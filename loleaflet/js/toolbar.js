@@ -186,6 +186,8 @@ function onClick(e, id, item, subItem) {
 	}
 	else if (id === 'sum') {
 		map.sendUnoCommand('.uno:AutoSum');
+		//w2ui['formulabar'].show('acceptformula', 'cancelformula');
+		//w2ui['formulabar'].hide('sum', 'function');
 	}
 	else if (id === 'function') {
 		L.DomUtil.get('formulaInput').value = '=';
