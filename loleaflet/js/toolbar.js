@@ -1273,6 +1273,32 @@ function onFontSelect(e) {
 
 function onFontSizeSelect(e) {
 	var size = e.target.value;
+	var selnum = $('.fontsizes-select').val();
+	var wrongnum = false;
+	var testn = selnum - 0;
+
+	/* 驗證輸入的字型大小是否數字 */
+	if (isNaN(testn) && selnum !== '') {
+		wrongnum = true;
+		alert('請輸入數字');
+	}
+	else if (testn <= 0 && selnum !== '') {
+		wrongnum = true;
+		alert('請輸入正整數');
+	}
+	if (wrongnum) {  // 由於列表用 select2 。要特別處理輸入文字會自動加進列表的情形
+		$('.fontsizes-select option').each(function (i, e) {
+			// 輸入錯誤字型大小：將打錯的從列表移除
+			if (($(e).text() === selnum) && selnum != '') {
+				console.log(selnum + ' removed');
+				$(e).remove();
+			}
+		});
+		$(e.target).find('option[data-select2-tag]').removeAttr('data-select2-tag');
+		// 打錯則預設字型大小還原為 12
+		$('.fontsizes-select').val('12').trigger('change');
+		return;
+	}
 	var command = {};
 	$(e.target).find('option[data-select2-tag]').removeAttr('data-select2-tag');
 	map.applyFontSize(size);
