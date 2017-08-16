@@ -582,8 +582,6 @@ L.TileLayer = L.GridLayer.extend({
 
 	_onDownloadAsMsg: function (textMsg) {
 		var command = this._map._socket.parseServerCmd(textMsg);
-		var parser = document.createElement('a');
-		parser.href = this._map.options.server;
 
 		var wopiSrc = '';
 		if (this._map.options.wopiSrc != '') {
@@ -611,7 +609,24 @@ L.TileLayer = L.GridLayer.extend({
 			this._map.fire('slidedownloadready', {url: url});
 		}
 		else if (command.id === 'export') {
-			this._map._fileDownloader.src = url;
+			if (!L.Browser.ie) {
+				this._map._fileDownloader.src = url;
+				return;
+			}
+
+			// IE 下載若以 iframe.src(如上) 則檔名會顯示亂碼。
+			// 解決方式：以 ajax 將檔案下載下來，再以 msSaveOrOpenBlob 直接開啟檔案
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onreadystatechange = L.bind(function () {
+				if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+					var blob = new Blob([xmlHttp.response], {type: 'application/pdf'});
+					//var url = URL.createObjectURL(blob);
+					window.navigator.msSaveOrOpenBlob(blob, command.name);
+				}
+			}, this);
+			xmlHttp.open('GET', url, true);
+			xmlHttp.responseType = 'blob';
+			xmlHttp.send();
 		}
 	},
 
