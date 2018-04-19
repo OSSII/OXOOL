@@ -33,6 +33,7 @@
 #include <Poco/SplitterChannel.h>
 #include <Poco/Thread.h>
 #include <Poco/Timestamp.h>
+#include <Poco/Timezone.h>
 
 #include "Log.hpp"
 #include "Util.hpp"
@@ -95,6 +96,8 @@ namespace Log
         signalLog(buf + i + 1);
     }
 
+    static int tz_offset = -1;
+
     char* prefix(char* buffer, const std::size_t len, const char* level)
     {
         const char *threadName = Util::getThreadName();
@@ -103,12 +106,15 @@ namespace Log
 #elif defined IOS
         const auto osTid = pthread_mach_thread_np(pthread_self());
 #endif
+        if (tz_offset < 0)
+             tz_offset = Poco::Timezone::tzd() / 60 / 60 ;
+
         Poco::DateTime time;
         snprintf(buffer, len, "%s-%.05lu %.4u-%.2u-%.2u %.2u:%.2u:%.2u.%.6u [ %s ] %s  ",
                     (Source.inited ? Source.id.c_str() : "<shutdown>"),
                     osTid,
                     time.year(), time.month(), time.day(),
-                    time.hour(), time.minute(), time.second(),
+                    time.hour() + tz_offset, time.minute(), time.second(),
                     time.millisecond() * 1000 + time.microsecond(),
                     threadName, level);
         return buffer;
