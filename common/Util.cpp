@@ -557,7 +557,7 @@ namespace Util
 
     void getVersionInfo(std::string& version, std::string& hash)
     {
-        version = std::string(LOOLWSD_VERSION);
+        version = std::string(LOOLWSD_VERSION) + "-" + std::string(LOOLWSD_VERSION_DIST);
         hash = std::string(LOOLWSD_VERSION_HASH);
         hash.resize(std::min(8, (int)hash.length()));
     }
