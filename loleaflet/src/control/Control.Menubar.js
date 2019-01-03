@@ -650,15 +650,8 @@ L.Control.Menubar = L.Control.extend({
 						$(aItem).removeClass(constChecked);
 					}
 				} else if (type === 'action') { // enable all except fullscreen on windows
-					if (id === 'fullscreen' && (L.Browser.ie || L.Browser.edge)) { // Full screen works weirdly on IE 11 and on Edge
-						$(aItem).addClass('disabled');
-						var index = self.options.allowedViewModeActions.indexOf('fullscreen');
-						if (index > 0) {
-							self.options.allowedViewModeActions.splice(index, 1);
-						}
-					} else {
-						$(aItem).removeClass('disabled');
-					}
+					$(aItem).removeClass('disabled');
+					$(aItem).addClass('enabled'); // extra added
 				}
 			} else { // eslint-disable-next-line no-lonely-if
 				if (type === 'unocommand') { // disable all uno commands
