@@ -2285,7 +2285,7 @@ private:
         std::string discPath = Path(Application::instance().commandPath()).parent().toString() + "discovery.xml";
         if (!File(discPath).exists())
         {
-            discPath = LOOLWSD::FileServerRoot + "/discovery.xml";
+            discPath = LOOLWSD::FileServerRoot + "/loleaflet/dist/discovery.xml";
         }
 
         InputSource input(discPath);
@@ -2718,7 +2718,7 @@ private:
         if (!File(discoveryPath).exists())
         {
             // http://server/hosting/discovery.xml
-            discoveryPath = LOOLWSD::FileServerRoot + "/discovery.xml";
+            discoveryPath = LOOLWSD::FileServerRoot + "/loleaflet/dist/discovery.xml";
         }
 
         const std::string action = "action";
