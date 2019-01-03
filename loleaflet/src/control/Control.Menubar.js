@@ -23,6 +23,8 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
 					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
 					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action'},
 					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action'},
 					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action'},
@@ -235,6 +237,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
 					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
 					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action'},
 					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action'},
 					{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action'}]},
@@ -315,10 +318,12 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{name: _('Download as'), id:'downloadas', type: 'menu', menu: [
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
 					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
 					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action'},
 					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action'},
 					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action'}]},
+					{name: _('CSV (.csv)'), id: 'downloadas-csv', icon:'fa fa-file-excel-o', type: 'action', hotkey: ''},
 				{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'}
 			]},
@@ -411,6 +416,7 @@ L.Control.Menubar = L.Control.extend({
 			'downloadas-pdf', 'downloadas-odt', 'downloadas-doc', 'downloadas-docx', 'downloadas-rtf', // file menu
 			'downloadas-odp', 'downloadas-ppt', 'downloadas-pptx', // file menu
 			'downloadas-ods', 'downloadas-xls', 'downloadas-xlsx', // file menu
+			'downloadas-csv', 'downloadas-html', 'downloadas-txt',  // file menu
 			'fullscreen', 'zoomin', 'zoomout', 'zoomreset', // view menu
 			'about', 'keyboard-shortcuts' // help menu
 		]

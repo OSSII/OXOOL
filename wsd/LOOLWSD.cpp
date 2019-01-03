@@ -2523,6 +2523,15 @@ private:
                 if (serveAsAttachment && contentType != "image/svg+xml")
                     response.set("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
+                if (Poco::Path(fileName).getExtension() == "pdf")
+                {
+                    contentType = "application/pdf";
+                }
+                if (Poco::Path(fileName).getExtension() == "txt" ||
+                    Poco::Path(fileName).getExtension() == "htm")
+                {
+                    contentType = "text/html";
+                }
                 try
                 {
                     HttpHelper::sendFile(socket, filePath.toString(), contentType, response);
