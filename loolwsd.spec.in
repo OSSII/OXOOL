@@ -137,6 +137,7 @@ getent passwd lool >/dev/null || useradd -g lool -r lool
 
 %post
 setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/loolforkit
+setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/loolwsd
 
 mkdir -p /var/cache/loolwsd && chown lool:lool /var/cache/loolwsd
 rm -rf /var/cache/loolwsd/*
