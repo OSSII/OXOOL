@@ -2021,10 +2021,6 @@ function onUpdatePermission(e) {
 			toolbar.disable(id);
 		});
 
-		toolbar = w2ui['toolbar-down'];
-		toolbarDownButtons.forEach(function(id) {
-			toolbar.disable(id);
-		});
 		$('#search-input').prop('disabled', true);
 	}
 }
