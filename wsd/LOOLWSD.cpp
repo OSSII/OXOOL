@@ -2180,6 +2180,8 @@ private:
             << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
             << "Content-Length: " << responseString.size() << "\r\n"
             << "Content-Type: " << mimeType << "\r\n"
+            << "X-Content-Type-Options: nosniff\r\n"
+            << "Cache-Control: no-cache,no-store\r\n"
             << "\r\n";
 
         if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET)
