@@ -19,6 +19,35 @@
     width: auto;
 }
 
+/* hotkey */
+.hotkey, .hotkey:hover {
+
+    color: black;
+    font-size:12px;
+    font-family:"Lucida Sans Unicode", "Lucida Sans", "Lucida Grande", Arial, sans
+serif;
+    left:150px;
+    position: absolute;
+    z-index: 1000px;
+    position: absolute;
+    top: 6px;
+    right: 13px;
+    /*font: normal normal normal 12px/1 FontAwesome;*/
+    /* background-color: red; */
+}
+.menuicon, .menuicon:hover {
+    position: absolute;
+    top: 6px;
+    left: 5px;
+}
+
+/* item */
+.sm-nowrap .item {
+    min-width: 12.5em;
+    max-width: 20em;
+    width: 100%;
+}
+
 /* Customizations to sm-simple theme to make it look like LO menu, lo-menu class */
 .lo-menu {
     border: none;

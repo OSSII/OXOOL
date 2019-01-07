@@ -81,6 +81,7 @@ LOLEAFLET_CSS =\
 	$(builddir)/node_modules/smartmenus/dist/css/sm-core-css.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-simple/sm-simple.css \
 	$(srcdir)/css/menubar.css \
+	$(builddir)/fonts/font-awesome.min.css \
 	$(builddir)/node_modules/jquery-ui/themes/ui-lightness/jquery-ui.css
 
 LOLEAFLET_CSS_DST = $(foreach file,$(LOLEAFLET_CSS),$(builddir)/dist/$(notdir $(file)))
@@ -152,6 +153,8 @@ build-loleaflet: | $(LOLEAFLET_L10N_DST) \
 	$(JQUERY_UI_DIST_IMAGES) \
 	$(LOLEAFLET_PREFIX)/dist/loleaflet-src.js \
 	$(ADMIN_BUNDLE) \
+	$(builddir)/dist/fonts/fontawesome-webfont.eot \
+	$(builddir)/dist/fonts/fontawesome-webfont.woff2 \
 	$(builddir)/dist/bundle.css \
 	$(builddir)/dist/bundle.js \
 	$(builddir)/dist/loleaflet.html
@@ -256,6 +259,10 @@ $(builddir)/dist/%.js: $(srcdir)/js/%.js
 	@cp $< $@
 
 $(builddir)/dist/node_modules/%.js: $(builddir)/node_modules/%.js
+	@mkdir -p $(dir $@)
+	@cp $< $@
+
+$(builddir)/dist/fonts/%: $(builddir)/fonts/%
 	@mkdir -p $(dir $@)
 	@cp $< $@
 

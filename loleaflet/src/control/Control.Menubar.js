@@ -15,33 +15,33 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:ToolsMenu'), disabled: true}
 		],
 		text:  [
-			{name: _UNO('.uno:PickList', 'text'), id: 'file', type: 'menu', menu: [
-				{name: _UNO('.uno:Save', 'text'), id: 'save', type: 'action'},
-				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action'},
+			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', hotkey: '', type: 'menu', menu: [
+				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
+				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download', hotkey: ''},
 				{name: _('Share...'), id:'shareas', type: 'action'},
 				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action'},
-				{name: _('See revision history'), id: 'rev-history', type: 'action'},
-				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history', hotkey: ''},
+				{name: _('Download as'), id: 'downloadas', type: 'menu', icon:'fa fa-download', hotkey: '', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o', hotkey: ''},
 					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
 					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
-					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action'},
-					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action'},
-					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action'},
+					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action', icon: 'fa fa-file-text-o', hotkey: ''},
+					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action', icon: 'fa fa-file-word-o', hotkey: ''},
+					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action', icon: 'fa fa-file-word-o', hotkey: ''},
 					{name: _('Rich Text (.rtf)'), id: 'downloadas-rtf', type: 'action'}]},
 				{name: _('Sign document'), id: 'signdocument', type: 'action'},
 				{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'text'), type: 'menu', menu: [
-				{uno: '.uno:Undo'},
-				{uno: '.uno:Redo'},
-				{name: _('Repair'), id: 'repair',  type: 'action'},
+				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
+				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
+				{name: _('Repair'), id: 'repair',  type: 'action', icon: 'fa fa-retweet', hotkey: ''},
 				{type: 'separator'},
-				{uno: '.uno:Cut'},
-				{uno: '.uno:Copy'},
-				{uno: '.uno:Paste'},
-				{uno: '.uno:SelectAll'},
+				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
+				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
+				{uno: '.uno:Paste', icon: 'fa fa-clipboard', hotkey: 'Ctrl+V'},
+				{uno: '.uno:SelectAll', icon: 'fa fa-check-circle', hotkey: 'Ctrl+A'},
 				{type: 'separator'},
 				{uno: '.uno:SearchDialog'},
 				{type: 'separator'},
@@ -58,19 +58,19 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:EditStyle'}
 			]},
 			{name: _UNO('.uno:ViewMenu', 'text'), id: 'view', type: 'menu', menu: [
-				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action'},
+				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action', icon: 'fa fa-square-o', hotkey: ''},
 				{type: 'separator'},
-				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action'},
-				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action'},
-				{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action',icon: 'fa fa-plus', hotkey: ''},
+				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action', icon: 'fa fa-minus', hotkey: ''},
+				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-refresh', hotkey: ''},
 				{type: 'separator'},
 				{uno: '.uno:ControlCodes'}
 			]
 			},
 			{name: _UNO('.uno:InsertMenu', 'text'), type: 'menu', menu: [
-				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
-				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action'},
-				{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action'},
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o', hotkey: ''},
+				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o', hotkey: ''},
+				{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action', icon: 'fa fa-comment'},
 				{uno: '.uno:InsertObjectChart'},
 				{type: 'separator'},
 				{name: _UNO('.uno:InsertField', 'text'), type: 'menu', menu: [
@@ -91,11 +91,11 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:InsertFootnote'},
 				{uno: '.uno:InsertEndnote'},
 				{type: 'separator'},
-				{uno: '.uno:InsertPagebreak'},
-				{uno: '.uno:InsertColumnBreak'},
+				{uno: '.uno:InsertPagebreak', icon: 'fa fa-wpforms', hotkey: 'Ctrl+Enter'},
+				{uno: '.uno:InsertColumnBreak', icon: 'fa fa-columns', hotkey: 'Ctrl+Shift+Enter'},
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog'},
-				{uno: '.uno:InsertSymbol'},
+				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
 				{name: _UNO('.uno:FormattingMarkMenu', 'text'), type: 'menu', menu: [
 					{uno: '.uno:InsertNonBreakingSpace'},
 					{uno: '.uno:InsertHardHyphen'},
@@ -109,11 +109,11 @@ L.Control.Menubar = L.Control.extend({
 			},
 			{name: _UNO('.uno:FormatMenu', 'text'), type: 'menu', menu: [
 				{name: _UNO('.uno:FormatTextMenu', 'text'), type: 'menu', menu: [
-					{uno: '.uno:Bold'},
-					{uno: '.uno:Italic'},
-					{uno: '.uno:Underline'},
-					{uno: '.uno:UnderlineDouble'},
-					{uno: '.uno:Strikeout'},
+					{uno: '.uno:Bold', icon: 'fa fa-bold', hotkey: 'Ctrl+B'},
+					{uno: '.uno:Italic', icon: 'fa fa-italic', hotkey: 'Ctrl+I'},
+					{uno: '.uno:Underline', icon: 'fa fa-underline', hotkey: 'Ctrl+U'},
+					{uno: '.uno:UnderlineDouble', icon: 'fa fa-underline', hotkey: 'Ctrl+D'},
+					{uno: '.uno:Strikeout', icon: 'fa fa-strikethrough', hotkey: 'Ctrl+Alt+5'},
 					{uno: '.uno:Overline'},
 					{type: 'separator'},
 					{uno: '.uno:SuperScript'},
@@ -147,14 +147,14 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:IncrementIndent'},
 					{uno: '.uno:DecrementIndent'}]},
 				{name: _UNO('.uno:TextAlign', 'text'), type: 'menu', menu: [
-					{uno: '.uno:CommonAlignLeft'},
-					{uno: '.uno:CommonAlignHorizontalCenter'},
-					{uno: '.uno:CommonAlignRight'},
-					{uno: '.uno:CommonAlignJustified'},
+					{uno: '.uno:CommonAlignLeft', icon: 'fa fa-align-left'},
+					{uno: '.uno:CommonAlignHorizontalCenter', icon: 'fa fa-align-center'},
+					{uno: '.uno:CommonAlignRight', icon: 'fa fa-align-right'},
+					{uno: '.uno:CommonAlignJustified', icon: 'fa fa-align-justify'},
 					{type: 'separator'},
-					{uno: '.uno:CommonAlignTop'},
+					{uno: '.uno:CommonAlignTop', icon: 'fa fa-chevron-up'},
 					{uno: '.uno:CommonAlignVerticalCenter'},
-					{uno: '.uno:CommonAlignBottom'}]},
+					{uno: '.uno:CommonAlignBottom', icon: 'fa fa-chevron-down'}]},
 				{name: _UNO('.uno:FormatBulletsMenu', 'text'), type: 'menu', menu: [
 					{uno: '.uno:DefaultBullet'},
 					{uno: '.uno:DefaultNumbering'},
@@ -231,28 +231,28 @@ L.Control.Menubar = L.Control.extend({
 
 		presentation: [
 			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
-				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action'},
-				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action'},
-				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action'},
+				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
+				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action', icon:'fa fa-download'},
+				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon:'fa fa-file-pdf-o'},
 					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
-					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action'},
-					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action'},
-					{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action'}]},
+					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action', icon: 'fa fa-file-text-o'},
+					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action', icon: 'fa fa-file-powerpoint-o'},
+						{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action', icon: 'fa fa-file-powerpoint-o'}]},
 				{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'presentation'), type: 'menu', menu: [
-				{uno: '.uno:Undo'},
-				{uno: '.uno:Redo'},
+				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
+				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
 				{name: _('Repair'), id: 'repair',  type: 'action'},
 				{type: 'separator'},
-				{uno: '.uno:Cut'},
-				{uno: '.uno:Copy'},
-				{uno: '.uno:Paste'},
-				{uno: '.uno:SelectAll'},
+				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
+				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
+				{uno: '.uno:Paste', icon: 'fa fa-clipboard', hotkey: 'Ctrl+V'},
+				{uno: '.uno:SelectAll', icon: 'fa fa-check-circle', hotkey: 'Ctrl+A'},
 				{type: 'separator'},
 				{uno: '.uno:SearchDialog'}
 			]},
@@ -264,14 +264,14 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('Reset zoom'), id: 'zoomreset', type: 'action'}]
 			},
 			{name: _UNO('.uno:InsertMenu', 'presentation'), type: 'menu', menu: [
-				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
-				{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action'},
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o'},
+				{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
 				{name: _UNO('.uno:InsertAnnotation', 'presentation'), id: 'insertcomment', type: 'action'},
 				{uno: '.uno:InsertObjectChart'},
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog'},
 				{type: 'separator'},
-				{uno: '.uno:InsertSymbol'}]
+				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'}]
 			},
 			{name: _UNO('.uno:FormatMenu', 'presentation'), type: 'menu', menu: [
 				{name: _UNO('.uno:FormatObjectMenu', 'presentation'), type: 'menu', menu: [
@@ -313,28 +313,28 @@ L.Control.Menubar = L.Control.extend({
 
 		spreadsheet: [
 			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
-				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action'},
-				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action'},
-				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action'},
-				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
+				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
+				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
 				{name: _('Download as'), id:'downloadas', type: 'menu', menu: [
 					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
-					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action'},
-					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action'},
-					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action'}]},
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o'},
+					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action', icon: 'fa fa-file-text-o'},
+					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action', icon:'fa fa-file-excel-o'},
+					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action', icon:'fa fa-file-excel-o'}]},
 					{name: _('CSV (.csv)'), id: 'downloadas-csv', icon:'fa fa-file-excel-o', type: 'action', hotkey: ''},
 				{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'spreadsheet'), type: 'menu', menu: [
-				{uno: '.uno:Undo'},
-				{uno: '.uno:Redo'},
+				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
+				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
 				{name: _('Repair'), id: 'repair',  type: 'action'},
 				{type: 'separator'},
-				{uno: '.uno:Cut'},
-				{uno: '.uno:Copy'},
-				{uno: '.uno:Paste'},
+				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
+				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
+				{uno: '.uno:Paste', icon: 'fa fa-clipboard', hotkey: 'Ctrl+V'},
 				{uno: '.uno:SelectAll'},
 				{type: 'separator'},
 				{uno: '.uno:SearchDialog'}
@@ -344,12 +344,12 @@ L.Control.Menubar = L.Control.extend({
 			]},
 			{name: _UNO('.uno:InsertMenu', 'spreadsheet'), type: 'menu', menu: [
 				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
-				{name: _UNO('.uno:InsertGraphic', 'spreadsheet'), id: 'insertgraphicremote', type: 'action'},
+				{name: _UNO('.uno:InsertGraphic', 'spreadsheet'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
 				{uno: '.uno:InsertObjectChart'},
 				{name: _UNO('.uno:InsertAnnotation', 'spreadsheet'), id: 'insertcomment', type: 'action'},
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog'},
-				{uno: '.uno:InsertSymbol'}
+				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'}
 			]},
 			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), type: 'menu', menu: [
 				{uno: '.uno:ResetAttributes'},
@@ -841,6 +841,7 @@ L.Control.Menubar = L.Control.extend({
 					L.DomUtil.addClass(liItem, 'readonly');
 				}
 			}
+			//L.DomUtil.create('i', menu[i].icon, liItem);
 			var aItem = L.DomUtil.create('a', menu[i].disabled ? 'disabled' : '', liItem);
 			if (menu[i].name !== undefined) {
 				aItem.innerHTML = menu[i].name;
@@ -849,7 +850,13 @@ L.Control.Menubar = L.Control.extend({
 			} else {
 				aItem.innerHTML = '';
 			}
+			var iItem = L.DomUtil.create('i', menu[i].icon, aItem);
+			//var spanItem = L.DomUtil.create('span', 'hotkey', aItem);
 
+			L.DomUtil.addClass(iItem, 'menuicon');
+			/*if (menu[i].hotkey) {
+				spanItem.innerHTML = menu[i].hotkey;
+			}*/
 			if (menu[i].type === 'menu') {
 				var ulItem = L.DomUtil.create('ul', '', liItem);
 				var subitemList = this._createMenu(menu[i].menu);
