@@ -1278,11 +1278,7 @@ function onFontSizeSelect(e) {
 	var testn = selnum - 0;
 
 	/* 驗證輸入的字型大小是否數字 */
-	if (isNaN(testn) && selnum !== '') {
-		wrongnum = true;
-		alert('請輸入數字');
-	}
-	else if (testn <= 0 && selnum !== '') {
+	if (testn <= 0 && selnum !== '') {
 		wrongnum = true;
 		alert('請輸入正整數');
 	}
@@ -1857,6 +1853,16 @@ function updateCommandValues() {
 			data: []
 		});
 
+		$('.fontsizes-select').on('select2:open', function() {
+			$('input[type=search][class=select2-search__field]').keypress(function(e) {
+				if ('Backspace' == e.key || 'Delete' == e.key || 'ArrowLeft' == e.key || 'ArrowRight' == e.key || '.' == e.key)
+					return true;
+				/* 驗證輸入的字型大小是否數字 */
+				if (isNaN(e.key) && e.key !== '') {
+					return false;
+				}
+			});
+		});
 		$('.fontsizes-select').on('select2:select', onFontSizeSelect);
 		if (fontsSelectValue) {
 			updateFontSizeList(fontsSelectValue);
