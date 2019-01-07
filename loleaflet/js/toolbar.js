@@ -1424,6 +1424,7 @@ function onDocLayerInit() {
 
 	switch (docType) {
 	case 'spreadsheet':
+		$('div#logo').addClass('logo_ods');
 		toolbarUp.remove('inserttable', 'styles', 'justifypara', 'defaultbullet', 'defaultnumbering', 'break-numbering', 'insertfootnote');
 		if (!_useSimpleUI()) {
 			statusbar.insert('left', [
@@ -1463,6 +1464,7 @@ function onDocLayerInit() {
 
 		break;
 	case 'text':
+		$('div#logo').addClass('logo_odt');
 		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset');
 		if (!_useSimpleUI()) {
 			statusbar.insert('left', [
@@ -1491,6 +1493,7 @@ function onDocLayerInit() {
 
 		break;
 	case 'presentation':
+		$('div#logo').addClass('logo_odp');
 		var presentationToolbar = w2ui['presentation-toolbar'];
 		presentationToolbar.show('insertpage', 'duplicatepage', 'deletepage');
 		if (!map['wopi'].HideExportOption) {
@@ -1518,6 +1521,7 @@ function onDocLayerInit() {
 
 		break;
 	case 'drawing':
+		$('div#logo').addClass('logo_odt');
 		toolbarUp.remove('insertannotation', 'wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
 
 		// Remove irrelevant toolbars
