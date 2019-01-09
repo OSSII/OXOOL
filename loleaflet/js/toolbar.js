@@ -1278,9 +1278,9 @@ function onFontSizeSelect(e) {
 	var testn = selnum - 0;
 
 	/* 驗證輸入的字型大小是否數字 */
-	if (testn <= 0 && selnum !== '') {
+	if (isNaN(testn) && selnum !== '') {
 		wrongnum = true;
-		alert('請輸入正整數');
+		alert('請輸入數字');
 	}
 	if (wrongnum) {  // 由於列表用 select2 。要特別處理輸入文字會自動加進列表的情形
 		$('.fontsizes-select option').each(function (i, e) {
@@ -1620,12 +1620,9 @@ function onCommandStateChanged(e) {
 		});
 		if (!found) {
 			// we need to add the size
-			var defsizes = [6,7,8,9,10,10.5,11,12,13,14,15,16,18,20,22,24,26,28,32,36,40,44,48,54,60,66,72,80,88,96];
-			for (var si in defsizes)
-				$('.fontsizes-select')
-					.append($('<option></option>')
-					.text(defsizes[si]).val(defsizes[si]));
-
+			$('.fontsizes-select')
+				.append($('<option></option>')
+				.text(state));
 		}
 		fontsizesSelectValue = state;
 		$('.fontsizes-select').val(state).trigger('change');
@@ -1861,8 +1858,10 @@ function updateCommandValues() {
 			$('input[type=search][class=select2-search__field]').keypress(function(e) {
 				if ('Backspace' == e.key || 'Delete' == e.key || 'ArrowLeft' == e.key || 'ArrowRight' == e.key || '.' == e.key)
 					return true;
+				if (' ' == e.key)
+					return false;
 				/* 驗證輸入的字型大小是否數字 */
-				if (isNaN(e.key) && e.key !== '') {
+				if (isNaN(e.key)) {
 					return false;
 				}
 			});
