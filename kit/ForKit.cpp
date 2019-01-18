@@ -167,12 +167,12 @@ static bool haveCapability(cap_value_t capability)
     {
         if (cap_name)
         {
-            LOG_FTL("Capability " << cap_name << " is not set for the loolforkit program.");
+            LOG_FTL("Capability " << cap_name << " is not set for the oxoolforkit program.");
             cap_free(cap_name);
         }
         else
         {
-            LOG_ERR("Capability " << capability << " is not set for the loolforkit program.");
+            LOG_ERR("Capability " << capability << " is not set for the oxoolforkit program.");
         }
         return false;
     }
@@ -339,16 +339,16 @@ void forkLibreOfficeKit(const std::string& childRoot,
 #ifndef KIT_IN_PROCESS
 static void printArgumentHelp()
 {
-    std::cout << "Usage: loolforkit [OPTION]..." << std::endl;
+    std::cout << "Usage: oxoolforkit [OPTION]..." << std::endl;
     std::cout << "  Single-threaded process that spawns lok instances" << std::endl;
-    std::cout << "  Note: Running this standalone is not possible. It is spawned by loolwsd" << std::endl;
+    std::cout << "  Note: Running this standalone is not possible. It is spawned by oxoolwsd" << std::endl;
     std::cout << "        and is controlled via a pipe." << std::endl;
     std::cout << "" << std::endl;
 }
 
 int main(int argc, char** argv)
 {
-    if (!hasCorrectUID("loolforkit"))
+    if (!hasCorrectUID("oxoolforkit"))
     {
         return Application::EXIT_SOFTWARE;
     }
@@ -442,7 +442,7 @@ int main(int argc, char** argv)
         {
             std::string version, hash;
             Util::getVersionInfo(version, hash);
-            std::cout << "loolforkit version details: " << version << " - " << hash << std::endl;
+            std::cout << "oxoolforkit version details: " << version << " - " << hash << std::endl;
             DisplayVersion = true;
         }
         else if (std::strstr(cmd, "--rlimits") == cmd)
@@ -505,9 +505,9 @@ int main(int argc, char** argv)
         "sharedext:${${BRAND_BASE_DIR}/program/lounorc:SHARED_EXTENSIONS_USER}/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini "
         "userext:${${BRAND_BASE_DIR}/program/lounorc:UNO_USER_PACKAGES_CACHE}/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini "
 #if ENABLE_DEBUG // '*' denotes non-writable.
-        "user:*file://" DEBUG_ABSSRCDIR "/loolkitconfig.xcu "
+        "user:*file://" DEBUG_ABSSRCDIR "/oxoolkitconfig.xcu "
 #else
-        "user:*file://" LOOLWSD_CONFIGDIR "/loolkitconfig.xcu "
+        "user:*file://" LOOLWSD_CONFIGDIR "/oxoolkitconfig.xcu "
 #endif
         );
 
@@ -522,7 +522,7 @@ int main(int argc, char** argv)
 
     if (!NoCapsForKit && !haveCorrectCapabilities())
     {
-        std::cerr << "FATAL: Capabilities are not set for the loolforkit program." << std::endl;
+        std::cerr << "FATAL: Capabilities are not set for the oxoolforkit program." << std::endl;
         std::cerr << "Please make sure that the current partition was *not* mounted with the 'nosuid' option." << std::endl;
         std::cerr << "If you are on SLES11, please set 'file_caps=1' as kernel boot option." << std::endl << std::endl;
         return Application::EXIT_SOFTWARE;

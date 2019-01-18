@@ -17,10 +17,10 @@ SUBDIRS = . loleaflet
 export ENABLE_DEBUG
 
 bin_PROGRAMS = \
-	loolwsd loolforkit \
-	loolconvert loolconfig
+	oxoolwsd oxoolforkit \
+	oxoolconvert oxoolconfig
 
-dist_bin_SCRIPTS = loolwsd-systemplate-setup
+dist_bin_SCRIPTS = oxoolwsd-systemplate-setup
 
 man_MANS = man/loolwsd.1 \
            man/loolforkit.1 \
@@ -33,15 +33,14 @@ dist_doc_DATA = wsd/README \
                 wsd/protocol.txt \
                 wsd/reference.md
 
-loolwsddatadir = @LOOLWSD_DATADIR@
+oxoolwsddatadir = @LOOLWSD_DATADIR@
 
-loolwsddata_DATA = discovery.xml \
+oxoolwsddata_DATA = discovery.xml \
                    favicon.ico
 
-loolwsdconfigdir = @LOOLWSD_CONFIGDIR@
+oxoolwsdconfigdir = @LOOLWSD_CONFIGDIR@
 
-loolwsdconfig_DATA = loolwsd.xml \
-		     loolkitconfig.xcu
+oxoolwsdconfig_DATA = oxoolkitconfig.xcu
 
 apache2configdir = ${sysconfdir}/apache2/conf-available
 
@@ -65,17 +64,17 @@ if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -pthread -Wl,-E,-rpath,/snap/loolwsd/current/usr/lib -lpam $(ZLIB_LIBS)
+AM_LDFLAGS = -pthread -Wl,-E,-rpath,/snap/oxoolwsd/current/usr/lib -lpam $(ZLIB_LIBS)
 
 if ENABLE_SSL
 AM_LDFLAGS += -lssl -lcrypto
 else
-loolwsd_fuzzer_LDADD = -lssl -lcrypto
-loolwsd_LDADD = -lssl -lcrypto
-loolconfig_LDADD = -lssl -lcrypto
+oxoolwsd_fuzzer_LDADD = -lssl -lcrypto
+oxoolwsd_LDADD = -lssl -lcrypto
+oxoolconfig_LDADD = -lssl -lcrypto
 endif
 
-loolwsd_fuzzer_CPPFLAGS = -DKIT_IN_PROCESS=1 -DFUZZER=1 -DTDOC=\"$(abs_top_srcdir)/test/data\" $(AM_CPPFLAGS)
+oxoolwsd_fuzzer_CPPFLAGS = -DKIT_IN_PROCESS=1 -DFUZZER=1 -DTDOC=\"$(abs_top_srcdir)/test/data\" $(AM_CPPFLAGS)
 
 AM_ETAGSFLAGS = --c++-kinds=+p --fields=+iaS --extra=+q -R --totals=yes --exclude=loleaflet *
 AM_CTAGSFLAGS = $(AM_ETAGSFLAGS)
@@ -97,7 +96,7 @@ if ENABLE_SSL
 shared_sources += net/Ssl.cpp
 endif
 
-loolwsd_sources = common/Crypto.cpp \
+oxoolwsd_sources = common/Crypto.cpp \
                   wsd/Admin.cpp \
                   wsd/AdminModel.cpp \
                   wsd/Auth.cpp \
@@ -108,17 +107,17 @@ loolwsd_sources = common/Crypto.cpp \
                   wsd/Storage.cpp \
                   wsd/TileCache.cpp
 
-loolwsd_SOURCES = $(loolwsd_sources) \
+oxoolwsd_SOURCES = $(oxoolwsd_sources) \
                   $(shared_sources)
 
 noinst_PROGRAMS = clientnb \
                   connect \
                   lokitclient \
-                  loolwsd_fuzzer \
-                  loolmap \
-                  loolstress \
-                  loolmount \
-                  loolsocketdump
+                  oxoolwsd_fuzzer \
+                  oxoolmap \
+                  oxoolstress \
+                  oxoolmount \
+                  oxoolsocketdump
 
 connect_SOURCES = tools/Connect.cpp \
                   common/Log.cpp \
@@ -131,15 +130,15 @@ lokitclient_SOURCES = common/IoUtil.cpp \
                       common/Protocol.cpp \
                       common/Util.cpp
 
-loolforkit_sources = kit/ChildSession.cpp \
+oxoolforkit_sources = kit/ChildSession.cpp \
                      kit/ForKit.cpp \
                      kit/Kit.cpp
 
-loolforkit_SOURCES = $(loolforkit_sources) \
+oxoolforkit_SOURCES = $(oxoolforkit_sources) \
                      $(shared_sources)
 
-loolwsd_fuzzer_SOURCES = $(loolwsd_sources) \
-                         $(loolforkit_sources) \
+oxoolwsd_fuzzer_SOURCES = $(oxoolwsd_sources) \
+                         $(oxoolforkit_sources) \
                          $(shared_sources) \
                          kit/DummyLibreOfficeKit.cpp
 
@@ -147,24 +146,24 @@ clientnb_SOURCES = net/clientnb.cpp \
                    common/Log.cpp \
                    common/Util.cpp
 
-loolmount_SOURCES = tools/mount.cpp
+oxoolmount_SOURCES = tools/mount.cpp
 
-loolmap_SOURCES = tools/map.cpp
+oxoolmap_SOURCES = tools/map.cpp
 
-loolconvert_SOURCES = tools/Tool.cpp
+oxoolconvert_SOURCES = tools/Tool.cpp
 
-loolstress_CPPFLAGS = -DTDOC=\"$(abs_top_srcdir)/test/data\" ${include_paths}
-loolstress_SOURCES = tools/Stress.cpp \
+oxoolstress_CPPFLAGS = -DTDOC=\"$(abs_top_srcdir)/test/data\" ${include_paths}
+oxoolstress_SOURCES = tools/Stress.cpp \
                      common/Protocol.cpp \
                      common/Log.cpp \
 		     common/Util.cpp
 
-loolconfig_SOURCES = tools/Config.cpp \
+oxoolconfig_SOURCES = tools/Config.cpp \
 		     common/Crypto.cpp \
 		     common/Log.cpp \
 		     common/Util.cpp
 
-loolsocketdump_SOURCES = tools/WebSocketDump.cpp \
+oxoolsocketdump_SOURCES = tools/WebSocketDump.cpp \
 			 $(shared_sources)
 
 wsd_headers = wsd/Admin.hpp \
@@ -236,7 +235,7 @@ dist-hook:
 
 EXTRA_DIST = discovery.xml \
              favicon.ico \
-             loolkitconfig.xcu \
+             oxoolkitconfig.xcu \
              loolwsd.spec \
              loolwsd.xml.in \
              loolwsd.service \
@@ -263,9 +262,9 @@ if HAVE_LO_PATH
 
 SYSTEM_STAMP = @SYSTEMPLATE_PATH@/system_stamp
 
-$(SYSTEM_STAMP) : ${top_srcdir}/loolwsd-systemplate-setup
+$(SYSTEM_STAMP) : ${top_srcdir}/oxoolwsd-systemplate-setup
 	if test "z@SYSTEMPLATE_PATH@" != "z"; then rm -rf "@SYSTEMPLATE_PATH@"; fi
-	${top_srcdir}/loolwsd-systemplate-setup "@SYSTEMPLATE_PATH@" "@LO_PATH@" && touch $@
+	${top_srcdir}/oxoolwsd-systemplate-setup "@SYSTEMPLATE_PATH@" "@LO_PATH@" && touch $@
 
 @JAILS_PATH@ :
 	mkdir -p $@
@@ -279,13 +278,13 @@ clean-local:
 	if test "z@TILECACHE_PATH@" != "z"; then rm -rf "@TILECACHE_PATH@"; fi
 
 run: all @TILECACHE_PATH@ @JAILS_PATH@
-	@echo "Launching loolwsd"
+	@echo "Launching oxoolwsd"
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(abs_top_srcdir)/test/data/hello-world.odt
 	@cp $(abs_top_srcdir)/test/data/hello.ods $(abs_top_srcdir)/test/data/hello-world.ods
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	@echo
-	./loolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
+	./oxoolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
 			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
 			  --o:tile_cache_path="@TILECACHE_PATH@" \
 			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
@@ -295,13 +294,13 @@ run: all @TILECACHE_PATH@ @JAILS_PATH@
 			  --o:logging.file[@enable]=true --o:logging.level=trace
 
 run-valgrind: all @TILECACHE_PATH@ @JAILS_PATH@
-	@echo "Launching loolwsd under valgrind (but not forkit/loolkit, yet)"
+	@echo "Launching oxoolwsd under valgrind (but not forkit/oxoolkit, yet)"
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(abs_top_srcdir)/test/data/hello-world.odt
 	@cp $(abs_top_srcdir)/test/data/hello.ods $(abs_top_srcdir)/test/data/hello-world.ods
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	valgrind --tool=memcheck --trace-children=no -v --read-var-info=yes \
-		./loolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
+		./oxoolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
 			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
 			  --o:tile_cache_path="@TILECACHE_PATH@" \
 			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
@@ -311,13 +310,13 @@ run-valgrind: all @TILECACHE_PATH@ @JAILS_PATH@
 			  --o:logging.file[@enable]=false --o:logging.level=trace
 
 run-gdb: all @TILECACHE_PATH@ @JAILS_PATH@
-	@echo "Launching loolwsd under valgrind's callgrind"
+	@echo "Launching oxoolwsd under valgrind's callgrind"
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(abs_top_srcdir)/test/data/hello-world.odt
 	@cp $(abs_top_srcdir)/test/data/hello.ods $(abs_top_srcdir)/test/data/hello-world.ods
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	gdb --tui --args \
-		./loolwsd --o:security.capabilities="false" \
+		./oxoolwsd --o:security.capabilities="false" \
 			  --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
 			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
 			  --o:tile_cache_path="@TILECACHE_PATH@" \
@@ -328,13 +327,13 @@ run-gdb: all @TILECACHE_PATH@ @JAILS_PATH@
 			  --o:logging.file[@enable]=false --o:logging.level=error
 
 run-callgrind: all @TILECACHE_PATH@ @JAILS_PATH@
-	@echo "Launching loolwsd under valgrind's callgrind"
+	@echo "Launching oxoolwsd under valgrind's callgrind"
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(abs_top_srcdir)/test/data/hello-world.odt
 	@cp $(abs_top_srcdir)/test/data/hello.ods $(abs_top_srcdir)/test/data/hello-world.ods
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	valgrind --tool=callgrind --simulate-cache=yes --dump-instr=yes --num-callers=50 --error-limit=no --trace-children=yes \
-		./loolwsd --o:security.capabilities="false" \
+		./oxoolwsd --o:security.capabilities="false" \
 			  --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
 			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
 			  --o:tile_cache_path="@TILECACHE_PATH@" \
@@ -345,13 +344,13 @@ run-callgrind: all @TILECACHE_PATH@ @JAILS_PATH@
 			  --o:logging.file[@enable]=false --o:logging.level=error
 
 run-strace: all @TILECACHE_PATH@ @JAILS_PATH@
-	@echo "Launching loolwsd under strace"
+	@echo "Launching oxoolwsd under strace"
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(abs_top_srcdir)/test/data/hello-world.odt
 	@cp $(abs_top_srcdir)/test/data/hello.ods $(abs_top_srcdir)/test/data/hello-world.ods
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	strace -o strace.log -f -tt -s 256 \
-		./loolwsd --o:security.capabilities="false" \
+		./oxoolwsd --o:security.capabilities="false" \
 			  --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
 			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
 			  --o:tile_cache_path="@TILECACHE_PATH@" \
@@ -375,16 +374,16 @@ clean-cache cache-clean:
 clang-tidy:
 	parallel clang-tidy -header-filter=^$(PWD).* -- $(shell git ls-files|grep /.*cpp$$|grep -v test)
 
-# After building loolforkit, set its capabilities as required. Do it
+# After building oxoolforkit, set its capabilities as required. Do it
 # already after a plain 'make' to allow for testing without
 # installing. When building for packaging, no need for this, as the
 # capabilities won't survive packaging anyway. Instead, handle it when
 # installing the RPM or Debian package.
 
-all-local: loolforkit loolmount @TILECACHE_PATH@ @JAILS_PATH@ $(SYSTEM_STAMP)
+all-local: oxoolforkit oxoolmount @TILECACHE_PATH@ @JAILS_PATH@ $(SYSTEM_STAMP)
 if ENABLE_SETCAP
-	    sudo @SETCAP@ cap_fowner,cap_mknod,cap_sys_chroot=ep loolforkit
-	    sudo @SETCAP@ cap_sys_admin=ep loolmount
+	    sudo @SETCAP@ cap_fowner,cap_mknod,cap_sys_chroot=ep oxoolforkit
+	    sudo @SETCAP@ cap_sys_admin=ep oxoolmount
 else
 	    echo "Skipping capability setting"
 endif

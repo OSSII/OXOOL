@@ -282,7 +282,7 @@ int Stress::main(const std::vector<std::string>& args)
 
     if (args.size() == 0)
     {
-        std::cerr << "Usage: loolstress [--bench] <tracefile | url> " << std::endl;
+        std::cerr << "Usage: oxoolstress [--bench] <tracefile | url> " << std::endl;
         std::cerr << "       Trace files may be plain text or gzipped (with .gz extension)." << std::endl;
         std::cerr << "       --help for full arguments list." << std::endl;
         return Application::EXIT_NOINPUT;

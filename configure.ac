@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 
-AC_INIT([loolwsd], [3.1], [libreoffice@lists.freedesktop.org])
+AC_INIT([oxoolwsd], [3.1], [libreoffice@lists.freedesktop.org])
 LT_INIT([shared, disable-static, dlopen])
 
 AM_INIT_AUTOMAKE([1.10 subdir-objects tar-pax -Wno-portability])
@@ -17,7 +17,7 @@ LOOLWSD_VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
 LOOLWSD_VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
 LOOLWSD_VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
 LOOLWSD_VERSION="$LOOLWSD_VERSION_MAJOR.$LOOLWSD_VERSION_MINOR"
-LOOLWSD_VERSION_DIST=1
+LOOLWSD_VERSION_DIST=5
 
 AC_SUBST([LOOLWSD_VERSION_MAJOR])
 AC_SUBST([LOOLWSD_VERSION_MINOR])
@@ -174,7 +174,7 @@ AS_IF([test "$enable_debug" = yes -a -n "$with_poco_libs"],
 ENABLE_DEBUG=
 LOOLWSD_LOGLEVEL="warning"
 LOOLWSD_LOG_TO_FILE="false"
-LOOLWSD_LOGFILE="/var/log/loolwsd.log"
+LOOLWSD_LOGFILE="/var/log/oxoolwsd.log"
 LOOLWSD_ANONYMIZE_FILENAMES=false
 LOOLWSD_ANONYMIZE_USERNAMES=false
 LOLEAFLET_LOGGING="false"
@@ -185,7 +185,7 @@ if test "$enable_debug" = "yes"; then
    ENABLE_DEBUG=true
    LOOLWSD_LOGLEVEL="trace"
    LOOLWSD_LOG_TO_FILE="true"
-   LOOLWSD_LOGFILE="/tmp/loolwsd.log"
+   LOOLWSD_LOGFILE="/tmp/oxoolwsd.log"
    LOOLWSD_ANONYMIZE_FILENAMES=false
    LOOLWSD_ANONYMIZE_USERNAMES=false
    LOLEAFLET_LOGGING="true"
@@ -601,7 +601,7 @@ fi
 AC_SUBST(ENABLE_SETCAP)
 
 AC_CONFIG_LINKS([discovery.xml:discovery.xml])
-AC_CONFIG_LINKS([loolkitconfig.xcu:loolkitconfig.xcu])
+AC_CONFIG_LINKS([oxoolkitconfig.xcu:oxoolkitconfig.xcu])
 AC_CONFIG_LINKS([loleaflet/package.json:loleaflet/package.json])
 AC_LINK_FILES([loleaflet/node_shrinkwrap], [loleaflet/node_shrinkwrap])
 
