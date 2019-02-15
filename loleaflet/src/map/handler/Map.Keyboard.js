@@ -423,8 +423,11 @@ L.Map.Keyboard = L.Handler.extend({
 			// (part or whole word deleted) with the spell-checked word. (for
 			// example: enter 'tar' and with spell-check correct that to 'rat')
 			var data = e.originalEvent.data;
-			for (var idx = 0; idx < data.length; idx++) {
-				this._map._docLayer._postKeyboardEvent('input', data[idx].charCodeAt(), 0);
+
+			if (!this._isComposing) {
+				for (var idx = 0; idx < data.length; idx++) {
+					this._map._docLayer._postKeyboardEvent('input', data[idx].charCodeAt(), 0);
+				}
 			}
 		}
 	},
