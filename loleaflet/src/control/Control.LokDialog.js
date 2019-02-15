@@ -68,6 +68,7 @@ L.Control.LokDialog = L.Control.extend({
 
 		// pre-multiplied by the scale factor
 		var dpiscale = L.getDpiScaleFactor();
+		dpiscale = 1;
 		return [x * dpiscale, y * dpiscale, width * dpiscale, height * dpiscale].join(',');
 	},
 
@@ -76,6 +77,7 @@ L.Control.LokDialog = L.Control.extend({
 			rectangle = rectangle.replace(/ /g, '');
 
 		var dpiscale = L.getDpiScaleFactor();
+		dpiscale = 1;
 		console.log('_sendPaintWindow: rectangle: ' + rectangle + ', dpiscale: ' + dpiscale);
 		this._map._socket.sendMessage('paintwindow ' + id + (rectangle ? ' rectangle=' + rectangle + ' dpiscale=' + dpiscale : ''));
 	},
@@ -250,6 +252,7 @@ L.Control.LokDialog = L.Control.extend({
 		L.DomUtil.setStyle(canvas, 'height', height + 'px');
 
 		var scale = L.getDpiScaleFactor();
+		scale = 1;
 		canvas.width = width * scale;
 		canvas.height = height * scale;
 	},
