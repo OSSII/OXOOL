@@ -12,7 +12,7 @@
 }
 
 .main-nav {
-    height: 30px; /* on mouseover menubar items, border emerges */
+    height: 32px; /* on mouseover menubar items, border emerges */
     background: #efefef;
     position: static;
     margin-left: 10px;
@@ -57,13 +57,13 @@ serif;
 }
 
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active {
-    font-family: "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    line-height: 15px;
+    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+    font-size: 16px;
+    line-height: 18px;
 }
 
 .lo-menu ul a, .lo-menu ul a:hover, .lo-menu ul a:focus, .lo-menu ul a:active {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .lo-menu a.disabled {

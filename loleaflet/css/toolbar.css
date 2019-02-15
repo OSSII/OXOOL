@@ -217,20 +217,20 @@ button.leaflet-control-search-next
 
 #zoomlevel {
     min-width: 36px;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 /* select box */
 .select2-results__option {
     padding: 5px;
-    font-family: "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 12px;
+    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+    font-size: 14px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .select2-selection__rendered {
-    font-family: "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 12px;
+    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+    font-size: 14px;
 }
 .styles-select {
     width: 180px;

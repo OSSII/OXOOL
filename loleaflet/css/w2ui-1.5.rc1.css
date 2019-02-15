@@ -59,8 +59,8 @@
   -ms-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  font-family: Verdana, Arial, sans-serif;
-  font-size: 11px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+  font-size: 12px;
 }
 .w2ui-reset * {
   color: default;
@@ -82,8 +82,8 @@
 }
 .w2ui-reset table tr th,
 .w2ui-reset table tr td {
-  font-family: Verdana, Arial, sans-serif;
-  font-size: 11px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+  font-size: 12px;
 }
 .w2ui-reset input:not([type=button]):not([type=submit]):not([type=checkbox]):not([type=radio]),
 .w2ui-reset select,
@@ -94,12 +94,12 @@
   vertical-align: baseline;
   padding: 4px;
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 .w2ui-reset select {
   padding: 1px;
   height: 23px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .w2ui-centered {
   position: absolute;
@@ -390,8 +390,8 @@ input[type=checkbox].w2ui-toggle:focus {
   margin-top: 0px;
   background-color: rgba(60, 60, 60, 0.9);
   color: #ffffff !important;
-  font-size: 11px;
-  font-family: verdana;
+  font-size: 12px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   text-shadow: 1px 1px 3px #000;
   line-height: 1.4;
   letter-spacing: 0.1px;
@@ -590,7 +590,7 @@ input[type=checkbox].w2ui-toggle:focus {
   text-overflow: ellipsis;
   overflow: hidden;
   font-size: 13px;
-  font-family: Verdana, Arial, sans-serif;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   opacity: 0.8;
   filter: alpha(opacity=80);
   background-color: #555555;
@@ -1474,8 +1474,8 @@ button.w2ui-btn-small:focus:before {
   background-color: #eff3f5;
   white-space: nowrap;
   cursor: default;
-  font-family: verdana;
-  font-size: 11px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+  font-size: 12px;
   line-height: 100%;
   height: 20px;
   overflow: hidden;
@@ -2178,7 +2178,7 @@ button.w2ui-btn-small:focus:before {
   display: inline-block;
   border-radius: 3px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
   padding: 1px 5px;
   width: 30px;
@@ -2284,8 +2284,8 @@ button.w2ui-btn-small:focus:before {
   /* do not show changed for spreadsheet */
 }
 .w2ui-info-bubble table {
-  font-size: 11px;
-  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   color: white;
   text-shadow: 1px 1px solid #999;
 }
@@ -2305,8 +2305,8 @@ button.w2ui-btn-small:focus:before {
   cursor: default;
 }
 .w2ui-overlay .w2ui-select-field table {
-  font-size: 11px;
-  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   border-spacing: 0px;
   border-collapse: border-collapse;
 }
@@ -2425,7 +2425,7 @@ button.w2ui-btn-small:focus:before {
   position: fixed;
   z-index: 1600;
   overflow: hidden;
-  font-family: Verdana, Arial, sans-serif;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   border-radius: 6px;
   padding: 0px;
   margin: 0px;
@@ -2965,7 +2965,7 @@ button.w2ui-btn-small:focus:before {
 }
 .w2ui-toolbar table.w2ui-button .w2ui-tb-count > span {
   border: 1px solid #f6fcf4;
-  border-radius: 11px;
+  border-radius: 12px;
   width: auto;
   height: 18px;
   padding: 0px 6px 1px 6px;

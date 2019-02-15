@@ -227,7 +227,7 @@
 
 /* general typography */
 .leaflet-container {
-	font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font: 12px/1.5 Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
 	}
 
 
@@ -287,7 +287,7 @@
 
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
-	font: bold 18px 'Lucida Console', Monaco, monospace;
+	font: bold 18px Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
 	text-indent: 1px;
 	}
 .leaflet-control-zoom-out {
@@ -421,7 +421,7 @@ a.leaflet-control-buttons:hover:first-child {
 	}
 .leaflet-container .leaflet-control-attribution,
 .leaflet-container .leaflet-control-scale {
-	font-size: 11px;
+	font-size: 12px;
 	}
 .leaflet-left .leaflet-control-scale {
 	margin-left: 5px;
@@ -434,7 +434,7 @@ a.leaflet-control-buttons:hover:first-child {
 	border-top: none;
 	line-height: 1.1;
 	padding: 2px 5px 1px;
-	font-size: 11px;
+	font-size: 12px;
 	white-space: nowrap;
 	overflow: hidden;
 	-moz-box-sizing: content-box;
@@ -527,7 +527,7 @@ a.leaflet-control-buttons:hover:first-child {
 	text-align: center;
 	width: 18px;
 	height: 14px;
-	font: 16px/14px Tahoma, Verdana, sans-serif;
+	font: 16px/14px Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
 	color: #c3c3c3;
 	text-decoration: none;
 	font-weight: bold;
@@ -575,7 +575,7 @@ a.leaflet-control-buttons:hover:first-child {
 
 .debug .leaflet-popup-content {
 	margin: 1px 1px;
-	font: 9px/8px Tahoma, Verdana, sans-serif;
+	font: 9px/8px Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
 	line-height: 1;
 	background: rgba(0, 0, 0, 0);
 	pointer-events: none;
@@ -745,7 +745,7 @@ input.clipboard {
 
 .leaflet-progress > span > span {
 	padding: 0 8px;
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: bold;
 	color: #fff;
 	text-shadow: 0 1px rgba(0, 0, 0, 0.4);
@@ -827,7 +827,7 @@ input.clipboard {
 	border-width: 0px .5px;
 	border-style: solid;
 	border-color: grey;
-	font-size: 10px;
+	font-size: 12px;
 	text-align: center;
 	color: grey;
 	line-height: 7px;
