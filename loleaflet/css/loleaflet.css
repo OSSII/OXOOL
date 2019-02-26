@@ -29,8 +29,11 @@
 }
 
 #logo.readonly {
-    background-size: 100px;
-    top: -5px;
+    position: fixed;
+    min-height: 30px;
+    width: 30px;
+    z-index: 99999;
+    top: 0px;
 }
 
 #map {
