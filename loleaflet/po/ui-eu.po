@@ -1,0 +1,928 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-17 14:59+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+"X-Pootle-Path: /eu/libo_online/loleaflet-ui-eu.po\n"
+"X-Pootle-Revision: 3609508\n"
+
+#: admin/admin.strings.js:6
+msgid "Admin console"
+msgstr "Administrazio kontsola"
+
+#: admin/admin.strings.js:7
+msgid "Settings"
+msgstr "Ezarpenak"
+
+#: admin/admin.strings.js:8
+msgid "Overview"
+msgstr "Ikuspegi orokorra"
+
+#: admin/admin.strings.js:9
+msgid "(current)"
+msgstr "(unekoa)"
+
+#: admin/admin.strings.js:10
+msgid "Analytics"
+msgstr "Analitika"
+
+#: admin/admin.strings.js:11
+msgid "History"
+msgstr "Historia"
+
+#: admin/admin.strings.js:12
+msgid "Dashboard"
+msgstr "Aginte-mahaia"
+
+#: admin/admin.strings.js:13
+msgid "Users online"
+msgstr "Konektatutako erabiltzaileak"
+
+#: admin/admin.strings.js:14
+msgid "User Name"
+msgstr "Erabiltzaile-izena"
+
+#: admin/admin.strings.js:15
+msgid "Documents opened"
+msgstr "Irekitako dokumentuak"
+
+#: admin/admin.strings.js:16
+msgid "Number of Documents"
+msgstr "Dokumentu kopurua"
+
+#: admin/admin.strings.js:17
+msgid "Memory consumed"
+msgstr "Erabilitako memoria"
+
+#: admin/admin.strings.js:18
+msgid "Bytes sent"
+msgstr "Bidalitako byte-ak"
+
+#: admin/admin.strings.js:19
+msgid "Bytes received"
+msgstr "Jasotako byte-ak"
+
+#: admin/admin.strings.js:20
+msgid "PID"
+msgstr "PID"
+
+#: admin/admin.strings.js:21
+msgid "Document"
+msgstr "Dokumentua"
+
+#: admin/admin.strings.js:22
+msgid "Number of views"
+msgstr "Ikuste kopurua"
+
+#: admin/admin.strings.js:23
+msgid "Elapsed time"
+msgstr "Igarotako denbora"
+
+#: admin/admin.strings.js:24
+msgid "Idle time"
+msgstr "Inaktibitate denbora"
+
+#: admin/admin.strings.js:25
+msgid "Modified"
+msgstr "Aldatua"
+
+#: admin/admin.strings.js:26
+msgid "Kill"
+msgstr "Hil"
+
+#: admin/admin.strings.js:27
+msgid "Graphs"
+msgstr "Grafikoak"
+
+#: admin/admin.strings.js:28
+msgid "Memory Graph"
+msgstr "Memoriaren diagrama"
+
+#: admin/admin.strings.js:29
+msgid "CPU Graph"
+msgstr "CPUaren diagrama"
+
+#: admin/admin.strings.js:30
+msgid "Network Graph"
+msgstr "Sarearen diagrama"
+
+#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:232
+msgid "Save"
+msgstr "Gorde"
+
+#: admin/admin.strings.js:32
+msgid "Cache size of memory statistics"
+msgstr "Memoria estatistiken katxearen amaina"
+
+#: admin/admin.strings.js:33
+msgid "Time interval of memory statistics (in ms)"
+msgstr "Memoria estatistiken denbora tartea (ms-tan)"
+
+#: admin/admin.strings.js:34
+msgid "Cache size of CPU statistics"
+msgstr "PUZ estatistiken katxearen tamaina"
+
+#: admin/admin.strings.js:35
+msgid "Time interval of CPU statistics (in ms)"
+msgstr "PUZ eztatistiken denbora tartea (ms-tan)"
+
+#: admin/admin.strings.js:36
+msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgstr ""
+"Dokumentu-prozesuaren gehieneko memoria birtuala (MB) - gutxitu besterik ez"
+
+#: admin/admin.strings.js:37
+msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgstr ""
+"Dokumentu-prozesuaren gehieneko pilako memoria (KB) - gutxitu besterik ez"
+
+#: admin/admin.strings.js:38
+msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgstr ""
+"Diskora idazteko onartutako gehieneko fitxategi tamaina (MB) - gutxitu "
+"besterik ez"
+
+#: admin/admin.strings.js:39
+msgid "Documents:"
+msgstr "Dokumentuak:"
+
+#: admin/admin.strings.js:40
+msgid "Expired:"
+msgstr "Iraungita:"
+
+#: admin/admin.strings.js:41
+msgid "Refresh"
+msgstr "Freskatu"
+
+#: admin/src/AdminSocketAnalytics.js:219
+msgid "Received"
+msgstr "Jasota"
+
+#: admin/src/AdminSocketAnalytics.js:223
+msgid "Sent"
+msgstr "Bidalita"
+
+#: admin/src/AdminSocketBase.js:46
+msgid "Connection error"
+msgstr "Konexio-errorea"
+
+#: admin/src/AdminSocketOverview.js:101
+msgid "Are you sure you want to terminate this session?"
+msgstr "Ziur zaude saio hau itxi nahi duzula?"
+
+#: admin/src/AdminSocketOverview.js:182 admin/src/AdminSocketOverview.js:284
+msgid "Documents"
+msgstr "Dokumentuak"
+
+#: admin/src/AdminSocketSettings.js:34
+msgid "Are you sure you want to shut down the server?"
+msgstr "Ziur zerbitzaria itzali nahi duzula?"
+
+#: admin/src/Util.js:14
+msgid "kB"
+msgstr "kB"
+
+#: admin/src/Util.js:14
+msgid "MB"
+msgstr "MB"
+
+#: admin/src/Util.js:14
+msgid "GB"
+msgstr "GB"
+
+#: admin/src/Util.js:14
+msgid "TB"
+msgstr "TB"
+
+#: admin/src/Util.js:43 admin/src/Util.js:45
+msgid " hrs"
+msgstr " ordu"
+
+#: admin/src/Util.js:49 admin/src/Util.js:51
+msgid " mins"
+msgstr " minutu"
+
+#: admin/src/Util.js:54
+msgid " s"
+msgstr " s"
+
+#: js/toolbar.js:153
+msgid "Are you sure you want to delete this page?"
+msgstr "Ziur orri hau ezabatu nahi duzula?"
+
+#: js/toolbar.js:620
+msgid "Document repair"
+msgstr "Dokumentu konponketa"
+
+#: js/toolbar.js:660
+msgid "Insert table"
+msgstr "Txertatu taula"
+
+#: js/toolbar.js:662
+msgid "Borders"
+msgstr "Ertzak"
+
+#: js/toolbar.js:670
+msgid "More..."
+msgstr "Gehiago..."
+
+#: js/toolbar.js:682
+msgid "Insert shapes"
+msgstr "Txertatu formak"
+
+#: js/toolbar.js:689
+msgid "Insert Local Image"
+msgstr "Txertatu irudi lokala"
+
+#: js/toolbar.js:717 js/toolbar.js:1031
+msgid "Always follow the editor"
+msgstr "Jarraitu beti editoreari"
+
+#: js/toolbar.js:720 js/toolbar.js:1034
+msgid "Current"
+msgstr "Unekoa"
+
+#: js/toolbar.js:745 js/toolbar.js:912 js/toolbar.js:1428
+msgid "Sum"
+msgstr "Batuketa"
+
+#: js/toolbar.js:746 js/toolbar.js:913
+msgid "Function"
+msgstr "Funtzioa"
+
+#: js/toolbar.js:747 js/toolbar.js:914 src/layer/marker/Annotation.js:171
+msgid "Cancel"
+msgstr "Utzi"
+
+#: js/toolbar.js:748 js/toolbar.js:915
+msgid "Accept"
+msgstr "Onartu"
+
+#: js/toolbar.js:781 js/toolbar.js:970
+msgid "First sheet"
+msgstr "Lehen orria"
+
+#: js/toolbar.js:782 js/toolbar.js:971
+msgid "Previous sheet"
+msgstr "Aurreko orria"
+
+#: js/toolbar.js:783 js/toolbar.js:972
+msgid "Next sheet"
+msgstr "Hurrengo orria"
+
+#: js/toolbar.js:784 js/toolbar.js:973
+msgid "Last sheet"
+msgstr "Azken orria"
+
+#: js/toolbar.js:785 js/toolbar.js:974
+msgid "Insert sheet"
+msgstr "Txertatu orria"
+
+#: js/toolbar.js:946 src/control/Control.Menubar.js:30
+msgid "Sign document"
+msgstr "Sinatu dokumentua"
+
+#: js/toolbar.js:951
+msgid "Logout"
+msgstr "Amaitu saioa"
+
+#: js/toolbar.js:991 src/control/Control.Menubar.js:297
+msgid "Fullscreen presentation"
+msgstr "Pantaila osoko aurkezpena"
+
+#: js/toolbar.js:1015
+msgid "Search:"
+msgstr "Bilatu:"
+
+#: js/toolbar.js:1022
+msgid "Cancel the search"
+msgstr "Utzi bilaketa"
+
+#: js/toolbar.js:1027
+msgid "No users"
+msgstr "Erabiltzailerik ez"
+
+#: js/toolbar.js:1041 src/control/Control.Menubar.js:63
+#: src/control/Control.Menubar.js:261
+msgid "Reset zoom"
+msgstr "Berrezarri zooma"
+
+#: js/toolbar.js:1085
+msgid "%user has joined"
+msgstr "%user batu da"
+
+#: js/toolbar.js:1086
+msgid "%user has left"
+msgstr "%user joan da"
+
+#: js/toolbar.js:1406
+msgid "Number of Sheets"
+msgstr "Orri kopurua"
+
+#: js/toolbar.js:1409
+msgid "Selected range of cells"
+msgstr "Hautatutako gelaxka-area"
+
+#: js/toolbar.js:1412 js/toolbar.js:1451
+msgid "Entering text mode"
+msgstr "Testu modura sartzen"
+
+#: js/toolbar.js:1415 js/toolbar.js:1457 js/toolbar.js:1484
+msgid "Text Language"
+msgstr "Testuaren hizkuntza"
+
+#: js/toolbar.js:1418 js/toolbar.js:1454
+msgid "Selection Mode"
+msgstr "Hautapen modua"
+
+#: js/toolbar.js:1421
+msgid "Choice of functions"
+msgstr "Funtzioen aukera"
+
+#: js/toolbar.js:1423
+msgid "Average"
+msgstr "Batez bestekoa"
+
+#: js/toolbar.js:1424
+msgid "CountA"
+msgstr "KontagailuaA"
+
+#: js/toolbar.js:1425
+msgid "Count"
+msgstr "Zenbatu"
+
+#: js/toolbar.js:1426
+msgid "Maximum"
+msgstr "Gehienezkoa"
+
+#: js/toolbar.js:1427
+msgid "Minimum"
+msgstr "Gutxienekoa"
+
+#: js/toolbar.js:1429
+msgid "Selection count"
+msgstr "Hautapenaren kontaketa"
+
+#: js/toolbar.js:1430
+msgid "None"
+msgstr "Bat ere ez"
+
+#: js/toolbar.js:1445
+msgid "Number of Pages"
+msgstr "Orrialde kopurua"
+
+#: js/toolbar.js:1448
+msgid "Word Counter"
+msgstr "Hitz kontatzailea"
+
+#: js/toolbar.js:1479
+msgid "Number of Slides"
+msgstr "Diapositiba kopurua"
+
+#: js/toolbar.js:1511
+msgid "%n users"
+msgstr "%n erabiltzaile"
+
+#: js/toolbar.js:1512
+msgid "1 user"
+msgstr "erabiltzaile 1"
+
+#: js/toolbar.js:1513
+msgid "0 users"
+msgstr "0 erabiltzaile"
+
+#: js/toolbar.js:1643
+msgid "Document saved"
+msgstr "Dokumentua gorde da"
+
+#: js/toolbar.js:1793
+msgid "Style"
+msgstr "Estiloa"
+
+#: js/toolbar.js:1815
+msgid "Font"
+msgstr "Letra-tipoa"
+
+#: js/toolbar.js:1848
+msgid "Previous slide"
+msgstr "Aurreko diapositiba"
+
+#: js/toolbar.js:1849
+msgid "Next slide"
+msgstr "Hurrengo diapositiba"
+
+#: js/toolbar.js:1911
+msgid ""
+"Conflict Undo/Redo with multiple users. Please use document repair to resolve"
+msgstr ""
+"Hainbat erabiltzaileen arteko desegin/berrekin talka. Erabili dokumentu-"
+"konponketa ebazteko."
+
+#: js/toolbar.js:2139 src/control/Control.DocumentRepair.js:95
+msgid "You"
+msgstr "Zu"
+
+#: js/toolbar.js:2145
+msgid "Readonly"
+msgstr "Irakurtzeko soilik"
+
+#: src/control/Control.AlertDialog.js:28
+msgid "The server encountered a %0 error while parsing the %1 command."
+msgstr "Zerbitzariak %0 errore bat aurkitu du %1 komandoa analizatzean."
+
+#: src/control/Control.ContextMenu.js:131
+msgid "Internal Cut"
+msgstr "Barne mozketa"
+
+#: src/control/Control.ContextMenu.js:134
+msgid "Internal Copy"
+msgstr "Barne kopia"
+
+#: src/control/Control.ContextMenu.js:137
+msgid "Internal Paste"
+msgstr "Barne itsatsi"
+
+#: src/control/Control.ContextMenu.js:159
+msgid "Internal Paste Special"
+msgstr "Barne itsatsi berezia"
+
+#: src/control/Control.DocumentRepair.js:33
+msgid "Repair Document"
+msgstr "Konpondu dokumentua"
+
+#: src/control/Control.DocumentRepair.js:44
+msgid "Type"
+msgstr "Mota"
+
+#: src/control/Control.DocumentRepair.js:46
+msgid "Index"
+msgstr "Aurkibidea"
+
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:226
+msgid "Comment"
+msgstr "Iruzkina"
+
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr "Erabiltzaile-izena"
+
+#: src/control/Control.DocumentRepair.js:52
+msgid "Timestamp"
+msgstr "Denbora-zigilua"
+
+#: src/control/Control.DocumentRepair.js:56
+msgid "Jump to state"
+msgstr "Jauzi egoerara"
+
+#: src/control/Control.Menubar.js:21
+msgid "Share..."
+msgstr "Partekatu..."
+
+#: src/control/Control.Menubar.js:23 src/control/Control.Menubar.js:235
+#: src/control/Control.Menubar.js:316
+msgid "See revision history"
+msgstr "Ikusi berrikuspen historia"
+
+#: src/control/Control.Menubar.js:24 src/control/Control.Menubar.js:236
+#: src/control/Control.Menubar.js:317
+msgid "Download as"
+msgstr "Deskargatu honela"
+
+#: src/control/Control.Menubar.js:25 src/control/Control.Menubar.js:237
+#: src/control/Control.Menubar.js:318
+msgid "PDF Document (.pdf)"
+msgstr "PDF Dokumentua (.pdf)"
+
+#: src/control/Control.Menubar.js:26
+msgid "ODF text document (.odt)"
+msgstr "ODF testu dokumentua (.odt)"
+
+#: src/control/Control.Menubar.js:27
+msgid "Word 2003 Document (.doc)"
+msgstr "Word 2003 dokumentua (.doc)"
+
+#: src/control/Control.Menubar.js:28
+msgid "Word Document (.docx)"
+msgstr "Word dokumentua (.docx)"
+
+#: src/control/Control.Menubar.js:29
+msgid "Rich Text (.rtf)"
+msgstr "Testu aberatsa (.rtf)"
+
+#: src/control/Control.Menubar.js:37 src/control/Control.Menubar.js:247
+#: src/control/Control.Menubar.js:328
+msgid "Repair"
+msgstr "Konpondu"
+
+#: src/control/Control.Menubar.js:69 src/control/Control.Menubar.js:264
+#: src/control/Control.Menubar.js:341
+msgid "Local Image..."
+msgstr "Irudi lokala..."
+
+#: src/control/Control.Menubar.js:85 src/control/Control.Menubar.js:87
+msgid "All"
+msgstr "Dena"
+
+#: src/control/Control.Menubar.js:134
+msgid "Text orientation"
+msgstr "Testu-orientazioa"
+
+#: src/control/Control.Menubar.js:212 src/control/Control.Menubar.js:214
+#: src/control/Control.Menubar.js:216 src/control/Control.Menubar.js:302
+#: src/control/Control.Menubar.js:396
+msgid "None (Do not check spelling)"
+msgstr "Bat ere ez (ez zuzendu ortografia)"
+
+#: src/control/Control.Menubar.js:224 src/control/Control.Menubar.js:305
+#: src/control/Control.Menubar.js:399
+msgid "Keyboard shortcuts"
+msgstr "Laster-teklak"
+
+#: src/control/Control.Menubar.js:225 src/control/Control.Menubar.js:306
+#: src/control/Control.Menubar.js:400
+msgid "About"
+msgstr "Honi buruz"
+
+#: src/control/Control.Menubar.js:227 src/control/Control.Menubar.js:308
+#: src/control/Control.Menubar.js:402
+msgid "Close document"
+msgstr "Itxi dokumentua"
+
+#: src/control/Control.Menubar.js:238
+msgid "ODF presentation (.odp)"
+msgstr "ODF aurkezpena (.odp)"
+
+#: src/control/Control.Menubar.js:239
+msgid "PowerPoint 2003 Presentation (.ppt)"
+msgstr "PowerPoint 2003 aurkezpena (.ppt)"
+
+#: src/control/Control.Menubar.js:240
+msgid "PowerPoint Presentation (.pptx)"
+msgstr "PowerPoint aurkezpena (.pptx)"
+
+#: src/control/Control.Menubar.js:319
+msgid "ODF spreadsheet (.ods)"
+msgstr "ODF kalkulu-orria (.ods)"
+
+#: src/control/Control.Menubar.js:320
+msgid "Excel 2003 Spreadsheet (.xls)"
+msgstr "Excel 2003 kalkulu-orria (.xls)"
+
+#: src/control/Control.Menubar.js:321
+msgid "Excel Spreadsheet (.xlsx)"
+msgstr "Excel kalkulu-orria (.xlsx)"
+
+#: src/control/Control.Menubar.js:467
+msgid "Reset to Default Language"
+msgstr "Leheneratu hizkuntza lehenetsira"
+
+#: src/control/Control.Menubar.js:718
+msgid "Are you sure you want to delete this slide?"
+msgstr "Ziur zaude diapositiba hau ezabatu nahi duzula?"
+
+#: src/control/Control.Scroll.Annotation.js:10
+msgid "Scroll up annotations"
+msgstr "Korritu gora anotazioak"
+
+#: src/control/Control.Scroll.Annotation.js:12
+msgid "Scroll down annotations"
+msgstr "Korritu behera anotazioak"
+
+#: src/control/Control.Tabs.js:55
+msgid "Insert sheet before this"
+msgstr "Txertatu orria honen aurretik"
+
+#: src/control/Control.Tabs.js:56
+msgid "Insert sheet after this"
+msgstr "Txertatu orria honen atzetik"
+
+#: src/control/Control.Tabs.js:61
+msgid "Are you sure you want to delete sheet, %sheet% ?"
+msgstr "Ziur zaude %sheet% orria ezabatu nahi duzula?"
+
+#: src/control/Control.Tabs.js:74
+msgid "Enter new sheet name"
+msgstr "Sartu orriaren izen berria"
+
+#: src/control/Ruler.js:95
+msgid "Left Margin"
+msgstr "Ezkerreko marjina"
+
+#: src/control/Ruler.js:96
+msgid "Right Margin"
+msgstr "Eskuineko marjina"
+
+#: src/control/Toolbar.js:75 src/control/Toolbar.js:84
+msgid "Downloading..."
+msgstr "Deskargatzen..."
+
+#: src/control/Toolbar.js:99 src/map/Map.js:1036
+msgid "Saving..."
+msgstr "Gordetzen..."
+
+#: src/control/Toolbar.js:250
+msgid "This version of %productName is powered by"
+msgstr "%productName bertsio honen oinarria"
+
+#: src/core/Socket.js:79
+msgid ""
+"IE11 has reached its maximum number of connections. Please see this document "
+"to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
+"versions/windows/internet-explorer/ie-developer/general-info/"
+"ee330736(v=vs.85)#websocket-maximum-server-connections"
+msgstr ""
+"IE11 nabigatzailea bere konexio kopuru maximora iritsi da. Begiratu honako "
+"dokumentua muga hori handitzeko, behar baduzu: https://docs.microsoft.com/"
+"en-us/previous-versions/windows/internet-explorer/ie-developer/general-info/"
+"ee330736(v=vs.85)#websocket-maximum-server-connections"
+
+#: src/core/Socket.js:81
+msgid "Oops, there is a problem connecting to LibreOffice Online : "
+msgstr "Arazo bat dago LibreOffice Onlinera konektatzean:  "
+
+#: src/core/Socket.js:276
+msgid "Unsupported server version."
+msgstr "Euskarririk gabeko zerbitzari bertsioa."
+
+#: src/core/Socket.js:327
+msgid "Session terminated by document owner"
+msgstr "Dokumentuaren jabeak saioa amaitu du"
+
+#: src/core/Socket.js:331
+msgid "Idle document - please click to reload and resume editing"
+msgstr "Dokumentu inaktiboa - egin klik birkargatzeko eta edizioa berrasteko"
+
+#: src/core/Socket.js:338
+msgid "Server is shutting down for maintenance (auto-saving)"
+msgstr "Zerbitzaria mantentzerako itzaltzen ari da (automatikoki gordetzen)"
+
+#: src/core/Socket.js:342
+msgid "Oops, there is a problem connecting the document"
+msgstr "Ene, arazo bat dago dokumentuarekin konektatzean"
+
+#: src/core/Socket.js:346
+msgid "Server is recycling and will be available shortly"
+msgstr "Zerbitzaria birziklatzen ari da eta laster egongo da erabilgarri"
+
+#: src/core/Socket.js:377
+msgid ""
+"Document has changed in storage. Loading the new document. Your version is "
+"available as revision."
+msgstr ""
+"Dokumentua biltegian aldatu da. Dokumentu berria kargatzen. Zure bertsioa "
+"berrikusketa gisa dago eskuragarri."
+
+#: src/core/Socket.js:383
+msgid ""
+"Restoring older revision. Any unsaved changes will be available in version "
+"history"
+msgstr ""
+"Aurreko bertsioa berreskuratzen. Gorde gabeko aldaketak bertsioen "
+"historialean aurkitu ahal izango dira."
+
+#: src/core/Socket.js:501
+msgid ""
+"Document has been changed in storage. What would you like to do with your "
+"unsaved changes?"
+msgstr ""
+"Dokumentua aldatu egin da biltegian. Ez egin nahi duzu gorde ez diren "
+"aldaketekin?"
+
+#: src/core/Socket.js:506
+msgid "Discard"
+msgstr "Baztertu"
+
+#: src/core/Socket.js:511
+msgid "Overwrite"
+msgstr "Gainidatzi"
+
+#: src/core/Socket.js:516
+msgid "Save to new file"
+msgstr "Gorde fitxategi berrian"
+
+#: src/core/Socket.js:584
+msgid "Document requires password to view."
+msgstr "Dokumentua ikusteko pasahitza behar da."
+
+#: src/core/Socket.js:587
+msgid "Document requires password to modify."
+msgstr "Dokumentua aldatzeko pasahitza behar da."
+
+#: src/core/Socket.js:589
+msgid "Hit Cancel to open in view-only mode."
+msgstr "Sakatu utzi soilik-ikusi moduan irekitzeko."
+
+#: src/core/Socket.js:593
+msgid "Wrong password provided. Please try again."
+msgstr "Pasahitz okerra. Saiatu berriro."
+
+#: src/core/Socket.js:706
+msgid "Connecting..."
+msgstr "Konektatzen..."
+
+#: src/core/Socket.js:857
+msgid ""
+"Well, this is embarrassing, we cannot connect to your document. Please try "
+"again."
+msgstr ""
+"Tira, hau lotsagarria da, ezin dugu zure dokumentuarekin konektatu. Saiatu "
+"berriro."
+
+#: src/errormessages.js:13
+msgid ""
+"No disk space left on server, please contact the server administrator to "
+"continue."
+msgstr ""
+"Ez dago leku librerik zerbitzariaren diskoan, jarri kontaktuan "
+"zerbitzariaren administratzailearekin jarraitu ahal izateko."
+
+#: src/errormessages.js:14
+msgid ""
+"The host URL is empty. The loolwsd server is probably misconfigured, please "
+"contact the administrator."
+msgstr ""
+"Ostalari URLa hutsik dago. Ziur aski loolwsd zerbitzaria gaizki "
+"konfiguratuta dago, jarri kontaktuan administratzailearekin."
+
+#: src/errormessages.js:15
+msgid ""
+"This is an unsupported version of {productname}. To avoid the impression "
+"that it is suitable for deployment in enterprises, this message appears when "
+"more than {docs} documents or {connections} connections are in use "
+"concurrently"
+msgstr ""
+"{productname} bertsio honek ez du euskarririk. Enpresetan instalatzeko prest "
+"dagoela inork pentsa ez dezan, mezu hau agertzen da {docs} dokumentu edo "
+"{connections} konexio baino gehiago aldi berean erabiltzen direnean."
+
+#: src/errormessages.js:16
+msgid "More information and support"
+msgstr "Informazio gehiago eta laguntza"
+
+#: src/errormessages.js:17
+msgid ""
+"This service is limited to %0 documents, and %1 connections total by the "
+"admin. This limit has been reached. Please try again later."
+msgstr ""
+"Administratzaileak zerbitzu hau %0 dokumentu, eta guztira %1 konexioetara "
+"mugatu du. Muga hau heldu da. Saiatu beranduago."
+
+#: src/errormessages.js:18
+msgid ""
+"Service is unavailable. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+"Zerbitzua ez dago eskuragarri. Saiatu geroago eta jakinarazi zure "
+"administratzaileari arazoak jarraitzen badu."
+
+#: src/errormessages.js:19
+msgid ""
+"Unauthorized WOPI host. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+"Baimenik gabeko WOPI ostalaria. Saiatu berriro geroago  eta jakinarazi zure "
+"administratzaileari arazoak jarraitzen badu."
+
+#: src/errormessages.js:20
+msgid "Wrong or missing WOPISrc parameter, please contact support."
+msgstr ""
+"WOPISrc parametro okerra edo parametro hori falta da, hitz egin "
+"teknikariekin."
+
+#: src/errormessages.js:21
+msgid ""
+"Your session will expire in %time. Please save your work and refresh the "
+"session (or webpage) to continue."
+msgstr ""
+"Zure saioa %time barru bukatuko da. Gorde zure lana eta freskatu saioa (edo "
+"orrialdea) jarraitzeko."
+
+#: src/errormessages.js:22
+msgid ""
+"Your session has been expired. Further changes to document might not be "
+"saved. Please refresh the session (or webpage) to continue."
+msgstr ""
+"Zure saioa bukatu da. Hemendik aurrera dokumentuan egindako aldaketak agian "
+"ez dira gordeko. Freskatu saioa (edo orrialdea) jarraitzeko."
+
+#: src/errormessages.js:23
+msgid ""
+"Failed to load the document. Please ensure the file type is supported and "
+"not corrupted, and try again."
+msgstr ""
+"Ezin izan da dokumentua kargatu. Ziurtatu onartutako fitxategi mota bat dela "
+"eta ez dagoela matxuratuta, eta saiatu berriro."
+
+#: src/errormessages.js:26
+#, javascript-format
+msgid ""
+"Failed to read document from storage. Please contact your storage server "
+"(%storageserver) administrator."
+msgstr ""
+"Ezin izan da dokumentua irakurri biltegitik. Kontaktatu zure biltegiratze-"
+"zerbitzariaren (%storageserver) administratzailearekin."
+
+#: src/errormessages.js:27
+#, javascript-format
+msgid ""
+"Save failed due to no disk space left on storage server. Document will now "
+"be read-only. Please contact the server (%storageserver) administrator to "
+"continue editing."
+msgstr ""
+"Ezin izan da gorde, biltegiratze-zerbitzarian lekurik ez dagoelako. "
+"Dokumentua irakurtzeko soilik izango da orain. Kontaktatu zerbitzariaren "
+"(%storageserver) administratzailearekin edizioarekin jarraitzeko."
+
+#: src/errormessages.js:28
+msgid "Document cannot be saved due to expired or invalid access token."
+msgstr ""
+"Ezin izan da dokumentua gorde sarbide token iraungitua edo baliogabea dela "
+"eta."
+
+#: src/errormessages.js:29
+msgid ""
+"Document cannot be saved. Check your permissions or contact the storage "
+"server administrator."
+msgstr ""
+"Ezin izan da dokumentua gorde. Egiaztatu zure baimenak edo kontaktatu "
+"biltegiratze-zerbitzariaren administratzailearekin."
+
+#: src/layer/marker/Annotation.js:201
+msgid "Accept change"
+msgstr "Onartu aldaketa"
+
+#: src/layer/marker/Annotation.js:206
+msgid "Reject change"
+msgstr "Ukatu aldaketa"
+
+#: src/layer/marker/Annotation.js:215
+msgid "Open menu"
+msgstr "Ireki menua"
+
+#: src/layer/marker/Annotation.js:235 src/layer/tile/TileLayer.js:199
+msgid "Reply"
+msgstr "Erantzun"
+
+#: src/layer/tile/TileLayer.js:193
+msgid "Modify"
+msgstr "Aldatu"
+
+#: src/layer/tile/TileLayer.js:205
+msgid "Remove"
+msgstr "Kendu"
+
+#: src/map/Map.js:143
+msgid "Initializing..."
+msgstr "Hasieratzen..."
+
+#: src/map/Map.js:908
+msgid "Inactive document - please click to resume editing"
+msgstr "Dokumentu ez aktiboa - Egin klik edizioari berrekiteko"
+
+#: src/map/Map.js:1039
+msgid "Loading..."
+msgstr "Kargatzen..."
+
+#: src/map/handler/Map.FileInserter.js:82
+msgid "Uploading..."
+msgstr "Igotzen..."
+
+#: src/map/handler/Map.WOPI.js:273
+msgid "Creating copy..."
+msgstr "Kopia sortzen..."
+
+#~ msgid "Textwrap"
+#~ msgstr "Testua itzulbiratzea"
+
+#~ msgid "No wrap"
+#~ msgstr "Ez itzulbiratu"
+
+#~ msgid "Page wrap"
+#~ msgstr "Orrialde-itzulbiratzea"
+
+#~ msgid "Wrap anchor only"
+#~ msgstr "Itzulbiratu aingura besterik ez"
+
+#~ msgid "Ideal wrap"
+#~ msgstr "Itzulbiratze ideala"
+
+#~ msgid "Left wrap"
+#~ msgstr "Ezker-itzulbira"
+
+#~ msgid "Right wrap"
+#~ msgstr "Eskuin-itzulbira"
+
+#~ msgid "Wrap through"
+#~ msgstr "Zeharkatu"

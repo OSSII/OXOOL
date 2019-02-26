@@ -1,0 +1,923 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-17 14:59+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+"X-Pootle-Path: /nn/libo_online/loleaflet-ui-nn.po\n"
+"X-Pootle-Revision: 3609693\n"
+
+#: admin/admin.strings.js:6
+msgid "Admin console"
+msgstr "Adminkonsoll"
+
+#: admin/admin.strings.js:7
+msgid "Settings"
+msgstr "Innstillingar"
+
+#: admin/admin.strings.js:8
+msgid "Overview"
+msgstr "Oversyn"
+
+#: admin/admin.strings.js:9
+msgid "(current)"
+msgstr "(gjeldande)"
+
+#: admin/admin.strings.js:10
+msgid "Analytics"
+msgstr "Analytisk"
+
+#: admin/admin.strings.js:11
+msgid "History"
+msgstr "Logg"
+
+#: admin/admin.strings.js:12
+msgid "Dashboard"
+msgstr "Oversyn"
+
+#: admin/admin.strings.js:13
+msgid "Users online"
+msgstr "Brukarar tilkopla"
+
+#: admin/admin.strings.js:14
+msgid "User Name"
+msgstr "Brukarnamn"
+
+#: admin/admin.strings.js:15
+msgid "Documents opened"
+msgstr "Dokument opna"
+
+#: admin/admin.strings.js:16
+msgid "Number of Documents"
+msgstr "Talet på dokument"
+
+#: admin/admin.strings.js:17
+msgid "Memory consumed"
+msgstr "Minne brukt"
+
+#: admin/admin.strings.js:18
+msgid "Bytes sent"
+msgstr "Sende byte"
+
+#: admin/admin.strings.js:19
+msgid "Bytes received"
+msgstr "Byte motteke"
+
+#: admin/admin.strings.js:20
+msgid "PID"
+msgstr "PID"
+
+#: admin/admin.strings.js:21
+msgid "Document"
+msgstr "Dokument"
+
+#: admin/admin.strings.js:22
+msgid "Number of views"
+msgstr "Talet på visingar"
+
+#: admin/admin.strings.js:23
+msgid "Elapsed time"
+msgstr "Tid gått"
+
+#: admin/admin.strings.js:24
+msgid "Idle time"
+msgstr "Passivtid"
+
+#: admin/admin.strings.js:25
+msgid "Modified"
+msgstr "Endra"
+
+#: admin/admin.strings.js:26
+msgid "Kill"
+msgstr "Terminer"
+
+#: admin/admin.strings.js:27
+msgid "Graphs"
+msgstr "Diagram"
+
+#: admin/admin.strings.js:28
+msgid "Memory Graph"
+msgstr "Minnekart"
+
+#: admin/admin.strings.js:29
+msgid "CPU Graph"
+msgstr "CPU-kart"
+
+#: admin/admin.strings.js:30
+msgid "Network Graph"
+msgstr "Nettverk-kart"
+
+#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:232
+msgid "Save"
+msgstr "Lagra"
+
+#: admin/admin.strings.js:32
+msgid "Cache size of memory statistics"
+msgstr "Storleik på mellomlageret for minnestatistikk"
+
+#: admin/admin.strings.js:33
+msgid "Time interval of memory statistics (in ms)"
+msgstr "Tidsintervall for minnestatistikk (i ms)"
+
+#: admin/admin.strings.js:34
+msgid "Cache size of CPU statistics"
+msgstr "Storleik på mellomlageret for CPU-statistikk"
+
+#: admin/admin.strings.js:35
+msgid "Time interval of CPU statistics (in ms)"
+msgstr "Tidsintervall for CPU-statistikk (i ms)"
+
+#: admin/admin.strings.js:36
+msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgstr ""
+"Maksimalt virtuelt minne ( i MB) for dokumentprosessar - kan berre reduserast"
+
+#: admin/admin.strings.js:37
+msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgstr ""
+"Maksimalt stakkminne ( i KB) for dokumentprosessar - kan berre reduserast"
+
+#: admin/admin.strings.js:38
+msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgstr ""
+"Maksimal filstorleik som kan skrivast til disk (i MB) - kan berre reduserast"
+
+#: admin/admin.strings.js:39
+msgid "Documents:"
+msgstr "Dokument:"
+
+#: admin/admin.strings.js:40
+msgid "Expired:"
+msgstr "Utgått:"
+
+#: admin/admin.strings.js:41
+msgid "Refresh"
+msgstr "Oppdater"
+
+#: admin/src/AdminSocketAnalytics.js:219
+msgid "Received"
+msgstr "Motteke"
+
+#: admin/src/AdminSocketAnalytics.js:223
+msgid "Sent"
+msgstr "Sendt"
+
+#: admin/src/AdminSocketBase.js:46
+msgid "Connection error"
+msgstr "Tilkoplingsfeil"
+
+#: admin/src/AdminSocketOverview.js:101
+msgid "Are you sure you want to terminate this session?"
+msgstr "Er du sikker på at du vil avslutta denne økta?"
+
+#: admin/src/AdminSocketOverview.js:182 admin/src/AdminSocketOverview.js:284
+msgid "Documents"
+msgstr "Dokument"
+
+#: admin/src/AdminSocketSettings.js:34
+msgid "Are you sure you want to shut down the server?"
+msgstr "Er du sikker på at du vil slå av tenaren?"
+
+#: admin/src/Util.js:14
+msgid "kB"
+msgstr "kB"
+
+#: admin/src/Util.js:14
+msgid "MB"
+msgstr "MB"
+
+#: admin/src/Util.js:14
+msgid "GB"
+msgstr "GB"
+
+#: admin/src/Util.js:14
+msgid "TB"
+msgstr "TB"
+
+#: admin/src/Util.js:43 admin/src/Util.js:45
+msgid " hrs"
+msgstr " timar"
+
+#: admin/src/Util.js:49 admin/src/Util.js:51
+msgid " mins"
+msgstr " minutt"
+
+#: admin/src/Util.js:54
+msgid " s"
+msgstr " s"
+
+#: js/toolbar.js:153
+msgid "Are you sure you want to delete this page?"
+msgstr "Er du sikker på at du vil sletta denne sida?"
+
+#: js/toolbar.js:620
+msgid "Document repair"
+msgstr "Dokumentgjenoppretting"
+
+#: js/toolbar.js:660
+msgid "Insert table"
+msgstr "Set inn tabell"
+
+#: js/toolbar.js:662
+msgid "Borders"
+msgstr "Kantlinjer"
+
+#: js/toolbar.js:670
+msgid "More..."
+msgstr "Meir"
+
+#: js/toolbar.js:682
+msgid "Insert shapes"
+msgstr "Set inn figurar"
+
+#: js/toolbar.js:689
+msgid "Insert Local Image"
+msgstr "Set inn lokalt bilete"
+
+#: js/toolbar.js:717 js/toolbar.js:1031
+msgid "Always follow the editor"
+msgstr "Følj alltid den som skriv"
+
+#: js/toolbar.js:720 js/toolbar.js:1034
+msgid "Current"
+msgstr "Gjeldande"
+
+#: js/toolbar.js:745 js/toolbar.js:912 js/toolbar.js:1428
+msgid "Sum"
+msgstr "Summer"
+
+#: js/toolbar.js:746 js/toolbar.js:913
+msgid "Function"
+msgstr "Funksjon"
+
+#: js/toolbar.js:747 js/toolbar.js:914 src/layer/marker/Annotation.js:171
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: js/toolbar.js:748 js/toolbar.js:915
+msgid "Accept"
+msgstr "Godta"
+
+#: js/toolbar.js:781 js/toolbar.js:970
+msgid "First sheet"
+msgstr "Første ark"
+
+#: js/toolbar.js:782 js/toolbar.js:971
+msgid "Previous sheet"
+msgstr "Førre ark"
+
+#: js/toolbar.js:783 js/toolbar.js:972
+msgid "Next sheet"
+msgstr "Neste ark"
+
+#: js/toolbar.js:784 js/toolbar.js:973
+msgid "Last sheet"
+msgstr "Siste ark"
+
+#: js/toolbar.js:785 js/toolbar.js:974
+msgid "Insert sheet"
+msgstr "Set inn ark"
+
+#: js/toolbar.js:946 src/control/Control.Menubar.js:30
+msgid "Sign document"
+msgstr "Signer dokumentet"
+
+#: js/toolbar.js:951
+msgid "Logout"
+msgstr "Logg ut"
+
+#: js/toolbar.js:991 src/control/Control.Menubar.js:297
+msgid "Fullscreen presentation"
+msgstr "Fullskjermvising"
+
+#: js/toolbar.js:1015
+msgid "Search:"
+msgstr "Søk:"
+
+#: js/toolbar.js:1022
+msgid "Cancel the search"
+msgstr "Avbryt søket"
+
+#: js/toolbar.js:1027
+msgid "No users"
+msgstr "Ingen brukarar"
+
+#: js/toolbar.js:1041 src/control/Control.Menubar.js:63
+#: src/control/Control.Menubar.js:261
+msgid "Reset zoom"
+msgstr "Tilbakestill forstørringa"
+
+#: js/toolbar.js:1085
+msgid "%user has joined"
+msgstr "%user har logga på"
+
+#: js/toolbar.js:1086
+msgid "%user has left"
+msgstr "%user har gått ut"
+
+#: js/toolbar.js:1406
+msgid "Number of Sheets"
+msgstr "Talet på ark"
+
+#: js/toolbar.js:1409
+msgid "Selected range of cells"
+msgstr "Markert celleområde"
+
+#: js/toolbar.js:1412 js/toolbar.js:1451
+msgid "Entering text mode"
+msgstr "Opnar tekstmodus."
+
+#: js/toolbar.js:1415 js/toolbar.js:1457 js/toolbar.js:1484
+msgid "Text Language"
+msgstr "Språk for teksten"
+
+#: js/toolbar.js:1418 js/toolbar.js:1454
+msgid "Selection Mode"
+msgstr "Merkingsmodus"
+
+#: js/toolbar.js:1421
+msgid "Choice of functions"
+msgstr "Utval av funksjonar"
+
+#: js/toolbar.js:1423
+msgid "Average"
+msgstr "Gjennomsnitt"
+
+#: js/toolbar.js:1424
+msgid "CountA"
+msgstr "TalpåA"
+
+#: js/toolbar.js:1425
+msgid "Count"
+msgstr "Tal på"
+
+#: js/toolbar.js:1426
+msgid "Maximum"
+msgstr "Maksimum"
+
+#: js/toolbar.js:1427
+msgid "Minimum"
+msgstr "Minimum"
+
+#: js/toolbar.js:1429
+msgid "Selection count"
+msgstr "Talet på markeringar"
+
+#: js/toolbar.js:1430
+msgid "None"
+msgstr "Ingen"
+
+#: js/toolbar.js:1445
+msgid "Number of Pages"
+msgstr "Talet på sider"
+
+#: js/toolbar.js:1448
+msgid "Word Counter"
+msgstr "Ordteljar"
+
+#: js/toolbar.js:1479
+msgid "Number of Slides"
+msgstr "Talet på lysbilete"
+
+#: js/toolbar.js:1511
+msgid "%n users"
+msgstr "%n brukarar"
+
+#: js/toolbar.js:1512
+msgid "1 user"
+msgstr "1 brukar"
+
+#: js/toolbar.js:1513
+msgid "0 users"
+msgstr "0 brukarar"
+
+#: js/toolbar.js:1643
+msgid "Document saved"
+msgstr "Dokumentet er lagra."
+
+#: js/toolbar.js:1793
+msgid "Style"
+msgstr "Stil"
+
+#: js/toolbar.js:1815
+msgid "Font"
+msgstr "Skrifttype"
+
+#: js/toolbar.js:1848
+msgid "Previous slide"
+msgstr "Førre lysbilete"
+
+#: js/toolbar.js:1849
+msgid "Next slide"
+msgstr "Neste lysbilete"
+
+#: js/toolbar.js:1911
+msgid ""
+"Conflict Undo/Redo with multiple users. Please use document repair to resolve"
+msgstr ""
+"Konflikt «Angre/Gjer om» fordi det er fleire brukarar. Bruk "
+"dokumentreparasjon for å løysa konflikten."
+
+#: js/toolbar.js:2139 src/control/Control.DocumentRepair.js:95
+msgid "You"
+msgstr "Du"
+
+#: js/toolbar.js:2145
+msgid "Readonly"
+msgstr "Skriveverna"
+
+#: src/control/Control.AlertDialog.js:28
+msgid "The server encountered a %0 error while parsing the %1 command."
+msgstr "Tenaren fann ein %0-feil ved utføringa av %1-kommandoen."
+
+#: src/control/Control.ContextMenu.js:131
+msgid "Internal Cut"
+msgstr "Intern klipp ut"
+
+#: src/control/Control.ContextMenu.js:134
+msgid "Internal Copy"
+msgstr "Intern kopi"
+
+#: src/control/Control.ContextMenu.js:137
+msgid "Internal Paste"
+msgstr "Intern lim inn"
+
+#: src/control/Control.ContextMenu.js:159
+msgid "Internal Paste Special"
+msgstr "Intern lim inn spesial"
+
+#: src/control/Control.DocumentRepair.js:33
+msgid "Repair Document"
+msgstr "Gjenopprett dokumentet"
+
+#: src/control/Control.DocumentRepair.js:44
+msgid "Type"
+msgstr "Type"
+
+#: src/control/Control.DocumentRepair.js:46
+msgid "Index"
+msgstr "Indeks"
+
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:226
+msgid "Comment"
+msgstr "Merknad"
+
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr "Brukarnamn"
+
+#: src/control/Control.DocumentRepair.js:52
+msgid "Timestamp"
+msgstr "Tidsstempel"
+
+#: src/control/Control.DocumentRepair.js:56
+msgid "Jump to state"
+msgstr "Gå til tilstand"
+
+#: src/control/Control.Menubar.js:21
+msgid "Share..."
+msgstr "Del …"
+
+#: src/control/Control.Menubar.js:23 src/control/Control.Menubar.js:235
+#: src/control/Control.Menubar.js:316
+msgid "See revision history"
+msgstr "Sjå revisjonslogg"
+
+#: src/control/Control.Menubar.js:24 src/control/Control.Menubar.js:236
+#: src/control/Control.Menubar.js:317
+msgid "Download as"
+msgstr "Last ned som"
+
+#: src/control/Control.Menubar.js:25 src/control/Control.Menubar.js:237
+#: src/control/Control.Menubar.js:318
+msgid "PDF Document (.pdf)"
+msgstr "PDF-dokument (.pdf)"
+
+#: src/control/Control.Menubar.js:26
+msgid "ODF text document (.odt)"
+msgstr "ODF-textdokument (.odt)"
+
+#: src/control/Control.Menubar.js:27
+msgid "Word 2003 Document (.doc)"
+msgstr "Word 2003 Document (.doc)"
+
+#: src/control/Control.Menubar.js:28
+msgid "Word Document (.docx)"
+msgstr "Word Document (.docx)"
+
+#: src/control/Control.Menubar.js:29
+msgid "Rich Text (.rtf)"
+msgstr "Rik tekst (.rtf)"
+
+#: src/control/Control.Menubar.js:37 src/control/Control.Menubar.js:247
+#: src/control/Control.Menubar.js:328
+msgid "Repair"
+msgstr "Reparer"
+
+#: src/control/Control.Menubar.js:69 src/control/Control.Menubar.js:264
+#: src/control/Control.Menubar.js:341
+msgid "Local Image..."
+msgstr "Lokale bilete …"
+
+#: src/control/Control.Menubar.js:85 src/control/Control.Menubar.js:87
+msgid "All"
+msgstr "Alle"
+
+#: src/control/Control.Menubar.js:134
+msgid "Text orientation"
+msgstr "Tekstretning"
+
+#: src/control/Control.Menubar.js:212 src/control/Control.Menubar.js:214
+#: src/control/Control.Menubar.js:216 src/control/Control.Menubar.js:302
+#: src/control/Control.Menubar.js:396
+msgid "None (Do not check spelling)"
+msgstr "Ingen (ikkje sjekk stavinga)"
+
+#: src/control/Control.Menubar.js:224 src/control/Control.Menubar.js:305
+#: src/control/Control.Menubar.js:399
+msgid "Keyboard shortcuts"
+msgstr "Snøggtastar"
+
+#: src/control/Control.Menubar.js:225 src/control/Control.Menubar.js:306
+#: src/control/Control.Menubar.js:400
+msgid "About"
+msgstr "Om"
+
+#: src/control/Control.Menubar.js:227 src/control/Control.Menubar.js:308
+#: src/control/Control.Menubar.js:402
+msgid "Close document"
+msgstr "Lukk dokumentet"
+
+#: src/control/Control.Menubar.js:238
+msgid "ODF presentation (.odp)"
+msgstr "ODF-presentasjon (.odp)"
+
+#: src/control/Control.Menubar.js:239
+msgid "PowerPoint 2003 Presentation (.ppt)"
+msgstr "PowerPoint 2003 Presentation (.ppt)"
+
+#: src/control/Control.Menubar.js:240
+msgid "PowerPoint Presentation (.pptx)"
+msgstr "PowerPoint-presentasjon (.pptx)"
+
+#: src/control/Control.Menubar.js:319
+msgid "ODF spreadsheet (.ods)"
+msgstr "ODF-rekneark (.ods)"
+
+#: src/control/Control.Menubar.js:320
+msgid "Excel 2003 Spreadsheet (.xls)"
+msgstr "Excel 2003-rekneark (.xls)"
+
+#: src/control/Control.Menubar.js:321
+msgid "Excel Spreadsheet (.xlsx)"
+msgstr "Excel-rekneark (.xlsx)"
+
+#: src/control/Control.Menubar.js:467
+msgid "Reset to Default Language"
+msgstr "Tilbakestill til standardspråket"
+
+#: src/control/Control.Menubar.js:718
+msgid "Are you sure you want to delete this slide?"
+msgstr "Er du sikker på at du vil sletta dette lysbiletet?"
+
+#: src/control/Control.Scroll.Annotation.js:10
+msgid "Scroll up annotations"
+msgstr "Rull opp merknadar"
+
+#: src/control/Control.Scroll.Annotation.js:12
+msgid "Scroll down annotations"
+msgstr "Rull ned merknadar"
+
+#: src/control/Control.Tabs.js:55
+msgid "Insert sheet before this"
+msgstr "Set inn ark framføre dette"
+
+#: src/control/Control.Tabs.js:56
+msgid "Insert sheet after this"
+msgstr "Set inn ark etter dette"
+
+#: src/control/Control.Tabs.js:61
+msgid "Are you sure you want to delete sheet, %sheet% ?"
+msgstr "Er du sikker på at du vil sletta arket %sheet%?"
+
+#: src/control/Control.Tabs.js:74
+msgid "Enter new sheet name"
+msgstr "Skriv inn nytt namn"
+
+#: src/control/Ruler.js:95
+msgid "Left Margin"
+msgstr "Venstremarg"
+
+#: src/control/Ruler.js:96
+msgid "Right Margin"
+msgstr "Høgremarg"
+
+#: src/control/Toolbar.js:75 src/control/Toolbar.js:84
+msgid "Downloading..."
+msgstr "Lastar ned …"
+
+#: src/control/Toolbar.js:99 src/map/Map.js:1036
+msgid "Saving..."
+msgstr "Lagrar …"
+
+#: src/control/Toolbar.js:250
+msgid "This version of %productName is powered by"
+msgstr "Denne versjonen av %productName vert driven av"
+
+#: src/core/Socket.js:79
+msgid ""
+"IE11 has reached its maximum number of connections. Please see this document "
+"to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
+"versions/windows/internet-explorer/ie-developer/general-info/"
+"ee330736(v=vs.85)#websocket-maximum-server-connections"
+msgstr ""
+"IE11 har nådd det maksimale talet på tilkoplingar. Les "
+"https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/"
+"ie-developer/general-info/ee330736(v=vs.85)#websocket-maximum-server-"
+"connections om korleis du kan auka denne grensa."
+
+#: src/core/Socket.js:81
+msgid "Oops, there is a problem connecting to LibreOffice Online : "
+msgstr "Uff. Det er problem med å kopla til LibreOffice Online: "
+
+#: src/core/Socket.js:276
+msgid "Unsupported server version."
+msgstr "Har ikkje støtte for denne tenarversjonen."
+
+#: src/core/Socket.js:327
+msgid "Session terminated by document owner"
+msgstr "Økta er avslutta av dokumenteigaren"
+
+#: src/core/Socket.js:331
+msgid "Idle document - please click to reload and resume editing"
+msgstr "Tomt dokument, klikk for å halda fram med redigeringa"
+
+#: src/core/Socket.js:338
+msgid "Server is shutting down for maintenance (auto-saving)"
+msgstr "Tenaren vert lukka for vedlikehald (autolagring)"
+
+#: src/core/Socket.js:342
+msgid "Oops, there is a problem connecting the document"
+msgstr "Oi, det er eit problem med å kopla til dokumentet"
+
+#: src/core/Socket.js:346
+msgid "Server is recycling and will be available shortly"
+msgstr "Tenaren startar på nytt og er snart tilgjengeleg"
+
+#: src/core/Socket.js:377
+msgid ""
+"Document has changed in storage. Loading the new document. Your version is "
+"available as revision."
+msgstr ""
+"Det lagra dokumentet er endra. Opna det nye dokumentet. Versjonen din er "
+"tilgjengeleg som revisjon."
+
+#: src/core/Socket.js:383
+msgid ""
+"Restoring older revision. Any unsaved changes will be available in version "
+"history"
+msgstr ""
+"Gjenopprettar eldre verson. Alle endringar som ikkje er lagra er "
+"tilgjengelege i versjonsloggen"
+
+#: src/core/Socket.js:501
+msgid ""
+"Document has been changed in storage. What would you like to do with your "
+"unsaved changes?"
+msgstr ""
+"Dokumentet i lageret er endra. Kva vil du gjera med endringane som ikkje er "
+"lagra?"
+
+#: src/core/Socket.js:506
+msgid "Discard"
+msgstr "Forkast"
+
+#: src/core/Socket.js:511
+msgid "Overwrite"
+msgstr "Skriv over"
+
+#: src/core/Socket.js:516
+msgid "Save to new file"
+msgstr "Lagra til ny fil"
+
+#: src/core/Socket.js:584
+msgid "Document requires password to view."
+msgstr "Det krevst passord for å visa dette dokumentet."
+
+#: src/core/Socket.js:587
+msgid "Document requires password to modify."
+msgstr "Det krevst passord for å endra dette dokumentet."
+
+#: src/core/Socket.js:589
+msgid "Hit Cancel to open in view-only mode."
+msgstr "Trykk på avbryt for å opna som skriveverna."
+
+#: src/core/Socket.js:593
+msgid "Wrong password provided. Please try again."
+msgstr "Feil passord. Prøv igjen:"
+
+#: src/core/Socket.js:706
+msgid "Connecting..."
+msgstr "Koplar til …"
+
+#: src/core/Socket.js:857
+msgid ""
+"Well, this is embarrassing, we cannot connect to your document. Please try "
+"again."
+msgstr "Vi kan diverre ikkje kopla deg til dokumentet ditt. Prøv igjen."
+
+#: src/errormessages.js:13
+msgid ""
+"No disk space left on server, please contact the server administrator to "
+"continue."
+msgstr ""
+"Det er ikkje ledig plass på tenaren. Kontakt tenaradministrasjonen for å "
+"halda fram. "
+
+#: src/errormessages.js:14
+msgid ""
+"The host URL is empty. The loolwsd server is probably misconfigured, please "
+"contact the administrator."
+msgstr ""
+"Verts-URL-en er tom. loolwsd-tenaren er truleg sett opp feil. Kontakt "
+"administrator."
+
+#: src/errormessages.js:15
+msgid ""
+"This is an unsupported version of {productname}. To avoid the impression "
+"that it is suitable for deployment in enterprises, this message appears when "
+"more than {docs} documents or {connections} connections are in use "
+"concurrently"
+msgstr ""
+"Dette er ein versjon av {productname} som ikkje vert støtta. For å unngå "
+"inntrykket av at dette er brukbart til bruk i verksemder, vil denne meldinga "
+"koma opp når meir enn {docs} dokument eller fleire enn {connections} "
+"koplingar er brukte samstundes."
+
+#: src/errormessages.js:16
+msgid "More information and support"
+msgstr "Meir informasjon og støtte"
+
+#: src/errormessages.js:17
+msgid ""
+"This service is limited to %0 documents, and %1 connections total by the "
+"admin. This limit has been reached. Please try again later."
+msgstr ""
+"Denne tenesta er avgrensa til %0 dokument og %1 tilkoplingar totalt. Denne "
+"avgrensinga er nådd. Prøv igjen seinare."
+
+#: src/errormessages.js:18
+msgid ""
+"Service is unavailable. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+"Tenesta er ikkje tilgjengeleg. Prøv igjen seinare og rapporter problemet til "
+"administrator viss det held fram."
+
+#: src/errormessages.js:19
+msgid ""
+"Unauthorized WOPI host. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+"Uautorisert WOPI-vert. Prøv igjen seinare og rapporter problemet til "
+"administrator viss det held fram."
+
+#: src/errormessages.js:20
+msgid "Wrong or missing WOPISrc parameter, please contact support."
+msgstr "Feil eller manglande WOPISrc-parameter, kontakt IKT-teamet."
+
+#: src/errormessages.js:21
+msgid ""
+"Your session will expire in %time. Please save your work and refresh the "
+"session (or webpage) to continue."
+msgstr ""
+"Økta går ut om %time. Lagra arbeidet ditt og last ned økta (eller nettsida) "
+"på nytt for å halde fram."
+
+#: src/errormessages.js:22
+msgid ""
+"Your session has been expired. Further changes to document might not be "
+"saved. Please refresh the session (or webpage) to continue."
+msgstr ""
+"Økta har gått ut. Endringar i dokumentet vert kanskje ikkje lagra. Last ned "
+"økta (eller nettsida) på nytt for å halda fram."
+
+#: src/errormessages.js:23
+msgid ""
+"Failed to load the document. Please ensure the file type is supported and "
+"not corrupted, and try again."
+msgstr ""
+"Fekk ikkje til å lasta ned dokumentet. Sjå etter at det er støtte for "
+"filtypen og at han ikkje er øydelagt og prøv igjen."
+
+#: src/errormessages.js:26
+#, javascript-format
+msgid ""
+"Failed to read document from storage. Please contact your storage server "
+"(%storageserver) administrator."
+msgstr ""
+"Kunne ikkje lesa dokumentet frå lageret. Kontakt tenaradministrasjonen "
+"(%storageserver)."
+
+#: src/errormessages.js:27
+#, javascript-format
+msgid ""
+"Save failed due to no disk space left on storage server. Document will now "
+"be read-only. Please contact the server (%storageserver) administrator to "
+"continue editing."
+msgstr ""
+"Lagringa lukkast ikkje fordi det ikkje er plass på tenaren. Dokumentet er nå "
+"skriveverna. Kontakt tenaradministrasjonen for å halde fram med redigeringa "
+"(%storageserver)."
+
+#: src/errormessages.js:28
+msgid "Document cannot be saved due to expired or invalid access token."
+msgstr ""
+"Dokumentet kan ikkje lagrast fordi tilgangen er forelda eller er ugyldig."
+
+#: src/errormessages.js:29
+msgid ""
+"Document cannot be saved. Check your permissions or contact the storage "
+"server administrator."
+msgstr ""
+"Dokumentet kan ikkje lagrast. Kontroller rettane dine eller kontakt "
+"tenaradministratøren."
+
+#: src/layer/marker/Annotation.js:201
+msgid "Accept change"
+msgstr "Godta endring"
+
+#: src/layer/marker/Annotation.js:206
+msgid "Reject change"
+msgstr "Avvis endring"
+
+#: src/layer/marker/Annotation.js:215
+msgid "Open menu"
+msgstr "Opna meny"
+
+#: src/layer/marker/Annotation.js:235 src/layer/tile/TileLayer.js:199
+msgid "Reply"
+msgstr "Svar"
+
+#: src/layer/tile/TileLayer.js:193
+msgid "Modify"
+msgstr "Endra"
+
+#: src/layer/tile/TileLayer.js:205
+msgid "Remove"
+msgstr "Fjern"
+
+#: src/map/Map.js:143
+msgid "Initializing..."
+msgstr "Klargjer …"
+
+#: src/map/Map.js:908
+msgid "Inactive document - please click to resume editing"
+msgstr "Inaktivt dokument, klikk for å halda fram med redigeringa"
+
+#: src/map/Map.js:1039
+msgid "Loading..."
+msgstr "Lastar ..."
+
+#: src/map/handler/Map.FileInserter.js:82
+msgid "Uploading..."
+msgstr "Lastar opp ..."
+
+#: src/map/handler/Map.WOPI.js:273
+msgid "Creating copy..."
+msgstr "Lagar kopi …"
+
+#~ msgid "Textwrap"
+#~ msgstr "Tekstbryting"
+
+#~ msgid "No wrap"
+#~ msgstr "Inga tekstbryting"
+
+#~ msgid "Page wrap"
+#~ msgstr "Tekstbryting på sida"
+
+#~ msgid "Wrap anchor only"
+#~ msgstr "Bryt berre forankring"
+
+#~ msgid "Ideal wrap"
+#~ msgstr "Beste bryting"
+
+#~ msgid "Left wrap"
+#~ msgstr "Tekstbryting til venstre"
+
+#~ msgid "Right wrap"
+#~ msgstr "Tekstbryting til høgre"
+
+#~ msgid "Wrap through"
+#~ msgstr "Tekstflyt"

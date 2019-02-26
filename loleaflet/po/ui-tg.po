@@ -1,0 +1,856 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-17 14:59+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+"X-Pootle-Path: /tg/libo_online/loleaflet-ui-tg.po\n"
+"X-Pootle-Revision: 3609216\n"
+
+#: admin/admin.strings.js:6
+msgid "Admin console"
+msgstr ""
+
+#: admin/admin.strings.js:7
+msgid "Settings"
+msgstr ""
+
+#: admin/admin.strings.js:8
+msgid "Overview"
+msgstr ""
+
+#: admin/admin.strings.js:9
+msgid "(current)"
+msgstr ""
+
+#: admin/admin.strings.js:10
+msgid "Analytics"
+msgstr ""
+
+#: admin/admin.strings.js:11
+msgid "History"
+msgstr ""
+
+#: admin/admin.strings.js:12
+msgid "Dashboard"
+msgstr ""
+
+#: admin/admin.strings.js:13
+msgid "Users online"
+msgstr ""
+
+#: admin/admin.strings.js:14
+msgid "User Name"
+msgstr ""
+
+#: admin/admin.strings.js:15
+msgid "Documents opened"
+msgstr ""
+
+#: admin/admin.strings.js:16
+msgid "Number of Documents"
+msgstr ""
+
+#: admin/admin.strings.js:17
+msgid "Memory consumed"
+msgstr ""
+
+#: admin/admin.strings.js:18
+msgid "Bytes sent"
+msgstr ""
+
+#: admin/admin.strings.js:19
+msgid "Bytes received"
+msgstr ""
+
+#: admin/admin.strings.js:20
+msgid "PID"
+msgstr ""
+
+#: admin/admin.strings.js:21
+msgid "Document"
+msgstr ""
+
+#: admin/admin.strings.js:22
+msgid "Number of views"
+msgstr ""
+
+#: admin/admin.strings.js:23
+msgid "Elapsed time"
+msgstr ""
+
+#: admin/admin.strings.js:24
+msgid "Idle time"
+msgstr ""
+
+#: admin/admin.strings.js:25
+msgid "Modified"
+msgstr ""
+
+#: admin/admin.strings.js:26
+msgid "Kill"
+msgstr ""
+
+#: admin/admin.strings.js:27
+msgid "Graphs"
+msgstr ""
+
+#: admin/admin.strings.js:28
+msgid "Memory Graph"
+msgstr ""
+
+#: admin/admin.strings.js:29
+msgid "CPU Graph"
+msgstr ""
+
+#: admin/admin.strings.js:30
+msgid "Network Graph"
+msgstr ""
+
+#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:232
+msgid "Save"
+msgstr ""
+
+#: admin/admin.strings.js:32
+msgid "Cache size of memory statistics"
+msgstr ""
+
+#: admin/admin.strings.js:33
+msgid "Time interval of memory statistics (in ms)"
+msgstr ""
+
+#: admin/admin.strings.js:34
+msgid "Cache size of CPU statistics"
+msgstr ""
+
+#: admin/admin.strings.js:35
+msgid "Time interval of CPU statistics (in ms)"
+msgstr ""
+
+#: admin/admin.strings.js:36
+msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgstr ""
+
+#: admin/admin.strings.js:37
+msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgstr ""
+
+#: admin/admin.strings.js:38
+msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgstr ""
+
+#: admin/admin.strings.js:39
+msgid "Documents:"
+msgstr ""
+
+#: admin/admin.strings.js:40
+msgid "Expired:"
+msgstr ""
+
+#: admin/admin.strings.js:41
+msgid "Refresh"
+msgstr ""
+
+#: admin/src/AdminSocketAnalytics.js:219
+msgid "Received"
+msgstr ""
+
+#: admin/src/AdminSocketAnalytics.js:223
+msgid "Sent"
+msgstr ""
+
+#: admin/src/AdminSocketBase.js:46
+msgid "Connection error"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:101
+msgid "Are you sure you want to terminate this session?"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:182 admin/src/AdminSocketOverview.js:284
+msgid "Documents"
+msgstr ""
+
+#: admin/src/AdminSocketSettings.js:34
+msgid "Are you sure you want to shut down the server?"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "kB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "MB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "GB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "TB"
+msgstr ""
+
+#: admin/src/Util.js:43 admin/src/Util.js:45
+msgid " hrs"
+msgstr ""
+
+#: admin/src/Util.js:49 admin/src/Util.js:51
+msgid " mins"
+msgstr ""
+
+#: admin/src/Util.js:54
+msgid " s"
+msgstr ""
+
+#: js/toolbar.js:153
+msgid "Are you sure you want to delete this page?"
+msgstr ""
+
+#: js/toolbar.js:620
+msgid "Document repair"
+msgstr ""
+
+#: js/toolbar.js:660
+msgid "Insert table"
+msgstr ""
+
+#: js/toolbar.js:662
+msgid "Borders"
+msgstr ""
+
+#: js/toolbar.js:670
+msgid "More..."
+msgstr ""
+
+#: js/toolbar.js:682
+msgid "Insert shapes"
+msgstr ""
+
+#: js/toolbar.js:689
+msgid "Insert Local Image"
+msgstr ""
+
+#: js/toolbar.js:717 js/toolbar.js:1031
+msgid "Always follow the editor"
+msgstr ""
+
+#: js/toolbar.js:720 js/toolbar.js:1034
+msgid "Current"
+msgstr ""
+
+#: js/toolbar.js:745 js/toolbar.js:912 js/toolbar.js:1428
+msgid "Sum"
+msgstr ""
+
+#: js/toolbar.js:746 js/toolbar.js:913
+msgid "Function"
+msgstr ""
+
+#: js/toolbar.js:747 js/toolbar.js:914 src/layer/marker/Annotation.js:171
+msgid "Cancel"
+msgstr ""
+
+#: js/toolbar.js:748 js/toolbar.js:915
+msgid "Accept"
+msgstr ""
+
+#: js/toolbar.js:781 js/toolbar.js:970
+msgid "First sheet"
+msgstr ""
+
+#: js/toolbar.js:782 js/toolbar.js:971
+msgid "Previous sheet"
+msgstr ""
+
+#: js/toolbar.js:783 js/toolbar.js:972
+msgid "Next sheet"
+msgstr ""
+
+#: js/toolbar.js:784 js/toolbar.js:973
+msgid "Last sheet"
+msgstr ""
+
+#: js/toolbar.js:785 js/toolbar.js:974
+msgid "Insert sheet"
+msgstr ""
+
+#: js/toolbar.js:946 src/control/Control.Menubar.js:30
+msgid "Sign document"
+msgstr ""
+
+#: js/toolbar.js:951
+msgid "Logout"
+msgstr ""
+
+#: js/toolbar.js:991 src/control/Control.Menubar.js:297
+msgid "Fullscreen presentation"
+msgstr ""
+
+#: js/toolbar.js:1015
+msgid "Search:"
+msgstr ""
+
+#: js/toolbar.js:1022
+msgid "Cancel the search"
+msgstr ""
+
+#: js/toolbar.js:1027
+msgid "No users"
+msgstr ""
+
+#: js/toolbar.js:1041 src/control/Control.Menubar.js:63
+#: src/control/Control.Menubar.js:261
+msgid "Reset zoom"
+msgstr ""
+
+#: js/toolbar.js:1085
+msgid "%user has joined"
+msgstr ""
+
+#: js/toolbar.js:1086
+msgid "%user has left"
+msgstr ""
+
+#: js/toolbar.js:1406
+msgid "Number of Sheets"
+msgstr ""
+
+#: js/toolbar.js:1409
+msgid "Selected range of cells"
+msgstr ""
+
+#: js/toolbar.js:1412 js/toolbar.js:1451
+msgid "Entering text mode"
+msgstr ""
+
+#: js/toolbar.js:1415 js/toolbar.js:1457 js/toolbar.js:1484
+msgid "Text Language"
+msgstr ""
+
+#: js/toolbar.js:1418 js/toolbar.js:1454
+msgid "Selection Mode"
+msgstr ""
+
+#: js/toolbar.js:1421
+msgid "Choice of functions"
+msgstr ""
+
+#: js/toolbar.js:1423
+msgid "Average"
+msgstr ""
+
+#: js/toolbar.js:1424
+msgid "CountA"
+msgstr ""
+
+#: js/toolbar.js:1425
+msgid "Count"
+msgstr ""
+
+#: js/toolbar.js:1426
+msgid "Maximum"
+msgstr ""
+
+#: js/toolbar.js:1427
+msgid "Minimum"
+msgstr ""
+
+#: js/toolbar.js:1429
+msgid "Selection count"
+msgstr ""
+
+#: js/toolbar.js:1430
+msgid "None"
+msgstr ""
+
+#: js/toolbar.js:1445
+msgid "Number of Pages"
+msgstr ""
+
+#: js/toolbar.js:1448
+msgid "Word Counter"
+msgstr ""
+
+#: js/toolbar.js:1479
+msgid "Number of Slides"
+msgstr ""
+
+#: js/toolbar.js:1511
+msgid "%n users"
+msgstr ""
+
+#: js/toolbar.js:1512
+msgid "1 user"
+msgstr ""
+
+#: js/toolbar.js:1513
+msgid "0 users"
+msgstr ""
+
+#: js/toolbar.js:1643
+msgid "Document saved"
+msgstr ""
+
+#: js/toolbar.js:1793
+msgid "Style"
+msgstr ""
+
+#: js/toolbar.js:1815
+msgid "Font"
+msgstr ""
+
+#: js/toolbar.js:1848
+msgid "Previous slide"
+msgstr ""
+
+#: js/toolbar.js:1849
+msgid "Next slide"
+msgstr ""
+
+#: js/toolbar.js:1911
+msgid ""
+"Conflict Undo/Redo with multiple users. Please use document repair to resolve"
+msgstr ""
+
+#: js/toolbar.js:2139 src/control/Control.DocumentRepair.js:95
+msgid "You"
+msgstr ""
+
+#: js/toolbar.js:2145
+msgid "Readonly"
+msgstr ""
+
+#: src/control/Control.AlertDialog.js:28
+msgid "The server encountered a %0 error while parsing the %1 command."
+msgstr ""
+
+#: src/control/Control.ContextMenu.js:131
+msgid "Internal Cut"
+msgstr ""
+
+#: src/control/Control.ContextMenu.js:134
+msgid "Internal Copy"
+msgstr ""
+
+#: src/control/Control.ContextMenu.js:137
+msgid "Internal Paste"
+msgstr ""
+
+#: src/control/Control.ContextMenu.js:159
+msgid "Internal Paste Special"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:33
+msgid "Repair Document"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:44
+msgid "Type"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:46
+msgid "Index"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:226
+msgid "Comment"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:52
+msgid "Timestamp"
+msgstr ""
+
+#: src/control/Control.DocumentRepair.js:56
+msgid "Jump to state"
+msgstr ""
+
+#: src/control/Control.Menubar.js:21
+msgid "Share..."
+msgstr ""
+
+#: src/control/Control.Menubar.js:23 src/control/Control.Menubar.js:235
+#: src/control/Control.Menubar.js:316
+msgid "See revision history"
+msgstr ""
+
+#: src/control/Control.Menubar.js:24 src/control/Control.Menubar.js:236
+#: src/control/Control.Menubar.js:317
+msgid "Download as"
+msgstr ""
+
+#: src/control/Control.Menubar.js:25 src/control/Control.Menubar.js:237
+#: src/control/Control.Menubar.js:318
+msgid "PDF Document (.pdf)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:26
+msgid "ODF text document (.odt)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:27
+msgid "Word 2003 Document (.doc)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:28
+msgid "Word Document (.docx)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:29
+msgid "Rich Text (.rtf)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:37 src/control/Control.Menubar.js:247
+#: src/control/Control.Menubar.js:328
+msgid "Repair"
+msgstr ""
+
+#: src/control/Control.Menubar.js:69 src/control/Control.Menubar.js:264
+#: src/control/Control.Menubar.js:341
+msgid "Local Image..."
+msgstr ""
+
+#: src/control/Control.Menubar.js:85 src/control/Control.Menubar.js:87
+msgid "All"
+msgstr ""
+
+#: src/control/Control.Menubar.js:134
+msgid "Text orientation"
+msgstr ""
+
+#: src/control/Control.Menubar.js:212 src/control/Control.Menubar.js:214
+#: src/control/Control.Menubar.js:216 src/control/Control.Menubar.js:302
+#: src/control/Control.Menubar.js:396
+msgid "None (Do not check spelling)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:224 src/control/Control.Menubar.js:305
+#: src/control/Control.Menubar.js:399
+msgid "Keyboard shortcuts"
+msgstr ""
+
+#: src/control/Control.Menubar.js:225 src/control/Control.Menubar.js:306
+#: src/control/Control.Menubar.js:400
+msgid "About"
+msgstr ""
+
+#: src/control/Control.Menubar.js:227 src/control/Control.Menubar.js:308
+#: src/control/Control.Menubar.js:402
+msgid "Close document"
+msgstr ""
+
+#: src/control/Control.Menubar.js:238
+msgid "ODF presentation (.odp)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:239
+msgid "PowerPoint 2003 Presentation (.ppt)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:240
+msgid "PowerPoint Presentation (.pptx)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:319
+msgid "ODF spreadsheet (.ods)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:320
+msgid "Excel 2003 Spreadsheet (.xls)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:321
+msgid "Excel Spreadsheet (.xlsx)"
+msgstr ""
+
+#: src/control/Control.Menubar.js:467
+msgid "Reset to Default Language"
+msgstr ""
+
+#: src/control/Control.Menubar.js:718
+msgid "Are you sure you want to delete this slide?"
+msgstr ""
+
+#: src/control/Control.Scroll.Annotation.js:10
+msgid "Scroll up annotations"
+msgstr ""
+
+#: src/control/Control.Scroll.Annotation.js:12
+msgid "Scroll down annotations"
+msgstr ""
+
+#: src/control/Control.Tabs.js:55
+msgid "Insert sheet before this"
+msgstr ""
+
+#: src/control/Control.Tabs.js:56
+msgid "Insert sheet after this"
+msgstr ""
+
+#: src/control/Control.Tabs.js:61
+msgid "Are you sure you want to delete sheet, %sheet% ?"
+msgstr ""
+
+#: src/control/Control.Tabs.js:74
+msgid "Enter new sheet name"
+msgstr ""
+
+#: src/control/Ruler.js:95
+msgid "Left Margin"
+msgstr ""
+
+#: src/control/Ruler.js:96
+msgid "Right Margin"
+msgstr ""
+
+#: src/control/Toolbar.js:75 src/control/Toolbar.js:84
+msgid "Downloading..."
+msgstr ""
+
+#: src/control/Toolbar.js:99 src/map/Map.js:1036
+msgid "Saving..."
+msgstr ""
+
+#: src/control/Toolbar.js:250
+msgid "This version of %productName is powered by"
+msgstr ""
+
+#: src/core/Socket.js:79
+msgid ""
+"IE11 has reached its maximum number of connections. Please see this document "
+"to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
+"versions/windows/internet-explorer/ie-developer/general-info/"
+"ee330736(v=vs.85)#websocket-maximum-server-connections"
+msgstr ""
+
+#: src/core/Socket.js:81
+msgid "Oops, there is a problem connecting to LibreOffice Online : "
+msgstr ""
+
+#: src/core/Socket.js:276
+msgid "Unsupported server version."
+msgstr ""
+
+#: src/core/Socket.js:327
+msgid "Session terminated by document owner"
+msgstr ""
+
+#: src/core/Socket.js:331
+msgid "Idle document - please click to reload and resume editing"
+msgstr ""
+
+#: src/core/Socket.js:338
+msgid "Server is shutting down for maintenance (auto-saving)"
+msgstr ""
+
+#: src/core/Socket.js:342
+msgid "Oops, there is a problem connecting the document"
+msgstr ""
+
+#: src/core/Socket.js:346
+msgid "Server is recycling and will be available shortly"
+msgstr ""
+
+#: src/core/Socket.js:377
+msgid ""
+"Document has changed in storage. Loading the new document. Your version is "
+"available as revision."
+msgstr ""
+
+#: src/core/Socket.js:383
+msgid ""
+"Restoring older revision. Any unsaved changes will be available in version "
+"history"
+msgstr ""
+
+#: src/core/Socket.js:501
+msgid ""
+"Document has been changed in storage. What would you like to do with your "
+"unsaved changes?"
+msgstr ""
+
+#: src/core/Socket.js:506
+msgid "Discard"
+msgstr ""
+
+#: src/core/Socket.js:511
+msgid "Overwrite"
+msgstr ""
+
+#: src/core/Socket.js:516
+msgid "Save to new file"
+msgstr ""
+
+#: src/core/Socket.js:584
+msgid "Document requires password to view."
+msgstr ""
+
+#: src/core/Socket.js:587
+msgid "Document requires password to modify."
+msgstr ""
+
+#: src/core/Socket.js:589
+msgid "Hit Cancel to open in view-only mode."
+msgstr ""
+
+#: src/core/Socket.js:593
+msgid "Wrong password provided. Please try again."
+msgstr ""
+
+#: src/core/Socket.js:706
+msgid "Connecting..."
+msgstr ""
+
+#: src/core/Socket.js:857
+msgid ""
+"Well, this is embarrassing, we cannot connect to your document. Please try "
+"again."
+msgstr ""
+
+#: src/errormessages.js:13
+msgid ""
+"No disk space left on server, please contact the server administrator to "
+"continue."
+msgstr ""
+
+#: src/errormessages.js:14
+msgid ""
+"The host URL is empty. The loolwsd server is probably misconfigured, please "
+"contact the administrator."
+msgstr ""
+
+#: src/errormessages.js:15
+msgid ""
+"This is an unsupported version of {productname}. To avoid the impression "
+"that it is suitable for deployment in enterprises, this message appears when "
+"more than {docs} documents or {connections} connections are in use "
+"concurrently"
+msgstr ""
+
+#: src/errormessages.js:16
+msgid "More information and support"
+msgstr ""
+
+#: src/errormessages.js:17
+msgid ""
+"This service is limited to %0 documents, and %1 connections total by the "
+"admin. This limit has been reached. Please try again later."
+msgstr ""
+
+#: src/errormessages.js:18
+msgid ""
+"Service is unavailable. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+
+#: src/errormessages.js:19
+msgid ""
+"Unauthorized WOPI host. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+
+#: src/errormessages.js:20
+msgid "Wrong or missing WOPISrc parameter, please contact support."
+msgstr ""
+
+#: src/errormessages.js:21
+msgid ""
+"Your session will expire in %time. Please save your work and refresh the "
+"session (or webpage) to continue."
+msgstr ""
+
+#: src/errormessages.js:22
+msgid ""
+"Your session has been expired. Further changes to document might not be "
+"saved. Please refresh the session (or webpage) to continue."
+msgstr ""
+
+#: src/errormessages.js:23
+msgid ""
+"Failed to load the document. Please ensure the file type is supported and "
+"not corrupted, and try again."
+msgstr ""
+
+#: src/errormessages.js:26
+#, javascript-format
+msgid ""
+"Failed to read document from storage. Please contact your storage server "
+"(%storageserver) administrator."
+msgstr ""
+
+#: src/errormessages.js:27
+#, javascript-format
+msgid ""
+"Save failed due to no disk space left on storage server. Document will now "
+"be read-only. Please contact the server (%storageserver) administrator to "
+"continue editing."
+msgstr ""
+
+#: src/errormessages.js:28
+msgid "Document cannot be saved due to expired or invalid access token."
+msgstr ""
+
+#: src/errormessages.js:29
+msgid ""
+"Document cannot be saved. Check your permissions or contact the storage "
+"server administrator."
+msgstr ""
+
+#: src/layer/marker/Annotation.js:201
+msgid "Accept change"
+msgstr ""
+
+#: src/layer/marker/Annotation.js:206
+msgid "Reject change"
+msgstr ""
+
+#: src/layer/marker/Annotation.js:215
+msgid "Open menu"
+msgstr ""
+
+#: src/layer/marker/Annotation.js:235 src/layer/tile/TileLayer.js:199
+msgid "Reply"
+msgstr ""
+
+#: src/layer/tile/TileLayer.js:193
+msgid "Modify"
+msgstr ""
+
+#: src/layer/tile/TileLayer.js:205
+msgid "Remove"
+msgstr ""
+
+#: src/map/Map.js:143
+msgid "Initializing..."
+msgstr ""
+
+#: src/map/Map.js:908
+msgid "Inactive document - please click to resume editing"
+msgstr ""
+
+#: src/map/Map.js:1039
+msgid "Loading..."
+msgstr ""
+
+#: src/map/handler/Map.FileInserter.js:82
+msgid "Uploading..."
+msgstr ""
+
+#: src/map/handler/Map.WOPI.js:273
+msgid "Creating copy..."
+msgstr ""

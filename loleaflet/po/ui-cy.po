@@ -1,0 +1,920 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-17 14:59+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Translate Toolkit 2.2.5\n"
+"X-Pootle-Path: /cy/libo_online/loleaflet-ui-cy.po\n"
+"X-Pootle-Revision: 3609665\n"
+
+#: admin/admin.strings.js:6
+msgid "Admin console"
+msgstr "Consol gweinyddol"
+
+#: admin/admin.strings.js:7
+msgid "Settings"
+msgstr "Gosodiadau"
+
+#: admin/admin.strings.js:8
+msgid "Overview"
+msgstr "Trosolwg"
+
+#: admin/admin.strings.js:9
+msgid "(current)"
+msgstr "(cyfredol)"
+
+#: admin/admin.strings.js:10
+msgid "Analytics"
+msgstr "Dadansoddiad"
+
+#: admin/admin.strings.js:11
+msgid "History"
+msgstr "Hanes"
+
+#: admin/admin.strings.js:12
+msgid "Dashboard"
+msgstr "Bwrdd Gwaith"
+
+#: admin/admin.strings.js:13
+msgid "Users online"
+msgstr "Defnyddwyr ar-lein"
+
+#: admin/admin.strings.js:14
+msgid "User Name"
+msgstr "Enw Defnyddiwr"
+
+#: admin/admin.strings.js:15
+msgid "Documents opened"
+msgstr "Dogfennau wedi eu hagor"
+
+#: admin/admin.strings.js:16
+msgid "Number of Documents"
+msgstr "Nifer y Dogfennau"
+
+#: admin/admin.strings.js:17
+msgid "Memory consumed"
+msgstr "Cof wedi ei ddefnyddio"
+
+#: admin/admin.strings.js:18
+msgid "Bytes sent"
+msgstr "Didau wedi'u hanfon"
+
+#: admin/admin.strings.js:19
+msgid "Bytes received"
+msgstr "Didau wedi'u derbyn"
+
+#: admin/admin.strings.js:20
+msgid "PID"
+msgstr "PID"
+
+#: admin/admin.strings.js:21
+msgid "Document"
+msgstr "Dogfen"
+
+#: admin/admin.strings.js:22
+msgid "Number of views"
+msgstr "Nifer y golygon"
+
+#: admin/admin.strings.js:23
+msgid "Elapsed time"
+msgstr "Amser wedi mynd heibio"
+
+#: admin/admin.strings.js:24
+msgid "Idle time"
+msgstr "Amser oedi"
+
+#: admin/admin.strings.js:25
+msgid "Modified"
+msgstr "Newidiwyd"
+
+#: admin/admin.strings.js:26
+msgid "Kill"
+msgstr "Lladd"
+
+#: admin/admin.strings.js:27
+msgid "Graphs"
+msgstr "Graffiau"
+
+#: admin/admin.strings.js:28
+msgid "Memory Graph"
+msgstr "Newidiwyd"
+
+#: admin/admin.strings.js:29
+msgid "CPU Graph"
+msgstr "Graff CPU"
+
+#: admin/admin.strings.js:30
+msgid "Network Graph"
+msgstr "Graff Rhwydwaith"
+
+#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:232
+msgid "Save"
+msgstr "Cadw"
+
+#: admin/admin.strings.js:32
+msgid "Cache size of memory statistics"
+msgstr "Maint y storfa o ystadegau cof"
+
+#: admin/admin.strings.js:33
+msgid "Time interval of memory statistics (in ms)"
+msgstr "Cyfnod amser ystadegau cof (mewn ms)"
+
+#: admin/admin.strings.js:34
+msgid "Cache size of CPU statistics"
+msgstr "Maint storfa ystadegau CPU"
+
+#: admin/admin.strings.js:35
+msgid "Time interval of CPU statistics (in ms)"
+msgstr "Cyfnod amser ystadegau CPU (mewn ms)"
+
+#: admin/admin.strings.js:36
+msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgstr "Cof rhithiol proses Dogfen Mwyaf (mewn MB) - lleihau'n unig"
+
+#: admin/admin.strings.js:37
+msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgstr "Cof proses stac Dogfen Mwyaf (mewn MB) - lleihau'n unig"
+
+#: admin/admin.strings.js:38
+msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgstr "Y maint mwyaf i ysgrifennu i ddisg (mewn MB) - lleihau'n unig"
+
+#: admin/admin.strings.js:39
+msgid "Documents:"
+msgstr "Dogfennau"
+
+#: admin/admin.strings.js:40
+msgid "Expired:"
+msgstr "Dod i Ben:"
+
+#: admin/admin.strings.js:41
+msgid "Refresh"
+msgstr "Adnewyddu"
+
+#: admin/src/AdminSocketAnalytics.js:219
+msgid "Received"
+msgstr "Derbyniwyd"
+
+#: admin/src/AdminSocketAnalytics.js:223
+msgid "Sent"
+msgstr "Anfonwyd"
+
+#: admin/src/AdminSocketBase.js:46
+msgid "Connection error"
+msgstr "Gwall cysylltu"
+
+#: admin/src/AdminSocketOverview.js:101
+msgid "Are you sure you want to terminate this session?"
+msgstr "Ydych chi'n siŵr eich bod eisiau dileu'r sesiwn hwn?"
+
+#: admin/src/AdminSocketOverview.js:182 admin/src/AdminSocketOverview.js:284
+msgid "Documents"
+msgstr "Dogfennau"
+
+#: admin/src/AdminSocketSettings.js:34
+msgid "Are you sure you want to shut down the server?"
+msgstr "Ydych chi'n siŵr eich bod eisiau cau'r gweinydd?"
+
+#: admin/src/Util.js:14
+msgid "kB"
+msgstr "kB"
+
+#: admin/src/Util.js:14
+msgid "MB"
+msgstr "MB"
+
+#: admin/src/Util.js:14
+msgid "GB"
+msgstr "GB"
+
+#: admin/src/Util.js:14
+msgid "TB"
+msgstr "TB"
+
+#: admin/src/Util.js:43 admin/src/Util.js:45
+msgid " hrs"
+msgstr " awr"
+
+#: admin/src/Util.js:49 admin/src/Util.js:51
+msgid " mins"
+msgstr " mun"
+
+#: admin/src/Util.js:54
+msgid " s"
+msgstr " s"
+
+#: js/toolbar.js:153
+msgid "Are you sure you want to delete this page?"
+msgstr "Ydych chi'n siŵr eich bod eisiau dileu'r dudalen hon?"
+
+#: js/toolbar.js:620
+msgid "Document repair"
+msgstr "Trwsio dogfennau"
+
+#: js/toolbar.js:660
+msgid "Insert table"
+msgstr "Mewnosod tudalen"
+
+#: js/toolbar.js:662
+msgid "Borders"
+msgstr "Borderi"
+
+#: js/toolbar.js:670
+msgid "More..."
+msgstr "Rhagor..."
+
+#: js/toolbar.js:682
+msgid "Insert shapes"
+msgstr "Mewnosod siapiau"
+
+#: js/toolbar.js:689
+msgid "Insert Local Image"
+msgstr "Mewnosod Delwedd Leol"
+
+#: js/toolbar.js:717 js/toolbar.js:1031
+msgid "Always follow the editor"
+msgstr "Dilyn y golygydd bob tro"
+
+#: js/toolbar.js:720 js/toolbar.js:1034
+msgid "Current"
+msgstr "Cyfredol"
+
+#: js/toolbar.js:745 js/toolbar.js:912 js/toolbar.js:1428
+msgid "Sum"
+msgstr "Swm"
+
+#: js/toolbar.js:746 js/toolbar.js:913
+msgid "Function"
+msgstr "Swyddogaeth"
+
+#: js/toolbar.js:747 js/toolbar.js:914 src/layer/marker/Annotation.js:171
+msgid "Cancel"
+msgstr "Diddymu"
+
+#: js/toolbar.js:748 js/toolbar.js:915
+msgid "Accept"
+msgstr "Derbyn"
+
+#: js/toolbar.js:781 js/toolbar.js:970
+msgid "First sheet"
+msgstr "Daflen gyntaf"
+
+#: js/toolbar.js:782 js/toolbar.js:971
+msgid "Previous sheet"
+msgstr "Dalen flaenorol"
+
+#: js/toolbar.js:783 js/toolbar.js:972
+msgid "Next sheet"
+msgstr "Dalen nesaf"
+
+#: js/toolbar.js:784 js/toolbar.js:973
+msgid "Last sheet"
+msgstr "Dalen olaf"
+
+#: js/toolbar.js:785 js/toolbar.js:974
+msgid "Insert sheet"
+msgstr "Mewnosod dalen"
+
+#: js/toolbar.js:946 src/control/Control.Menubar.js:30
+msgid "Sign document"
+msgstr "Llofnodi dogfen"
+
+#: js/toolbar.js:951
+msgid "Logout"
+msgstr "Allgofnodi"
+
+#: js/toolbar.js:991 src/control/Control.Menubar.js:297
+msgid "Fullscreen presentation"
+msgstr "Cyflwyniad sgrin lawn"
+
+#: js/toolbar.js:1015
+msgid "Search:"
+msgstr "Chwilio:"
+
+#: js/toolbar.js:1022
+msgid "Cancel the search"
+msgstr "Diddymu'r chwilio"
+
+#: js/toolbar.js:1027
+msgid "No users"
+msgstr "Dim defnyddwyr"
+
+#: js/toolbar.js:1041 src/control/Control.Menubar.js:63
+#: src/control/Control.Menubar.js:261
+msgid "Reset zoom"
+msgstr "Ailosod chwyddo"
+
+#: js/toolbar.js:1085
+msgid "%user has joined"
+msgstr "Mae %user wedi ymuno"
+
+#: js/toolbar.js:1086
+msgid "%user has left"
+msgstr "Mae %user wedi gadael"
+
+#: js/toolbar.js:1406
+msgid "Number of Sheets"
+msgstr "Nifer y Dalenni"
+
+#: js/toolbar.js:1409
+msgid "Selected range of cells"
+msgstr "Ystod y celloedd wedi eu dewis"
+
+#: js/toolbar.js:1412 js/toolbar.js:1451
+msgid "Entering text mode"
+msgstr "Mynd i'r modd testun"
+
+#: js/toolbar.js:1415 js/toolbar.js:1457 js/toolbar.js:1484
+msgid "Text Language"
+msgstr "Iaith Testun"
+
+#: js/toolbar.js:1418 js/toolbar.js:1454
+msgid "Selection Mode"
+msgstr "Y Modd Dewis"
+
+#: js/toolbar.js:1421
+msgid "Choice of functions"
+msgstr "Y dewis o swyddogaethau"
+
+#: js/toolbar.js:1423
+msgid "Average"
+msgstr "Cyfartaledd"
+
+#: js/toolbar.js:1424
+msgid "CountA"
+msgstr "CyfrifA"
+
+#: js/toolbar.js:1425
+msgid "Count"
+msgstr "Cyfrif"
+
+#: js/toolbar.js:1426
+msgid "Maximum"
+msgstr "Uchafswm"
+
+#: js/toolbar.js:1427
+msgid "Minimum"
+msgstr "Lleiafswm"
+
+#: js/toolbar.js:1429
+msgid "Selection count"
+msgstr "Cyfrif y dewis"
+
+#: js/toolbar.js:1430
+msgid "None"
+msgstr "Dim"
+
+#: js/toolbar.js:1445
+msgid "Number of Pages"
+msgstr "Nifer o Dudalennau"
+
+#: js/toolbar.js:1448
+msgid "Word Counter"
+msgstr "Cyfrifydd Geiriau"
+
+#: js/toolbar.js:1479
+msgid "Number of Slides"
+msgstr "Nifer y Sleidiau"
+
+#: js/toolbar.js:1511
+msgid "%n users"
+msgstr "%n defnyddiwr"
+
+#: js/toolbar.js:1512
+msgid "1 user"
+msgstr "1 defnyddiwr"
+
+#: js/toolbar.js:1513
+msgid "0 users"
+msgstr "0 defnyddwyr"
+
+#: js/toolbar.js:1643
+msgid "Document saved"
+msgstr "Dogfen wedi ei chadw"
+
+#: js/toolbar.js:1793
+msgid "Style"
+msgstr "Arddull"
+
+#: js/toolbar.js:1815
+msgid "Font"
+msgstr "Ffont"
+
+#: js/toolbar.js:1848
+msgid "Previous slide"
+msgstr "Sleid flaenorol"
+
+#: js/toolbar.js:1849
+msgid "Next slide"
+msgstr "Sleid nesaf"
+
+#: js/toolbar.js:1911
+msgid ""
+"Conflict Undo/Redo with multiple users. Please use document repair to resolve"
+msgstr ""
+"Gwrthdaro Dadwneud/Ail-wneud oherwydd defnyddwyr luosog. Defnyddiwch "
+"trwsio'r ddogfen i'w ddatrys"
+
+#: js/toolbar.js:2139 src/control/Control.DocumentRepair.js:95
+msgid "You"
+msgstr "Chi"
+
+#: js/toolbar.js:2145
+msgid "Readonly"
+msgstr "Darllen y unig"
+
+#: src/control/Control.AlertDialog.js:28
+msgid "The server encountered a %0 error while parsing the %1 command."
+msgstr "Profodd y gweinydd wall %0 wrth ddidoli'r gorchymyn %1."
+
+#: src/control/Control.ContextMenu.js:131
+msgid "Internal Cut"
+msgstr "Toriad Mewnol"
+
+#: src/control/Control.ContextMenu.js:134
+msgid "Internal Copy"
+msgstr "Copi Mewnol"
+
+#: src/control/Control.ContextMenu.js:137
+msgid "Internal Paste"
+msgstr "Gludo Mewnol"
+
+#: src/control/Control.ContextMenu.js:159
+msgid "Internal Paste Special"
+msgstr "Gludo Mewnol Arbennig"
+
+#: src/control/Control.DocumentRepair.js:33
+msgid "Repair Document"
+msgstr "Trwsio Dogfen"
+
+#: src/control/Control.DocumentRepair.js:44
+msgid "Type"
+msgstr "Math"
+
+#: src/control/Control.DocumentRepair.js:46
+msgid "Index"
+msgstr "Mynegai"
+
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:226
+msgid "Comment"
+msgstr "Sylw"
+
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr "Enw defnyddiwr"
+
+#: src/control/Control.DocumentRepair.js:52
+msgid "Timestamp"
+msgstr "Stamp amser"
+
+#: src/control/Control.DocumentRepair.js:56
+msgid "Jump to state"
+msgstr "Symud i'r cyflwr"
+
+#: src/control/Control.Menubar.js:21
+msgid "Share..."
+msgstr "|Rhannu..."
+
+#: src/control/Control.Menubar.js:23 src/control/Control.Menubar.js:235
+#: src/control/Control.Menubar.js:316
+msgid "See revision history"
+msgstr "Gweld hanes adolygu"
+
+#: src/control/Control.Menubar.js:24 src/control/Control.Menubar.js:236
+#: src/control/Control.Menubar.js:317
+msgid "Download as"
+msgstr "Llwytho i lawr fel"
+
+#: src/control/Control.Menubar.js:25 src/control/Control.Menubar.js:237
+#: src/control/Control.Menubar.js:318
+msgid "PDF Document (.pdf)"
+msgstr "Dogfen PDF (.pdf)"
+
+#: src/control/Control.Menubar.js:26
+msgid "ODF text document (.odt)"
+msgstr "Dogfen testun ODF (.odt)"
+
+#: src/control/Control.Menubar.js:27
+msgid "Word 2003 Document (.doc)"
+msgstr "Dogfen Word 2003 (.doc)"
+
+#: src/control/Control.Menubar.js:28
+msgid "Word Document (.docx)"
+msgstr "Dogfen Word (.docx)"
+
+#: src/control/Control.Menubar.js:29
+msgid "Rich Text (.rtf)"
+msgstr "Testun Cyfoethog (.rtf)"
+
+#: src/control/Control.Menubar.js:37 src/control/Control.Menubar.js:247
+#: src/control/Control.Menubar.js:328
+msgid "Repair"
+msgstr "Trwsio"
+
+#: src/control/Control.Menubar.js:69 src/control/Control.Menubar.js:264
+#: src/control/Control.Menubar.js:341
+msgid "Local Image..."
+msgstr "Delwedd Leol..."
+
+#: src/control/Control.Menubar.js:85 src/control/Control.Menubar.js:87
+msgid "All"
+msgstr "Y Cyfan"
+
+#: src/control/Control.Menubar.js:134
+msgid "Text orientation"
+msgstr "Cyfeiriad testun"
+
+#: src/control/Control.Menubar.js:212 src/control/Control.Menubar.js:214
+#: src/control/Control.Menubar.js:216 src/control/Control.Menubar.js:302
+#: src/control/Control.Menubar.js:396
+msgid "None (Do not check spelling)"
+msgstr "Dim (Peidio gwirio sillafu)"
+
+#: src/control/Control.Menubar.js:224 src/control/Control.Menubar.js:305
+#: src/control/Control.Menubar.js:399
+msgid "Keyboard shortcuts"
+msgstr "Llwybrau byr bysellfwrdd"
+
+#: src/control/Control.Menubar.js:225 src/control/Control.Menubar.js:306
+#: src/control/Control.Menubar.js:400
+msgid "About"
+msgstr "Ynghylch"
+
+#: src/control/Control.Menubar.js:227 src/control/Control.Menubar.js:308
+#: src/control/Control.Menubar.js:402
+msgid "Close document"
+msgstr "Cau dogfen"
+
+#: src/control/Control.Menubar.js:238
+msgid "ODF presentation (.odp)"
+msgstr "Cyflwyno ODF (.odp)"
+
+#: src/control/Control.Menubar.js:239
+msgid "PowerPoint 2003 Presentation (.ppt)"
+msgstr "Cyflwyniad PowerPoint 2003 (.ppt)"
+
+#: src/control/Control.Menubar.js:240
+msgid "PowerPoint Presentation (.pptx)"
+msgstr "Cyflwyniad PowerPoint (.pptx)"
+
+#: src/control/Control.Menubar.js:319
+msgid "ODF spreadsheet (.ods)"
+msgstr "Taenlen ODF (.ods)"
+
+#: src/control/Control.Menubar.js:320
+msgid "Excel 2003 Spreadsheet (.xls)"
+msgstr "Taenlen Excel 2003 (.xls)"
+
+#: src/control/Control.Menubar.js:321
+msgid "Excel Spreadsheet (.xlsx)"
+msgstr "Taenlen Excel (.xlsx)"
+
+#: src/control/Control.Menubar.js:467
+msgid "Reset to Default Language"
+msgstr "Ailosod i'r Iaith Ragosodedig"
+
+#: src/control/Control.Menubar.js:718
+msgid "Are you sure you want to delete this slide?"
+msgstr "Ydych chi'n siŵr eich bod eisiau dileu'r sleid hwn?"
+
+#: src/control/Control.Scroll.Annotation.js:10
+msgid "Scroll up annotations"
+msgstr "Sgrolio i fyny anodiadau"
+
+#: src/control/Control.Scroll.Annotation.js:12
+msgid "Scroll down annotations"
+msgstr "Sgrolio i lawr anodiadau"
+
+#: src/control/Control.Tabs.js:55
+msgid "Insert sheet before this"
+msgstr "Mewnosod dalen cyn hon"
+
+#: src/control/Control.Tabs.js:56
+msgid "Insert sheet after this"
+msgstr "Mewnosod dalen ar ôl hon"
+
+#: src/control/Control.Tabs.js:61
+msgid "Are you sure you want to delete sheet, %sheet% ?"
+msgstr "Ydych chi'n siŵr eich bod am ddileu'r ddalen, %sheet% ?"
+
+#: src/control/Control.Tabs.js:74
+msgid "Enter new sheet name"
+msgstr "Rhoi enw newydd i'r dalen"
+
+#: src/control/Ruler.js:95
+msgid "Left Margin"
+msgstr "Ymyl Chwith"
+
+#: src/control/Ruler.js:96
+msgid "Right Margin"
+msgstr "Ymyl Dde"
+
+#: src/control/Toolbar.js:75 src/control/Toolbar.js:84
+msgid "Downloading..."
+msgstr "Wrthi'n Llwytho i Lawr..."
+
+#: src/control/Toolbar.js:99 src/map/Map.js:1036
+msgid "Saving..."
+msgstr "Yn cadw..."
+
+#: src/control/Toolbar.js:250
+msgid "This version of %productName is powered by"
+msgstr "Mae'r fersiwn yma o %productName yn cael ei yrru gan"
+
+#: src/core/Socket.js:79
+msgid ""
+"IE11 has reached its maximum number of connections. Please see this document "
+"to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
+"versions/windows/internet-explorer/ie-developer/general-info/"
+"ee330736(v=vs.85)#websocket-maximum-server-connections"
+msgstr ""
+"Mae E11 wedi cyrraedd ei uchafswm cysylltiad. Darllenwch y ddogfen hon i "
+"gynyddu'r terfyn os oes angen: https://docs.microsoft.com/en-us/"
+"previous-versions/windows/internet-explorer/ie-developer/general-info/"
+"ee330736(v=vs.85)#websocket-maximum-server-connections"
+
+#: src/core/Socket.js:81
+msgid "Oops, there is a problem connecting to LibreOffice Online : "
+msgstr "Wps, mae anhawster cysylltu â LibreOffice Ar-lein : "
+
+#: src/core/Socket.js:276
+msgid "Unsupported server version."
+msgstr "Fersiwn gweinydd heb gymorth."
+
+#: src/core/Socket.js:327
+msgid "Session terminated by document owner"
+msgstr "Terfynodd perchennog y ddogfen y sesiwn"
+
+#: src/core/Socket.js:331
+msgid "Idle document - please click to reload and resume editing"
+msgstr "Dogfen anweithredol - cliciwch i ail-lwytho ac ailgychwyn golygu"
+
+#: src/core/Socket.js:338
+msgid "Server is shutting down for maintenance (auto-saving)"
+msgstr "Mae'r gweinydd yn cau ar gyfer cynnal a chadw (awto gadw)"
+
+#: src/core/Socket.js:342
+msgid "Oops, there is a problem connecting the document"
+msgstr "Wps, mae yna anhawster cysylltu a'r ddogfen"
+
+#: src/core/Socket.js:346
+msgid "Server is recycling and will be available shortly"
+msgstr "Mae'r gweinydd yn ailgylchu a bydd ar gael cyn bo hir"
+
+#: src/core/Socket.js:377
+msgid ""
+"Document has changed in storage. Loading the new document. Your version is "
+"available as revision."
+msgstr ""
+"Mae'r ddogfen wedi newid yn y storfa. Llwytho dogfen newydd. Mae eich "
+"fersiwn ar gael fel adolygiad."
+
+#: src/core/Socket.js:383
+msgid ""
+"Restoring older revision. Any unsaved changes will be available in version "
+"history"
+msgstr ""
+"Yn adfer yr hen fersiwn. Bydd unrhyw newidiadau wedi eu cadw ar gael yn "
+"hanes y fersiynau."
+
+#: src/core/Socket.js:501
+msgid ""
+"Document has been changed in storage. What would you like to do with your "
+"unsaved changes?"
+msgstr ""
+"Mae dogfen wedi ei newid yn y storfa. Beth hoffech chi ei wneud gyda'r "
+"newidiadau sydd heb eu cadw?"
+
+#: src/core/Socket.js:506
+msgid "Discard"
+msgstr "Gwaredu"
+
+#: src/core/Socket.js:511
+msgid "Overwrite"
+msgstr "Trosysgrifennu"
+
+#: src/core/Socket.js:516
+msgid "Save to new file"
+msgstr "Cadw i ffeil newydd"
+
+#: src/core/Socket.js:584
+msgid "Document requires password to view."
+msgstr "Mae angen cyfrinair i weld y ddogfen."
+
+#: src/core/Socket.js:587
+msgid "Document requires password to modify."
+msgstr "Mae angen cyfrinair i newid y ddogfen."
+
+#: src/core/Socket.js:589
+msgid "Hit Cancel to open in view-only mode."
+msgstr "Cliciwch Diddymu i agor yn y modd gweld yn unig."
+
+#: src/core/Socket.js:593
+msgid "Wrong password provided. Please try again."
+msgstr "Wedi darparu cyfrinair anghywir. Ceisiwch eto."
+
+#: src/core/Socket.js:706
+msgid "Connecting..."
+msgstr "Cysylltu..."
+
+#: src/core/Socket.js:857
+msgid ""
+"Well, this is embarrassing, we cannot connect to your document. Please try "
+"again."
+msgstr ""
+"Mae'n ddrwg gennym, nid ydym yn gallu cysylltu â'ch dogfen. Ceisiwch eto."
+
+#: src/errormessages.js:13
+msgid ""
+"No disk space left on server, please contact the server administrator to "
+"continue."
+msgstr ""
+"Nid oes lle ar ddisg ar ôl ar y gweinydd, cysylltwch â'ch gweinyddwr "
+"gweinydd i barhau."
+
+#: src/errormessages.js:14
+msgid ""
+"The host URL is empty. The loolwsd server is probably misconfigured, please "
+"contact the administrator."
+msgstr ""
+"Mae URL y gwestai yn wag. Bosib fod y gweinydd loolwsd wedi ei gam "
+"ffurfweddu, cysyltwch â'r gweinyddwr."
+
+#: src/errormessages.js:15
+msgid ""
+"This is an unsupported version of {productname}. To avoid the impression "
+"that it is suitable for deployment in enterprises, this message appears when "
+"more than {docs} documents or {connections} connections are in use "
+"concurrently"
+msgstr ""
+"Mae hwn yn fersiwn heb ei gynnal o {productname}. I osgoi'r argraff ei fod "
+"yn addas ar gyfer ei ddefnyddio mewn mentrau, bydd y neges yma'n cae ei "
+"ddangos pan fydd mwy na {docs} dogfen neu {connections} cysylltiad yn cael "
+"eu defnyddio ar y tro."
+
+#: src/errormessages.js:16
+msgid "More information and support"
+msgstr "Rhagor o wybodaeth a chefnogaeth"
+
+#: src/errormessages.js:17
+msgid ""
+"This service is limited to %0 documents, and %1 connections total by the "
+"admin. This limit has been reached. Please try again later."
+msgstr ""
+"Mae'r gwasanaeth wedi ei gyfyngu i %0 dogfen a chyfanswm o %1 cysylltiad gan "
+"y gweinyddwr. Mae'r terfyn yna wedi ei gyrraedd. Ceisiwch eto'n hwyrach."
+
+#: src/errormessages.js:18
+msgid ""
+"Service is unavailable. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+"Nid yw'r gwasanaeth ar gael. Ceisiwch eto'n hwyrach a dywedwch wrth eich "
+"gweinyddwr os yw problemau'n parhau."
+
+#: src/errormessages.js:19
+msgid ""
+"Unauthorized WOPI host. Please try again later and report to your "
+"administrator if the issue persists."
+msgstr ""
+"Gwesteiwr WOPI heb ei awdurdodi. Ceisiwch eto'n hwyrach a dywedwch wrth eich "
+"gweinyddwr os yw problemau'n parhau."
+
+#: src/errormessages.js:20
+msgid "Wrong or missing WOPISrc parameter, please contact support."
+msgstr "Paramedrau WOPISrc anghywir neu coll, cysylltwch â'ch cefnogaeth."
+
+#: src/errormessages.js:21
+msgid ""
+"Your session will expire in %time. Please save your work and refresh the "
+"session (or webpage) to continue."
+msgstr ""
+"Bydd eich sesiwn yn dod i ben ymhen %time. Cadwch eich gwaith ac adnewyddu'r "
+"sesiwn (neu dudalen gwe) i barhau."
+
+#: src/errormessages.js:22
+msgid ""
+"Your session has been expired. Further changes to document might not be "
+"saved. Please refresh the session (or webpage) to continue."
+msgstr ""
+"Mae eich sesiwn wedi dod i ben. Efallai na fydd newidiadau pellach i'r "
+"ddogfen yn cael eu adw. Adnewyddwch eich sesiwn (neu dudalen gwe) i barhau."
+
+#: src/errormessages.js:23
+msgid ""
+"Failed to load the document. Please ensure the file type is supported and "
+"not corrupted, and try again."
+msgstr ""
+"Wedi methu llwytho'r ddogfen. Gwnewch yn siŵr fod y math yna o ffeil yn cael "
+"ei gynnal ac nad yw wedi ei llygru a cheisiwch eto."
+
+#: src/errormessages.js:26
+#, javascript-format
+msgid ""
+"Failed to read document from storage. Please contact your storage server "
+"(%storageserver) administrator."
+msgstr ""
+"Methu darllen y ddogfen yn y storfa. Cysylltwch â'ch gweinyddwr gweinydd "
+"storio (%storageserver)."
+
+#: src/errormessages.js:27
+#, javascript-format
+msgid ""
+"Save failed due to no disk space left on storage server. Document will now "
+"be read-only. Please contact the server (%storageserver) administrator to "
+"continue editing."
+msgstr ""
+"Methodd y cadw gan nad oedd lle ar ddisg ar y gweinydd cadw. Bydd y ddogfen "
+"yn un darllen yn unig, nawr. Cysylltwch â gweinyddwr y gweinydd "
+"(%storageserver) er mwyn parhau i olygu."
+
+#: src/errormessages.js:28
+msgid "Document cannot be saved due to expired or invalid access token."
+msgstr "Nid oes modd cadw'r ddogfen oherwydd tocyn mynediad hen neu annilys."
+
+#: src/errormessages.js:29
+msgid ""
+"Document cannot be saved. Check your permissions or contact the storage "
+"server administrator."
+msgstr ""
+"Nid oes modd cadw'r ddogfen. Gwiriwch eich caniatâd neu cysylltwch â "
+"gweinyddwr y gweinydd storio."
+
+#: src/layer/marker/Annotation.js:201
+msgid "Accept change"
+msgstr "Derbyn newid"
+
+#: src/layer/marker/Annotation.js:206
+msgid "Reject change"
+msgstr "Gwrthod newid"
+
+#: src/layer/marker/Annotation.js:215
+msgid "Open menu"
+msgstr "Agor dewislen"
+
+#: src/layer/marker/Annotation.js:235 src/layer/tile/TileLayer.js:199
+msgid "Reply"
+msgstr "Ateb"
+
+#: src/layer/tile/TileLayer.js:193
+msgid "Modify"
+msgstr "Newid"
+
+#: src/layer/tile/TileLayer.js:205
+msgid "Remove"
+msgstr "Tynnu"
+
+#: src/map/Map.js:143
+msgid "Initializing..."
+msgstr "Cychwyn..."
+
+#: src/map/Map.js:908
+msgid "Inactive document - please click to resume editing"
+msgstr "Dogfen anweithredol - cliciwch i ailgychwyn golygu"
+
+#: src/map/Map.js:1039
+msgid "Loading..."
+msgstr "Yn llwytho..."
+
+#: src/map/handler/Map.FileInserter.js:82
+msgid "Uploading..."
+msgstr "Yn llwytho..."
+
+#: src/map/handler/Map.WOPI.js:273
+msgid "Creating copy..."
+msgstr "Creu copi..."
+
+#~ msgid "Textwrap"
+#~ msgstr "Amlapio Testun"
+
+#~ msgid "No wrap"
+#~ msgstr "Dim amlapio"
+
+#~ msgid "Page wrap"
+#~ msgstr "Amlapio tudalen"
+
+#~ msgid "Wrap anchor only"
+#~ msgstr "Amlapio angor yn unig"
+
+#~ msgid "Ideal wrap"
+#~ msgstr "Amlapio delfrydol"
+
+#~ msgid "Left wrap"
+#~ msgstr "Amlapio i'r chwith"
+
+#~ msgid "Right wrap"
+#~ msgstr "Amlapio i'r dde"
+
+#~ msgid "Wrap through"
+#~ msgstr "Amlapio parhaus"

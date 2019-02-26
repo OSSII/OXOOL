@@ -1,0 +1,6 @@
+## Path:	Network/Remote access/LOOLWSD
+## Description:	LibreOffice Online WebSocket Daemon settings
+## Type:	string
+## Default:	""
+## ServiceRestart: loolwsd
+#

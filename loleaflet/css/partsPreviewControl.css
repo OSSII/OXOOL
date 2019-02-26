@@ -1,0 +1,32 @@
+#document-container.parts-preview-document {
+        left: 214px;
+}
+
+#slide-sorter {
+	height: 100%
+}
+
+.preview-frame {
+	max-width: 190px;
+	white-space: nowrap;
+	text-align: center; margin: 1em 0;
+	}
+
+.preview-helper {
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
+	}
+
+.preview-img {
+	/* In draw docs, the width of previews are small, but we want a min of 180px to align it with document's left edge */
+        min-width: 180px;
+	vertical-align: middle;
+	max-width: 184px;
+	cursor: pointer;
+	border: 2px solid #dfdfdf;
+	}
+
+.preview-img-selected {
+	border-color: #000000;
+}
