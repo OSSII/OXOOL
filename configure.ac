@@ -612,7 +612,7 @@ AC_CONFIG_FILES([Makefile
                  loleaflet/Makefile
                  loleaflet/npm-shrinkwrap.json
                  loolwsd.spec
-                 loolwsd.xml
+                 oxoolwsd.xml
                  debian/loolwsd.postinst])
 AC_CONFIG_FILES([test/run_unit.sh],[chmod +x test/run_unit.sh])
 

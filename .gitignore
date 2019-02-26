@@ -58,18 +58,18 @@ loleaflet/npm-shrinkwrap.json
 
 connect
 lokitclient
-loolwsd
-loolforkit
-loolmount
-loolmap
-loolconvert
-loolsocketdump
-loolstress
-loolconfig
+oxoolwsd
+oxoolforkit
+oxoolmount
+oxoolmap
+oxoolconvert
+oxoolsocketdump
+oxoolstress
+oxoolconfig
 loolforkit-nocaps
 loadtest
 unittest
-loolwsd_fuzzer
+oxoolwsd_fuzzer
 clientnb
 
 # make tags

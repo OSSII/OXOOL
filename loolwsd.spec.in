@@ -1,190 +1,175 @@
-# spec file for package loolwsd
-#
-# Copyright (c) 2015 Collabora
-#
-# This file is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-%if 0%{?name_suffix:1}
-Name:           loolwsd%{name_suffix}
+%if "ndcodfapi" == "@BUNDLE_NAME@"
+%define pkg_ver 1.0.0
+%define pkg_conv_ver 1.0.0
+%define pkg_conv_ver_re 1
+%define pkg_merge_ver 1.0.0
+%define pkg_merge_ver_re 2
+%define pkg_re 2
+%define pkg_oxool @BUNDLE_NAME@
+%define pkg_merge ndcodfapi-plugin-odfreport
+%define pkg_conv ndcodfapi-plugin-odfconvert
+%define conf_bundle ndc
 %else
-Name:           loolwsd
-%endif
-Version:        @PACKAGE_VERSION@
-Release:        1%{?dist}
-Vendor:         %{vendor}
-Summary:        LibreOffice Online WebSocket Daemon
-License:        MPL
-Source0:        loolwsd-@PACKAGE_VERSION@.tar.gz
-BuildRequires:  libcap-devel libpng-devel poco-devel >= 1.7.5
-%if 0%{?fedora} || 0%{?rhel} >= 7
-BuildRequires:  libpcap kernel-headers
-%else
-%if 0%{?suse_version}
-BuildRequires:  libcap-progs linux-glibc-devel systemd-rpm-macros
-%endif
+%define pkg_ver @PACKAGE_VERSION@
+%define pkg_conv_ver 2.0.1
+%define pkg_conv_ver_re 10
+%define pkg_merge_ver 2.0.1
+%define pkg_merge_ver_re 21
+%define pkg_re @LOOLWSD_VERSION_DIST@%{?dist}
+%define pkg_oxool oxool-ossii
+%define pkg_merge mergeodf
+%define pkg_conv convertto
+%define conf_bundle ossii
 %endif
 
-Requires:       %{lo_rpm_list}
-Requires:       systemd
-Requires(post): coreutils grep sed
-%if 0%{?fedora} || 0%{?rhel} >= 7
-# loolwsd dependencies
-Requires:       expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssl-libs pcre xz-libs zlib
-Requires:       poco-crypto >= 1.7.5 poco-foundation >= 1.7.5 poco-json >= 1.7.5 poco-net >= 1.7.5 poco-netssl >= 1.7.5 poco-util >= 1.7.5 poco-xml >= 1.7.5
-# LibreOffice dependencies (unfortunately upstream LibreOffice RPM packages (from TDF) do not have real dependencies)
-Requires:       atk avahi-glib avahi-libs bzip2-libs cairo cups-libs dbus-glib dbus-libs fontconfig freetype GConf2 gdk-pixbuf2 glib2 gnome-vfs2 graphite2 gstreamer gstreamer-plugins-base gtk2 harfbuzz libdrm libffi libICE libSM libuuid libX11 libXau libxcb libXcomposite libXcursor libXdamage libXext libXfixes libXi libXinerama libXrandr libXrender libxshmfence libXt libXxf86vm mesa-libEGL mesa-libgbm mesa-libGL mesa-libglapi pango pixman
-%else
-%if 0%{?suse_version}
-# loolwsd dependencies
-Requires(post): libcap-progs
-Requires:       libcap2 libopenssl1_0_0 libpng12-0 libpcre1 libz1 %{?systemd_requires} %{fillup_prereq}
-Requires:       libPocoCrypto48 >= 1.7.8 libPocoFoundation48 >= 1.7.8 libPocoJSON48 >= 1.7.8 libPocoNet48 >= 1.7.8 libPocoNetSSL48 >= 1.7.8 libPocoUtil48 >= 1.7.8 libPocoXML48 >= 1.7.8
-# LibreOffice dependencies (unfortunately upstream LibreOffice RPM packages (from TDF) do not have real dependencies)
-Requires:       Mesa-libEGL1 Mesa-libGL1 Mesa-libglapi0 cups-libs dbus-1-glib fontconfig libatk-1_0-0 libavahi-client3 libavahi-common3 libavahi-glib1 libbz2-1 libcairo2 libcom_err2 libdbus-1-3 libdrm2 libexpat1 libfreetype6 libgbm1 libgio-2_0-0 libglib-2_0-0 libgmodule-2_0-0 libgobject-2_0-0 libgraphite2-3 libgthread-2_0-0 libgtk-2_0-0 libharfbuzz0 libkeyutils1 liblzma5 libpixman-1-0 libpng16-16 libuuid1 libxml2 libffi4 libgbm1 libICE6 libselinux1 libSM6 libwayland-client0 libwayland-server0 libX11-6 libX11-xcb1 libXau6 libxcb1 libxcb-dri2-0 libxcb-dri3-0 libxcb-glx0 libxcb-present0 libxcb-render0 libxcb-shm0 libxcb-sync1 libxcb-xfixes0 libXdamage1 libXext6 libXfixes3 libXrender1 libxshmfence1 libXxf86vm1
-%endif
-%endif
+Summary:        OxOffice On-Line WebSocket Daemon
+Name:           %pkg_oxool
+Conflicts:	oxool
+Version:        %pkg_ver
+Release:        %pkg_re
+License:        Commercial
+Source0:        online_patch.tar.gz
+
+# build tools
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: findutils
+BuildRequires: gcc-c++
+#BuildRequires: git
+BuildRequires: make
+BuildRequires: yum
+BuildRequires: libtool cppunit-devel
+
+BuildRequires: libpng-devel
+BuildRequires: openssl-devel
+BuildRequires: libcap-devel
+BuildRequires: nodejs
+#BuildRequires: npm
+BuildRequires: poco-devel >= 1.7.3
+BuildRequires: oxoffice-core
+
+Requires: oxofficedemo >= 6.2.0.1.0
+Requires: expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssl-libs pcre xz-libs zlib
+Requires: poco-crypto >= 1.7.3 poco-foundation >= 1.7.3 poco-json >= 1.7.3 poco-net >= 1.7.3 poco-netssl >= 1.7.3 poco-util >= 1.7.3 poco-xml >= 1.7.3
+Requires: cronie sqlite
+
 %if 0%{?name_suffix:1}
-Provides:       loleaflet = 1.5.8, loolwsd
+Provides:       loleaflet = 1.5.8, oxoolwsd
 %else
 Provides:       loleaflet = 1.5.8
 %endif
 Obsoletes:      loleaflet <= 1.5.8
 
-%description
+Conflicts: oxool-asus oxool-openfind ndcodfapi
 
-%if 0%{?suse_version}
-%debug_package
-%endif
+%description
+oxool
+
 %prep
-%setup -n loolwsd-@PACKAGE_VERSION@
+%setup -q -n online_patch
 
 %build
-%configure \
-	--enable-silent-rules \
-	--with-lokit-path=bundled/include \
-	--with-lo-path=%{loroot} \
+%if 1
+./autogen.sh
+%configure --enable-slient-rules \
 	--disable-setcap \
-%if 0%{?config_options:1}
-	%{config_options}
+	--disable-werror \
+	--with-lokit-path=bundled/include \
+	--with-lo-path=/opt/libreoffice \
+	--with-logfile=/var/log/oxoolwsd.log \
+	--disable-debug --enable-ssl \
+	--with-max-documents=65535 --with-max-connections=65535
+env BUILDING_FROM_RPMBUILD=yes %{__make} %{?_smp_mflags}
+
+#git checkout -- loleaflet/node_modules/
+#pushd loleaflet
+#rm dist/bundle.js
+npm install -g jake browserify
+%{__make} %{?_smp_mflags}
 %endif
-
-make %{?_smp_mflags}
-
-%check
-#make check
 
 %install
-make install DESTDIR=%{buildroot}
-%__install -D -m 444 loolwsd.service %{buildroot}%{_unitdir}/loolwsd.service
-install -d -m 755 %{buildroot}/var/adm/fillup-templates
-%if 0%{?fedora} || 0%{?rhel} >= 7
-install -D -m 644 sysconfig.loolwsd %{buildroot}/etc/sysconfig/loolwsd
-%else
-%if 0%{?suse_version}
-install -D -m 644 sysconfig.loolwsd %{buildroot}/var/adm/fillup-templates
-%endif
-%endif
+#cd online
+rm -rf $RPM_BUILD_ROOT
+env BUILDING_FROM_RPMBUILD=yes DESTDIR=$RPM_BUILD_ROOT make install
+%__install -m 444 discovery.xml $RPM_BUILD_ROOT/%{_datadir}/oxoolwsd/loleaflet/dist/
+%__install -m 444 etc/ca-chain.cert.pem $RPM_BUILD_ROOT/etc/oxoolwsd/ca-chain.cert.pem
+%__install -m 444 etc/cert.pem $RPM_BUILD_ROOT/etc/oxoolwsd/cert.pem
+%__install -m 444 etc/key.pem $RPM_BUILD_ROOT/etc/oxoolwsd/key.pem
+#%__install -m 444 styles.xml $RPM_BUILD_ROOT/%{_datadir}/loolwsd/loleaflet/dist/
+%__install -D -m 444 loolwsd.service %{buildroot}%{_unitdir}/oxool.service
+#%__install -D -m 444 %{SOURCE1} %{buildroot}%{_unitdir}/oxool.service
+%__cp loolwsd.xml $RPM_BUILD_ROOT/etc/oxoolwsd/oxoolwsd.xml
+mkdir -p $RPM_BUILD_ROOT/var/cache/oxoolwsd
+
+mkdir -p $RPM_BUILD_ROOT/var/log
+touch $RPM_BUILD_ROOT/var/log/oxoolwsd.log
+
 mkdir -p %{buildroot}/etc/cron.d
-echo "#Remove old tiles once every 10 days at midnight" > %{buildroot}/etc/cron.d/loolwsd.cron
-echo "0 0 */1 * * root find /var/cache/loolwsd -type f -a -atime +10 -exec rm {} \;" >> %{buildroot}/etc/cron.d/loolwsd.cron
-mkdir -p %{buildroot}/etc/pam.d
-echo "auth       required     pam_unix.so" > %{buildroot}/etc/pam.d/loolwsd
-echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/loolwsd
-
-%files
-/usr/bin/loolwsd
-/usr/bin/loolwsd-systemplate-setup
-/usr/bin/loolforkit
-/usr/bin/loolconvert
-/usr/bin/loolconfig
-/usr/share/loolwsd/discovery.xml
-/usr/share/loolwsd/favicon.ico
-/usr/share/loolwsd/loleaflet
-/usr/share/doc/loolwsd/README
-/usr/share/doc/loolwsd/README.vars
-/usr/share/doc/loolwsd/protocol.txt
-/usr/share/doc/loolwsd/reference.md
-/usr/share/man/man1/loolwsd.1
-/usr/share/man/man1/loolforkit.1
-/usr/share/man/man1/loolconvert.1
-/usr/share/man/man1/loolconfig.1
-/usr/share/man/man1/loolwsd-systemplate-setup.1
-%{_unitdir}/loolwsd.service
-%if 0%{?fedora} || 0%{?rhel} >= 7
-%config(noreplace) /etc/sysconfig/loolwsd
-%else
-%if 0%{?suse_version}
-/var/adm/fillup-templates/sysconfig.loolwsd
-%endif
-%endif
-
-%config(noreplace) /etc/cron.d/loolwsd.cron
-%config(noreplace) /etc/pam.d/loolwsd
-%config(noreplace) %attr(640, lool, root) /etc/loolwsd/loolwsd.xml
-%config /etc/loolwsd/loolkitconfig.xcu
-
-%doc README
+echo "#Remove old tiles once every 10 days at midnight" > %{buildroot}/etc/cron.d/oxoolwsd.cron
+echo "0 0 */1 * * root find /var/cache/oxoolwsd -name \"*.png\" -a -atime +10 -exec rm {} \;" >> %{buildroot}/etc/cron.d/oxoolwsd.cron
 
 %pre
-%if 0%{?suse_version}
-%service_add_pre loolwsd.service
-%endif
-
 getent group lool >/dev/null || groupadd -r lool
-getent passwd lool >/dev/null || useradd -g lool -r lool
+getent passwd lool >/dev/null || useradd -g lool -r lool -m
 
 %post
-setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/loolforkit
-setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/loolwsd
+setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit
+#setcap cap_sys_admin=ep /usr/bin/loolmount
+setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/oxoolwsd
 
-mkdir -p /var/cache/loolwsd && chown lool:lool /var/cache/loolwsd
-rm -rf /var/cache/loolwsd/*
+rm -rf %{_datarootdir}/oxoolwsd/systemplate
+oxoolwsd-systemplate-setup %{_datarootdir}/oxoolwsd/systemplate /opt/libreoffice >/dev/null 2>&1
 
-# Figure out where LO is installed, let's hope it is not a mount point
-# Create a directory for loolwsd on the same file system
-loroot=%{loroot}
-loolparent=`cd ${loroot} && cd .. && /bin/pwd`
-
-rm -rf ${loolparent}/lool
-mkdir -p ${loolparent}/lool/child-roots
-chown lool:lool ${loolparent}/lool
-chown lool:lool ${loolparent}/lool/child-roots
-
-fc-cache ${loroot}/share/fonts/truetype
-su lool -c "loolwsd-systemplate-setup ${loolparent}/lool/systemplate ${loroot} >/dev/null 2>&1"
-
-%if 0%{?fedora} || 0%{?rhel} >= 7
-%systemd_post loolwsd.service
-%else
-%if 0%{?suse_version}
-%service_add_post loolwsd.service
-%{fillup_only -n loolwsd}
-%endif
-%endif
-
+%systemd_post oxool.service
 
 %preun
-%if 0%{?fedora} || 0%{?rhel} >= 7
-%systemd_preun loolwsd.service
-%else
-%if 0%{?suse_version}
-%service_del_preun loolwsd.service
-%endif
-%endif
+%systemd_preun oxool.service
 
 %postun
-%if 0%{?fedora} || 0%{?rhel} >= 7
-%systemd_postun loolwsd.service
-%else
-%if 0%{?suse_version}
-%service_del_postun loolwsd.service
-%endif
-%endif
+%systemd_postun oxool.service
+
+%files
+%defattr(-,root,root)
+/usr/bin/oxoolwsd
+/usr/bin/oxoolwsd-systemplate-setup
+/usr/bin/oxoolforkit
+/usr/bin/oxoolconvert
+/usr/bin/oxoolconfig
+#%{_bindir}/loolforkit
+#%{_bindir}/loolmap
+#%{_bindir}/loolmount
+#%{_bindir}/loolstress
+#%{_bindir}/looltool
+%{_bindir}/oxoolwsd
+%{_bindir}/oxoolwsd-systemplate-setup
+#%{_bindir}/oxoolgetuser
+#%{_bindir}/prune_tokens.sh
+%dir %attr(777, root, root) %{_datadir}/oxoolwsd
+%{_datadir}/oxoolwsd/*
+%dir %attr(777, root, root) /var/cache/oxoolwsd
+%{_unitdir}/oxool.service
+/etc/cron.d/oxoolwsd.cron
+%config(noreplace) /etc/oxoolwsd/oxoolwsd.xml
+#%config(noreplace) /etc/oxoolwsd/perm.xml
+%config(noreplace) /etc/oxoolwsd/ca-chain.cert.pem
+%config(noreplace) /etc/oxoolwsd/cert.pem
+%config(noreplace) /etc/oxoolwsd/key.pem
+%config /etc/oxoolwsd/oxoolkitconfig.xcu
+/usr/share/doc/oxoolwsd/reference.md
+%exclude /usr/share/man/man1/loolwsd.1.gz
+%exclude /usr/share/man/man1/loolforkit.1.gz
+%exclude /usr/share/man/man1/loolconvert.1.gz
+%exclude /usr/share/man/man1/loolconfig.1.gz
+%exclude /usr/share/man/man1/loolwsd-systemplate-setup.1.gz
+%{_docdir}/oxoolwsd/README
+%{_docdir}/oxoolwsd/README.vars
+%{_docdir}/oxoolwsd/protocol.txt
+#%{_docdir}/loolwsd/reference.txt
+#%dir %attr(755, lool, lool) /usr/local/share/loolwsd
+%exclude /etc/apache2/conf-available/loolwsd.conf
+%exclude /etc/nginx/snippets/loolwsd.conf
+
+%config(noreplace) %attr(664, lool, lool) /var/log/oxoolwsd.log
 
 %changelog
-* Mon Aug 03 2015 Mihai Varga
-- added the cronjob
-* Tue May 19 2015 Tor Lillqvist
-- Initial RPM release
