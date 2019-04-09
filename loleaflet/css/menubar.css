@@ -38,7 +38,7 @@ serif;
 .menuicon, .menuicon:hover {
     position: absolute;
     top: 6px;
-    left: 5px;
+    left: 12px; /* 選單 ICON 前空白 */
 }
 
 /* item */
@@ -88,8 +88,9 @@ serif;
     user-select: none;
     cursor: default;
 }
+/* Menu Item */
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
-    padding: 5px 22px;
+    padding: 5px 36px; /* ICON */
     color: #000;
 }
 .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
