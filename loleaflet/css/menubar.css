@@ -123,6 +123,7 @@ serif;
 .lo-menu ul a span.sub-arrow {
     right: 0;
     margin-right: 5px;
+    width: auto;
     background: transparent; /* we want them to be transparent always whether mobile or desktop */
 }
 .lo-menu ul > li {
