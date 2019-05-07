@@ -28,7 +28,7 @@ Conflicts:	oxool
 Version:        %pkg_ver
 Release:        %pkg_re
 License:        Commercial
-Source0:        online_patch.tar.gz
+Source0:        oxool_ossii.tar.gz
 
 # build tools
 BuildRequires: autoconf
@@ -47,6 +47,7 @@ BuildRequires: nodejs
 #BuildRequires: npm
 BuildRequires: poco-devel >= 1.7.3
 BuildRequires: oxoffice-core
+BuildRequires: pam-devel
 
 Requires: oxofficedemo >= 6.2.0.1.0
 Requires: expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssl-libs pcre xz-libs zlib
@@ -66,7 +67,7 @@ Conflicts: oxool-asus oxool-openfind ndcodfapi
 oxool
 
 %prep
-%setup -q -n online_patch
+%setup -q -n oxool_ossii
 
 %build
 %if 1
@@ -99,7 +100,7 @@ env BUILDING_FROM_RPMBUILD=yes DESTDIR=$RPM_BUILD_ROOT make install
 #%__install -m 444 styles.xml $RPM_BUILD_ROOT/%{_datadir}/loolwsd/loleaflet/dist/
 %__install -D -m 444 loolwsd.service %{buildroot}%{_unitdir}/oxool.service
 #%__install -D -m 444 %{SOURCE1} %{buildroot}%{_unitdir}/oxool.service
-%__cp loolwsd.xml $RPM_BUILD_ROOT/etc/oxoolwsd/oxoolwsd.xml
+%__cp oxoolwsd.xml $RPM_BUILD_ROOT/etc/oxoolwsd/oxoolwsd.xml
 mkdir -p $RPM_BUILD_ROOT/var/cache/oxoolwsd
 
 mkdir -p $RPM_BUILD_ROOT/var/log
