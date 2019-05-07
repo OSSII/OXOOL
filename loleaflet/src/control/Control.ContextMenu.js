@@ -28,7 +28,7 @@ L.Control.ContextMenu = L.Control.extend({
 					  'WrapMenu', 'WrapOff', 'WrapOn', 'WrapIdeal', 'WrapLeft', 'WrapRight', 'WrapThrough',
 					  'WrapThroughTransparent', 'WrapContour', 'WrapAnchorOnly',
 					  'ArrangeFrameMenu', 'ArrangeMenu', 'BringToFront', 'ObjectForwardOne', 'ObjectBackOne', 'SendToBack',
-					  'RotateMenu', 'RotateLeft', 'RotateRight'],
+					  'RotateMenu', 'RotateLeft', 'RotateRight', 'FormatParintbrush'],
 
 			text: ['TableInsertMenu',
 				   'InsertRowsBefore', 'InsertRowsAfter', 'InsertColumnsBefore', 'InsertColumnsAfter',
@@ -36,7 +36,8 @@ L.Control.ContextMenu = L.Control.extend({
 				   'DeleteRows', 'DeleteColumns', 'DeleteTable',
 				   'MergeCells', 'SetOptimalColumnWidth', 'SetOptimalRowHeight',
 				   'UpdateCurIndex','RemoveTableOf',
-				   'ReplyComment', 'DeleteComment', 'DeleteAuthor', 'DeleteAllNotes'],
+				   'ReplyComment', 'DeleteComment', 'DeleteAuthor', 'DeleteAllNotes',
+				   'FormatPaintbrush', 'CharacterMenu', 'ParagraphMenu', 'TextBodyParaStyle', 'Heading1ParaStyle', 'Heading2ParaStyle', 'Heading3ParaStyle', 'PreformattedParaStyle'],
 
 			spreadsheet: ['MergeCells', 'SplitCell', 'RecalcPivotTable', 'FormatCellDialog'],
 
@@ -115,13 +116,13 @@ L.Control.ContextMenu = L.Control.extend({
 				// Only show whitelisted items
 				// Command name (excluding '.uno:') starts from index = 5
 				var commandName = item.command.substring(5);
-				if (this.options.whitelist.general.indexOf(commandName) === -1 &&
+				/*if (this.options.whitelist.general.indexOf(commandName) === -1 &&
 					!(docType === 'text' && this.options.whitelist.text.indexOf(commandName) !== -1) &&
 					!(docType === 'spreadsheet' && this.options.whitelist.spreadsheet.indexOf(commandName) !== -1) &&
 					!(docType === 'presentation' && this.options.whitelist.presentation.indexOf(commandName) !== -1) &&
 					!(docType === 'drawing' && this.options.whitelist.drawing.indexOf(commandName) !== -1)) {
 					continue;
-				}
+				}*/
 
 				// Get the translated text associated with the command
 				itemName = _UNO(item.command, docType, true);
