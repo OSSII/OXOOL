@@ -65,9 +65,9 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:ViewMenu', 'text'), id: 'view', type: 'menu', menu: [
 				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action', icon: 'fa fa-arrows-alt', hotkey: ''},
 				{type: 'separator'},
-				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action',icon: 'fa fa-plus', hotkey: ''},
-				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action', icon: 'fa fa-minus', hotkey: ''},
-				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-refresh', hotkey: ''},
+				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action',icon: 'fa fa-search-plus', hotkey: ''},
+				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action', icon: 'fa fa-search-minus', hotkey: ''},
+				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-search', hotkey: ''},
 				{type: 'separator'},
 				{uno: '.uno:ControlCodes'}
 			]
