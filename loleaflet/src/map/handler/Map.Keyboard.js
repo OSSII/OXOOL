@@ -182,16 +182,23 @@ L.Map.Keyboard = L.Handler.extend({
 		this._map.off('compositionstart compositionupdate compositionend textInput', this._onIME, this);
 	},
 
+	/*
+	 * Returns true whenever the key event shall be ignored.
+	 * This means shift+insert and shift+delete (or "insert or delete when holding
+	 * shift down"). Those events are handled elsewhere to trigger "cut" and 
+	 * "paste" events, and need to be ignored in order to avoid double-handling them.
+	 */
 	_ignoreKeyEvent: function(e) {
-		var shift = e.originalEvent.shiftKey ? this.keyModifier.shift : 0;
-		if (shift && (e.originalEvent.keyCode === 45 || e.originalEvent.keyCode === 46)) {
-			// don't handle shift+insert, shift+delete
-			// These are converted to 'cut', 'paste' events which are
-			// automatically handled by us, so avoid double-handling
-			return true;
+		var shift = e.originalEvent.shiftKey;
+		if ('key' in e.originalEvent) {
+			var key = e.originalEvent.key;
+			return (shift && (key === 'Delete' || key === 'Insert'));
+		} else {
+			// keyCode is not reliable in AZERTY/DVORAK keyboard layouts, is used
+			// only as a fallback for MSIE8.
+			var keyCode = e.originalEvent.keyCode;
+			return (shift && (keyCode === 45 || keyCode === 46));
 		}
-
-		return false;
 	},
 
 	_setPanOffset: function (pan) {
@@ -310,6 +317,13 @@ L.Map.Keyboard = L.Handler.extend({
 			alt = 0;
 		}
 
+		// handle help - F1
+		if (e.type === 'keydown' && !shift && !ctrl && !alt && !cmd && keyCode === 112) {
+			this._map.showHelp();
+			e.originalEvent.preventDefault();
+			return;
+		}
+
 		var unoKeyCode = this._toUNOKeyCode(keyCode);
 
 		if (this.modifier) {
@@ -385,28 +399,21 @@ L.Map.Keyboard = L.Handler.extend({
 	},
 
 	_onIME: function (e) {
-		if (e.type === 'compositionstart' || e.type === 'compositionupdate') {
+		if (e.type === 'compositionstart') {
 			this._isComposing = true; // we are starting composing with IME
-			var txt = '';
-			for (var i = 0; i < e.originalEvent.data.length; i++) {
-				txt += e.originalEvent.data[i];
-			}
-			if (txt) {
-				this._map._docLayer._postCompositionEvent(0, 'input', txt);
-			}
-		}
-
-		if (e.type === 'compositionend') {
+		} else if (e.type === 'compositionupdate') {
+			this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
+		} else if (e.type === 'compositionend') {
 			this._isComposing = false; // stop of composing with IME
 			// get the composited char codes
 			// clear the input now - best to do this ASAP so the input
 			// is clear for the next word
 			this._map._clipboardContainer.setValue('');
 			// Set all keycodes to zero
-			this._map._docLayer._postCompositionEvent(0, 'end', '');
+			this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
 		}
 
-		if (e.type === 'textInput' && !this._keyHandled) {
+		if (e.type === 'textInput' && !this._keyHandled && !this._isComposing) {
 			// Hack for making space and spell-check text insert work
 			// in Chrome (on Andorid) or Chrome with IME.
 			//
@@ -423,11 +430,8 @@ L.Map.Keyboard = L.Handler.extend({
 			// (part or whole word deleted) with the spell-checked word. (for
 			// example: enter 'tar' and with spell-check correct that to 'rat')
 			var data = e.originalEvent.data;
-
-			if (!this._isComposing) {
-				for (var idx = 0; idx < data.length; idx++) {
-					this._map._docLayer._postKeyboardEvent('input', data[idx].charCodeAt(), 0);
-				}
+			for (var idx = 0; idx < data.length; idx++) {
+				this._map._docLayer._postKeyboardEvent('input', data[idx].charCodeAt(), 0);
 			}
 		}
 	},
