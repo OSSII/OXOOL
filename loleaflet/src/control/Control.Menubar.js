@@ -534,14 +534,30 @@ L.Control.Menubar = L.Control.extend({
 		}
 
 		// Add document specific menu
+		var iconClass = 'document-logo'; // MenuBar 上的檔案圖示 Class
 		var docType = this._map.getDocType();
 		if (docType === 'text') {
+			iconClass += ' writer-icon-img'; // Writer 圖示
 			this._initializeMenu(this.options.text);
 		} else if (docType === 'spreadsheet') {
+			iconClass += ' calc-icon-img'; // Calc 圖示
 			this._initializeMenu(this.options.spreadsheet);
 		} else if (docType === 'presentation' || docType === 'drawing') {
+			iconClass += ' impress-icon-img'; // Impress 圖示
 			this._initializeMenu(this.options.presentation);
 		}
+
+		// Add by Firefly
+		// 把圖示放在 MenuBar 最前面
+		var liItem = L.DomUtil.create('li', '');
+		liItem.id = 'document-header';
+		var aItem = L.DomUtil.create('div', iconClass, liItem);
+		$(aItem).data('id', 'document-logo');
+		$(aItem).data('type', 'action');
+		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
+		// 點選圖示執行函式 (暫時不用)
+		// $(aItem).bind('click', {self: this}, this._createDocument);
+		//------- End
 
 		// initialize menubar plugin
 		$('#main-menu').smartmenus({

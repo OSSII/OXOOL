@@ -16,26 +16,6 @@
     display: none;
 }
 
-.logo_odt {background: url('../dist/images/lc_logo_odt_scale1.svg') no-repeat center }
-.logo_ods {background: url('../dist/images/lc_logo_ods_scale1.svg') no-repeat center }
-.logo_odp {background: url('../dist/images/lc_logo_odp_scale1.svg') no-repeat center }
-
-#logo{
-    position: fixed;
-    min-height: 30px;
-    width: 30px;
-    z-index: 99999;
-    top: 0px;
-}
-
-#logo.readonly {
-    position: fixed;
-    min-height: 30px;
-    width: 30px;
-    z-index: 99999;
-    top: 0px;
-}
-
 #map {
 	position: absolute;
 	top: 0px;

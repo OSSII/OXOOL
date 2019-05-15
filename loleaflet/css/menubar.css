@@ -1,22 +1,58 @@
 #main-menu {
     top: 0;
     height: 25px;
-    padding-left: 25px;
     z-index: 1000;
     outline: none;
+    float: left;
     background-color: transparent;
+    margin-left: 5px;
+    white-space: nowrap;
+    display: inline;
 }
 
 #main-menu.readonly {
-    top: 0;
+    top: 0px;
 }
 
+#document-header {
+    position: relative;
+    margin-right: 5px;
+}
+
+.document-logo {
+    position: relative;
+    width: 22px;
+    height: 30px;
+}
+
+.writer-icon-img {
+        background-image: url('images/lc_logo_odt_scale1.svg');
+        background-size: 30px 30px;
+        background-repeat: no-repeat;
+        background-position: bottom;
+}
+
+.calc-icon-img {
+        background-image: url('images/lc_logo_ods_scale1.svg');
+        background-size: 30px 30px;
+        background-repeat: no-repeat;
+        background-position: bottom;
+}
+
+.impress-icon-img {
+        background-image: url('images/lc_logo_odp_scale1.svg');
+        background-size: 30px 30px;
+        background-repeat: no-repeat;
+        background-position: bottom;
+}
+
+
 .main-nav {
-    height: 32px; /* on mouseover menubar items, border emerges */
-    background: #efefef;
-    position: static;
-    margin-left: 10px;
+    height: 30px; /* on mouseover menubar items, border emerges */
     width: auto;
+    background: #efefef;
+    margin: 3px;
+    white-space: nowrap;
 }
 
 /* hotkey */
@@ -223,7 +259,7 @@ serif;
 }
 
 @media (max-width: 768px),(max-device-height: 768px) {
-    #document-logo {
+    .document-logo {
         display: none;
     }
 

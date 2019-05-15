@@ -79,7 +79,6 @@ ifelse(MOBILEAPP,[true],
         and width, this being inside the smaller "document-container" will
         cause the content to overflow, creating scrollbars -->
 
-    <div id="logo" class="logo"></div>
     <nav class="main-nav" role="navigation">
       <!-- Mobile menu toggle button (hamburger/x icon) -->
       <input id="main-menu-state" type="checkbox" />
