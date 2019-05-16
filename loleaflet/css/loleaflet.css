@@ -78,6 +78,12 @@ body {
     width: 0;
 }
 
+@media (max-width: 900px) {
+        #menu-last-mod {
+                display: none;
+        }
+}
+
 @media (max-width: 768px),(max-device-height: 768px) {
     /* Show slidesorter beyond 768px only */
     #presentation-controls-wrapper {
