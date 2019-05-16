@@ -62,18 +62,16 @@
     font-size:12px;
     font-family:"Lucida Sans Unicode", "Lucida Sans", "Lucida Grande", Arial, sans
 serif;
-    left:150px;
-    position: absolute;
+    /*left:150px;
     z-index: 1000px;
-    position: absolute;
     top: 6px;
-    right: 13px;
+    right: 13px;*/
     /*font: normal normal normal 12px/1 FontAwesome;*/
     /* background-color: red; */
 }
 .menuicon, .menuicon:hover {
     position: absolute;
-    top: 6px;
+    top: 5px;
     left: 12px; /* 選單 ICON 前空白 */
 }
 
@@ -312,7 +310,8 @@ serif;
 .lo-menu-item-checked::before {
     position: absolute;
     content: '\2713';
-    left: 5px;
+    color: blue;
+    left: 12px;
     top: 5px;
 }
 

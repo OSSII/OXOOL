@@ -885,7 +885,6 @@ L.Control.Menubar = L.Control.extend({
 					L.DomUtil.addClass(liItem, 'readonly');
 				}
 			}
-			//L.DomUtil.create('i', menu[i].icon, liItem);
 			var aItem = L.DomUtil.create('a', menu[i].disabled ? 'disabled' : '', liItem);
 			if (menu[i].name !== undefined) {
 				aItem.innerHTML = menu[i].name;
@@ -894,10 +893,12 @@ L.Control.Menubar = L.Control.extend({
 			} else {
 				aItem.innerHTML = '';
 			}
-			var iItem = L.DomUtil.create('i', menu[i].icon, aItem);
+			// Add by Firefly
+			// 有指定 Icon 再加
+			if (menu[i].icon !== undefined) {
+				L.DomUtil.create('i', 'menuicon ' + menu[i].icon, aItem);
+			}
 			//var spanItem = L.DomUtil.create('span', 'hotkey', aItem);
-
-			L.DomUtil.addClass(iItem, 'menuicon');
 			/*if (menu[i].hotkey) {
 				spanItem.innerHTML = menu[i].hotkey;
 			}*/
