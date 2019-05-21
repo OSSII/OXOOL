@@ -897,10 +897,10 @@ L.Control.Menubar = L.Control.extend({
 			if (menu[i].icon !== undefined) {
 				L.DomUtil.create('i', 'menuicon ' + menu[i].icon, aItem);
 			}
-			//var spanItem = L.DomUtil.create('span', 'hotkey', aItem);
-			/*if (menu[i].hotkey) {
+			if (menu[i].hotkey !== undefined) {
+				var spanItem = L.DomUtil.create('span', 'hotkey', aItem);
 				spanItem.innerHTML = menu[i].hotkey;
-			}*/
+			}
 			if (menu[i].type === 'menu') {
 				var ulItem = L.DomUtil.create('ul', '', liItem);
 				var subitemList = this._createMenu(menu[i].menu);

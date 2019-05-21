@@ -57,18 +57,17 @@
 
 /* hotkey */
 .hotkey, .hotkey:hover {
-
-    color: black;
     font-size:12px;
     font-family:"Lucida Sans Unicode", "Lucida Sans", "Lucida Grande", Arial, sans
 serif;
-    /*left:150px;
-    z-index: 1000px;
-    top: 6px;
-    right: 13px;*/
-    /*font: normal normal normal 12px/1 FontAwesome;*/
-    /* background-color: red; */
+    margin-left: 12px;
+    position: absolute;
+    text-align: right;
+    width: 150px;
+    right: 13px;
+    display: inline-block;
 }
+
 .menuicon, .menuicon:hover {
     position: absolute;
     top: 5px;
@@ -124,7 +123,7 @@ serif;
 }
 /* Menu Item */
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
-    padding: 5px 36px; /* ICON */
+    padding: 5px 104px 5px 36px; /* ICON */
     color: #000;
 }
 .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
