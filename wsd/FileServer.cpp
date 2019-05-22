@@ -307,6 +307,18 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::M
                 return;
             }
 
+            /* Add by Firefly <firefly@ossii.com.tw>
+             * 增加兩頁
+             * 1. adminConfigSettings.html : 設定系統配置檔 loolwsd.xml
+             * 2. adminCommandSettings.html : 選單,工具列,右鍵選單功能啟動或關閉設定
+             */
+            if (endPoint == "adminConfigSettings.html" ||
+                endPoint == "adminCommandSettings.html")
+            {
+                preprocessAdminFile(request, socket);
+                return;
+            }
+
             if (endPoint == "admin-bundle.js" ||
                 endPoint == "admin-localizations.js")
             {
