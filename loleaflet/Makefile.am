@@ -305,6 +305,7 @@ pot:
 		admin/src/AdminSocketBase.js \
 		admin/src/AdminSocketOverview.js \
 		admin/src/AdminSocketSettings.js \
+		admin/src/AdminSocketConfigSettings.js \
 		admin/src/Util.js \
 		js/toolbar.js \
 		mdc/js/material-components-web.js \
