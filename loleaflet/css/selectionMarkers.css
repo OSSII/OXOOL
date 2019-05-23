@@ -1,4 +1,5 @@
 .leaflet-selection-marker-start {
+	display: none;
 	margin-left: -28px;
 	width: 30px;
 	height: 44px;
@@ -6,8 +7,18 @@
 	}
 
 .leaflet-selection-marker-end {
+	display: none;
 	margin-left: -2px;
 	width: 30px;
 	height: 44px;
 	background-image: url('images/handle_end.png');
 	}
+
+@media (max-width: 768px),(max-device-height: 768px) {
+    .leaflet-selection-marker-start {
+	display: block;
+    }
+    .leaflet-selection-marker-end {
+	display: block;
+    }
+}
