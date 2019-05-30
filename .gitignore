@@ -13,7 +13,7 @@
 Makefile
 Makefile.in
 loolwsd.spec
-loolwsd.xml
+oxoolwsd.xml
 aclocal.m4
 autom4te.cache
 config.h
@@ -54,6 +54,7 @@ loolwsd.log
 
 # loleaflet
 loleaflet/dist
+loleaflet/node_modules
 loleaflet/npm-shrinkwrap.json
 
 connect
