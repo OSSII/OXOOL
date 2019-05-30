@@ -78,7 +78,7 @@ std::string Config::ConfigFile =
 #else
     LOOLWSD_CONFIGDIR
 #endif
-    "/loolwsd.xml";
+    "/" PACKAGE_NAME ".xml";
 
 std::string Config::SupportKeyString;
 bool Config::SupportKeyStringProvided = false;
