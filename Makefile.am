@@ -237,7 +237,7 @@ EXTRA_DIST = discovery.xml \
              favicon.ico \
              oxoolkitconfig.xcu \
              loolwsd.spec \
-             loolwsd.xml.in \
+             oxoolwsd.xml.in \
              loolwsd.service \
              sysconfig.loolwsd \
              debian/compat \
