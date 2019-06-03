@@ -7,16 +7,16 @@
 
     <tile_cache_path desc="Path to a directory where to keep the tile cache." type="path" relative="false" default="@LOOLWSD_CACHEDIR@"></tile_cache_path>
     <sys_template_path desc="Path to a template tree with shared libraries etc to be used as source for chroot jails for child processes." type="path" relative="true" default="systemplate"></sys_template_path>
-    <lo_template_path desc="Path to a LibreOffice installation tree to be copied (linked) into the jails for child processes. Should be on the same file system as systemplate." type="path" relative="false" default="@LO_PATH@"></lo_template_path>
+    <lo_template_path desc="Path to a OxOffice installation tree to be copied (linked) into the jails for child processes. Should be on the same file system as systemplate." type="path" relative="false" default="@LO_PATH@"></lo_template_path>
     <child_root_path desc="Path to the directory under which the chroot jails for the child processes will be created. Should be on the same file system as systemplate and lotemplate. Must be an empty directory." type="path" relative="true" default="jails"></child_root_path>
 
-    <server_name desc="Hostname:port of the server running loolwsd. If empty, it's derived from the request." type="string" default=""></server_name>
+    <server_name desc="Hostname:port of the server running oxoolwsd. If empty, it's derived from the request." type="string" default=""></server_name>
     <client_port_number desc="Port number to listen to (default: 9980), must not be 9981">9980</client_port_number>
     <file_server_root_path desc="Path to the directory that should be considered root for the file server. This should be the directory containing loleaflet." type="path" relative="true" default="loleaflet/../"></file_server_root_path>
 
-    <memproportion desc="The maximum percentage of system memory consumed by all of the LibreOffice Online, after which we start cleaning up idle documents" type="double" default="80.0"></memproportion>
+    <memproportion desc="The maximum percentage of system memory consumed by all of the OxOffice Online, after which we start cleaning up idle documents" type="double" default="80.0"></memproportion>
     <num_prespawn_children desc="Number of child processes to keep started in advance and waiting for new clients." type="uint" default="1">1</num_prespawn_children>
-    <per_document desc="Document-specific settings, including LO Core settings.">
+    <per_document desc="Document-specific settings, including OX Core settings.">
         <max_concurrency desc="The maximum number of threads to use while processing a document." type="uint" default="4">4</max_concurrency>
         <document_signing desc="If true show the document signing menu item." type="bool" default="false">false</document_signing>
         <idle_timeout_secs desc="The maximum number of seconds before unloading an idle document. Defaults to 1 hour." type="uint" default="3600">3600</idle_timeout_secs>
@@ -71,7 +71,7 @@
 
     <net desc="Network settings">
       <proto type="string" default="all" desc="Protocol to use IPv4, IPv6 or all for both">all</proto>
-      <listen type="string" default="any" desc="Listen address that loolwsd binds to. Can be 'any' or 'loopback'.">any</listen>
+      <listen type="string" default="any" desc="Listen address that oxoolwsd binds to. Can be 'any' or 'loopback'.">any</listen>
       <service_root type="path" default="" desc="Prefix all the pages, websockets, etc. with this path."></service_root>
       <post_allow desc="Allow/deny client IP address for POST(REST)." allow="true">
         <host desc="The IPv4 private 192.168 block as plain IPv4 dotted decimal addresses.">192\.168\.[0-9]{1,3}\.[0-9]{1,3}</host>
@@ -80,12 +80,12 @@
         <host desc="Ditto, but as IPv4-mapped IPv6 address">::ffff:127\.0\.0\.1</host>
         <host desc="The IPv6 loopback (localhost) address.">::1</host>
       </post_allow>
-      <frame_ancestors desc="Specify who is allowed to embed the LO Online iframe (loolwsd and WOPI host are always allowed). Separate multiple hosts by space."></frame_ancestors>
+      <frame_ancestors desc="Specify who is allowed to embed the OxOffice Online iframe (oxoolwsd and WOPI host are always allowed). Separate multiple hosts by space."></frame_ancestors>
     </net>
 
     <ssl desc="SSL settings">
         <enable type="bool" desc="Controls whether SSL encryption is enable (do not disable for production deployment). If default is false, must first be compiled with SSL support to enable." default="@ENABLE_SSL@">@ENABLE_SSL@</enable>
-        <termination desc="Connection via proxy where loolwsd acts as working via https, but actually uses http." type="bool" default="true">false</termination>
+        <termination desc="Connection via proxy where oxoolwsd acts as working via https, but actually uses http." type="bool" default="true">false</termination>
         <cert_file_path desc="Path to the cert file" relative="false">/etc/oxoolwsd/cert.pem</cert_file_path>
         <key_file_path desc="Path to the key file" relative="false">/etc/oxoolwsd/key.pem</key_file_path>
         <ca_file_path desc="Path to the ca file" relative="false">/etc/oxoolwsd/ca-chain.cert.pem</ca_file_path>
