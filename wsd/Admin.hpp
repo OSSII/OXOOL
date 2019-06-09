@@ -17,6 +17,22 @@
 
 #include "net/WebSocketHandler.hpp"
 
+// add by Firefly <firefly@ossii.com.tw>
+#include <Poco/Util/XMLConfiguration.h>
+#include <Poco/Dynamic/Var.h>
+#include <Poco/JSON/JSON.h>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Parser.h>
+#include <common/JsonUtil.hpp>
+using Poco::Util::XMLConfiguration;
+class oxoolConfig final: public XMLConfiguration
+{
+public:
+    oxoolConfig()
+        {}
+};
+//-------- End of Firefly added
+
 class Admin;
 
 /// Handle admin client's Websocket requests & replies.
@@ -122,6 +138,16 @@ public:
 
     /// Attempt a synchronous connection to a monitor with @uri @when that future comes
     void scheduleMonitorConnect(const std::string &uri, std::chrono::steady_clock::time_point when);
+    /// Add by Firefly <firefly@ossii.com.tw>
+    oxoolConfig& config();
+    ///  移除指定 Key 所屬陣列
+    void removeSpecialKeys(const std::string& keyName);
+    void saveConfig()
+    {
+        _oxoolConfig.save(_configFile);
+    }
+    
+
 
 private:
     /// Notify Forkit of changed settings.
@@ -165,6 +191,13 @@ private:
     std::atomic<int> _memStatsTaskIntervalMs;
     std::atomic<int> _netStatsTaskIntervalMs;
     DocProcSettings _defDocProcSettings;
+
+    // Add by Firefly <firefly@ossii.com.tw>
+    std::string _configFile;
+    oxoolConfig _oxoolConfig;
+    std::string _permFile;
+    oxoolConfig _permConfig;
+    //------ End of Firefly
 
     // Don't update any more frequently than this since it's excessive.
     static const int MinStatsIntervalMs;

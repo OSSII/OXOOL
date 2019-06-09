@@ -48,6 +48,20 @@ using Poco::Util::Application;
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 2500;
 
+std::string addSlashes(const std::string &source)
+{
+    std::string out;
+    for (const char c: source)
+    {
+        switch (c)
+        {
+            case '\\':  out += "\\\\";  break;
+            default:    out += c;       break;
+        }
+    }
+    return out;
+}
+
 /// Process incoming websocket messages
 void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
                                        std::vector<char> &payload)
@@ -265,6 +279,99 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
             }
         }
     }
+    // Add by Firefly <firefly@ossii.com.tw>
+    // 以 json 字串傳回設定項目
+    else if (tokens[0] == "getConfig" && tokens.count() > 1)
+    {
+        std::ostringstream oss;
+        auto& config = _admin->config();
+        oss << "settings {\n";
+        for (size_t i=1; i < tokens.count() ; i ++)
+        {
+            std::string key = tokens[i];
+
+            if (i > 1) oss << ",\n";
+
+            oss << "\"" << key << "\": ";
+            // 下列三種 key 是陣列形式
+            if (key == "net.post_allow.host" ||
+                key == "storage.wopi.host" ||
+                key == "storage.webdav.host")
+            {
+                oss << "[\n";
+                size_t j_cnt = 0;
+                for (size_t j=0 ; ; j++)
+                {
+                    std::string arrkey = key + "[" + std::to_string(j) + "]";
+                    if (config.has(arrkey))
+                    {
+                        j_cnt ++;
+                        if (j_cnt > 1) oss << ",\n";
+                        std::string allow = config.getString(arrkey + "[@allow]", "");
+                        std::string value = addSlashes(config.getString(arrkey, ""));
+                        oss << "\t {\"value\": \"" << value << "\"";
+                        if (!allow.empty())
+                        {
+                            oss << ", \"allow\": " << allow;
+                        }
+                        oss << "}";
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    
+                }
+                oss << "\n\t]\n";
+                continue;
+            }
+            
+            if (config.has(key))
+            {
+                std::string p_value = addSlashes(config.getString(key, "")); // 讀取 value, 沒有的話預設為空字串
+                std::string p_type = config.getString(key + "[@type]", ""); // 讀取 type, 沒有的話預設為空字串
+                if (p_type == "int" || p_type == "uint" || p_type == "bool" ||
+                    p_value == "true" || p_value=="false")
+                    oss << p_value;
+                else
+                    oss << "\"" << p_value << "\"";
+            }
+            else
+            {
+                oss << "null";
+            }
+        }
+        oss << "\n}\n";
+        sendTextFrame(oss.str());
+    }
+    else if (tokens[0] == "setConfig" && tokens.count() > 1)
+    {
+        Poco::JSON::Object::Ptr object;
+        if (JsonUtil::parseJSON(firstLine, object))
+        {
+            auto& config = _admin->config();
+            // 清除三種陣列
+            _admin->removeSpecialKeys("net.post_allow.host");
+            _admin->removeSpecialKeys("storage.wopi.host");
+            _admin->removeSpecialKeys("storage.webdav.host");
+            for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
+            {
+                // it->first : key, it->second.toString() : value
+                config.setString(it->first, it->second.toString());
+            }
+            _admin->saveConfig();
+            sendTextFrame("setConfigOk");
+        }
+        else
+        {
+            sendTextFrame("setConfigNothing");
+        }
+    }
+    else
+    {
+        sendTextFrame("!Unknow Command -> " + firstLine);
+    }
+    // End of Firefly
 }
 
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
@@ -373,6 +480,25 @@ Admin::Admin() :
     const size_t totalMem = getTotalMemoryUsage();
     LOG_TRC("Total memory used: " << totalMem << " KB.");
     _model.addMemStats(totalMem);
+
+    // Add by Firefly <firefly@ossii.com.tw>
+    _configFile =
+#if ENABLE_DEBUG
+    DEBUG_ABSSRCDIR "/" PACKAGE_NAME ".xml";
+#else
+    LOOLWSD::ConfigFile;
+#endif
+    _oxoolConfig.load(_configFile);
+
+    _permFile = 
+#if ENABLE_DEBUG
+    DEBUG_ABSSRCDIR
+#else
+    LOOLWSD_CONFIGDIR
+#endif
+    "/perm.xml";
+    _permConfig.load(_permFile);
+    //----- End of Firefly
 }
 
 Admin::~Admin()
@@ -552,6 +678,24 @@ AdminModel& Admin::getModel()
 {
     return _model;
 }
+
+// Add by Firefly
+oxoolConfig& Admin::config()
+{
+    return _oxoolConfig;
+}
+
+void Admin::removeSpecialKeys(const std::string& keyName)
+{
+    for (size_t i = 0; ; ++i)
+    {
+        const std::string host = keyName + "[" + std::to_string(i) + "]";
+        if (!_oxoolConfig.has(host)) break;
+
+        _oxoolConfig.remove(host);
+    }
+}
+//-------------end if firefly
 
 void Admin::updateLastActivityTime(const std::string& docKey)
 {
