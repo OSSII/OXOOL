@@ -30,7 +30,7 @@
            host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
         }
 
-        Admin.Analytics(host)
+        Admin.ViewLog(host)
     </script>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -57,53 +57,14 @@
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
             <li><a href="admin.html"><script>document.write(l10nstrings.strOverview)</script></a></li>
-            <li class="active"><a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics);</script> <span class="sr-only"><script>document.write(l10nstrings.strCurrent)</script></span></a></li>
-            <li><a href="adminViewLog.html">檢視日誌</a></li>
+            <li><a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a></li>
+            <li  class="active"><a href="adminViewLog.html">檢視日誌</a></li>
             <li><a href="adminConfigSettings.html">系統設定</script></a></li>
             <li><a href="adminPermissionSettings.html">界面設定</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <ul class="nav nav-tabs">
-            <li class="active">
-              <a href="#memview" data-toggle="tab">
-                <h4><script>document.write(l10nstrings.strMemoryGraph)</script></h4>
-              </a>
-            </li>
-            <li>
-              <a href="#cpuview" data-toggle="tab">
-                <h4><script>document.write(l10nstrings.strCpuGraph)</script></h4>
-              </a>
-            </li>
-            <li>
-              <a href="#networkview" data-toggle="tab">
-                <h4><script>document.write(l10nstrings.strNetGraph)</script></h4>
-              </a>
-            </li>
-          </ul>
-          <div class="tab-content graph-content">
-            <div id="memview" class="active tab-pane">
-              <div class="graph-container">
-                <div>
-                  <svg id="MemVisualisation" width="1010" height="510"></svg>
-                </div>
-              </div>
-            </div>
-            <div id="cpuview" class="tab-pane">
-              <div class="graph-container">
-                <div>
-                  <svg id="CpuVisualisation" width="1010" height="510"></svg>
-                </div>
-              </div>
-            </div>
-            <div id="networkview" class="tab-pane">
-              <div class="graph-container">
-                <div>
-                  <svg id="NetVisualisation" width="1010" height="510"></svg>
-                </div>
-              </div>
-            </div>
-          </div>
+          <h2 class="page-header">待完成</h2>
         </div>
       </div>
     </div>
