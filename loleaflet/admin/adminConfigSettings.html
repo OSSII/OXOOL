@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>LibreOffice Online - Admin console</title>
+    <title>OxOffice Online - Admin console</title>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -16,7 +16,52 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <link rel="localizations" href="%SERVICE_ROOT%/loleaflet/%VERSION%/l10n/admin-localizations.json" type="application/vnd.oftn.l10n+json"/>
+    <style>
+      .material-switch > input[type="checkbox"] {
+    display: none;   
+}
 
+.material-switch > label {
+    cursor: pointer;
+    height: 0px;
+    position: relative; 
+    width: 32px;  
+}
+
+.material-switch > label::before {
+    background: rgb(0, 0, 0);
+    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    content: '';
+    height: 12px;
+    margin-top: -8px;
+    position:absolute;
+    opacity: 0.3;
+    transition: all 0.1s ease-in-out;
+    width: 32px;
+}
+.material-switch > label::after {
+    background: rgb(255, 255, 255);
+    border-radius: 16px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    content: '';
+    height: 16px;
+    left: -4px;
+    margin-top: -6px;
+    position: absolute;
+    top: -4px;
+    transition: all 0.1s ease-in-out;
+    width: 16px;
+}
+.material-switch > input[type="checkbox"]:checked + label::before {
+    background: inherit;
+    opacity: 0.5;
+}
+.material-switch > input[type="checkbox"]:checked + label::after {
+    background: inherit;
+    left: 20px;
+}
+  </style>
   </head>
   <body>
     <script src="%SERVICE_ROOT%/loleaflet/%VERSION%/admin-bundle.js"></script>
@@ -30,43 +75,353 @@
         else {
            host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
         }
-        Admin.ConfigSettings(host);
+        var config = Admin.ConfigSettings(host);
     </script>
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#"><script>document.write(l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole)</script></a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="adminSettings.html"><script>document.write(l10nstrings.strSettings)</script></a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="admin.html"><script>document.write(l10nstrings.strOverview)</script></a></li>
-            <li><a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a></li>
-            <li><a href="adminHistory.html"><script>document.write(l10nstrings.strHistory)</script></a></li>
-            <li><a href="adminConfigSettings.html"><script>document.write(l10nstrings.strConfigSettings)</script></a></li>
-          </ul>
-        </div>
-
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h1 class="page-header"><script>document.write(l10nstrings.strConfigSettings)</script></h1>
-        </div>
-      </div>
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#"><script>document.write(l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole)</script></a>
     </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="adminSettings.html"><script>document.write(l10nstrings.strSettings)</script></a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+        <li><a href="admin.html"><script>document.write(l10nstrings.strOverview)</script></a></li>
+        <li><a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a></li>
+        <li><a href="adminViewLog.html">檢視日誌</a></li>
+        <li class="active"><a href="adminConfigSettings.html">系統設定</script></a></li>
+        <li><a href="adminPermissionSettings.html">界面設定</a></li>
+      </ul>
+    </div>
+
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <h2 class="page-header">系統設定</script></h2>
+      <form class="form-horizontal" id="mainform">
+        <div class="panel-group">
+          <!-- 一般設定 -->
+          <div class="panel panel-primary">
+            <div class="panel-heading"><strong>一般設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="control-label col-md-3" for="server_name">主機名稱</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="server_name">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="client_port_number">Port</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="client_port_number">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="loleaflet_html">文件編輯首頁檔名</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="loleaflet_html">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 文件編輯設定 -->
+          <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>文件編輯設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_document.idlesave_duration_secs">文件修改後幾秒自動儲存</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_document.idlesave_duration_secs">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_document.autosave_duration_secs">自動存檔間隔秒數</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_document.autosave_duration_secs">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_document.limit_file_size_mb">每個程序可寫入的檔案大小(單位:M)</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_document.limit_file_size_mb" title="0:表示無限制">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_document.limit_num_open_files">每個程序可開啟檔案數量</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_document.limit_num_open_files" title="0:表示無限制">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_document.limit_load_secs">載入文件最大秒數</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_document.limit_load_secs" title="0:表示無限制">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 文件檢視設定 -->
+          <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>文件檢視設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_view.out_of_focus_timeout_secs">瀏覽器調暗秒數</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_view.out_of_focus_timeout_secs">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_view.idle_timeout_secs">停止編輯調暗秒數</label>
+                <div class="col-md-9">
+                  <input type="number" class="form-control" id="per_view.idle_timeout_secs">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 日誌設定 -->
+          <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>日誌設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="control-label col-md-3" for="logging.level">紀錄層級</label>
+                <div class="col-md-9">
+                  <select class="form-control" id="logging.level">
+                    <option value="none">無</option>
+                    <option value="fatal">致命</option>
+                    <option value="critical">緊急</option>
+                    <option value="error">錯誤</option>
+                    <option value="warning">警告</option>
+                    <option value="notice">通知</option>
+                    <option value="information">資訊</option>
+                    <option value="debug">除錯</option>
+                    <option value="trace">追蹤</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="file.property[@name=path]">日誌檔完整路徑及檔名</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="logging.file.property[@name=path]">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="logging.file.property[@name=rotation]">多久備份一次日誌？</label>
+                <div class="col-md-9">
+                  <select class="form-control" id="logging.file.property[@name=rotation]">
+                    <option value="never">無</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每 7 天</option>
+                    <option value="monthly">每 30 天</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="logging.file.property[@name=archive]">備份日誌識別名稱</label>
+                <div class="col-md-9">
+                  <select class="form-control" id="logging.file.property[@name=archive]">
+                    <option value="timestamp">日誌檔名+日期時間</option>
+                    <option value="number">日誌檔名+流水號</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="text-right col-md-3" for="logging.file.property[@name=compress]">壓縮備份日誌檔</label>
+                <div class="col-md-9 material-switch">
+                  <input type="checkbox" class="form-control" id="logging.file.property[@name=compress]">
+                  <label for="logging.file.property[@name=compress]" class="label-success"></label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="logging.file.property[@name=purgeAge]">日誌檔最長保留期限</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="logging.file.property[@name=purgeAge]" title="單位是: minutes/hours/days/weeks/months">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="logging.file.property[@name=purgeCount]">日誌檔保留數量</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="logging.file.property[@name=purgeCount]" title="若不清除請輸入 'none'">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="text-right col-md-3" for="logging.file.property[@name=rotateOnOpen]">伺服器啟動時整理日誌檔</label>
+                <div class="col-md-9 material-switch">
+                  <input type="checkbox" class="form-control" id="logging.file.property[@name=rotateOnOpen]">
+                  <label for="logging.file.property[@name=rotateOnOpen]" class="label-success"></label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 網路設定 -->
+          <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>網路設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="control-label col-md-3" for="per_document.idlesave_duration_secs">通訊協定</label>
+                <div class="col-md-9">
+                  <select class="form-control" id="net.proto">
+                    <option value="ipv4">IPv4</option>
+                    <option value="ipv6">IPv6</option>
+                    <option value="all">全部</option>
+                  </select>
+                </div>
+              </div>
+              <div form-group>
+                <label class="control-label col-md-3">接受 POST 客戶端來源</label>
+                <div class="col-md-9">
+                  <input type="hidden" id="net.post_allow.host">
+                  <ul class="list-group" id="post_allow_hostlist">
+                  </ul>
+                  <a class="btn btn-primary" id="post_allow_hostAdd">新增來源</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- SSL 設定 -->
+          <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>SSL 設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="text-right col-md-3" for="ssl.enable">啟用 SSL</label>
+                <div class="col-md-9 material-switch">
+                  <input type="checkbox" class="form-control" id="ssl.enable">
+                  <label for="ssl.enable" class="label-success"></label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="ssl.cert_file_path">CERT 檔案位置</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="ssl.cert_file_path">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="ssl.key_file_path">KEY 檔案位置</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="ssl.key_file_path">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3" for="ssl.ca_file_path">CA  檔案位置</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="ssl.ca_file_path">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 文件儲存設定 -->
+          <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>文件儲存設定</strong></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="text-right col-md-3" for="storage.filesystem[@allow]">存主機檔案系統</label>
+                <div class="col-md-9 material-switch">
+                  <input type="checkbox" class="form-control" id="storage.filesystem[@allow]">
+                  <label for="storage.filesystem[@allow]" class="label-success"></label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3"><input type="radio" name="storage_wopi_webdav" id="storage.wopi[@allow]">&nbsp;&nbsp;使用 WOPI</label>
+                <div class="col-md-9">
+                  <div class="input-group">
+                    <span class="input-group-addon">WOPI 最大文件不超過</span>
+                    <input type="text" class="form-control" id="storage.wopi.max_file_size">
+                    <span class="input-group-addon">Bytes.(0 : 表示不限制)</span>
+                  </div>
+                  <input type="hidden" id="storage.wopi.host">
+                </div>
+              </div>
+              <div form-group>
+                <label class="col-md-3"></label>
+                <div class="col-md-9">
+                  <ul class="list-group" id="wopi_hostlist">
+                  </ul>
+                  <a class="btn btn-primary" id="wopi_hostAdd">新增來源</a>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3"><input type="radio" name="storage_wopi_webdav" id="storage.webdav[@allow]">&nbsp;&nbsp;使用 WebDAV</label>
+                <div class="col-md-9 material-switch">
+                  <input type="hidden" id="storage.webdav.host">
+                </div>
+              </div>
+              <div form-group>
+                <label class="col-md-3"></label>
+                <div class="col-md-9">
+                  <ul class="list-group" id="webdav_hostlist">
+                  </ul>
+                  <a class="btn btn-primary" id="webdav_hostAdd">新增來源</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div><button class="btn btn-info pull-right" id="saveConfig" disabled><strong>更新設定</strong></button></div>
+    </div>
+  </div>
+</div>
 <!--%FOOTER%-->
+<script>
+$(document).ready(function() {
+  $('#saveConfig').attr('disabled', false)
+	.click(function ()
+	{
+    $('#saveConfig').attr('disabled', true);
+
+    var form = $('#mainform input, select, textarea');
+    var json = {};
+    for (var i= 0 ; i < form.length ; i++)
+		{
+      var id = form[i].id;
+      if (id == 'net.post_allow.host' ||
+					id == 'storage.wopi.host' ||
+          id == 'storage.webdav.host')
+      {
+        var arr = document.getElementsByClassName(id + '[]');
+        for (var j = 0 ; j < arr.length ; j++)
+        {
+          json[id + '[' + j + ']'] = arr[j].textContent;
+          var allow = arr[j].attributes.allow;
+          if (typeof allow != 'undefined')
+          {
+            json[id + '[' + j + '][@allow]'] = allow.value;
+          }
+        }
+        continue;
+      }
+
+      var value;
+      var input = document.getElementById(id);
+      if (input)
+      {
+        switch (input.type)
+        {
+        case 'checkbox':
+        case 'radio':
+          value = input.checked ? 'true' : 'false';
+          break;
+        default:
+          value = input.value;
+          break;
+        }
+        json[id] = value;
+      }
+    }
+    config.setConfig(JSON.stringify(json));
+	})
+});
+</script>
   </body>
 </html>
