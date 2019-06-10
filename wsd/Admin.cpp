@@ -47,6 +47,21 @@ using Poco::Util::Application;
 
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 2500;
+// Add by Firefly <firefly@ossii.com.tw>
+std::string ConfigFile = 
+#if ENABLE_DEBUG
+        DEBUG_ABSSRCDIR "/" PACKAGE_NAME ".xml";
+#else
+        LOOLWSD::ConfigFile;
+#endif
+
+std::string PermFile = 
+#if ENABLE_DEBUG
+    DEBUG_ABSSRCDIR
+#else
+    LOOLWSD_CONFIGDIR
+#endif
+    "/perm.xml";
 
 std::string addSlashes(const std::string &source)
 {
@@ -62,6 +77,18 @@ std::string addSlashes(const std::string &source)
     return out;
 }
 
+void removeSpecialKeys(oxoolConfig& config, const std::string& keyName)
+{
+    for (size_t i = 0; ; i++)
+    {
+        const std::string item = keyName + "[0]";
+        if (!config.has(item)) break;
+
+        config.remove(item);
+    }
+}
+//------------ end of firefly
+
 /// Process incoming websocket messages
 void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
                                        std::vector<char> &payload)
@@ -70,6 +97,7 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
     const std::string firstLine = getFirstLine(payload.data(), payload.size());
     StringTokenizer tokens(firstLine, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
     LOG_TRC("Recv: " << firstLine << " tokens " << tokens.count());
+    oxoolConfig config, permConfig;
 
     if (tokens.count() < 1)
     {
@@ -283,8 +311,8 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
     // 以 json 字串傳回設定項目
     else if (tokens[0] == "getConfig" && tokens.count() > 1)
     {
+        config.load(ConfigFile);
         std::ostringstream oss;
-        auto& config = _admin->config();
         oss << "settings {\n";
         for (size_t i=1; i < tokens.count() ; i ++)
         {
@@ -320,7 +348,6 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
                     {
                         break;
                     }
-                    
                 }
                 oss << "\n\t]\n";
                 continue;
@@ -346,25 +373,153 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
     }
     else if (tokens[0] == "setConfig" && tokens.count() > 1)
     {
+        config.load(ConfigFile);
         Poco::JSON::Object::Ptr object;
         if (JsonUtil::parseJSON(firstLine, object))
         {
-            auto& config = _admin->config();
             // 清除三種陣列
-            _admin->removeSpecialKeys("net.post_allow.host");
-            _admin->removeSpecialKeys("storage.wopi.host");
-            _admin->removeSpecialKeys("storage.webdav.host");
+            removeSpecialKeys(config, "net.post_allow.host");
+            removeSpecialKeys(config,"storage.wopi.host");
+            removeSpecialKeys(config,"storage.webdav.host");
             for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
             {
                 // it->first : key, it->second.toString() : value
                 config.setString(it->first, it->second.toString());
             }
-            _admin->saveConfig();
+            config.save(ConfigFile);
             sendTextFrame("setConfigOk");
         }
         else
         {
             sendTextFrame("setConfigNothing");
+        }
+    }
+    // 讀取選單、工具列以及右鍵選單權限
+    else if (tokens[0] == "getPermission" && tokens.count() > 1)
+    {
+        permConfig.load(PermFile);
+        std::ostringstream oss;
+        oss << "settings {\n";
+
+        for (size_t i=1; i < tokens.count() ; i ++)
+        {
+            std::string key = tokens[i];
+            if (i > 1) oss << ",\n";
+
+            oss << "\"" << key << "\": ";
+            if (key == "text.showfor" ||
+                key == "spreadsheet.showfor" ||
+                key == "presentation.showfor" ||
+                key == "toolbar.showfor")
+            {
+                oss << "[\n";
+                size_t j_cnt = 0;
+                for (size_t j=0 ; ; j++)
+                {
+                    std::string arrkey = key + "[" + std::to_string(j) + "]";
+                    if (!permConfig.has(arrkey)) break;
+
+                    j_cnt ++;
+                    if (j_cnt > 1) oss << ",\n";
+                    std::string value = permConfig.getString(arrkey, "");
+                    std::string edit = permConfig.getString(arrkey + "[@edit]", "true");
+                    std::string view = permConfig.getString(arrkey + "[@view]", "false");
+                    std::string readonly = permConfig.getString(arrkey + "[@readonly]", "false");
+                    std::string desc = permConfig.getString(arrkey + "[@desc]", "");
+                    oss << "\t {\"value\":\"" << value << "\"";
+                    oss << ",\"edit\":" << (edit == "true" ? "true" : "false");
+                    if (key != "toolbar.showfor")
+                    {
+                        oss << ",\"view\":" << (view == "true" ? "true" : "false");
+                        oss << ",\"readonly\":" << (readonly == "true" ? "true" : "false");
+                    }
+                    oss << ",\"desc\":\"" << desc << "\"";
+                    oss << "}";
+                }
+                oss << "\n\t]\n";
+                continue;   
+            }
+
+            if (permConfig.has(key))
+            {
+                std::string p_value = addSlashes(permConfig.getString(key, "")); // 讀取 value, 沒有的話預設為空字串
+                std::string p_type = permConfig.getString(key + "[@type]", ""); // 讀取 type, 沒有的話預設為空字串
+                if (p_type == "int" || p_type == "uint" || p_type == "bool" ||
+                    p_value == "true" || p_value=="false")
+                    oss << p_value;
+                else
+                    oss << "\"" << p_value << "\"";
+            }
+            else
+            {
+                oss << "null";
+            }
+        }
+        oss << "\n}\n";
+        sendTextFrame(oss.str());
+    }
+    // 設定選單、工具列以及右鍵選單權限
+    else if (tokens[0] == "setPermission" && tokens.count() > 1)
+    {
+        permConfig.load(PermFile);
+        Poco::JSON::Object::Ptr object;
+        if (JsonUtil::parseJSON(firstLine, object))
+        {
+            for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
+            {
+                // it->first : key, it->second.toString() : value
+                std::string key = it->first;
+                if (it->second.isArray())
+                {
+                    removeSpecialKeys(permConfig, key);
+                    Poco::JSON::Array::Ptr spArray = it->second.extract<Poco::JSON::Array::Ptr>();
+                    for(size_t i=0; i < spArray->size(); ++i)
+                    {
+                        std::string basicStr = key + "[" + std::to_string(i) + "]";
+                        Poco::JSON::Object::Ptr spObj = spArray->getObject(i);
+                        for (Poco::JSON::Object::ConstIterator spit = spObj->begin(); spit != spObj->end(); ++spit)
+                        {
+                            std::string writeStr;
+                            if (spit->first == "value")
+                            {
+                                writeStr = basicStr;
+                            }
+                            else if (spit->first == "edit")
+                            {
+                                writeStr = basicStr + "[@edit]";
+                            }
+                            else if (spit->first == "view")
+                            {
+                                writeStr = basicStr + "[@view]";
+                            }
+                            else if (spit->first == "readonly")
+                            {
+                                writeStr = basicStr + "[@readonly]";
+                            }
+                            else if (spit->first == "desc")
+                            {
+                                writeStr = basicStr + "[@desc]";
+                            }
+                            else
+                            {
+                                writeStr = basicStr + "[@_unknow_]";
+                            }
+                            
+                            permConfig.setString(writeStr, spit->second.toString());
+                        }
+                    }
+                }
+                else
+                {
+                    permConfig.setString(key, it->second.toString());
+                }
+            }
+            permConfig.save(PermFile);
+            sendTextFrame("setPermissionOk");
+        }
+        else
+        {
+            sendTextFrame("setPermissionNothing");
         }
     }
     else
@@ -480,25 +635,6 @@ Admin::Admin() :
     const size_t totalMem = getTotalMemoryUsage();
     LOG_TRC("Total memory used: " << totalMem << " KB.");
     _model.addMemStats(totalMem);
-
-    // Add by Firefly <firefly@ossii.com.tw>
-    _configFile =
-#if ENABLE_DEBUG
-    DEBUG_ABSSRCDIR "/" PACKAGE_NAME ".xml";
-#else
-    LOOLWSD::ConfigFile;
-#endif
-    _oxoolConfig.load(_configFile);
-
-    _permFile = 
-#if ENABLE_DEBUG
-    DEBUG_ABSSRCDIR
-#else
-    LOOLWSD_CONFIGDIR
-#endif
-    "/perm.xml";
-    _permConfig.load(_permFile);
-    //----- End of Firefly
 }
 
 Admin::~Admin()
@@ -678,24 +814,6 @@ AdminModel& Admin::getModel()
 {
     return _model;
 }
-
-// Add by Firefly
-oxoolConfig& Admin::config()
-{
-    return _oxoolConfig;
-}
-
-void Admin::removeSpecialKeys(const std::string& keyName)
-{
-    for (size_t i = 0; ; ++i)
-    {
-        const std::string host = keyName + "[" + std::to_string(i) + "]";
-        if (!_oxoolConfig.has(host)) break;
-
-        _oxoolConfig.remove(host);
-    }
-}
-//-------------end if firefly
 
 void Admin::updateLastActivityTime(const std::string& docKey)
 {

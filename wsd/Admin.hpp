@@ -138,16 +138,6 @@ public:
 
     /// Attempt a synchronous connection to a monitor with @uri @when that future comes
     void scheduleMonitorConnect(const std::string &uri, std::chrono::steady_clock::time_point when);
-    /// Add by Firefly <firefly@ossii.com.tw>
-    oxoolConfig& config();
-    ///  移除指定 Key 所屬陣列
-    void removeSpecialKeys(const std::string& keyName);
-    void saveConfig()
-    {
-        _oxoolConfig.save(_configFile);
-    }
-    
-
 
 private:
     /// Notify Forkit of changed settings.
@@ -191,13 +181,6 @@ private:
     std::atomic<int> _memStatsTaskIntervalMs;
     std::atomic<int> _netStatsTaskIntervalMs;
     DocProcSettings _defDocProcSettings;
-
-    // Add by Firefly <firefly@ossii.com.tw>
-    std::string _configFile;
-    oxoolConfig _oxoolConfig;
-    std::string _permFile;
-    oxoolConfig _permConfig;
-    //------ End of Firefly
 
     // Don't update any more frequently than this since it's excessive.
     static const int MinStatsIntervalMs;
