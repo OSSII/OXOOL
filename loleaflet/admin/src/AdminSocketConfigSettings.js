@@ -210,15 +210,12 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 						{
 						case 'net.post_allow.host':
 							addHosts(key, hosts, 'post_allow_hostlist');
-							$('#post_allow_hostAdd').click(function() {addItem(key, 'post_allow_hostlist', false);});
 							break;
 						case 'storage.wopi.host':
 							addHosts(key, hosts, 'wopi_hostlist');
-							$('#wopi_hostAdd').click(function() {addItem(key, 'wopi_hostlist', true);});
 							break;
 						case 'storage.webdav.host':
 							addHosts(key, hosts, 'webdav_hostlist');
-							$('#webdav_hostAdd').click(function() {addItem(key, 'webdav_hostlist', true);});
 							break;
 						}
 					}
@@ -258,6 +255,9 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 					}
 				}
 			}
+			$('#post_allow_hostAdd').click(function() {addItem('net.post_allow.host', 'post_allow_hostlist', false);});
+			$('#wopi_hostAdd').click(function() {addItem('storage.wopi.host', 'wopi_hostlist', true);});
+			$('#webdav_hostAdd').click(function() {addItem('storage.webdav.host', 'webdav_hostlist', true);});
 		}
 		else if (textMsg == 'setConfigOk')	// 設定更新成功
 		{
