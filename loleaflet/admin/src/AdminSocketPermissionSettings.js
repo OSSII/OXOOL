@@ -94,7 +94,7 @@ var AdminSocketPermissionSettings = AdminSocketBase.extend({
 	setPermission: function(settings)
 	{
 		this.socket.send('setPermission ' + settings);
-		console.log(settings);
+		//console.log(settings);
 	},
 
 	getArray: function(key, containerId)
@@ -136,7 +136,7 @@ var AdminSocketPermissionSettings = AdminSocketBase.extend({
 
 	onSocketMessage: function(e) {
 		var textMsg;
-		console.log(e.data);
+		//console.log(e.data);
 		if (typeof e.data === 'string')
 		{
 			textMsg = e.data;
