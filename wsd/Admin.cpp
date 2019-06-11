@@ -484,25 +484,9 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
                             {
                                 writeStr = basicStr;
                             }
-                            else if (spit->first == "edit")
-                            {
-                                writeStr = basicStr + "[@edit]";
-                            }
-                            else if (spit->first == "view")
-                            {
-                                writeStr = basicStr + "[@view]";
-                            }
-                            else if (spit->first == "readonly")
-                            {
-                                writeStr = basicStr + "[@readonly]";
-                            }
-                            else if (spit->first == "desc")
-                            {
-                                writeStr = basicStr + "[@desc]";
-                            }
                             else
                             {
-                                writeStr = basicStr + "[@_unknow_]";
+                                writeStr = basicStr + "[@" + spit->first + "]";
                             }
                             
                             permConfig.setString(writeStr, spit->second.toString());
@@ -521,6 +505,34 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
         {
             sendTextFrame("setPermissionNothing");
         }
+    }
+    //  讀取檔案內容
+    else if (tokens[0] == "getLog" && tokens.count() == 2)
+    {
+        const auto& config = Application::instance().config();
+        std::string logfile = config.getString("logging.file.property[@name=path]");
+        size_t position = std::stoul(tokens[1], nullptr, 0);
+        //Poco::FileInputStream in(logfile);
+        std::ifstream file(logfile, std::ios::binary);
+        if (file.is_open())
+        {
+            file.seekg(position, std::ios::beg);
+            std::string retStr = "";
+            char c;
+            while (file.get(c))
+            {
+                position ++;
+                retStr.append(&c, 1);
+            }
+            sendTextFrame("[ReadTo=" + std::to_string(position) + "]" + retStr);
+            file.close();
+        }
+        else
+        {
+            sendTextFrame("FileNotFound");
+        }
+
+        
     }
     else
     {
@@ -553,7 +565,11 @@ void AdminSocketHandler::sendTextFrame(const std::string& message)
     UnitWSD::get().onAdminQueryMessage(message);
     if (_isAuthenticated)
     {
-        LOG_TRC("send admin text frame '" << message << "'");
+        //  避免 Log 檔爆增
+        if (message.substr(0, 8) != "[ReadTo=")
+        {
+            LOG_TRC("send admin text frame '" << message << "'");
+        }
         sendMessage(message);
     }
     else

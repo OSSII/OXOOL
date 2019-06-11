@@ -18,6 +18,7 @@
 #include "net/WebSocketHandler.hpp"
 
 // add by Firefly <firefly@ossii.com.tw>
+//#include <Poco/FileStream.h>
 #include <Poco/Util/XMLConfiguration.h>
 #include <Poco/Dynamic/Var.h>
 #include <Poco/JSON/JSON.h>
