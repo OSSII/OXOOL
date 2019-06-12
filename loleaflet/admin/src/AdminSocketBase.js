@@ -3,7 +3,7 @@
 	Abstract class
 */
 
-/* global _ Util vex Base */
+/* global _ Util vex Base Admin */
 var AdminSocketBase = Base.extend({
 	socket: null,
 
@@ -46,3 +46,4 @@ var AdminSocketBase = Base.extend({
 		vex.dialog.alert(_('Connection error'));
 	}
 });
+Admin.SocketBase = AdminSocketBase;
