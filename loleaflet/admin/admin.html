@@ -31,6 +31,7 @@
       }
 
       Admin.Overview(host);
+      Admin.GlobalFunction(host);
     </script>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -44,11 +45,9 @@
           </button>
           <a class="navbar-brand" href="#"><script>document.write(l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole)</script></a>
         </div>
-        <!--div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="adminSettings.html"><script>document.write(l10nstrings.strSettings)</script></a></li>
-          </ul>
-        </div-->
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul id="navbar-menu" class="nav navbar-nav navbar-right"></ul>
+        </div>
       </div>
     </nav>
 
