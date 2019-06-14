@@ -4,6 +4,7 @@ var deps = {
 		src: ['src/Base.js',
 		      'src/Admin.js',
 		      'src/AdminSocketBase.js',
+		      'src/AdminSocketGlobalFunction.js',
 		      'src/AdminSocketBroker.js'],
 		desc: 'Core admin scripts infrastructure'
 	},

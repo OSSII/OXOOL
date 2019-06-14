@@ -5,7 +5,6 @@ var l10nstrings = {};
 l10nstrings.strProductName = 'OxOffice Online';
 l10nstrings.strAdminConsole = _('Admin console');
 l10nstrings.strSettings = _('Settings');
-l10nstrings.strConfigSettings = _('Config settings');
 l10nstrings.strOverview = _('Overview');
 l10nstrings.strCurrent = _('(current)');
 l10nstrings.strAnalytics = _('Analytics');
