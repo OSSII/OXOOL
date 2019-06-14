@@ -25,6 +25,9 @@ class FileServerRequestHandler
 public:
     /// Evaluate if the cookie exists, and if not, ask for the credentials.
     static bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, Poco::Net::HTTPResponse& response);
+    /// Add by Firefly <firefly@ossii.com.tw>
+    /// 將  isConfigAuthOk 改為公開 method
+    static bool isConfigAuthOk(const std::string &userProvidedUsr, const std::string &userProvidedPwd);
 
     static void handleRequest(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& message, const std::shared_ptr<StreamSocket>& socket);
 

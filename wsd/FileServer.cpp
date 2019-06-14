@@ -112,8 +112,81 @@ bool isPamAuthOk(const std::string& userProvidedUsr, const std::string& userProv
     return true;
 }
 
+}
+
+bool FileServerRequestHandler::isAdminLoggedIn(const HTTPRequest& request,
+                                               HTTPResponse &response)
+{
+    assert(LOOLWSD::AdminEnabled);
+
+    const auto& config = Application::instance().config();
+
+    NameValueCollection cookies;
+    request.getCookies(cookies);
+    try
+    {
+        const std::string jwtToken = cookies.get("jwt");
+        LOG_INF("Verifying JWT token: " << jwtToken);
+        JWTAuth authAgent("admin", "admin", "admin");
+        if (authAgent.verify(jwtToken))
+        {
+            LOG_TRC("JWT token is valid");
+            return true;
+        }
+
+        LOG_INF("Invalid JWT token, let the administrator re-login");
+    }
+    catch (const Poco::Exception& exc)
+    {
+        LOG_INF("No existing JWT cookie found");
+    }
+
+    // If no cookie found, or is invalid, let the admin re-login
+    HTTPBasicCredentials credentials(request);
+    const std::string& userProvidedUsr = credentials.getUsername();
+    const std::string& userProvidedPwd = credentials.getPassword();
+
+    // Deny attempts to login without providing a username / pwd and fail right away
+    // We don't even want to allow a password-less PAM module to be used here,
+    // or anything.
+    if (userProvidedUsr.empty() || userProvidedPwd.empty())
+    {
+        LOG_WRN("An attempt to log into Admin Console without username or password.");
+        return false;
+    }
+
+    // Check if the user is allowed to use the admin console
+    if (config.getBool("admin_console.enable_pam", "false"))
+    {
+        // use PAM - it needs the username too
+        if (!isPamAuthOk(userProvidedUsr, userProvidedPwd))
+            return false;
+    }
+    else
+    {
+        // use the hash or password in the config file
+        if (!isConfigAuthOk(userProvidedUsr, userProvidedPwd))
+            return false;
+    }
+
+    // authentication passed, generate and set the cookie
+    JWTAuth authAgent("admin", "admin", "admin");
+    const std::string jwtToken = authAgent.getAccessToken();
+
+    Poco::Net::HTTPCookie cookie("jwt", jwtToken);
+    // bundlify appears to add an extra /dist -> dist/dist/admin
+    cookie.setPath(LOOLWSD::ServiceRoot + "/loleaflet/dist/");
+    cookie.setSecure(LOOLWSD::isSSLEnabled() ||
+                     LOOLWSD::isSSLTermination());
+    response.addCookie(cookie);
+
+    return true;
+}
+
 /// Check for user / password set in loolwsd.xml.
-bool isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userProvidedPwd)
+/// Modify by Firefly <firefly@ossii.com.tw>
+/// 將  isConfigAuthOk 改為公開 method
+bool FileServerRequestHandler::isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userProvidedPwd)
 {
     const auto& config = Application::instance().config();
     const std::string& user = config.getString("admin_console.username", "");
@@ -186,77 +259,6 @@ bool isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userP
     }
 
     return pass == userProvidedPwd;
-}
-
-}
-
-bool FileServerRequestHandler::isAdminLoggedIn(const HTTPRequest& request,
-                                               HTTPResponse &response)
-{
-    assert(LOOLWSD::AdminEnabled);
-
-    const auto& config = Application::instance().config();
-
-    NameValueCollection cookies;
-    request.getCookies(cookies);
-    try
-    {
-        const std::string jwtToken = cookies.get("jwt");
-        LOG_INF("Verifying JWT token: " << jwtToken);
-        JWTAuth authAgent("admin", "admin", "admin");
-        if (authAgent.verify(jwtToken))
-        {
-            LOG_TRC("JWT token is valid");
-            return true;
-        }
-
-        LOG_INF("Invalid JWT token, let the administrator re-login");
-    }
-    catch (const Poco::Exception& exc)
-    {
-        LOG_INF("No existing JWT cookie found");
-    }
-
-    // If no cookie found, or is invalid, let the admin re-login
-    HTTPBasicCredentials credentials(request);
-    const std::string& userProvidedUsr = credentials.getUsername();
-    const std::string& userProvidedPwd = credentials.getPassword();
-
-    // Deny attempts to login without providing a username / pwd and fail right away
-    // We don't even want to allow a password-less PAM module to be used here,
-    // or anything.
-    if (userProvidedUsr.empty() || userProvidedPwd.empty())
-    {
-        LOG_WRN("An attempt to log into Admin Console without username or password.");
-        return false;
-    }
-
-    // Check if the user is allowed to use the admin console
-    if (config.getBool("admin_console.enable_pam", "false"))
-    {
-        // use PAM - it needs the username too
-        if (!isPamAuthOk(userProvidedUsr, userProvidedPwd))
-            return false;
-    }
-    else
-    {
-        // use the hash or password in the config file
-        if (!isConfigAuthOk(userProvidedUsr, userProvidedPwd))
-            return false;
-    }
-
-    // authentication passed, generate and set the cookie
-    JWTAuth authAgent("admin", "admin", "admin");
-    const std::string jwtToken = authAgent.getAccessToken();
-
-    Poco::Net::HTTPCookie cookie("jwt", jwtToken);
-    // bundlify appears to add an extra /dist -> dist/dist/admin
-    cookie.setPath(LOOLWSD::ServiceRoot + "/loleaflet/dist/");
-    cookie.setSecure(LOOLWSD::isSSLEnabled() ||
-                     LOOLWSD::isSSLTermination());
-    response.addCookie(cookie);
-
-    return true;
 }
 
 void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::MemoryInputStream& message,
