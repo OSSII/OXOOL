@@ -5,6 +5,12 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
   padding-top: 50px;
+  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif
+}
+
+.navbar-brand {
+    font-weight: bold;
+    padding: 6px 15px;
 }
 
 
