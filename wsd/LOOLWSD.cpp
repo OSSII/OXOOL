@@ -640,8 +640,8 @@ inline std::string getAdminURI(const Poco::Util::LayeredConfiguration &config)
     std::string user = config.getString("admin_console.username", "");
     std::string passwd = config.getString("admin_console.password", "");
 
-    if (user.empty() || passwd.empty())
-        return "";
+    /*if (user.empty() || passwd.empty())
+        return "";*/
 
     std::ostringstream oss;
 
