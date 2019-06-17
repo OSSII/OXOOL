@@ -31,8 +31,8 @@ function GlobalFunctionCheckAccountPassword()
 			'<input name="password" type="password" placeholder="' + _('Password') + '" required />'
 		].join(''),
 		buttons: [
-			$.extend({}, vex.dialog.buttons.YES, { text: _('Check') }),
-			$.extend({}, vex.dialog.buttons.NO, { text: _('Exit') })
+			$.extend({}, vex.dialog.buttons.YES, { text: _('Verification') }),
+			$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
 		],
 		callback: function (data) {
 			if (data)
@@ -56,7 +56,7 @@ function GlobalFunctionChangeAccountPassword()
 		].join(''),
 		buttons: [
 			$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
-			$.extend({}, vex.dialog.buttons.NO, { text: _('Exit') })
+			$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
 		],
 		callback: function (data) {
 			if (data)
@@ -110,8 +110,6 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 	onSocketOpen: function() {
 		// Base class' onSocketOpen handles authentication
 		this.base.call(this);
-		this.socket.send('subscribe settings');
-		this.socket.send('settings');
 		this.socket.send('version');
 	},
 
@@ -139,6 +137,17 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 		else if (textMsg.startsWith('setAdminPasswordOk'))
 		{
 			alert(_('The account and password have been updated and will take effect after the next service restart.'));
+		}
+		else if (textMsg.startsWith('loolserver ')) {
+			var oxoolwsdVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
+			$('#version').text(_('Version') + ' : ' + oxoolwsdVersionObj.Version);
+		}
+		else if (textMsg.startsWith('lokitversion ')) {
+			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
+			$('#lokit').text(' , ' + _('Core') + ' : ' +
+							lokitVersionObj.ProductName + ' ' +
+							lokitVersionObj.ProductVersion +
+							lokitVersionObj.ProductExtension);
 		}
 	},
 
