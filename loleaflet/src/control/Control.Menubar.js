@@ -15,11 +15,6 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:ToolsMenu'), disabled: true}
 		],
 		text:  [
-			{name: _('擴充功能'), id: 'file1', icon:'icon_file', hotkey: '', type: 'menu', menu: [
-				{name: _('插入水平線'), id: 'insertLine', type: 'action'},
-				{name: _('劃線'), id: 'drawLine', type: 'action'},
-				{name: _('複製格式'), id: 'formatPaintbrush', type: 'action'},
-			]},
 			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', hotkey: '', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download', hotkey: ''},
@@ -234,10 +229,6 @@ L.Control.Menubar = L.Control.extend({
 		],
 
 		presentation: [
-			{name: _('擴充功能'), id: 'file1', icon:'icon_file', hotkey: '', type: 'menu', menu: [
-				{name: _('複製格式'), id: 'formatPaintbrush', type: 'action'},
-				{name: _('插入頁碼'), id: 'insertPageNumber', type: 'action'},
-			]},
 			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action', icon:'fa fa-download'},
@@ -319,11 +310,6 @@ L.Control.Menubar = L.Control.extend({
 		],
 
 		spreadsheet: [
-			{name: _('擴充功能'), id: 'extend', icon:'icon_file', hotkey: '', type: 'menu', menu: [
-				{name: _('插入函式'), id: 'functionDialog', type: 'action'},
-				{name: _('條件式格式設定'), id: 'conditionalFormatDialog', type: 'action'},
-				{name: _('複製格式'), id: 'formatPaintbrush', type: 'action'},
-			]},
 			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
