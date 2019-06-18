@@ -51,14 +51,15 @@ const int Admin::DefStatsIntervalMs = 2500;
 #define pwdSaltLength 128
 #define pwdIterations 10000
 #define pwdHashLength 128
-std::string ConfigFile = 
+std::string ConfigFile =
 #if ENABLE_DEBUG
-        DEBUG_ABSSRCDIR "/" PACKAGE_NAME ".xml";
+    DEBUG_ABSSRCDIR
 #else
-        LOOLWSD::ConfigFile;
+    LOOLWSD_CONFIGDIR
 #endif
+    "/" PACKAGE_NAME ".xml";
 
-std::string PermFile = 
+std::string PermFile =
 #if ENABLE_DEBUG
     DEBUG_ABSSRCDIR
 #else
