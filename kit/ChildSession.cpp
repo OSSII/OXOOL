@@ -976,6 +976,9 @@ bool ChildSession::unoCommand(const char* /*buffer*/, int /*length*/, const std:
     const bool bNotify = (tokens[1] == ".uno:Save" ||
                           tokens[1] == ".uno:Undo" ||
                           tokens[1] == ".uno:Redo" ||
+                          // Add by Firefly <firefly@ossii.com.tw>
+                          // 亦可執行 macro:///Library.module.function([參數1, 參數2]) 巨集
+                          Util::startsWith(tokens[1], "macro://") ||
                           Util::startsWith(tokens[1], "vnd.sun.star.script:"));
 
     std::unique_lock<std::mutex> lock(_docManager.getDocumentMutex());
