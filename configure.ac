@@ -582,6 +582,7 @@ LOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(LOOLWSD_CONFIGDIR)
 
 LOOLWSD_DATADIR=${datadir}/${PACKAGE}
+AC_DEFINE_UNQUOTED([LOOLWSD_DATADIR],["$LOOLWSD_DATADIR"],[Data folder])
 AC_SUBST(LOOLWSD_DATADIR)
 
 AS_IF([test "$enable_setcap" != "no"],
@@ -611,7 +612,7 @@ AC_CONFIG_FILES([Makefile
                  test/Makefile
                  loleaflet/Makefile
                  loleaflet/npm-shrinkwrap.json
-                 loolwsd.spec
+                 oxoolwsd.spec
                  oxoolwsd.xml
                  debian/loolwsd.postinst])
 AC_CONFIG_FILES([test/run_unit.sh],[chmod +x test/run_unit.sh])

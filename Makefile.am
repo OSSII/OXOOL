@@ -12,7 +12,7 @@ SUBDIRS = gtk loleaflet
 
 else
 
-SUBDIRS = . loleaflet
+SUBDIRS = . test loleaflet
 
 export ENABLE_DEBUG
 
@@ -22,11 +22,11 @@ bin_PROGRAMS = \
 
 dist_bin_SCRIPTS = oxoolwsd-systemplate-setup
 
-man_MANS = man/loolwsd.1 \
-           man/loolforkit.1 \
-           man/loolconvert.1 \
-           man/loolconfig.1 \
-           man/loolwsd-systemplate-setup.1
+man_MANS = man/oxoolwsd.1 \
+           man/oxoolforkit.1 \
+           man/oxoolconvert.1 \
+           man/oxoolconfig.1 \
+           man/oxoolwsd-systemplate-setup.1
 
 dist_doc_DATA = wsd/README \
                 wsd/README.vars \
@@ -40,15 +40,19 @@ oxoolwsddata_DATA = discovery.xml \
 
 oxoolwsdconfigdir = @LOOLWSD_CONFIGDIR@
 
-oxoolwsdconfig_DATA = oxoolkitconfig.xcu
+oxoolwsdconfig_DATA = oxoolwsd.xml \
+		      oxoolkitconfig.xcu \
+		      etc/ca-chain.cert.pem \
+		      etc/cert.pem \
+		      etc/key.pem
 
 apache2configdir = ${sysconfdir}/apache2/conf-available
 
-apache2config_DATA = etc/apache2/loolwsd.conf
+apache2config_DATA = etc/apache2/oxoolwsd.conf
 
 nginxconfigdir = ${sysconfdir}/nginx/snippets
 
-nginxconfig_DATA = etc/nginx/loolwsd.conf
+nginxconfig_DATA = etc/nginx/oxoolwsd.conf
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -236,10 +240,10 @@ dist-hook:
 EXTRA_DIST = discovery.xml \
              favicon.ico \
              oxoolkitconfig.xcu \
-             loolwsd.spec \
+             oxoolwsd.spec \
              oxoolwsd.xml.in \
-             loolwsd.service \
-             sysconfig.loolwsd \
+             oxoolwsd.service \
+             sysconfig.oxoolwsd \
              debian/compat \
              debian/copyright \
              debian/loolwsd.cron.d \
@@ -253,8 +257,8 @@ EXTRA_DIST = discovery.xml \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
-             etc/apache2/loolwsd.conf \
-             etc/nginx/loolwsd.conf \
+             etc/apache2/oxoolwsd.conf \
+             etc/nginx/oxoolwsd.conf \
              scripts/unocommands.py \
              $(man_MANS)
 

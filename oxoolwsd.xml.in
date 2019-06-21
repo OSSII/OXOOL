@@ -5,14 +5,14 @@
 
     <allowed_languages desc="List of supported languages of Writing Aids (spell checker, grammar checker, thesaurus, hyphenation) on this instance. Allowing too many has negative effect on startup performance." default="de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru">de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru</allowed_languages>
 
-    <tile_cache_path desc="Path to a directory where to keep the tile cache." type="path" relative="false" default="@LOOLWSD_CACHEDIR@"></tile_cache_path>
-    <sys_template_path desc="Path to a template tree with shared libraries etc to be used as source for chroot jails for child processes." type="path" relative="true" default="systemplate"></sys_template_path>
+    <tile_cache_path desc="Path to a directory where to keep the tile cache." type="path" relative="false" default="@LOOLWSD_CACHEDIR@">@LOOLWSD_CACHEDIR@</tile_cache_path>
+    <sys_template_path desc="Path to a template tree with shared libraries etc to be used as source for chroot jails for child processes." type="path" relative="true" default="systemplate">@LO_PATH@/../@PACKAGE_NAME@/systemplate</sys_template_path>
     <lo_template_path desc="Path to a OxOffice installation tree to be copied (linked) into the jails for child processes. Should be on the same file system as systemplate." type="path" relative="false" default="@LO_PATH@"></lo_template_path>
-    <child_root_path desc="Path to the directory under which the chroot jails for the child processes will be created. Should be on the same file system as systemplate and lotemplate. Must be an empty directory." type="path" relative="true" default="jails"></child_root_path>
+    <child_root_path desc="Path to the directory under which the chroot jails for the child processes will be created. Should be on the same file system as systemplate and lotemplate. Must be an empty directory." type="path" relative="true" default="jails">@LO_PATH@/../@PACKAGE_NAME@/child-roots</child_root_path>
 
     <server_name desc="Hostname:port of the server running oxoolwsd. If empty, it's derived from the request." type="string" default=""></server_name>
     <client_port_number desc="Port number to listen to (default: 9980), must not be 9981">9980</client_port_number>
-    <file_server_root_path desc="Path to the directory that should be considered root for the file server. This should be the directory containing loleaflet." type="path" relative="true" default="loleaflet/../"></file_server_root_path>
+    <file_server_root_path desc="Path to the directory that should be considered root for the file server. This should be the directory containing loleaflet." type="path" relative="true" default="loleaflet/../">@LOOLWSD_DATADIR@</file_server_root_path>
 
     <memproportion desc="The maximum percentage of system memory consumed by all of the OxOffice Online, after which we start cleaning up idle documents" type="double" default="80.0"></memproportion>
     <num_prespawn_children desc="Number of child processes to keep started in advance and waiting for new clients." type="uint" default="1">1</num_prespawn_children>
