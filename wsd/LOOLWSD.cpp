@@ -2292,7 +2292,7 @@ private:
         std::string discPath = Path(Application::instance().commandPath()).parent().toString() + "discovery.xml";
         if (!File(discPath).exists())
         {
-            discPath = LOOLWSD::FileServerRoot + "/loleaflet/dist/discovery.xml";
+            discPath = LOOLWSD::FileServerRoot + "/discovery.xml";
         }
 
         InputSource input(discPath);
