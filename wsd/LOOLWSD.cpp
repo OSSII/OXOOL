@@ -2725,7 +2725,7 @@ private:
         if (!File(discoveryPath).exists())
         {
             // http://server/hosting/discovery.xml
-            discoveryPath = LOOLWSD::FileServerRoot + "/loleaflet/dist/discovery.xml";
+            discoveryPath = LOOLWSD::FileServerRoot + "/discovery.xml";
         }
 
         const std::string action = "action";
