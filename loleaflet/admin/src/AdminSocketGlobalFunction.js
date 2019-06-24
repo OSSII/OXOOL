@@ -121,7 +121,6 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 		else {
 			textMsg = '';
 		}
-		console.log(textMsg);
 
 		// 原來的帳號密碼與 oxoolwsd.xml 不符
 		if (textMsg.startsWith('ConfigAuthWrong'))
