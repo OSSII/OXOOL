@@ -2176,6 +2176,10 @@ function onAddView(e) {
 	if (e.viewId === map._docLayer._viewId) {
 		username = _('You');
 		color = '#000';
+		// Add by Firefly <firefly@ossii.com.tw>
+		var div = $(document.createElement('div'));
+		div.addClass('screen-watermark').text(e.username);
+		$('#map').prepend(div);
 	}
 
 	// Mention readonly sessions in userlist

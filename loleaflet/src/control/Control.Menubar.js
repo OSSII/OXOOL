@@ -18,10 +18,10 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', hotkey: '', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download', hotkey: ''},
-				{name: _('Share...'), id:'shareas', type: 'action'},
-				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action'},
-				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history', hotkey: ''},
-				{name: _('Download as'), id: 'downloadas', type: 'menu', icon:'fa fa-download', hotkey: '', menu: [
+				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
+				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action', icon:'fa fa-print', hotkey: 'Ctrl+P'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
+				{name: _('Download as'), id: 'downloadas', type: 'menu', icon:'fa fa-cloud-download', menu: [
 					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o', hotkey: ''},
 					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
 					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
