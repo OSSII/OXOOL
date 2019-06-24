@@ -348,6 +348,11 @@ else
     AC_MSG_ERROR(no)
 fi
 
+LOKIT_PATH="bundled/include"
+if test -z $with_lokit_path; then
+    with_lokit_path="$LOKIT_PATH"
+fi
+
 with_lokit_path=`readlink -f $with_lokit_path`
 AS_IF([test -n "$with_lokit_path"],
       [CPPFLAGS="$CPPFLAGS -I${with_lokit_path}"])
