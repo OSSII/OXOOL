@@ -46,13 +46,13 @@ oxoolwsdconfig_DATA = oxoolwsd.xml \
 		      etc/cert.pem \
 		      etc/key.pem
 
-apache2configdir = ${sysconfdir}/apache2/conf-available
+#apache2configdir = ${sysconfdir}/apache2/conf-available
 
-apache2config_DATA = etc/apache2/oxoolwsd.conf
+#apache2config_DATA = etc/apache2/oxoolwsd.conf
 
-nginxconfigdir = ${sysconfdir}/nginx/snippets
+#nginxconfigdir = ${sysconfdir}/nginx/snippets
 
-nginxconfig_DATA = etc/nginx/oxoolwsd.conf
+#nginxconfig_DATA = etc/nginx/oxoolwsd.conf
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -257,8 +257,6 @@ EXTRA_DIST = discovery.xml \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
-             etc/apache2/oxoolwsd.conf \
-             etc/nginx/oxoolwsd.conf \
              scripts/unocommands.py \
              $(man_MANS)
 
@@ -289,6 +287,7 @@ run: all @TILECACHE_PATH@ @JAILS_PATH@
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	@echo
 	./oxoolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" --o:lo_template_path="@LO_PATH@" \
+			  --o:file_server_root_path="$(abs_top_srcdir)" \
 			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
 			  --o:tile_cache_path="@TILECACHE_PATH@" \
 			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
