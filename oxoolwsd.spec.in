@@ -68,9 +68,6 @@ mkdir -p %{buildroot}/etc/pam.d
 echo "auth       required     pam_unix.so" > %{buildroot}/etc/pam.d/%{name}
 echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
-rm -rf %{buildroot}/etc/apache2
-rm -rf %{buildroot}/etc/nginx
-
 %files
 /usr/bin/oxoolwsd
 /usr/bin/%{name}-systemplate-setup
