@@ -12,6 +12,7 @@
 .vscode
 Makefile
 Makefile.in
+oxoolwsd.spec
 loolwsd.spec
 oxoolwsd.xml
 aclocal.m4
