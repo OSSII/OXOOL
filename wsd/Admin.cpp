@@ -574,8 +574,8 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
     //  讀取檔案內容
     else if (tokens[0] == "getLog" && tokens.count() == 2)
     {
-        const auto& config = Application::instance().config();
-        std::string logfile = config.getString("logging.file.property[@name=path]");
+        auto& sysconfig = Application::instance().config();
+        std::string logfile = sysconfig.getString("logging.file.property[@name=path]");
         size_t position = std::stoul(tokens[1], nullptr, 0);
         //Poco::FileInputStream in(logfile);
         std::ifstream file(logfile, std::ios::binary);

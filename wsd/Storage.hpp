@@ -151,7 +151,7 @@ public:
 
     /// To be able to set the WOPI 'is autosave?' header appropriately.
     void setIsAutosave(bool isAutosave) { _isAutosave = isAutosave; }
-    void setIsExitSave(bool isExitSave) { _isExitSave = isExitSave; }
+    void setIsExitSave(bool exitSave) { _isExitSave = exitSave; }
     bool isExitSave() const { return _isExitSave; }
 
     /// Returns the basic information about the file.
