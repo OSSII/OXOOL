@@ -15,28 +15,30 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:ToolsMenu'), disabled: true}
 		],
 		text:  [
-			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', hotkey: '', type: 'menu', menu: [
+			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
-				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download', hotkey: ''},
+				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download'},
 				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action', icon:'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
 				{name: _('Download as'), id: 'downloadas', type: 'menu', icon:'fa fa-cloud-download', menu: [
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o', hotkey: ''},
-					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
-					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
-					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action', icon: 'fa fa-file-text-o', hotkey: ''},
-					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action', icon: 'fa fa-file-word-o', hotkey: ''},
-					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action', icon: 'fa fa-file-word-o', hotkey: ''},
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o'},
+					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', icon: 'fa fa-file-pdf-o', type: 'action'},
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action'},
+					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action', icon: 'fa fa-file-text-o'},
+					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action', icon: 'fa fa-file-word-o'},
+					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action', icon: 'fa fa-file-word-o'},
 					{name: _('Rich Text (.rtf)'), id: 'downloadas-rtf', type: 'action'}]},
 				{name: _('Sign document'), id: 'signdocument', type: 'action'},
 				{type: 'separator'},
-				{uno: '.uno:SetDocumentProperties'}
+				{uno: '.uno:SetDocumentProperties'},
+				{type: 'separator'},
+				{name: _('Close document'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'text'), type: 'menu', menu: [
 				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
 				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
-				{name: _('Repair'), id: 'repair',  type: 'action', icon: 'fa fa-retweet', hotkey: ''},
+				{name: _('Repair'), id: 'repair',  type: 'action', icon: 'fa fa-retweet'},
 				{type: 'separator'},
 				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
 				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
@@ -54,24 +56,24 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:RejectAllTrackedChanges'},
 					{uno: '.uno:PreviousTrackedChange'},
 					{uno: '.uno:NextTrackedChange'}
-				]},
-				{uno: '.uno:EditStyle'}
+				]}/*,
+				{uno: '.uno:EditStyle'}*/
 			]},
 			{name: _UNO('.uno:ViewMenu', 'text'), id: 'view', type: 'menu', menu: [
-				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action', icon: 'fa fa-arrows-alt', hotkey: ''},
+				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action', icon: 'fa fa-arrows-alt'},
 				{type: 'separator'},
-				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action',icon: 'fa fa-search-plus', hotkey: ''},
-				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action', icon: 'fa fa-search-minus', hotkey: ''},
-				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-search', hotkey: ''},
+				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action',icon: 'fa fa-search-plus'},
+				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action', icon: 'fa fa-search-minus'},
+				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-search'},
 				{type: 'separator'},
 				{uno: '.uno:ControlCodes'}
 			]
 			},
 			{name: _UNO('.uno:InsertMenu', 'text'), type: 'menu', menu: [
-				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o', hotkey: ''},
-				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o', hotkey: ''},
-				{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action', icon: 'fa fa-comment'},
-				{uno: '.uno:InsertObjectChart'},
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o'},
+				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
+				{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action', icon: 'fa fa-comment-o'},
+				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
 				{type: 'separator'},
 				{name: _UNO('.uno:InsertField', 'text'), type: 'menu', menu: [
 					{uno: '.uno:InsertPageNumberField'},
@@ -94,7 +96,7 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:InsertPagebreak', icon: 'fa fa-wpforms', hotkey: 'Ctrl+Enter'},
 				{uno: '.uno:InsertColumnBreak', icon: 'fa fa-columns', hotkey: 'Ctrl+Shift+Enter'},
 				{type: 'separator'},
-				{uno: '.uno:HyperlinkDialog'},
+				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link'},
 				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
 				{name: _UNO('.uno:FormattingMarkMenu', 'text'), type: 'menu', menu: [
 					{uno: '.uno:InsertNonBreakingSpace'},
@@ -103,12 +105,12 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:InsertZWSP'},
 					{uno: '.uno:InsertZWNBSP'},
 					{uno: '.uno:InsertLRM'},
-					{uno: '.uno:InsertRLM'}]},
-				{uno: '.uno:InsertIndexesEntry'}
+					{uno: '.uno:InsertRLM'}]}/*,
+				{uno: '.uno:InsertIndexesEntry'}*/
 			]
 			},
 			{name: _UNO('.uno:FormatMenu', 'text'), type: 'menu', menu: [
-				{name: _UNO('.uno:FormatTextMenu', 'text'), type: 'menu', menu: [
+				{name: _UNO('.uno:FormatTextMenu', 'text'), icon:'fa fa-font', type: 'menu', menu: [
 					{uno: '.uno:Bold', icon: 'fa fa-bold', hotkey: 'Ctrl+B'},
 					{uno: '.uno:Italic', icon: 'fa fa-italic', hotkey: 'Ctrl+I'},
 					{uno: '.uno:Underline', icon: 'fa fa-underline', hotkey: 'Ctrl+U'},
@@ -116,8 +118,8 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:Strikeout', icon: 'fa fa-strikethrough', hotkey: 'Ctrl+Alt+5'},
 					{uno: '.uno:Overline'},
 					{type: 'separator'},
-					{uno: '.uno:SuperScript'},
-					{uno: '.uno:SubScript'},
+					{uno: '.uno:SuperScript', icon: 'fa fa-superscript', hotkey: 'Ctrl+Shift+P'},
+					{uno: '.uno:SubScript', icon: 'fa fa-subscript', hotkey: 'Ctrl+Shift+B'},
 					{uno: '.uno:SmallCaps'},
 					{type: 'separator'},
 					{uno: '.uno:Shadowed'},
@@ -136,7 +138,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('Text orientation'), type: 'menu', menu: [
 					{uno: '.uno:ParaLeftToRight'},
 					{uno: '.uno:ParaRightToLeft'}]},
-				{name: _UNO('.uno:FormatSpacingMenu', 'text'), type: 'menu', menu: [
+				{name: _UNO('.uno:FormatSpacingMenu', 'text'), icon: 'fa fa-text-height', type: 'menu', menu: [
 					{uno: '.uno:SpacePara1'},
 					{uno: '.uno:SpacePara15'},
 					{uno: '.uno:SpacePara2'},
@@ -144,23 +146,23 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:ParaspaceIncrease'},
 					{uno: '.uno:ParaspaceDecrease'},
 					{type: 'separator'},
-					{uno: '.uno:IncrementIndent'},
-					{uno: '.uno:DecrementIndent'}]},
-				{name: _UNO('.uno:TextAlign', 'text'), type: 'menu', menu: [
-					{uno: '.uno:CommonAlignLeft', icon: 'fa fa-align-left'},
-					{uno: '.uno:CommonAlignHorizontalCenter', icon: 'fa fa-align-center'},
-					{uno: '.uno:CommonAlignRight', icon: 'fa fa-align-right'},
-					{uno: '.uno:CommonAlignJustified', icon: 'fa fa-align-justify'},
+					{uno: '.uno:IncrementIndent', icon: 'fa fa-indent'},
+					{uno: '.uno:DecrementIndent', icon: 'fa fa-outdent'}]},
+				{name: _UNO('.uno:TextAlign', 'text'), icon: 'fa fa-align-justify', type: 'menu', menu: [
+					{uno: '.uno:CommonAlignLeft', icon: 'fa fa-align-left', hotkey: 'Ctrl+L'},
+					{uno: '.uno:CommonAlignHorizontalCenter', icon: 'fa fa-align-center', hotkey: 'Ctrl+E'},
+					{uno: '.uno:CommonAlignRight', icon: 'fa fa-align-right', hotkey: 'Ctrl+R'},
+					{uno: '.uno:CommonAlignJustified', icon: 'fa fa-align-justify', hotkey: 'Ctrl+J'},
 					{type: 'separator'},
 					{uno: '.uno:CommonAlignTop', icon: 'fa fa-chevron-up'},
 					{uno: '.uno:CommonAlignVerticalCenter'},
 					{uno: '.uno:CommonAlignBottom', icon: 'fa fa-chevron-down'}]},
-				{name: _UNO('.uno:FormatBulletsMenu', 'text'), type: 'menu', menu: [
-					{uno: '.uno:DefaultBullet'},
-					{uno: '.uno:DefaultNumbering'},
+				{name: _UNO('.uno:FormatBulletsMenu', 'text'), icon: 'fa fa-list', type: 'menu', menu: [
+					{uno: '.uno:DefaultBullet', icon: 'fa fa-list-ul'},
+					{uno: '.uno:DefaultNumbering', icon: 'fa fa-list-ol'},
 					{type: 'separator'},
-					{uno: '.uno:DecrementLevel'},
-					{uno: '.uno:IncrementLevel'},
+					{uno: '.uno:DecrementLevel', icon: 'fa fa-indent'},
+					{uno: '.uno:IncrementLevel', icon: 'fa fa-outdent'},
 					{uno: '.uno:DecrementSubLevels'},
 					{uno: '.uno:IncrementSubLevels'},
 					{type: 'separator'},
@@ -177,13 +179,24 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:ContinueNumbering'}]},
 				{type: 'separator'},
 				{uno: '.uno:FontDialog'},
-				{uno: '.uno:ParagraphDialog'},
+				{uno: '.uno:ParagraphDialog', icon: 'fa fa-paragraph'},
 				{uno: '.uno:OutlineBullet'},
-				{uno: '.uno:PageDialog'},
+				{uno: '.uno:PageDialog', icon: 'fa fa-file-o'},
 				{type: 'separator'},
-				{uno: '.uno:FormatColumns'},
+				{uno: '.uno:FormatColumns', icon: 'fa fa-columns'},
 				{type: 'separator'},
-				{uno: '.uno:ResetAttributes'}
+				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'},
+				{type: 'separator'},
+				{name: _('Page size'), type: 'menu', menu: [
+					{name: _('A4 portrait'), id:'a4portrait', type: 'action'},
+					{name: _('A4 landscape'), id:'a4landscape', type: 'action'},
+					{name: _('A5 portrait'), id:'a5portrait', type: 'action'},
+					{name: _('A5 landscape'), id:'a5landscape', type: 'action'},
+					{name: _('Letter portrait'), id:'letterportrait', type: 'action'},
+					{name: _('Letter landscape'), id:'letterlandscape', type: 'action'},
+					{name: _('Legal portrait'), id:'legalportrait', type: 'action'},
+					{name: _('Legal landscape'), id:'legallandscape', type: 'action'}
+				]}
 			]},
 			{name: _UNO('.uno:TableMenu', 'text'), type: 'menu', menu: [
 				{name: _UNO('.uno:TableInsertMenu', 'text'), type: 'menu', menu: [
@@ -197,19 +210,19 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:DeleteColumns'},
 					{uno: '.uno:DeleteTable'}]},
 				{name: _UNO('.uno:TableSelectMenu', 'text'), type: 'menu', menu: [
-					{uno: '.uno:SelectTable'},
+					{uno: '.uno:SelectTable', icon: 'fa fa-table'},
 					{uno: '.uno:EntireRow'},
 					{uno: '.uno:EntireColumn'},
 					{uno: '.uno:EntireCell'}]},
-				{uno: '.uno:MergeCells'},
+				{uno: '.uno:MergeCells'}/*,
 				{type: 'separator'},
-				{uno: '.uno:TableDialog'}
+				{uno: '.uno:TableDialog'}*/
 			]},
 			{name: _UNO('.uno:ToolsMenu', 'text'), id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellingAndGrammarDialog'},
 				{uno: '.uno:SpellOnline'},
-				{uno: '.uno:ThesaurusDialog'},
-				{name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
+				//{uno: '.uno:ThesaurusDialog'},
+				{name: _UNO('.uno:LanguageMenu'), icon: 'fa fa-language', type: 'menu', menu: [
 					{name: _UNO('.uno:SetLanguageSelectionMenu', 'text'), type: 'menu', menu: [
 						{name: _('None (Do not check spelling)'), id: 'noneselection', uno: '.uno:LanguageStatus?Language:string=Current_LANGUAGE_NONE'}]},
 					{name: _UNO('.uno:SetLanguageParagraphMenu', 'text'), type: 'menu', menu: [
@@ -223,7 +236,7 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:OnlineAutoFormat'}]}
 			]},
 			{name: _UNO('.uno:HelpMenu', 'text'), id: 'help', type: 'menu', menu: [
-				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o'},
+				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctel+Shift+?'},
 				{name: _('About'), id: 'about', type: 'action'}]
 			}
 		],
@@ -234,14 +247,16 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action', icon:'fa fa-download'},
 				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
-				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
+				{name: _('Download as'), id: 'downloadas', icon:'fa fa-cloud-download', type: 'menu', menu: [
 					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon:'fa fa-file-pdf-o'},
-					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action'},
 					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action', icon: 'fa fa-file-text-o'},
 					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action', icon: 'fa fa-file-powerpoint-o'},
-						{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action', icon: 'fa fa-file-powerpoint-o'}]},
+					{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action', icon: 'fa fa-file-powerpoint-o'}]},
 				{type: 'separator'},
-				{uno: '.uno:SetDocumentProperties'}
+				{uno: '.uno:SetDocumentProperties'},
+				{type: 'separator'},
+				{name: _('Close document'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'presentation'), type: 'menu', menu: [
 				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
@@ -315,15 +330,17 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
-				{name: _('Download as'), id:'downloadas', type: 'menu', menu: [
-					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action', hotkey: ''},
+				{name: _('Download as'), id:'downloadas', icon:'fa fa-cloud-download', type: 'menu', menu: [
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action'},
 					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o'},
 					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action', icon: 'fa fa-file-text-o'},
 					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action', icon:'fa fa-file-excel-o'},
-					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action', icon:'fa fa-file-excel-o'}]},
-					{name: _('CSV (.csv)'), id: 'downloadas-csv', icon:'fa fa-file-excel-o', type: 'action', hotkey: ''},
+					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action', icon:'fa fa-file-excel-o'},
+					{name: _('CSV (.csv)'), id: 'downloadas-csv', icon:'fa fa-file-excel-o', type: 'action'}]},
 				{type: 'separator'},
-				{uno: '.uno:SetDocumentProperties'}
+				{uno: '.uno:SetDocumentProperties'},
+				{type: 'separator'},
+				{name: _('Close document'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'spreadsheet'), type: 'menu', menu: [
 				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
