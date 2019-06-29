@@ -1787,7 +1787,7 @@ w2utils.event = {
         if (!edata.type) { console.log('ERROR: You must specify event type when calling .on() method of '+ this.name); return; }
         if (!handler) { console.log('ERROR: You must specify event handler function when calling .on() method of '+ this.name); return; }
         if (!$.isArray(this.handlers)) this.handlers = [];
-        console.log('add', edata);
+        // console.log('add', edata);
         this.handlers.push({ edata: edata, handler: handler });
     },
 
@@ -13086,7 +13086,8 @@ var w2prompt = function (label, title, callBack) {
                 if (scrollBox.scrollLeft() > 0) {
                     box.find('.w2ui-scroll-left').show();
                 }
-                if (scrollBox.scrollLeft() < scrollBox.find(':first').outerWidth() - scrollBox.outerWidth()) {
+                // Allow for rounding errors (on mobile, the max scrollLeft we get is 0.5 less than the real max).
+                if (scrollBox.scrollLeft() < scrollBox.find(':first').outerWidth() - scrollBox.outerWidth() - 1) {
                     box.find('.w2ui-scroll-right').show();
                 }
             }
@@ -13706,8 +13707,8 @@ var w2prompt = function (label, title, callBack) {
             html += '<td width="100%" id="tb_'+ this.name +'_right" align="right">'+ this.right +'</td>';
             html += '</tr>'+
                     '</tbody></table></div>'+
-                    '<div class="w2ui-scroll-left" onclick="var el=w2ui[\''+ this.name +'\']; if (el) el.scroll(\'left\');"></div>'+
-                    '<div class="w2ui-scroll-right" onclick="var el=w2ui[\''+ this.name +'\']; if (el) el.scroll(\'right\');"></div>';
+                    '<div class="w2ui-scroll-left" onmousedown="event.preventDefault()" onclick="var el=w2ui[\''+ this.name +'\']; if (el) el.scroll(\'left\');"></div>'+
+                    '<div class="w2ui-scroll-right" onmousedown="event.preventDefault()" onclick="var el=w2ui[\''+ this.name +'\']; if (el) el.scroll(\'right\');"></div>';
             $(this.box)
                 .attr('name', this.name)
                 .addClass('w2ui-reset w2ui-toolbar')
@@ -13790,7 +13791,8 @@ var w2prompt = function (label, title, callBack) {
                 if (scrollBox.scrollLeft() > 0) {
                     box.find('.w2ui-scroll-left').show();
                 }
-                if (scrollBox.scrollLeft() < scrollBox.find(':first').outerWidth() - scrollBox.outerWidth()) {
+                // Allow for rounding errors (on mobile, the max scrollLeft we get is 0.5 less than the real max).
+                if (scrollBox.scrollLeft() < scrollBox.find(':first').outerWidth() - scrollBox.outerWidth() - 1) {
                     box.find('.w2ui-scroll-right').show();
                 }
             }
