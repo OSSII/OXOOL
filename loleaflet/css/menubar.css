@@ -74,6 +74,19 @@ serif;
     left: 12px; /* 選單 ICON 前空白 */
 }
 
+.img-icon {
+    height: 16px;
+    width: 16px;
+    display: inline-block;
+    top: 6px;
+}
+
+.img-icon.presentation{ background: url('images/lc_dia.svg') no-repeat center !important; }
+.img-icon.insertpage{ background: url('images/lc_insertpage.svg') no-repeat center !important; }
+.img-icon.duplicatepage{ background: url('images/lc_duplicatepage.svg') no-repeat center !important; }
+.img-icon.deletepage { background: url('images/lc_deletepage.svg') no-repeat center !important; }
+
+
 /* item */
 .sm-nowrap .item {
     min-width: 12.5em;
