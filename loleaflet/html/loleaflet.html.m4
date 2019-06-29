@@ -121,6 +121,10 @@ ifelse(MOBILEAPP,[true],
       <div id="presentation-toolbar"></div>
     </div>
 
+    <div id="mobile-edit-button" style="display: none">
+      <i id="mobile-edit-button-icon" class="fa fa-pencil"></i>
+    </div>
+
     <div id="toolbar-down"></div>
 
     <!-- Remove if you don't want the About dialog -->
