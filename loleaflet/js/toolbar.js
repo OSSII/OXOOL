@@ -111,10 +111,20 @@ function onClick(e, id, item, subItem) {
 		map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');
 	}
 	else if (id === 'zoomin' && map.getZoom() < map.getMaxZoom()) {
-		map.zoomIn(1);
+		if (map.getDocType() === 'spreadsheet') {
+			map.setZoom(14); // 200%
+		}
+		else {
+			map.zoomIn(1);
+		}
 	}
 	else if (id === 'zoomout' && map.getZoom() > map.getMinZoom()) {
-		map.zoomOut(1);
+		if (map.getDocType() === 'spreadsheet') {
+			map.setZoom(10); // 100%
+		}
+		else {
+			map.zoomOut(1);
+		}
 	}
 	else if (id === 'zoomreset') {
 		map.setZoom(map.options.zoom);
