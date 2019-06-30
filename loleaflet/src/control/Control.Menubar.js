@@ -90,8 +90,8 @@ L.Control.Menubar = L.Control.extend({
 					{name: _UNO('.uno:InsertPageFooter', 'text'), type: 'menu', menu: [
 						{name: _('All'), disabled: true, id: 'insertfooter', tag: '_ALL_', uno: '.uno:InsertPageFooter?'}]}
 				]},
-				{uno: '.uno:InsertFootnote'},
-				{uno: '.uno:InsertEndnote'},
+				{uno: '.uno:InsertFootnote', hotkey: 'Ctrl+Alt+F'},
+				{uno: '.uno:InsertEndnote', hotkey: 'Ctrl+Alt+D'},
 				{type: 'separator'},
 				{uno: '.uno:InsertPagebreak', icon: 'fa fa-wpforms', hotkey: 'Ctrl+Enter'},
 				{uno: '.uno:InsertColumnBreak', icon: 'fa fa-columns', hotkey: 'Ctrl+Shift+Enter'},
