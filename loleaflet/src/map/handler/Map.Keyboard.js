@@ -261,6 +261,23 @@ L.Map.Keyboard = L.Handler.extend({
 		if (!inputEle) {
 			inputEle = this._map._clipboardContainer.activeElement();
 		}
+		// Add by Firefly
+		// 加入組字功能，補足 _onKeyDown 缺漏部份
+		if (e.type === 'compositionstart') {
+			this._isComposing = true;
+		} else if (e.type === 'compositionupdate') {
+			compEventFn('input', e.originalEvent.data);
+		} else if (e.type === 'compositionend') {
+			this._isComposing = false;
+			compEventFn('end', e.originalEvent.data);
+		}
+		if (e.type === 'textInput' && !this._keyHandled && !this._isComposing) {
+			var data = e.originalEvent.data;
+			for (var idx = 0; idx < data.length; idx++) {
+				compEventFn('input', data[idx].charCodeAt());
+			}
+		}
+		//---------------------------------
 		this.modifier = 0;
 		var shift = e.originalEvent.shiftKey ? this.keyModifier.shift : 0;
 		var ctrl = e.originalEvent.ctrlKey ? this.keyModifier.ctrl : 0;
