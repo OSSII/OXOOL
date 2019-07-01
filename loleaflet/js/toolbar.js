@@ -200,6 +200,9 @@ function onClick(e, id, item, subItem) {
 	else if (id === 'backcolor' && typeof e.color !== 'undefined') {
 		onColorPick(id, e.color)
 	}
+	else if (id === 'functionwizard') {
+		map.sendUnoCommand('.uno:FunctionDialog');
+	}
 	else if (id === 'sum') {
 		map.sendUnoCommand('.uno:AutoSum');
 		//w2ui['formulabar'].show('acceptformula', 'cancelformula');
@@ -798,6 +801,7 @@ function initMobileToolbar(toolItems) {
 			{type: 'html',  id: 'left'},
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
 			{type: 'break'},
+			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _('Function Wizard')},
 			{type: 'button',  id: 'sum',  img: 'autosum', hint: _('Sum')},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _('Function')},
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
@@ -965,6 +969,7 @@ function initNormalToolbar(toolItems) {
 			{type: 'html',  id: 'left'},
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
 			{type: 'break'},
+			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _('Function Wizard')},
 			{type: 'button',  id: 'sum',  img: 'autosum', hint: _('Sum')},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _('Function')},
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
@@ -2043,7 +2048,7 @@ function onUpdatePermission(e) {
 	}
 
 	var spreadsheetButtons = ['firstrecord', 'prevrecord', 'nextrecord', 'lastrecord', 'insertsheet'];
-	var formulaBarButtons = ['sum', 'function'];
+	var formulaBarButtons = ['functionwizard', 'sum', 'function'];
 	var presentationButtons = ['insertpage', 'duplicatepage', 'deletepage'];
 	var toolbarDownButtons = ['next', 'prev'];
 	if (e.perm === 'edit') {
