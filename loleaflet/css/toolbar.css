@@ -526,6 +526,9 @@ button.leaflet-control-search-next
 .w2ui-icon.alignhorizontal{ background: url('images/lc_alignhorizontalcenter.svg') no-repeat center !important; }
 .w2ui-icon.alignleft{ background: url('images/lc_alignleft.svg') no-repeat center !important; }
 .w2ui-icon.alignright{ background: url('images/lc_alignright.svg') no-repeat center !important; }
+.w2ui-icon.aligntop{ background: url('images/lc_aligntop.svg') no-repeat center !important; }
+.w2ui-icon.alignmiddle{ background: url('images/lc_alignmiddle.svg') no-repeat center !important; }
+.w2ui-icon.alignbottom{ background: url('images/lc_alignbottom.svg') no-repeat center !important; }
 .w2ui-icon.autosum{ background: url('images/lc_autosum.svg') no-repeat center !important; }
 .w2ui-icon.backcolor{ background: url('images/lc_backcolor.svg') no-repeat center !important; }
 .w2ui-icon.bold{ background: url('images/lc_bold.svg') no-repeat center !important; }

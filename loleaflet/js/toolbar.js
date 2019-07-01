@@ -690,6 +690,10 @@ function createToolbar() {
 				{id: 'alignhorizontalcenter', text: _UNO('.uno:CenterPara', '', true), icon: 'alignhorizontal', uno: 'AlignHorizontalCenter'},
 				{id: 'alignright', text: _UNO('.uno:RightPara', '', true), icon: 'alignright', uno: 'AlignRight'},
 				{id: 'alignblock', text: _UNO('.uno:JustifyPara', '', true), icon: 'alignblock', uno: 'AlignBlock'},
+				{type: 'break'},
+				{id: 'aligntop', text: _UNO('.uno:CommonAlignTop', '', true), icon: 'aligntop', uno: 'CommonAlignTop'},
+				{id: 'alignmiddle', text: _UNO('.uno:CommonAlignVerticalCenter', '', true), icon: 'alignmiddle', uno: 'CommonAlignVerticalCenter'},
+				{id: 'alignbottom', text: _UNO('.uno:CommonAlignBottom', '', true), icon: 'alignbottom', uno: 'CommonAlignBottom'},
 			]},
 		{type: 'menu',  id: 'linespacing',  img: 'linespacing', hint: _UNO('.uno:FormatSpacingMenu'), hidden: true,
 			items: [
