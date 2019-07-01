@@ -104,6 +104,9 @@ function onClick(e, id, item, subItem) {
 			map.toggleCommandState(item.uno);
 		}
 	}
+	else if (id === 'print') {
+		map.print();
+	}
 	else if (id === 'save') {
 		map.save(false /* An explicit save should terminate cell edit */, false /* An explicit save should save it again */);
 	}
@@ -125,6 +128,9 @@ function onClick(e, id, item, subItem) {
 		else {
 			map.zoomOut(1);
 		}
+	}
+	else if (item.scale) {
+		map.setZoom(item.scale);
 	}
 	else if (id === 'zoomreset') {
 		map.setZoom(map.options.zoom);
@@ -626,51 +632,46 @@ var fontsizesSelectValue;
 function createToolbar() {
 	var toolItems = [
 		{type: 'button',  id: 'save', img: 'save', hint: _UNO('.uno:Save')},
-		{type: 'break', id: 'savebreak'},
+		{type: 'button',  id: 'print', img: 'print', hint: _UNO('.uno:Print', 'text'), mobile: false, tablet: false},
+		{type: 'break', id: 'savebreak', mobile: false},
 		{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true, mobile: false},
 		{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true, mobile: false},
-		{type: 'button',  id: 'repair', img: 'repair', hint: _('Document repair'), disabled: true, mobile: false},
+		{type: 'button',  id: 'formatpaintbrush',  img: 'copyformat', hint: _UNO('.uno:FormatPaintbrush'), uno: 'FormatPaintbrush', mobile: false},
+		{type: 'button',  id: 'reset',  img: 'deleteformat', hint: _UNO('.uno:ResetAttributes', 'text'), uno: 'ResetAttributes', mobile: false},
 		{type: 'break', mobile: false},
-		{type: 'html',   id: 'styles', html: '<select class="styles-select"></select>', mobile: false},
+		{type: 'menu-radio', id: 'zoom', text: '100%',
+			selected: 'zoom100', hint: _('Zoom factor'),
+			mobile: false, tablet: false,
+			items: [
+				{ id: 'zoom50', text: '50%', scale: 6},
+				{ id: 'zoom60', text: '60%', scale: 7},
+				{ id: 'zoom70', text: '70%', scale: 8},
+				{ id: 'zoom85', text: '85%', scale: 9},
+				{ id: 'zoom100', text: '100%', scale: 10},
+				{ id: 'zoom120', text: '120%', scale: 11},
+				{ id: 'zoom150', text: '150%', scale: 12},
+				{ id: 'zoom175', text: '175%', scale: 13},
+				{ id: 'zoom200', text: '200%', scale: 14}
+			]
+		},
+		{type: 'break', mobile: false, tablet: false},
+		{type: 'html',   id: 'styles', html: '<select class="styles-select"></select>', desktop: true, mobile: false, tablet: false},
 		{type: 'html',   id: 'fonts', html: '<select class="fonts-select"></select>', mobile: false},
 		{type: 'html',   id: 'fontsizes', html: '<select class="fontsizes-select"></select>', mobile: false},
-		{type: 'break', mobile: false},
-		{type: 'button',  id: 'bold',  img: 'bold', hint: _UNO('.uno:Bold'), uno: 'Bold', disabled: true},
-		{type: 'button',  id: 'italic', img: 'italic', hint: _UNO('.uno:Italic'), uno: 'Italic', disabled: true},
-		{type: 'button',  id: 'underline',  img: 'underline', hint: _UNO('.uno:Underline'), uno: 'Underline', disabled: true},
-		{type: 'button',  id: 'strikeout', img: 'strikeout', hint: _UNO('.uno:Strikeout'), uno: 'Strikeout', disabled: true},
+		{type: 'break', mobile: false, tablet: false },
+		{type: 'button',  id: 'bold',  img: 'bold', hint: _UNO('.uno:Bold'), uno: 'Bold'},
+		{type: 'button',  id: 'italic', img: 'italic', hint: _UNO('.uno:Italic'), uno: 'Italic'},
+		{type: 'button',  id: 'underline',  img: 'underline', hint: _UNO('.uno:Underline'), uno: 'Underline'},
+		{type: 'button',  id: 'strikeout', img: 'strikeout', hint: _UNO('.uno:Strikeout'), uno: 'Strikeout'},
 		{type: 'break', id: 'formatbreak'},
-		{type: 'button',  id: 'insertfootnote', img: 'insertfootnote', hint: _UNO('.uno:InsertFootnote'), uno: 'InsertFootnote', mobile: false},
-		{type: 'break' , mobile:false},
 		{type: 'text-color',  id: 'fontcolor', hint: _UNO('.uno:FontColor')},
 		{type: 'color',  id: 'backcolor', hint: _UNO('.uno:BackgroundColor')},
-		{type: 'break'},
-		{type: 'button',  id: 'leftpara',  img: 'alignleft', hint: _UNO('.uno:LeftPara', '', true), uno: 'LeftPara', unosheet: 'AlignLeft', disabled: true},
-		{type: 'button',  id: 'centerpara',  img: 'alignhorizontal', hint: _UNO('.uno:CenterPara', '', true), uno: 'CenterPara', unosheet: 'AlignHorizontalCenter', disabled: true},
-		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:RightPara', '', true), uno: 'RightPara', unosheet: 'AlignRight', disabled: true},
-		{type: 'button',  id: 'justifypara',  img: 'alignblock', hint: _UNO('.uno:JustifyPara', '', true), uno: 'JustifyPara', unosheet: '', disabled: true},
-		{type: 'break',  id: 'wraptextseparator'},
-		{type: 'button',  id: 'wraptext',  img: 'wraptext', hint: _UNO('.uno:WrapText', 'spreadsheet', true), uno: 'WrapText', disabled: true},
-		{type: 'button',  id: 'togglemergecells',  img: 'togglemergecells', hint: _UNO('.uno:ToggleMergeCells', 'spreadsheet', true), uno: 'ToggleMergeCells', disabled: true},
-		{type: 'break',   id: 'break-toggle'},
-		{type: 'button',  id: 'numberformatcurrency',  img: 'numberformatcurrency', hint: _UNO('.uno:NumberFormatCurrency', 'spreadsheet', true), uno: 'NumberFormatCurrency', disabled: true},
-		{type: 'button',  id: 'numberformatpercent',  img: 'numberformatpercent', hint: _UNO('.uno:NumberFormatPercent', 'spreadsheet', true), uno: 'NumberFormatPercent', disabled: true},
-		{type: 'button',  id: 'numberformatdecimal',  img: 'numberformatdecimal', hint: _UNO('.uno:NumberFormatDecimal', 'spreadsheet', true), uno: 'NumberFormatDecimal', disabled: true},
-		{type: 'button',  id: 'numberformatdate',  img: 'numberformatdate', hint: _UNO('.uno:NumberFormatDate', 'spreadsheet', true), uno: 'NumberFormatDate', disabled: true},
-		{type: 'button',  id: 'numberformatincdecimals',  img: 'numberformatincdecimals', hint: _UNO('.uno:NumberFormatIncDecimals', 'spreadsheet', true), uno: 'NumberFormatIncDecimals', disabled: true},
-		{type: 'button',  id: 'numberformatdecdecimals',  img: 'numberformatdecdecimals', hint: _UNO('.uno:NumberFormatDecDecimals', 'spreadsheet', true), uno: 'NumberFormatDecDecimals', disabled: true},
-		{type: 'break',   id: 'break-number'},
-		{type: 'button',  id: 'sortascending',  img: 'sortascending', hint: _UNO('.uno:SortAscending', 'spreadsheet', true), uno: 'SortAscending', disabled: true},
-		{type: 'button',  id: 'sortdescending',  img: 'sortdescending', hint: _UNO('.uno:SortDescending', 'spreadsheet', true), uno: 'SortDescending', disabled: true},
-		{type: 'break',   id: 'break-align'},
-		{type: 'button',  id: 'defaultbullet',  img: 'bullet', hint: _UNO('.uno:DefaultBullet', '', true), uno: 'DefaultBullet', disabled: true},
-		{type: 'button',  id: 'defaultnumbering',  img: 'numbering', hint: _UNO('.uno:DefaultNumbering', '', true), uno: 'DefaultNumbering', disabled: true},
-		{type: 'break',   id: 'break-numbering'},
-		{type: 'button',  id: 'incrementindent',  img: 'incrementindent', hint: _UNO('.uno:IncrementIndent', '', true), uno: 'IncrementIndent', disabled: true},
-		{type: 'button',  id: 'decrementindent',  img: 'decrementindent', hint: _UNO('.uno:DecrementIndent', '', true), uno: 'DecrementIndent', disabled: true},
-		{type: 'break', id: 'incdecindent'},
-		{type: 'drop',  id: 'inserttable',  img: 'inserttable', hint: _('Insert table'), overlay: {onShow: insertTable},
-		 html: '<div id="inserttable-wrapper"><div id="inserttable-popup" class="inserttable-pop ui-widget ui-widget-content ui-corner-all"><div class="inserttable-grid"></div><div id="inserttable-status" class="loleaflet-font" style="padding: 5px;"><br/></div></div></div>'},
+		{type: 'break', mobile: false},
+		{type: 'button',  id: 'leftpara',  img: 'alignleft', hint: _UNO('.uno:LeftPara', '', true), uno: 'LeftPara', unosheet: 'AlignLeft', hidden:true, disabled: true},
+		{type: 'button',  id: 'centerpara',  img: 'alignhorizontal', hint: _UNO('.uno:CenterPara', '', true), uno: 'CenterPara', unosheet: 'AlignHorizontalCenter', hidden:true, disabled: true},
+		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:RightPara', '', true), uno: 'RightPara', unosheet: 'AlignRight', hidden:true, disabled: true},
+		{type: 'button',  id: 'justifypara',  img: 'alignblock', hint: _UNO('.uno:JustifyPara', '', true), uno: 'JustifyPara', unosheet: '', hidden:true, disabled: true},
+		{type: 'break', id: 'breakpara', hidden: true},
 		{type: 'drop',  id: 'setborderstyle',  img: 'setborderstyle', hint: _('Borders'),
 			html: '<table id="setborderstyle-grid"><tr><td class="w2ui-tb-image w2ui-icon frame01" onclick="setBorderStyle(1)"></td>' +
 			      '<td class="w2ui-tb-image w2ui-icon frame02" onclick="setBorderStyle(2)"></td><td class="w2ui-tb-image w2ui-icon frame03" onclick="setBorderStyle(3)"></td>' +
@@ -681,7 +682,36 @@ function createToolbar() {
 			      '<td class="w2ui-tb-image w2ui-icon frame12" onclick="setBorderStyle(12)"></td></tr><tr>' +
 			      '<td colspan="4" class="w2ui-tb-image w2ui-icon frame13" onclick="setBorderStyle(0)"><div id="div-frame13">' + _('More...') + '</div></td></tr></table>'
 		},
-		{type: 'drop', id: 'conditionalformaticonset',  img: 'conditionalformatdialog', hint: _UNO('.uno:ConditionalFormatMenu', 'spreadsheet', true),
+		{type: 'button',  id: 'togglemergecells',  img: 'togglemergecells', hint: _UNO('.uno:ToggleMergeCells', 'spreadsheet', true), hidden: true, uno: 'ToggleMergeCells', disabled: true},
+		{type: 'break', id: 'breakmergecells', hidden: true},
+		{type: 'menu', id: 'textalign', img: 'alignblock', hint: _UNO('.uno:TextAlign'), hidden: true,
+			items: [
+				{id: 'alignleft', text: _UNO('.uno:LeftPara', '', true), icon: 'alignleft', uno: 'AlignLeft'},
+				{id: 'alignhorizontalcenter', text: _UNO('.uno:CenterPara', '', true), icon: 'alignhorizontal', uno: 'AlignHorizontalCenter'},
+				{id: 'alignright', text: _UNO('.uno:RightPara', '', true), icon: 'alignright', uno: 'AlignRight'},
+				{id: 'alignblock', text: _UNO('.uno:JustifyPara', '', true), icon: 'alignblock', uno: 'AlignBlock'},
+			]},
+		{type: 'menu',  id: 'linespacing',  img: 'linespacing', hint: _UNO('.uno:FormatSpacingMenu'), hidden: true,
+			items: [
+					{id: 'spacepara1', text: _UNO('.uno:SpacePara1'), uno: 'SpacePara1'},
+					{id: 'spacepara15', text: _UNO('.uno:SpacePara15'), uno: 'SpacePara15'},
+					{id: 'spacepara2', text: _UNO('.uno:SpacePara2'), uno: 'SpacePara2'},
+					{type: 'break'},
+					{id: 'paraspaceincrease', text: _UNO('.uno:ParaspaceIncrease'), uno: 'ParaspaceIncrease'},
+					{id: 'paraspacedecrease', text: _UNO('.uno:ParaspaceDecrease'), uno: 'ParaspaceDecrease'}
+			]},
+		{type: 'button',  id: 'wraptext',  img: 'wraptext', hint: _UNO('.uno:WrapText', 'spreadsheet', true), hidden: true, uno: 'WrapText', disabled: true},
+		{type: 'break', id: 'breakspacing', hidden: true},
+		{type: 'button',  id: 'defaultnumbering',  img: 'numbering', hint: _UNO('.uno:DefaultNumbering', '', true), uno: 'DefaultNumbering', hidden: true, disabled: true},
+		{type: 'button',  id: 'defaultbullet',  img: 'bullet', hint: _UNO('.uno:DefaultBullet', '', true), uno: 'DefaultBullet', hidden: true, disabled: true},
+		{type: 'break', id: 'breakbullet', hidden: true},
+		{type: 'button',  id: 'incrementindent',  img: 'incrementindent', hint: _UNO('.uno:IncrementIndent', '', true), uno: 'IncrementIndent', hidden: true, disabled: true},
+		{type: 'button',  id: 'decrementindent',  img: 'decrementindent', hint: _UNO('.uno:DecrementIndent', '', true), uno: 'DecrementIndent', hidden: true, disabled: true},
+		{type: 'break', id: 'breakindent', hidden: true},
+		{type: 'button',  id: 'sortascending',  img: 'sortascending', hint: _UNO('.uno:SortAscending', 'spreadsheet', true), uno: 'SortAscending', hidden: true, disabled: true},
+		{type: 'button',  id: 'sortdescending',  img: 'sortdescending', hint: _UNO('.uno:SortDescending', 'spreadsheet', true), uno: 'SortDescending', hidden: true, disabled: true},
+		{type: 'break', id: 'breaksorting', hidden: true},
+		{type: 'drop', id: 'conditionalformaticonset',  img: 'conditionalformatdialog', hint: _UNO('.uno:ConditionalFormatMenu', 'spreadsheet', true), hidden: true,
 			html: '<table id="conditionalformatmenu-grid"><tr>' +
 				  '<td class="w2ui-tb-image w2ui-icon iconset00" onclick="setConditionalFormatIconSet(0)"/><td class="w2ui-tb-image w2ui-icon iconset01" onclick="setConditionalFormatIconSet(1)"/><td class="w2ui-tb-image w2ui-icon iconset02" onclick="setConditionalFormatIconSet(2)"/></tr><tr>' +
 				  '<td class="w2ui-tb-image w2ui-icon iconset03" onclick="setConditionalFormatIconSet(3)"/><td class="w2ui-tb-image w2ui-icon iconset04" onclick="setConditionalFormatIconSet(4)"/><td class="w2ui-tb-image w2ui-icon iconset05" onclick="setConditionalFormatIconSet(5)"/></tr><tr>' +
@@ -691,17 +721,27 @@ function createToolbar() {
 				  '<td class="w2ui-tb-image w2ui-icon iconset16" onclick="setConditionalFormatIconSet(16)"/><td class="w2ui-tb-image w2ui-icon iconset17" onclick="setConditionalFormatIconSet(17)"/><td class="w2ui-tb-image w2ui-icon iconset18" onclick="setConditionalFormatIconSet(18)"/></tr><tr>' +
 				  '<td class="w2ui-tb-image w2ui-icon iconset19" onclick="setConditionalFormatIconSet(19)"/><td class="w2ui-tb-image w2ui-icon iconset20" onclick="setConditionalFormatIconSet(20)"/><td class="w2ui-tb-image w2ui-icon iconset21" onclick="setConditionalFormatIconSet(21)"/></tr></table>'
 		},
-		{type: 'drop',  id: 'insertshapes',  img: 'basicshapes_ellipse', hint: _('Insert shapes'), overlay: {onShow: insertShapes},
-		 html: '<div id="insertshape-wrapper"><div id="insertshape-popup" class="insertshape-pop ui-widget ui-widget-content ui-corner-all"><div class="insertshape-grid"></div></div></div>'},
-		{type: 'button',  id: 'insertobjectchart',  img: 'insertobjectchart', hint: _UNO('.uno:InsertObjectChart', '', true), uno: 'InsertObjectChart'},
-		{type: 'button',  id: 'insertannotation', img: 'annotation', hint: _UNO('.uno:InsertAnnotation', '', true)},
+		{type: 'button',  id: 'numberformatcurrency',  img: 'numberformatcurrency', hint: _UNO('.uno:NumberFormatCurrency', 'spreadsheet', true), uno: 'NumberFormatCurrency', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatpercent',  img: 'numberformatpercent', hint: _UNO('.uno:NumberFormatPercent', 'spreadsheet', true), uno: 'NumberFormatPercent', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatdecimal',  img: 'numberformatdecimal', hint: _UNO('.uno:NumberFormatDecimal', 'spreadsheet', true), uno: 'NumberFormatDecimal', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatdate',  img: 'numberformatdate', hint: _UNO('.uno:NumberFormatDate', 'spreadsheet', true), uno: 'NumberFormatDate', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatincdecimals',  img: 'numberformatincdecimals', hint: _UNO('.uno:NumberFormatIncDecimals', 'spreadsheet', true), uno: 'NumberFormatIncDecimals', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatdecdecimals',  img: 'numberformatdecdecimals', hint: _UNO('.uno:NumberFormatDecDecimals', 'spreadsheet', true), uno: 'NumberFormatDecDecimals', hidden: true, disabled: true},
+		{type: 'break',   id: 'break-number', hidden: true},
+		{type: 'button',  id: 'insertannotation', img: 'insertannotation', hint: _UNO('.uno:InsertAnnotation', '', true), hidden: true},
+		{type: 'drop',  id: 'inserttable',  img: 'inserttable', hint: _('Insert table'), hidden: true, overlay: {onShow: insertTable},
+		 html: '<div id="inserttable-wrapper"><div id="inserttable-popup" class="inserttable-pop ui-widget ui-widget-content ui-corner-all"><div class="inserttable-grid"></div><div id="inserttable-status" class="loleaflet-font" style="padding: 5px;"><br/></div></div></div>'},
 		{type: 'button',  id: 'insertgraphic',  img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true)},
 		{type: 'menu', id: 'menugraphic', img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), hidden: true,
 			items: [
-				{id: 'localgraphic', text: _('Insert Local Image'), icon: 'insertgraphic'},
-				{id: 'remotegraphic', text: _UNO('.uno:InsertGraphic', '', true), icon: 'insertgraphic'},
+				{id: 'localgraphic', text: _('Insert Local Image')},
+				{id: 'remotegraphic', text: _UNO('.uno:InsertGraphic', '', true)},
 			]},
-		{type: 'button',  id: 'specialcharacter', img: 'specialcharacter', hint: _UNO('.uno:InsertSymbol', '', true), uno: '.uno:InsertSymbol'}
+		{type: 'button',  id: 'insertobjectchart',  img: 'insertobjectchart', hint: _UNO('.uno:InsertObjectChart', '', true), uno: 'InsertObjectChart'},
+		{type: 'drop',  id: 'insertshapes',  img: 'basicshapes_ellipse', hint: _('Insert shapes'), overlay: {onShow: insertShapes},
+		 html: '<div id="insertshape-wrapper"><div id="insertshape-popup" class="insertshape-pop ui-widget ui-widget-content ui-corner-all"><div class="insertshape-grid"></div></div></div>'},
+		{type: 'button',  id: 'inserthyperlink',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true},
+		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: '.uno:InsertSymbol'}
 	];
 
 	if (_useSimpleUI()) {
@@ -1397,6 +1437,9 @@ function onWopiProps(e) {
 	if (e.HideExportOption) {
 		w2ui['presentation-toolbar'].hide('presentation', 'presentationbreak');
 	}
+	if (e.HidePrintOption) {
+		w2ui['toolbar-up'].hide('print');
+	}
 	if (e.DisableCopy) {
 		$('input#formulaInput').bind('copy', function(evt) {
 			evt.preventDefault();
@@ -1434,7 +1477,20 @@ function onDocLayerInit() {
 
 	switch (docType) {
 	case 'spreadsheet':
+		toolbarUp.show('textalign', 'wraptext', 'breakspacing', 'insertannotation', 'conditionalformaticonset',
+			'numberformatcurrency', 'numberformatpercent', 'numberformatdate',
+			'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'togglemergecells', 'breakmergecells',
+			'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting');
 		toolbarUp.remove('inserttable', 'styles', 'justifypara', 'defaultbullet', 'defaultnumbering', 'break-numbering', 'insertfootnote');
+		statusbar.remove('prev', 'next', 'prevnextbreak');
+
+		toolbarUp.set('zoom', {
+			items: [
+				{ id: 'zoom100', text: '100%', scale: 10},
+				{ id: 'zoom200', text: '200%', scale: 14}
+			]
+		});
+
 		if (!_useSimpleUI()) {
 			statusbar.insert('left', [
 				{type: 'break', id:'break1'},
@@ -1473,6 +1529,9 @@ function onDocLayerInit() {
 
 		break;
 	case 'text':
+		toolbarUp.show('style', 'leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
+			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'incrementindent', 'decrementindent',
+			'breakindent', 'inserttable', 'insertannotation');
 		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset');
 		if (!_useSimpleUI()) {
 			statusbar.insert('left', [
@@ -1506,7 +1565,8 @@ function onDocLayerInit() {
 		if (!map['wopi'].HideExportOption) {
 			presentationToolbar.show('presentation', 'presentationbreak');
 		}
-		toolbarUp.remove('insertannotation', 'wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
+		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing', 'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'insertannotation', 'inserttable');
+		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
 		if (!_useSimpleUI()) {
 			statusbar.insert('left', [
 				{type: 'break', id: 'break1'},
@@ -1528,8 +1588,9 @@ function onDocLayerInit() {
 
 		break;
 	case 'drawing':
+		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
+			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable');
 		toolbarUp.remove('insertannotation', 'wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
-
 		// Remove irrelevant toolbars
 		$('#formulabar').hide();
 		$('#spreadsheet-toolbar').hide();
@@ -2271,9 +2332,26 @@ function setupToolbar(e) {
 	});
 
 	map.on('zoomend', function () {
-		var zoomRatio = map.getZoomScale(map.getZoom(), map.options.zoom);
-		var zoomPercent = Math.round(zoomRatio * 100);
-		$('#zoomlevel').html(zoomPercent + '%');
+		var zoomPercent = 100;
+		var zoomSelected = null;
+		switch (map.getZoom()) {
+		case 6:  zoomPercent =  50; zoomSelected = 'zoom50'; break;
+		case 7:  zoomPercent =  60; zoomSelected = 'zoom60'; break;
+		case 8:  zoomPercent =  70; zoomSelected = 'zoom70'; break;
+		case 9:  zoomPercent =  85; zoomSelected = 'zoom85'; break;
+		case 10: zoomPercent = 100; zoomSelected = 'zoom100'; break;
+		case 11: zoomPercent = 120; zoomSelected = 'zoom120'; break;
+		case 12: zoomPercent = 150; zoomSelected = 'zoom150'; break;
+		case 13: zoomPercent = 175; zoomSelected = 'zoom175'; break;
+		case 14: zoomPercent = 200; zoomSelected = 'zoom200'; break;
+		default:
+			var zoomRatio = map.getZoomScale(map.getZoom(), map.options.zoom);
+			zoomPercent = Math.round(zoomRatio * 100);
+			break;
+		}
+		zoomPercent += '%';
+		$('#zoomlevel').html(zoomPercent);
+		w2ui['toolbar-up'].set('zoom', {text: zoomPercent, selected: zoomSelected});
 	});
 
 	map.on('celladdress', function (e) {
