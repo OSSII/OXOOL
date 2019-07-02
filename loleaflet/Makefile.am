@@ -75,7 +75,7 @@ LOLEAFLET_CSS =\
 	$(srcdir)/plugins/draw-$(DRAW_VERSION)/dist/leaflet.draw.css \
 	$(builddir)/node_modules/jquery-contextmenu/dist/jquery.contextMenu.css \
 	$(builddir)/node_modules/vex-js/css/vex.css \
-	$(builddir)/node_modules/vex-js/css/vex-theme-plain.css \
+	$(builddir)/node_modules/vex-js/css/vex-theme-default.css \
 	$(builddir)/node_modules/vex-js/css/vex-theme-bottom-right-corner.css \
 	$(builddir)/node_modules/select2/dist/css/select2.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-core-css.css \

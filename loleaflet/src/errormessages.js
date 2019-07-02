@@ -3,7 +3,7 @@
 /* global vex _ getParameterByName */
 var errorMessages = {};
 
-vex.defaultOptions.className = 'vex-theme-plain';
+vex.defaultOptions.className = 'vex-theme-default';
 
 var lang = getParameterByName('lang');
 if (lang) {
