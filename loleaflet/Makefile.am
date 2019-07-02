@@ -83,7 +83,7 @@ LOLEAFLET_CSS =\
 	$(srcdir)/css/menubar.css \
 	$(srcdir)/mdc/css/material-components-web.css \
 	$(builddir)/fonts/font-awesome.min.css \
-	$(builddir)/node_modules/jquery-ui/themes/ui-lightness/jquery-ui.css
+	$(builddir)/node_modules/jquery-ui/themes/redmond/jquery-ui.css
 
 LOLEAFLET_CSS_DST = $(foreach file,$(LOLEAFLET_CSS),$(builddir)/dist/$(notdir $(file)))
 LOLEAFLET_CSS_M4 = $(strip $(foreach file,$(LOLEAFLET_CSS),$(notdir $(file))))
