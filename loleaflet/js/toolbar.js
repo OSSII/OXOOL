@@ -277,9 +277,6 @@ function onClick(e, id, item, subItem) {
 		}
 		map.remove();
 	}
-	else {
-		map.handleSigningClickEvent(id, item); // this handles a bunch of signing bar click events
-	}
 }
 
 function setBorders(left, right, bottom, top, horiz, vert) {
@@ -657,7 +654,6 @@ function createToolbar() {
 		{type: 'break', mobile: false},
 		{type: 'menu-radio', id: 'zoom', text: '100%',
 			selected: 'zoom100', hint: _('Zoom factor'),
-			mobile: false, tablet: false,
 			items: [
 				{ id: 'zoom50', text: '50%', scale: 6},
 				{ id: 'zoom60', text: '60%', scale: 7},
