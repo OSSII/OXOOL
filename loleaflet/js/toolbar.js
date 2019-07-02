@@ -268,6 +268,18 @@ function onClick(e, id, item, subItem) {
 		}
 		L.toggleFullScreen();
 	}
+	else if (id === 'close' || id === 'closemobile') {
+		if (window.ThisIsAMobileApp) {
+			window.webkit.messageHandlers.lool.postMessage('BYE', '*');
+		} else {
+			map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
+			map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
+		}
+		map.remove();
+	}
+	else {
+		map.handleSigningClickEvent(id, item); // this handles a bunch of signing bar click events
+	}
 }
 
 function setBorders(left, right, bottom, top, horiz, vert) {
@@ -634,6 +646,7 @@ var fontsizesSelectValue;
 
 function createToolbar() {
 	var toolItems = [
+		{type: 'button',  id: 'closemobile',  img: 'closemobile', desktop: false, mobile: false, tablet: true, hidden: true},
 		{type: 'button',  id: 'save', img: 'save', hint: _UNO('.uno:Save')},
 		{type: 'button',  id: 'print', img: 'print', hint: _UNO('.uno:Print', 'text'), mobile: false, tablet: false},
 		{type: 'break', id: 'savebreak', mobile: false},
@@ -764,7 +777,7 @@ function initMobileToolbar(toolItems) {
 		name: 'toolbar-down',
 		tooltip: 'bottom',
 		items: [
-			{type: 'button',  id: 'close',  img: 'closemobile'},
+			{type: 'button',  id: 'closemobile',  img: 'closemobile'},
 			{type: 'spacer'},
 			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
 			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
