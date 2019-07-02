@@ -55,6 +55,7 @@ var w2utils = (function ($) {
             "dateStartYear"     : 1950,       // start year for date-picker
             "dateEndYear"       : 2020        // end year for date picker
         },
+        isTouchDevice   : isTouchDevice,
         isBin           : isBin,
         isInt           : isInt,
         isFloat         : isFloat,
@@ -107,6 +108,11 @@ var w2utils = (function ($) {
                  ? true : false)
     };
     return obj;
+
+    function isTouchDevice() {
+        try{ document.createEvent("TouchEvent"); return true;}
+        catch(e){ return false; }
+    }
 
     function isBin (val) {
         var re = /^[0-1]+$/;
@@ -13714,6 +13720,11 @@ var w2prompt = function (label, title, callBack) {
                 .addClass('w2ui-reset w2ui-toolbar')
                 .html(html);
             if ($(this.box).length > 0) $(this.box)[0].style.cssText += this.style;
+            // Add by Firefly <firefly@ossii.com.tw>
+            if (w2utils.isTouchDevice()) {
+                $(this.box).find('.w2ui-scroll-wrapper').css('overflow', 'auto');
+	        }
+	        // --------------------- end of firefly
             // refresh all
             this.refresh();
             this.resize();
@@ -13786,7 +13797,8 @@ var w2prompt = function (label, title, callBack) {
             var box = $(this.box);
             box.find('.w2ui-scroll-left, .w2ui-scroll-right').hide();
             var scrollBox = box.find('.w2ui-scroll-wrapper');
-            if (scrollBox.find(':first').outerWidth() > scrollBox.outerWidth()) {
+            // Modify by Firefly <firefly@ossii.com.tw>
+            if (scrollBox.css('overflow') != 'auto' && scrollBox.find(':first').outerWidth() > scrollBox.outerWidth()) {
                 // we have overflowed content
                 if (scrollBox.scrollLeft() > 0) {
                     box.find('.w2ui-scroll-left').show();
