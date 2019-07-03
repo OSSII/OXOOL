@@ -109,6 +109,14 @@ AC_ARG_WITH([lo-builddir],
                             LibreOffice core source directory (which typically would be the same as the build
                             directory you specify with this option).]))
 
+AC_ARG_WITH([brand-name],
+            AS_HELP_STRING([--with-brand-name="Brand name"],
+                           [Specify brand name.]))
+
+AC_ARG_WITH([brand-version],
+            AS_HELP_STRING([--with-brand-version="Brand version"],
+                           [Specify brand version.]))
+
 AC_ARG_WITH([logfile],
             AS_HELP_STRING([--with-logfile=<path>],
                            [Path to the location of the logfile.]))
@@ -197,6 +205,18 @@ AC_SUBST(ENABLE_DEBUG)
 AC_SUBST(LOOLWSD_LOGLEVEL)
 AC_SUBST(LOOLWSD_LOG_TO_FILE)
 AC_SUBST(LOLEAFLET_LOGGING)
+
+if test -n "$with_brand_name" ; then
+   BRAND_NAME="$with_brand_name"
+fi
+AC_DEFINE_UNQUOTED([BRAND_NAME],["$BRAND_NAME"],[Brand name])
+AC_SUBST(BRAND_NAME)
+
+if test -n "$with_brand_version" ; then
+   BRAND_VERSION="$with_brand_version"
+fi
+AC_DEFINE_UNQUOTED([BRAND_VERSION],["$BRAND_VERSION"],[Brand version])
+AC_SUBST(BRAND_VERSION)
 
 if test -n "$with_logfile" ; then
    LOOLWSD_LOGFILE="$with_logfile"
@@ -587,7 +607,6 @@ LOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(LOOLWSD_CONFIGDIR)
 
 LOOLWSD_DATADIR=${datadir}/${PACKAGE}
-AC_DEFINE_UNQUOTED([LOOLWSD_DATADIR],["$LOOLWSD_DATADIR"],[Data folder])
 AC_SUBST(LOOLWSD_DATADIR)
 
 AS_IF([test "$enable_setcap" != "no"],

@@ -2084,6 +2084,10 @@ private:
             {
                 handleWopiDiscoveryRequest(request);
             }
+            else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == "/hosting/version")
+            {
+                handleVersionRequest(request);
+            }
             else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == CAPABILITIES_END_POINT)
             {
                 handleCapabilitiesRequest(request);
@@ -2237,6 +2241,34 @@ private:
         socket->send(oss.str());
         socket->shutdown();
         LOG_INF("Sent discovery.xml successfully.");
+    }
+
+    void handleVersionRequest(const Poco::Net::HTTPRequest& request)
+    {
+        std::string branding_name, branding_version;
+
+        LOG_DBG("Get version request: " << request.getURI());
+        std::string version = "{\"OxOOL\":\""  LOOLWSD_VERSION  "\"";
+        if ((std::string)BRAND_NAME != "")
+        {
+            version += ",\"" BRAND_NAME "\":\"" BRAND_VERSION "\"";
+        }
+        version += "}";
+
+        std::ostringstream oss;
+        oss << "HTTP/1.1 200 OK\r\n"
+            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
+            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
+            << "Content-Length: " << version.size() << "\r\n"
+            << "Content-Type: application/json\r\n"
+            << "X-Content-Type-Options: nosniff\r\n"
+            << "\r\n"
+            << version;
+
+        auto socket = _socket.lock();
+        socket->send(oss.str());
+        socket->shutdown();
+        LOG_INF("Sent version.json successfully.");
     }
 
     void handleCapabilitiesRequest(const Poco::Net::HTTPRequest& request)
