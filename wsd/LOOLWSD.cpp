@@ -2253,6 +2253,10 @@ private:
         {
             version += ",\"" BRAND_NAME "\":\"" BRAND_VERSION "\"";
         }
+        else
+        {
+            version += ",\"OSSII\":\"" LOOLWSD_VERSION "\"";
+        }
         version += "}";
 
         std::ostringstream oss;
