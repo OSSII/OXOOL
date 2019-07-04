@@ -145,7 +145,9 @@ L.Map.include({
 
 	toggleCommandState: function (unoState) {
 		if (this._permission === 'edit') {
-			if (!unoState.startsWith('.uno:')) {
+			// Modify by Firefly <firefly@ossii.com.tw>
+			// Support for commands beginning with macro://
+			if (!unoState.startsWith('.uno:') && !unoState.startsWith('macro://')) {
 				unoState = '.uno:' + unoState;
 			}
 			this.sendUnoCommand(unoState);
