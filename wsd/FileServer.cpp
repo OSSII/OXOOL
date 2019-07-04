@@ -658,6 +658,9 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request, Poco::
     Poco::replaceInPlace(preprocess, std::string("%OUT_OF_FOCUS_TIMEOUT_SECS%"), outOfFocusTimeoutSecs);
     const std::string idleTimeoutSecs= config.getString("per_view.idle_timeout_secs", "900");
     Poco::replaceInPlace(preprocess, std::string("%IDLE_TIMEOUT_SECS%"), idleTimeoutSecs);
+    // Add by Firefly <firefly@ossii.com.tw>
+    const std::string screenWatermark = config.getString("screen_watermark.enable", "false");
+    Poco::replaceInPlace(preprocess, std::string("%SCREEN_WATERMARK%"), screenWatermark);
 
     const std::string mimeType = "text/html";
 

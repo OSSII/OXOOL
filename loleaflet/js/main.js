@@ -1,6 +1,7 @@
 /* -*- js-indent-level: 8 -*- */
 /* global errorMessages getParameterByName accessToken accessTokenTTL accessHeader vex host */
 /* global serviceRoot idleTimeoutSecs outOfFocusTimeoutSecs setupToolbar*/
+/* global setupScreenWatermark */
 /*eslint indent: [error, "tab", { "outerIIFEBody": 0 }]*/
 (function (global) {
 
@@ -71,6 +72,7 @@ var map = L.map('map', {
 ////// Controls /////
 map.addControl(L.control.menubar());
 setupToolbar(map);
+setupScreenWatermark(map);
 map.addControl(L.control.scroll());
 map.addControl(L.control.alertDialog());
 map.addControl(L.control.lokDialog());

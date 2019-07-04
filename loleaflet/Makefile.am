@@ -122,6 +122,7 @@ PLUGINS_JS =\
 	jquery.mCustomScrollbar.js \
 	w2ui-1.5.rc1.js \
 	toolbar.js \
+	screenwatermark.js \
 	material-components-web.js \
 	main.js
 
@@ -185,6 +186,7 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_DST) \
 	$(builddir)/dist/global.js \
 	$(builddir)/dist/w2ui-1.5.rc1.js \
 	$(builddir)/dist/toolbar.js \
+	$(builddir)/dist/screenwatermark.js \
 	$(builddir)/dist/material-components-web.js \
 	$(builddir)/dist/main.js
 	@touch $@
@@ -210,6 +212,7 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 	$(srcdir)/js/jquery.mCustomScrollbar.js \
 	$(srcdir)/js/w2ui-1.5.rc1.js \
 	$(srcdir)/js/toolbar.js \
+	$(srcdir)/js/screenwatermark.js \
 	$(srcdir)/mdc/js/material-components-web.js \
 	$(srcdir)/js/main.js
 	@echo "Uglify loleaflet js files..."
@@ -221,6 +224,7 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 		$(srcdir)/js/w2ui-1.5.rc1.js \
 		$(builddir)/build/dist/loleaflet-src.js \
 		$(srcdir)/js/toolbar.js \
+		$(srcdir)/js/screenwatermark.js \
 		$(srcdir)/mdc/js/material-components-web.js \
 		$(srcdir)/js/main.js \
 		--source-map --output $@
@@ -308,6 +312,7 @@ pot:
 		admin/src/AdminSocketGlobalFunction.js \
 		admin/src/Util.js \
 		js/toolbar.js \
+		js/screenwatermark.js \
 		mdc/js/material-components-web.js \
 		src/control/Control.AlertDialog.js \
 		src/control/Control.ContextMenu.js \

@@ -157,6 +157,7 @@ ifelse(MOBILEAPP,[true],
       window.loleafletLogging = '%LOLEAFLET_LOGGING%';
       window.outOfFocusTimeoutSecs = %OUT_OF_FOCUS_TIMEOUT_SECS%;
       window.idleTimeoutSecs = %IDLE_TIMEOUT_SECS%;
+      window.screenWatermark = '%SCREEN_WATERMARK%';
       window.tileSize = 256;])
     </script>
   <script>

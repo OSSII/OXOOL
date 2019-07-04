@@ -133,4 +133,8 @@
     <monitors desc="Addresses of servers we connect to on start for monitoring">
     </monitors>
 
+    <screen_watermark desc="Screen watermark settings">
+        <enable desc="Enable screen watermark functionality" type="bool" default="false">false</enable>
+    </screen_watermark>
+
 </config>
