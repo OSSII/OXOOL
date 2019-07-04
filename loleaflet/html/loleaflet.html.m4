@@ -81,9 +81,15 @@ ifelse(MOBILEAPP,[true],
 
     <nav class="main-nav" role="navigation">
       <!-- Mobile menu toggle button (hamburger/x icon) -->
-      <input id="main-menu-state" type="checkbox" />
+      <input id="main-menu-state" type="checkbox" style="display: none"/>
       <ul id="main-menu" class="sm sm-simple lo-menu"></ul>
+      <div id="document-titlebar">
+         <div class="document-title">
+           <input id="document-name-input" type="text" disabled="true" style="display: none"/>
+         </div>
+       </div>
     </nav>
+
     <table id="toolbar-wrapper">
     <tr>
       <td id="toolbar-logo"></td>
@@ -95,14 +101,13 @@ ifelse(MOBILEAPP,[true],
       </td>
     </tr>
     <tr>
-      <td colspan="3" id="formulabar"></td>
+      <td colspan="3" id="formulabar" style="display: none"></td>
     </tr>
     </table>
 
     <!--%DOCUMENT_SIGNING_DIV%-->
 
     <input id="insertgraphic" type="file" style="position: fixed; top: -100em">
-    <input id="document-name-input" type="text" disabled="true"/>
 
     <div id="closebuttonwrapper">
       <div class="closebuttonimage" id="closebutton"></div>

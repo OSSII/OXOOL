@@ -85,29 +85,27 @@ w2ui-toolbar {
 }
 
 #document-name-input {
-    position: fixed;
-    z-index: 1050;
-    right: 35px;
-    top: 2px;
-    width: 200px;
-    font-size: 16px;
-    padding-right: 20px;
+    padding: 1px;
+    font-size: 14px;
     border: 1px solid transparent;
     background-color: transparent;
+    width: 200px;
 }
 
 #document-name-input.editable:focus {
     border: 1px solid #bbbbbb;
     background-color: white;
+    width: 200px;
 }
 
 #document-name-input.editable:hover {
     border: 1px solid #bbbbbb;
-    background-color: white;
+    background-color: transparent;
     background-image: url('images/lc_editdoc.svg');
     background-position: right;
     background-repeat: no-repeat;
     padding-right: 20px;
+    width: 181px;
 }
 
 #closebuttonwrapper {

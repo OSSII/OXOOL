@@ -46,6 +46,20 @@
         background-position: bottom;
 }
 
+.document-title {
+    display: table-cell;
+    vertical-align: middle;
+    height: 30px;
+    white-space: nowrap;
+}
+
+#document-titlebar {
+    position: relative;
+    display: inline-block;
+    table-layout: fixed;
+    border-spacing: 5px 0px;
+    max-height: 39px;
+}
 
 .main-nav {
     height: 30px; /* on mouseover menubar items, border emerges */
@@ -268,9 +282,10 @@ serif;
     top: 3px;
 }
 
-@media (max-width: 768px),(max-device-height: 768px) {
+@media (max-width: 767px),(max-device-height: 767px) {
     .document-logo {
-        display: none;
+	width: 35px;
+	height: 38px;
     }
 
     #document-titlebar {
@@ -288,19 +303,6 @@ serif;
 
     .main-menu-btn {
         display: inline-block;
-        position: relative;
-        top: 0px;
-    }
-
-    .main-nav {
-        position: absolute;
-        width: 100%;
-        margin: 0;
-    }
-
-    #main-menu {
-	position: relative;
-	top: 0;
     }
 
     .main-nav {
@@ -311,9 +313,29 @@ serif;
         margin: 0;
         -webkit-overflow-scrolling: touch;
         overflow: scroll;
-        z-index: 1000;
+        z-index: 1010;
     }
 
+    #main-menu {
+	position: relative;
+	top: 0;
+    }
+
+    .writer-icon-img {
+        background-size: 35px 35px;
+    }
+
+    .calc-icon-img {
+        background-size: 35px 35px;
+    }
+
+    .impress-icon-img {
+        background-size: 35px 35px;
+    }
+
+    #document-name-input {
+        display: none;
+    }
 }
 
 /* Some more lo-menu specific customizations */

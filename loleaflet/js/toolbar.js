@@ -1621,12 +1621,12 @@ function onDocLayerInit() {
 		nUsers = '%n';
 		oneUser = '1';
 		noUser = '0';
-		//$('#document-name-input').hide();
+		$('#document-name-input').hide();
 	} else {
 		nUsers = _('%n users');
 		oneUser = _('1 user');
 		noUser = _('0 users');
-		//$('#document-name-input').show();
+		$('#document-name-input').show();
 	}
 
 	updateUserListCount();
