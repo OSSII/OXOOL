@@ -109,6 +109,10 @@ AC_ARG_WITH([lo-builddir],
                             LibreOffice core source directory (which typically would be the same as the build
                             directory you specify with this option).]))
 
+AC_ARG_WITH([app-name],
+              AS_HELP_STRING([--with-app-name=<name>],
+                             [Set the user-visible name of the app you build.]))
+
 AC_ARG_WITH([brand-name],
             AS_HELP_STRING([--with-brand-name="Brand name"],
                            [Specify brand name.]))
@@ -205,6 +209,13 @@ AC_SUBST(ENABLE_DEBUG)
 AC_SUBST(LOOLWSD_LOGLEVEL)
 AC_SUBST(LOOLWSD_LOG_TO_FILE)
 AC_SUBST(LOLEAFLET_LOGGING)
+
+APP_NAME="OxOOL"
+if test -n "$with_app_name"; then
+   APP_NAME="$with_app_name"
+fi
+AC_DEFINE_UNQUOTED([APP_NAME],["$APP_NAME"],[The user-visible name of the app you build.])
+AC_SUBST(APP_NAME)
 
 if test -n "$with_brand_name" ; then
    BRAND_NAME="$with_brand_name"
