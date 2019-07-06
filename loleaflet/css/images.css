@@ -249,7 +249,7 @@
 .inserthyperlink{ background: url('images/lc_inserthyperlink.svg') no-repeat center !important; }
 .bullet{ background: url('images/lc_defaultbullet.svg') no-repeat center !important; }
 .cancel{ background: url('images/lc_cancel.svg') no-repeat center !important; }
-.color{ background: url('images/lc_color.svg') no-repeat center !important; }
+.fontcolor{ background: url('images/lc_color.svg') no-repeat center !important; }
 .decrementindent{ background: url('images/lc_decrementindent.svg') no-repeat center !important; }
 .deletepage{ background: url('images/lc_deletepage.svg') no-repeat center !important; }
 .duplicatepage{ background: url('images/lc_duplicatepage.svg') no-repeat center !important; }
