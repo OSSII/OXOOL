@@ -165,7 +165,7 @@ public:
 
     /// Writes the contents of the file back to the source.
     /// @param savedFile When the operation was saveAs, this is the path to the file that was saved.
-    virtual SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename) = 0;
+    virtual SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) = 0;
 
     static size_t getFileSize(const std::string& filename);
 
@@ -242,7 +242,7 @@ public:
 
     std::string loadStorageFileToLocal(const Authorization& auth) override;
 
-    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename) override;
+    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) override;
 
 private:
     /// True if the jailed file is not linked but copied.
@@ -279,6 +279,7 @@ public:
                      const std::string& username,
                      const std::string& userExtraInfo,
                      const std::string& watermarkText,
+                     const std::string& templateSaveAs,
                      const bool userCanWrite,
                      const std::string& postMessageOrigin,
                      const bool hidePrintOption,
@@ -292,14 +293,18 @@ public:
                      const bool userCanNotWriteRelative,
                      const bool enableInsertRemoteImage,
                      const bool enableShare,
+                     const std::string& hideUserList,
                      const TriState disableChangeTrackingShow,
                      const TriState disableChangeTrackingRecord,
                      const TriState hideChangeTrackingControls,
+                     const bool supportsRename,
+                     const bool userCanRename,
                      const std::chrono::duration<double> callDuration)
             : _userId(userid),
               _obfuscatedUserId(obfuscatedUserId),
               _username(username),
               _watermarkText(watermarkText),
+              _templateSaveAs(templateSaveAs),
               _userCanWrite(userCanWrite),
               _postMessageOrigin(postMessageOrigin),
               _hidePrintOption(hidePrintOption),
@@ -313,9 +318,12 @@ public:
               _userCanNotWriteRelative(userCanNotWriteRelative),
               _enableInsertRemoteImage(enableInsertRemoteImage),
               _enableShare(enableShare),
+             _hideUserList(hideUserList),
               _disableChangeTrackingShow(disableChangeTrackingShow),
               _disableChangeTrackingRecord(disableChangeTrackingRecord),
               _hideChangeTrackingControls(hideChangeTrackingControls),
+              _supportsRename(supportsRename),
+              _userCanRename(userCanRename),
               _callDuration(callDuration)
             {
                 _userExtraInfo = userExtraInfo;
@@ -332,6 +340,8 @@ public:
         /// In case a watermark has to be rendered on each tile.
         std::string _watermarkText;
         /// If user accessing the file has write permission
+        /// In case we want to use this file as a template, it should be first re-saved under this name (using PutRelativeFile).
+         std::string _templateSaveAs;
         bool _userCanWrite;
         /// WOPI Post message property
         std::string _postMessageOrigin;
@@ -357,12 +367,20 @@ public:
         bool _enableInsertRemoteImage;
         /// if set to true, users can access the file share functionality
         bool _enableShare;
+        /// If set to "true", user list on the status bar will be hidden
+        /// If set to "mobile" | "tablet" | "desktop", will be hidden on a specified device
+        /// (may be joint, delimited by commas eg. "mobile,tablet")
+        std::string _hideUserList;
         /// If we should disable change-tracking visibility by default (meaningful at loading).
         TriState _disableChangeTrackingShow;
         /// If we should disable change-tracking ability by default (meaningful at loading).
         TriState _disableChangeTrackingRecord;
         /// If we should hide change-tracking commands for this user.
         TriState _hideChangeTrackingControls;
+        /// If WOPI host supports rename
+        bool _supportsRename;
+        /// If user is allowed to rename the document
+        bool _userCanRename;
 
         /// Time it took to call WOPI's CheckFileInfo
         std::chrono::duration<double> _callDuration;
@@ -377,7 +395,7 @@ public:
     /// uri format: http://server/<...>/wopi*/files/<id>/content
     std::string loadStorageFileToLocal(const Authorization& auth) override;
 
-    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename) override;
+    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) override;
 
     /// Total time taken for making WOPI calls during load
     std::chrono::duration<double> getWopiLoadDuration() const { return _wopiLoadDuration; }
@@ -407,7 +425,7 @@ public:
 
     std::string loadStorageFileToLocal(const Authorization& auth) override;
 
-    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename) override;
+    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) override;
 
 private:
     std::unique_ptr<AuthBase> _authAgent;

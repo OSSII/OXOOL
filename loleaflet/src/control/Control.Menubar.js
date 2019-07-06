@@ -18,7 +18,7 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download'},
-				//{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
+				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action', icon:'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
 				{name: _('Download as'), id: 'downloadas', type: 'menu', icon:'fa fa-cloud-download', menu: [
@@ -238,13 +238,15 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:HelpMenu', 'text'), id: 'help', type: 'menu', menu: [
 				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctel+Shift+?'},
 				{name: _('About'), id: 'about', type: 'action'}]
-			}
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', mobile: false, tablet: false}
 		],
 
 		presentation: [
 			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action', icon:'fa fa-download'},
+				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{name: _('Download as'), id: 'downloadas', icon:'fa fa-cloud-download', type: 'menu', menu: [
@@ -325,13 +327,15 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:HelpMenu', 'presentation'), id: 'help', type: 'menu', menu: [
 				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctrl+Shift+?'},
 				{name: _('About'), id: 'about', type: 'action'}]
-			}
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', mobile: false, tablet: false}
 		],
 
 		spreadsheet: [
 			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
+				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
 				{name: _('Download as'), id:'downloadas', icon:'fa fa-cloud-download', type: 'menu', menu: [
@@ -428,7 +432,8 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:HelpMenu', 'spreadsheet'), id: 'help', type: 'menu', menu: [
 				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctrl+Shift+?'},
 				{name: _('About'), id: 'about', type: 'action'}]
-			}
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', mobile: false, tablet: false}
 		],
 
 		commandStates: {},
@@ -776,7 +781,7 @@ L.Control.Menubar = L.Control.extend({
 			this._map.showLOAboutDialog();
 		} else if (id === 'keyboard-shortcuts') {
 			this._map.showLOKeyboardHelp();
-		} else if (id === 'rev-history') {
+		} else if (revHistoryEnabled && (id === 'rev-history' || id === 'last-mod')) {
 			// if we are being loaded inside an iframe, ask
 			// our host to show revision history mode
 			this._map.fire('postMessage', {msgId: 'rev-history', args: {Deprecated: true}});

@@ -85,7 +85,7 @@ ifelse(MOBILEAPP,[true],
       <ul id="main-menu" class="sm sm-simple lo-menu"></ul>
       <div id="document-titlebar">
          <div class="document-title">
-           <input id="document-name-input" type="text" disabled="true" style="display: none"/>
+           <input id="document-name-input" type="text" spellcheck="false" disabled="true" style="display: none"/>
          </div>
        </div>
     </nav>

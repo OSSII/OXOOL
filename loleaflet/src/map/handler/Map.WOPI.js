@@ -22,7 +22,10 @@ L.Map.WOPI = L.Handler.extend({
 	UserCanNotWriteRelative: true,
 	EnableInsertRemoteImage: false,
 	EnableShare: false,
+	HideUserList: null,
 	CallPythonScriptSource: null,
+	SupportsRename: false,
+	UserCanRename: false,
 
 	_appLoadedConditions: {
 		docloaded: false,
@@ -78,7 +81,11 @@ L.Map.WOPI = L.Handler.extend({
 		this.DisableInactiveMessages = !!wopiInfo['DisableInactiveMessages'];
 		this.UserCanNotWriteRelative = !!wopiInfo['UserCanNotWriteRelative'];
 		this.EnableInsertRemoteImage = !!wopiInfo['EnableInsertRemoteImage'];
+		this.SupportsRename = !!wopiInfo['SupportsRename'];
+		this.UserCanRename = !!wopiInfo['UserCanRename'];
 		this.EnableShare = !!wopiInfo['EnableShare'];
+		if (wopiInfo['HideUserList'])
+			this.HideUserList = wopiInfo['HideUserList'].split(',');
 
 		this._map.fire('postMessage', {
 			msgId: 'App_LoadingStatus',
@@ -89,6 +96,11 @@ L.Map.WOPI = L.Handler.extend({
 				}
 			}
 		});
+
+		if ('TemplateSaveAs' in wopiInfo) {
+			this._map.showBusy(_('Creating new file from template...'), false);
+			this._map.saveAs(wopiInfo['TemplateSaveAs']);
+		}
 	},
 
 	resetAppLoaded: function() {
@@ -124,7 +136,7 @@ L.Map.WOPI = L.Handler.extend({
 	},
 
 	_postMessageListener: function(e) {
-		if (!window.WOPIPostmessageReady || (e.origin !== window.parent.origin)) {
+		if (!window.WOPIPostmessageReady) {
 			return;
 		}
 

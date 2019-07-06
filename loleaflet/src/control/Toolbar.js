@@ -81,8 +81,12 @@ L.Map.include({
 	},
 
 	print: function () {
-		this.showBusy(_('Downloading...'), false);
-		this.downloadAs('print.pdf', 'pdf', null, 'print');
+		if (window.ThisIsTheiOSApp) {
+			window.webkit.messageHandlers.lool.postMessage('PRINT', '*');
+		} else {
+			this.showBusy(_('Downloading...'), false);
+			this.downloadAs('print.pdf', 'pdf', null, 'print');
+		}
 	},
 
 	saveAs: function (url, format, options) {
@@ -101,6 +105,14 @@ L.Map.include({
 			'url=wopi:' + encodeURIComponent(url) + ' ' +
 			'format=' + format + ' ' +
 			'options=' + options);
+	},
+
+	renameFile: function (filename) {
+		if (!filename) {
+			return;
+		}
+		this.showBusy(_('Renaming...'), false);
+		this._socket.sendMessage('renamefile filename=' + encodeURIComponent(filename));
 	},
 
 	applyStyle: function (style, familyName) {

@@ -305,6 +305,11 @@ L.Socket = L.Class.extend({
 			this._map.fire('wopiprops', wopiInfo);
 			return;
 		}
+		else if (textMsg.startsWith('lastmodtime: ')) {
+			var time = textMsg.substring(textMsg.indexOf(' '));
+			this._map.updateModificationIndicator(time);
+			return;
+		}
 		else if (textMsg.startsWith('commandresult: ')) {
 			var commandresult = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
 			if (commandresult['command'] === 'savetostorage' && commandresult['success']) {
@@ -474,6 +479,9 @@ L.Socket = L.Class.extend({
 			}
 			else if (command.errorKind === 'savefailed') {
 				storageError = errorMessages.storage.savefailed;
+			}
+			else if (command.errorKind === 'renamefailed') {
+				storageError = errorMessages.storage.renamefailed;
 			}
 			else if (command.errorKind === 'saveunauthorized') {
 				storageError = errorMessages.storage.saveunauthorized;
@@ -675,7 +683,7 @@ L.Socket = L.Class.extend({
 					', last: ' + (command.rendercount - this._map._docLayer._debugRenderCount));
 			this._map._docLayer._debugRenderCount = command.rendercount;
 		}
-		else if (textMsg.startsWith('saveas:')) {
+		else if (textMsg.startsWith('saveas:') || textMsg.startsWith('renamefile:')) {
 			this._map.hideBusy();
 			if (command !== undefined && command.url !== undefined && command.url !== '') {
 				this.close();

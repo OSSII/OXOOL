@@ -3,7 +3,7 @@
  * L.Map is the central class of the API - it is used to create a map.
  */
 
-/* global vex $ _ */
+/* global timeago vex revHistoryEnabled $ _ */
 L.Map = L.Evented.extend({
 
 	options: {
@@ -115,8 +115,9 @@ L.Map = L.Evented.extend({
 
 			if (e.perm === 'readonly') {
 				L.DomUtil.addClass(this._container.parentElement, 'readonly');
-				L.DomUtil.addClass(L.DomUtil.get('logo'), 'readonly');
-				L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
+				if (!L.Browser.mobile) {
+					L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
+				}
 				L.DomUtil.addClass(L.DomUtil.get('main-menu'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('spreadsheet-row-column-frame'), 'readonly');
@@ -178,6 +179,7 @@ L.Map = L.Evented.extend({
 				// remove the comments and changes
 				this._docLayer.clearAnnotations();
 			}
+			this.initializeModificationIndicator();
 		}, this);
 	},
 
@@ -238,6 +240,51 @@ L.Map = L.Evented.extend({
 		}
 	},
 
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 初始化最近修改時間 html 位置
+	initializeModificationIndicator: function() {
+		var lastModButton = L.DomUtil.get('menu-last-mod');
+		if (lastModButton !== null && lastModButton !== undefined
+			&& lastModButton.firstChild.innerHTML !== null
+			&& lastModButton.firstChild.childElementCount == 0) {
+			var mainSpan = document.createElement('span');
+			var label = document.createTextNode(_('Last modification'));
+			var separator = document.createTextNode(': ');
+			this.lastModIndicator = document.createElement('span');
+			mainSpan.appendChild(label);
+			mainSpan.appendChild(separator);
+			mainSpan.appendChild(this.lastModIndicator);
+
+			this.updateModificationIndicator(this._lastmodtime);
+
+			// Replace menu button body with new content
+			lastModButton.firstChild.innerHTML = '';
+			lastModButton.firstChild.appendChild(mainSpan);
+			if (revHistoryEnabled) {
+				L.DomUtil.setStyle(lastModButton, 'cursor', 'pointer');			}
+		}
+	},
+
+	// 紀錄最後更新時間
+	updateModificationIndicator: function(newModificationTime) {
+		this._lastmodtime = newModificationTime;
+		if (this.lastModIndicator !== null && this.lastModIndicator !== undefined) {
+			// Get locale
+			var special = [ 'bn_IN', 'hi_IN', 'id_ID', 'nb_NO', 'nn_NO', 'pt_BR', 'zh_CN', 'zh_TW'];
+			var locale = String.locale;
+			locale = locale.replace('-', '_');
+			if ($.inArray(locale, special) < 0) {
+				if (locale.indexOf('_') > 0) {
+					locale = locale.substring(0, locale.indexOf('_'));
+				}
+			}
+			// Real-time auto update
+			this.lastModIndicator.setAttribute('datetime', newModificationTime);
+			timeago().render(this.lastModIndicator, locale);
+		}
+	},
+	// --------- End of Firefly
+	
 	showBusy: function(label, bar) {
 		// If document is already loaded, ask the toolbar widget to show busy
 		// status on the bottom statusbar
