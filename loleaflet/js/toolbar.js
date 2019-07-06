@@ -9,8 +9,18 @@
 
 var map;
 
-function _useSimpleUI() {
+// has to match small screen size requirement
+function _inMobileMode() {
 	return L.Browser.mobile && $('#main-menu').css('display') === 'none';
+}
+
+// mobile device with big screen size
+function _inTabletMode() {
+	return L.Browser.mobile && !_inMobileMode();
+}
+
+function _inDesktopMode() {
+	return !L.Browser.mobile;
 }
 
 function onDelete(e) {
@@ -205,8 +215,6 @@ function onClick(e, id, item, subItem) {
 	}
 	else if (id === 'sum') {
 		map.sendUnoCommand('.uno:AutoSum');
-		//w2ui['formulabar'].show('acceptformula', 'cancelformula');
-		//w2ui['formulabar'].hide('sum', 'function');
 	}
 	else if (id === 'function') {
 		L.DomUtil.get('formulaInput').value = '=';
@@ -667,9 +675,42 @@ function createToolbar() {
 			]
 		},
 		{type: 'break', mobile: false, tablet: false},
-		{type: 'html',   id: 'styles', html: '<select class="styles-select"></select>', desktop: true, mobile: false, tablet: false},
-		{type: 'html',   id: 'fonts', html: '<select class="fonts-select"></select>', mobile: false},
-		{type: 'html',   id: 'fontsizes', html: '<select class="fontsizes-select"></select>', mobile: false},
+		{type: 'html', id: 'styles',
+			html: '<select class="styles-select"><option>' + _('Default Style') + '</option></select>',
+			onRefresh: function (edata) {
+				if (!edata.item.html) {
+					edata.isCancelled = true;
+				} else {
+					$.extend(edata, { onComplete: function (e) {
+						$('.styles-select').select2();
+						e.item.html = undefined;
+					}});
+				}
+			}, hidden: true, desktop: true, mobile: false, tablet: false},
+		{type: 'html', id: 'fonts',
+			html: '<select class="fonts-select"><option>Liberation Sans</option></select>',
+			onRefresh: function (edata) {
+				if (!edata.item.html) {
+					edata.isCancelled = true;
+				} else {
+					$.extend(edata, { onComplete: function (e) {
+						$('.fonts-select').select2();
+						e.item.html = undefined;
+					}});
+				}
+			}, mobile: false},
+		{type: 'html',   id: 'fontsizes',
+			html: '<select class="fontsizes-select"><option>14</option></select>',
+			onRefresh: function (edata) {
+				if (!edata.item.html) {
+					edata.isCancelled = true;
+				} else {
+					$.extend(edata, { onComplete: function (e) {
+						$('.fontsizes-select').select2({ dropdownAutoWidth: true, width: 'auto'});
+						e.item.html = undefined;
+					}});
+				}
+			}, mobile: false},
 		{type: 'break', mobile: false, tablet: false },
 		{type: 'button',  id: 'bold',  img: 'bold', hint: _UNO('.uno:Bold'), uno: 'Bold'},
 		{type: 'button',  id: 'italic', img: 'italic', hint: _UNO('.uno:Italic'), uno: 'Italic'},
@@ -760,7 +801,7 @@ function createToolbar() {
 		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: '.uno:InsertSymbol'}
 	];
 
-	if (_useSimpleUI()) {
+	if (_inMobileMode()) {
 		initMobileToolbar(toolItems);
 	} else {
 		initNormalToolbar(toolItems);
@@ -890,11 +931,12 @@ function initMobileToolbar(toolItems) {
 				} else {
 					toolItem.css('display', '');
 				}
+				updateCommandValues(edata.target);
 			}
 
-			if (map.getDocType() === 'presentation') {
+			if (edata.target === 'toolbar-up' && map.getDocType() === 'presentation') {
 				// Fill the style select box if not yet filled
-				if ($('.styles-select')[0] && $('.styles-select')[0].length === 0) {
+				if ($('.styles-select')[0] && $('.styles-select')[0].length === 1) {
 					var data = [''];
 					// Inserts a separator element
 					data = data.concat({text: '\u2500\u2500\u2500\u2500\u2500\u2500', disabled: true});
@@ -911,11 +953,11 @@ function initMobileToolbar(toolItems) {
 				}
 			}
 
-			updateCommandValues();
+			if (edata.target === 'inserttable')
+				insertTable();
 
-			insertTable();
-
-			insertShapes();
+			if (edata.target === 'insertshapes')
+				insertShapes();
 		}
 	});
 
@@ -938,8 +980,8 @@ function initNormalToolbar(toolItems) {
 			onClick(e, e.target);
 			hideTooltip(this, e.target);
 		},
-		onRefresh: function() {
-			if (map.getDocType() === 'presentation') {
+		onRefresh: function(event) {
+			if (event.target === 'toolbar-up' && map.getDocType() === 'presentation') {
 				// Fill the style select box if not yet filled
 				if ($('.styles-select')[0] && $('.styles-select')[0].length === 1) {
 					var data = [''];
@@ -958,11 +1000,23 @@ function initNormalToolbar(toolItems) {
 				}
 			}
 
-			updateCommandValues();
+			if ((event.target === 'styles' || event.target === 'fonts' || event.target === 'fontsizes') && event.item) {
+				var toolItem = $(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(event.item.id));
+				if ((_inDesktopMode() && event.item.desktop == false)
+					|| (_inTabletMode() && event.item.tablet == false)) {
+					toolItem.css('display', 'none');
+				} else {
+					toolItem.css('display', '');
+				}
 
-			insertTable();
+				updateCommandValues(event.target);
+			}
 
-			insertShapes();
+			if (event.target === 'inserttable')
+				insertTable();
+
+			if (event.target === 'insertshapes')
+				insertShapes();
 		}
 	});
 
@@ -1523,7 +1577,7 @@ function onDocLayerInit() {
 			]
 		});
 
-		if (!_useSimpleUI()) {
+		if (!_inMobileMode()) {
 			statusbar.insert('left', [
 				{type: 'break', id:'break1'},
 				{type: 'html',  id: 'StatusDocPos',
@@ -1554,7 +1608,9 @@ function onDocLayerInit() {
 					{ id: '1', text: _('None')}
 				]}
 			]);
+			$('#spreadsheet-toolbar').show();
 		}
+		$('#formulabar').show();
 
 		// Remove irrelevant toolbars
 		$('#presentation-toolbar').hide();
@@ -1565,7 +1621,7 @@ function onDocLayerInit() {
 			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'incrementindent', 'decrementindent',
 			'breakindent', 'inserttable', 'insertannotation');
 		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset');
-		if (!_useSimpleUI()) {
+		if (!_inMobileMode()) {
 			statusbar.insert('left', [
 				{type: 'break', id: 'break1'},
 				{type: 'html',  id: 'StatePageNumber',
@@ -1599,7 +1655,7 @@ function onDocLayerInit() {
 		}
 		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing', 'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'insertannotation', 'inserttable');
 		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
-		if (!_useSimpleUI()) {
+		if (!_inMobileMode()) {
 			statusbar.insert('left', [
 				{type: 'break', id: 'break1'},
 				{
@@ -1649,6 +1705,7 @@ function onDocLayerInit() {
 }
 
 function onCommandStateChanged(e) {
+	console.log('onCommandStateChanged : ', e)
 	var toolbar = w2ui['toolbar-up'];
 	var statusbar = w2ui['toolbar-down'];
 	var commandName = e.commandName;
@@ -1841,7 +1898,7 @@ function onCommandStateChanged(e) {
 	// If in non-edit mode, will be taken care of when permission is changed to 'edit'
 	else if (map._permission === 'edit' && (state === 'enabled' || state === 'disabled')) {
 		var toolbarUp = toolbar;
-		if (_useSimpleUI()) {
+		if (_inMobileMode()) {
 			toolbarUp = statusbar;
 		}
 		if (state === 'enabled') {
@@ -1853,11 +1910,11 @@ function onCommandStateChanged(e) {
 	}
 }
 
-function updateCommandValues() {
+function updateCommandValues(targetName) {
 	var data = [];
 	// 1) For .uno:StyleApply
 	// we need an empty option for the place holder to work
-	if ($('.styles-select option').length === 0) {
+	if (targetName === 'styles' && $('.styles-select option').length === 1) {
 		var styles = [];
 		var topStyles = [];
 		var commandValues = map.getToolbarCommandValues('.uno:StyleApply');
@@ -1923,9 +1980,10 @@ function updateCommandValues() {
 		});
 		$('.styles-select').val(stylesSelectValue).trigger('change');
 		$('.styles-select').on('select2:select', onStyleSelect);
+		w2ui['toolbar-up'].resize();
 	}
 
-	if ($('.fonts-select option').length === 0) {
+	if (targetName === 'fonts' && $('.fonts-select option').length === 1) {
 		// 2) For .uno:CharFontName
 		commandValues = map.getToolbarCommandValues('.uno:CharFontName');
 		if (typeof commandValues === 'undefined') {
@@ -1945,31 +2003,21 @@ function updateCommandValues() {
 		});
 		$('.fonts-select').on('select2:select', onFontSelect);
 		$('.fonts-select').val(fontsSelectValue).trigger('change');
+		w2ui['toolbar-up'].resize();
 	}
 
-	if ($('.fontsizes-select option').length === 0) {
+	if (targetName === 'fontsizes' && $('.fontsizes-select option').length === 1) {
 		$('.fontsizes-select').select2({
 			placeholder: ' ',
 			data: []
 		});
 
-		$('.fontsizes-select').on('select2:open', function() {
-			$('input[type=search][class=select2-search__field]').keypress(function(e) {
-				if ('Backspace' == e.key || 'Delete' == e.key || 'ArrowLeft' == e.key || 'ArrowRight' == e.key || '.' == e.key)
-					return true;
-				if (' ' == e.key)
-					return false;
-				/* 驗證輸入的字型大小是否數字 */
-				if (isNaN(e.key)) {
-					return false;
-				}
-			});
-		});
 		$('.fontsizes-select').on('select2:select', onFontSizeSelect);
 		if (fontsSelectValue) {
 			updateFontSizeList(fontsSelectValue);
 		}
 		$('.fontsizes-select').val(fontsizesSelectValue).trigger('change');
+		w2ui['toolbar-up'].resize();
 	}
 }
 
