@@ -12,7 +12,7 @@ SUBDIRS = gtk loleaflet
 
 else
 
-SUBDIRS = . loleaflet
+SUBDIRS = . test loleaflet
 
 export ENABLE_DEBUG
 
