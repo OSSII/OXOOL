@@ -28,7 +28,7 @@ L.Control.ContextMenu = L.Control.extend({
 					  'WrapMenu', 'WrapOff', 'WrapOn', 'WrapIdeal', 'WrapLeft', 'WrapRight', 'WrapThrough',
 					  'WrapThroughTransparent', 'WrapContour', 'WrapAnchorOnly',
 					  'ArrangeFrameMenu', 'ArrangeMenu', 'BringToFront', 'ObjectForwardOne', 'ObjectBackOne', 'SendToBack',
-					  'RotateMenu', 'RotateLeft', 'RotateRight', 'FormatParintbrush'],
+					  'RotateMenu', 'RotateLeft', 'RotateRight', 'FormatPaintbrush'],
 
 			text: ['TableInsertMenu',
 				   'InsertRowsBefore', 'InsertRowsAfter', 'InsertColumnsBefore', 'InsertColumnsAfter',
