@@ -97,7 +97,9 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:InsertColumnBreak', icon: 'fa fa-columns', hotkey: 'Ctrl+Shift+Enter'},
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrl+K'},
+				{uno: '.uno:InsertBookmark', icon: 'fa fa-bookmark'},
 				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
+				{name: _('Horizontal Line'), id: 'inserthorizontalline', type: 'action'},
 				{name: _UNO('.uno:FormattingMarkMenu', 'text'), type: 'menu', menu: [
 					{uno: '.uno:InsertNonBreakingSpace'},
 					{uno: '.uno:InsertHardHyphen'},
@@ -806,13 +808,13 @@ L.Control.Menubar = L.Control.extend({
 			this._map.sendUnoCommand('.uno:FunctionDialog');
 		} else if (id === 'conditionalFormatDialog') {
 			this._map.sendUnoCommand('.uno:ConditionalFormatDialog');
-		} else if (id === 'formatPaintbrush') {
-			this._map.sendUnoCommand('.uno:FormatPaintbrush');
 		} else if (id === 'insertPageNumber') {
 			this._map.sendUnoCommand('.uno:InsertPageNumber');
 			//this._map.sendUnoCommand('.uno:InsertSlideNumber');
 		} else if (id === 'drawLine') {
 			this._map.sendUnoCommand('.uno:Line');
+		} else if (id === 'inserthorizontalline') {
+			this._map.sendUnoCommand('.uno:StyleApply {"FamilyName":{"type":"string", "value": "ParagraphStyles"},"Style":{"type":"string", "value": "Horizontal Line"}}');
 		} else if (id === 'a4portrait') {
 			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Width":{"type":"long", "value": "21000"},"AttributePageSize.Height":{"type":"long", "value": "29700"}}');
 			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "false"}}');
