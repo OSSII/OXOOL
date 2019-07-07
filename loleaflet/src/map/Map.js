@@ -79,6 +79,7 @@ L.Map = L.Evented.extend({
 		this._debugAlwaysActive = false; // disables the dimming / document inactivity when true
 		this._serverRecycling = false;
 		this._documentIdle = false;
+		this._helpTarget = null; // help page that fits best the current context
 
 		vex.dialogID = -1;
 
@@ -719,6 +720,14 @@ L.Map = L.Evented.extend({
 
 	mouseEventToLatLng: function (e) { // (MouseEvent)
 		return this.layerPointToLatLng(this.mouseEventToLayerPoint(e));
+	},
+
+	setHelpTarget: function(page) {
+		this._helpTarget = page;
+	},
+
+	showHelp: function() {
+		// TODO : 實作線上說明
 	},
 
 	focus: function () {
