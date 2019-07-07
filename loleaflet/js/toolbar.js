@@ -659,21 +659,6 @@ function createToolbar() {
 		{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true, mobile: false},
 		{type: 'button',  id: 'formatpaintbrush',  img: 'copyformat', hint: _UNO('.uno:FormatPaintbrush'), uno: 'FormatPaintbrush', mobile: false},
 		{type: 'button',  id: 'reset',  img: 'deleteformat', hint: _UNO('.uno:ResetAttributes', 'text'), uno: 'ResetAttributes', mobile: false},
-		{type: 'break', mobile: false},
-		{type: 'menu-radio', id: 'zoom', text: '100%',
-			selected: 'zoom100', hint: _('Zoom factor'),
-			items: [
-				{ id: 'zoom50', text: '50%', scale: 6},
-				{ id: 'zoom60', text: '60%', scale: 7},
-				{ id: 'zoom70', text: '70%', scale: 8},
-				{ id: 'zoom85', text: '85%', scale: 9},
-				{ id: 'zoom100', text: '100%', scale: 10},
-				{ id: 'zoom120', text: '120%', scale: 11},
-				{ id: 'zoom150', text: '150%', scale: 12},
-				{ id: 'zoom175', text: '175%', scale: 13},
-				{ id: 'zoom200', text: '200%', scale: 14}
-			]
-		},
 		{type: 'break', mobile: false, tablet: false},
 		{type: 'html', id: 'styles',
 			html: '<select class="styles-select"><option>' + _('Default Style') + '</option></select>',
@@ -1164,7 +1149,20 @@ function initNormalToolbar(toolItems) {
 				{type: 'break', id: 'prevnextbreak'},
 				{type: 'button',  id: 'zoomreset', img: 'zoomreset', hint: _('Reset zoom')},
 				{type: 'button',  id: 'zoomout', img: 'zoomout', hint: _UNO('.uno:ZoomMinus')},
-				{type: 'html',    id: 'zoomlevel', html: '<div id="zoomlevel" class="loleaflet-font">100%</div>', mobile: false},
+				{type: 'menu-radio', id: 'zoom', text: '100%',
+					selected: 'zoom100', hint: _('Zoom factor'),
+					items: [
+						{ id: 'zoom50', text: '50%', scale: 6},
+						{ id: 'zoom60', text: '60%', scale: 7},
+						{ id: 'zoom70', text: '70%', scale: 8},
+						{ id: 'zoom85', text: '85%', scale: 9},
+						{ id: 'zoom100', text: '100%', scale: 10},
+						{ id: 'zoom120', text: '120%', scale: 11},
+						{ id: 'zoom150', text: '150%', scale: 12},
+						{ id: 'zoom175', text: '175%', scale: 13},
+						{ id: 'zoom200', text: '200%', scale: 14}
+					]
+				},
 				{type: 'button',  id: 'zoomin', img: 'zoomin', hint: _UNO('.uno:ZoomPlus')}
 			],
 			onClick: function (e) {
@@ -1416,13 +1414,12 @@ function onFontSizeSelect(e) {
 	/* 驗證輸入的字型大小是否數字 */
 	if (isNaN(testn) && selnum !== '') {
 		wrongnum = true;
-		alert('請輸入數字');
+		alert(_('Can only enter numbers'));
 	}
 	if (wrongnum) {  // 由於列表用 select2 。要特別處理輸入文字會自動加進列表的情形
 		$('.fontsizes-select option').each(function (i, e) {
 			// 輸入錯誤字型大小：將打錯的從列表移除
 			if (($(e).text() === selnum) && selnum != '') {
-				console.log(selnum + ' removed');
 				$(e).remove();
 			}
 		});
@@ -1570,7 +1567,7 @@ function onDocLayerInit() {
 		toolbarUp.remove('inserttable', 'styles', 'justifypara', 'defaultbullet', 'defaultnumbering', 'break-numbering', 'insertfootnote');
 		statusbar.remove('prev', 'next', 'prevnextbreak');
 
-		toolbarUp.set('zoom', {
+		statusbar.set('zoom', {
 			items: [
 				{ id: 'zoom100', text: '100%', scale: 10},
 				{ id: 'zoom200', text: '200%', scale: 14}
@@ -1705,7 +1702,7 @@ function onDocLayerInit() {
 }
 
 function onCommandStateChanged(e) {
-	console.log('onCommandStateChanged : ', e)
+
 	var toolbar = w2ui['toolbar-up'];
 	var statusbar = w2ui['toolbar-down'];
 	var commandName = e.commandName;
@@ -2299,9 +2296,9 @@ function updateUserListCount() {
 		userlistItem.text = noUser;
 	}
 
-	var zoomlevel = $('#zoomlevel').html();
+	//var zoomlevel = $('#zoomlevel').html();
 	w2ui['toolbar-down'].refresh();
-	$('#zoomlevel').html(zoomlevel);
+	//$('#zoomlevel').html(zoomlevel);
 }
 
 function escapeHtml(input) {
@@ -2430,8 +2427,7 @@ function setupToolbar(e) {
 			break;
 		}
 		zoomPercent += '%';
-		$('#zoomlevel').html(zoomPercent);
-		w2ui['toolbar-up'].set('zoom', {text: zoomPercent, selected: zoomSelected});
+		w2ui['toolbar-down'].set('zoom', {text: zoomPercent, selected: zoomSelected});
 	});
 
 	map.on('celladdress', function (e) {
