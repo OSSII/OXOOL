@@ -80,6 +80,7 @@ L.Map = L.Evented.extend({
 		this._serverRecycling = false;
 		this._documentIdle = false;
 		this._helpTarget = null; // help page that fits best the current context
+		this._trackEvent = false; // 追蹤各種事件開關
 
 		vex.dialogID = -1;
 
@@ -110,6 +111,7 @@ L.Map = L.Evented.extend({
 		this.initComplete = false;
 
 		this.on('updatepermission', function(e) {
+			if (this._trackEvent) {console.debug('updatepermission: ', e);}
 			if (!this.initComplete) {
 				this._fireInitComplete('updatepermission');
 			}
@@ -134,6 +136,7 @@ L.Map = L.Evented.extend({
 			}
 		});
 		this.on('updatetoolbarcommandvalues', function(e) {
+			if (this._trackEvent) {console.debug('updatetoolbarcommandvalues: ', e);}
 			if (this.initComplete) {
 				return;
 			}
@@ -162,11 +165,13 @@ L.Map = L.Evented.extend({
 		this._docLoaded = false;
 
 		this.on('commandstatechanged', function(e) {
+			if (this._trackEvent) {console.debug('Command state changed: ', e);}
 			if (e.commandName === '.uno:ModifiedStatus')
-				this._everModified = this._everModified || (e.state === 'true');
+				this._everModified = this._everModified || (e.state === 'true');			
 		}, this);
 
 		this.on('docloaded', function(e) {
+			if (this._trackEvent) {console.debug('docloaded: ', e);}
 			this._docLoaded = e.status;
 			if (this._docLoaded) {
 				// so that dim timer starts from now()
@@ -283,6 +288,12 @@ L.Map = L.Evented.extend({
 			this.lastModIndicator.setAttribute('datetime', newModificationTime);
 			timeago().render(this.lastModIndicator, locale);
 		}
+	},
+
+	// 切換追蹤開關
+	switchEventTrack: function() {
+		this._trackEvent = !this._trackEvent;
+		vex.dialog.alert(_('Event tracking status') + ' : ' + (this._trackEvent ? 'On' : 'Off'));
 	},
 	// --------- End of Firefly
 	
@@ -729,6 +740,19 @@ L.Map = L.Evented.extend({
 	showHelp: function() {
 		// TODO : 實作線上說明
 	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 輸入 uno command 並執行
+	executeUnoCommand: function() {
+		var cmd = prompt(_('Please enter a command starting with ".uno:" or "macro:///"'));
+		if (cmd !== null) {
+			if (!cmd.startsWith('.uno:') && !cmd.startsWith('macro:///')) {
+				alert(_('Invalid Command.'))
+			} else {
+				this.sendUnoCommand(cmd);
+			}
+		}
+	},	
 
 	focus: function () {
 		this._clipboardContainer.focus();
