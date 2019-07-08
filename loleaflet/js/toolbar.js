@@ -830,13 +830,6 @@ function initMobileToolbar(toolItems) {
 		}
 	});
 
-	// 非編輯模式不需要 undo & redo
-	if (map._permission !== 'edit') {
-		var topbar = w2ui['toolbar-down'];
-		topbar.remove('undo');
-		topbar.remove('redo');
-	}
-
 	toolbar.bind('touchstart', function(e) {
 		w2ui['toolbar-down'].touchStarted = true;
 		var touchEvent = e.originalEvent;
@@ -917,16 +910,6 @@ function initMobileToolbar(toolItems) {
 	});
 
 	toolbar = $('#toolbar-down');
-	// 非編輯模式，不顯示編輯用的工具列
-	// 並且把文件顯示區下方對齊螢幕下方
-	if (map._permission !== 'edit') {
-		var topofdocument = $('#toolbar-wrapper').height();
-		toolbar.hide();
-		$('#document-container').css('top', topofdocument + 'px');
-		$('#document-container').css('bottom', '0px');
-		map.setZoom(5);
-	}
-
 	toolbar.w2toolbar({
 		name: 'toolbar-up',
 		tooltip: 'top',
@@ -2202,6 +2185,20 @@ function onUpdatePermission(e) {
 		});
 
 		$('#search-input').prop('disabled', true);
+		if (_inMobileMode()) {
+			// firefly1
+			// 非編輯模式不需要 undo & redo
+			var topbar = w2ui['toolbar-down'];
+			$('#toolbar-down').hide();
+			topbar.remove('undo');
+			topbar.remove('redo');
+			// 非編輯模式，不顯示編輯用的工具列
+			// 並且把文件顯示區下方對齊螢幕下方
+			var topofdocument = $('#toolbar-wrapper').height();
+			$('#document-container').css('top', topofdocument + 'px');
+			$('#document-container').css('bottom', '0px');
+			map.setZoom(5);
+		}
 	}
 }
 
