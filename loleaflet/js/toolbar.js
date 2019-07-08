@@ -803,7 +803,7 @@ function initMobileToolbar(toolItems) {
 			{type: 'spacer'},
 			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
 			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
-			{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
+			//{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
 			{type: 'drop', id: 'userlist', img: 'users', html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
 				'<hr><table class="loleaflet-font" id="editor-btn">' +
 				'<tr>' +
@@ -814,12 +814,29 @@ function initMobileToolbar(toolItems) {
 				'<p id="currently-msg">' + _('Current') + ' - <b><span id="current-editor"></span></b></p>' +
 				'</div>'
 			},
+			{type: 'break', id: 'prevnextbreak'},
+			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text')},
+			{type: 'break'},
+			{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text')},
+			{type: 'break', id:'break1'},
+			{
+				type: 'html', id: 'PageStatus',
+				html: '<div id="PageStatus" class="loleaflet-font" title="' + _('Number of Slides') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+			}
 		],
 		onClick: function (e) {
 			onClick(e, e.target);
 			hideTooltip(this, e.target);
 		}
 	});
+
+	// 非編輯模式不需要 undo & redo
+	if (map._permission !== 'edit') {
+		var topbar = w2ui['toolbar-down'];
+		topbar.remove('undo');
+		topbar.remove('redo');
+	}
+
 	toolbar.bind('touchstart', function(e) {
 		w2ui['toolbar-down'].touchStarted = true;
 		var touchEvent = e.originalEvent;
@@ -900,6 +917,16 @@ function initMobileToolbar(toolItems) {
 	});
 
 	toolbar = $('#toolbar-down');
+	// 非編輯模式，不顯示編輯用的工具列
+	// 並且把文件顯示區下方對齊螢幕下方
+	if (map._permission !== 'edit') {
+		var topofdocument = $('#toolbar-wrapper').height();
+		toolbar.hide();
+		$('#document-container').css('top', topofdocument + 'px');
+		$('#document-container').css('bottom', '0px');
+		map.setZoom(5);
+	}
+
 	toolbar.w2toolbar({
 		name: 'toolbar-up',
 		tooltip: 'top',
