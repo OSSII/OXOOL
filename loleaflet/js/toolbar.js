@@ -710,7 +710,7 @@ function createToolbar() {
 		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:RightPara', '', true), uno: 'RightPara', unosheet: 'AlignRight', hidden:true, disabled: true},
 		{type: 'button',  id: 'justifypara',  img: 'alignblock', hint: _UNO('.uno:JustifyPara', '', true), uno: 'JustifyPara', unosheet: '', hidden:true, disabled: true},
 		{type: 'break', id: 'breakpara', hidden: true},
-		{type: 'drop',  id: 'setborderstyle',  img: 'setborderstyle', hint: _('Borders'),
+		{type: 'drop',  id: 'setborderstyle',  img: 'setborderstyle', hint: _('Borders'), hidden: true,
 			html: '<table id="setborderstyle-grid"><tr><td class="w2ui-tb-image w2ui-icon frame01" onclick="setBorderStyle(1)"></td>' +
 			      '<td class="w2ui-tb-image w2ui-icon frame02" onclick="setBorderStyle(2)"></td><td class="w2ui-tb-image w2ui-icon frame03" onclick="setBorderStyle(3)"></td>' +
 			      '<td class="w2ui-tb-image w2ui-icon frame04" onclick="setBorderStyle(4)"></td></tr><tr><td class="w2ui-tb-image w2ui-icon frame05" onclick="setBorderStyle(5)"></td>' +
@@ -1574,8 +1574,6 @@ function onDocLayerInit() {
 			'numberformatcurrency', 'numberformatpercent', 'numberformatdate',
 			'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'togglemergecells', 'breakmergecells',
 			'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting');
-		toolbarUp.remove('inserttable', 'styles', 'justifypara', 'defaultbullet', 'defaultnumbering', 'break-numbering', 'insertfootnote');
-		statusbar.remove('prev', 'next', 'prevnextbreak');
 
 		statusbar.set('zoom', {
 			items: [
@@ -1624,10 +1622,10 @@ function onDocLayerInit() {
 
 		break;
 	case 'text':
-		toolbarUp.show('style', 'leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
+		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'incrementindent', 'decrementindent',
 			'breakindent', 'inserttable', 'insertannotation');
-		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset');
+		//toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset');
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
 				{type: 'break', id: 'break1'},
@@ -1661,7 +1659,7 @@ function onDocLayerInit() {
 			presentationToolbar.show('presentation', 'presentationbreak');
 		}
 		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing', 'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'insertannotation', 'inserttable');
-		toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
+
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
 				{type: 'break', id: 'break1'},
@@ -2348,10 +2346,6 @@ function onAddView(e) {
 	if (e.viewId === map._docLayer._viewId) {
 		username = _('You');
 		color = '#000';
-		// Add by Firefly <firefly@ossii.com.tw>
-		//var div = $(document.createElement('div'));
-		//div.addClass('screen-watermark').text(e.username);
-		//$('#map').prepend(div);
 	}
 
 	// Mention readonly sessions in userlist
