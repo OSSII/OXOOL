@@ -255,7 +255,7 @@
 .duplicatepage{ background: url('images/lc_duplicatepage.svg') no-repeat center !important; }
 .edit{ background: url('images/lc_editdoc.svg') no-repeat center !important; }
 .equal{ background: url('images/lc26049.svg') no-repeat center !important; }
-.help{ background: url('images/lc_helpindex.svg') no-repeat center !important; }
+.helpindex{ background: url('images/lc_helpindex.svg') no-repeat center !important; }
 .incrementindent{ background: url('images/lc_decrementlevel.svg') no-repeat center !important; }
 .insertpage{ background: url('images/lc_insertpage.svg') no-repeat center !important; }
 .insertsheet{ background: url('images/lc_insert.svg') no-repeat center !important; }
