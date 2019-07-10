@@ -196,5 +196,4 @@ ifelse(MOBILEAPP,[true],
   ])
 )dnl
     <!--%BRANDING_JS%--> <!-- logo onclick handler -->
-  <script>window.mdc.autoInit();</script>
 </body></html>

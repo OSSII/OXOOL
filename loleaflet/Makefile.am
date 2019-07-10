@@ -82,7 +82,6 @@ LOLEAFLET_CSS =\
 	$(builddir)/node_modules/smartmenus/dist/css/sm-core-css.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-simple/sm-simple.css \
 	$(srcdir)/css/menubar.css \
-	$(srcdir)/mdc/css/material-components-web.css \
 	$(builddir)/fonts/font-awesome.min.css \
 	$(builddir)/node_modules/jquery-ui/themes/redmond/jquery-ui.css
 
@@ -126,7 +125,6 @@ PLUGINS_JS =\
 	w2ui-1.5.rc1.js \
 	toolbar.js \
 	screenwatermark.js \
-	material-components-web.js \
 	main.js
 
 PLUGINS_JS_SRC = $(shell find $(srcdir)/js -name '*.js')
@@ -190,7 +188,6 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_DST) \
 	$(builddir)/dist/w2ui-1.5.rc1.js \
 	$(builddir)/dist/toolbar.js \
 	$(builddir)/dist/screenwatermark.js \
-	$(builddir)/dist/material-components-web.js \
 	$(builddir)/dist/main.js
 	@touch $@
 else
@@ -216,7 +213,6 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 	$(srcdir)/js/w2ui-1.5.rc1.js \
 	$(srcdir)/js/toolbar.js \
 	$(srcdir)/js/screenwatermark.js \
-	$(srcdir)/mdc/js/material-components-web.js \
 	$(srcdir)/js/main.js
 	@echo "Uglify loleaflet js files..."
 	NODE_PATH=$(abs_builddir)/node_modules $(NODE) node_modules/uglify-js/bin/uglifyjs \
@@ -228,7 +224,6 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 		$(builddir)/build/dist/loleaflet-src.js \
 		$(srcdir)/js/toolbar.js \
 		$(srcdir)/js/screenwatermark.js \
-		$(srcdir)/mdc/js/material-components-web.js \
 		$(srcdir)/js/main.js \
 		--source-map --output $@
 endif
@@ -267,10 +262,6 @@ $(builddir)/dist/src/%.js: $(srcdir)/src/%.js
 	@cp $< $@
 
 $(builddir)/dist/%.js: $(srcdir)/js/%.js
-	@mkdir -p $(dir $@)
-	@cp $< $@
-
-$(builddir)/dist/material-components-web.js: $(srcdir)/mdc/js/material-components-web.js
 	@mkdir -p $(dir $@)
 	@cp $< $@
 
@@ -316,7 +307,6 @@ pot:
 		admin/src/Util.js \
 		js/toolbar.js \
 		js/screenwatermark.js \
-		mdc/js/material-components-web.js \
 		src/control/Control.AlertDialog.js \
 		src/control/Control.ContextMenu.js \
 		src/control/Control.DocumentRepair.js \
