@@ -316,6 +316,14 @@ function setBorders(left, right, bottom, top, horiz, vert) {
 	map.sendUnoCommand('.uno:SetBorderStyle', params);
 }
 
+// close the popup
+function closePopup() {
+	if ($('#w2ui-overlay-toolbar-up').length > 0) {
+		$('#w2ui-overlay-toolbar-up').removeData('keepOpen')[0].hide();
+	}
+	map.focus();
+}
+
 function setBorderStyle(num) {
 	switch (num) {
 	case 0: map.sendUnoCommand('.uno:FormatCellBorders'); break;
@@ -341,10 +349,7 @@ function setBorderStyle(num) {
 	// close the popup
 	// TODO we may consider keeping it open in the future if we add border color
 	// and style to this popup too
-	if ($('#w2ui-overlay-toolbar-up').length > 0) {
-		$('#w2ui-overlay-toolbar-up').removeData('keepOpen')[0].hide();
-	}
-	map.focus();
+	closePopup();
 }
 
 global.setBorderStyle = setBorderStyle;
@@ -358,10 +363,7 @@ function setConditionalFormatIconSet(num) {
 	map.sendUnoCommand('.uno:IconSetFormatDialog', params);
 
 	// close the popup
-	if ($('#w2ui-overlay-toolbar-up').length > 0) {
-		$('#w2ui-overlay-toolbar-up').removeData('keepOpen')[0].hide();
-	}
-	map.focus();
+	closePopup();
 }
 
 global.setConditionalFormatIconSet = setConditionalFormatIconSet;
@@ -404,13 +406,9 @@ function insertTable() {
 				' }, "Rows": { "type": "long","value": '
 				+ row + ' }}';
 
-			if ($('#w2ui-overlay-toolbar-up').length > 0) {
-				$('#w2ui-overlay-toolbar-up').removeData('keepOpen')[0].hide();
-			}
-
 			map._socket.sendMessage(msg);
-			// refocus map due popup
-			map.focus();
+
+			closePopup();
 		}
 	}, '.col');
 }
@@ -596,6 +594,82 @@ function insertShapes() {
 	$grid.on({
 		click: function(e) {
 			map.sendUnoCommand('.uno:' + $(e.target).data().uno);
+			closePopup();
+		}
+	});
+}
+
+var transition = [
+	{img: 'transition-none', label: _('None'), action: {type:0, subtype: 0}}, // 無
+	{img: 'transition-wipe', label: _('Wipe'), action: {type:1, subtype: 2}}, // 擦去
+	{img: 'transition-wheel', label: _('Wheel'), action: {type:23, subtype: 107}}, // 滾輪
+	{img: 'transition-uncover', label: _('Uncover'), action: {type:36, subtype: 98}}, // 抽出
+	{img: 'transition-bars', label: _('Bars'), action: {type:38, subtype: 13}}, // 條碼
+	{img: 'transition-checkers', label: _('Checkers'), action: {type:39, subtype: 19}}, // 棋盤
+	{img: 'transition-shape', label: _('Shape'), action: {type:3, subtype: 12}}, // 形狀
+	{img: 'transition-box', label: _('Box'), action: {type:12, subtype: 25}}, // 方塊
+	{img: 'transition-wedge', label: _('Wedge'), action: {type:25, subtype: 48}}, // 楔入
+	{img: 'transition-venetian', label: _('Venetian'), action: {type:41, subtype: 13}}, // 百葉窗
+	{img: 'transition-fade', label: _('Fade'), action: {type:37, subtype: 104}}, // 淡化
+	{img: 'transition-cut', label: _('Cut'), action: {type:1, subtype: 104}}, // 剪下
+	{img: 'transition-cover', label: _('Cover'), action: {type:36, subtype: 98}}, // 覆蓋
+	{img: 'transition-dissolve', label: _('Dissolve'), action: {type:40, subtype: 0}}, // 溶解
+	{img: 'transition-random', label: _('Random'), action: {type:42, subtype: 0}}, // 隨機
+	{img: 'transition-comb', label: _('Comb'), action: {type:35, subtype: 110}}, // 梳紋
+	{img: 'transition-push', label: _('Push'), action: {type:35, subtype: 98}}, // 推展
+	{img: 'transition-split', label: _('Split'), action: {type:4, subtype: 14}}, // 分割
+	{img: 'transition-diagonal', label: _('Diagonal'), action: {type:34, subtype: 96}}, // 對角
+	{img: 'transition-tiles', label: _('Tiles'), action: {type:21, subtype: 108}}, // 拼貼
+	{img: 'transition-cube', label: _('Cube'), action: {type:21, subtype:12}}, // 立方體
+	{img: 'transition-circles', label: _('Circles'), action: {type:21, subtype: 27}}, // 圓形
+	{img: 'transition-helix', label: _('Helix'), action: {type:21, subtype: 55}}, // 螺旋
+	{img: 'transition-fall', label: _('Fall'), action: {type:21, subtype: 1}}, // 向下落
+	{img: 'transition-turn-around', label: _('Turn Around'), action: {type:21, subtype: 2}}, // 左右翻轉
+	{img: 'transition-iris', label: _('Iris'), action: {type:21, subtype: 3}}, // 光圈
+	{img: 'transition-turn-down', label: _('Turn Down'), action: {type:21, subtype: 4}}, // 向下轉
+	{img: 'transition-rochade', label: _('Rochade'), action: {type:21, subtype: 5}}, // 左右置換
+	{img: 'transition-3d-venetian', label: _('3D Denetian'), action: {type:21, subtype: 6}}, // 3D 百葉窗
+	{img: 'transition-static', label: _('Static'), action: {type:21, subtype: 8}}, // 靜態
+	{img: 'transition-fine-dissolve', label: _('Fine Dissolve'), action: {type:21, subtype: 9}}, // 細緻溶解
+	{img: 'transition-vortex', label: _('Vortex'), action: {type:21, subtype: 13}}, // 漩渦
+	{img: 'transition-ripple', label: _('Ripple'), action: {type:21, subtype: 14}}, // 漣漪
+	{img: 'transition-glitter', label: _('Glitter'), action: {type:21, subtype: 26}}, // 閃耀
+	{img: 'transition-honeycomb', label: _('Honeycomb'), action: {type:21, subtype: 31}}, // 蜂巢
+	{img: 'transition-newsflash', label: _('Newsflash'), action: {type:43, subtype: 114}} // 新聞快報
+];
+
+// 投影片轉場
+function animationEffects() {
+	var width = 3;
+	var $grid = $('.animationeffects-grid');
+
+	if ($grid.children().size() > 0)
+		return;
+
+	var rows = Math.ceil(transition.length / width);
+	var idx = 0;
+	for (var r = 0; r < rows; r++) {
+		var $row = $('<div/>').addClass('row');
+		$grid.append($row);
+		for (var c = 0; c < width; c++) {
+			if (idx >= transition.length) {
+				break;
+			}
+			var shape = transition[idx++];
+			var $col = $('<div/>').addClass('col transition-icon').addClass(shape.img).attr('title', shape.label);
+
+			$col.data('action', shape.action);
+			$row.append($col);
+		}
+
+		if (idx >= transition.length)
+			break;
+	}
+	$grid.on({
+		click: function(e) {
+			var action = $(e.target).data().action;
+			var macro = 'macro:///OxOOL.Impress.SetTransition(' + action.type + ',' + action.subtype + ')';
+			map.sendUnoCommand(macro);
 		}
 	});
 }
@@ -782,8 +856,11 @@ function createToolbar() {
 		{type: 'button',  id: 'insertobjectchart',  img: 'insertobjectchart', hint: _UNO('.uno:InsertObjectChart', '', true), uno: 'InsertObjectChart'},
 		{type: 'drop',  id: 'insertshapes',  img: 'basicshapes_ellipse', hint: _('Insert shapes'), overlay: {onShow: insertShapes},
 		 html: '<div id="insertshape-wrapper"><div id="insertshape-popup" class="insertshape-pop ui-widget ui-widget-content ui-corner-all"><div class="insertshape-grid"></div></div></div>'},
+		{type: 'drop',  id: 'animationeffects',  img: 'animationeffects', hint: _('Side Transition'), overlay: {onShow: animationEffects},
+		 html: '<div id="animationeffects-wrapper"><div id="animationeffects-popup" class="ui-widget ui-widget-content ui-corner-all"><div class="animationeffects-grid"></div></div></div>', hidden: true},
 		{type: 'button',  id: 'inserthyperlink',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true},
-		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: '.uno:InsertSymbol'}
+		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: '.uno:InsertSymbol'},
+		
 	];
 
 	if (_inMobileMode()) {
@@ -1658,7 +1735,7 @@ function onDocLayerInit() {
 		if (!map['wopi'].HideExportOption) {
 			presentationToolbar.show('presentation', 'presentationbreak');
 		}
-		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing', 'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'insertannotation', 'inserttable');
+		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing', 'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'insertannotation', 'inserttable', 'animationeffects');
 
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [

@@ -376,6 +376,32 @@ button.leaflet-control-search-next
     border: 1px solid #ccc;
 }
 
+.animationeffects-grid {
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.5);
+    position: relative;
+    padding: 2px;
+    display: block;
+    overflow: auto; /* child margins otherwise don't expand *this* element (parent) */
+}
+
+.animationeffects-grid .row {
+    height: 32px;
+}
+
+.animationeffects-grid .col {
+    height: 100%;
+    float: left;
+    padding: 2px;
+    width: 32px;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 1);
+}
+
+.animationeffects-grid .col:hover {
+    border: 1px solid #ccc;
+}
+
 tr.useritem:hover {
     cursor: default;
     background-color: rgba(67, 172, 232, 0.25);

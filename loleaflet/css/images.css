@@ -1,4 +1,49 @@
 
+/* 投影片轉場 */
+.transition-icon {
+        height: 32px;
+        width: 32px;
+        margin: 2px 2px;
+        display: block;
+}
+.animationeffects { background: url('images/lc_animationeffects.svg') no-repeat center !important; }
+.transition-none { background: url('images/transition-none.svg') no-repeat center !important; }
+.transition-wipe { background: url('images/transition-wipe.svg') no-repeat center !important; }
+.transition-wheel { background: url('images/transition-wheel.svg') no-repeat center !important; }
+.transition-uncover { background: url('images/transition-uncover.svg') no-repeat center !important; }
+.transition-bars { background: url('images/transition-random-bars.svg') no-repeat center !important; }
+.transition-checkers { background: url('images/transition-checkerboard.svg') no-repeat center !important; }
+.transition-shape { background: url('images/transition-shape.svg') no-repeat center !important; }
+.transition-box { background: url('images/transition-box.svg') no-repeat center !important; }
+.transition-wedge { background: url('images/transition-wedge.svg') no-repeat center !important; }
+.transition-venetian { background: url('images/transition-venetian-blinds.svg') no-repeat center !important; }
+.transition-fade { background: url('images/transition-fade.svg') no-repeat center !important; }
+.transition-cut { background: url('images/transition-cut.svg') no-repeat center !important; }
+.transition-cover { background: url('images/transition-cover.svg') no-repeat center !important; }
+.transition-dissolve { background: url('images/transition-dissolve.svg') no-repeat center !important; }
+.transition-random { background: url('images/transition-random.svg') no-repeat center !important; }
+.transition-comb { background: url('images/transition-comb.svg') no-repeat center !important; }
+.transition-push { background: url('images/transition-push.svg') no-repeat center !important; }
+.transition-split { background: url('images/transition-split.svg') no-repeat center !important; }
+.transition-diagonal { background: url('images/transition-diagonal-squares.svg') no-repeat center !important; }
+.transition-tiles { background: url('images/transition-tile-flip.svg') no-repeat center !important; }
+.transition-cube { background: url('images/transition-cube-turning.svg') no-repeat center !important; }
+.transition-circles { background: url('images/transition-revolving-circles.svg') no-repeat center !important; }
+.transition-helix { background: url('images/transition-turning-helix.svg') no-repeat center !important; }
+.transition-fall { background: url('images/transition-fall.svg') no-repeat center !important; }
+.transition-turn-around { background: url('images/transition-turn-around.svg') no-repeat center !important; }
+.transition-iris { background: url('images/transition-iris.svg') no-repeat center !important; }
+.transition-turn-down { background: url('images/transition-turn-down.svg') no-repeat center !important; }
+.transition-rochade { background: url('images/transition-rochade.svg') no-repeat center !important; }
+.transition-3d-venetian { background: url('images/transition-venetian-blinds-3d.svg') no-repeat center !important; }
+.transition-static { background: url('images/transition-static.svg') no-repeat center !important; }
+.transition-fine-dissolve { background: url('images/transition-finedissolve.svg') no-repeat center !important; }
+.transition-vortex { background: url('images/transition-vortex.svg') no-repeat center !important; }
+.transition-ripple { background: url('images/transition-ripple.svg') no-repeat center !important; }
+.transition-glitter { background: url('images/transition-glitter.svg') no-repeat center !important; }
+.transition-honeycomb { background: url('images/transition-honeycomb.svg') no-repeat center !important; }
+.transition-newsflash { background: url('images/transition-newsflash.svg') no-repeat center !important; }
+
 .basicshapes_rectangle { background: url('images/lc_rect.svg') no-repeat center !important; }
 .basicshapes_round-rectangle { background: url('images/lc_rect_rounded.svg') no-repeat center !important; }
 .basicshapes_quadrat { background: url('images/lc_square.svg') no-repeat center !important; }
