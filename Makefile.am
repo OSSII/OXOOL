@@ -12,7 +12,7 @@ SUBDIRS = gtk loleaflet
 
 else
 
-SUBDIRS = . test loleaflet
+SUBDIRS = . test loleaflet extensions
 
 export ENABLE_DEBUG
 
@@ -266,7 +266,7 @@ SYSTEM_STAMP = @SYSTEMPLATE_PATH@/system_stamp
 
 $(SYSTEM_STAMP) : ${top_srcdir}/oxoolwsd-systemplate-setup
 	if test "z@SYSTEMPLATE_PATH@" != "z"; then rm -rf "@SYSTEMPLATE_PATH@"; fi
-	${top_srcdir}/oxoolwsd-systemplate-setup "@SYSTEMPLATE_PATH@" "@LO_PATH@" && touch $@
+	${top_srcdir}/oxoolwsd-systemplate-setup "@SYSTEMPLATE_PATH@" "@LO_PATH@" "@EXTENSIONS_PATH@" && touch $@
 
 @JAILS_PATH@ :
 	mkdir -p $@

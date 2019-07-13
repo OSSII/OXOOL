@@ -399,6 +399,7 @@ if test -n "$with_lo_path"; then
    LO_PATH="${with_lo_path%/}"
    version_file="$with_lo_path/program/versionrc"
    if test -f $version_file; then
+     EXTENSIONS_PATH="\${abs_top_builddir}/extensions"
      JAILS_PATH="\${abs_top_builddir}/jails"
      TILECACHE_PATH="\${abs_top_builddir}/cache"
      SYSTEMPLATE_PATH="\${abs_top_builddir}/systemplate"
@@ -415,6 +416,7 @@ else
 fi
 AC_SUBST(LO_PATH)
 AC_DEFINE_UNQUOTED([LO_PATH],["$LO_PATH"],[Path to LibreOffice installation])
+AC_SUBST(EXTENSIONS_PATH)
 AC_SUBST(JAILS_PATH)
 AC_SUBST(TILECACHE_PATH)
 AC_SUBST(SYSTEMPLATE_PATH)
@@ -646,6 +648,7 @@ AC_CONFIG_FILES([Makefile
                  Mobile/Mobile/Info.plist
                  test/Makefile
                  loleaflet/Makefile
+                 extensions/Makefile
                  loleaflet/npm-shrinkwrap.json
                  oxoolwsd.spec
                  oxoolwsd.xml

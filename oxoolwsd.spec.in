@@ -78,6 +78,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 /usr/share/%{name}/loleaflet
 /usr/share/%{name}/discovery.xml
 /usr/share/%{name}/favicon.ico
+/usr/share/%{name}/extensions
 /usr/share/doc/%{name}/README
 /usr/share/doc/%{name}/README.vars
 /usr/share/doc/%{name}/protocol.txt
@@ -125,7 +126,7 @@ chown lool:lool ${loolparent}/%{name}
 chown lool:lool ${loolparent}/%{name}/child-roots
 
 fc-cache ${loroot}/share/fonts/truetype
-su lool -c "%{name}-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} >/dev/null 2>&1"
+su lool -c "%{name}-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} "%{_datadir}/%{name}/extensions" >/dev/null 2>&1"
 
 %if 0%{?fedora} || 0%{?rhel} >= 7
 %systemd_post %{name}.service
