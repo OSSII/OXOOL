@@ -143,5 +143,8 @@ su lool -c "%{name}-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot
 %systemd_postun %{name}.service
 %endif
 rm -fr /var/cache/%{name}
+loroot=%{loroot}
+loolparent=`cd ${loroot} && cd .. && /bin/pwd`
+rm -rf ${loolparent}/%{name}
 
 %changelog
