@@ -15,37 +15,38 @@
     position: fixed;
     bottom: 0;
     z-index: 1000;
+    border-top: 1px solid #bbbbbb;
 }
 
 #document-signing-bar {
     background-color: #dd000088;
 }
 
-w2ui-toolbar {
-    position: absolute;
-    right: 10px;
-    top: 40px;
-    border: 1px solid darkgrey;
-    z-index: 1000;
-    display: none;
-    overflow: visible !important;
+.w2ui-toolbar {
+    background-color: #fafafa !important;
 }
 
 #spreadsheet-toolbar {
     left: 0;
     text-align: center;
-    height: 32px;
-    bottom: 33px;
+    bottom: 37px;
     padding: 0;
     position: absolute;
+    border-top: 1px solid #bbbbbb;
+}
+
+#formulabar {
+    border-top: 1px solid #bbbbbb;
+    height: 30px;
 }
 
 #presentation-toolbar {
-    background-color: #dfdfdf;
+    background-color: #fafafa;
     text-align: center;
     position: absolute;
-    z-index: 500;
-    width: 100%;
+    width: 250px;
+    border-top: 1px solid #bbbbbb;
+    border-right: 1px solid #bbbbbb;
 }
 
 /* For MS Edge 40, the select2 combo boxes need to have higher z-index than #map
@@ -203,7 +204,7 @@ button.leaflet-control-search-next
 
 #toolbar label
 , .leaflet-control-search {
-    background-color: #fff;
+    background-color: #fafafa;
 }
 
 .search-not-found {

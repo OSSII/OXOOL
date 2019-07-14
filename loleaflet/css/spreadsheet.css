@@ -1,8 +1,8 @@
 #document-container.spreadsheet-document {
         border-top: 1px solid #B6B6B6;
-        top: 128px;
+        top: 133px;
         left: 50px;
-        bottom: 65px;
+        bottom: 74px;
 }
 
 #document-container.spreadsheet-document.readonly {
@@ -14,14 +14,13 @@
 	padding: 0;
 	left: 162px;
 	right: 0;
-	bottom: 33px;
+	bottom: 37px;
 	position: absolute;
 	cursor: pointer;
-	height: 32px;
+	height: 36px;
 	overflow: hidden;
 	white-space: nowrap;
-
-	background-color: #efefef;
+	background-color: #fafafa;
 	}
 
 .spreadsheet-tab-scroll {
@@ -29,8 +28,6 @@
 	height: 100%;
 	overflow: auto;
 	padding-bottom: 20px; /* to hide the scroolbar */
-
-	margin-left: 6px;
 	}
 
 .spreadsheet-tab {
@@ -41,11 +38,10 @@
 	padding-right: 9px;
 	padding-top: 3px;
 	padding-bottom: 3px;
-
-	font: 12px/1.5 "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 14px;
 	display: inline-block;
 	border: 1px solid darkgrey;
-	background-color: lightgrey;
+	background-color: #f0f0f0;
 	color: black;
 	}
 
@@ -56,13 +52,14 @@
 	padding-top: 6px;
 	border: 1px solid #dfdfdf;
 	border-top: 0px;
+	font-size: 14px;
 	}
 
 #spreadsheet-row-column-frame {
 	position: absolute;
 	left: 0;
 	right: 0;
-	top: 108px;
+	top: 113px;
 	bottom: 65px;
 }
 
@@ -72,7 +69,7 @@
 
 #spreadsheet-header-corner-container {
 	border: 1px solid darkgrey;
-	background-color: lightgrey;
+	background-color: #f0f0f0;
 	cursor: pointer;
 
 	position: absolute;
@@ -104,8 +101,8 @@
 	}
 
 #spreadsheet-header-columns-container {
-	border: 1px solid darkgrey;
-	background-color: lightgrey;
+	border: 1px solid #bbbbbb;
+	background-color: #f0f0f0;
 
 	position: absolute;
 	display: inline-block;
@@ -129,10 +126,10 @@
 	}
 
 .spreadsheet-header-column {
-	border: 1px solid darkgray;
+	border: 1px solid #bbbbbb;
+	background-color: #f0f0f0;
 	font: 12px/1.5 "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
 	color: black;
-	background-color: lightgray;
 	cursor: pointer;
 }
 
@@ -150,8 +147,8 @@
 }
 
 #spreadsheet-header-rows-container {
-	border: 1px solid darkgrey;
-	background-color: lightgrey;
+	border: 1px solid #bbbbbb;
+	background-color: #f0f0f0;
 
 	position: absolute;
 	left: 0;
@@ -171,10 +168,11 @@
 	}
 
 .spreadsheet-header-row {
-	border: 1px solid darkgray;
-	font: 12px/1.5 "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
+	border: 1px solid #bbbbbb;
+	background-color: #f0f0f0;
+	font-size: 14px;
 	color: black;
-	background-color: lightgray;
+	font: 12px/1.5 "Segoe UI", Tahoma, Arial, Helvetica, sans-serif;
 	cursor: pointer;
 	}
 

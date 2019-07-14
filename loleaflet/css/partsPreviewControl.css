@@ -1,22 +1,33 @@
 #document-container.parts-preview-document {
-        left: 214px;
+        left: 250px;
+	bottom: 37px;
 }
 
 #slide-sorter {
-	height: 100%
+	height: 100%;
 }
 
 .preview-frame {
-	max-width: 190px;
+	width: 250px;
 	white-space: nowrap;
-	text-align: center; margin: 1em 0;
-	}
+	text-align: center;
+	margin: 1em 0;
+}
 
 .preview-helper {
 	display: inline-block;
 	height: 100%;
-	vertical-align: middle;
-	}
+	vertical-align: top;
+	font-size: 14px;
+	color: #d86344;
+	margin-right: 4px;
+}
+
+.preview-slide-no {
+	display: inline-block;
+	height: 100%;
+	vertical-align: top;
+}
 
 .preview-img {
 	/* In draw docs, the width of previews are small, but we want a min of 180px to align it with document's left edge */
@@ -25,8 +36,13 @@
 	max-width: 184px;
 	cursor: pointer;
 	border: 2px solid #dfdfdf;
-	}
+}
 
 .preview-img-selected {
 	border-color: #000000;
 }
+
+.mCSB_container {
+	margin-right: 0px !important;
+}
+

@@ -2,8 +2,8 @@
 	border-top: 1px solid #B6B6B6;
 	background: #DFDFDF;
 	position: absolute;
-	top: 70px;
-	bottom: 33px;
+	top: 72px;
+	bottom: 37px;
 	right: 0px;
 	left: 0px;
 }
@@ -45,13 +45,14 @@ body {
 }
 
 #presentation-controls-wrapper {
-    background: #dfdfdf;
+    background: #fff;
     position: absolute;
-    top: 70px;
+    top: 72px;
     left: 0px;
-    bottom: 66px;
-    max-width: 218px;
-    border-top: 1px solid #b6b6b6;
+    bottom: 77px;
+    max-width: 249px;
+    border-top: 1px solid #bbbbbb;
+    border-right: 1px solid #bbbbbb;
     display: block;
 }
 
@@ -68,6 +69,7 @@ body {
     table-layout: fixed;
     border-collapse: collapse;
     width: 100%;
+    border-top: 1px solid #bbbbbb;
 }
 
 #toolbar-logo {
