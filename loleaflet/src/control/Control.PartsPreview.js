@@ -66,7 +66,8 @@ L.Control.PartsPreview = L.Control.extend({
 
 	_createPreview: function (i, hashCode, bottomBound) {
 		var frame = L.DomUtil.create('div', 'preview-frame', this._partsPreviewCont);
-		L.DomUtil.create('span', 'preview-helper', frame);
+		var helper = L.DomUtil.create('div', 'preview-helper', frame);
+		$(helper).text(i + 1);
 
 		var imgClassName = 'preview-img';
 		var img = L.DomUtil.create('img', imgClassName, frame);
