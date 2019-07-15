@@ -35,11 +35,11 @@
 	vertical-align: middle;
 	max-width: 184px;
 	cursor: pointer;
-	border: 2px solid #dfdfdf;
+	border: 2px solid #f0f0f0;
 }
 
 .preview-img-selected {
-	border-color: #000000;
+	border-color: #d86344;
 }
 
 .mCSB_container {

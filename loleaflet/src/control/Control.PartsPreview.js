@@ -184,6 +184,14 @@ L.Control.PartsPreview = L.Control.extend({
 				}
 			}
 		}
+		// Add by Firefly <firefly@ossii.com.tw>
+		// 更新這張投影片(含)之後的編號
+		var slides = $('#slide-sorter .mCSB_container .preview-frame');
+		for (it = e.selectedPart; it < slides.length ; it++)
+		{
+			$(slides[it].childNodes[0]).text(it+1);
+		}
+		//---------------------------------------------------------
 	},
 
 	_updatePreview: function (e) {
