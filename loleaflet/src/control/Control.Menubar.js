@@ -289,7 +289,9 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrl+K'},
 				{type: 'separator'},
-				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'}]
+				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
+				{type: 'separator'},
+				{name: _UNO('.uno:HeaderAndFooter', 'presentation'), uno: '.uno:HeaderAndFooter'}]
 			},
 			{name: _UNO('.uno:FormatMenu', 'presentation'), type: 'menu', menu: [
 				{uno: '.uno:FontDialog', icon: 'fa fa-font'},
@@ -379,7 +381,7 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrk+K'},
 				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
-				{uno: '.uno:EditHeaderAndFooter'}
+				{name: _UNO('.uno:HeaderAndFooter', 'spreadsheet'), uno: '.uno:EditHeaderAndFooter'}
 			]},
 			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), type: 'menu', menu: [
 				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'},
@@ -798,12 +800,6 @@ L.Control.Menubar = L.Control.extend({
 			this._map.remove();
 		} else if (id === 'repair') {
 			this._map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');
-		} else if (id === 'insertLine') {
-			var msg = 'uno .uno:StyleApply {' +
-					'"FamilyName":{"type":"string", "value":"ParagraphStyles"},' +
-					'"Style":{"type":"string", "value": "Horizontal Line"}' +
-					'}';
-			this._map._socket.sendMessage(msg);
 		} else if (id === 'functionDialog') {
 			this._map.sendUnoCommand('.uno:FunctionDialog');
 		} else if (id === 'conditionalFormatDialog') {
@@ -814,7 +810,8 @@ L.Control.Menubar = L.Control.extend({
 		} else if (id === 'drawLine') {
 			this._map.sendUnoCommand('.uno:Line');
 		} else if (id === 'inserthorizontalline') {
-			this._map.sendUnoCommand('.uno:StyleApply {"FamilyName":{"type":"string", "value": "ParagraphStyles"},"Style":{"type":"string", "value": "Horizontal Line"}}');
+			//this._map.sendUnoCommand('.uno:StyleApply', '{"FamilyName":{"type":"string", "value": "ParagraphStyles"},"Style":{"type":"string", "value": "Horizontal Line"}}');
+			this._map.sendUnoCommand('.uno:StyleApply', {FamilyName:{type:'string', value: 'ParagraphStyles'},Style:{type:'string', value: 'Horizontal Line'}});
 		} else if (id === 'a4portrait') {
 			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Width":{"type":"long", "value": "21000"},"AttributePageSize.Height":{"type":"long", "value": "29700"}}');
 			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "false"}}');
