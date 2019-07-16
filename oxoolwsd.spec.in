@@ -15,7 +15,7 @@ Name:           @PACKAGE_NAME@%{name_suffix}
 Name:           @PACKAGE_NAME@
 %endif
 Version:        @PACKAGE_VERSION@
-Release:        1%{?dist}
+Release:        @LOOLWSD_VERSION_DIST@%{?dist}
 Vendor:         %{vendor}
 Summary:        OxOffice Online WebSocket Daemon
 License:        MPL

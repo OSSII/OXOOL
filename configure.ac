@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 
-AC_INIT([oxoolwsd], [3.1], [develop@ossii.com.tw])
+AC_INIT([oxoolwsd], [3.1.1], [develop@ossii.com.tw])
 LT_INIT([shared, disable-static, dlopen])
 
 AM_INIT_AUTOMAKE([1.10 subdir-objects tar-pax -Wno-portability])
@@ -17,7 +17,7 @@ LOOLWSD_VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
 LOOLWSD_VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
 LOOLWSD_VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
 LOOLWSD_VERSION="$LOOLWSD_VERSION_MAJOR.$LOOLWSD_VERSION_MINOR"
-LOOLWSD_VERSION_DIST=7
+LOOLWSD_VERSION_DIST=1
 
 AC_SUBST([LOOLWSD_VERSION_MAJOR])
 AC_SUBST([LOOLWSD_VERSION_MINOR])
