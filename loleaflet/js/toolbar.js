@@ -29,23 +29,42 @@ function onDelete(e) {
 	}
 }
 
+// make functions visible outside: window.mode.isMobile()
+global.mode = {
+	isMobile: _inMobileMode,
+	isTablet: _inTabletMode,
+	isDesktop: _inDesktopMode
+};
+
 var nUsers, oneUser, noUser;
 
-function _mobilify() {
-	var toolbarUp = w2ui['editbar'];
-	var statusbar = w2ui['actionbar'];
+function _updateVisibilityForToolbar(toolbar) {
+	var isDesktop = _inDesktopMode();
+	var isMobile = _inMobileMode();
+	var isTablet = _inTabletMode();
 
-	toolbarUp.items.forEach(function(item) {
-		if (item.mobile === false && !item.hidden) {
-			toolbarUp.hide(item.id);
+	var toShow = [];
+	var toHide = [];
+
+	toolbar.items.forEach(function(item) {
+		if (((isMobile && item.mobile === false) || (isTablet && item.tablet === false) || (isDesktop && item.desktop === false) || (!window.ThisIsAMobileApp && item.mobilebrowser === false)) && !item.hidden) {
+			toHide.push(item.id);
+		}
+		else if (((isMobile && item.mobile === true) || (isTablet && item.tablet === true) || (isDesktop && item.desktop === true) || (window.ThisIsAMobileApp && item.mobilebrowser === true)) && item.hidden) {
+			toShow.push(item.id);
 		}
 	});
 
-	statusbar.items.forEach(function(item) {
-		if (item.mobile === false && !item.hidden) {
-			statusbar.hide(item.id);
-		}
-	});
+	console.log('explicitly hiding: ' + toHide);
+	console.log('explicitly showing: ' + toShow);
+
+	toHide.forEach(function(item) { toolbar.hide(item); });
+	toShow.forEach(function(item) { toolbar.show(item); });
+}
+
+function _updateToolbarsVisibility() {
+	_updateVisibilityForToolbar(w2ui['editbar']);
+	_updateVisibilityForToolbar(w2ui['actionbar']);
 }
 
 function resizeToolbar() {
@@ -261,11 +280,8 @@ function onClick(e, id, item, subItem) {
 			map.sendUnoCommand('.uno:StatusBarFunc', command);
 		});
 	}
-	else if (id === 'logout') {
-		map.signingLogout();
-	}
-	else if (id === 'sign') {
-		map.signDocument();
+	else if (id === 'fold' || id === 'hamburger-tablet') {
+		map.toggleMenubar();
 	}
 	else if (id === 'fullscreen') {
 		if (item.checked) {
@@ -284,6 +300,9 @@ function onClick(e, id, item, subItem) {
 			map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
 		}
 		map.remove();
+	}
+	else {
+		console.log('有 id 未處理 : ' + id)
 	}
 }
 
@@ -346,7 +365,6 @@ function setBorderStyle(num) {
 	default: console.log('ignored border: ' + num);
 	}
 
-	// close the popup
 	// TODO we may consider keeping it open in the future if we add border color
 	// and style to this popup too
 	closePopup();
@@ -362,7 +380,6 @@ function setConditionalFormatIconSet(num) {
 		}};
 	map.sendUnoCommand('.uno:IconSetFormatDialog', params);
 
-	// close the popup
 	closePopup();
 }
 
@@ -408,13 +425,13 @@ function insertTable() {
 
 			map._socket.sendMessage(msg);
 
-			closePopup();
+			closePopup()
 		}
 	}, '.col');
 }
 
 var shapes = {
-	'Basic': [
+	'Basic Shapes': [
 		{img: 'basicshapes_rectangle', uno: 'BasicShapes.rectangle'},
 		{img: 'basicshapes_round-rectangle', uno: 'BasicShapes.round-rectangle'},
 		{img: 'basicshapes_quadrat', uno: 'BasicShapes.quadrat'},
@@ -465,7 +482,7 @@ var shapes = {
 		{img: 'symbolshapes_diamond-bevel', uno: 'SymbolShapes.diamond-bevel'}
 	],
 
-	'Arrows': [
+	'Block Arrows': [
 		{img: 'arrowshapes_left-arrow', uno: 'ArrowShapes.left-arrow'},
 		{img: 'arrowshapes_right-arrow', uno: 'ArrowShapes.right-arrow'},
 		{img: 'arrowshapes_up-arrow', uno: 'ArrowShapes.up-arrow'},
@@ -498,7 +515,7 @@ var shapes = {
 		{img: 'arrowshapes_s-sharped-arrow', uno: 'ArrowShapes.s-sharped-arrow'}
 	],
 
-	'Star': [
+	'Stars': [
 		{img: 'starshapes_bang', uno: 'StarShapes.bang'},
 		{img: 'starshapes_star4', uno: 'StarShapes.star4'},
 		{img: 'starshapes_star5', uno: 'StarShapes.star5'},
@@ -514,7 +531,7 @@ var shapes = {
 		{img: 'starshapes_doorplate', uno: 'StarShapes.doorplate'}
 	],
 
-	'Callout': [
+	'Callouts': [
 		{img: 'calloutshapes_rectangular-callout', uno: 'CalloutShapes.rectangular-callout'},
 		{img: 'calloutshapes_round-rectangular-callout', uno: 'CalloutShapes.round-rectangular-callout'},
 		{img: 'calloutshapes_round-callout', uno: 'CalloutShapes.round-callout'},
@@ -568,7 +585,7 @@ function insertShapes() {
 		return;
 
 	for (var s in shapes) {
-		var $rowHeader = $('<div/>').addClass('row-header loleaflet-font').append(s);
+		var $rowHeader = $('<div/>').addClass('row-header loleaflet-font').append(_(s));
 		$grid.append($rowHeader);
 
 		var rows = Math.ceil(shapes[s].length / width);
@@ -723,6 +740,9 @@ var stylesSelectValue;
 var fontsSelectValue;
 var fontsizesSelectValue;
 
+// mobile:false means hide it both for normal Online used from a mobile browser, and in a mobile app
+// mobilebrowser:false means hide it for normal Online used from a mobile browser, but don't hide it in a mobile app
+
 function createToolbar() {
 	var toolItems = [
 		{type: 'button',  id: 'closemobile',  img: 'closemobile', desktop: false, mobile: false, tablet: true, hidden: true},
@@ -733,9 +753,9 @@ function createToolbar() {
 		{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true, mobile: false},
 		{type: 'button',  id: 'formatpaintbrush',  img: 'copyformat', hint: _UNO('.uno:FormatPaintbrush'), uno: 'FormatPaintbrush', mobile: false},
 		{type: 'button',  id: 'reset',  img: 'deleteformat', hint: _UNO('.uno:ResetAttributes', 'text'), uno: 'ResetAttributes', mobile: false},
-		{type: 'break', mobile: false, tablet: false},
+		{type: 'break', mobile: false},
 		{type: 'html', id: 'styles',
-			html: '<select class="styles-select"><option>' + _('Default Style') + '</option></select>',
+			html: '<select class="styles-select"><option>Default Style</option></select>',
 			onRefresh: function (edata) {
 				if (!edata.item.html) {
 					edata.isCancelled = true;
@@ -775,14 +795,14 @@ function createToolbar() {
 		{type: 'button',  id: 'italic', img: 'italic', hint: _UNO('.uno:Italic'), uno: 'Italic'},
 		{type: 'button',  id: 'underline',  img: 'underline', hint: _UNO('.uno:Underline'), uno: 'Underline'},
 		{type: 'button',  id: 'strikeout', img: 'strikeout', hint: _UNO('.uno:Strikeout'), uno: 'Strikeout'},
-		{type: 'break', id: 'formatbreak'},
+		{type: 'break'},
 		{type: 'text-color',  id: 'fontcolor', hint: _UNO('.uno:FontColor')},
 		{type: 'color',  id: 'backcolor', hint: _UNO('.uno:BackgroundColor')},
-		{type: 'break', mobile: false},
-		{type: 'button',  id: 'leftpara',  img: 'alignleft', hint: _UNO('.uno:LeftPara', '', true), uno: 'LeftPara', unosheet: 'AlignLeft', hidden:true, disabled: true},
-		{type: 'button',  id: 'centerpara',  img: 'alignhorizontal', hint: _UNO('.uno:CenterPara', '', true), uno: 'CenterPara', unosheet: 'AlignHorizontalCenter', hidden:true, disabled: true},
-		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:RightPara', '', true), uno: 'RightPara', unosheet: 'AlignRight', hidden:true, disabled: true},
-		{type: 'button',  id: 'justifypara',  img: 'alignblock', hint: _UNO('.uno:JustifyPara', '', true), uno: 'JustifyPara', unosheet: '', hidden:true, disabled: true},
+		{type: 'break' , mobile:false},
+		{type: 'button',  id: 'leftpara',  img: 'alignleft', hint: _UNO('.uno:LeftPara', '', true), uno: 'LeftPara', hidden: true, unosheet: 'AlignLeft', disabled: true},
+		{type: 'button',  id: 'centerpara',  img: 'alignhorizontal', hint: _UNO('.uno:CenterPara', '', true), uno: 'CenterPara', hidden: true, unosheet: 'AlignHorizontalCenter', disabled: true},
+		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:RightPara', '', true), uno: 'RightPara', hidden: true, unosheet: 'AlignRight', disabled: true},
+		{type: 'button',  id: 'justifypara',  img: 'alignblock', hint: _UNO('.uno:JustifyPara', '', true), uno: 'JustifyPara', hidden: true, unosheet: '', disabled: true},
 		{type: 'break', id: 'breakpara', hidden: true},
 		{type: 'drop',  id: 'setborderstyle',  img: 'setborderstyle', hint: _('Borders'), hidden: true,
 			html: '<table id="setborderstyle-grid"><tr><td class="w2ui-tb-image w2ui-icon frame01" onclick="setBorderStyle(1)"></td>' +
@@ -798,10 +818,10 @@ function createToolbar() {
 		{type: 'break', id: 'breakmergecells', hidden: true},
 		{type: 'menu', id: 'textalign', img: 'alignblock', hint: _UNO('.uno:TextAlign'), hidden: true,
 			items: [
-				{id: 'alignleft', text: _UNO('.uno:LeftPara', '', true), icon: 'alignleft', uno: 'AlignLeft'},
-				{id: 'alignhorizontalcenter', text: _UNO('.uno:CenterPara', '', true), icon: 'alignhorizontal', uno: 'AlignHorizontalCenter'},
-				{id: 'alignright', text: _UNO('.uno:RightPara', '', true), icon: 'alignright', uno: 'AlignRight'},
-				{id: 'alignblock', text: _UNO('.uno:JustifyPara', '', true), icon: 'alignblock', uno: 'AlignBlock'},
+				{id: 'alignleft', text: _UNO('.uno:AlignLeft', 'spreadsheet', true), icon: 'alignleft', uno: 'AlignLeft'},
+				{id: 'alignhorizontalcenter', text: _UNO('.uno:AlignHorizontalCenter', 'spreadsheet', true), icon: 'alignhorizontal', uno: 'AlignHorizontalCenter'},
+				{id: 'alignright', text: _UNO('.uno:AlignRight', 'spreadsheet', true), icon: 'alignright', uno: 'AlignRight'},
+				{id: 'alignblock', text: _UNO('.uno:AlignBlock', 'spreadsheet', true), icon: 'alignblock', uno: 'AlignBlock'},
 				{type: 'break'},
 				{id: 'aligntop', text: _UNO('.uno:CommonAlignTop', '', true), icon: 'aligntop', uno: 'CommonAlignTop'},
 				{id: 'alignmiddle', text: _UNO('.uno:CommonAlignVerticalCenter', '', true), icon: 'alignmiddle', uno: 'CommonAlignVerticalCenter'},
@@ -809,23 +829,23 @@ function createToolbar() {
 			]},
 		{type: 'menu',  id: 'linespacing',  img: 'linespacing', hint: _UNO('.uno:FormatSpacingMenu'), hidden: true,
 			items: [
-					{id: 'spacepara1', text: _UNO('.uno:SpacePara1'), uno: 'SpacePara1'},
-					{id: 'spacepara15', text: _UNO('.uno:SpacePara15'), uno: 'SpacePara15'},
-					{id: 'spacepara2', text: _UNO('.uno:SpacePara2'), uno: 'SpacePara2'},
-					{type: 'break'},
-					{id: 'paraspaceincrease', text: _UNO('.uno:ParaspaceIncrease'), uno: 'ParaspaceIncrease'},
-					{id: 'paraspacedecrease', text: _UNO('.uno:ParaspaceDecrease'), uno: 'ParaspaceDecrease'}
+				{id: 'spacepara1', text: _UNO('.uno:SpacePara1'), uno: 'SpacePara1'},
+				{id: 'spacepara15', text: _UNO('.uno:SpacePara15'), uno: 'SpacePara15'},
+				{id: 'spacepara2', text: _UNO('.uno:SpacePara2'), uno: 'SpacePara2'},
+				{type: 'break'},
+				{id: 'paraspaceincrease', text: _UNO('.uno:ParaspaceIncrease'), uno: 'ParaspaceIncrease'},
+				{id: 'paraspacedecrease', text: _UNO('.uno:ParaspaceDecrease'), uno: 'ParaspaceDecrease'}
 			]},
 		{type: 'button',  id: 'wraptext',  img: 'wraptext', hint: _UNO('.uno:WrapText', 'spreadsheet', true), hidden: true, uno: 'WrapText', disabled: true},
 		{type: 'break', id: 'breakspacing', hidden: true},
-		{type: 'button',  id: 'defaultnumbering',  img: 'numbering', hint: _UNO('.uno:DefaultNumbering', '', true), uno: 'DefaultNumbering', hidden: true, disabled: true},
-		{type: 'button',  id: 'defaultbullet',  img: 'bullet', hint: _UNO('.uno:DefaultBullet', '', true), uno: 'DefaultBullet', hidden: true, disabled: true},
+		{type: 'button',  id: 'defaultnumbering',  img: 'numbering', hint: _UNO('.uno:DefaultNumbering', '', true), hidden: true, uno: 'DefaultNumbering', disabled: true},
+		{type: 'button',  id: 'defaultbullet',  img: 'bullet', hint: _UNO('.uno:DefaultBullet', '', true), hidden: true, uno: 'DefaultBullet', disabled: true},
 		{type: 'break', id: 'breakbullet', hidden: true},
 		{type: 'button',  id: 'incrementindent',  img: 'incrementindent', hint: _UNO('.uno:IncrementIndent', '', true), uno: 'IncrementIndent', hidden: true, disabled: true},
 		{type: 'button',  id: 'decrementindent',  img: 'decrementindent', hint: _UNO('.uno:DecrementIndent', '', true), uno: 'DecrementIndent', hidden: true, disabled: true},
 		{type: 'break', id: 'breakindent', hidden: true},
-		{type: 'button',  id: 'sortascending',  img: 'sortascending', hint: _UNO('.uno:SortAscending', 'spreadsheet', true), uno: 'SortAscending', hidden: true, disabled: true},
-		{type: 'button',  id: 'sortdescending',  img: 'sortdescending', hint: _UNO('.uno:SortDescending', 'spreadsheet', true), uno: 'SortDescending', hidden: true, disabled: true},
+		{type: 'button',  id: 'sortascending',  img: 'sortascending', hint: _UNO('.uno:SortAscending', 'spreadsheet', true), uno: 'SortAscending', disabled: true, hidden: true},
+		{type: 'button',  id: 'sortdescending',  img: 'sortdescending', hint: _UNO('.uno:SortDescending', 'spreadsheet', true), uno: 'SortDescending', disabled: true, hidden: true},
 		{type: 'break', id: 'breaksorting', hidden: true},
 		{type: 'drop', id: 'conditionalformaticonset',  img: 'conditionalformatdialog', hint: _UNO('.uno:ConditionalFormatMenu', 'spreadsheet', true), hidden: true,
 			html: '<table id="conditionalformatmenu-grid"><tr>' +
@@ -837,16 +857,15 @@ function createToolbar() {
 				  '<td class="w2ui-tb-image w2ui-icon iconset16" onclick="setConditionalFormatIconSet(16)"/><td class="w2ui-tb-image w2ui-icon iconset17" onclick="setConditionalFormatIconSet(17)"/><td class="w2ui-tb-image w2ui-icon iconset18" onclick="setConditionalFormatIconSet(18)"/></tr><tr>' +
 				  '<td class="w2ui-tb-image w2ui-icon iconset19" onclick="setConditionalFormatIconSet(19)"/><td class="w2ui-tb-image w2ui-icon iconset20" onclick="setConditionalFormatIconSet(20)"/><td class="w2ui-tb-image w2ui-icon iconset21" onclick="setConditionalFormatIconSet(21)"/></tr></table>'
 		},
-		{type: 'button',  id: 'numberformatcurrency',  img: 'numberformatcurrency', hint: _UNO('.uno:NumberFormatCurrency', 'spreadsheet', true), uno: 'NumberFormatCurrency', hidden: true, disabled: true},
-		{type: 'button',  id: 'numberformatpercent',  img: 'numberformatpercent', hint: _UNO('.uno:NumberFormatPercent', 'spreadsheet', true), uno: 'NumberFormatPercent', hidden: true, disabled: true},
-		{type: 'button',  id: 'numberformatdecimal',  img: 'numberformatdecimal', hint: _UNO('.uno:NumberFormatDecimal', 'spreadsheet', true), uno: 'NumberFormatDecimal', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatcurrency',  img: 'numberformatcurrency', hint: _UNO('.uno:NumberFormatCurrency', 'spreadsheet', true), hidden: true, uno: 'NumberFormatCurrency', disabled: true},
+		{type: 'button',  id: 'numberformatpercent',  img: 'numberformatpercent', hint: _UNO('.uno:NumberFormatPercent', 'spreadsheet', true), hidden: true, uno: 'NumberFormatPercent', disabled: true},
 		{type: 'button',  id: 'numberformatdate',  img: 'numberformatdate', hint: _UNO('.uno:NumberFormatDate', 'spreadsheet', true), uno: 'NumberFormatDate', hidden: true, disabled: true},
-		{type: 'button',  id: 'numberformatincdecimals',  img: 'numberformatincdecimals', hint: _UNO('.uno:NumberFormatIncDecimals', 'spreadsheet', true), uno: 'NumberFormatIncDecimals', hidden: true, disabled: true},
-		{type: 'button',  id: 'numberformatdecdecimals',  img: 'numberformatdecdecimals', hint: _UNO('.uno:NumberFormatDecDecimals', 'spreadsheet', true), uno: 'NumberFormatDecDecimals', hidden: true, disabled: true},
+		{type: 'button',  id: 'numberformatdecdecimals',  img: 'numberformatdecdecimals', hint: _UNO('.uno:NumberFormatDecDecimals', 'spreadsheet', true), hidden: true, uno: 'NumberFormatDecDecimals', disabled: true},
+		{type: 'button',  id: 'numberformatincdecimals',  img: 'numberformatincdecimals', hint: _UNO('.uno:NumberFormatIncDecimals', 'spreadsheet', true), hidden: true, uno: 'NumberFormatIncDecimals', disabled: true},
 		{type: 'break',   id: 'break-number', hidden: true},
 		{type: 'button',  id: 'insertannotation', img: 'insertannotation', hint: _UNO('.uno:InsertAnnotation', '', true), hidden: true},
 		{type: 'drop',  id: 'inserttable',  img: 'inserttable', hint: _('Insert table'), hidden: true, overlay: {onShow: insertTable},
-		 html: '<div id="inserttable-wrapper"><div id="inserttable-popup" class="inserttable-pop ui-widget ui-widget-content ui-corner-all"><div class="inserttable-grid"></div><div id="inserttable-status" class="loleaflet-font" style="padding: 5px;"><br/></div></div></div>'},
+		 html: '<div id="inserttable-wrapper"><div id="inserttable-popup" class="inserttable-pop ui-widget ui-corner-all"><div class="inserttable-grid"></div><div id="inserttable-status" class="loleaflet-font" style="padding: 5px;"><br/></div></div></div>'},
 		{type: 'button',  id: 'insertgraphic',  img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true)},
 		{type: 'menu', id: 'menugraphic', img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), hidden: true,
 			items: [
@@ -855,17 +874,23 @@ function createToolbar() {
 			]},
 		{type: 'button',  id: 'insertobjectchart',  img: 'insertobjectchart', hint: _UNO('.uno:InsertObjectChart', '', true), uno: 'InsertObjectChart'},
 		{type: 'drop',  id: 'insertshapes',  img: 'basicshapes_ellipse', hint: _('Insert shapes'), overlay: {onShow: insertShapes},
-		 html: '<div id="insertshape-wrapper"><div id="insertshape-popup" class="insertshape-pop ui-widget ui-widget-content ui-corner-all"><div class="insertshape-grid"></div></div></div>'},
+			html: '<div id="insertshape-wrapper"><div id="insertshape-popup" class="insertshape-pop ui-widget ui-corner-all"><div class="insertshape-grid"></div></div></div>'},
 		{type: 'drop',  id: 'animationeffects',  img: 'animationeffects', hint: _('Side Transition'), overlay: {onShow: animationEffects},
-		 html: '<div id="animationeffects-wrapper"><div id="animationeffects-popup" class="ui-widget ui-widget-content ui-corner-all"><div class="animationeffects-grid"></div></div></div>', hidden: true},
-		{type: 'button',  id: 'inserthyperlink',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true},
-		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: '.uno:InsertSymbol'},
-		
+			html: '<div id="animationeffects-wrapper"><div id="animationeffects-popup" class="ui-widget ui-widget-content ui-corner-all"><div class="animationeffects-grid"></div></div></div>', hidden: true},
+		{type: 'button',  id: 'link',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true},
+		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: 'InsertSymbol'},
+		{type: 'spacer'},
+		{type: 'button',  id: 'edit',  img: 'edit'},
+		{type: 'button',  id: 'fold',  img: 'fold', desktop: true, mobile: false, hidden: true},
+		{type: 'button',  id: 'hamburger-tablet',  img: 'hamburger', desktop: false, mobile: false, tablet: true, hidden: true}
 	];
 
 	if (_inMobileMode()) {
+		// 暫時關掉手機模式啟用編輯按鈕
+		//$('#mobile-edit-button').show();
 		initMobileToolbar(toolItems);
 	} else {
+		$('#toolbar-down').show();
 		initNormalToolbar(toolItems);
 	}
 }
@@ -878,10 +903,12 @@ function initMobileToolbar(toolItems) {
 		items: [
 			{type: 'button',  id: 'closemobile',  img: 'closemobile'},
 			{type: 'spacer'},
+			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text'), hidden: true},
+			{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text'), hidden: true},
 			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
 			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
-			//{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
-			{type: 'drop', id: 'userlist', img: 'users', html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
+			{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
+			{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
 				'<hr><table class="loleaflet-font" id="editor-btn">' +
 				'<tr>' +
 				'<td><input type="checkbox" name="alwaysFollow" id="follow-checkbox" onclick="editorUpdate(event)"></td>' +
@@ -891,22 +918,27 @@ function initMobileToolbar(toolItems) {
 				'<p id="currently-msg">' + _('Current') + ' - <b><span id="current-editor"></span></b></p>' +
 				'</div>'
 			},
-			{type: 'break', id: 'prevnextbreak'},
-			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text')},
-			{type: 'break'},
-			{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text')},
-			{type: 'break', id:'break1'},
-			{
-				type: 'html', id: 'PageStatus',
-				html: '<div id="PageStatus" class="loleaflet-font" title="' + _('Number of Slides') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
-			}
 		],
 		onClick: function (e) {
 			onClick(e, e.target);
 			hideTooltip(this, e.target);
+		},
+		onRefresh: function() {
+			/*var showUserList = map['wopi'].HideUserList !== null &&
+								map['wopi'].HideUserList !== undefined &&
+								$.inArray('true', map['wopi'].HideUserList) < 0 &&
+								((window.mode.isMobile() && $.inArray('mobile', map['wopi'].HideUserList) < 0) ||
+								(window.mode.isTablet() && $.inArray('tablet', map['wopi'].HideUserList) < 0));*/
+			var showUserList = true;
+			if (this.get('userlist').hidden == true && showUserList) {
+				this.show('userlist');
+				this.show('userlistbreak');
+				map.on('deselectuser', deselectUser);
+				map.on('addview', onAddView);
+				map.on('removeview', onRemoveView);
+			}
 		}
 	});
-
 	toolbar.bind('touchstart', function(e) {
 		w2ui['actionbar'].touchStarted = true;
 		var touchEvent = e.originalEvent;
@@ -919,6 +951,7 @@ function initMobileToolbar(toolItems) {
 	toolbar.w2toolbar({
 		name: 'formulabar',
 		tooltip: 'bottom',
+		hidden: true,
 		items: [
 			{type: 'html',  id: 'left'},
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
@@ -929,7 +962,6 @@ function initMobileToolbar(toolItems) {
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
 			{type: 'button', hidden: true, id: 'acceptformula',  img: 'accepttrackedchanges', hint: _('Accept')},
 			{type: 'html', id: 'formula', html: '<input id="formulaInput" type="text">'}
-
 		],
 		onClick: function (e) {
 			onClick(e, e.target);
@@ -959,12 +991,13 @@ function initMobileToolbar(toolItems) {
 	toolbar.w2toolbar({
 		name: 'spreadsheet-toolbar',
 		tooltip: 'bottom',
+		hidden: true,
 		items: [
-			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hidden: true, hint: _('First sheet')},
-			{type: 'button',  id: 'prevrecord',  img: 'prevrecord', hidden: true, hint: _('Previous sheet')},
-			{type: 'button',  id: 'nextrecord',  img: 'nextrecord', hidden: true, hint: _('Next sheet')},
-			{type: 'button',  id: 'lastrecord',  img: 'lastrecord', hidden: true, hint: _('Last sheet')},
-			{type: 'button',  id: 'insertsheet', img: 'insertsheet', hidden:true, hint: _('Insert sheet')}
+			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hint: _('First sheet')},
+			{type: 'button',  id: 'prevrecord',  img: 'prevrecord', hint: _('Previous sheet')},
+			{type: 'button',  id: 'nextrecord',  img: 'nextrecord', hint: _('Next sheet')},
+			{type: 'button',  id: 'lastrecord',  img: 'lastrecord', hint: _('Last sheet')},
+			{type: 'button',  id: 'insertsheet', img: 'insertsheet', hint: _('Insert sheet')}
 		],
 		onClick: function (e) {
 			onClick(e, e.target);
@@ -983,6 +1016,7 @@ function initMobileToolbar(toolItems) {
 	toolbar.w2toolbar({
 		name: 'presentation-toolbar',
 		tooltip: 'bottom',
+		hidden: true,
 		items: []
 	});
 
@@ -996,7 +1030,7 @@ function initMobileToolbar(toolItems) {
 			hideTooltip(this, e.target);
 		},
 		onRefresh: function(edata) {
-			if (edata.item && (edata.item.id === 'styles' || edata.item.id === 'fonts' || edata.item.id === 'fontsizes')) {
+			if (edata.target === 'styles' || edata.target === 'fonts' || edata.target === 'fontsizes') {
 				var toolItem = $(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(edata.item.id));
 				if (edata.item.hidden) {
 					toolItem.css('display', 'none');
@@ -1100,11 +1134,11 @@ function initNormalToolbar(toolItems) {
 	toolbar.w2toolbar({
 		name: 'formulabar',
 		tooltip: 'bottom',
+		hidden: true,
 		items: [
 			{type: 'html',  id: 'left'},
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
 			{type: 'break'},
-			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _('Function Wizard')},
 			{type: 'button',  id: 'sum',  img: 'autosum', hint: _('Sum')},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _('Function')},
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
@@ -1136,16 +1170,7 @@ function initNormalToolbar(toolItems) {
 		toolbar.w2toolbar({
 			name: 'document-signing-bar',
 			tooltip: 'bottom',
-			items: [
-				{type: 'html',  id: 'left'},
-				{type: 'html', id: 'logo', html: '<p><b>Vereign</b></p>'},
-				{type: 'button',  id: 'sign',  caption: 'Sign', img: '', hint: _('Sign document')},
-				{type: 'break' },
-				{type: 'html', id: 'user-label', html: '<p>User:</p>'},
-				{type: 'html', id: 'user', html: '<none>'},
-				{type: 'break' },
-				{type: 'button',  id: 'logout',  caption: 'Logout', img: '', hint: _('Logout')},
-			],
+			items: map.setupSigningToolbarItems(),
 			onClick: function (e) {
 				onClick(e, e.target);
 				hideTooltip(this, e.target);
@@ -1162,12 +1187,13 @@ function initNormalToolbar(toolItems) {
 	toolbar.w2toolbar({
 		name: 'spreadsheet-toolbar',
 		tooltip: 'bottom',
+		hidden: true,
 		items: [
-			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hidden: true, hint: _('First sheet')},
-			{type: 'button',  id: 'prevrecord',  img: 'prevrecord', hidden: true, hint: _('Previous sheet')},
-			{type: 'button',  id: 'nextrecord',  img: 'nextrecord', hidden: true, hint: _('Next sheet')},
-			{type: 'button',  id: 'lastrecord',  img: 'lastrecord', hidden: true, hint: _('Last sheet')},
-			{type: 'button',  id: 'insertsheet', img: 'insertsheet', hidden:true, hint: _('Insert sheet')}
+			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hint: _('First sheet')},
+			{type: 'button',  id: 'prevrecord',  img: 'prevrecord', hint: _('Previous sheet')},
+			{type: 'button',  id: 'nextrecord',  img: 'nextrecord', hint: _('Next sheet')},
+			{type: 'button',  id: 'lastrecord',  img: 'lastrecord', hint: _('Last sheet')},
+			{type: 'button',  id: 'insertsheet', img: 'insertsheet', hint: _('Insert sheet')}
 		],
 		onClick: function (e) {
 			onClick(e, e.target);
@@ -1182,13 +1208,14 @@ function initNormalToolbar(toolItems) {
 	toolbar.w2toolbar({
 		name: 'presentation-toolbar',
 		tooltip: 'bottom',
+		hidden: true,
 		items: [
 			{type: 'html',  id: 'left'},
 			{type: 'button',  id: 'presentation', img: 'presentation', hidden:true, hint: _('Fullscreen presentation')},
 			{type: 'break', id: 'presentationbreak', hidden:true},
-			{type: 'button',  id: 'insertpage', img: 'insertpage', hidden:true, hint: _UNO('.uno:TaskPaneInsertPage', 'presentation')},
-			{type: 'button',  id: 'duplicatepage', img: 'duplicatepage', hidden:true, hint: _UNO('.uno:DuplicateSlide', 'presentation')},
-			{type: 'button',  id: 'deletepage', img: 'deletepage', hidden:true, hint: _UNO('.uno:DeleteSlide', 'presentation')},
+			{type: 'button',  id: 'insertpage', img: 'insertpage', hint: _UNO('.uno:TaskPaneInsertPage', 'presentation')},
+			{type: 'button',  id: 'duplicatepage', img: 'duplicatepage', hint: _UNO('.uno:DuplicateSlide', 'presentation')},
+			{type: 'button',  id: 'deletepage', img: 'deletepage', hint: _UNO('.uno:DeleteSlide', 'presentation')},
 			{type: 'html',  id: 'right'}
 		],
 		onClick: function (e) {
@@ -1201,7 +1228,7 @@ function initNormalToolbar(toolItems) {
 	});
 
 	toolbar = $('#toolbar-down');
-	if ($('#main-menu').css('display') !== 'none') {
+	if (!window.mode.isMobile()) {
 		toolbar.w2toolbar({
 			name: 'actionbar',
 			tooltip: 'top',
@@ -1218,9 +1245,9 @@ function initNormalToolbar(toolItems) {
 				{type: 'button',  id: 'cancelsearch', img: 'cancel', hint: _('Cancel the search'), hidden: true},
 				{type: 'html',  id: 'left'},
 				{type: 'html',  id: 'right'},
-				{type: 'html',    id: 'modifiedstatuslabel', html: '<div id="modifiedstatuslabel" class="loleaflet-font"></div>', mobile:false},
-				{type: 'break', id: 'modifiedstatuslabelbreak', mobile:false},
-				{type: 'drop', id: 'userlist', text: _('No users'), html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
+				{type: 'html',  id: 'modifiedstatuslabel', hidden: true, html: '<div id="modifiedstatuslabel" class="loleaflet-font"></div>', mobile: false, tablet: false},
+				{type: 'break', id: 'modifiedstatuslabelbreak', mobile: false},
+				{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
 					'<hr><table class="loleaflet-font" id="editor-btn">' +
 					'<tr>' +
 					'<td><input type="checkbox" name="alwaysFollow" id="follow-checkbox" onclick="editorUpdate(event)"></td>' +
@@ -1230,13 +1257,13 @@ function initNormalToolbar(toolItems) {
 					'<p id="currently-msg">' + _('Current') + ' - <b><span id="current-editor"></span></b></p>' +
 					'</div>'
 				},
-				{type: 'break', id: 'userlistbreak'},
+				{type: 'break', id: 'userlistbreak', hidden: true, mobile: false },
 				{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text')},
 				{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text')},
 				{type: 'break', id: 'prevnextbreak'},
 				{type: 'button',  id: 'zoomreset', img: 'zoomreset', hint: _('Reset zoom')},
 				{type: 'button',  id: 'zoomout', img: 'zoomout', hint: _UNO('.uno:ZoomMinus')},
-				{type: 'menu-radio', id: 'zoom', text: '100%',
+				{type: 'menu-radio', id: 'zoom', text: '100%', mobile: false,
 					selected: 'zoom100', hint: _('Zoom factor'),
 					items: [
 						{ id: 'zoom50', text: '50%', scale: 6},
@@ -1276,6 +1303,20 @@ function initNormalToolbar(toolItems) {
 				$('#tb_actionbar_item_userlist .w2ui-tb-caption').addClass('loleaflet-font');
 				$('#search-input').off('input', onSearch).on('input', onSearch);
 				$('#search-input').off('keydown', onSearchKeyDown).on('keydown', onSearchKeyDown);
+
+				/*var showInDesktop = map['wopi'].HideUserList !== null &&
+									map['wopi'].HideUserList !== undefined &&
+									$.inArray('true', map['wopi'].HideUserList) < 0 &&
+									$.inArray('desktop', map['wopi'].HideUserList) < 0;*/
+
+				var showInDesktop = true;
+				if (this.get('userlist').hidden == true && showInDesktop) {
+					this.show('userlist');
+					this.show('userlistbreak');
+					map.on('deselectuser', deselectUser);
+					map.on('addview', onAddView);
+					map.on('removeview', onRemoveView);
+				}
 			}
 		});
 	}
@@ -1378,14 +1419,8 @@ function documentNameConfirm() {
 	if (value !== null && value != '' && value != map['wopi'].BaseFileName) {
 		if (map['wopi'].UserCanRename && map['wopi'].SupportsRename) {
 			// file name must be without the extension
-			if (value.lastIndexOf('.') > 0) {
+			if (value.lastIndexOf('.') > 0)
 				value = value.substr(0, value.lastIndexOf('.'));
-			}
-			// Add by Firefly <firefly@ossii.com.tw>
-			// 檔名最後一字是中文的話，會掉字，所以加個空白就能避免 XD
-			if (value.length >0 && value.slice(-1).charCodeAt(0) > 127) {
-				value += ' ';
-			}
 			map.renameFile(value);
 		} else {
 			// saveAs for rename
@@ -1453,8 +1488,6 @@ function updateFontSizeList(font) {
 	$('.fontsizes-select').find('option').remove();
 	var data = [''];
 	data = data.concat(map.getToolbarCommandValues('.uno:CharFontName')[font]);
-	if (data[1] === undefined)
-		data = ['', 6,7,8,9,10,10.5,11,12,13,14,15,16,18,20,22,24,26,28,32,36,40,44,48,54,60,66,72,80,88,96];
 	$('.fontsizes-select').select2({
 		data: data,
 		placeholder: ' ',
@@ -1494,27 +1527,6 @@ function onFontSelect(e) {
 
 function onFontSizeSelect(e) {
 	var size = e.target.value;
-	var selnum = $('.fontsizes-select').val();
-	var wrongnum = false;
-	var testn = selnum - 0;
-
-	/* 驗證輸入的字型大小是否數字 */
-	if (isNaN(testn) && selnum !== '') {
-		wrongnum = true;
-		alert(_('Can only enter numbers'));
-	}
-	if (wrongnum) {  // 由於列表用 select2 。要特別處理輸入文字會自動加進列表的情形
-		$('.fontsizes-select option').each(function (i, e) {
-			// 輸入錯誤字型大小：將打錯的從列表移除
-			if (($(e).text() === selnum) && selnum != '') {
-				$(e).remove();
-			}
-		});
-		$(e.target).find('option[data-select2-tag]').removeAttr('data-select2-tag');
-		// 打錯則預設字型大小還原為 12
-		$('.fontsizes-select').val('12').trigger('change');
-		return;
-	}
 	var command = {};
 	$(e.target).find('option[data-select2-tag]').removeAttr('data-select2-tag');
 	map.applyFontSize(size);
@@ -1651,8 +1663,9 @@ function onDocLayerInit() {
 			'numberformatcurrency', 'numberformatpercent', 'numberformatdate',
 			'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'togglemergecells', 'breakmergecells',
 			'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting');
+		toolbarUp.remove('styles');
 
-		statusbar.set('zoom', {
+		toolbarUp.set('zoom', {
 			items: [
 				{ id: 'zoom100', text: '100%', scale: 10},
 				{ id: 'zoom200', text: '200%', scale: 14}
@@ -1661,81 +1674,100 @@ function onDocLayerInit() {
 
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
-				{type: 'break', id:'break1'},
-				{type: 'html',  id: 'StatusDocPos',
-					html: '<div id="StatusDocPos" class="loleaflet-font" title="'+_('Number of Sheets')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break2'},
-				{type: 'html',  id: 'RowColSelCount',
-					html: '<div id="RowColSelCount" class="loleaflet-font" title="'+_('Selected range of cells')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break3'},
-				{type: 'html',  id: 'InsertMode', mobile: false,
-					html: '<div id="InsertMode" class="loleaflet-font" title="'+_('Entering text mode')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break4'},
-				{type: 'html',  id: 'LanguageStatus', mobile: false,
-					html: '<div id="LanguageStatus" class="loleaflet-font" title="'+_('Text Language')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break5'},
-				{type: 'html',  id: 'StatusSelectionMode', mobile: false,
-					html: '<div id="StatusSelectionMode" class="loleaflet-font" title="'+_('Selection Mode')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break8', mobile: false},
-				{type: 'html',  id: 'StateTableCell', mobile:false,
-				 html: '<div id="StateTableCell" class="loleaflet-font" title="'+_('Choice of functions')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'menu-check', id: 'StateTableCellMenu', caption: '', selected: ['2', '512'], items: [
-					{ id: '2', text: _('Average')},
-					{ id: '8', text: _('CountA')},
-					{ id: '4', text: _('Count')},
-					{ id: '16', text: _('Maximum')},
-					{ id: '32', text: _('Minimum')},
-					{ id: '512', text: _('Sum')},
-					{ id: '8192', text: _('Selection count')},
-					{ id: '1', text: _('None')}
-				]}
+				{type: 'break', id: 'break1'},
+				{
+					type: 'html', id: 'StatusDocPos',
+					html: '<div id="StatusDocPos" class="loleaflet-font" title="' + _('Number of Sheets') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break2'},
+				{
+					type: 'html', id: 'RowColSelCount',
+					html: '<div id="RowColSelCount" class="loleaflet-font" title="' + _('Selected range of cells') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break3', tablet: false},
+				{
+					type: 'html', id: 'InsertMode', mobile: false, tablet: false,
+					html: '<div id="InsertMode" class="loleaflet-font" title="' + _('Entering text mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break4', tablet: false},
+				{
+					type: 'html', id: 'LanguageStatus', mobile: false, tablet: false,
+					html: '<div id="LanguageStatus" class="loleaflet-font" title="' + _('Text Language') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break5', tablet: false},
+				{
+					type: 'html', id: 'StatusSelectionMode', mobile: false, tablet: false,
+					html: '<div id="StatusSelectionMode" class="loleaflet-font" title="' + _('Selection Mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break8', mobile: false, tablet: false},
+				{
+					type: 'html', id: 'StateTableCell', mobile: false, tablet: false,
+					html: '<div id="StateTableCell" class="loleaflet-font" title="' + _('Choice of functions') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{
+					type: 'menu-check', id: 'StateTableCellMenu', caption: '', selected: ['2', '512'], items: [
+						{id: '2', text: _('Average')},
+						{id: '8', text: _('CountA')},
+						{id: '4', text: _('Count')},
+						{id: '16', text: _('Maximum')},
+						{id: '32', text: _('Minimum')},
+						{id: '512', text: _('Sum')},
+						{id: '8192', text: _('Selection count')},
+						{id: '1', text: _('None')}
+					], tablet: false
+				},
+				{type: 'break', id: 'break8', mobile: false}
 			]);
+
 			$('#spreadsheet-toolbar').show();
 		}
 		$('#formulabar').show();
-
 		// Remove irrelevant toolbars
 		$('#presentation-toolbar').hide();
-
 		break;
 	case 'text':
 		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'incrementindent', 'decrementindent',
 			'breakindent', 'inserttable', 'insertannotation');
-		//toolbarUp.remove('wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset');
+
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
 				{type: 'break', id: 'break1'},
-				{type: 'html',  id: 'StatePageNumber',
-					html: '<div id="StatePageNumber" class="loleaflet-font" title="'+_('Number of Pages')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break2'},
-				{type: 'html',  id: 'StateWordCount', mobile: false,
-					html: '<div id="StateWordCount" class="loleaflet-font" title="'+_('Word Counter')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break5', mobile: false},
-				{type: 'html',  id: 'InsertMode', mobile: false,
-					html: '<div id="InsertMode" class="loleaflet-font" title="'+_('Entering text mode')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break6', mobile:false},
-				{type: 'html',  id: 'StatusSelectionMode', mobile: false,
-					html: '<div id="StatusSelectionMode" class="loleaflet-font" title="'+_('Selection Mode')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' },
-				{type: 'break', id:'break7', mobile:false},
-				{type: 'html',  id: 'LanguageStatus', mobile: false,
-					html: '<div id="LanguageStatus" class="loleaflet-font" title="'+_('Text Language')+ '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>' }
+				{
+					type: 'html', id: 'StatePageNumber',
+					html: '<div id="StatePageNumber" class="loleaflet-font" title="' + _('Number of Pages') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break2'},
+				{
+					type: 'html', id: 'StateWordCount', mobile: false, tablet: false,
+					html: '<div id="StateWordCount" class="loleaflet-font" title="' + _('Word Counter') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break5', mobile: false, tablet: false},
+				{
+					type: 'html', id: 'InsertMode', mobile: false, tablet: false,
+					html: '<div id="InsertMode" class="loleaflet-font" title="' + _('Entering text mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break6', mobile: false, tablet: false},
+				{
+					type: 'html', id: 'StatusSelectionMode', mobile: false, tablet: false,
+					html: '<div id="StatusSelectionMode" class="loleaflet-font" title="' + _('Selection Mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break7', mobile: false, tablet: false},
+				{
+					type: 'html', id: 'LanguageStatus', mobile: false, tablet: false,
+					html: '<div id="LanguageStatus" class="loleaflet-font" title="' + _('Text Language') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+				},
+				{type: 'break', id: 'break8', mobile: false}
 			]);
 		}
-
-		// Remove irrelevant toolbars
-		$('#formulabar').hide();
-		$('#spreadsheet-toolbar').hide();
-		$('#presentation-toolbar').hide();
 
 		break;
 	case 'presentation':
 		var presentationToolbar = w2ui['presentation-toolbar'];
-		presentationToolbar.show('insertpage', 'duplicatepage', 'deletepage');
 		if (!map['wopi'].HideExportOption) {
 			presentationToolbar.show('presentation', 'presentationbreak');
 		}
-		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing', 'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'insertannotation', 'inserttable', 'animationeffects');
+		toolbarUp.show('animationeffects');
 
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
@@ -1744,32 +1776,33 @@ function onDocLayerInit() {
 					type: 'html', id: 'PageStatus',
 					html: '<div id="PageStatus" class="loleaflet-font" title="' + _('Number of Slides') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 				},
-				{type: 'break', id: 'break2', mobile: false},
+				{type: 'break', id: 'break2', mobile: false, tablet: false},
 				{
-					type: 'html', id: 'LanguageStatus', mobile: false,
+					type: 'html', id: 'LanguageStatus', mobile: false, tablet: false,
 					html: '<div id="LanguageStatus" class="loleaflet-font" title="' + _('Text Language') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
-				}
+				},
+				{type: 'break', id: 'break8', mobile: false}
 			]);
 		}
-
-		// Remove irrelevant toolbars
-		$('#formulabar').hide();
-		$('#spreadsheet-toolbar').hide();
-
-		break;
+		// FALLTHROUGH intended
 	case 'drawing':
 		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable');
-		toolbarUp.remove('insertannotation', 'wraptextseparator', 'wraptext', 'togglemergecells', 'break-toggle', 'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate', 'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'sortascending', 'sortdescending', 'setborderstyle', 'conditionalformaticonset', 'insertfootnote');
+		statusbar.show('prev', 'next');
 		// Remove irrelevant toolbars
 		$('#formulabar').hide();
 		$('#spreadsheet-toolbar').hide();
-
+		$('#presentation-toolbar').show();
 		break;
 	}
 
+	if (L.DomUtil.get('document-signing-bar') !== null) {
+		map.signingInitializeBar();
+	}
+
+	_updateToolbarsVisibility();
+
 	if (L.Browser.mobile) {
-		_mobilify();
 		nUsers = '%n';
 		oneUser = '1';
 		noUser = '0';
@@ -1784,10 +1817,31 @@ function onDocLayerInit() {
 	updateUserListCount();
 	toolbarUp.refresh();
 	statusbar.refresh();
+
+	if (window.mode.isTablet()) {
+		// Fold menubar by default
+		// FIXME: reuse toogleMenubar / use css
+		$('.main-nav').css({'display': 'none'});
+		$('#closebuttonwrapper').css({'display': 'none'});
+		var obj = $('.fold');
+		obj.removeClass('w2ui-icon fold');
+		obj.addClass('w2ui-icon unfold');
+		$('#document-container').addClass('tablet');
+		$('#spreadsheet-row-column-frame').addClass('tablet');
+		$('#presentation-controls-wrapper').css({'top': '41px'});
+
+		$('#tb_editbar_item_fonts').css({'display': 'none'});
+		$('#tb_editbar_item_fontsizes').css({'display': 'none'});
+	}
+
+	if (docType == 'spreadsheet') {
+		var el = w2ui['spreadsheet-toolbar'];
+		if (el)
+			el.resize();
+	}
 }
 
 function onCommandStateChanged(e) {
-
 	var toolbar = w2ui['editbar'];
 	var statusbar = w2ui['actionbar'];
 	var commandName = e.commandName;
@@ -1860,7 +1914,7 @@ function onCommandStateChanged(e) {
 			// we need to add the size
 			$('.fontsizes-select')
 				.append($('<option></option>')
-				.text(state));
+				.text(state).val(state));
 		}
 		fontsizesSelectValue = state;
 		$('.fontsizes-select').val(state).trigger('change');
@@ -1969,11 +2023,15 @@ function onCommandStateChanged(e) {
 
 	var id = unoCmdToToolbarId(commandName);
 	if (state === 'true') {
-		toolbar.enable(id);
+		if (map._permission === 'edit') {
+			toolbar.enable(id);
+		}
 		toolbar.check(id);
 	}
 	else if (state === 'false') {
-		toolbar.enable(id);
+		if (map._permission === 'edit') {
+			toolbar.enable(id);
+		}
 		toolbar.uncheck(id);
 	}
 	// Change the toolbar button states if we are in editmode
@@ -2141,22 +2199,6 @@ function onUpdateParts(e) {
 			toolbar.enable('next');
 		}
 	}
-
-	toolbar = w2ui['editbar'];
-	if (e.docType !== 'text' && e.docType !== 'spreadsheet') {
-		toolbar.hide('incrementindent');
-		toolbar.hide('decrementindent');
-		toolbar.hide('incdecindent');
-	}
-
-	toolbar = w2ui['spreadsheet-toolbar'];
-	if (e.docType === 'spreadsheet') {
-		toolbar.show('firstrecord');
-		toolbar.show('nextrecord');
-		toolbar.show('prevrecord');
-		toolbar.show('lastrecord');
-		toolbar.show('insertsheet');
-	}
 }
 
 function onCommandResult(e) {
@@ -2186,21 +2228,27 @@ function onCommandResult(e) {
 function onUpdatePermission(e) {
 	var toolbar = w2ui['editbar'];
 
+	// always enabled items
+	var enabledButtons = ['closemobile', 'undo', 'redo'];
+
 	// copy the first array
 	var items = toolbar.items.slice();
 	for (var idx in items) {
-		var unoCmd = map.getDocType() === 'spreadsheet' ? items[idx].unosheet : items[idx].uno;
-		var keepDisabled = map['stateChangeHandler'].getItemValue(unoCmd) === 'disabled';
+		var found = enabledButtons.filter(function(id) { return id === items[idx].id });
+		var alwaysEnable = found.length !== 0;
+
 		if (e.perm === 'edit') {
-			if (!keepDisabled) {
+			var unoCmd = map.getDocType() === 'spreadsheet' ? items[idx].unosheet : items[idx].uno;
+			var keepDisabled = map['stateChangeHandler'].getItemValue(unoCmd) === 'disabled';
+			if (!keepDisabled || alwaysEnable) {
 				toolbar.enable(items[idx].id);
 			}
-		} else {
+		} else if (!alwaysEnable) {
 			toolbar.disable(items[idx].id);
 		}
 	}
 
-	var spreadsheetButtons = ['firstrecord', 'prevrecord', 'nextrecord', 'lastrecord', 'insertsheet'];
+	var spreadsheetButtons = ['insertsheet'];
 	var formulaBarButtons = ['functionwizard', 'sum', 'function'];
 	var presentationButtons = ['insertpage', 'duplicatepage', 'deletepage'];
 	var toolbarDownButtons = ['next', 'prev'];
@@ -2233,6 +2281,24 @@ function onUpdatePermission(e) {
 			toolbar.enable(id);
 		});
 		$('#search-input').prop('disabled', false);
+
+		// FIXME avoid hardcoding this stuff if possible
+		if (_inMobileMode()) {
+			$('#toolbar-down').show();
+			switch (map._docLayer._docType) {
+			case 'text':
+				$('#document-container').css('bottom', '33px');
+				break;
+			case 'spreadsheet':
+				$('#document-container').css('bottom', '68px'); // FIXME this and spreadsheet-row-column-frame are supposed to be the same, but are not
+				$('#spreadsheet-row-column-frame').css('bottom', '65px');
+				$('#spreadsheet-toolbar').show();
+				break;
+			case 'presentation':
+				$('#document-container').css('bottom', '33px');
+				break;
+			}
+		}
 	}
 	else {
 		// Disable list boxes
@@ -2259,34 +2325,29 @@ function onUpdatePermission(e) {
 			toolbar.disable(id);
 		});
 
+		toolbar = w2ui['actionbar'];
+		toolbarDownButtons.forEach(function(id) {
+			toolbar.disable(id);
+		});
 		$('#search-input').prop('disabled', true);
+
+		// FIXME avoid hardcoding this stuff if possible
 		if (_inMobileMode()) {
-			// firefly1
-			// 非編輯模式不需要 undo & redo
-			var topbar = w2ui['actionbar'];
 			$('#toolbar-down').hide();
-			topbar.remove('undo');
-			topbar.remove('redo');
-			// 非編輯模式，不顯示編輯用的工具列
-			// 並且把文件顯示區下方對齊螢幕下方
-			var topofdocument = $('#toolbar-wrapper').height();
-			$('#document-container').css('top', topofdocument + 'px');
-			$('#document-container').css('bottom', '0px');
-			map.setZoom(5);
+			switch (map._docLayer._docType) {
+			case 'text':
+				$('#document-container').css('bottom', '0');
+				break;
+			case 'spreadsheet':
+				$('#document-container').css('bottom', '35px');
+				$('#spreadsheet-row-column-frame').css('bottom', '0');
+				$('#spreadsheet-toolbar').show();
+				break;
+			case 'presentation':
+				$('#document-container').css('bottom', '0');
+				break;
+			}
 		}
-	}
-}
-
-function goToViewId(id) {
-	var docLayer = map._docLayer;
-
-	if (id === -1)
-		return;
-
-	if (map.getDocType() === 'spreadsheet') {
-		docLayer.goToCellViewCursor(id);
-	} else if (map.getDocType() === 'text' || map.getDocType() === 'presentation') {
-		docLayer.goToViewCursor(id);
 	}
 }
 
@@ -2294,13 +2355,13 @@ function onUseritemClicked(e) { // eslint-disable-line no-unused-vars
 	var docLayer = map._docLayer;
 	var viewId = parseInt(e.currentTarget.id.replace('user-', ''));
 
-	goToViewId(viewId);
+	map._goToViewId(viewId);
 
 	if (viewId === map._docLayer._viewId) {
 		$('#tb_actionbar_item_userlist').w2overlay('');
 		return;
 	} else if (docLayer._followThis !== -1) {
-		map.fire('setFollowOff');
+		map._setFollowing(false, null);
 	}
 
 	docLayer._followThis = viewId;
@@ -2321,7 +2382,7 @@ function editorUpdate(e) { // eslint-disable-line no-unused-vars
 		docLayer._followUser = false;
 		docLayer._followEditor = true;
 		if (editorId !== -1 && editorId !== docLayer.viewId) {
-			goToViewId(editorId);
+			map._goToViewId(editorId);
 			docLayer._followThis = editorId;
 		}
 
@@ -2351,25 +2412,22 @@ function selectUser(viewId) {
 	$('#tb_actionbar_item_userlist').w2overlay('');
 }
 
-function deselectUser(viewId) {
+function deselectUser(e) {
 	var userlistItem = w2ui['actionbar'].get('userlist');
 	if (userlistItem === null) {
 		return;
 	}
 
-	userlistItem.html = $(userlistItem.html).find('#user-' + viewId).removeClass('selected-user').parent().parent().parent()[0].outerHTML;
+	userlistItem.html = $(userlistItem.html).find('#user-' + e.viewId).removeClass('selected-user').parent().parent().parent()[0].outerHTML;
 }
 
 function getUserItem(viewId, userName, extraInfo, color) {
-	var className = 'useritem';
+	var html = '<tr class="useritem" id="user-' + viewId + '" onclick="onUseritemClicked(event)">' +
+		     '<td class=usercolor>';
 	if (extraInfo !== undefined && extraInfo.avatar !== undefined) {
-		className = 'useritem-avatar';
-	}
-
-	var html = '<tr class="' + className + '" id="user-' + viewId + '" onclick="onUseritemClicked(event)">' +
-		     '<td class=usercolor style="background-color: ' + color  +';">';
-	if (extraInfo !== undefined && extraInfo.avatar !== undefined) {
-		html += '<img src="' + extraInfo.avatar + '" width="32" height="32" />';
+		html += '<img class="avatar-img" src="' + extraInfo.avatar + '" style="border-color: ' + color  + ';" />';
+	} else {
+		html += '<div class="user-info" style="background-color: ' + color  + ';" />';
 	}
 
 	// TODO: Add mail and other links as sub-menu.
@@ -2395,9 +2453,17 @@ function updateUserListCount() {
 		userlistItem.text = noUser;
 	}
 
-	//var zoomlevel = $('#zoomlevel').html();
+	var zoomlevel = $('#zoomlevel').html();
 	w2ui['actionbar'].refresh();
-	//$('#zoomlevel').html(zoomlevel);
+	$('#zoomlevel').html(zoomlevel);
+
+	if (count > 1) {
+		$('#tb_actionbar_item_userlist').show();
+		$('#tb_actionbar_item_userlistbreak').show();
+	} else {
+		$('#tb_actionbar_item_userlist').hide();
+		$('#tb_actionbar_item_userlistbreak').hide();
+	}
 }
 
 function escapeHtml(input) {
@@ -2438,6 +2504,32 @@ function onAddView(e) {
 	}
 }
 
+function onRemoveView(e) {
+	$('#tb_actionbar_item_userlist')
+		.w2overlay({
+			class: 'loleaflet-font',
+			html: userLeftPopupMessage.replace('%user', e.username),
+			style: 'padding: 5px'
+		});
+	clearTimeout(userPopupTimeout);
+	userPopupTimeout = setTimeout(function() {
+		$('#tb_actionbar_item_userlist').w2overlay('');
+		clearTimeout(userPopupTimeout);
+		userPopupTimeout = null;
+	}, 3000);
+
+	if (e.viewId === map._docLayer._followThis) {
+		map._docLayer._followThis = -1;
+		map._docLayer._followUser = false;
+	}
+
+	var userlistItem = w2ui['actionbar'].get('userlist');
+	if (userlistItem !== null) {
+		userlistItem.html = $(userlistItem.html).find('#user-' + e.viewId).remove().end()[0].outerHTML;
+		updateUserListCount();
+	}
+}
+
 $(window).resize(function() {
 	resizeToolbar();
 });
@@ -2445,17 +2537,15 @@ $(window).resize(function() {
 $(document).ready(function() {
 	if (!closebutton) {
 		$('#closebuttonwrapper').hide();
-	} else {
-		$('#closebutton').click(function() {
-			if (window.ThisIsAMobileApp) {
-				window.webkit.messageHandlers.lool.postMessage('BYE', '*');
-			} else {
-				map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
-				map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
-			}
-			map.remove();
-		});
+	} else if (closebutton && !L.Browser.mobile) {
+		$('.closebuttonimage').show();
 	}
+
+	$('#closebutton').click(function() {
+		map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
+		map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
+		map.remove();
+	});
 
 	// Attach insert file action
 	$('#insertgraphic').on('change', onInsertFile);
@@ -2471,17 +2561,6 @@ function setupToolbar(e) {
 		$('#current-editor').text(e.username);
 	});
 
-	map.on('setFollowOff', function() {
-		var docLayer = map._docLayer;
-		var viewId = docLayer._followThis;
-		if (viewId !== -1 && map._viewInfo[viewId]) {
-			deselectUser(viewId);
-		}
-		docLayer._followThis = -1;
-		docLayer._followUser = false;
-		docLayer._followEditor = false;
-	});
-
 	map.on('keydown', function (e) {
 		if (e.originalEvent.ctrlKey && !e.originalEvent.altKey &&
 		   (e.originalEvent.key === 'f' || e.originalEvent.key === 'F')) {
@@ -2493,7 +2572,7 @@ function setupToolbar(e) {
 	});
 
 	map.on('hyperlinkclicked', function (e) {
-		map.fire('warn', {url: e.url, map: map, cmd: 'openlink'});
+		window.open(e.url, '_blank');
 	});
 
 	map.on('cellformula', function (e) {
@@ -2518,7 +2597,7 @@ function setupToolbar(e) {
 		case 14: zoomPercent = 200; zoomSelected = 'zoom200'; break;
 		default:
 			var zoomRatio = map.getZoomScale(map.getZoom(), map.options.zoom);
-			zoomPercent = Math.round(zoomRatio * 100);
+			zoomPercent = Math.round(zoomRatio * 100) + '%';
 			break;
 		}
 		zoomPercent += '%';
@@ -2564,35 +2643,8 @@ function setupToolbar(e) {
 		}
 	});
 
-	map.on('removeview', function(e) {
-		$('#tb_actionbar_item_userlist')
-			.w2overlay({
-				class: 'loleaflet-font',
-				html: userLeftPopupMessage.replace('%user', e.username),
-				style: 'padding: 5px'
-			});
-		clearTimeout(userPopupTimeout);
-		userPopupTimeout = setTimeout(function() {
-			$('#tb_actionbar_item_userlist').w2overlay('');
-			clearTimeout(userPopupTimeout);
-			userPopupTimeout = null;
-		}, 3000);
-
-		if (e.viewId === map._docLayer._followThis) {
-			map._docLayer._followThis = -1;
-			map._docLayer._followUser = false;
-		}
-
-		var userlistItem = w2ui['actionbar'].get('userlist');
-		if (userlistItem !== null) {
-			userlistItem.html = $(userlistItem.html).find('#user-' + e.viewId).remove().end()[0].outerHTML;
-			updateUserListCount();
-		}
-	});
-
 	map.on('doclayerinit', onDocLayerInit);
 	map.on('wopiprops', onWopiProps);
-	map.on('addview', onAddView);
 	map.on('updatepermission', onUpdatePermission);
 	map.on('commandresult', onCommandResult);
 	map.on('updateparts pagenumberchanged', onUpdateParts);

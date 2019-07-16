@@ -3,7 +3,20 @@
  * L.Map is the central class of the API - it is used to create a map.
  */
 
-/* global timeago vex revHistoryEnabled $ _ */
+function moveObjectVertically(obj, diff) {
+	if (obj) {
+		var prevTop = obj.css('top');
+		if (prevTop) {
+			prevTop = parseInt(prevTop.slice(0, -2)) + diff;
+		}
+		else {
+			prevTop = 0 + diff;
+		}
+		obj.css({'top': String(prevTop) + 'px'});
+	}
+}
+
+/* global timeago closebutton vex revHistoryEnabled $ _ */
 L.Map = L.Evented.extend({
 
 	options: {
@@ -1355,6 +1368,90 @@ L.Map = L.Evented.extend({
 		else {
 			$('.scroll-container').mCustomScrollbar('disable');
 		}
+	},
+
+	_goToViewId: function(id) {
+		if (id === -1)
+			return;
+
+		if (this.getDocType() === 'spreadsheet') {
+			this._docLayer.goToCellViewCursor(id);
+		} else if (this.getDocType() === 'text' || this.getDocType() === 'presentation') {
+			this._docLayer.goToViewCursor(id);
+		}
+	},
+
+	_setFollowing: function(followingState, viewId) {
+		var userDefined = viewId !== null && viewId !== undefined;
+		var followDefined = followingState !== null && followingState !== undefined;
+
+		var followEditor = true;
+		var followUser = false;
+
+		if (userDefined && viewId !== -1 && viewId !== this._docLayer.viewId) {
+			followUser = true;
+			followEditor = false;
+		}
+
+		if (followDefined && followingState === false) {
+			followEditor = false;
+			followUser = false;
+		}
+
+		this._docLayer._followUser = followUser;
+		this._docLayer._followEditor = followEditor;
+
+		if (followUser) {
+			this._goToViewId(viewId);
+			this._docLayer._followThis = viewId;
+		}
+		else if (followEditor) {
+			var editorId = this._docLayer._editorId;
+			if (editorId !== -1 && editorId !== this._docLayer.viewId) {
+				this._goToViewId(editorId);
+				this._docLayer._followThis = editorId;
+			}
+		}
+		else {
+			this.fire('deselectuser', {viewId: this._docLayer._followThis});
+			this._docLayer._followThis = -1;
+		}
+
+		// Notify about changes
+		this.fire('postMessage', {msgId: 'FollowUser_Changed',
+			args: {FollowedViewId: this._docLayer._followThis,
+				IsFollowUser: followUser,
+				IsFollowEditor: followEditor}});
+	},
+
+	toggleMenubar: function() {
+		var obj = null;
+		var mainNav = $('.main-nav');
+		var height = mainNav.height();
+		if (mainNav.css('display') === 'none') {
+			mainNav.css({'display': ''});
+			if (closebutton && !window.mode.isTablet()) {
+				$('#closebuttonwrapper').css({'display': ''});
+			}
+
+			obj = $('.unfold');
+			obj.removeClass('w2ui-icon unfold');
+			obj.addClass('w2ui-icon fold');
+		}
+		else {
+			mainNav.css({'display': 'none'});
+			if (closebutton) {
+				$('#closebuttonwrapper').css({'display': 'none'});
+			}
+
+			obj = $('.fold');
+			obj.removeClass('w2ui-icon fold');
+			obj.addClass('w2ui-icon unfold');
+			height = height * -1;
+		}
+		moveObjectVertically($('#spreadsheet-row-column-frame'), height);
+		moveObjectVertically($('#document-container'), height);
+		moveObjectVertically($('#presentation-controls-wrapper'), height);
 	}
 });
 

@@ -8,8 +8,12 @@
 	left: 0px;
 }
 
+#document-container.tablet {
+    top: 36px;
+}
+
 #document-container.readonly {
-    top: 30px;
+    top: 36px;
 }
 
 #toolbar-wrapper.readonly {
@@ -110,6 +114,14 @@ body {
     #presentation-controls-wrapper {
 	display: none;
     }
+    #document-container.tablet {
+        top: 41px;
+    }
+
+    #document-container.readonly {
+        top: 41px;
+    }
+
     #document-container.parts-preview-document {
 	left: 0px !important;
     }
@@ -120,19 +132,26 @@ body {
 	top: 50px !important;
     }
     #document-container {
-	top: 40px;
+	top: 41px;
     }
     #spreadsheet-row-column-frame {
 	top: 73px !important;
     }
     #spreadsheet-row-column-frame.readonly {
-	top: 30px !important;
+	top: 41px !important;
     }
     #toolbar-hamburger {
 	width: 41px;
     }
     #closebutton {
 	display: none;
+    }
+    #closebuttonwrapper {
+        display: none;
+    }
+    /* Show menubar even if folded */
+    .main-nav {
+        display: block !important;
     }
 }
 
