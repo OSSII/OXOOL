@@ -1139,6 +1139,7 @@ function initNormalToolbar(toolItems) {
 			{type: 'html',  id: 'left'},
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
 			{type: 'break'},
+			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _('Function Wizard')},
 			{type: 'button',  id: 'sum',  img: 'autosum', hint: _('Sum')},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _('Function')},
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
