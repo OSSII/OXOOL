@@ -3,7 +3,7 @@
  * L.WOPI contains WOPI related logic
  */
 
-/* global $ w2ui toolbarUpMobileItems resizeToolbar _ */
+/* global $ w2ui toolbarUpMobileItems _ */
 L.Map.WOPI = L.Handler.extend({
 	// If the CheckFileInfo call fails on server side, we won't have any PostMessageOrigin.
 	// So use '*' because we still needs to send 'close' message to the parent frame which
@@ -160,7 +160,7 @@ L.Map.WOPI = L.Handler.extend({
 
 		if (msg.MessageId === 'Insert_Button') {
 			if (msg.Values) {
-				if (msg.Values.id && !w2ui['toolbar-up'].get(msg.Values.id)
+				if (msg.Values.id && !w2ui['editbar'].get(msg.Values.id)
 				    && msg.Values.imgurl) {
 					if (this._map._permission === 'edit') {
 						// add the css rule for the image
@@ -170,7 +170,7 @@ L.Map.WOPI = L.Handler.extend({
 						$('html > head > style').append('.w2ui-icon.' + msg.Values.id + '{background: url(' + msg.Values.imgurl + ') no-repeat center !important; }');
 
 						// add the item to the toolbar
-						w2ui['toolbar-up'].insert('save', [
+						w2ui['editbar'].insert('save', [
 							{
 								type: 'button',
 								id: msg.Values.id,
@@ -187,7 +187,6 @@ L.Map.WOPI = L.Handler.extend({
 							var idx = toolbarUpMobileItems.indexOf('save');
 							toolbarUpMobileItems.splice(idx, 0, msg.Values.id);
 						}
-						resizeToolbar();
 					}
 					else if (this._map._permission === 'readonly') {
 						// Just add a menu entry for it
@@ -206,17 +205,17 @@ L.Map.WOPI = L.Handler.extend({
 				return;
 			}
 			if (this._map._permission !== 'edit') {
-				console.log('No toolbar in readonly mode - ignoring Remove_Button request.');
+				console.log('No toolbar in readonly mode - ignoring request.');
 				return;
 			}
-			if (!w2ui['toolbar-up'].get(msg.Values.id)) {
+			if (!w2ui['editbar'].get(msg.Values.id)) {
 				console.error('Toolbar button with id "' + msg.Values.id + '" not found.');
 				return;
 			}
 			if (msg.MessageId === 'Show_Button') {
-				w2ui['toolbar-up'].show(msg.Values.id);
+				w2ui['editbar'].show(msg.Values.id);
 			} else {
-				w2ui['toolbar-up'].hide(msg.Values.id);
+				w2ui['editbar'].hide(msg.Values.id);
 			}
 		}
 		else if (msg.MessageId === 'Set_Settings') {
@@ -233,7 +232,9 @@ L.Map.WOPI = L.Handler.extend({
 					UserName: this._map._viewInfo[viewInfoIdx].username,
 					UserId: this._map._viewInfo[viewInfoIdx].userid,
 					UserExtraInfo: this._map._viewInfo[viewInfoIdx].userextrainfo,
-					Color: this._map._viewInfo[viewInfoIdx].color
+					Color: this._map._viewInfo[viewInfoIdx].color,
+					ReadOnly: this._map._viewInfo[viewInfoIdx].readonly,
+					IsCurrentView: this._map._docLayer._viewId === parseInt(viewInfoIdx, 10)
 				});
 			}
 
@@ -290,6 +291,14 @@ L.Map.WOPI = L.Handler.extend({
 				}
 			}
 		}
+		else if (msg.MessageId === 'Action_FollowUser') {
+			if (msg.Values) {
+				this._map._setFollowing(msg.Values.Follow, msg.Values.ViewId);
+			}
+			else {
+				this._map._setFollowing(true, null);
+			}
+		}
 		else if (msg.MessageId === 'Host_VersionRestore') {
 			if (msg.Values.Status === 'Pre_Restore') {
 				this._map._socket.sendMessage('versionrestore prerestore');
@@ -300,6 +309,11 @@ L.Map.WOPI = L.Handler.extend({
 			 msg.hasOwnProperty('Function')) {
 			this._map.CallPythonScriptSource = e.source;
 			this._map.sendUnoCommand('vnd.sun.star.script:' + msg.ScriptFile + '$' + msg.Function + '?language=Python&location=share', msg.Values);
+		}
+		else if (msg.MessageId === 'Action_RemoveView') {
+			if (msg.Values && msg.Values.ViewId !== null && msg.Values.ViewId !== undefined) {
+				this._map._socket.sendMessage('removesession ' + msg.Values.ViewId);
+			}
 		}
 	},
 
