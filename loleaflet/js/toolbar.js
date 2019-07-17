@@ -626,7 +626,7 @@ var transition = [
 	{img: 'transition-shape', label: _('Shape'), action: {type:3, subtype: 12}}, // 形狀
 	{img: 'transition-box', label: _('Box'), action: {type:12, subtype: 25}}, // 方塊
 	{img: 'transition-wedge', label: _('Wedge'), action: {type:25, subtype: 48}}, // 楔入
-	{img: 'transition-venetian', label: _('Venetian'), action: {type:41, subtype: 13}}, // 百葉窗
+	{img: 'transition-venetian', label: _('Venetian Blinds'), action: {type:41, subtype: 13}}, // 百葉窗
 	{img: 'transition-fade', label: _('Fade'), action: {type:37, subtype: 104}}, // 淡化
 	{img: 'transition-cut', label: _('Cut'), action: {type:1, subtype: 104}}, // 剪下
 	{img: 'transition-cover', label: _('Cover'), action: {type:36, subtype: 98}}, // 覆蓋
