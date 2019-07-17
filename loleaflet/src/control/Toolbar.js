@@ -3,7 +3,7 @@
  * Toolbar handler
  */
 
-/* global $ window vex brandProductName _ */
+/* global $ window vex brandProductName _ _UNOTARGET*/
 L.Map.include({
 
 	// a mapping of uno commands to more readable toolbar items
@@ -151,6 +151,16 @@ L.Map.include({
 
 	sendUnoCommand: function (command, json) {
 		if (this._permission === 'edit') {
+			// Add by Firefly <firefly@ossii.com.tw>
+			// 是否有替代 uno?
+			var targetURL = _UNOTARGET(command);
+			// 有的話就用替代 uno
+			if (targetURL !== '') command = targetURL;
+			// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
+			if (command.startsWith('.uno:')) {
+				 command = encodeURI(command);
+			}
+			//----------------------------------------
 			this._socket.sendMessage('uno ' + command + (json ? ' ' + JSON.stringify(json) : ''));
 		}
 	},
