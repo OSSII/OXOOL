@@ -3,55 +3,14 @@
 * Control.ContextMenu
 */
 
-/* global $ _ _UNO */
+/* global $ _UNO*/
 L.Control.ContextMenu = L.Control.extend({
 	options: {
-		SEPARATOR: '---------',
-		/*
-		 * Enter UNO commands that should appear in the context menu.
-		 * Entering a UNO command under `general' would enable it for all types
-		 * of documents. If you do not want that, whitelist it in document specific filter.
-		 *
-		 * UNOCOMMANDS_EXTRACT_START <- don't remove this line, it's used by unocommands.py
-		 */
-		whitelist: {
-			/*
-			 * UNO commands for menus are not available sometimes. Presence of Menu commands
-			 * in following list is just for reference and ease of locating uno command
-			 * from context menu structure.
-			 */
-			general: ['Cut', 'Copy', 'Paste', 'PasteSpecialMenu', 'PasteUnformatted',
-					  'NumberingStart', 'ContinueNumbering', 'IncrementLevel', 'DecrementLevel',
-					  'OpenHyperlinkOnCursor', 'CopyHyperlinkLocation', 'RemoveHyperlink',
-					  'AnchorMenu', 'SetAnchorToPage', 'SetAnchorToPara', 'SetAnchorAtChar',
-					  'SetAnchorToChar', 'SetAnchorToFrame',
-					  'WrapMenu', 'WrapOff', 'WrapOn', 'WrapIdeal', 'WrapLeft', 'WrapRight', 'WrapThrough',
-					  'WrapThroughTransparent', 'WrapContour', 'WrapAnchorOnly',
-					  'ArrangeFrameMenu', 'ArrangeMenu', 'BringToFront', 'ObjectForwardOne', 'ObjectBackOne', 'SendToBack',
-					  'RotateMenu', 'RotateLeft', 'RotateRight', 'FormatPaintbrush'],
-
-			text: ['TableInsertMenu',
-				   'InsertRowsBefore', 'InsertRowsAfter', 'InsertColumnsBefore', 'InsertColumnsAfter',
-				   'TableDeleteMenu',
-				   'DeleteRows', 'DeleteColumns', 'DeleteTable',
-				   'MergeCells', 'SetOptimalColumnWidth', 'SetOptimalRowHeight',
-				   'UpdateCurIndex','RemoveTableOf',
-				   'ReplyComment', 'DeleteComment', 'DeleteAuthor', 'DeleteAllNotes',
-				   'FormatPaintbrush', 'CharacterMenu', 'ParagraphMenu', 'TextBodyParaStyle', 'Heading1ParaStyle', 'Heading2ParaStyle', 'Heading3ParaStyle', 'PreformattedParaStyle'],
-
-			spreadsheet: ['MergeCells', 'SplitCell', 'RecalcPivotTable', 'FormatCellDialog'],
-
-			presentation: ['TransformDialog', 'FormatLine', 'FormatArea'],
-			drawing: []
-		}
-		// UNOCOMMANDS_EXTRACT_END <- don't remove this line, it's used by unocommands.py
+		SEPARATOR: '---------'
 	},
 
-
-
-	onAdd: function (map) {
+	onAdd: function(map) {
 		this._prevMousePos = null;
-
 		map.on('locontextmenu', this._onContextMenu, this);
 		map.on('mousedown', this._onMouseDown, this);
 		map.on('keydown', this._onKeyDown, this);
@@ -90,6 +49,7 @@ L.Control.ContextMenu = L.Control.extend({
 					items: contextMenu
 				};
 			}
+
 		});
 
 		$('.leaflet-layer').contextMenu(this._prevMousePos);
@@ -100,47 +60,31 @@ L.Control.ContextMenu = L.Control.extend({
 		var contextMenu = {};
 		var sepIdx = 1, itemName;
 		var isLastItemText = false;
+	
 		for (var idx in obj.menu) {
 			var item = obj.menu[idx];
-			if (item.enabled === 'false') {
-				continue;
+			
+			if (item.enabled === 'false') { continue; }
+
+			if (item.type !== 'separator') {
+				// 取得 uno command 翻譯
+				itemName = _UNO(item.command, docType, true);
+				// 沒有翻譯的話，用 item.text 當選項標題
+				if (item.command === '.uno:' + itemName)
+				{
+					itemName = item.text;
+				}
 			}
 
 			if (item.type === 'separator') {
 				if (isLastItemText) {
-					contextMenu['sep' + sepIdx++] = this.options.SEPARATOR;
+					contextMenu['sep' + sepIdx++] = '---------';
 				}
 				isLastItemText = false;
 			}
 			else if (item.type === 'command') {
-				// Only show whitelisted items
-				// Command name (excluding '.uno:') starts from index = 5
-				var commandName = item.command.substring(5);
-				/*if (this.options.whitelist.general.indexOf(commandName) === -1 &&
-					!(docType === 'text' && this.options.whitelist.text.indexOf(commandName) !== -1) &&
-					!(docType === 'spreadsheet' && this.options.whitelist.spreadsheet.indexOf(commandName) !== -1) &&
-					!(docType === 'presentation' && this.options.whitelist.presentation.indexOf(commandName) !== -1) &&
-					!(docType === 'drawing' && this.options.whitelist.drawing.indexOf(commandName) !== -1)) {
-					continue;
-				}*/
-
-				// Get the translated text associated with the command
-				itemName = _UNO(item.command, docType, true);
-
-				switch (commandName) {
-				case 'Cut':
-					itemName = _('Internal Cut');
-					break;
-				case 'Copy':
-					itemName = _('Internal Copy');
-					break;
-				case 'Paste':
-					itemName = _('Internal Paste');
-					break;
-				}
-
 				contextMenu[item.command] = {
-					name: _(itemName)
+					name: itemName
 				};
 
 				if (item.checktype === 'checkmark') {
@@ -152,13 +96,8 @@ L.Control.ContextMenu = L.Control.extend({
 						contextMenu[item.command]['icon'] = 'radio';
 					}
 				}
-
 				isLastItemText = true;
 			} else if (item.type === 'menu') {
-				itemName = item.text;
-				if (itemName.replace('~', '') === 'Paste Special') {
-					itemName = _('Internal Paste Special');
-				}
 				var submenu = this._createContextMenuStructure(item);
 				// ignore submenus with all items disabled
 				if (Object.keys(submenu).length === 0) {
@@ -166,7 +105,7 @@ L.Control.ContextMenu = L.Control.extend({
 				}
 
 				contextMenu[item.command] = {
-					name: _(itemName).replace(/\(~[A-Za-z]\)/, '').replace('~', ''),
+					name: itemName,
 					items: submenu
 				};
 				isLastItemText = true;
