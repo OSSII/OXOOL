@@ -296,7 +296,7 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:FormatMenu', 'presentation'), type: 'menu', menu: [
 				{uno: '.uno:FontDialog', icon: 'fa fa-font'},
 				{uno: '.uno:ParagraphDialog', icon: 'fa fa-paragraph'},
-				{name: _UNO('.uno:PageDialog', 'spreadsheet'), uno: '.uno:PageSetup', icon: 'fa fa-file-o'},
+				{uno: '.uno:PageSetup', icon: 'fa fa-file-o'},
 				{type: 'separator'},
 				{uno: '.uno:TransformDialog'},
 				{uno: '.uno:FormatLine'},
@@ -304,14 +304,14 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:OutlineBullet', icon: 'fa fa-list'}]
 			},
-			{name: _UNO('.uno:TableMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
-				{name: _UNO('.uno:TableInsertMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+			{uno: '.uno:TableMenu', type: 'menu', menu: [
+				{uno: '.uno:TableInsertMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertRowsBefore'},
 					{uno: '.uno:InsertRowsAfter'},
 					{type: 'separator'},
 					{uno: '.uno:InsertColumnsBefore'},
 					{uno: '.uno:InsertColumnsAfter'}]},
-				{name: _UNO('.uno:TableDeleteMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+				{uno: '.uno:TableDeleteMenu', type: 'menu', menu: [
 					{uno: '.uno:DeleteRows'},
 					{uno: '.uno:DeleteColumns'}]},
 				{uno: '.uno:MergeCells'}]
@@ -381,12 +381,12 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrk+K'},
 				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
-				{name: _UNO('.uno:HeaderAndFooter', 'spreadsheet'), uno: '.uno:EditHeaderAndFooter'}
+				{uno: '.uno:EditHeaderAndFooter'}
 			]},
 			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), type: 'menu', menu: [
 				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'},
 				{uno: '.uno:FormatCellDialog'},
-				{name: _UNO('.uno:PageDialog', 'spreadsheet'), uno: '.uno:PageFormatDialog', icon: 'fa fa-file-o'}
+				{uno: '.uno:PageFormatDialog', icon: 'fa fa-file-o'}
 			]},
 			{name: _UNO('.uno:SheetMenu', 'spreadsheet'), type: 'menu', menu: [
 				{name: _UNO('.uno:InsertRowsMenu', 'spreadsheet'), type: 'menu', menu: [
