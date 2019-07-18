@@ -1768,7 +1768,7 @@ function onDocLayerInit() {
 		if (!map['wopi'].HideExportOption) {
 			presentationToolbar.show('presentation', 'presentationbreak');
 		}
-		toolbarUp.show('animationeffects');
+		toolbarUp.show('insertannotation', 'animationeffects');
 
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
@@ -2579,7 +2579,7 @@ function setupToolbar(e) {
 	map.on('cellformula', function (e) {
 		if (document.activeElement !== L.DomUtil.get('formulaInput')) {
 			// if the user is not editing the formula bar
-			L.DomUtil.get('formulaInput').value = e.formula;
+			L.DomUtil.get('formulaInput').vaspreadsheetue = e.formula;
 		}
 	});
 
