@@ -9,11 +9,11 @@
 }
 
 #document-container.tablet {
-    top: 36px;
+    top: 31px;
 }
 
 #document-container.readonly {
-    top: 36px;
+    top: 31px;
 }
 
 #toolbar-wrapper.readonly {
@@ -65,7 +65,7 @@ body {
 }
 
 #presentation-controls-wrapper.readonly {
-    top: 30px;
+    top: 31px;
 }
 
 #toolbar-wrapper {
