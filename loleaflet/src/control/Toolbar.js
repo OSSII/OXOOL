@@ -153,7 +153,7 @@ L.Map.include({
 		if (this._permission === 'edit') {
 			// Add by Firefly <firefly@ossii.com.tw>
 			// 是否有替代 uno?
-			var targetURL = _UNOTARGET(command);
+			var targetURL = _UNOTARGET(command, this.getDocType());
 			// 有的話就用替代 uno
 			if (targetURL !== '') command = targetURL;
 			// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
