@@ -31,6 +31,9 @@ JQUERY_UI_DIST_IMAGES = $(patsubst $(JQUERY_UI_IMAGE_PATH)/%.png,$(builddir)/dis
 LOLEAFLET_IMAGES_SRC = $(shell find $(srcdir)/images -name '*.*')
 LOLEAFLET_IMAGES_DST = $(patsubst $(srcdir)/%,$(builddir)/dist/%,$(LOLEAFLET_IMAGES_SRC))
 
+LOLEAFLET_UICONFIG_SRC = $(shell find $(srcdir)/uiconfig -name '*.*')
+LOLEAFLET_UICONFIG_DST = $(patsubst $(srcdir)/%,$(builddir)/dist/%,$(LOLEAFLET_UICONFIG_SRC))
+
 LOLEAFLET_L10N_SRC = $(shell find $(srcdir)/l10n -name '*.*')
 if !ENABLE_IOSAPP
 LOLEAFLET_L10N_DST =  $(patsubst $(srcdir)/l10n/%,$(builddir)/dist/l10n/%,$(LOLEAFLET_L10N_SRC))
@@ -154,6 +157,7 @@ endif
 build-loleaflet: | $(LOLEAFLET_L10N_DST) \
 	$(L10N_JSON) \
 	$(LOLEAFLET_IMAGES_DST) \
+	$(LOLEAFLET_UICONFIG_DST) \
 	$(JQUERY_UI_DIST_IMAGES) \
 	$(LOLEAFLET_PREFIX)/dist/loleaflet-src.js \
 	$(ADMIN_BUNDLE) \
@@ -250,6 +254,10 @@ $(builddir)/dist/plugins/%.js: $(srcdir)/plugins/%.js
 	@cp $< $@
 
 $(builddir)/dist/images/%: $(srcdir)/images/%
+	@mkdir -p $(dir $@)
+	@cp $< $@
+
+$(builddir)/dist/uiconfig/%: $(srcdir)/uiconfig/%
 	@mkdir -p $(dir $@)
 	@cp $< $@
 
