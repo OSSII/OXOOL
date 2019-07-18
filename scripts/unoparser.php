@@ -66,11 +66,8 @@ function _2nodes($array, &$nodes, $uno)
             switch ($nodeName)
             {
                 case 'node':
-                    if (substr($nodeAttrName, 0, 5) == '.uno:')
-                    {
-                        $uno = $nodeAttrName;
-                        $nodes[$uno] = array();
-                    }
+                    $uno = $nodeAttrName;
+                    $nodes[$uno] = array();
                     break;
                 case 'prop':
                     switch ($nodeAttrName)
@@ -80,13 +77,12 @@ function _2nodes($array, &$nodes, $uno)
                         case 'TooltipLabel':    //
                         case 'PopupLabel':  // 
                         case 'TargetURL':
+                        case 'IsExperimental':
+                        case 'Properties': // 是否顯示 icon
                             if (!isset($nodeChildren[0]['content']))
                                 $nodeChildren[0]['content'] = '';
 
                             $nodes[$uno][$nodeAttrName] = $nodeChildren[0]['content'];
-                            break;
-                        case 'Properties': // 不需要
-                        case 'IsExperimental':
                             break;
                         default:
                             echo "other prop attrib name : ".$nodeAttrName."\n";
@@ -169,11 +165,16 @@ foreach ($unoCcommandFiles as $xcu => $data)
         $nodes = array2node($xml);
 	    foreach ($nodes as $cmd => $data)
 	    {
-            $uno = substr($cmd, 5);
+		if (substr($cmd, 0, 5) == '.uno:')
+            		$uno = substr($cmd, 5);
+		else
+			$uno = $cmd;
+
 	        if (!isset($unoCommandsArray[$uno]))
 	        {
 		        $unoCommandsArray[$uno] = array();
 	        }
+
 	        $unoCommandsArray[$uno][$xcu] = array();
 	        foreach ($data as $key => $value)
 	        {
@@ -182,17 +183,23 @@ foreach ($unoCcommandFiles as $xcu => $data)
 		            case 'Label':
 			            $unoCommandsArray[$uno][$xcu]['menu'] = $value;
 			            break;
-                    case 'ContextLabel':
+			    case 'ContextLabel':
 			            $unoCommandsArray[$uno][$xcu]['context'] = $value;
 			            break;
-                    case 'TooltipLabel':
+                    	    case 'TooltipLabel':
 			            $unoCommandsArray[$uno][$xcu]['tooltip'] = $value;
 			            break;
-                    case 'PopupLabel':
+	                    case 'PopupLabel':
 			            $unoCommandsArray[$uno][$xcu]['popup'] = $value;
 			            break;
-                    case 'TargetURL':
-			            $unoCommandsArray[$uno]['TargetURL'] = $value;
+        	            case 'TargetURL':
+			            $unoCommandsArray[$uno][$xcu]['TargetURL'] = $value;
+			            break;
+        	            case 'Properties':
+			            $unoCommandsArray[$uno][$xcu]['properties'] = $value;
+			            break;
+                            case 'IsExperimental':
+			            $unoCommandsArray[$uno][$xcu]['IsExperimental'] = $value;
 			            break;
 		        }
 	        }
@@ -215,15 +222,18 @@ $jsContent = <<< EOD
 ${json}
 
 window._UNO = function(string, component, isContext) {
-	var command = string.substr(5);
+	var command = (string.startsWith('.uno:') ? string.substr(5) : string);
+
 	var context = 'menu';
 	if (isContext === true) {
 		context = 'context';
 	}
+
 	var entry = unoCommandsArray[command];
 	if (entry === undefined) {
 		return command;
 	}
+
 	var componentEntry = entry[component];
 	if (componentEntry === undefined) {
 		componentEntry = entry['global'];
@@ -239,7 +249,7 @@ window._UNO = function(string, component, isContext) {
 		}
 	}
 
-    text = _(text);
+	text = _(text);
 	// Remove access key markers from translated strings
 	// 1. access key in parenthesis in case of non-latin scripts
 	text = text.replace(/\(~[A-Za-z]\)/, '');
@@ -249,16 +259,20 @@ window._UNO = function(string, component, isContext) {
 	return text;
 }
 
-window._UNOTARGET = function(string) {
-    var command = string.substr(5);
+window._UNOTARGET = function(string, component) {
+    var command = (string.startsWith('.uno:') ? string.substr(5) : string);
     var entry = unoCommandsArray[command];
-	if (entry === undefined) {
-		return '';
-    }
-    if (entry['TargetURL'] === undefined) {
+    if (entry === undefined) {
         return '';
     }
-    return entry['TargetURL'];
+
+    var componentEntry = entry[component];
+    if (componentEntry === undefined) {
+		return '';
+    }
+
+    var  targetURL = componentEntry['TargetURL']
+    return (targetURL === undefined ? '' : targetURL);
 }
 EOD;
 
