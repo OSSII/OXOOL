@@ -2288,15 +2288,15 @@ function onUpdatePermission(e) {
 			$('#toolbar-down').show();
 			switch (map._docLayer._docType) {
 			case 'text':
-				$('#document-container').css('bottom', '33px');
+				$('#document-container').css('bottom', '37px');
 				break;
 			case 'spreadsheet':
-				$('#document-container').css('bottom', '68px'); // FIXME this and spreadsheet-row-column-frame are supposed to be the same, but are not
-				$('#spreadsheet-row-column-frame').css('bottom', '65px');
+				$('#document-container').css('bottom', '74px'); // FIXME this and spreadsheet-row-column-frame are supposed to be the same, but are not
+				$('#spreadsheet-row-column-frame').css('bottom', '74px');
 				$('#spreadsheet-toolbar').show();
 				break;
 			case 'presentation':
-				$('#document-container').css('bottom', '33px');
+				$('#document-container').css('bottom', '37px');
 				break;
 			}
 		}
