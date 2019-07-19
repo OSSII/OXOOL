@@ -1,7 +1,7 @@
 #main-menu {
     top: 0;
     height: 25px;
-    z-index: 1000;
+    /*z-index: 1000;*/
     outline: none;
     float: left;
     background-color: transparent;
@@ -132,7 +132,7 @@ serif;
     padding-left: 15px;
     padding-right: 15px;
     padding-top: 8px;
-    z-index: 500;
+   /*z-index: 500;*/
     border-left: 1px solid #fafafa;
     border-right: 1px solid #fafafa;
 }
@@ -171,7 +171,7 @@ serif;
 }
 .lo-menu > li > ul {
     margin-top: -1px !important;
-    z-index: 400;
+    /*z-index: 400;*/
 }
 .lo-menu > li > a span.sub-arrow {
     display: none;
@@ -212,7 +212,7 @@ serif;
 /* Mobile menu toggle button */
 
 .main-menu-btn {
-    z-index: 2000;
+    /*z-index: 2000;*/
     float: right;
     top: 5px;
     margin: 2px 10px;
@@ -313,7 +313,7 @@ serif;
         margin: 0;
         -webkit-overflow-scrolling: touch;
         overflow: scroll;
-        z-index: 1010;
+        /*z-index: 1010;*/
     }
 
     #main-menu {
@@ -359,6 +359,6 @@ serif;
     margin-top: 3px;
     text-decoration: underline;
     padding: 4px 4px 4px 4px;
-    z-index: 500;
+    /*z-index: 500;*/
     border: 1px solid transparent;
 }
