@@ -11526,3 +11526,27 @@ window._UNOTARGET = function(string, component) {
     var  targetURL = componentEntry['TargetURL']
     return (targetURL === undefined ? '' : targetURL);
 }
+
+window._UNOICON = function(string, component) {
+    var command = (string.startsWith('.uno:') ? string.substr(5) : string);
+    var fallback = "global";
+
+    var entry = unoCommandsArray[command];
+    if (entry === undefined) {
+        return '';
+    }
+
+    var componentEntry = entry[component];
+    if (componentEntry === undefined) {
+	componentEntry = entry[fallback];
+	if (componentEntry === undefined) {
+	    return '';
+	}
+    }
+
+    var  showicon = componentEntry['properties']
+    if (showicon === undefined)
+	return '';
+
+    return command.toLowerCase();
+}
