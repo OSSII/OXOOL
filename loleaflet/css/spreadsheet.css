@@ -200,13 +200,13 @@
 	}
 
 @media (max-width: 767px) {
-	#spreadsheet-toolbar {
+	/*#spreadsheet-toolbar {
 		bottom: 0;
-	}
+	}*/
 
-	.spreadsheet-tabs-container {
+	/*.spreadsheet-tabs-container {
 		bottom: 0;
-	}
+	}*/
 
 	#spreadsheet-row-column-frame {
 		top: 73px;
