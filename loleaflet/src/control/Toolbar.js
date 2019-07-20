@@ -152,6 +152,7 @@ L.Map.include({
 	sendUnoCommand: function (command, json) {
 		if (this._permission === 'edit') {
 			// Add by Firefly <firefly@ossii.com.tw>
+			command = command.trim(); // 去掉前後空白，(不知為何，就有程序愛加空白在命令列後面 XD)
 			// 是否有替代 uno?
 			var targetURL = _UNOTARGET(command, this.getDocType());
 			// 有的話就用替代 uno
