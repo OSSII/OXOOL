@@ -796,12 +796,12 @@ function createToolbar() {
 		{type: 'button',  id: 'underline',  img: 'underline', hint: _UNO('.uno:Underline'), uno: 'Underline'},
 		{type: 'button',  id: 'strikeout', img: 'strikeout', hint: _UNO('.uno:Strikeout'), uno: 'Strikeout'},
 		{type: 'break'},
-		{type: 'text-color',  id: 'fontcolor', hint: _UNO('.uno:FontColor')},
+		{type: 'text-color',  id: 'fontcolor', hint: _UNO('.uno:Color')},
 		{type: 'color',  id: 'backcolor', hint: _UNO('.uno:BackgroundColor')},
 		{type: 'break' , mobile:false},
-		{type: 'button',  id: 'leftpara',  img: 'alignleft', hint: _UNO('.uno:LeftPara', '', true), uno: 'LeftPara', hidden: true, unosheet: 'AlignLeft', disabled: true},
-		{type: 'button',  id: 'centerpara',  img: 'alignhorizontal', hint: _UNO('.uno:CenterPara', '', true), uno: 'CenterPara', hidden: true, unosheet: 'AlignHorizontalCenter', disabled: true},
-		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:RightPara', '', true), uno: 'RightPara', hidden: true, unosheet: 'AlignRight', disabled: true},
+		{type: 'button',  id: 'leftpara',  img: 'alignleft', hint: _UNO('.uno:AlignLeft', 'text', true), uno: 'LeftPara', hidden: true, unosheet: 'AlignLeft', disabled: true},
+		{type: 'button',  id: 'centerpara',  img: 'alignhorizontal', hint: _UNO('.uno:AlignCenter', 'text', true), uno: 'CenterPara', hidden: true, unosheet: 'AlignHorizontalCenter', disabled: true},
+		{type: 'button',  id: 'rightpara',  img: 'alignright', hint: _UNO('.uno:AlignRight', 'text', true), uno: 'RightPara', hidden: true, unosheet: 'AlignRight', disabled: true},
 		{type: 'button',  id: 'justifypara',  img: 'alignblock', hint: _UNO('.uno:JustifyPara', '', true), uno: 'JustifyPara', hidden: true, unosheet: '', disabled: true},
 		{type: 'break', id: 'breakpara', hidden: true},
 		{type: 'drop',  id: 'setborderstyle',  img: 'setborderstyle', hint: _('Borders'), hidden: true,
@@ -875,7 +875,7 @@ function createToolbar() {
 		{type: 'button',  id: 'insertobjectchart',  img: 'insertobjectchart', hint: _UNO('.uno:InsertObjectChart', '', true), uno: 'InsertObjectChart'},
 		{type: 'drop',  id: 'insertshapes',  img: 'basicshapes_ellipse', hint: _('Insert shapes'), overlay: {onShow: insertShapes},
 			html: '<div id="insertshape-wrapper"><div id="insertshape-popup" class="insertshape-pop ui-widget ui-corner-all"><div class="insertshape-grid"></div></div></div>'},
-		{type: 'drop',  id: 'animationeffects',  img: 'animationeffects', hint: _('Side Transition'), overlay: {onShow: animationEffects},
+		{type: 'drop',  id: 'animationeffects',  img: 'animationeffects', hint: _UNO('.uno:SlideChangeWindow', 'presentation'), overlay: {onShow: animationEffects},
 			html: '<div id="animationeffects-wrapper"><div id="animationeffects-popup" class="ui-widget ui-widget-content ui-corner-all"><div class="animationeffects-grid"></div></div></div>', hidden: true},
 		{type: 'button',  id: 'link',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true},
 		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: 'InsertSymbol'},
@@ -886,8 +886,6 @@ function createToolbar() {
 	];
 
 	if (_inMobileMode()) {
-		// 暫時關掉手機模式啟用編輯按鈕
-		//$('#mobile-edit-button').show();
 		initMobileToolbar(toolItems);
 	} else {
 		$('#toolbar-down').show();
@@ -2293,7 +2291,7 @@ function onUpdatePermission(e) {
 			case 'spreadsheet':
 				$('#document-container').css('bottom', '74px'); // FIXME this and spreadsheet-row-column-frame are supposed to be the same, but are not
 				$('#spreadsheet-row-column-frame').css('bottom', '74px');
-				$('#spreadsheet-toolbar').show();
+				$('#spreadsheet-toolbar').removeClass('mobile-view').show();
 				break;
 			case 'presentation':
 				$('#document-container').css('bottom', '37px');
@@ -2340,9 +2338,10 @@ function onUpdatePermission(e) {
 				$('#document-container').css('bottom', '0');
 				break;
 			case 'spreadsheet':
-				$('#document-container').css('bottom', '35px');
+				$('#mobile-edit-button').addClass('spreadsheet');
+				$('#document-container').css('bottom', '37px');
 				$('#spreadsheet-row-column-frame').css('bottom', '0');
-				$('#spreadsheet-toolbar').show();
+				$('#spreadsheet-toolbar').addClass('mobile-view').show();
 				break;
 			case 'presentation':
 				$('#document-container').css('bottom', '0');
@@ -2579,7 +2578,7 @@ function setupToolbar(e) {
 	map.on('cellformula', function (e) {
 		if (document.activeElement !== L.DomUtil.get('formulaInput')) {
 			// if the user is not editing the formula bar
-			L.DomUtil.get('formulaInput').vaspreadsheetue = e.formula;
+			L.DomUtil.get('formulaInput').value = e.formula;
 		}
 	});
 

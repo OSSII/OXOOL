@@ -35,6 +35,10 @@
     border-top: 1px solid #bbbbbb;
 }
 
+#spreadsheet-toolbar.mobile-view {
+    bottom: 0px;
+}
+
 #formulabar {
     border-top: 1px solid #bbbbbb;
     height: 30px;
@@ -76,14 +80,17 @@
 
 #formulaInput {
     height: 29px;
-    width: 700px;
+    width: 100%;
 }
 
-@media (max-width: 768px),(max-device-height: 768px) {
-     #formulaInput {
-	width: 500px;
-     }
+#tb_formulabar_item_formula {
+    width: 100%;
 }
+
+#tb_formulabar_item_formula div table {
+    width: 100%;
+}
+
 
 #document-name-input {
     padding: 1px;

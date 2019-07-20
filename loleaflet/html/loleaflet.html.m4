@@ -119,22 +119,22 @@ ifelse(MOBILEAPP,[true],
 
       <div id="map"></div>
     </div>
-    <div id="spreadsheet-toolbar"></div>
+    <div id="spreadsheet-toolbar" style="display:none"></div>
 
     <div id="presentation-controls-wrapper">
       <div id="slide-sorter"></div>
-      <div id="presentation-toolbar"></div>
+      <div id="presentation-toolbar" style="display:none"></div>
     </div>
 
     <div id="mobile-edit-button" style="display: none">
       <i id="mobile-edit-button-icon" class="fa fa-pencil"></i>
     </div>
 
-    <div id="toolbar-down"></div>
+    <div id="toolbar-down" style="display:none"></div>
 
     <!-- Remove if you don't want the About dialog -->
     <div id="about-dialog" style="display:none; text-align: center; user-select: text">
-      <h1 id="product-name">LibreOffice Online</h1>
+      <h1 id="product-name">OxOffice Online</h1>
       <hr/>
       <p id="product-string"></p>
       <h3>LOOLWSD</h3>

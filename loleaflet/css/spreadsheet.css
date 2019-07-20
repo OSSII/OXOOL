@@ -23,6 +23,10 @@
 	background-color: #fafafa;
 	}
 
+.spreadsheet-tabs-container.mobile-view {
+	bottom: 0px;
+}
+
 .spreadsheet-tab-scroll {
 	width: 100%;
 	height: 100%;
@@ -200,20 +204,12 @@
 	}
 
 @media (max-width: 767px) {
-	/*#spreadsheet-toolbar {
-		bottom: 0;
-	}*/
-
-	/*.spreadsheet-tabs-container {
-		bottom: 0;
-	}*/
-
 	#spreadsheet-row-column-frame {
 		top: 73px;
-		bottom: 36px;
+		bottom: 37px;
 	}
 
 	#spreadsheet-row-column-frame.readonly {
-		top: 30px;
+		top: 41px;
 	}
 }

@@ -8,11 +8,11 @@ L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help)
 	options: {
 		initial: [
-			{name: _UNO('.uno:PickList'), disabled: true},
-			{name: _UNO('.uno:EditMenu'), disabled: true},
-			{name: _UNO('.uno:ViewMenu'), disabled: true},
-			{name: _UNO('.uno:InsertMenu'), disabled: true},
-			{name: _UNO('.uno:ToolsMenu'), disabled: true}
+			{name: _UNO('.uno:PickList')},
+			{name: _UNO('.uno:EditMenu')},
+			{name: _UNO('.uno:ViewMenu')},
+			{name: _UNO('.uno:InsertMenu')},
+			{name: _UNO('.uno:ToolsMenu')}
 		],
 		text:  [
 			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', type: 'menu', menu: [
@@ -447,8 +447,8 @@ L.Control.Menubar = L.Control.extend({
 
 		allowedViewModeActions: [
 			'downloadas-pdf', 'downloadas-odt', 'downloadas-doc', 'downloadas-docx', 'downloadas-rtf', // file menu
-			'downloadas-odp', 'downloadas-ppt', 'downloadas-pptx', // file menu
-			'downloadas-ods', 'downloadas-xls', 'downloadas-xlsx', // file menu
+			'downloadas-odp', 'downloadas-ppt', 'downloadas-pptx', 'print', // file menu
+			'downloadas-ods', 'downloadas-xls', 'downloadas-xlsx', 'closedocument', // file menu
 			'downloadas-csv', 'downloadas-html', 'downloadas-txt',  // file menu
 			'fullscreen', 'zoomin', 'zoomout', 'zoomreset', // view menu
 			'about', 'keyboard-shortcuts' // help menu
@@ -461,6 +461,7 @@ L.Control.Menubar = L.Control.extend({
 		this._initializeMenu(this.options.initial);
 
 		map.on('doclayerinit', this._onDocLayerInit, this);
+		map.on('updatepermission', this._onRefresh, this);
 		map.on('addmenu', this._addMenu, this);
 		map.on('commandvalues', this._onInitMenu, this);
 		map.on('updatetoolbarcommandvalues', this._onStyleMenu, this);
@@ -532,6 +533,41 @@ L.Control.Menubar = L.Control.extend({
 		}
 	},
 
+	_onRefresh: function() {
+		// clear initial menu
+		while (this._menubarCont.hasChildNodes()) {
+			this._menubarCont.removeChild(this._menubarCont.firstChild);
+		}
+
+		// Add document specific menu
+		var docType = this._map.getDocType();
+		if (docType === 'text') {
+			this._initializeMenu(this.options.text);
+		} else if (docType === 'spreadsheet') {
+			this._initializeMenu(this.options.spreadsheet);
+		} else if (docType === 'presentation' || docType === 'drawing') {
+			this._initializeMenu(this.options.presentation);
+		}
+
+		// initialize menubar plugin
+		$('#main-menu').smartmenus({
+			hideOnClick: true,
+			showOnClick: true,
+			hideTimeout: 0,
+			hideDuration: 0,
+			showDuration: 0,
+			showTimeout: 0,
+			collapsibleHideDuration: 0,
+			subIndicatorsPos: 'append',
+			subIndicatorsText: '&#8250;'
+		});
+		$('#main-menu').attr('tabindex', 0);
+
+		if (this._map._permission !== 'readonly') {
+			this._createFileIcon();
+		}
+	},
+
 	_onStyleMenu: function (e) {
 		if (e.commandName === '.uno:StyleApply') {
 			var style;
@@ -549,55 +585,23 @@ L.Control.Menubar = L.Control.extend({
 		}
 	},
 
+	_createDocument: function(e) {
+		var self = e.data.self;
+		var docType = self._map.getDocType();
+		self._map.fire('postMessage', {msgId: 'UI_CreateFile', args: {DocumentType: docType}});
+	},
+
 	_onDocLayerInit: function() {
-		// clear initial menu
-		while (this._menubarCont.hasChildNodes()) {
-			this._menubarCont.removeChild(this._menubarCont.firstChild);
-		}
-
-		// Add document specific menu
-		var iconClass = 'document-logo'; // MenuBar 上的檔案圖示 Class
-		var docType = this._map.getDocType();
-		if (docType === 'text') {
-			iconClass += ' writer-icon-img'; // Writer 圖示
-			this._initializeMenu(this.options.text);
-		} else if (docType === 'spreadsheet') {
-			iconClass += ' calc-icon-img'; // Calc 圖示
-			this._initializeMenu(this.options.spreadsheet);
-		} else if (docType === 'presentation' || docType === 'drawing') {
-			iconClass += ' impress-icon-img'; // Impress 圖示
-			this._initializeMenu(this.options.presentation);
-		}
-
-		// Add by Firefly
-		// 把圖示放在 MenuBar 最前面
-		var liItem = L.DomUtil.create('li', '');
-		liItem.id = 'document-header';
-		var aItem = L.DomUtil.create('div', iconClass, liItem);
-		$(aItem).data('id', 'document-logo');
-		$(aItem).data('type', 'action');
-		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
-		// 點選圖示執行函式 (暫時不用)
-		// $(aItem).bind('click', {self: this}, this._createDocument);
-		//------- End
-
-		// initialize menubar plugin
-		$('#main-menu').smartmenus({
-			hideOnClick: true,
-			showOnClick: true,
-			hideTimeout: 0,
-			hideDuration: 0,
-			showDuration: 0,
-			showTimeout: 0,
-			collapsibleHideDuration: 0,
-			subIndicatorsPos: 'append',
-			subIndicatorsText: '&#8250;'
-		});
-		$('#main-menu').attr('tabindex', 0);
+		this._onRefresh();
 
 		$('#main-menu').bind('select.smapi', {self: this}, this._onItemSelected);
+		$('#main-menu').bind('mouseenter.smapi', {self: this}, this._onMouseEnter);
+		$('#main-menu').bind('mouseleave.smapi', {self: this}, this._onMouseLeave);
+
 		$('#main-menu').bind('beforeshow.smapi', {self: this}, this._beforeShow);
 		$('#main-menu').bind('click.smapi', {self: this}, this._onClicked);
+
+		$('#main-menu').bind('keydown', {self: this}, this._onKeyDown);
 
 		// SmartMenus mobile menu toggle button
 		$(function() {
@@ -608,11 +612,11 @@ L.Control.Menubar = L.Control.extend({
 					var $menu = $('#main-menu');
 					var $nav = $menu.parent();
 					if (this.checked) {
-						$nav.css({height: 'initial', bottom: 33});
+						$nav.css({height: 'initial', bottom: '38px'});
 						$menu.hide().slideDown(250, function() { $menu.css('display', ''); });
 					} else {
 						$menu.show().slideUp(250, function() { $menu.css('display', ''); });
-						$nav.css({height:0, bottom: ''});
+						$nav.css({height:'', bottom: ''});
 					}
 				});
 				// hide mobile menu beforeunload
@@ -699,8 +703,15 @@ L.Control.Menubar = L.Control.extend({
 						$(aItem).removeClass(constChecked);
 					}
 				} else if (type === 'action') { // enable all except fullscreen on windows
-					$(aItem).removeClass('disabled');
-					$(aItem).addClass('enabled'); // extra added
+					if (id === 'fullscreen' && (L.Browser.ie || L.Browser.edge)) { // Full screen works weirdly on IE 11 and on Edge
+						$(aItem).addClass('disabled');
+						var index = self.options.allowedViewModeActions.indexOf('fullscreen');
+						if (index > 0) {
+							self.options.allowedViewModeActions.splice(index, 1);
+						}
+					} else {
+						$(aItem).removeClass('disabled');
+					}
 				}
 			} else { // eslint-disable-next-line no-lonely-if
 				if (type === 'unocommand') { // disable all uno commands
@@ -748,19 +759,9 @@ L.Control.Menubar = L.Control.extend({
 		} else if (id === 'insertgraphicremote') {
 			this._map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
 		} else if (id === 'zoomin' && this._map.getZoom() < this._map.getMaxZoom()) {
-			if (this._map.getDocType() === 'spreadsheet') {
-				this._map.setZoom(14); // 200%
-			}
-			else {
-				this._map.zoomIn(1);
-			}
+			this._map.zoomIn(1);
 		} else if (id === 'zoomout' && this._map.getZoom() > this._map.getMinZoom()) {
-			if (this._map.getDocType() === 'spreadsheet') {
-				this._map.setZoom(10); // 100%
-			}
-			else {
-				this._map.zoomOut(1);
-			}
+			this._map.zoomOut(1);
 		} else if (id === 'zoomreset') {
 			this._map.setZoom(this._map.options.zoom);
 		} else if (id === 'fullscreen') {
@@ -800,42 +801,6 @@ L.Control.Menubar = L.Control.extend({
 			this._map.remove();
 		} else if (id === 'repair') {
 			this._map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');
-		} else if (id === 'functionDialog') {
-			this._map.sendUnoCommand('.uno:FunctionDialog');
-		} else if (id === 'conditionalFormatDialog') {
-			this._map.sendUnoCommand('.uno:ConditionalFormatDialog');
-		} else if (id === 'insertPageNumber') {
-			this._map.sendUnoCommand('.uno:InsertPageNumber');
-			//this._map.sendUnoCommand('.uno:InsertSlideNumber');
-		} else if (id === 'drawLine') {
-			this._map.sendUnoCommand('.uno:Line');
-		} else if (id === 'inserthorizontalline') {
-			//this._map.sendUnoCommand('.uno:StyleApply', '{"FamilyName":{"type":"string", "value": "ParagraphStyles"},"Style":{"type":"string", "value": "Horizontal Line"}}');
-			this._map.sendUnoCommand('.uno:StyleApply', {FamilyName:{type:'string', value: 'ParagraphStyles'},Style:{type:'string', value: 'Horizontal Line'}});
-		} else if (id === 'a4portrait') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Width":{"type":"long", "value": "21000"},"AttributePageSize.Height":{"type":"long", "value": "29700"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "false"}}');
-		} else if (id === 'a4landscape') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Height":{"type":"long", "value": "21000"},"AttributePageSize.Width":{"type":"long", "value": "29700"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "true"}}');
-		} else if (id === 'a5portrait') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Width":{"type":"long", "value": "14800"},"AttributePageSize.Height":{"type":"long", "value": "21000"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "false"}}');
-		} else if (id === 'a5landscape') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Height":{"type":"long", "value": "14800"},"AttributePageSize.Width":{"type":"long", "value": "21000"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "true"}}');
-		} else if (id === 'letterportrait') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Width":{"type":"long", "value": "21950"},"AttributePageSize.Height":{"type":"long", "value": "27940"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "false"}}');
-		} else if (id === 'letterlandscape') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Height":{"type":"long", "value": "21950"},"AttributePageSize.Width":{"type":"long", "value": "27940"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "true"}}');
-		} else if (id === 'legalportrait') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Width":{"type":"long", "value": "21590"},"AttributePageSize.Height":{"type":"long", "value": "35560"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "false"}}');
-		} else if (id === 'legallandscape') {
-			this._map.sendUnoCommand('.uno:AttributePageSize {"AttributePageSize.Height":{"type":"long", "value": "21590"},"AttributePageSize.Width":{"type":"long", "value": "35560"}}');
-			this._map.sendUnoCommand('.uno:AttributePage {"AttributePage.Landscape":{"type":"boolean", "value": "true"}}');
 		}
 		// Inform the host if asked
 		if ($(item).data('postmessage') === 'true') {
@@ -864,6 +829,56 @@ L.Control.Menubar = L.Control.extend({
 			self._map.focus();
 	},
 
+	_onMouseEnter: function(e, item) {
+		var self = e.data.self;
+		var type = $(item).data('type');
+		if (type === 'unocommand') {
+			var unoCommand = $(item).data('uno');
+			self._map.setHelpTarget(unoCommand);
+		} else if (type === 'action') {
+			var id = $(item).data('id');
+			self._map.setHelpTarget('modules/online/menu/' + id);
+		}
+	},
+
+	_onMouseLeave: function(e) {
+		var self = e.data.self;
+		self._map.setHelpTarget(null);
+	},
+
+	_onKeyDown: function(e) {
+		var self = e.data.self;
+
+		// handle help - F1
+		if (e.type === 'keydown' && !e.shiftKey && !e.ctrlKey && !e.altKey && e.keyCode == 112) {
+			self._map.showHelp();
+		}
+	},
+
+	_createFileIcon: function() {
+		var iconClass = 'document-logo';
+		var docType = this._map.getDocType();
+		if (docType === 'text') {
+			iconClass += ' writer-icon-img';
+		} else if (docType === 'spreadsheet') {
+			iconClass += ' calc-icon-img';
+		} else if (docType === 'presentation' || docType === 'drawing') {
+			iconClass += ' impress-icon-img';
+		}
+
+		var liItem = L.DomUtil.create('li', '');
+		liItem.id = 'document-header';
+		var aItem = L.DomUtil.create('div', iconClass, liItem);
+		$(aItem).data('id', 'document-logo');
+		$(aItem).data('type', 'action');
+
+		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
+
+		var $docLogo = $(aItem);
+		$docLogo.bind('click', {self: this}, this._createDocument);
+
+	},
+
 	_createMenu: function(menu) {
 		var itemList = [];
 		var docType = this._map.getDocType();
@@ -885,6 +900,10 @@ L.Control.Menubar = L.Control.extend({
 				}
 				if (!found)
 					continue;
+			}
+
+			if (this._map._permission === 'readonly' && menu[i].id === 'last-mod') {
+				continue;
 			}
 
 			if (menu[i].type === 'action') {
@@ -970,6 +989,14 @@ L.Control.Menubar = L.Control.extend({
 			} else if (menu[i].type === 'action') {
 				$(aItem).data('type', 'action');
 				$(aItem).data('id', menu[i].id);
+			}
+
+			if (menu[i].tablet == false && window.mode.isTablet()) {
+				$(aItem).css('display', 'none');
+			}
+
+			if (menu[i].mobile == false && window.mode.isMobile()) {
+				$(aItem).css('display', 'none');
 			}
 
 			itemList.push(liItem);

@@ -21,6 +21,14 @@ L.Control.Tabs = L.Control.extend({
 		setTimeout(function() {
 			$('.spreadsheet-tab').contextMenu(e.perm === 'edit');
 		}, 1000);
+
+		if (window.mode.isMobile() == true) {
+			if (e.perm === 'edit') {
+				$('.spreadsheet-tabs-container').removeClass('mobile-view');
+			} else {
+				$('.spreadsheet-tabs-container').addClass('mobile-view');
+			}
+		}
 	},
 
 	_initialize: function () {

@@ -97,6 +97,10 @@ body {
         z-index: 2000;
 }
 
+#mobile-edit-button.spreadsheet {
+	bottom: 53px;
+}
+
 #mobile-edit-button-icon {
 	line-height: 56px;
 	font-size: 24px;
@@ -126,16 +130,16 @@ body {
 	left: 0px !important;
     }
     #document-container.spreadsheet-document {
-	top: 93px !important;
+	top: 102px !important;
     }
     #document-container.spreadsheet-document.readonly {
-	top: 50px !important;
+	top: 61px !important;
     }
     #document-container {
 	top: 41px;
     }
     #spreadsheet-row-column-frame {
-	top: 73px !important;
+	top: 82px !important;
     }
     #spreadsheet-row-column-frame.readonly {
 	top: 41px !important;
@@ -493,6 +497,8 @@ body {
 .ui-dialog-titlebar {
     padding: 0 1em !important;
 }
+
+.vex { z-index: 10000 !important;}
 
 /* Infobar */
 .vex-theme-bottom-right-corner .vex-dialog-message {
