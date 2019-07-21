@@ -9,6 +9,15 @@ L.Control.MobileInput = L.Control.extend({
 
 	initialize: function (options) {
 		L.setOptions(this, options);
+		this._cursorHandler = L.marker(new L.LatLng(0, 0), {
+			icon: L.divIcon({
+				className: 'leaflet-cursor-handler',
+				iconSize: null
+			}),
+			draggable: true
+		});
+
+		this._cursorHandler.on('dragend', this.onDragEnd, this);
 	},
 
 	onAdd: function () {
@@ -16,16 +25,29 @@ L.Control.MobileInput = L.Control.extend({
 		return this._container;
 	},
 
+	onDragEnd: function () {
+		var mousePos = this._map._docLayer._latLngToTwips(this._cursorHandler.getLatLng());
+		this._map._docLayer._postMouseEvent('buttondown', mousePos.x, mousePos.y, 1, 1, 0);
+		this._map._docLayer._postMouseEvent('buttonup', mousePos.x, mousePos.y, 1, 1, 0);
+	},
+
 	onGotFocus: function () {
-		if (this._map._docLayer._cursorMarker) {
+		if (this._map._docLayer && this._map._docLayer._cursorMarker) {
+			this._cursorHandler.setLatLng(this._map._docLayer._visibleCursor.getSouthWest());
 			this._map.addLayer(this._map._docLayer._cursorMarker);
+			if (this._map._docLayer._selections.getLayers().length === 0) {
+				this._map.addLayer(this._cursorHandler);
+			} else {
+				this._map.removeLayer(this._cursorHandler);
+			}
 		}
 	},
 
 	onLostFocus: function () {
-		if (this._map._docLayer._cursorMarker) {
+		if (this._map._docLayer && this._map._docLayer._cursorMarker) {
 			this._textArea.value = '';
 			this._map.removeLayer(this._map._docLayer._cursorMarker);
+			this._map.removeLayer(this._cursorHandler);
 		}
 	},
 
@@ -62,11 +84,15 @@ L.Control.MobileInput = L.Control.extend({
 		}
 	},
 
+	hideCursor: function () {
+		this.onLostFocus();
+	},
+
 	_initLayout: function () {
 		var constOff = 'off',
 		stopEvents = 'touchstart touchmove touchend mousedown mousemove mouseout mouseover mouseup mousewheel click scroll',
 		container = this._container = L.DomUtil.create('div', 'loleaflet-mobile-container');
-
+		
 		this._textArea = L.DomUtil.create('input', 'loleaflet-mobile-input', container);
 		this._textArea.setAttribute('type', 'text');
 		this._textArea.setAttribute('autocorrect', constOff);
