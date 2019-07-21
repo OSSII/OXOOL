@@ -336,6 +336,13 @@ var deps = {
 		desc: 'Menu bar'
 	},
 
+	ControlXmlMenubar: {
+		src: ['control/Control.js',
+		      'control/Control.XmlMenubar.js'],
+		heading: 'Controls',
+		desc: 'Xml Menu bar'
+	},
+
 	ControlTabs: {
 		src: ['control/Control.js',
 		      'control/Control.Tabs.js'],

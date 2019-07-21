@@ -458,7 +458,6 @@ L.Control.Menubar = L.Control.extend({
 	onAdd: function (map) {
 		this._initialized = false;
 		this._menubarCont = L.DomUtil.get('main-menu');
-		this._initializeMenu(this.options.initial);
 
 		map.on('doclayerinit', this._onDocLayerInit, this);
 		map.on('updatepermission', this._onRefresh, this);

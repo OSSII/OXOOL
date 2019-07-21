@@ -70,7 +70,12 @@ var map = L.map('map', {
 });
 
 ////// Controls /////
-map.addControl(L.control.menubar());
+var xmlmenubar = getParameterByName('xmlmenubar') === 'true';
+if (!xmlmenubar)
+	map.addControl(L.control.menubar());
+else
+	map.addControl(L.control.xmlmenubar());
+
 setupToolbar(map);
 setupScreenWatermark(map);
 map.addControl(L.control.scroll());
