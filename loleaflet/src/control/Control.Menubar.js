@@ -33,7 +33,7 @@ L.Control.Menubar = L.Control.extend({
 				/*{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'},*/
 				{type: 'separator'},
-				{name: _('Close document'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
+				{name: _UNO('CloseDoc'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'text'), type: 'menu', menu: [
 				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
@@ -260,7 +260,7 @@ L.Control.Menubar = L.Control.extend({
 				/*{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'},*/
 				{type: 'separator'},
-				{name: _('Close document'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
+				{name: _UNO('CloseDoc'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'presentation'), type: 'menu', menu: [
 				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
@@ -352,7 +352,7 @@ L.Control.Menubar = L.Control.extend({
 				/*{type: 'separator'},
 				{uno: '.uno:SetDocumentProperties'},*/
 				{type: 'separator'},
-				{name: _('Close document'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
+				{name: _UNO('CloseDoc'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'spreadsheet'), type: 'menu', menu: [
 				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
