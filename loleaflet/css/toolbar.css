@@ -1,6 +1,7 @@
 #toolbar-up.w2ui-toolbar {
     left: 0;
     right: 0;
+    height: 41px;
     padding-left: 9px;
     text-align: center;
     /*z-index: 999;*/
@@ -14,6 +15,7 @@
     padding: 0;
     position: fixed;
     bottom: 0;
+    height: 37px;
     /*z-index: 1000;*/
     border-top: 1px solid #bbbbbb;
 }
@@ -41,7 +43,7 @@
 
 #formulabar {
     border-top: 1px solid #bbbbbb;
-    height: 30px;
+    height: 41px;
 }
 
 #presentation-toolbar {
