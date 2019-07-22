@@ -103,7 +103,6 @@ L.Control.MobileInput = L.Control.extend({
 			.on(this._textArea, 'keydown keypress keyup', this.onKeyEvents, this)
 			.on(this._textArea, 'compositionstart compositionupdate compositionend', this.onCompEvents, this)
 			.on(this._textArea, 'textInput', this.onTextInput, this)
-			.on(this._textArea, 'input', this.onInput, this)
 			.on(this._textArea, 'focus', this.onGotFocus, this)
 			.on(this._textArea, 'blur', this.onLostFocus, this);
 	},
@@ -162,17 +161,19 @@ L.Control.MobileInput = L.Control.extend({
 	onCompEvents: function (e) {
 		var map = this._map;
 
-		if (e.type === 'compositionstart' || e.type === 'compositionupdate') {
+		if (e.type === 'compositionstart') {
 			this._isComposing = true; // we are starting composing with IME
-			this._composingData = e.data; // cache what we have composed so far
-		}
-
-		if (e.type === 'compositionend') {
+		} else if (e.type === 'compositionupdate') {
+			map._docLayer._postCompositionEvent(0, 'input', e.data);
+		} if (e.type === 'compositionend') {
 			this._isComposing = false; // stop of composing with IME
-			map._docLayer._postCompositionEvent(0, 'end', '');
+			// get the composited char codes
+			// clear the input now - best to do this ASAP so the input
+			// is clear for the next word
+			this._composingData = '';
+			// Set all keycodes to zero
+			map._docLayer._postCompositionEvent(0, 'end', e.data);
 		}
-
-		L.DomEvent.stopPropagation(e);
 	},
 
 	onTextInput: function (e) {
@@ -183,39 +184,6 @@ L.Control.MobileInput = L.Control.extend({
 
 		L.DomEvent.stopPropagation(e);
 	},
-
-	onInput: function (e) {
-		var backSpace = this._map.keyboard._toUNOKeyCode(8);
-		var i;
-
-		// deferred processing of composition text or normal text; we can get
-		// both in some cases, and based on the input event we need to decide
-		// which one we actually need to use
-		if (e.inputType === 'insertText') {
-			if (this._textData) {
-				for (i = 0; i < this._textData.length; ++i) {
-					this._map._docLayer._postKeyboardEvent('input', this._textData[i].charCodeAt(), 0);
-				}
-			}
-		}
-		else if (e.inputType === 'insertCompositionText') {
-			if (this._composingData) {
-				this._map._docLayer._postCompositionEvent(0, 'input', this._composingData);
-			}
-		}
-		else if (e.inputType === 'deleteContentBackward' && this._lastInput !== backSpace) {
-			// this means we need to delete the entire interim composition;
-			// let's issue backspace that many times
-			if (this._composingData) {
-				for (i = 0; i < this._composingData.length; ++i) {
-					this._map._docLayer._postKeyboardEvent('input', 0, backSpace);
-				}
-			}
-		}
-
-		L.DomEvent.stopPropagation(e);
-	}
-});
 
 L.control.mobileInput = function (options) {
 	return new L.Control.MobileInput(options);
