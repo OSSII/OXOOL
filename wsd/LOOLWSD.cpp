@@ -3124,6 +3124,8 @@ int LOOLWSD::innerMain()
     // Force a uniform UTF-8 locale for ourselves & our children.
     ::setenv("LC_ALL", "en_US.UTF-8", 1);
     setlocale(LC_ALL, "en_US.UTF-8");
+    // Also set to be in online mode.
+    ::setenv("ONLINE_MODE", "true", 1);
 
     if (access(Cache.c_str(), R_OK | W_OK | X_OK) != 0)
     {
