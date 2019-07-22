@@ -183,7 +183,8 @@ L.Control.MobileInput = L.Control.extend({
 		}
 
 		L.DomEvent.stopPropagation(e);
-	},
+	}
+});
 
 L.control.mobileInput = function (options) {
 	return new L.Control.MobileInput(options);
