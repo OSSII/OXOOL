@@ -11,9 +11,17 @@ L.Control.ContextMenu = L.Control.extend({
 
 	onAdd: function(map) {
 		this._prevMousePos = null;
-		map.on('locontextmenu', this._onContextMenu, this);
-		map.on('mousedown', this._onMouseDown, this);
-		map.on('keydown', this._onKeyDown, this);
+		map.on('updatepermission', this._onUpdatePermission, this); // Check Permission
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// Right-click menu only in edit mode.
+	_onUpdatePermission: function(e) {
+		if (e.perm === 'edit') {
+			this._map.on('locontextmenu', this._onContextMenu, this);
+			this._map.on('mousedown', this._onMouseDown, this);
+			this._map.on('keydown', this._onKeyDown, this);
+		}
 	},
 
 	_onMouseDown: function(e) {
