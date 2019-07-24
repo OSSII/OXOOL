@@ -101,8 +101,7 @@ L.Control.MobileInput = L.Control.extend({
 		this._textArea.setAttribute('spellcheck', 'false');
 		L.DomEvent.on(this._textArea, stopEvents, L.DomEvent.stopPropagation)
 			.on(this._textArea, 'keydown keypress keyup', this.onKeyEvents, this)
-			.on(this._textArea, 'compositionstart compositionupdate compositionend', this.onCompEvents, this)
-			.on(this._textArea, 'textInput', this.onTextInput, this)
+			.on(this._textArea, 'compositionstart compositionupdate compositionend textInput', this.onCompEvents, this)
 			.on(this._textArea, 'focus', this.onGotFocus, this)
 			.on(this._textArea, 'blur', this.onLostFocus, this);
 	},
@@ -114,45 +113,35 @@ L.Control.MobileInput = L.Control.extend({
 		    docLayer = this._map._docLayer,
 		    unoKeyCode = handler._toUNOKeyCode(keyCode);
 
-		this._keyHandled = this._keyHandled || false;
-		if (this._isComposing) {
-			if (keyCode === 229 && charCode === 0) {
-				return;
-			}
-			// stop the composing - so that we handle eg. Enter even during
-			// composition
-			this._isComposing = false;
-			this._lastInput = null;
+		if (!this._isComposing && e.type === 'keyup') {
+			// not compositing and keyup, clear the input so it is ready
+			// for next word (or char only)
 			this._textArea.value = '';
 		}
 
 		docLayer._resetPreFetching();
 		if (handler._ignoreKeyEvent({originalEvent: e})) {
-			this._lastInput = null;
 			// key ignored
 		}
 		else if (e.type === 'keydown') {
 			this._keyHandled = false;
 			if (handler.handleOnKeyDownKeys[keyCode] && charCode === 0) {
 				docLayer._postKeyboardEvent('input', charCode, unoKeyCode);
-				this._lastInput = unoKeyCode;
 			}
 		}
 		else if ((e.type === 'keypress') && (!handler.handleOnKeyDownKeys[keyCode] || charCode !== 0)) {
 			if (charCode === keyCode && charCode !== 13) {
+				if (keyCode > 128) return; // fixup for ios.
 				// Chrome sets keyCode = charCode for printable keys
 				// while LO requires it to be 0
 				keyCode = 0;
-				unoKeyCode = handler._toUNOKeyCode(keyCode);
+				unoKeyCode = this._toUNOKeyCode(keyCode);
 			}
-
 			docLayer._postKeyboardEvent('input', charCode, unoKeyCode);
-			this._lastInput = unoKeyCode;
 			this._keyHandled = true;
 		}
 		else if (e.type === 'keyup') {
 			docLayer._postKeyboardEvent('up', charCode, unoKeyCode);
-			this._lastInput = null;
 			this._keyHandled = true;
 		}
 		L.DomEvent.stopPropagation(e);
@@ -161,27 +150,26 @@ L.Control.MobileInput = L.Control.extend({
 	onCompEvents: function (e) {
 		var map = this._map;
 
-		if (e.type === 'compositionstart') {
-			this._isComposing = true; // we are starting composing with IME
-		} else if (e.type === 'compositionupdate') {
+		switch (e.type)
+		{
+		case 'compositionstart':
+			this._isComposing = true;
+			break;
+		case 'compositionupdate':
 			map._docLayer._postCompositionEvent(0, 'input', e.data);
-		} if (e.type === 'compositionend') {
-			this._isComposing = false; // stop of composing with IME
-			// get the composited char codes
-			// clear the input now - best to do this ASAP so the input
-			// is clear for the next word
-			this._composingData = '';
-			// Set all keycodes to zero
+			break;
+		case 'compositionend':
+			this._isComposing = false;
 			map._docLayer._postCompositionEvent(0, 'end', e.data);
+			break;
+		case 'textInput':
+			if (!this._keyHandled) {
+				var data = e.data;
+				for (var idx = 0; idx < data.length; idx++) {
+					this._map._docLayer._postKeyboardEvent('input', data[idx].charCodeAt(), 0);
+				}
+			}
 		}
-	},
-
-	onTextInput: function (e) {
-		if (!this._keyHandled) {
-			this._textData = e.data;
-			this._textArea.value = '';
-		}
-
 		L.DomEvent.stopPropagation(e);
 	}
 });
