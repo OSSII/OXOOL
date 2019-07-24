@@ -170,16 +170,23 @@ L.Map.Keyboard = L.Handler.extend({
 		if (container.tabIndex === -1) {
 			container.tabIndex = '0';
 		}
-
+		this._map.on('updatepermission', this.updatePermission, this); // Check Permission
 		this._map.on('mousedown', this._onMouseDown, this);
-		this._map.on('keydown keyup keypress', this._onKeyDown, this);
-		this._map.on('compositionstart compositionupdate compositionend textInput', this._onIME, this);
 	},
 
 	removeHooks: function () {
 		this._map.off('mousedown', this._onMouseDown, this);
 		this._map.off('keydown keyup keypress', this._onKeyDown, this);
 		this._map.off('compositionstart compositionupdate compositionend textInput', this._onIME, this);
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// Keyboard can only be operated in edit mode.
+	updatePermission: function (e) {
+		if (e.perm === 'edit') {
+			this._map.on('keydown keyup keypress', this._onKeyDown, this);
+			this._map.on('compositionstart compositionupdate compositionend textInput', this._onIME, this);
+		}
 	},
 
 	/*
