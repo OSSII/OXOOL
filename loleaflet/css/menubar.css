@@ -1,7 +1,7 @@
 #main-menu {
     top: 0;
-    height: 25px;
-    /*z-index: 1000;*/
+    height: 31px;
+    z-index: 1000;
     outline: none;
     float: left;
     background-color: transparent;
@@ -150,7 +150,7 @@ serif;
 
 /* Menu Item */
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
-    padding: 5px 104px 5px 36px; /* ICON */
+    padding: 5px 84px 5px 36px; /* ICON */
     color: #000;
 }
 .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
