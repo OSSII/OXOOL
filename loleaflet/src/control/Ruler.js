@@ -47,6 +47,7 @@ L.Control.Ruler = L.Control.extend({
 			L.DomEvent.on(this._lMarginDrag, 'mousedown', this._initiateDrag, this);
 		}
 		else {
+			$('.loleaflet-ruler').addClass('readonly');
 			this._lMarginDrag.style.cursor = 'default';
 			this._rMarginDrag.style.cursor = 'default';
 

@@ -781,6 +781,11 @@ input.clipboard {
 	margin: 0px;
 	}
 
+.loleaflet-ruler.readonly {
+	height: 0;
+	display: none;
+}
+
 /* The 20px above is 5% of the 400px below. */
 @media screen and (max-height: 400px) {
 	.loleaflet-ruler {
