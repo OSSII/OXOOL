@@ -55,6 +55,12 @@ var deps = {
 		src: ['src/AdminSocketHistory.js'],
 		desc: 'Socket to query document history.',
 		deps: ['AdminCore']
+	},
+
+	AdminSocketSoftwareUpgrade: {
+		src: ['src/AdminSocketSoftwareUpgrade.js'],
+		desc: 'Socket to upgrade software.',
+		deps: ['AdminCore']
 	}
 };
 

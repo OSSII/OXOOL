@@ -31,7 +31,7 @@
         }
 
       Admin.GlobalFunction(host);
-      Admin.ViewLog(host);
+      Admin.SoftwareUpgrade(host);
     </script>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -57,15 +57,46 @@
           <ul class="nav nav-sidebar">
             <li><a href="admin.html"><script>document.write(l10nstrings.strOverview)</script></a></li>
             <li><a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a></li>
-            <li  class="active"><a href="adminViewLog.html">檢視日誌</a></li>
+            <li><a href="adminViewLog.html">檢視日誌</a></li>
             <li><a href="adminConfigSettings.html">系統設定</script></a></li>
             <li><a href="adminPermissionSettings.html">界面設定</a></li>
-            <li><a href="adminSoftwareUpgrade.html">軟體升級</a></li>
+            <li class="active"><a href="adminSoftwareUpgrade.html">軟體升級</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h4 class="page-header">日誌內容<button class="btn btn-primary pull-right" id="Pause"><strong>暫停</strong></button></h4>
-          <pre id="log" style="width:100%; height:75vh; background-color:#000000;color:#ffffff;"></pre>
+          <h4 class="page-header">上傳升級檔案</h4>
+          <div class="row"><!-- row begin -->
+            <div class="col-md-8">
+              <div class="input-group">
+                <label class="input-group-btn">
+                  <span class="btn btn-primary">
+                    瀏覽檔案<input type="file" id="filename" style="display: none;">
+                  </span>
+                </label>
+                <input type="text" class="form-control" id="filename-disp" readonly>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <input type="button" class="btn btn-success" id="upload" value="上傳" disabled>
+            </div>
+          </div><!-- row end -->
+          <!-- 上傳進度條 -->
+          <div class="row" id="progress" style="margin-top:20px;display:none;"><!-- row begin -->
+            <div class="col-md-8">
+              <p><b>上傳進度：</b></p>
+              <div class="progress">
+                <div class="progress-bar progress-bar-info" id="progressbar" role="progressbar" aria-valuenow="0"
+                  aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div><!-- row end -->
+          <!-- 升級訊息視窗 -->
+          <div class="row" id="work-area" style="display:none;"><!-- row begin -->
+            <div class="col-md-8">
+              <pre id="message-area" style="width:100%; height:60vh; color:#ffffff; background-color:#000000"></pre>
+            </div>
+          </div><!-- row end -->
         </div>
       </div>
     </div>

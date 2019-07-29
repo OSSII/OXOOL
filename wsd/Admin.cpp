@@ -48,6 +48,8 @@ using Poco::Util::Application;
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 2500;
 // Add by Firefly <firefly@ossii.com.tw>
+using Poco::Path;
+
 #define pwdSaltLength 128
 #define pwdIterations 10000
 #define pwdHashLength 128
@@ -91,12 +93,92 @@ void removeSpecialKeys(oxoolConfig& config, const std::string& keyName)
         config.remove(item);
     }
 }
+
+/// 軟體升級作業
+bool AdminSocketHandler::upgradeSoftware(const std::string& command)
+{
+    std::string cmd = "";
+    std::string out = "";
+    FILE *fp;
+    char buf[128];
+
+    // 進入暫存目錄
+    if (chdir(_temporaryFile->path().c_str()) != 0)
+    {
+        return false;
+    }
+
+    // 解壓縮檔案
+    if (command == "uncompressPackage")
+    {
+        cmd = "tar zxvf \"" + _upgradeFileName + "\"  2>&1";
+        fp = popen(cmd.c_str(), "r");
+        while (fgets(buf, sizeof(buf), fp))
+        {  
+            out.append(buf);
+        }
+        pclose(fp);
+        sendTextFrame("upgradeInfo:" + out);
+        return (errno == 0 ? true : false);
+    }
+    // 升級測試
+    else if (command == "upgradePackageTest")
+    {
+        cmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1";
+        fp = popen(cmd.c_str(), "r");
+        while (fgets(buf, sizeof(buf), fp))
+        {  
+            out.append(buf);
+        }
+        pclose(fp);
+        sendTextFrame("upgradeInfo:" + out);
+        return (errno == 0 ? true : false);
+    }
+    // 正式升級
+    else if (command == "upgradePackage")
+    {
+        cmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1";
+        fp = popen(cmd.c_str(), "r");
+        while (fgets(buf, sizeof(buf), fp))
+        {  
+            out.append(buf);
+        }
+        pclose(fp);
+        sendTextFrame("upgradeInfo:" + out);
+        return (errno == 0 ? true : false);
+    }
+    // 清除升級暫存檔案
+    else if (command == "clearUpgradeFiles")
+    {
+        delete _temporaryFile;
+        _temporaryFile = nullptr;
+        return true;
+    }
+
+    sendTextFrame("unknow upgrade command : " + command);
+    return false;
+}
 //------------ end of firefly
 
 /// Process incoming websocket messages
 void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
                                        std::vector<char> &payload)
 {
+    // 接收軟體升級檔
+    if (_upgradeFile != nullptr)
+    {
+        LOG_DBG("Recv file data size = " + std::to_string(payload.size()));
+        _upgradeFile->write(payload.data(), payload.size());
+        _upgradeFileSize -= payload.size();
+        if (_upgradeFileSize <= 0)
+        {
+            _upgradeFile->close();   // 關閉檔案
+            delete _upgradeFile; // 刪除物件
+            _upgradeFile = nullptr; // 設成空值
+            sendTextFrame("upgradeFileReciveOK"); // 通知接收完畢
+        }
+        return;
+    }
     // FIXME: check fin, code etc.
     const std::string firstLine = getFirstLine(payload.data(), payload.size());
     StringTokenizer tokens(firstLine, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
@@ -599,6 +681,59 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
 
         
     }
+    //  Client 準備上傳軟體升級包
+    else if (tokens[0] == "uploadUpgradeFile" && tokens.count() > 1)
+    {
+        _temporaryFile = new TemporaryFile(Path::temp());
+        LOG_DBG("Upgrade temporary dir is " + _temporaryFile->path());
+        //_temporaryFile->keep(); // 保持不要自動清除
+        _temporaryFile->createDirectories(); // 強制建立暫存目錄
+
+        Poco::JSON::Object::Ptr object;
+        if (JsonUtil::parseJSON(firstLine, object))
+        {
+            for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
+            {
+                // it->first : key, it->second.toString() : value
+                std::string key = it->first;
+                if (key == "name")
+                {
+                    _upgradeFileName = it->second.toString(); // 上傳的檔名
+                    _upgradeFile = new std::ofstream;
+                    _upgradeFile->open(_temporaryFile->path() + "/" + _upgradeFileName); // 建立空檔案
+                }
+                else if (key == "size")
+                {
+                    _upgradeFileSize = std::stoul(it->second.toString(), nullptr, 0); // 檔案大小
+                 }
+            }
+        }
+        sendTextFrame("readyToReceiveFile"); // 告訴 Client 可以開始上傳了
+    }
+    // Client 通知解壓縮
+    else if (tokens[0] == "uncompressPackage" && tokens.count() == 1)
+    {
+        // 通知解壓縮狀態
+        sendTextFrame(upgradeSoftware(tokens[0]) ? "uncompressPackageOK" : "uncompressPackageFail");
+    }
+    // Client 通知升級測試
+    else if (tokens[0] == "upgradePackageTest" && tokens.count() == 1)
+    {
+        // 通知升級測試狀態
+        sendTextFrame(upgradeSoftware(tokens[0]) ? "upgradePackageTestOK" : "upgradePackageTestFail");
+    }
+    // Client 通知正式升級
+    else if (tokens[0] == "upgradePackage" && tokens.count() == 1)
+    {
+        // 通知正式升級狀態
+        sendTextFrame(upgradeSoftware(tokens[0]) ? "upgradeSuccess" : "upgradeFail");
+    }
+    // Client 通知清除升級暫存檔
+    else if (tokens[0] == "clearUpgradeFiles" && tokens.count() == 1)
+    {
+        // 通知正式升級狀態
+        sendTextFrame(upgradeSoftware(tokens[0]) ? "clearUpgradeFilesOK" : "clearUpgradeFilesFail");
+    }
     else
     {
         sendTextFrame("!Unknow Command -> " + firstLine);
@@ -611,7 +746,9 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
                                        const Poco::Net::HTTPRequest& request)
     : WebSocketHandler(socket, request),
       _admin(adminManager),
-      _isAuthenticated(false)
+      _isAuthenticated(false),
+      _temporaryFile(nullptr),
+      _upgradeFile(nullptr)
 {
     // Different session id pool for admin sessions (?)
     _sessionId = Util::decodeId(LOOLWSD::GenSessionId());
@@ -620,7 +757,9 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager)
     : WebSocketHandler(true),
       _admin(adminManager),
-      _isAuthenticated(true)
+      _isAuthenticated(true),
+      _temporaryFile(nullptr),
+      _upgradeFile(nullptr)
 {
     _sessionId = Util::decodeId(LOOLWSD::GenSessionId());
 }

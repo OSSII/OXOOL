@@ -24,8 +24,10 @@
 #include <Poco/JSON/JSON.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/TemporaryFile.h>
 #include <common/JsonUtil.hpp>
 using Poco::Util::XMLConfiguration;
+using Poco::TemporaryFile;
 class oxoolConfig final: public XMLConfiguration
 {
 public:
@@ -66,6 +68,14 @@ private:
     Admin* _admin;
     int _sessionId;
     bool _isAuthenticated;
+    // Add by Firefly <firefly@ossii.com.tw>
+    // 軟體升級用
+    TemporaryFile* _temporaryFile;
+    std::ofstream* _upgradeFile;
+    std::string _upgradeFileName;
+    size_t _upgradeFileSize;
+    bool upgradeSoftware(const std::string& command); // 軟體升級作業
+    //-------------------------------------------
 };
 
 class MemoryStatsTask;
