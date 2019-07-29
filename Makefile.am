@@ -38,6 +38,9 @@ oxoolwsddatadir = @LOOLWSD_DATADIR@
 oxoolwsddata_DATA = discovery.xml \
                    favicon.ico
 
+sudoersdir = ${sysconfdir}/sudoers.d
+sudoers_DATA = etc/sudoers.d/lool
+
 oxoolwsdconfigdir = @LOOLWSD_CONFIGDIR@
 
 oxoolwsdconfig_DATA = oxoolwsd.xml \
@@ -257,6 +260,7 @@ EXTRA_DIST = discovery.xml \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
+             etc/sudoers.d/lool \
              scripts/unocommands.py \
              $(man_MANS)
 
