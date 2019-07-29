@@ -643,6 +643,15 @@ and dependencies (minified).
 					
 					if($this.data(pluginPfx)){ /* check if plugin has initialized */
 					
+						/* Ugly hack extension: When vertical scrollbar position
+						   was very close to the end of spreadsheet, next part of
+						   the document has to be loaded. This contidion is fulfilled
+						   in that case. We need to ignore it to prevent scrollbar
+						   from reaching the end what blocks possibility to scroll down. */
+						if(!window.ThisIsAMobileApp && options && options.timeout == undefined
+							&& options.calledFromInvalidateCursorMsg == undefined)
+							return;
+
 						var d=$this.data(pluginPfx),o=d.opt,
 							/* method default options */
 							methodDefaults={
@@ -2138,8 +2147,7 @@ and dependencies (minified).
 						// hidden part of the document (for instance when pressing enter on the
 						// last visible line). The options.timeout==1 is a silly way to detect
 						// the mouse-wheel scrolling.
-						if((window.ThisIsAMobileApp && (options.drag || options.timeout===1 || options.calledFromInvalidateCursorMsg==true)) ||
-						   (!window.ThisIsAMobileApp)) {
+						if(!window.ThisIsAMobileApp || options.drag || options.timeout===1 || options.calledFromInvalidateCursorMsg==true){
 							/* callbacks: whileScrolling */
 							if(_cb("whileScrolling")){_mcs(); o.callbacks.whileScrolling.call(el[0]);}
 						}
