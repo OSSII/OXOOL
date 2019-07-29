@@ -97,10 +97,12 @@ void removeSpecialKeys(oxoolConfig& config, const std::string& keyName)
 /// 軟體升級作業
 bool AdminSocketHandler::upgradeSoftware(const std::string& command)
 {
+    std::ifstream in;
     std::string cmd = "";
     std::string out = "";
     FILE *fp;
     char buf[128];
+    int retcode = -1;
 
     // 進入暫存目錄
     if (chdir(_temporaryFile->path().c_str()) != 0)
@@ -111,7 +113,7 @@ bool AdminSocketHandler::upgradeSoftware(const std::string& command)
     // 解壓縮檔案
     if (command == "uncompressPackage")
     {
-        cmd = "tar zxvf \"" + _upgradeFileName + "\"  2>&1";
+        cmd = "tar zxvf \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
         fp = popen(cmd.c_str(), "r");
         while (fgets(buf, sizeof(buf), fp))
         {  
@@ -119,12 +121,17 @@ bool AdminSocketHandler::upgradeSoftware(const std::string& command)
         }
         pclose(fp);
         sendTextFrame("upgradeInfo:" + out);
-        return (errno == 0 ? true : false);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buf, sizeof(buf));
+        in.close();
+        retcode = atoi(buf);
+        return (retcode == 0 ? true : false);
     }
     // 升級測試
     else if (command == "upgradePackageTest")
     {
-        cmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1";
+        cmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
         fp = popen(cmd.c_str(), "r");
         while (fgets(buf, sizeof(buf), fp))
         {  
@@ -132,12 +139,17 @@ bool AdminSocketHandler::upgradeSoftware(const std::string& command)
         }
         pclose(fp);
         sendTextFrame("upgradeInfo:" + out);
-        return (errno == 0 ? true : false);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buf, sizeof(buf));
+        in.close();
+        retcode = atoi(buf);
+        return (retcode == 0 ? true : false);
     }
     // 正式升級
     else if (command == "upgradePackage")
     {
-        cmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1";
+        cmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
         fp = popen(cmd.c_str(), "r");
         while (fgets(buf, sizeof(buf), fp))
         {  
@@ -145,7 +157,12 @@ bool AdminSocketHandler::upgradeSoftware(const std::string& command)
         }
         pclose(fp);
         sendTextFrame("upgradeInfo:" + out);
-        return (errno == 0 ? true : false);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buf, sizeof(buf));
+        in.close();
+        retcode = atoi(buf);
+        return (retcode == 0 ? true : false);
     }
     // 清除升級暫存檔案
     else if (command == "clearUpgradeFiles")
