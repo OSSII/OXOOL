@@ -113,7 +113,14 @@ bool AdminSocketHandler::upgradeSoftware(const std::string& command)
     // 解壓縮檔案
     if (command == "uncompressPackage")
     {
-        cmd = "tar zxvf \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
+        Poco::Path file(_upgradeFileName);
+        std::string ext = file.getExtension();
+
+        if (ext == "zip")
+            cmd = "unzip \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
+        else
+            cmd = "tar zxvf \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
+
         fp = popen(cmd.c_str(), "r");
         while (fgets(buf, sizeof(buf), fp))
         {  
@@ -186,8 +193,9 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
     {
         LOG_DBG("Recv file data size = " + std::to_string(payload.size()));
         _upgradeFile->write(payload.data(), payload.size());
-        _upgradeFileSize -= payload.size();
-        if (_upgradeFileSize <= 0)
+        _totalReceived += payload.size();
+        sendTextFrame("receivedSize:" + std::to_string(_totalReceived)); // 通知 client 已收到的 bytes
+        if (_totalReceived >= _upgradeFileSize)
         {
             _upgradeFile->close();   // 關閉檔案
             delete _upgradeFile; // 刪除物件
@@ -705,6 +713,9 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
         LOG_DBG("Upgrade temporary dir is " + _temporaryFile->path());
         //_temporaryFile->keep(); // 保持不要自動清除
         _temporaryFile->createDirectories(); // 強制建立暫存目錄
+        _upgradeFileName = "";
+        _upgradeFileSize = 0;
+        _totalReceived = 0;
 
         Poco::JSON::Object::Ptr object;
         if (JsonUtil::parseJSON(firstLine, object))
@@ -725,7 +736,10 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
                  }
             }
         }
-        sendTextFrame("readyToReceiveFile"); // 告訴 Client 可以開始上傳了
+        if (_upgradeFileName.length() > 0 && _upgradeFileSize > 0)
+            sendTextFrame("readyToReceiveFile"); // 告訴 Client 可以開始上傳了
+        else
+            sendTextFrame("upgradeFileInfoError"); // 告訴 Client 檔案資訊有誤
     }
     // Client 通知解壓縮
     else if (tokens[0] == "uncompressPackage" && tokens.count() == 1)

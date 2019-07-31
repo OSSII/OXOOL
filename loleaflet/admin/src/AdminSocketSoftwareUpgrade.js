@@ -26,12 +26,14 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		$('#upload').click(function () {
 			that._fileInfo = $('#filename')[0].files[0];
 			if (that._fileInfo.type !== 'application/gzip' &&
-				that._fileInfo.type !== 'application/x-gzip')
+				that._fileInfo.type !== 'application/x-gzip' &&
+				that._fileInfo.type !== 'application/zip' &&
+				that._fileInfo.type !== 'application/x-zip-compressed')
 			{
-				vex.dialog.alert('軟體升級檔案，只接受 .tar.gz 格式！');
+				vex.dialog.alert('軟體升級檔案，只接受 zip 或 .tar.gz 格式！');
 				return;
 			}
-			var fileObj = {name: that._fileInfo.name, size:that._fileInfo.size};
+			var fileObj = {name: that._fileInfo.name.toLowerCase(), size:that._fileInfo.size};
 			that.socket.send('uploadUpgradeFile ' + JSON.stringify(fileObj));
 		});
 	},
@@ -47,10 +49,6 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 			}
 			that.socket.send(e.target.result); // 資料傳送給 server
 			that._loaded += e.loaded; // 累計傳送大小
-			var percent = Math.floor((that._loaded / that._fileInfo.size) * 100); // 計算傳送比例
-			$('#progressbar').css('width', percent +'%')
-							.attr('aria-valuenow', percent)
-							.text('已完成 ' + percent + ' %');
 			if (that._loaded < that._fileInfo.size)
 				that._uploadFile(nextSlice);
 		}
@@ -82,6 +80,9 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 			$('#upload').attr('disabled', true);
 			$('#progress').show();
 			this._uploadFile(0);
+			break;
+		case 'upgradeFileInfoError': // 上傳檔案資訊有誤
+			vex.dialog.alert('上傳檔案資訊有誤，請檢查');
 			break;
 		case 'upgradeFileReciveOK': // 檔案接收完畢
 			$('#work-area').show();
@@ -126,6 +127,12 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		default:
 			if (textMsg.startsWith('upgradeInfo:')) {
 				this._addMessage(textMsg.substr(12));
+			} else if (textMsg.startsWith('receivedSize:')) {
+				var totalBytes = textMsg.substr(13);
+				var percent = Math.floor((totalBytes / this._fileInfo.size) * 100); // 計算傳送比例
+				$('#progressbar').css('width', percent +'%')
+								.attr('aria-valuenow', percent)
+								.text('已完成 ' + percent + ' %');
 			} else {
 				console.log('未知訊息 : ' + textMsg);
 			}

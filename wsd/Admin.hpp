@@ -73,7 +73,8 @@ private:
     TemporaryFile* _temporaryFile;
     std::ofstream* _upgradeFile;
     std::string _upgradeFileName;
-    size_t _upgradeFileSize;
+    size_t _upgradeFileSize; // 檔案大小
+    size_t _totalReceived; // 已收到的檔案大小
     bool upgradeSoftware(const std::string& command); // 軟體升級作業
     //-------------------------------------------
 };
