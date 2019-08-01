@@ -216,9 +216,9 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:EntireRow'},
 					{uno: '.uno:EntireColumn'},
 					{uno: '.uno:EntireCell'}]},
-				{uno: '.uno:MergeCells'}/*,
+				{uno: '.uno:MergeCells'},
 				{type: 'separator'},
-				{uno: '.uno:TableDialog'}*/
+				{uno: '.uno:TableDialog'}
 			]},
 			{name: _UNO('.uno:ToolsMenu', 'text'), id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellingAndGrammarDialog'},
