@@ -18,6 +18,7 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download'},
+				{name: _UNO('.uno:SaveAs', 'text'), id: 'ASUSsaveas', type: 'action', icon:'img-icon saveas'},
 				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action', icon:'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
@@ -248,6 +249,7 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action', icon:'fa fa-download'},
+				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'ASUSsaveas', type: 'action', icon:'img-icon saveas'},
 				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
@@ -339,6 +341,7 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
 				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
+				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'ASUSsaveas', type: 'action', icon:'img-icon saveas', hotkey: 'Ctrl+S'},
 				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
 				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
@@ -737,6 +740,8 @@ L.Control.Menubar = L.Control.extend({
 			this._map.save(true, true);
 		} else if (id === 'saveas') {
 			this._map.fire('postMessage', {msgId: 'UI_SaveAs'});
+		} else if (id === 'ASUSsaveas') {
+			this._map.fire('executeDialog', {dialog: 'saveAs'});
 		} else if (id === 'shareas') {
 			this._map.fire('postMessage', {msgId: 'UI_Share'});
 		} else if (id === 'print') {
@@ -917,6 +922,8 @@ L.Control.Menubar = L.Control.extend({
 				continue;
 
 			if (menu[i].id === 'saveas' && this._map['wopi'].UserCanNotWriteRelative)
+				continue;
+			if (menu[i].id === 'ASUSsaveas' && this._map['wopi']._enabled !== true)
 				continue;
 
 			if (menu[i].id === 'shareas' && !this._map['wopi'].EnableShare)
