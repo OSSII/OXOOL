@@ -50,9 +50,15 @@ L.Control.ContextMenu = L.Control.extend({
 			build: function() {
 				return {
 					callback: function(key) {
-						map.sendUnoCommand(key);
-						// Give the stolen focus back to map
-						map.focus();
+						// Modify by Firefly <firefly@ossii.com.tw>
+						// 把插入註解的行為統一化
+						if (key === '.uno:InsertAnnotation')
+							map.insertComment();
+						else {
+							map.sendUnoCommand(key);
+							// Give the stolen focus back to map
+							map.focus();
+						}
 					},
 					items: contextMenu
 				};
