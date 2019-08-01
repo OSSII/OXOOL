@@ -330,7 +330,8 @@ pot:
 		src/layer/tile/TileLayer.js \
 		src/map/Map.js \
 		src/map/handler/Map.FileInserter.js \
-		src/map/handler/Map.WOPI.js
+		src/map/handler/Map.WOPI.js \
+		uiconfig/dialogs/*.js
 
 	html2po --pot --input=html/loleaflet-help.html --output=po/templates/loleaflet-help.pot --duplicates=merge
 
