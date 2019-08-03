@@ -19,6 +19,30 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "Accent1CellStyles": {
+        "spreadsheet": {
+            "menu": "Accent 1",
+            "tooltip": "Accent 1 Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Accent 1&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
+    "Accent2CellStyles": {
+        "spreadsheet": {
+            "menu": "Accent 2",
+            "tooltip": "Accent 2 Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Accent 2&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
+    "Accent3CellStyles": {
+        "spreadsheet": {
+            "menu": "Accent 3",
+            "tooltip": "Accent 3 Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Accent 3&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
     "AcceptAllTrackedChanges": {
         "text": {
             "menu": "Accept All",
@@ -607,7 +631,8 @@ var unoCommandsArray = {
     },
     "AuditMenu": {
         "spreadsheet": {
-            "menu": "~Detective"
+            "menu": "~Detective",
+            "properties": "1"
         }
     },
     "AuditingFillMode": {
@@ -618,12 +643,14 @@ var unoCommandsArray = {
     },
     "AuthoritiesEntryDialog": {
         "text": {
-            "menu": "~Bibliography Entry..."
+            "menu": "~Bibliography Entry...",
+            "properties": "1"
         }
     },
     "AutoComplete": {
         "spreadsheet": {
-            "menu": "~AutoInput"
+            "menu": "~AutoInput",
+            "properties": "1"
         }
     },
     "AutoControlFocus": {
@@ -634,7 +661,8 @@ var unoCommandsArray = {
     },
     "AutoCorrectDlg": {
         "global": {
-            "menu": "~AutoCorrect Options..."
+            "menu": "~AutoCorrect Options...",
+            "properties": "1"
         }
     },
     "AutoCorrectDlg?OpenSmartTag:bool=true": {
@@ -655,7 +683,7 @@ var unoCommandsArray = {
     },
     "AutoFormat": {
         "global": {
-            "menu": "AutoFormat Table Styles",
+            "menu": "Table Styles",
             "context": "Auto~Format Styles...",
             "properties": "1"
         }
@@ -667,7 +695,8 @@ var unoCommandsArray = {
     },
     "AutoFormatMenu": {
         "text": {
-            "menu": "AutoCorr~ect"
+            "menu": "AutoCorr~ect",
+            "properties": "1"
         }
     },
     "AutoFormatRedlineApply": {
@@ -715,7 +744,8 @@ var unoCommandsArray = {
     "AutoRefreshArrows": {
         "spreadsheet": {
             "menu": "A~utoRefresh Traces",
-            "context": "A~utoRefresh"
+            "context": "A~utoRefresh",
+            "properties": "1"
         }
     },
     "AutoSum": {
@@ -726,7 +756,8 @@ var unoCommandsArray = {
     },
     "AutomaticCalculation": {
         "spreadsheet": {
-            "menu": "Auto~Calculate"
+            "menu": "Auto~Calculate",
+            "properties": "1"
         }
     },
     "AvailableToolbars": {
@@ -762,6 +793,14 @@ var unoCommandsArray = {
         "presentation": {
             "menu": "Send Back~ward",
             "properties": "1"
+        }
+    },
+    "BadCellStyles": {
+        "spreadsheet": {
+            "menu": "Bad",
+            "tooltip": "Bad Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Bad&FamilyName:string=CellStyles",
+            "properties": "9"
         }
     },
     "BasicBreak": {
@@ -1098,12 +1137,14 @@ var unoCommandsArray = {
     },
     "CalculateHard": {
         "spreadsheet": {
-            "menu": "Recalculate Hard"
+            "menu": "Recalculate Hard",
+            "properties": "1"
         }
     },
     "CalculateSel": {
         "text": {
-            "menu": "Calculat~e"
+            "menu": "Calculat~e",
+            "properties": "1"
         }
     },
     "CalloutShapes": {
@@ -1312,13 +1353,15 @@ var unoCommandsArray = {
     },
     "ChangesMenu": {
         "global": {
-            "menu": "Track Chan~ges"
+            "menu": "Track Chan~ges",
+            "properties": "1"
         }
     },
     "ChapterNumberingDialog": {
         "text": {
             "menu": "Chapter ~Numbering...",
-            "tooltip": "Set Chapter Numbering"
+            "tooltip": "Set Chapter Numbering",
+            "properties": "1"
         }
     },
     "CharBackColor": {
@@ -1377,12 +1420,19 @@ var unoCommandsArray = {
     },
     "ChartMenu": {
         "global": {
-            "menu": "~Chart"
+            "menu": "~Chart",
+            "properties": "1"
         }
     },
     "CheckBox": {
         "global": {
             "menu": "Check Box",
+            "properties": "1"
+        }
+    },
+    "CheckBoxFormField": {
+        "global": {
+            "menu": "Check Box Form Field",
             "properties": "1"
         }
     },
@@ -1480,7 +1530,7 @@ var unoCommandsArray = {
     },
     "ClassificationDialog": {
         "global": {
-            "menu": "Manage document classification"
+            "menu": "Manage Document Classification"
         }
     },
     "ClearArrowDependents": {
@@ -1593,7 +1643,8 @@ var unoCommandsArray = {
     },
     "ColumnMenu": {
         "spreadsheet": {
-            "menu": "Colu~mns"
+            "menu": "Colu~mns",
+            "properties": "1"
         },
         "presentation": {
             "menu": "Colu~mn"
@@ -1677,7 +1728,8 @@ var unoCommandsArray = {
     },
     "CommonAlignLeft": {
         "global": {
-            "menu": "Left"
+            "menu": "Left",
+            "properties": "1"
         }
     },
     "CommonAlignRight": {
@@ -1995,7 +2047,6 @@ var unoCommandsArray = {
     "ControlProperties": {
         "global": {
             "menu": "Con~trol Properties...",
-            "popup": "Con~trol...",
             "properties": "9"
         }
     },
@@ -2025,12 +2076,14 @@ var unoCommandsArray = {
     },
     "ConvertIntoBitmap": {
         "presentation": {
-            "menu": "To ~Bitmap"
+            "menu": "To ~Bitmap",
+            "properties": "1"
         }
     },
     "ConvertIntoMetaFile": {
         "presentation": {
-            "menu": "To ~Metafile"
+            "menu": "To ~Metafile",
+            "properties": "1"
         }
     },
     "ConvertMenu": {
@@ -2335,8 +2388,8 @@ var unoCommandsArray = {
         "spreadsheet": {
             "menu": "Pivot Table",
             "context": "Pi~vot Table...",
-            "tooltip": "Insert Pivot Table",
-            "popup": "~Edit Layout...",
+            "tooltip": "Insert or Edit Pivot Table",
+            "popup": "~Properties...",
             "properties": "1"
         }
     },
@@ -2354,7 +2407,8 @@ var unoCommandsArray = {
     },
     "DataFilterRemoveFilter": {
         "spreadsheet": {
-            "menu": "~Reset Filter"
+            "menu": "~Reset Filter",
+            "properties": "1"
         }
     },
     "DataFilterSpecialFilter": {
@@ -2371,7 +2425,8 @@ var unoCommandsArray = {
     },
     "DataForm": {
         "spreadsheet": {
-            "menu": "F~orm..."
+            "menu": "F~orm...",
+            "properties": "1"
         }
     },
     "DataMenu": {
@@ -2485,6 +2540,14 @@ var unoCommandsArray = {
             "context": "~Bulleted List",
             "tooltip": "Toggle Bulleted List",
             "properties": "15"
+        }
+    },
+    "DefaultCellStyles": {
+        "spreadsheet": {
+            "menu": "Default",
+            "tooltip": "Default Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Default&FamilyName:string=CellStyles",
+            "properties": "9"
         }
     },
     "DefaultCharStyle": {
@@ -2655,6 +2718,7 @@ var unoCommandsArray = {
         "text": {
             "menu": "Delete Columns",
             "context": "~Columns",
+            "tooltip": "Delete selected columns",
             "properties": "1"
         },
         "spreadsheet": {
@@ -2703,7 +2767,8 @@ var unoCommandsArray = {
     "DeletePivotTable": {
         "spreadsheet": {
             "menu": "~Delete Pivot Table",
-            "context": "~Delete"
+            "context": "~Delete",
+            "properties": "1"
         }
     },
     "DeletePrintArea": {
@@ -2730,6 +2795,7 @@ var unoCommandsArray = {
         "text": {
             "menu": "Delete Rows",
             "context": "~Rows",
+            "tooltip": "Delete selected rows",
             "properties": "1"
         },
         "spreadsheet": {
@@ -2758,6 +2824,7 @@ var unoCommandsArray = {
         "text": {
             "menu": "Delete Table",
             "context": "~Table",
+            "tooltip": "Delete table",
             "properties": "1"
         }
     },
@@ -2836,7 +2903,8 @@ var unoCommandsArray = {
     },
     "DisplayQualityMenu": {
         "presentation": {
-            "menu": "~Color\/Grayscale"
+            "menu": "~Color\/Grayscale",
+            "properties": "1"
         }
     },
     "DistributeColumns": {
@@ -2867,7 +2935,8 @@ var unoCommandsArray = {
     },
     "Documentation": {
         "global": {
-            "menu": "~User Guides"
+            "menu": "~User Guides",
+            "properties": "1"
         }
     },
     "Donation": {
@@ -2919,6 +2988,12 @@ var unoCommandsArray = {
             "menu": "~Drawing View"
         }
     },
+    "DropDownFormField": {
+        "global": {
+            "menu": "Drop-Down Form Field",
+            "properties": "1"
+        }
+    },
     "DuplicatePage": {
         "presentation": {
             "menu": "Duplicate Page",
@@ -2946,7 +3021,8 @@ var unoCommandsArray = {
     },
     "EditCommentsMenu": {
         "global": {
-            "menu": "Comme~nt"
+            "menu": "Comme~nt",
+            "properties": "1"
         }
     },
     "EditCurIndex": {
@@ -2969,7 +3045,8 @@ var unoCommandsArray = {
     },
     "EditFootnote": {
         "text": {
-            "menu": "~Footnote or Endnote..."
+            "menu": "~Footnote or Endnote...",
+            "properties": "1"
         }
     },
     "EditFrameSet": {
@@ -2993,20 +3070,24 @@ var unoCommandsArray = {
     "EditHyperlink": {
         "text": {
             "menu": "~Hyperlink",
-            "popup": "Edit Hyperlink..."
+            "popup": "Edit Hyperlink...",
+            "properties": "1"
         },
         "presentation": {
-            "menu": "~Hyperlink..."
+            "menu": "~Hyperlink...",
+            "properties": "1"
         }
     },
     "EditLinks": {
         "spreadsheet": {
-            "menu": "Lin~ks to External Files..."
+            "menu": "Lin~ks to External Files...",
+            "properties": "1"
         }
     },
     "EditLinksMenu": {
         "global": {
-            "menu": "R~eference"
+            "menu": "R~eference",
+            "properties": "1"
         }
     },
     "EditMenu": {
@@ -3030,12 +3111,14 @@ var unoCommandsArray = {
     },
     "EditRegion": {
         "text": {
-            "menu": "~Sections..."
+            "menu": "~Sections...",
+            "properties": "1"
         }
     },
     "EditSelectMenu": {
         "global": {
-            "menu": "Select"
+            "menu": "Select",
+            "properties": "1"
         }
     },
     "EditShapeHyperlink": {
@@ -3137,6 +3220,7 @@ var unoCommandsArray = {
         "text": {
             "menu": "Select Cell",
             "context": "C~ell",
+            "tooltip": "Select Cell",
             "properties": "1"
         }
     },
@@ -3172,6 +3256,14 @@ var unoCommandsArray = {
         "global": {
             "menu": "Equalize ~Width",
             "properties": "1"
+        }
+    },
+    "ErrorCellStyles": {
+        "spreadsheet": {
+            "menu": "Error",
+            "tooltip": "Error Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Error&FamilyName:string=CellStyles",
+            "properties": "9"
         }
     },
     "Escape": {
@@ -3226,7 +3318,8 @@ var unoCommandsArray = {
     },
     "ExportAsMenu": {
         "global": {
-            "menu": "~Export As"
+            "menu": "~Export As",
+            "properties": "1"
         }
     },
     "ExportDialog": {
@@ -3247,7 +3340,15 @@ var unoCommandsArray = {
         "global": {
             "menu": "PDF",
             "context": "Export Directly as PDF",
-            "tooltip": "Export as PDF",
+            "tooltip": "Export Directly as PDF",
+            "properties": "1"
+        }
+    },
+    "ExportDirectToPDF?IsRedactMode:bool=true": {
+        "global": {
+            "menu": "Sanitized PDF",
+            "context": "Export Directly to PDF as Bitmap",
+            "tooltip": "Export Directly to PDF as Bitmap",
             "properties": "1"
         }
     },
@@ -3363,7 +3464,8 @@ var unoCommandsArray = {
     "FieldDialog": {
         "text": {
             "menu": "F~ields...",
-            "popup": "Edit F~ields..."
+            "popup": "Edit F~ields...",
+            "properties": "1"
         }
     },
     "FieldMenu": {
@@ -3410,7 +3512,7 @@ var unoCommandsArray = {
     "FillDown": {
         "spreadsheet": {
             "menu": "Fill ~Down",
-            "context": "~Down"
+            "context": "Fill ~Down"
         }
     },
     "FillDraft": {
@@ -3426,7 +3528,7 @@ var unoCommandsArray = {
     "FillLeft": {
         "spreadsheet": {
             "menu": "Fill ~Left",
-            "context": "~Left"
+            "context": "Fill ~Left"
         }
     },
     "FillModeEnd": {
@@ -3462,13 +3564,13 @@ var unoCommandsArray = {
     "FillRight": {
         "spreadsheet": {
             "menu": "Fill ~Right",
-            "context": "~Right"
+            "context": "Fill ~Right"
         }
     },
     "FillSeries": {
         "spreadsheet": {
             "menu": "Fill S~eries...",
-            "context": "S~eries..."
+            "context": "Fill S~eries..."
         }
     },
     "FillShadow": {
@@ -3492,7 +3594,7 @@ var unoCommandsArray = {
     "FillTable": {
         "spreadsheet": {
             "menu": "Fill ~Sheets...",
-            "context": "~Sheets..."
+            "context": "Fill ~Sheets..."
         }
     },
     "FillTransparence": {
@@ -3503,7 +3605,7 @@ var unoCommandsArray = {
     "FillUp": {
         "spreadsheet": {
             "menu": "Fill ~Up",
-            "context": "~Up"
+            "context": "Fill ~Up"
         }
     },
     "FilterCrit": {
@@ -3514,7 +3616,8 @@ var unoCommandsArray = {
     },
     "FilterMenu": {
         "spreadsheet": {
-            "menu": "More ~Filters"
+            "menu": "More ~Filters",
+            "properties": "1"
         }
     },
     "FindAll": {
@@ -3571,7 +3674,8 @@ var unoCommandsArray = {
     },
     "FlipMenu": {
         "global": {
-            "menu": "F~lip"
+            "menu": "F~lip",
+            "properties": "1"
         }
     },
     "FlipVertical": {
@@ -4006,6 +4110,14 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "FootnoteCellStyles": {
+        "spreadsheet": {
+            "menu": "Footnote",
+            "tooltip": "Footnote Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Footnote&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
     "FootnoteDialog": {
         "text": {
             "menu": "~Footnotes and Endnotes...",
@@ -4055,7 +4167,6 @@ var unoCommandsArray = {
     "FormProperties": {
         "global": {
             "menu": "For~m Properties...",
-            "popup": "For~m...",
             "properties": "9"
         }
     },
@@ -4151,10 +4262,12 @@ var unoCommandsArray = {
     },
     "FormatObjectMenu": {
         "global": {
-            "menu": "~Object and Shape"
+            "menu": "~Object and Shape",
+            "properties": "1"
         },
         "text": {
-            "menu": "Text Box and Shap~e"
+            "menu": "Text Box and Shap~e",
+            "properties": "1"
         }
     },
     "FormatPaintbrush": {
@@ -4179,7 +4292,8 @@ var unoCommandsArray = {
     },
     "FormatStylesMenu": {
         "global": {
-            "menu": "St~yles"
+            "menu": "St~yles",
+            "properties": "1"
         }
     },
     "FormatTextMenu": {
@@ -4202,12 +4316,19 @@ var unoCommandsArray = {
     },
     "FormattingMarkMenu": {
         "global": {
-            "menu": "Formatting Mark"
+            "menu": "Formatting Mark",
+            "properties": "1"
         }
     },
     "Forward": {
         "presentation": {
             "menu": "Bring ~Forward",
+            "properties": "1"
+        }
+    },
+    "FourierAnalysisDialog": {
+        "spreadsheet": {
+            "menu": "F~ourier Analysis...",
             "properties": "1"
         }
     },
@@ -4248,6 +4369,13 @@ var unoCommandsArray = {
     "Freeline_Unfilled": {
         "global": {
             "menu": "Freeform Line",
+            "properties": "1"
+        }
+    },
+    "Freeline_Unfilled?Transparence:short=50&Color:string=COL_GRAY7&Width:short=500&IsSticky:bool=true&ShapeName:string=FreeformRedactionShape": {
+        "global": {
+            "menu": "Freeform",
+            "tooltip": "Freeform Redaction",
             "properties": "1"
         }
     },
@@ -4312,7 +4440,8 @@ var unoCommandsArray = {
     },
     "GetInvolved": {
         "global": {
-            "menu": "Get ~Involved"
+            "menu": "Get ~Involved",
+            "properties": "1"
         }
     },
     "GlueEditMode": {
@@ -4754,6 +4883,14 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "GoodCellStyles": {
+        "spreadsheet": {
+            "menu": "Good",
+            "tooltip": "Good Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Good&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
     "GotoNextIndexMark": {
         "text": {
             "menu": "Go to Next Index Mark"
@@ -4977,7 +5114,8 @@ var unoCommandsArray = {
     },
     "GraphicMenu": {
         "global": {
-            "menu": "~Media"
+            "menu": "~Media",
+            "properties": "1"
         }
     },
     "Grid": {
@@ -4988,7 +5126,8 @@ var unoCommandsArray = {
     },
     "GridFront": {
         "presentation": {
-            "menu": "Grid to ~Front"
+            "menu": "Grid to ~Front",
+            "properties": "1"
         }
     },
     "GridMenu": {
@@ -5034,7 +5173,8 @@ var unoCommandsArray = {
     },
     "GroupOutlineMenu": {
         "spreadsheet": {
-            "menu": "~Group and Outline"
+            "menu": "~Group and Outline",
+            "properties": "1"
         }
     },
     "Groupbox": {
@@ -5102,12 +5242,28 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "Heading1CellStyles": {
+        "spreadsheet": {
+            "menu": "Heading 1",
+            "tooltip": "Heading 1 Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Heading 1&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
     "Heading1ParaStyle": {
         "text": {
             "menu": "Heading ~1",
             "tooltip": "Heading 1 Paragraph Style",
             "TargetURL": ".uno:StyleApply?Style:string=Heading 1&FamilyName:string=ParagraphStyles",
             "properties": "1"
+        }
+    },
+    "Heading2CellStyles": {
+        "spreadsheet": {
+            "menu": "Heading 2",
+            "tooltip": "Heading 2 Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Heading 2&FamilyName:string=CellStyles",
+            "properties": "9"
         }
     },
     "Heading2ParaStyle": {
@@ -5174,7 +5330,8 @@ var unoCommandsArray = {
     },
     "HelplinesFront": {
         "presentation": {
-            "menu": "Snap Guides to ~Front"
+            "menu": "Snap Guides to ~Front",
+            "properties": "1"
         }
     },
     "HelplinesMove": {
@@ -5255,6 +5412,13 @@ var unoCommandsArray = {
         "text": {
             "menu": "Hide Whitespac~e",
             "properties": "1"
+        }
+    },
+    "HorizontalLine": {
+        "text": {
+            "menu": "Horizontal ~Line",
+            "TargetURL": ".uno:StyleApply?Style:string=Horizontal Line&FamilyName:string=ParagraphStyles",
+            "properties": "9"
         }
     },
     "HyperlinkDialog": {
@@ -5351,7 +5515,8 @@ var unoCommandsArray = {
     },
     "IndexEntryDialog": {
         "text": {
-            "menu": "~Index Entry..."
+            "menu": "~Index Entry...",
+            "properties": "1"
         }
     },
     "IndexMarkToIndex": {
@@ -5445,7 +5610,8 @@ var unoCommandsArray = {
     },
     "InsertBreakMenu": {
         "spreadsheet": {
-            "menu": "Insert Page ~Break"
+            "menu": "Insert Page ~Break",
+            "properties": "1"
         }
     },
     "InsertBusinessCard": {
@@ -5497,7 +5663,8 @@ var unoCommandsArray = {
             "properties": "1"
         },
         "presentation": {
-            "menu": "Insert Columns"
+            "menu": "Insert Columns",
+            "properties": "1"
         }
     },
     "InsertColumns": {
@@ -5658,12 +5825,14 @@ var unoCommandsArray = {
     },
     "InsertFieldDateVariable": {
         "spreadsheet": {
-            "menu": "Date"
+            "menu": "Date",
+            "properties": "1"
         }
     },
     "InsertFieldDocTitle": {
         "spreadsheet": {
-            "menu": "Document Title"
+            "menu": "Document Title",
+            "properties": "1"
         }
     },
     "InsertFieldMenu": {
@@ -5673,7 +5842,8 @@ var unoCommandsArray = {
     },
     "InsertFieldSheet": {
         "spreadsheet": {
-            "menu": "Sheet Name"
+            "menu": "Sheet Name",
+            "properties": "1"
         }
     },
     "InsertFileControl": {
@@ -5720,7 +5890,8 @@ var unoCommandsArray = {
     },
     "InsertFormMenu": {
         "global": {
-            "menu": "Fo~rm Control"
+            "menu": "Fo~rm Control",
+            "properties": "1"
         }
     },
     "InsertFormattedField": {
@@ -5769,9 +5940,16 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "InsertGridControl": {
+        "global": {
+            "menu": "Table Control",
+            "properties": "1"
+        }
+    },
     "InsertHardHyphen": {
         "global": {
-            "menu": "Non-br~eaking hyphen"
+            "menu": "Insert non-br~eaking hyphen",
+            "properties": "1"
         }
     },
     "InsertHeader": {
@@ -5783,6 +5961,12 @@ var unoCommandsArray = {
     "InsertHeaderFooterMenu": {
         "text": {
             "menu": "He~ader and Footer",
+            "properties": "1"
+        }
+    },
+    "InsertHyperlinkControl": {
+        "global": {
+            "menu": "Hyperlink Control",
             "properties": "1"
         }
     },
@@ -5806,7 +5990,8 @@ var unoCommandsArray = {
     },
     "InsertLRM": {
         "global": {
-            "menu": "~Left-to-right mark"
+            "menu": "~Left-to-right Mark",
+            "properties": "1"
         }
     },
     "InsertLabels": {
@@ -5848,7 +6033,8 @@ var unoCommandsArray = {
     },
     "InsertMenu": {
         "global": {
-            "menu": "~Insert"
+            "menu": "~Insert",
+            "properties": "1"
         }
     },
     "InsertMode": {
@@ -5867,7 +6053,14 @@ var unoCommandsArray = {
     "InsertName": {
         "spreadsheet": {
             "menu": "~Insert Named Range or Expression...",
-            "context": "~Named Range or Expression..."
+            "context": "~Named Range or Expression...",
+            "properties": "1"
+        }
+    },
+    "InsertNarrowNobreakSpace": {
+        "global": {
+            "menu": "Insert n~arrow no-break space (U+202F)",
+            "properties": "1"
         }
     },
     "InsertNeutralParagraph": {
@@ -5878,7 +6071,8 @@ var unoCommandsArray = {
     },
     "InsertNonBreakingSpace": {
         "global": {
-            "menu": "~Non-breaking space"
+            "menu": "Insert ~non-breaking space",
+            "properties": "1"
         }
     },
     "InsertNumericField": {
@@ -6008,7 +6202,7 @@ var unoCommandsArray = {
     },
     "InsertPivotTable": {
         "spreadsheet": {
-            "menu": "~Create...",
+            "menu": "~Insert or Edit...",
             "TargetURL": ".uno:DataDataPilotRun",
             "properties": "1"
         }
@@ -6021,7 +6215,8 @@ var unoCommandsArray = {
     },
     "InsertRLM": {
         "global": {
-            "menu": "~Right-to-left mark"
+            "menu": "~Right-to-left Mark",
+            "properties": "1"
         }
     },
     "InsertReferenceField": {
@@ -6044,7 +6239,8 @@ var unoCommandsArray = {
             "properties": "1"
         },
         "presentation": {
-            "menu": "Insert Rows"
+            "menu": "Insert Rows",
+            "properties": "1"
         }
     },
     "InsertRows": {
@@ -6095,7 +6291,8 @@ var unoCommandsArray = {
     },
     "InsertScript": {
         "text": {
-            "menu": "S~cript..."
+            "menu": "S~cript...",
+            "properties": "1"
         }
     },
     "InsertSection": {
@@ -6152,7 +6349,8 @@ var unoCommandsArray = {
     },
     "InsertSoftHyphen": {
         "global": {
-            "menu": "S~oft hyphen"
+            "menu": "Insert s~oft Hyphen",
+            "properties": "1"
         }
     },
     "InsertSpreadsheet": {
@@ -6234,12 +6432,14 @@ var unoCommandsArray = {
     },
     "InsertZWNBSP": {
         "global": {
-            "menu": "No-width no ~break"
+            "menu": "No-width No ~Break",
+            "properties": "1"
         }
     },
     "InsertZWSP": {
         "global": {
-            "menu": "No-~width optional break"
+            "menu": "No-~width Optional Break",
+            "properties": "1"
         }
     },
     "InteractiveGradient": {
@@ -6333,12 +6533,14 @@ var unoCommandsArray = {
             "menu": "To Next Table"
         },
         "spreadsheet": {
-            "menu": "To Next Sheet"
+            "menu": "To Next Sheet",
+            "properties": "1"
         }
     },
     "JumpToNextTableSel": {
         "spreadsheet": {
-            "menu": "Select to Next Sheet"
+            "menu": "Select to Next Sheet",
+            "properties": "1"
         }
     },
     "JumpToNextUnprotected": {
@@ -6366,12 +6568,14 @@ var unoCommandsArray = {
             "menu": "To Previous Table"
         },
         "spreadsheet": {
-            "menu": "To Previous Sheet"
+            "menu": "To Previous Sheet",
+            "properties": "1"
         }
     },
     "JumpToPrevTableSel": {
         "spreadsheet": {
-            "menu": "Select to Previous Sheet"
+            "menu": "Select to Previous Sheet",
+            "properties": "1"
         }
     },
     "JumpToPreviousUnprotected": {
@@ -6413,7 +6617,8 @@ var unoCommandsArray = {
     },
     "LanguageMenu": {
         "global": {
-            "menu": "Language"
+            "menu": "Language",
+            "properties": "1"
         }
     },
     "LanguageStatus": {
@@ -6631,7 +6836,8 @@ var unoCommandsArray = {
     },
     "LinkDialog": {
         "text": {
-            "menu": "Lin~ks to External Files..."
+            "menu": "Lin~ks to External Files...",
+            "properties": "1"
         }
     },
     "ListBox": {
@@ -6652,6 +6858,21 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "MSCompatActiveXControls": {
+        "text": {
+            "menu": "ActiveX Controls"
+        }
+    },
+    "MSCompatContentControls": {
+        "text": {
+            "menu": "Content Controls"
+        }
+    },
+    "MSCompatLegacyControls": {
+        "text": {
+            "menu": "Legacy Form Fields"
+        }
+    },
     "MacroBarVisible": {
         "global": {
             "menu": "Macro Toolbar On\/Off"
@@ -6665,12 +6886,14 @@ var unoCommandsArray = {
     },
     "MacroOrganizer": {
         "global": {
-            "menu": "%PRODUCTNAME Basic Macro Organizer..."
+            "menu": "%PRODUCTNAME Basic Macro Organizer...",
+            "properties": "1"
         }
     },
     "MacroOrganizer?TabId:short=1": {
         "global": {
-            "menu": "Organize ~Dialogs..."
+            "menu": "Organize ~Dialogs...",
+            "properties": "1"
         }
     },
     "MacroRecorder": {
@@ -6681,7 +6904,8 @@ var unoCommandsArray = {
     },
     "MacroSignature": {
         "global": {
-            "menu": "Digital Signature..."
+            "menu": "Digital Signature...",
+            "properties": "1"
         }
     },
     "MacrosMenu": {
@@ -6704,7 +6928,7 @@ var unoCommandsArray = {
     },
     "MailMergeEmailDocuments": {
         "text": {
-            "menu": "Send E-Mail Messages",
+            "menu": "Send Email Messages",
             "properties": "1"
         }
     },
@@ -6770,7 +6994,8 @@ var unoCommandsArray = {
     },
     "ManageLinks": {
         "presentation": {
-            "menu": "Lin~ks to External Files..."
+            "menu": "Lin~ks to External Files...",
+            "properties": "1"
         }
     },
     "ManageXMLSource": {
@@ -6904,7 +7129,8 @@ var unoCommandsArray = {
     },
     "MergeTable": {
         "text": {
-            "menu": "Merge Table"
+            "menu": "Merge Table",
+            "properties": "1"
         }
     },
     "Mirror": {
@@ -6948,7 +7174,8 @@ var unoCommandsArray = {
     },
     "ModifyField": {
         "presentation": {
-            "menu": "F~ields..."
+            "menu": "F~ields...",
+            "properties": "1"
         }
     },
     "ModifyFrame": {
@@ -6961,7 +7188,8 @@ var unoCommandsArray = {
         "presentation": {
             "menu": "Modify Layer",
             "context": "~Layer...",
-            "popup": "~Modify Layer..."
+            "popup": "~Modify Layer...",
+            "properties": "1"
         }
     },
     "ModifyMenu": {
@@ -6987,15 +7215,10 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
-    "MoreControls": {
-        "global": {
-            "menu": "More Controls",
-            "properties": "9"
-        }
-    },
     "MoreDictionaries": {
         "global": {
-            "menu": "More Dictionaries Online..."
+            "menu": "More Dictionaries Online...",
+            "properties": "1"
         }
     },
     "Morphing": {
@@ -7136,7 +7359,8 @@ var unoCommandsArray = {
     },
     "NavigateMenu": {
         "global": {
-            "menu": "Navigate"
+            "menu": "Navigate",
+            "properties": "1"
         }
     },
     "NavigationBar": {
@@ -7157,6 +7381,14 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "NeutralCellStyles": {
+        "spreadsheet": {
+            "menu": "Neutral",
+            "tooltip": "Neutral Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Neutral&FamilyName:string=CellStyles",
+            "properties": "9"
+        }
+    },
     "NewDoc": {
         "global": {
             "menu": "Templates",
@@ -7172,12 +7404,14 @@ var unoCommandsArray = {
     },
     "NewGlobalDoc": {
         "text": {
-            "menu": "Create Master ~Document"
+            "menu": "Create Master ~Document",
+            "properties": "1"
         }
     },
     "NewHtmlDoc": {
         "text": {
-            "menu": "Create ~HTML Document"
+            "menu": "Create ~HTML Document",
+            "properties": "1"
         }
     },
     "NewPresentation": {
@@ -7251,6 +7485,14 @@ var unoCommandsArray = {
             "menu": "~Normal View",
             "context": "~Normal",
             "properties": "1"
+        }
+    },
+    "NoteCellStyles": {
+        "spreadsheet": {
+            "menu": "Note",
+            "tooltip": "Note Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Note&FamilyName:string=CellStyles",
+            "properties": "9"
         }
     },
     "NoteVisible": {
@@ -7463,12 +7705,14 @@ var unoCommandsArray = {
     },
     "ObjectMenu": {
         "global": {
-            "menu": "~Object"
+            "menu": "~Object",
+            "properties": "1"
         }
     },
     "ObjectMenue": {
         "global": {
-            "menu": "Ob~ject"
+            "menu": "Ob~ject",
+            "properties": "1"
         }
     },
     "ObjectMirrorHorizontal": {
@@ -7564,7 +7808,8 @@ var unoCommandsArray = {
     },
     "OpenXMLFilterSettings": {
         "global": {
-            "menu": "~XML Filter Settings..."
+            "menu": "~XML Filter Settings...",
+            "properties": "1"
         }
     },
     "OptimizeTable": {
@@ -7708,7 +7953,8 @@ var unoCommandsArray = {
     },
     "PageColumnDialog": {
         "text": {
-            "menu": "Page Columns"
+            "menu": "Page Columns",
+            "properties": "1"
         }
     },
     "PageColumnType": {
@@ -7828,7 +8074,7 @@ var unoCommandsArray = {
     },
     "ParagraphClassificationDialog": {
         "global": {
-            "menu": "Manage paragraph classification"
+            "menu": "Manage Paragraph Classification"
         }
     },
     "ParagraphDialog": {
@@ -7908,7 +8154,8 @@ var unoCommandsArray = {
     },
     "PasteSpecialMenu": {
         "global": {
-            "menu": "Paste ~Special"
+            "menu": "Paste ~Special",
+            "properties": "1"
         }
     },
     "PasteUnformatted": {
@@ -8021,7 +8268,7 @@ var unoCommandsArray = {
     },
     "PresentationLayout": {
         "presentation": {
-            "menu": "Master Slide...",
+            "menu": "Change Slide Master...",
             "properties": "1"
         }
     },
@@ -8228,7 +8475,7 @@ var unoCommandsArray = {
     "RandomNumberGeneratorDialog": {
         "spreadsheet": {
             "menu": "Fill R~andom Number...",
-            "context": "R~andom Number..."
+            "context": "Fill R~andom Number..."
         }
     },
     "ReadOnlyDoc": {
@@ -8295,6 +8542,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "Rect?FillTransparence:short=50&FillColor:string=COL_GRAY7&LineStyle:short=0&IsSticky:bool=true&ShapeName:string=RectangleRedactionShape": {
+        "global": {
+            "menu": "Rectangle",
+            "tooltip": "Rectangle Redaction",
+            "properties": "1"
+        }
+    },
     "Rect_Rounded": {
         "global": {
             "menu": "Rectangle, Rounded",
@@ -8319,6 +8573,34 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "RedactDoc": {
+        "global": {
+            "menu": "Redact",
+            "context": "Redact",
+            "tooltip": "Redact Document",
+            "properties": "1"
+        }
+    },
+    "RedactedExportBlack": {
+        "presentation": {
+            "menu": "Redacted Export (Black)",
+            "TargetURL": ".uno:ExportDirectToPDF?IsRedactMode:bool=true&RedactionStyle:string=Black",
+            "properties": "1"
+        }
+    },
+    "RedactedExportToolbox": {
+        "presentation": {
+            "menu": "Redacted Export",
+            "properties": "1"
+        }
+    },
+    "RedactedExportWhite": {
+        "presentation": {
+            "menu": "Redacted Export (White)",
+            "TargetURL": ".uno:ExportDirectToPDF?IsRedactMode:bool=true&RedactionStyle:string=White",
+            "properties": "1"
+        }
+    },
     "Redo": {
         "global": {
             "menu": "~Redo",
@@ -8333,7 +8615,8 @@ var unoCommandsArray = {
     },
     "RefreshArrows": {
         "spreadsheet": {
-            "menu": "Refresh Tra~ces"
+            "menu": "Refresh Tra~ces",
+            "properties": "1"
         }
     },
     "RefreshFormControl": {
@@ -8345,6 +8628,11 @@ var unoCommandsArray = {
     "RefreshView": {
         "text": {
             "menu": "Restore View"
+        }
+    },
+    "RegenerateDiagram": {
+        "global": {
+            "menu": "Regenerate Diagram"
         }
     },
     "RegressionDialog": {
@@ -8383,7 +8671,7 @@ var unoCommandsArray = {
     },
     "Remote": {
         "presentation": {
-            "menu": "Impress R~emote",
+            "menu": "Impress R~emote...",
             "properties": "1"
         }
     },
@@ -8412,7 +8700,8 @@ var unoCommandsArray = {
     },
     "RemoveHyperlink": {
         "text": {
-            "menu": "Remove Hyperlink"
+            "menu": "Remove Hyperlink",
+            "properties": "1"
         }
     },
     "RemoveTableOf": {
@@ -8453,7 +8742,8 @@ var unoCommandsArray = {
     "RenameSlide": {
         "presentation": {
             "menu": "Rename Slide",
-            "TargetURL": ".uno:RenamePage"
+            "TargetURL": ".uno:RenamePage",
+            "properties": "1"
         }
     },
     "RenameTable": {
@@ -8561,7 +8851,8 @@ var unoCommandsArray = {
     },
     "Rotate180": {
         "text": {
-            "menu": "Rotate 1~80°"
+            "menu": "Rotate 1~80°",
+            "properties": "1"
         }
     },
     "RotateFlipMenu": {
@@ -8583,7 +8874,8 @@ var unoCommandsArray = {
     },
     "RotateReset": {
         "text": {
-            "menu": "Reset R~otation"
+            "menu": "Reset R~otation",
+            "properties": "1"
         }
     },
     "RotateRight": {
@@ -8602,7 +8894,8 @@ var unoCommandsArray = {
     },
     "RowMenu": {
         "spreadsheet": {
-            "menu": "Ro~ws"
+            "menu": "Ro~ws",
+            "properties": "1"
         },
         "presentation": {
             "menu": "~Row"
@@ -8652,7 +8945,8 @@ var unoCommandsArray = {
     },
     "SafeMode": {
         "global": {
-            "menu": "~Restart in Safe Mode..."
+            "menu": "~Restart in Safe Mode...",
+            "properties": "1"
         }
     },
     "SamplingDialog": {
@@ -8763,12 +9057,14 @@ var unoCommandsArray = {
     },
     "Scan": {
         "global": {
-            "menu": "Scan"
+            "menu": "Scan",
+            "properties": "1"
         }
     },
     "ScenarioManager": {
         "spreadsheet": {
-            "menu": "Sc~enarios..."
+            "menu": "Sc~enarios...",
+            "properties": "1"
         }
     },
     "SchEditOptions": {
@@ -8856,7 +9152,8 @@ var unoCommandsArray = {
     },
     "SelectColumn": {
         "spreadsheet": {
-            "menu": "Select Column"
+            "menu": "Select Column",
+            "properties": "1"
         }
     },
     "SelectDB": {
@@ -8867,7 +9164,8 @@ var unoCommandsArray = {
     },
     "SelectData": {
         "spreadsheet": {
-            "menu": "Select Data Area"
+            "menu": "Select Data Area",
+            "properties": "1"
         }
     },
     "SelectMode": {
@@ -8884,7 +9182,8 @@ var unoCommandsArray = {
     },
     "SelectRow": {
         "spreadsheet": {
-            "menu": "Select Row"
+            "menu": "Select Row",
+            "properties": "1"
         }
     },
     "SelectScenario": {
@@ -8892,10 +9191,16 @@ var unoCommandsArray = {
             "menu": "Select Scenario"
         }
     },
+    "SelectSentence": {
+        "text": {
+            "menu": "Select Sentence"
+        }
+    },
     "SelectTable": {
         "text": {
             "menu": "Select Table",
             "context": "~Table",
+            "tooltip": "Select Table",
             "properties": "1"
         },
         "presentation": {
@@ -8907,7 +9212,8 @@ var unoCommandsArray = {
     },
     "SelectTables": {
         "spreadsheet": {
-            "menu": "~Select Sheets..."
+            "menu": "~Select Sheets...",
+            "properties": "1"
         }
     },
     "SelectText": {
@@ -8917,12 +9223,14 @@ var unoCommandsArray = {
     },
     "SelectTextMode": {
         "text": {
-            "menu": "Select Text"
+            "menu": "Select Text",
+            "properties": "1"
         }
     },
     "SelectUnprotectedCells": {
         "spreadsheet": {
-            "menu": "Select Unprotected Cells"
+            "menu": "Select Unprotected Cells",
+            "properties": "1"
         }
     },
     "SelectWord": {
@@ -8949,7 +9257,8 @@ var unoCommandsArray = {
     },
     "SelectionModeMenu": {
         "text": {
-            "menu": "Selection Mode"
+            "menu": "Selection Mode",
+            "properties": "1"
         }
     },
     "SendAbstractToStarImpress": {
@@ -8971,43 +9280,44 @@ var unoCommandsArray = {
     },
     "SendMail": {
         "global": {
-            "menu": "E-mail",
-            "context": "~E-mail Document...",
-            "tooltip": "Attach to E-mail",
+            "menu": "Email",
+            "context": "~Email Document...",
+            "tooltip": "Attach to Email",
             "properties": "1"
         }
     },
     "SendMailDocAsMS": {
         "global": {
-            "menu": "E-mail as ~Microsoft Format..."
+            "menu": "Email as ~Microsoft Format..."
         },
         "text": {
-            "menu": "E-mail as ~Microsoft Word..."
+            "menu": "Email as ~Microsoft Word..."
         },
         "spreadsheet": {
-            "menu": "E-mail as ~Microsoft Excel..."
+            "menu": "Email as ~Microsoft Excel..."
         },
         "presentation": {
-            "menu": "E-mail as ~Microsoft PowerPoint Presentation..."
+            "menu": "Email as ~Microsoft PowerPoint Presentation..."
         }
     },
     "SendMailDocAsOOo": {
         "global": {
-            "menu": "E-mail as ~OpenDocument Format..."
+            "menu": "Email as ~OpenDocument Format..."
         },
         "text": {
-            "menu": "E-mail as ~OpenDocument Text..."
+            "menu": "Email as ~OpenDocument Text..."
         },
         "spreadsheet": {
-            "menu": "E-mail as ~OpenDocument Spreadsheet..."
+            "menu": "Email as ~OpenDocument Spreadsheet..."
         },
         "presentation": {
-            "menu": "E-mail as ~OpenDocument Presentation..."
+            "menu": "Email as ~OpenDocument Presentation..."
         }
     },
     "SendMailDocAsPDF": {
         "global": {
-            "menu": "E-mail as P~DF..."
+            "menu": "Email as P~DF...",
+            "properties": "1"
         }
     },
     "SendMenu": {
@@ -9027,7 +9337,8 @@ var unoCommandsArray = {
     },
     "SendTo": {
         "spreadsheet": {
-            "menu": "Sen~d"
+            "menu": "Sen~d",
+            "properties": "1"
         }
     },
     "SendToBack": {
@@ -9038,7 +9349,8 @@ var unoCommandsArray = {
     },
     "SendToMenu": {
         "global": {
-            "menu": "Sen~d"
+            "menu": "Sen~d",
+            "properties": "1"
         }
     },
     "SendViaBluetooth": {
@@ -9129,7 +9441,8 @@ var unoCommandsArray = {
     },
     "SetInputMode": {
         "spreadsheet": {
-            "menu": "Cell Edit Mode"
+            "menu": "Cell Edit Mode",
+            "properties": "1"
         }
     },
     "SetLanguageAllTextMenu": {
@@ -9323,7 +9636,8 @@ var unoCommandsArray = {
     },
     "Show": {
         "spreadsheet": {
-            "menu": "~Show Sheet..."
+            "menu": "~Show Sheet...",
+            "properties": "1"
         }
     },
     "ShowAllNotes": {
@@ -9428,7 +9742,8 @@ var unoCommandsArray = {
     },
     "ShowLicense": {
         "global": {
-            "menu": "License Information"
+            "menu": "License Information",
+            "properties": "1"
         }
     },
     "ShowMultiplePages": {
@@ -9545,7 +9860,8 @@ var unoCommandsArray = {
     },
     "SignaturesMenu": {
         "global": {
-            "menu": "Digital Signatures"
+            "menu": "Digital Signatures",
+            "properties": "1"
         }
     },
     "SimpleReferenz": {
@@ -9587,7 +9903,8 @@ var unoCommandsArray = {
     },
     "SlideMoveMenu": {
         "presentation": {
-            "menu": "Move"
+            "menu": "Move",
+            "properties": "1"
         }
     },
     "SlideSetup": {
@@ -9633,7 +9950,8 @@ var unoCommandsArray = {
     },
     "SnapLinesMenu": {
         "presentation": {
-            "menu": "~Snap Guides"
+            "menu": "~Snap Guides",
+            "properties": "1"
         }
     },
     "SnapPoints": {
@@ -9983,7 +10301,7 @@ var unoCommandsArray = {
     "StatusBarVisible": {
         "global": {
             "menu": "Status ~Bar",
-            "properties": "8"
+            "properties": "9"
         }
     },
     "StatusDocPos": {
@@ -10288,14 +10606,14 @@ var unoCommandsArray = {
     },
     "StyleNewByExample": {
         "global": {
-            "context": "~New Style...",
+            "context": "~New Style from Selection",
             "menu": "New",
             "properties": "1"
         }
     },
     "StyleUpdateByExample": {
         "global": {
-            "context": "~Update Style",
+            "context": "~Update Selected Style",
             "menu": "Update",
             "properties": "1"
         }
@@ -10502,22 +10820,32 @@ var unoCommandsArray = {
     },
     "TableAutoFitMenu": {
         "global": {
-            "menu": "Si~ze"
+            "menu": "Si~ze",
+            "properties": "1"
         }
     },
     "TableBoundaries": {
         "text": {
-            "menu": "Table Boundaries"
+            "menu": "Table Boundaries",
+            "properties": "1"
+        }
+    },
+    "TableCellBackgroundColor": {
+        "text": {
+            "menu": "Table Cell Background Color",
+            "properties": "1"
         }
     },
     "TableConvertMenu": {
         "text": {
-            "menu": "~Convert"
+            "menu": "~Convert",
+            "properties": "1"
         }
     },
     "TableDeleteMenu": {
         "global": {
-            "menu": "~Delete"
+            "menu": "~Delete",
+            "properties": "1"
         }
     },
     "TableDeselectAll": {
@@ -10554,12 +10882,14 @@ var unoCommandsArray = {
     },
     "TableInsertMenu": {
         "global": {
-            "menu": "~Insert"
+            "menu": "~Insert",
+            "properties": "1"
         }
     },
     "TableMenu": {
         "global": {
-            "menu": "T~able"
+            "menu": "T~able",
+            "properties": "1"
         }
     },
     "TableModeFix": {
@@ -10593,7 +10923,8 @@ var unoCommandsArray = {
     },
     "TableOperationDialog": {
         "spreadsheet": {
-            "menu": "~Multiple Operations..."
+            "menu": "~Multiple Operations...",
+            "properties": "1"
         }
     },
     "TableSelectAll": {
@@ -10604,7 +10935,8 @@ var unoCommandsArray = {
     },
     "TableSelectMenu": {
         "text": {
-            "menu": "~Select"
+            "menu": "~Select",
+            "properties": "1"
         }
     },
     "TableSort": {
@@ -10665,10 +10997,12 @@ var unoCommandsArray = {
     },
     "TextAttributes": {
         "text": {
-            "menu": "Text Attributes..."
+            "menu": "Text Attributes...",
+            "properties": "1"
         },
         "spreadsheet": {
-            "menu": "~Text..."
+            "menu": "~Text...",
+            "properties": "1"
         },
         "presentation": {
             "menu": "Te~xt...",
@@ -10702,6 +11036,12 @@ var unoCommandsArray = {
     "TextFitToSizeTool": {
         "presentation": {
             "menu": "Fit Text in Textbox Size",
+            "properties": "1"
+        }
+    },
+    "TextFormField": {
+        "global": {
+            "menu": "Text Form Field",
             "properties": "1"
         }
     },
@@ -10876,7 +11216,8 @@ var unoCommandsArray = {
     },
     "ToolsFormsMenu": {
         "global": {
-            "menu": "~Forms"
+            "menu": "~Forms",
+            "properties": "1"
         }
     },
     "ToolsMacroEdit": {
@@ -10945,7 +11286,8 @@ var unoCommandsArray = {
     },
     "TwainSelect": {
         "global": {
-            "menu": "~Select Source..."
+            "menu": "~Select Source...",
+            "properties": "1"
         }
     },
     "TwainTransfer": {
@@ -11036,12 +11378,14 @@ var unoCommandsArray = {
     "UpdateAllIndexes": {
         "text": {
             "menu": "Update All",
-            "context": "Indexes and ~Tables"
+            "context": "Indexes and ~Tables",
+            "properties": "1"
         }
     },
     "UpdateAllLinks": {
         "text": {
-            "menu": "~Links"
+            "menu": "~Links",
+            "properties": "1"
         }
     },
     "UpdateChart": {
@@ -11051,7 +11395,8 @@ var unoCommandsArray = {
     },
     "UpdateCharts": {
         "text": {
-            "menu": "~Charts"
+            "menu": "~Charts",
+            "properties": "1"
         }
     },
     "UpdateCurIndex": {
@@ -11132,7 +11477,8 @@ var unoCommandsArray = {
     },
     "VersionDialog": {
         "global": {
-            "menu": "Versions..."
+            "menu": "Versions...",
+            "properties": "1"
         }
     },
     "VerticalCaption": {
@@ -11156,7 +11502,8 @@ var unoCommandsArray = {
     },
     "ViewBounds": {
         "text": {
-            "menu": "Te~xt Boundaries"
+            "menu": "Te~xt Boundaries",
+            "properties": "1"
         }
     },
     "ViewDataSourceBrowser": {
@@ -11192,13 +11539,22 @@ var unoCommandsArray = {
     "ViewTrackChanges": {
         "text": {
             "menu": "~Track Changes",
-            "TargetURL": ".uno:ShowTrackedChanges"
+            "TargetURL": ".uno:ShowTrackedChanges",
+            "properties": "1"
         }
     },
     "ViewValueHighlighting": {
         "spreadsheet": {
             "menu": "Value ~Highlighting",
             "properties": "1"
+        }
+    },
+    "WarningCellStyles": {
+        "spreadsheet": {
+            "menu": "Warning",
+            "tooltip": "Warning Cell Style",
+            "TargetURL": ".uno:StyleApply?Style:string=Warning&FamilyName:string=CellStyles",
+            "properties": "9"
         }
     },
     "Watermark": {
@@ -11210,6 +11566,13 @@ var unoCommandsArray = {
     "WebHtml": {
         "global": {
             "menu": "Preview in Web Browser",
+            "properties": "1"
+        }
+    },
+    "WhatsNew": {
+        "global": {
+            "menu": "What's New",
+            "tooltip": "Open the release notes for the installed version in the default browser",
             "properties": "1"
         }
     },
@@ -11330,7 +11693,7 @@ var unoCommandsArray = {
     },
     "ZTestDialog": {
         "spreadsheet": {
-            "menu": "~z-test...",
+            "menu": "~Z-test...",
             "properties": "1"
         }
     },
@@ -11353,12 +11716,14 @@ var unoCommandsArray = {
     },
     "Zoom200Percent": {
         "global": {
-            "menu": "200%"
+            "menu": "200%",
+            "properties": "1"
         }
     },
     "Zoom50Percent": {
         "global": {
-            "menu": "50%"
+            "menu": "50%",
+            "properties": "1"
         }
     },
     "Zoom75Percent": {
@@ -11378,7 +11743,8 @@ var unoCommandsArray = {
     },
     "ZoomMenu": {
         "global": {
-            "menu": "~Zoom"
+            "menu": "~Zoom",
+            "properties": "1"
         }
     },
     "ZoomMinus": {
@@ -11457,12 +11823,14 @@ var unoCommandsArray = {
     },
     "convert_to_contour": {
         "presentation": {
-            "menu": "To C~ontour"
+            "menu": "To C~ontour",
+            "properties": "1"
         }
     },
     "service:com.sun.star.deployment.ui.PackageManagerDialog": {
         "global": {
-            "menu": "~Extension Manager..."
+            "menu": "~Extension Manager...",
+            "properties": "1"
         }
     },
     "vnd.sun.star.findbar:FocusToFindbar": {
