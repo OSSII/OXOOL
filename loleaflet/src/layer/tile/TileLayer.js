@@ -99,6 +99,8 @@ L.TileLayer = L.GridLayer.extend({
 		this._graphicSelectionTwips = new L.Bounds(new L.Point(0, 0), new L.Point(0, 0));
 		// Rectangle graphic selection
 		this._graphicSelection = new L.LatLngBounds(new L.LatLng(0, 0), new L.LatLng(0, 0));
+		// Rotation angle of selected graphic object
+		this._graphicSelectionAngle = 0;
 		// Original rectangle of cell cursor in twips
 		this._cellCursorTwips = new L.Bounds(new L.Point(0, 0), new L.Point(0, 0));
 		// Rectangle for cell cursor
@@ -663,14 +665,16 @@ L.TileLayer = L.GridLayer.extend({
 			this._graphicSelection = new L.LatLngBounds(new L.LatLng(0, 0), new L.LatLng(0, 0));
 		}
 		else {
-			var strTwips = textMsg.match(/\d+/g);
-			var topLeftTwips = new L.Point(parseInt(strTwips[0]), parseInt(strTwips[1]));
-			var offset = new L.Point(parseInt(strTwips[2]), parseInt(strTwips[3]));
+			textMsg = '[' + textMsg.substr('graphicselection:'.length) + ']';
+			var msgData = JSON.parse(textMsg);
+			var topLeftTwips = new L.Point(msgData[0], msgData[1]);
+			var offset = new L.Point(msgData[2], msgData[3]);
 			var bottomRightTwips = topLeftTwips.add(offset);
 			this._graphicSelectionTwips = new L.Bounds(topLeftTwips, bottomRightTwips);
 			this._graphicSelection = new L.LatLngBounds(
 							this._twipsToLatLng(topLeftTwips, this._map.getZoom()),
 							this._twipsToLatLng(bottomRightTwips, this._map.getZoom()));
+			this._graphicSelectionAngle = (msgData.length > 4) ? msgData[4] : 0;
 		}
 
 		this._onUpdateGraphicSelection();
