@@ -434,12 +434,12 @@ var shapes = {
 	'Basic Shapes': [
 		{img: 'basicshapes_rectangle', uno: 'BasicShapes.rectangle'},
 		{img: 'basicshapes_round-rectangle', uno: 'BasicShapes.round-rectangle'},
-		{img: 'basicshapes_quadrat', uno: 'BasicShapes.quadrat'},
-		{img: 'basicshapes_round-quadrat', uno: 'BasicShapes.round-quadrat'},
-		{img: 'basicshapes_circle', uno: 'BasicShapes.circle'},
+		//{img: 'basicshapes_quadrat', uno: 'BasicShapes.quadrat'},
+		//{img: 'basicshapes_round-quadrat', uno: 'BasicShapes.round-quadrat'},
+		//{img: 'basicshapes_circle', uno: 'BasicShapes.circle'},
 		{img: 'basicshapes_ellipse', uno: 'BasicShapes.ellipse'},
 
-		{img: 'basicshapes_circle-pie', uno: 'BasicShapes.circle-pie'},
+		//{img: 'basicshapes_circle-pie', uno: 'BasicShapes.circle-pie'},
 		{img: 'basicshapes_isosceles-triangle', uno: 'BasicShapes.isosceles-triangle'},
 		{img: 'basicshapes_right-triangle', uno: 'BasicShapes.right-triangle'},
 		{img: 'basicshapes_trapezoid', uno: 'BasicShapes.trapezoid'},
@@ -456,7 +456,7 @@ var shapes = {
 		{img: 'basicshapes_can', uno: 'BasicShapes.can'},
 		{img: 'basicshapes_cube', uno: 'BasicShapes.cube'},
 		{img: 'basicshapes_paper', uno: 'BasicShapes.paper'},
-		{img: 'basicshapes_frame', uno: 'BasicShapes.frame'}
+		//{img: 'basicshapes_frame', uno: 'BasicShapes.frame'}
 	],
 
 	'Symbols':  [
@@ -465,11 +465,11 @@ var shapes = {
 		{img: 'symbolshapes_moon', uno: 'SymbolShapes.moon'},
 		{img: 'symbolshapes_lightning', uno: 'SymbolShapes.lightning'},
 		{img: 'symbolshapes_heart', uno: 'SymbolShapes.heart'},
-		{img: 'symbolshapes_flower', uno: 'SymbolShapes.flower'},
+		//{img: 'symbolshapes_flower', uno: 'SymbolShapes.flower'},
 
-		{img: 'symbolshapes_cloud', uno: 'SymbolShapes.cloud'},
+		//{img: 'symbolshapes_cloud', uno: 'SymbolShapes.cloud'},
 		{img: 'symbolshapes_forbidden', uno: 'SymbolShapes.forbidden'},
-		{img: 'symbolshapes_puzzle', uno: 'SymbolShapes.puzzle'},
+		//{img: 'symbolshapes_puzzle', uno: 'SymbolShapes.puzzle'},
 		{img: 'symbolshapes_bracket-pair', uno: 'SymbolShapes.bracket-pair'},
 		{img: 'symbolshapes_left-bracket', uno: 'SymbolShapes.left-bracket'},
 		{img: 'symbolshapes_right-bracket', uno: 'SymbolShapes.right-bracket'},
@@ -478,8 +478,8 @@ var shapes = {
 		{img: 'symbolshapes_left-brace', uno: 'SymbolShapes.left-brace'},
 		{img: 'symbolshapes_right-brace', uno: 'SymbolShapes.right-brace'},
 		{img: 'symbolshapes_quad-bevel', uno: 'SymbolShapes.quad-bevel'},
-		{img: 'symbolshapes_octagon-bevel', uno: 'SymbolShapes.octagon-bevel'},
-		{img: 'symbolshapes_diamond-bevel', uno: 'SymbolShapes.diamond-bevel'}
+		//{img: 'symbolshapes_octagon-bevel', uno: 'SymbolShapes.octagon-bevel'},
+		//{img: 'symbolshapes_diamond-bevel', uno: 'SymbolShapes.diamond-bevel'}
 	],
 
 	'Block Arrows': [
@@ -490,11 +490,11 @@ var shapes = {
 		{img: 'arrowshapes_left-right-arrow', uno: 'ArrowShapes.left-right-arrow'},
 		{img: 'arrowshapes_up-down-arrow', uno: 'ArrowShapes.up-down-arrow'},
 
-		{img: 'arrowshapes_up-right-arrow', uno: 'ArrowShapes.up-right-arrow'},
-		{img: 'arrowshapes_up-right-down-arrow', uno: 'ArrowShapes.up-right-down-arrow'},
+		//{img: 'arrowshapes_up-right-arrow', uno: 'ArrowShapes.up-right-arrow'},
+		//{img: 'arrowshapes_up-right-down-arrow', uno: 'ArrowShapes.up-right-down-arrow'},
 		{img: 'arrowshapes_quad-arrow', uno: 'ArrowShapes.quad-arrow'},
-		{img: 'arrowshapes_corner-right-arrow', uno: 'ArrowShapes.corner-right-arrow'},
-		{img: 'arrowshapes_split-arrow', uno: 'ArrowShapes.split-arrow'},
+		//{img: 'arrowshapes_corner-right-arrow', uno: 'ArrowShapes.corner-right-arrow'},
+		//{img: 'arrowshapes_split-arrow', uno: 'ArrowShapes.split-arrow'},
 		{img: 'arrowshapes_striped-right-arrow', uno: 'ArrowShapes.striped-right-arrow'},
 
 		{img: 'arrowshapes_notched-right-arrow', uno: 'ArrowShapes.notched-right-arrow'},
@@ -505,30 +505,30 @@ var shapes = {
 		{img: 'arrowshapes_up-arrow-callout', uno: 'ArrowShapes.up-arrow-callout'},
 
 		{img: 'arrowshapes_down-arrow-callout', uno: 'ArrowShapes.down-arrow-callout'},
-		{img: 'arrowshapes_left-right-arrow-callout', uno: 'ArrowShapes.left-right-arrow-callout'},
+		//{img: 'arrowshapes_left-right-arrow-callout', uno: 'ArrowShapes.left-right-arrow-callout'},
 		{img: 'arrowshapes_up-down-arrow-callout', uno: 'ArrowShapes.up-down-arrow-callout'},
 		{img: 'arrowshapes_up-right-arrow-callout', uno: 'ArrowShapes.up-right-arrow-callout'},
 		{img: 'arrowshapes_quad-arrow-callout', uno: 'ArrowShapes.quad-arrow-callout'},
 		{img: 'arrowshapes_circular-arrow', uno: 'ArrowShapes.circular-arrow'},
 
-		{img: 'arrowshapes_split-round-arrow', uno: 'ArrowShapes.split-round-arrow'},
-		{img: 'arrowshapes_s-sharped-arrow', uno: 'ArrowShapes.s-sharped-arrow'}
+		//{img: 'arrowshapes_split-round-arrow', uno: 'ArrowShapes.split-round-arrow'},
+		//{img: 'arrowshapes_s-sharped-arrow', uno: 'ArrowShapes.s-sharped-arrow'}
 	],
 
 	'Stars': [
 		{img: 'starshapes_bang', uno: 'StarShapes.bang'},
 		{img: 'starshapes_star4', uno: 'StarShapes.star4'},
 		{img: 'starshapes_star5', uno: 'StarShapes.star5'},
-		{img: 'starshapes_star6', uno: 'StarShapes.star6'},
+		//{img: 'starshapes_star6', uno: 'StarShapes.star6'},
 		{img: 'starshapes_star8', uno: 'StarShapes.star8'},
-		{img: 'starshapes_star12', uno: 'StarShapes.star12'},
+		//{img: 'starshapes_star12', uno: 'StarShapes.star12'},
 
 		{img: 'starshapes_star24', uno: 'StarShapes.star24'},
-		{img: 'starshapes_concave-star6', uno: 'StarShapes.concave-star6'},
+		//{img: 'starshapes_concave-star6', uno: 'StarShapes.concave-star6'},
 		{img: 'starshapes_vertical-scroll', uno: 'StarShapes.vertical-scroll'},
 		{img: 'starshapes_horizontal-scroll', uno: 'StarShapes.horizontal-scroll'},
-		{img: 'starshapes_signet', uno: 'StarShapes.signet'},
-		{img: 'starshapes_doorplate', uno: 'StarShapes.doorplate'}
+		//{img: 'starshapes_signet', uno: 'StarShapes.signet'},
+		//{img: 'starshapes_doorplate', uno: 'StarShapes.doorplate'}
 	],
 
 	'Callouts': [
