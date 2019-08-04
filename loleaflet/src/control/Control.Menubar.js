@@ -100,7 +100,7 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrl+K'},
 				{uno: '.uno:InsertBookmark', icon: 'fa fa-bookmark'},
 				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
-				{name: _('Horizontal Line'), id: 'inserthorizontalline', type: 'action'},
+				{name: _('Horizontal Line'), uno: '.uno:HorizontalLine'},
 				{name: _UNO('.uno:FormattingMarkMenu', 'text'), type: 'menu', menu: [
 					{uno: '.uno:InsertNonBreakingSpace'},
 					{uno: '.uno:InsertHardHyphen'},
@@ -188,18 +188,7 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:FormatColumns', icon: 'fa fa-columns'},
 				{type: 'separator'},
-				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'},
-				{type: 'separator'},
-				{name: _('Page size'), type: 'menu', menu: [
-					{name: 'A4, ' + _('Portrait'), id:'a4portrait', type: 'action'},
-					{name: 'A4, ' + _('Landscape'), id:'a4landscape', type: 'action'},
-					{name: 'A5, ' + _('Portrait'), id:'a5portrait', type: 'action'},
-					{name: 'A5, ' + _('Landscape'), id:'a5landscape', type: 'action'},
-					{name: 'Letter, ' + _('Portrait'), id:'letterportrait', type: 'action'},
-					{name: 'Letter, ' + _('Landscape'), id:'letterlandscape', type: 'action'},
-					{name: 'Legal, ' + _('Portrait'), id:'legalportrait', type: 'action'},
-					{name: 'Legal, ' + _('Landscape'), id:'legallandscape', type: 'action'}
-				]}
+				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'}
 			]},
 			{name: _UNO('.uno:TableMenu', 'text'), type: 'menu', menu: [
 				{name: _UNO('.uno:TableInsertMenu', 'text'), type: 'menu', menu: [
@@ -962,7 +951,7 @@ L.Control.Menubar = L.Control.extend({
 			if (menu[i].name !== undefined) {
 				aItem.innerHTML = menu[i].name;
 			} else if (menu[i].uno !== undefined) {
-				aItem.innerHTML = _UNO(menu[i].uno, docType);
+				aItem.innerHTML = _UNO(menu[i].uno, docType, true);
 			} else {
 				aItem.innerHTML = '';
 			}
