@@ -1525,12 +1525,7 @@ function onFontSelect(e) {
 }
 
 function onFontSizeSelect(e) {
-	var size = e.target.value;
-	var command = {};
-	$(e.target).find('option[data-select2-tag]').removeAttr('data-select2-tag');
-	map.applyFontSize(size);
-	var fontcolor = map.getDocType() === 'text' ? 'FontColor' : 'Color';
-	command[fontcolor] = {};
+	map.applyFontSize(e.target.value);
 	map.focus();
 }
 
@@ -1852,6 +1847,26 @@ function onDocLayerInit() {
 		if (el)
 			el.resize();
 	}
+
+	var data = [6, 7, 8, 9, 10, 10.5, 11, 12, 13, 14, 15, 16, 18, 20,
+		22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72, 80, 88, 96];
+	$('.fontsizes-select').select2({
+		data: data,
+		placeholder: ' ',
+		//Allow manually entered font size.
+		createTag: function(query) {
+			return {
+				id: query.term,
+				text: query.term,
+				tag: true
+			};
+		},
+		tags: true,
+		sorter: function(data) { return data.sort(function(a, b) {
+			return parseFloat(a.text) - parseFloat(b.text);
+		})}
+	});
+	$('.fontsizes-select').on('select2:select', onFontSizeSelect);
 }
 
 function onCommandStateChanged(e) {
