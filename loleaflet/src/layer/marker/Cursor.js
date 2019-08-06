@@ -125,11 +125,37 @@ L.cursor = function (latlng, size, options) {
 };
 
 L.Cursor.hotSpot = {
-	fill: {x: 7, y: 16}
+	fill: {x: 7, y: 16},
+	chart: {x: 16, y: 16},
+	darc: {x: 16, y: 16},
+	dbezier: {x: 16, y: 16},
+	dcapt: {x: 16, y: 16},
+	dcirccut: {x: 16, y: 16},
+	dconnect: {x: 16, y: 16},
+	dellipse: {x: 16, y: 16},
+	dfree: {x: 16, y: 16},
+	dline: {x: 16, y: 16},
+	dpie: {x: 16, y: 16},
+	dpolygon: {x: 16, y: 16},
+	drect: {x: 16, y: 16},
+	dtext: {x: 16, y: 16}
 };
 
 L.Cursor.customCursors = [
-	'fill'
+	'fill',
+	'chart',
+	'darc',
+	'dbezier',
+	'dcapt',
+	'dcirccut',
+	'dconnect',
+	'dellipse',
+	'dfree',
+	'dline',
+	'dpie',
+	'dpolygon',
+	'drect',
+	'dtext'
 ];
 
 L.Cursor.isCustomCursor = function (cursorName) {
