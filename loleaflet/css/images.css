@@ -172,6 +172,20 @@
 .flowchartshapes_flowchart-direct-access-storage { background: url('images/lc_flowchartshapes.flowchart-direct-access-storage.svg') no-repeat center !important; }
 .flowchartshapes_flowchart-display { background: url('images/lc_flowchartshapes.flowchart-display.svg') no-repeat center !important; }
 
+.formatgroup { background: url('images/lc_formatgroup.svg') no-repeat center !important; }
+.formatungroup { background: url('images/lc_formatungroup.svg') no-repeat center !important; }
+.entergroup { background: url('images/lc_entergroup.svg') no-repeat center !important; }
+.leavegroup { background: url('images/lc_leavegroup.svg') no-repeat center !important; }
+
+.linearrowend { background: url('images/lc_linearrowend.svg') no-repeat center !important; }
+.linecirclearrow { background: url('images/lc_linecirclearrow.svg') no-repeat center !important; }
+.linesquarearrow { background: url('images/lc_linesquarearrow.svg') no-repeat center !important; }
+.linearrows { background: url('images/lc_linearrows.svg') no-repeat center !important; }
+.linearrowstart { background: url('images/lc_linearrowstart.svg') no-repeat center !important; }
+.linearrowcircle { background: url('images/lc_linearrowcircle.svg') no-repeat center !important; }
+.linearrowsquare { background: url('images/lc_linearrowsquare.svg') no-repeat center !important; }
+.line { background: url('images/lc_line.svg') no-repeat center !important; }
+
 .frame01 { background: url('images/fr01.svg') no-repeat center !important; }
 .frame02 { background: url('images/fr02.svg') no-repeat center !important; }
 .frame03 { background: url('images/fr03.svg') no-repeat center !important; }
