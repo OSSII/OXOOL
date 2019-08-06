@@ -431,6 +431,17 @@ function insertTable() {
 }
 
 var shapes = {
+	'Line': [
+		{img: 'linearrowend', uno: 'LineArrowEnd'},
+		{img: 'linecirclearrow', uno: 'LineCircleArrow'},
+		{img: 'linesquarearrow', uno: 'LineSquareArrow'},
+		{img: 'linearrows', uno: 'LineArrows'},
+		{img: 'linearrowstart', uno: 'LineArrowStart'},
+		{img: 'linearrowcircle', uno: 'LineArrowCircle'},
+		{img: 'linearrowsquare', uno: 'LineArrowSquare'},
+		{img: 'line', uno: 'Line'},
+	],
+
 	'Basic Shapes': [
 		{img: 'basicshapes_rectangle', uno: 'BasicShapes.rectangle'},
 		{img: 'basicshapes_round-rectangle', uno: 'BasicShapes.round-rectangle'},
