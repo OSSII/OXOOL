@@ -49,7 +49,7 @@ Requires:       atk avahi-libs bzip2-libs cairo cups-libs dbus-glib dbus-libs fo
 	%{config_options}
 %endif
 
-make %{?_smp_mflags}
+make %{?_smp_mflags} build-nocheck
 
 %check
 #make check
@@ -74,6 +74,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 /usr/bin/oxoolforkit
 /usr/bin/oxoolconvert
 /usr/bin/oxoolconfig
+/usr/share/fonts/SourceHan/*.ttc
 %dir /usr/share/%{name}
 /usr/share/%{name}/loleaflet
 /usr/share/%{name}/discovery.xml
@@ -97,6 +98,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) /etc/cron.d/%{name}.cron
 %config(noreplace) /etc/pam.d/oxoolwsd
 %config(noreplace) %attr(640, lool, root) /etc/%{name}/%{name}.xml
+%config /etc/fonts/conf.d/65-oxool.conf
 %config /etc/%{name}/oxoolkitconfig.xcu
 %config(noreplace) /etc/%{name}/*.pem
 %config %attr(440, root, root) /etc/sudoers.d/lool
@@ -110,6 +112,7 @@ getent passwd lool >/dev/null || useradd -g lool -r lool
 
 %post
 setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit
+fc-cache -f
 
 mkdir -p /var/cache/%{name} && chown lool:lool /var/cache/%{name}
 rm -rf /var/cache/%{name}/*
@@ -140,6 +143,7 @@ su lool -c "%{name}-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot
 %endif
 
 %postun
+fc-cache -f
 %if 0%{?fedora} || 0%{?rhel} >= 7
 %systemd_postun %{name}.service
 %endif
