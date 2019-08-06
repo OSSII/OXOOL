@@ -293,7 +293,14 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:FormatLine'},
 				{uno: '.uno:FormatArea'},
 				{type: 'separator'},
-				{uno: '.uno:OutlineBullet', icon: 'fa fa-list'}]
+				{uno: '.uno:OutlineBullet', icon: 'fa fa-list'},
+				{type: 'separator'},
+				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
+					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
+					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup', hotkey: 'Ctrl+Alt+Shift+G'},
+					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
+					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
+				]}]
 			},
 			{uno: '.uno:TableMenu', type: 'menu', menu: [
 				{uno: '.uno:TableInsertMenu', type: 'menu', menu: [
