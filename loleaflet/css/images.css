@@ -177,6 +177,7 @@
 .entergroup { background: url('images/lc_entergroup.svg') no-repeat center !important; }
 .leavegroup { background: url('images/lc_leavegroup.svg') no-repeat center !important; }
 
+.selectobject { background: url('images/lc_selectobject.svg') no-repeat center !important; }
 .linearrowend { background: url('images/lc_linearrowend.svg') no-repeat center !important; }
 .linecirclearrow { background: url('images/lc_linecirclearrow.svg') no-repeat center !important; }
 .linesquarearrow { background: url('images/lc_linesquarearrow.svg') no-repeat center !important; }
