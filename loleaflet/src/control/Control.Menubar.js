@@ -912,8 +912,6 @@ L.Control.Menubar = L.Control.extend({
 
 			if (menu[i].id === 'saveas' && this._map['wopi'].UserCanNotWriteRelative)
 				continue;
-			if (menu[i].id === 'ASUSsaveas' && this._map['wopi']._enabled !== true)
-				continue;
 
 			if (menu[i].id === 'shareas' && !this._map['wopi'].EnableShare)
 				continue;
