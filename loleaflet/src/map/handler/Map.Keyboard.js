@@ -526,12 +526,14 @@ L.Map.Keyboard = L.Handler.extend({
 				case 68: // Ctrl + Shift + Alt + d for tile debugging mode
 					this._map._docLayer.toggleTileDebugMode();
 					break;
+/*
 				case 84: // Ctrl + Shift + Alt + t 切換事件追蹤開關
 					this._map.switchEventTrack();
 					break;
 				case 85: // Ctrl + Shift + Alt + u for input uno command
 					this._map.executeUnoCommand();
 					break;
+*/
 				}
 			}
 
