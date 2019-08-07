@@ -186,6 +186,16 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:OutlineBullet'},
 				{uno: '.uno:PageDialog', icon: 'fa fa-file-o'},
 				{type: 'separator'},
+				{uno: '.uno:TransformDialog'},
+				{uno: '.uno:FormatLine'},
+				{uno: '.uno:FormatArea'},
+				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
+					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
+					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup'},
+					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
+					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
+				]},
+				{type: 'separator'},
 				{uno: '.uno:FormatColumns', icon: 'fa fa-columns'},
 				{type: 'separator'},
 				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'}
@@ -297,7 +307,7 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
 					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
-					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup', hotkey: 'Ctrl+Alt+Shift+G'},
+					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup'},
 					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
 					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
 				]}]
@@ -385,7 +395,17 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), type: 'menu', menu: [
 				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'},
 				{uno: '.uno:FormatCellDialog'},
-				{uno: '.uno:PageFormatDialog', icon: 'fa fa-file-o'}
+				{uno: '.uno:PageFormatDialog', icon: 'fa fa-file-o'},
+				{type: 'separator'},
+				{uno: '.uno:TransformDialog'},
+				{uno: '.uno:FormatLine'},
+				{uno: '.uno:FormatArea'},
+				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
+					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
+					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup'},
+					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
+					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
+				]}
 			]},
 			{name: _UNO('.uno:SheetMenu', 'spreadsheet'), type: 'menu', menu: [
 				{name: _UNO('.uno:InsertRowsMenu', 'spreadsheet'), type: 'menu', menu: [
@@ -628,10 +648,11 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_onClicked: function(e, menu) {
-		if ($(menu).hasClass('highlighted')) {
+		// 只要被 click 就關掉 menu
+		/*if ($(menu).hasClass('highlighted')) {
 			$('#main-menu').smartmenus('menuHideAll');
-		}
-
+		}*/
+		$('#main-menu').smartmenus('menuHideAll');
 		var $mainMenuState = $('#main-menu-state');
 		if (!$(menu).hasClass('has-submenu') && $mainMenuState[0].checked) {
 			$mainMenuState[0].click();
