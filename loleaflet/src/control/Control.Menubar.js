@@ -618,7 +618,7 @@ L.Control.Menubar = L.Control.extend({
 		$('#main-menu').bind('click.smapi', {self: this}, this._onClicked);
 
 		$('#main-menu').bind('keydown', {self: this}, this._onKeyDown);
-
+/*
 		// SmartMenus mobile menu toggle button
 		$(function() {
 			var $mainMenuState = $('#main-menu-state');
@@ -643,7 +643,7 @@ L.Control.Menubar = L.Control.extend({
 				});
 			}
 		});
-
+*/
 		this._initialized = true;
 	},
 

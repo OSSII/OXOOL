@@ -144,9 +144,11 @@ body {
     #spreadsheet-row-column-frame.readonly {
 	top: 41px !important;
     }
+/*
     #toolbar-hamburger {
 	width: 41px;
     }
+*/
     #closebutton {
 	display: none;
     }
