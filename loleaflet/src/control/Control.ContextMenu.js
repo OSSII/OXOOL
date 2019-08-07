@@ -28,6 +28,7 @@ L.Control.ContextMenu = L.Control.extend({
 					  'WrapMenu', 'WrapOff', 'WrapOn', 'WrapIdeal', 'WrapLeft', 'WrapRight', 'WrapThrough',
 					  'WrapThroughTransparent', 'WrapContour', 'WrapAnchorOnly',
 					  'ArrangeFrameMenu', 'ArrangeMenu', 'BringToFront', 'ObjectForwardOne', 'ObjectBackOne', 'SendToBack', 'GropuMenu', 'FormatGroup', 'FormatUngroup', 'EnterGroup', 'LeaveGroup',
+					  'TransformDialog', 'FormatLine', 'FormatArea',
 					  'RotateMenu', 'RotateLeft', 'RotateRight', 'FormatPaintbrush'],
 
 			text: ['TableInsertMenu',
@@ -147,7 +148,7 @@ L.Control.ContextMenu = L.Control.extend({
 				// Get the translated text associated with the command
 				itemName = _UNO(item.command, docType, true);
 
-				switch (commandName) {
+				/*switch (commandName) {
 				case 'Cut':
 					itemName = _('Internal Cut');
 					break;
@@ -157,7 +158,7 @@ L.Control.ContextMenu = L.Control.extend({
 				case 'Paste':
 					itemName = _('Internal Paste');
 					break;
-				}
+				}*/
 
 				contextMenu[item.command] = {
 					name: _(itemName)
