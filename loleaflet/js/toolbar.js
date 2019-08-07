@@ -234,6 +234,7 @@ function onClick(e, id, item, subItem) {
 	}
 	else if (id === 'sum') {
 		map.sendUnoCommand('.uno:AutoSum');
+		onFormulaBarFocus();
 	}
 	else if (id === 'function') {
 		L.DomUtil.get('formulaInput').value = '=';
