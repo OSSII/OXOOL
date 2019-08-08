@@ -2338,7 +2338,7 @@ void lokit_main(
 
             // Copy some needed files - makes the networking work in the
             // chroot
-            const std::initializer_list<const char*> files = {"/etc/passwd", "/etc/group", "/etc/host.conf", "/etc/hosts", "/etc/nsswitch.conf", "/etc/resolv.conf"};
+            const std::initializer_list<const char*> files = {"/etc/passwd", "/etc/group", "/etc/host.conf", "/etc/hosts", "/etc/nsswitch.conf", "/etc/resolv.conf", "/etc/locale.conf", "/etc/localtime"};
             for (const auto& filename : files)
             {
                 const Poco::Path etcPath = Path(jailPath, filename);

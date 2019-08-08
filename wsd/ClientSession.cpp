@@ -465,6 +465,13 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             oss << " lang=" << getLang();
         }
 
+        // Add by Firefly <firefly@ossii.com.tw>
+        // 取得 timezone
+        if (!getTimezone().empty())
+        {
+            oss << " timezone=" << getTimezone();
+        }
+
         if (!getWatermarkText().empty())
         {
             std::string encodedWatermarkText;

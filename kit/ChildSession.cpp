@@ -36,6 +36,7 @@ using Poco::JSON::Parser;
 using Poco::StringTokenizer;
 using Poco::Timestamp;
 using Poco::URI;
+using Poco::File;
 
 using namespace LOOLProtocol;
 
@@ -380,6 +381,22 @@ bool ChildSession::loadDocument(const char * /*buffer*/, int /*length*/, const s
     assert(!getJailedFilePath().empty());
 
     std::unique_lock<std::recursive_mutex> lock(Mutex);
+
+    // Add by Firefly<firefly@ossii.com.tw>
+    if (!getTimezone().empty())
+    {
+        std::string zonefile= "/usr/share/zoneinfo/" + getTimezone();
+        if (File(zonefile).exists())
+        {
+            LOG_INF("set client timezone : " + getTimezone());
+            unlink("/etc/localtime");
+            link(zonefile.c_str(), "/etc/localtime");
+        }
+        else
+        {
+            LOG_WRN("can't find timezone file : " + zonefile);
+        }
+    }
 
     const bool loaded = _docManager.onLoad(getId(), getJailedFilePath(), getJailedFilePathAnonym(),
                                            getUserName(), getUserNameAnonym(),

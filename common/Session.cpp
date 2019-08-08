@@ -151,6 +151,12 @@ void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part,
             _lang = value;
             ++offset;
         }
+        // Add by Firefly <firefly@ossii.com.tw>
+        else if (name == "timezone")
+        {
+            _timezone = value;
+            ++offset;
+        } //--------------------
         else if (name == "watermarkText")
         {
             Poco::URI::decode(value, _watermarkText);

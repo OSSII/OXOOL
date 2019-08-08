@@ -106,6 +106,8 @@ public:
 
     const std::string& getLang() const { return _lang; }
 
+    const std::string& getTimezone() const { return _timezone; }
+
     bool getHaveDocPassword() const { return _haveDocPassword; }
 
     const std::string& getDocPassword() const { return _docPassword; }
@@ -205,6 +207,9 @@ private:
 
     /// Language for the document based on what the user has in the UI.
     std::string _lang;
+
+    /// Client time zone
+    std::string _timezone;
 };
 
 #endif
