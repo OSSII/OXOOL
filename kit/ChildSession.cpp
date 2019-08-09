@@ -388,9 +388,10 @@ bool ChildSession::loadDocument(const char * /*buffer*/, int /*length*/, const s
         std::string zonefile= "/usr/share/zoneinfo/" + getTimezone();
         if (File(zonefile).exists())
         {
+            std::string env_tz = ":" + getTimezone();
             LOG_INF("set client timezone : " + getTimezone());
-            unlink("/etc/localtime");
-            link(zonefile.c_str(), "/etc/localtime");
+            setenv("TZ", env_tz.c_str(), 1);
+            tzset();
         }
         else
         {
