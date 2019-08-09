@@ -39,7 +39,7 @@ oxoolwsddata_DATA = discovery.xml \
                    favicon.ico
 
 fontconfigdir = ${sysconfdir}/fonts/conf.d
-fontconfig_DATA = SourceHan/65-oxool.conf
+fontconfig_DATA = SourceHan/50-oxool.conf
 
 sourcehanfontsdir = ${datarootdir}/fonts/SourceHan
 sourcehanfonts_DATA = SourceHan/SourceHanSans-Regular.ttc \
@@ -268,7 +268,7 @@ EXTRA_DIST = discovery.xml \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
              etc/sudoers.d/lool \
-	     SourceHan/65-oxool.conf \
+	     SourceHan/50-oxool.conf \
 	     SourceHan/SourceHanSans-Regular.ttc \
 	     SourceHan/SourceHanSans-Bold.ttc \
              scripts/unocommands.py \

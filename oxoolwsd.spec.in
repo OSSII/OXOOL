@@ -49,7 +49,7 @@ Requires:       atk avahi-libs bzip2-libs cairo cups-libs dbus-glib dbus-libs fo
 	%{config_options}
 %endif
 
-make %{?_smp_mflags} build-nocheck
+make build-nocheck %{?_smp_mflags}
 
 %check
 #make check
@@ -98,7 +98,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) /etc/cron.d/%{name}.cron
 %config(noreplace) /etc/pam.d/oxoolwsd
 %config(noreplace) %attr(640, lool, root) /etc/%{name}/%{name}.xml
-%config /etc/fonts/conf.d/65-oxool.conf
+%config /etc/fonts/conf.d/50-oxool.conf
 %config /etc/%{name}/oxoolkitconfig.xcu
 %config(noreplace) /etc/%{name}/*.pem
 %config %attr(440, root, root) /etc/sudoers.d/lool
