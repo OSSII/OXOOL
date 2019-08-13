@@ -786,7 +786,7 @@ function onColorPick(id, color) {
 		uno = '.uno:' + backcolor;
 	}
 	map.sendUnoCommand(uno, command);
-	//map.focus();
+	map.focus();
 }
 
 function hideTooltip(toolbar, id) {
@@ -839,7 +839,7 @@ function createToolbar() {
 						e.item.html = undefined;
 					}});
 				}
-			}, mobile: false},
+			}, mobile: true},
 		{type: 'html',   id: 'fontsizes',
 			html: '<select class="fontsizes-select"><option>14</option></select>',
 			onRefresh: function (edata) {
@@ -851,7 +851,7 @@ function createToolbar() {
 						e.item.html = undefined;
 					}});
 				}
-			}, mobile: false},
+			}, mobile: true},
 		{type: 'break', mobile: false, tablet: false },
 		{type: 'button',  id: 'bold',  img: 'bold', hint: _UNO('.uno:Bold'), uno: 'Bold'},
 		{type: 'button',  id: 'italic', img: 'italic', hint: _UNO('.uno:Italic'), uno: 'Italic'},
