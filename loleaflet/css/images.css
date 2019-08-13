@@ -343,6 +343,7 @@
 .zoomin{ background: url('images/lc_zoomin.svg') no-repeat center !important; }
 .zoomout{ background: url('images/lc_zoomout.svg') no-repeat center !important; }
 .zoomreset{ background: url('images/lc_view100.svg') no-repeat center !important; }
+.search{ background: url('images/lc_search.svg') no-repeat center !important; }
 .more{ background: url('images/lc_downsearch.svg') no-repeat center !important; }
 .firstrecord{ background: url('images/lc_firstrecord.svg') no-repeat center !important; }
 .nextrecord{ background: url('images/lc_nextrecord.svg') no-repeat center !important; }
