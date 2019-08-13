@@ -111,6 +111,10 @@ function onClick(e, id, item, subItem) {
 		toolbar = w2ui['presentation-toolbar'];
 		item = toolbar.get(id);
 	}
+	else if (w2ui['mobileSearchBar'].get(id) !== null) {
+		toolbar = w2ui['mobileSearchBar'];
+		item = toolbar.get(id);
+	}
 	else {
 		throw new Error('unknown id: ' + id);
 	}
@@ -302,8 +306,49 @@ function onClick(e, id, item, subItem) {
 		}
 		map.remove();
 	}
+	else if (id === 'searchBtn') {
+		toggleMobileSearchBar();
+	}
 	else {
 		console.log('有 id 未處理 : ' + id)
+	}
+}
+
+function moveObjectVertically(obj, diff) {
+	if (obj) {
+		var prevTop = obj.css('top');
+		if (prevTop) {
+			prevTop = parseInt(prevTop.slice(0, -2)) + diff;
+		} else {
+			prevTop = 0 + diff;
+		}
+		obj.css({'top': String(prevTop) + 'px'});
+	}
+}
+
+function toggleMobileSearchBar() {
+	var toolbarUp = $('#toolbar-up');
+	var mobileSearchBar = $('#mobileSearchBar')
+						.css('top', toolbarUp.outerHeight())
+						.css('border-top', '1px solid #bbbbbb')
+						.css('position', 'absolute')
+						.css('height', '41px')
+						.css('left', '0').css('right', '0');
+
+	var height = mobileSearchBar.outerHeight();
+	if (mobileSearchBar.css('display') === 'none') {
+		mobileSearchBar.css('display', '');
+		$('#search-input').focus();
+	} else {
+		mobileSearchBar.css('display', 'none');
+		height *= -1;
+	}
+
+	moveObjectVertically($('#spreadsheet-row-column-frame'), height);
+	moveObjectVertically($('#document-container'), height);
+	moveObjectVertically($('#presentation-controls-wrapper'), height);
+	if (map.getDocType() === 'spreadsheet') {
+		moveObjectVertically($('#spreadsheet-row-column-frame'), height);
 	}
 }
 
@@ -741,7 +786,7 @@ function onColorPick(id, color) {
 		uno = '.uno:' + backcolor;
 	}
 	map.sendUnoCommand(uno, command);
-	map.focus();
+	//map.focus();
 }
 
 function hideTooltip(toolbar, id) {
@@ -918,9 +963,11 @@ function initMobileToolbar(toolItems) {
 		items: [
 			{type: 'button',  id: 'closemobile',  img: 'closemobile'},
 			{type: 'spacer'},
+			{type: 'button', id: 'searchBtn', img: 'search', hint:_UNO('.uno:Search', 'text'), hidden:true},
+			{type: 'break', id: 'break-searchBtn', hidden: true},
 			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text'), hidden: true},
 			{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text'), hidden: true},
-			{type: 'break',   id: 'break-prevnext', hidden: true},
+			{type: 'break',   id: 'prevnextbreak', hidden: true},
 			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
 			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
 			//{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
@@ -1085,6 +1132,40 @@ function initMobileToolbar(toolItems) {
 
 	toolbar.bind('touchstart', function(e) {
 		w2ui['editbar'].touchStarted = true;
+		var touchEvent = e.originalEvent;
+		if (touchEvent && touchEvent.touches.length > 1) {
+			L.DomEvent.preventDefault(e);
+		}
+	});
+
+	var mobileSearchBar = L.DomUtil.createWithId('div', 'mobileSearchBar', document.body);
+	$(mobileSearchBar).css('display', 'none')
+		.w2toolbar({
+			name: 'mobileSearchBar',
+			items: [
+				{type: 'html',  id: 'search',
+				 html: '<div style="padding: 3px 10px;" class="loleaflet-font">' +
+				 ' ' + _('Search:') +
+				 '    <input size="15" id="search-input"' +
+				 'style="padding: 3px; border-radius: 2px; border: 1px solid silver"/>' +
+				 '</div>'
+				},
+				{type: 'button', id: 'searchprev', img: 'prev', hint: _UNO('.uno:UpSearch'), disabled: true},
+				{type: 'button', id: 'searchnext', img: 'next', hint: _UNO('.uno:DownSearch'), disabled: true},
+				{type: 'button', id: 'cancelsearch', img: 'cancel', hint: _('Cancel the search'), hidden: true},
+			],
+			onClick: function (e) {
+				onClick(e, e.target);
+				hideTooltip(this, e.target);
+			},
+			onRefresh: function() {
+				$('#search-input').off('input', onSearch).on('input', onSearch);
+				$('#search-input').off('keydown', onSearchKeyDown).on('keydown', onSearchKeyDown);
+			}
+		});
+	toolbar = $(mobileSearchBar);
+	toolbar.bind('touchstart', function(e) {
+		w2ui['mobileSearchBar'].touchStarted = true;
 		var touchEvent = e.originalEvent;
 		if (touchEvent && touchEvent.touches.length > 1) {
 			L.DomEvent.preventDefault(e);
@@ -1402,7 +1483,12 @@ function unoCmdToToolbarId(commandname)
 }
 
 function onSearch() {
-	var toolbar = w2ui['actionbar'];
+	var toolbar;
+	if (!_inMobileMode()) {
+		toolbar = w2ui['actionbar'];
+	} else {
+		toolbar = w2ui['mobileSearchBar'];
+	}
 	// conditionally disabling until, we find a solution for tdf#108577
 	if (L.DomUtil.get('search-input').value === '') {
 		toolbar.disable('searchprev');
@@ -1671,7 +1757,7 @@ function onDocLayerInit() {
 
 	// Add by Firefly <firefly@ossii.com.tw>
 	// 唯讀模式搜尋無效，所以移除
-	if (map._permission == 'readonly') {
+	if (map._permission === 'readonly') {
 		statusbar.remove('search', 'searchprev', 'searchnext', 'cancelsearch');
 		// 文字文件與試算表的上下頁無效
 		if (docType === 'text' || docType === 'spreadsheet')
@@ -1814,7 +1900,7 @@ function onDocLayerInit() {
 	case 'drawing':
 		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable');
-		statusbar.show('prev', 'next');
+		statusbar.show('prev', 'next', 'prevnextbreak');
 		// Remove irrelevant toolbars
 		$('#formulabar').hide();
 		$('#spreadsheet-toolbar').hide();
@@ -2273,10 +2359,17 @@ function onCommandResult(e) {
 
 function onUpdatePermission(e) {
 	var toolbar = w2ui['editbar'];
+	var statusbar = w2ui['actionbar'];
+	map._docLayer._updateScrollOffset();
 
 	// always enabled items
 	var enabledButtons = ['closemobile', 'undo', 'redo'];
 
+	// 手機模式且非唯讀，顯示搜尋按鈕
+	if (_inMobileMode() && map._permission !== 'readonly') {
+		statusbar.show('searchBtn', 'break-searchBtn');
+	}
+	
 	// copy the first array
 	var items = toolbar.items.slice();
 	for (var idx in items) {
