@@ -83,7 +83,8 @@ function _cancelSearch() {
 	toolbar.disable('searchprev');
 	toolbar.disable('searchnext');
 	L.DomUtil.get('search-input').value = '';
-	map.focus();
+	if (!L.Browser.mobile)
+		map.focus();
 }
 
 function onClick(e, id, item, subItem) {
@@ -120,7 +121,8 @@ function onClick(e, id, item, subItem) {
 	}
 	var docLayer = map._docLayer;
 	if (id !== 'zoomin' && id !== 'zoomout') {
-		map.focus();
+		if (!L.Browser.mobile)
+			map.focus();
 	}
 	if (item.disabled) {
 		return;
@@ -386,7 +388,8 @@ function closePopup() {
 	if ($('#w2ui-overlay-editbar').length > 0) {
 		$('#w2ui-overlay-editbar').removeData('keepOpen')[0].hide();
 	}
-	map.focus();
+	if (!L.Browser.mobile)
+		map.focus();
 }
 
 function setBorderStyle(num) {
@@ -786,7 +789,8 @@ function onColorPick(id, color) {
 		uno = '.uno:' + backcolor;
 	}
 	map.sendUnoCommand(uno, command);
-	map.focus();
+	if (!L.Browser.mobile)
+		map.focus();
 }
 
 function hideTooltip(toolbar, id) {
@@ -817,7 +821,7 @@ function createToolbar() {
 		{type: 'button',  id: 'reset',  img: 'deleteformat', hint: _UNO('.uno:ResetAttributes', 'text'), uno: 'ResetAttributes', mobile: false},
 		{type: 'break', mobile: false},
 		{type: 'html', id: 'styles',
-			html: '<select class="styles-select"><option>Default Style</option></select>',
+			html: '<select class="styles-select"' + (L.Browser.mobile ? ' data-minimum-results-for-search="Infinity"' : '')  + '><option>Default Style</option></select>',
 			onRefresh: function (edata) {
 				if (!edata.item.html) {
 					edata.isCancelled = true;
@@ -829,7 +833,7 @@ function createToolbar() {
 				}
 			}, hidden: true, desktop: true, mobile: false, tablet: false},
 		{type: 'html', id: 'fonts',
-			html: '<select class="fonts-select"><option>Liberation Sans</option></select>',
+			html: '<select class="fonts-select"' + (L.Browser.mobile ? ' data-minimum-results-for-search="Infinity"' : '')  + '><option>Liberation Sans</option></select>',
 			onRefresh: function (edata) {
 				if (!edata.item.html) {
 					edata.isCancelled = true;
@@ -841,7 +845,7 @@ function createToolbar() {
 				}
 			}, mobile: true},
 		{type: 'html',   id: 'fontsizes',
-			html: '<select class="fontsizes-select"><option>14</option></select>',
+			html: '<select class="fontsizes-select"' + (L.Browser.mobile ? ' data-minimum-results-for-search="Infinity"' : '')  + '><option>14</option></select>',
 			onRefresh: function (edata) {
 				if (!edata.item.html) {
 					edata.isCancelled = true;
@@ -929,7 +933,7 @@ function createToolbar() {
 		{type: 'drop',  id: 'inserttable',  img: 'inserttable', hint: _('Insert table'), hidden: true, overlay: {onShow: insertTable},
 		 html: '<div id="inserttable-wrapper"><div id="inserttable-popup" class="inserttable-pop ui-widget ui-corner-all"><div class="inserttable-grid"></div><div id="inserttable-status" class="loleaflet-font" style="padding: 5px;"><br/></div></div></div>', mobile: false},
 		{type: 'button',  id: 'insertgraphic',  img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), mobile: false},
-		{type: 'menu', id: 'menugraphic', img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), hidden: true, mobile: false,
+		{type: 'menu', id: 'menugraphic', img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), hidden: true, mobile: true,
 			items: [
 				{id: 'localgraphic', text: _('Insert Local Image')},
 				{id: 'remotegraphic', text: _UNO('.uno:InsertGraphic', '', true)},
@@ -1582,7 +1586,8 @@ function onStyleSelect(e) {
 	else if (map.getDocType() === 'presentation' || map.getDocType() === 'drawing') {
 		map.applyLayout(style);
 	}
-	map.focus();
+	if (!L.Browser.mobile)
+		map.focus();
 }
 
 function updateFontSizeList(font) {
@@ -1625,12 +1630,14 @@ function onFontSelect(e) {
 	var font = e.target.value;
 	updateFontSizeList(font);
 	map.applyFont(font);
-	map.focus();
+	if (!L.Browser.mobile)
+		map.focus();
 }
 
 function onFontSizeSelect(e) {
 	map.applyFontSize(e.target.value);
-	map.focus();
+	if (!L.Browser.mobile)
+		map.focus();
 }
 
 function onInsertFile() {
@@ -1918,6 +1925,9 @@ function onDocLayerInit() {
 		nUsers = '%n';
 		oneUser = '1';
 		noUser = '0';
+		$('.styles-select').prop('data-minimum-results-for-search', 'Infinity');
+		$('.fonts-select').prop('data-minimum-results-for-search', 'Infinity');
+		$('.fontsizes-select').prop('data-minimum-results-for-search', 'Infinity');
 		$('#document-name-input').hide();
 	} else {
 		nUsers = _('%n users');
