@@ -49,7 +49,7 @@ Requires:       atk avahi-libs bzip2-libs cairo cups-libs dbus-glib dbus-libs fo
 	%{config_options}
 %endif
 
-make build-nocheck %{?_smp_mflags}
+make %{?_smp_mflags}
 
 %check
 #make check

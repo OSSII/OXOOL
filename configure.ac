@@ -646,15 +646,12 @@ AC_LINK_FILES([loleaflet/node_shrinkwrap], [loleaflet/node_shrinkwrap])
 AC_CONFIG_FILES([Makefile
                  gtk/Makefile
                  Mobile/Mobile/Info.plist
-                 test/Makefile
                  loleaflet/Makefile
                  extensions/Makefile
                  loleaflet/npm-shrinkwrap.json
                  oxoolwsd.spec
                  oxoolwsd.xml
                  debian/loolwsd.postinst])
-AC_CONFIG_FILES([test/run_unit.sh],[chmod +x test/run_unit.sh])
-
 AC_OUTPUT
 
 AC_LANG_POP
