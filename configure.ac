@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 
-AC_INIT([oxoolwsd], [3.1.3], [develop@ossii.com.tw])
+AC_INIT([oxoolwsd], [3.1.4], [develop@ossii.com.tw])
 LT_INIT([shared, disable-static, dlopen])
 
 AM_INIT_AUTOMAKE([1.10 subdir-objects tar-pax -Wno-portability])
