@@ -932,8 +932,8 @@ function createToolbar() {
 		{type: 'button',  id: 'insertannotation', img: 'insertannotation', hint: _UNO('.uno:InsertAnnotation', '', true), hidden: true, mobile: false},
 		{type: 'drop',  id: 'inserttable',  img: 'inserttable', hint: _('Insert table'), hidden: true, overlay: {onShow: insertTable},
 		 html: '<div id="inserttable-wrapper"><div id="inserttable-popup" class="inserttable-pop ui-widget ui-corner-all"><div class="inserttable-grid"></div><div id="inserttable-status" class="loleaflet-font" style="padding: 5px;"><br/></div></div></div>', mobile: false},
-		{type: 'button',  id: 'insertgraphic',  img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), mobile: false},
-		{type: 'menu', id: 'menugraphic', img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), hidden: true, mobile: true,
+		{type: 'button',  id: 'insertgraphic',  img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), mobile: true},
+		{type: 'menu', id: 'menugraphic', img: 'insertgraphic', hint: _UNO('.uno:InsertGraphic', '', true), hidden: true, mobile: false,
 			items: [
 				{id: 'localgraphic', text: _('Insert Local Image')},
 				{id: 'remotegraphic', text: _UNO('.uno:InsertGraphic', '', true)},
