@@ -346,6 +346,9 @@
 .keyboard{ background: url('images/keyboard.svg') no-repeat center !important; }
 .keyboard_hide{ background: url('images/keyboard_hide.svg') no-repeat center !important; }
 
+.mobilecut{ background: url('images/lc_cut.svg') no-repeat center !important; }
+.mobilecopy{ background: url('images/lc_copy.svg') no-repeat center !important; }
+.mobilepaste{ background: url('images/lc_paste.svg') no-repeat center !important; }
 .search{ background: url('images/lc_search.svg') no-repeat center !important; }
 .more{ background: url('images/lc_downsearch.svg') no-repeat center !important; }
 .firstrecord{ background: url('images/lc_firstrecord.svg') no-repeat center !important; }
