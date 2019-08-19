@@ -88,6 +88,17 @@ L.Control.MobileInput = L.Control.extend({
 		this.onLostFocus();
 	},
 
+	// Add by Firefly <firefly@ossii.com.tw>
+	disableVirtualKeyboard: function () {
+		this._textArea.setAttribute('readonly', true);
+		this.focus();
+	},
+
+	enableVirtualKeyboard: function () {
+		this._textArea.removeAttribute('readonly');
+		this.focus();
+	},
+
 	_initLayout: function () {
 		var constOff = 'off',
 		stopEvents = 'touchstart touchmove touchend mousedown mousemove mouseout mouseover mouseup mousewheel click scroll',
@@ -99,6 +110,7 @@ L.Control.MobileInput = L.Control.extend({
 		this._textArea.setAttribute('autocapitalize', constOff);
 		this._textArea.setAttribute('autocomplete', constOff);
 		this._textArea.setAttribute('spellcheck', 'false');
+		this.disableVirtualKeyboard();
 		L.DomEvent.on(this._textArea, stopEvents, L.DomEvent.stopPropagation)
 			.on(this._textArea, 'keydown keypress keyup', this.onKeyEvents, this)
 			.on(this._textArea, 'compositionstart compositionupdate compositionend textInput', this.onCompEvents, this)
@@ -135,7 +147,7 @@ L.Control.MobileInput = L.Control.extend({
 				// Chrome sets keyCode = charCode for printable keys
 				// while LO requires it to be 0
 				keyCode = 0;
-				unoKeyCode = this._toUNOKeyCode(keyCode);
+				unoKeyCode = handler._toUNOKeyCode(keyCode);
 			}
 			docLayer._postKeyboardEvent('input', charCode, unoKeyCode);
 			this._keyHandled = true;
