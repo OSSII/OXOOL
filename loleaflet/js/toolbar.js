@@ -83,11 +83,11 @@ function _cancelSearch() {
 	toolbar.disable('searchprev');
 	toolbar.disable('searchnext');
 	L.DomUtil.get('search-input').value = '';
-	if (!L.Browser.mobile)
-		map.focus();
+	map.focus();
 }
 
 function onClick(e, id, item, subItem) {
+	var statusbar = w2ui['actionbar'];
 	if (w2ui['editbar'].get(id) !== null) {
 		var toolbar = w2ui['editbar'];
 		item = toolbar.get(id);
@@ -116,13 +116,16 @@ function onClick(e, id, item, subItem) {
 		toolbar = w2ui['mobileSearchBar'];
 		item = toolbar.get(id);
 	}
+	else if (w2ui['mobileEditBar'].get(id) !== null) {
+		toolbar = w2ui['mobileEditBar'];
+		item = toolbar.get(id);
+	}
 	else {
 		throw new Error('unknown id: ' + id);
 	}
 	var docLayer = map._docLayer;
 	if (id !== 'zoomin' && id !== 'zoomout') {
-		if (!L.Browser.mobile)
-			map.focus();
+		map.focus();
 	}
 	if (item.disabled) {
 		return;
@@ -308,6 +311,20 @@ function onClick(e, id, item, subItem) {
 		}
 		map.remove();
 	}
+	else if (id === 'keyboardBtn') {
+		map._clipboardContainer.enableVirtualKeyboard();
+		statusbar.hide('keyboardBtn');
+		statusbar.show('keyboard_hideBtn');
+	}
+	else if (id === 'keyboard_hideBtn') {
+		map._clipboardContainer.disableVirtualKeyboard();
+		statusbar.hide('keyboard_hideBtn');
+		statusbar.show('keyboardBtn');
+	}
+	else if (id === 'mobileDelete') {
+		// send delete key
+		map._socket.sendMessage('key type=input char=0 key=1286');
+	}
 	else if (id === 'searchBtn') {
 		toggleMobileSearchBar();
 	}
@@ -346,7 +363,6 @@ function toggleMobileSearchBar() {
 		height *= -1;
 	}
 
-	moveObjectVertically($('#spreadsheet-row-column-frame'), height);
 	moveObjectVertically($('#document-container'), height);
 	moveObjectVertically($('#presentation-controls-wrapper'), height);
 	if (map.getDocType() === 'spreadsheet') {
@@ -388,8 +404,7 @@ function closePopup() {
 	if ($('#w2ui-overlay-editbar').length > 0) {
 		$('#w2ui-overlay-editbar').removeData('keepOpen')[0].hide();
 	}
-	if (!L.Browser.mobile)
-		map.focus();
+	map.focus();
 }
 
 function setBorderStyle(num) {
@@ -789,8 +804,7 @@ function onColorPick(id, color) {
 		uno = '.uno:' + backcolor;
 	}
 	map.sendUnoCommand(uno, command);
-	if (!L.Browser.mobile)
-		map.focus();
+	map.focus();
 }
 
 function hideTooltip(toolbar, id) {
@@ -967,6 +981,9 @@ function initMobileToolbar(toolItems) {
 		items: [
 			{type: 'button',  id: 'closemobile',  img: 'closemobile'},
 			{type: 'spacer'},
+			{type: 'button', id: 'keyboardBtn', img: 'keyboard', hidden:true},
+			{type: 'button', id: 'keyboard_hideBtn', img: 'keyboard_hide', hidden:true},
+			{type: 'break', id: 'break-keyboardBtn', hidden: true},
 			{type: 'button', id: 'searchBtn', img: 'search', hint:_UNO('.uno:Search', 'text'), hidden:true},
 			{type: 'break', id: 'break-searchBtn', hidden: true},
 			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text'), hidden: true},
@@ -1175,6 +1192,38 @@ function initMobileToolbar(toolItems) {
 			L.DomEvent.preventDefault(e);
 		}
 	});
+
+	var mobileEditBar = L.DomUtil.createWithId('div', 'mobileEditBar', document.body);
+	$(mobileEditBar).css('display', 'none')
+	.css('width', '300px').css('padding', '4px').css('position', 'absolute')
+	.css('top', '41px').css('left', '0px').css('font-size', '16px').css('z-index', '1000')
+	.w2toolbar({
+		name: 'mobileEditBar',
+		items: [
+			{type: 'button', id: 'mobileCut', uno: 'Cut', text: _UNO('Cut', 'text'), disabled: true},
+			{type: 'button', id: 'mobileCopy', uno: 'Copy', text: _UNO('Copy', 'text'), disabled: true},
+			{type: 'button', id: 'mobilePaste', uno: 'Paste', text: _UNO('Paste', 'text'), disabled: true},
+			{type: 'break'},
+			{type: 'button', id: 'mobileSelectAll', uno: 'SelectAll', text: _UNO('SelectAll', 'text')},
+			{type: 'button', id: 'mobileSelection', text: _UNO('SelectObject', 'text')},
+			{type: 'break'},
+			{type: 'button', id: 'mobileDelete', text: _('Delete')}
+		],
+		onClick: function (e) {
+			onClick(e, e.target);
+			hideTooltip(this, e.target);
+		},
+	});
+	toolbar = $(mobileEditBar);
+	toolbar.bind('touchstart', function(e) {
+		w2ui['mobileEditBar'].touchStarted = true;
+		var touchEvent = e.originalEvent;
+		if (touchEvent && touchEvent.touches.length > 1) {
+			L.DomEvent.preventDefault(e);
+		}
+	});
+
+
 }
 
 function initNormalToolbar(toolItems) {
@@ -1586,8 +1635,7 @@ function onStyleSelect(e) {
 	else if (map.getDocType() === 'presentation' || map.getDocType() === 'drawing') {
 		map.applyLayout(style);
 	}
-	if (!L.Browser.mobile)
-		map.focus();
+	map.focus();
 }
 
 function updateFontSizeList(font) {
@@ -1630,14 +1678,12 @@ function onFontSelect(e) {
 	var font = e.target.value;
 	updateFontSizeList(font);
 	map.applyFont(font);
-	if (!L.Browser.mobile)
-		map.focus();
+	map.focus();
 }
 
 function onFontSizeSelect(e) {
 	map.applyFontSize(e.target.value);
-	if (!L.Browser.mobile)
-		map.focus();
+	map.focus();
 }
 
 function onInsertFile() {
@@ -1986,10 +2032,36 @@ function onDocLayerInit() {
 function onCommandStateChanged(e) {
 	var toolbar = w2ui['editbar'];
 	var statusbar = w2ui['actionbar'];
+	var mobileEditBar = w2ui['mobileEditBar'];
 	var commandName = e.commandName;
 	var state = e.state;
 	var found = false;
 	var value, color, div;
+
+	if (mobileEditBar !== undefined) {
+		var ckid = '';
+		switch (commandName)
+		{
+		case '.uno:Cut':
+			ckid = 'mobileCut';
+			break;
+		case '.uno:Copy':
+			ckid = 'mobileCopy';
+			break;
+		case '.uno:Paste':
+			ckid = 'mobilePaste';
+			break;
+		}
+		if (ckid !== '') {
+			if (state === 'enabled') {
+				mobileEditBar.enable(ckid);
+			} else {
+				mobileEditBar.disable(ckid);
+			}
+			mobileEditBar.uncheck(ckid);
+			return;
+		}
+	}
 
 	if (commandName === '.uno:AssignLayout') {
 		$('.styles-select').val(state).trigger('change');
@@ -2376,8 +2448,14 @@ function onUpdatePermission(e) {
 	var enabledButtons = ['closemobile', 'undo', 'redo'];
 
 	// 手機模式且非唯讀，顯示搜尋按鈕
-	if (_inMobileMode() && map._permission !== 'readonly') {
-		statusbar.show('searchBtn', 'break-searchBtn');
+	if (_inMobileMode()) {
+		if (e.perm !== 'readonly') {
+			statusbar.show('searchBtn', 'break-searchBtn');
+		}
+		if (e.perm === 'edit') {
+			statusbar.show('keyboardBtn', 'break-keyboardBtn');
+			$('#mobileEditBar').show();
+		}
 	}
 	
 	// copy the first array
