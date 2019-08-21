@@ -28,7 +28,9 @@ L.Control.Tabs = L.Control.extend({
 					.removeClass('mobile-view')
 					.addClass('mobile-edit');
 			} else {
-				$('.spreadsheet-tabs-container').addClass('mobile-view');
+				$('.spreadsheet-tabs-container')
+					.addClass('mobile-view')
+					.addClass('mobile-edit');
 			}
 		}
 	},
