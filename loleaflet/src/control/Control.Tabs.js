@@ -24,7 +24,9 @@ L.Control.Tabs = L.Control.extend({
 
 		if (window.mode.isMobile() == true) {
 			if (e.perm === 'edit') {
-				$('.spreadsheet-tabs-container').removeClass('mobile-view');
+				$('.spreadsheet-tabs-container')
+					.removeClass('mobile-view')
+					.addClass('mobile-edit');
 			} else {
 				$('.spreadsheet-tabs-container').addClass('mobile-view');
 			}

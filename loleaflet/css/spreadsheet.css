@@ -27,6 +27,11 @@
 	bottom: 0px;
 }
 
+.spreadsheet-tabs-container.mobile-edit {
+	left: 32px;
+}
+
+
 .spreadsheet-tab-scroll {
 	width: 100%;
 	height: 100%;
