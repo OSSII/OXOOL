@@ -44,19 +44,19 @@ L.Map.Tap = L.Handler.extend({
 			return;
 		}
 
-		var first = e.touches[0],
+		var first = e.touches[0];/*,
 		    containerPoint = this._map.mouseEventToContainerPoint(first),
 		    layerPoint = this._map.containerPointToLayerPoint(containerPoint),
-		    latlng = this._map.layerPointToLatLng(layerPoint);
+		    latlng = this._map.layerPointToLatLng(layerPoint);*/
 		this._startPos = this._newPos = new L.Point(first.clientX, first.clientY);
 
-		if (!this._toolbar._map && this._map._docLayer.containsSelection(latlng)) {
+		/*if (!this._toolbar._map && this._map._docLayer.containsSelection(latlng)) {
 			this._toolbar._pos = containerPoint;
 			this._toolbar.addTo(this._map);
 			return;
-		}
+		}*/
 
-		this._toolbar.remove();
+		//this._toolbar.remove();
 		// simulate long hold but setting a timeout
 		this._fireClick = true;
 		this._holdTimeout = setTimeout(L.bind(function () {
