@@ -90,7 +90,7 @@ body {
         width: 56px;
         height: 56px;
         right: 16px;
-        bottom: 16px;
+        bottom: 32px;
         background-color: rgba(255, 128, 0, 0.5);
         border-radius: 50%;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -98,7 +98,7 @@ body {
 }
 
 #mobile-edit-button.spreadsheet {
-	bottom: 53px;
+	bottom: 68px;
 }
 
 #mobile-edit-button-icon {
@@ -135,6 +135,9 @@ body {
     #document-container.spreadsheet-document.readonly {
 	top: 61px !important;
     }
+    #document-container.spreadsheet-document.mobile-edit {
+	top: 143px !important;
+    }
     #document-container {
 	top: 41px;
     }
@@ -143,6 +146,9 @@ body {
     }
     #spreadsheet-row-column-frame.readonly {
 	top: 41px !important;
+    }
+    #spreadsheet-row-column-frame.mobile-edit {
+	top: 123px !important;
     }
 /*
     #toolbar-hamburger {

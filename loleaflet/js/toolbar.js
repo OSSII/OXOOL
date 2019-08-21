@@ -352,22 +352,16 @@ function toggleMobileSearchBar() {
 						.css('border-top', '1px solid #bbbbbb')
 						.css('position', 'absolute')
 						.css('height', '41px')
-						.css('left', '0').css('right', '0');
+						.css('left', '0').css('right', '0')
+						.css('z-index', '1000');
 
-	var height = mobileSearchBar.outerHeight();
 	if (mobileSearchBar.css('display') === 'none') {
 		mobileSearchBar.css('display', '');
 		$('#search-input').focus();
 	} else {
 		mobileSearchBar.css('display', 'none');
-		height *= -1;
 	}
 
-	moveObjectVertically($('#document-container'), height);
-	moveObjectVertically($('#presentation-controls-wrapper'), height);
-	if (map.getDocType() === 'spreadsheet') {
-		moveObjectVertically($('#spreadsheet-row-column-frame'), height);
-	}
 }
 
 function setBorders(left, right, bottom, top, horiz, vert) {
@@ -991,7 +985,7 @@ function initMobileToolbar(toolItems) {
 			{type: 'break',   id: 'prevnextbreak', hidden: true},
 			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
 			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
-			//{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
+			{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
 			{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
 				'<hr><table class="loleaflet-font" id="editor-btn">' +
 				'<tr>' +
@@ -1037,9 +1031,9 @@ function initMobileToolbar(toolItems) {
 		tooltip: 'bottom',
 		hidden: true,
 		items: [
-			{type: 'html',  id: 'left'},
-			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
-			{type: 'break'},
+			{type: 'html',  id: 'left', hidden: true},
+			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">', hidden: true},
+			{type: 'break', hidden: true},
 			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _UNO('.uno:FunctionDialog', 'spreadsheet')},
 			{type: 'button',  id: 'sum',  img: 'autosum', hint: _UNO('AutoSum')},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _UNO('InsertMath')},
@@ -1077,10 +1071,10 @@ function initMobileToolbar(toolItems) {
 		tooltip: 'bottom',
 		hidden: true,
 		items: [
-			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hint: _('First sheet')},
-			{type: 'button',  id: 'prevrecord',  img: 'prevrecord', hint: _('Previous sheet')},
-			{type: 'button',  id: 'nextrecord',  img: 'nextrecord', hint: _('Next sheet')},
-			{type: 'button',  id: 'lastrecord',  img: 'lastrecord', hint: _('Last sheet')},
+			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hint: _('First sheet'), hidden: true},
+			{type: 'button',  id: 'prevrecord',  img: 'prevrecord', hint: _('Previous sheet'), hidden: true},
+			{type: 'button',  id: 'nextrecord',  img: 'nextrecord', hint: _('Next sheet'), hidden: true},
+			{type: 'button',  id: 'lastrecord',  img: 'lastrecord', hint: _('Last sheet'), hidden: true},
 			{type: 'button',  id: 'insertsheet', img: 'insertsheet', hint: _('Insert sheet')}
 		],
 		onClick: function (e) {
@@ -1195,17 +1189,14 @@ function initMobileToolbar(toolItems) {
 
 	var mobileEditBar = L.DomUtil.createWithId('div', 'mobileEditBar', document.body);
 	$(mobileEditBar).css('display', 'none')
-	.css('width', '300px').css('padding', '4px').css('position', 'absolute')
-	.css('top', '41px').css('left', '0px').css('font-size', '16px').css('z-index', '1000')
 	.w2toolbar({
 		name: 'mobileEditBar',
 		items: [
-			{type: 'button', id: 'mobileCut', uno: 'Cut', text: _UNO('Cut', 'text'), disabled: true},
-			{type: 'button', id: 'mobileCopy', uno: 'Copy', text: _UNO('Copy', 'text'), disabled: true},
-			{type: 'button', id: 'mobilePaste', uno: 'Paste', text: _UNO('Paste', 'text'), disabled: true},
+			{type: 'button', id: 'mobileCut', uno: 'Cut', img: 'mobilecut', text: _UNO('Cut', 'text'), disabled: true},
+			{type: 'button', id: 'mobileCopy', uno: 'Copy', img: 'mobilecopy', text: _UNO('Copy', 'text'), disabled: true},
+			{type: 'button', id: 'mobilePaste', uno: 'Paste', img: 'mobilepaste', text: _UNO('Paste', 'text'), disabled: true},
 			{type: 'break'},
 			{type: 'button', id: 'mobileSelectAll', uno: 'SelectAll', text: _UNO('SelectAll', 'text')},
-			{type: 'button', id: 'mobileSelection', text: _UNO('SelectObject', 'text')},
 			{type: 'break'},
 			{type: 'button', id: 'mobileDelete', text: _('Delete')}
 		],
@@ -2442,19 +2433,39 @@ function onCommandResult(e) {
 function onUpdatePermission(e) {
 	var toolbar = w2ui['editbar'];
 	var statusbar = w2ui['actionbar'];
-	map._docLayer._updateScrollOffset();
+	//map._docLayer._updateScrollOffset();
 
 	// always enabled items
 	var enabledButtons = ['closemobile', 'undo', 'redo'];
 
-	// 手機模式且非唯讀，顯示搜尋按鈕
+	// 手機模式
 	if (_inMobileMode()) {
+		L.toggleFullScreen();
+		var toolbarUp;
+		var mobileEditBar = $('#mobileEditBar');
+		if (map.getDocType() === 'spreadsheet') {
+			toolbarUp = $('#toolbar-wrapper');
+		} else {
+			toolbarUp = $('#toolbar-up');
+		}
+		// 非唯讀，顯示搜尋按鈕
 		if (e.perm !== 'readonly') {
 			statusbar.show('searchBtn', 'break-searchBtn');
 		}
-		if (e.perm === 'edit') {
+		// 編輯模式，且非試算表文件，顯示鍵盤切換圖示
+		if (e.perm === 'edit' && map.getDocType() !== 'spreadsheet') {
 			statusbar.show('keyboardBtn', 'break-keyboardBtn');
-			$('#mobileEditBar').show();
+		}
+		// 
+		if (e.perm === 'edit') {
+			mobileEditBar.css('top', toolbarUp.outerHeight() - 1).show();
+			var height = mobileEditBar.outerHeight();
+			moveObjectVertically($('#document-container'), height);
+			moveObjectVertically($('#presentation-controls-wrapper'), height);
+			if (map.getDocType() === 'spreadsheet') {
+				$('#spreadsheet-row-column-frame').addClass('mobile-edit');
+				$('#document-container.spreadsheet-document').addClass('mobile-edit');
+			}
 		}
 	}
 	
@@ -2577,6 +2588,7 @@ function onUpdatePermission(e) {
 			}
 		}
 	}
+	map._docLayer._updateScrollOffset();
 }
 
 function onUseritemClicked(e) { // eslint-disable-line no-unused-vars

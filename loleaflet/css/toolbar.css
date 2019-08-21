@@ -55,6 +55,16 @@
     border-right: 1px solid #bbbbbb;
 }
 
+#mobileEditBar {
+    top: 41px;
+    position: absolute;
+    height: 41px;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #bbbbbb;
+    font-size: 14px;
+}
+
 /* For MS Edge 40, the select2 combo boxes need to have higher z-index than #map
  * Ideal would be to add the class to select2-container <span>, but
  * https://github.com/select2/select2/issues/285
