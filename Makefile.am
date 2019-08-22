@@ -256,7 +256,6 @@ EXTRA_DIST = discovery.xml \
              oxoolwsd.spec \
              oxoolwsd.xml.in \
              oxoolwsd.service \
-             sysconfig.oxoolwsd \
              debian/compat \
              debian/copyright \
              debian/loolwsd.cron.d \
@@ -271,6 +270,7 @@ EXTRA_DIST = discovery.xml \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
              etc/sudoers.d/lool \
+             etc/sysconfig/oxoolwsd \
 	     SourceHan/50-oxool.conf \
 	     SourceHan/SourceHanSans-Regular.ttc \
 	     SourceHan/SourceHanSans-Bold.ttc \
