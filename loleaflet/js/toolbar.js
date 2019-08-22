@@ -491,7 +491,6 @@ function insertTable() {
 var shapes = {
 	'Line': [
 		{img: 'selectobject', uno: 'SelectObject'},
-		{img: ''},
 		{img: 'linearrowend', uno: 'LineArrowEnd'},
 		{img: 'linecirclearrow', uno: 'LineCircleArrow'},
 		{img: 'linesquarearrow', uno: 'LineSquareArrow'},
