@@ -48,6 +48,9 @@ sourcehanfonts_DATA = SourceHan/SourceHanSans-Regular.ttc \
 sudoersdir = ${sysconfdir}/sudoers.d
 sudoers_DATA = etc/sudoers.d/lool
 
+servicesysconfigdir = ${sysconfdir}/sysconfig
+servicesysconfig_DATA = etc/sysconfig/oxoolwsd
+
 oxoolwsdconfigdir = @LOOLWSD_CONFIGDIR@
 
 oxoolwsdconfig_DATA = oxoolwsd.xml \
