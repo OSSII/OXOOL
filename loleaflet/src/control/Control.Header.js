@@ -2,6 +2,7 @@
 /*
 * Control.Header
 */
+/* global L Hammer */
 
 L.Control.Header = L.Control.extend({
 	options: {
@@ -18,11 +19,13 @@ L.Control.Header = L.Control.extend({
 		this._canvasHeight = 0;
 		this._clicks = 0;
 		this._current = -1;
+		this._resizeHandleSize = 15;
 		this._selection = {start: -1, end: -1};
 		this._mouseOverEntry = null;
 		this._lastMouseOverIndex = undefined;
 		this._hitResizeArea = false;
 		this._overHeaderArea = false;
+		this._hammer = null;
 
 		this._selectionBackgroundGradient = [ '#3465A4', '#729FCF', '#004586' ];
 
@@ -116,15 +119,27 @@ L.Control.Header = L.Control.extend({
 	},
 
 	mouseInit: function (element) {
+		var self = this;
+		if (this._hammer == null) {
+			this._hammer = new Hammer(element);
+			this._hammer.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));
+			this._hammer.on('panstart panmove panend', function (event) {
+				self._onPan(event);
+			});
+		}
 		L.DomEvent.on(element, 'mousedown', this._onMouseDown, this);
 	},
 
-	select: function (entry) {
-		this.drawHeaderEntry(entry, /*isOver=*/false, /*isHighlighted=*/true);
+	select: function (entry, isCurrent) {
+		this.drawHeaderEntry(entry, /*isOver=*/false, /*isHighlighted=*/true, isCurrent);
 	},
 
 	unselect: function (entry) {
-		this.drawHeaderEntry(entry, /*isOver=*/false, /*isHighlighted=*/false);
+		this.drawHeaderEntry(entry, /*isOver=*/false, /*isHighlighted=*/false, false);
+	},
+
+	isHeaderSelected: function (index) {
+		return index === this._current;
 	},
 
 	isHighlighted: function (index) {
@@ -151,7 +166,7 @@ L.Control.Header = L.Control.extend({
 		// after clearing selection, we need to select the header entry for the current cursor position,
 		// since we can't be sure that the selection clearing is due to click on a cell
 		// different from the one where the cursor is already placed
-		this.select(data.get(this._current));
+		this.select(data.get(this._current), true);
 	},
 
 	updateSelection: function(data, start, end) {
@@ -182,7 +197,7 @@ L.Control.Header = L.Control.extend({
 				itStart = entry.index;
 			}
 			if (selected) {
-				this.select(entry);
+				this.select(entry, false);
 			}
 			if (x0 <= end && end <= x1) {
 				itEnd = entry.index;
@@ -246,9 +261,85 @@ L.Control.Header = L.Control.extend({
 			this.unselect(data.get(this._current));
 			// no selection when the cell cursor is slim
 			if (entry && !zeroSizeEntry)
-				this.select(entry);
+				this.select(entry, true);
 		}
 		this._current = entry && !zeroSizeEntry ? entry.index : -1;
+	},
+
+	_onPan: function (event) {
+		if (event.pointerType != 'touch')
+			return;
+
+		if (event.type == 'panstart')
+			this._onPanStart(event);
+		else if (event.type == 'panmove') {
+			this._onPanMove(event);
+		}
+		else if (event.type == 'panend') {
+			this._onPanEnd(event);
+		}
+	},
+
+	_entryAtPoint: function(point) {
+		var position = this._getParallelPos(point);
+		position = position - this._position;
+
+		var eachEntry = this._data.getFirst();
+		while (eachEntry) {
+			var start = eachEntry.pos - eachEntry.size;
+			var end = eachEntry.pos;
+			if (position > start && position <= end) {
+				var resizeAreaStart = Math.max(start, end - 3);
+				if (this.isHeaderSelected(eachEntry.index)) {
+					resizeAreaStart = end - this._resizeHandleSize;
+				}
+				var isMouseOverResizeArea = (position > resizeAreaStart);
+				return {entry: eachEntry, hit: isMouseOverResizeArea};
+			}
+			eachEntry = this._data.getNext();
+		}
+		return null;
+	},
+
+	_onPanStart: function (event) {
+		if (this._hitOutline(event))
+			return;
+
+		var target = event.target || event.srcElement;
+		if (!target)
+			return false;
+
+		var result = this._entryAtPoint(this._hammerEventToCanvasPos(this._canvas, event));
+		if (!result)
+			return false;
+
+		this._mouseOverEntry = result.entry;
+		var rectangle = this.getHeaderEntryBoundingClientRect(result.entry.index);
+		if (!rectangle)
+			return;
+
+		L.DomUtil.disableImageDrag();
+		L.DomUtil.disableTextSelection();
+
+		this._start = new L.Point(rectangle.left, rectangle.top);
+		this._offset = new L.Point(rectangle.right - event.center.x, rectangle.bottom - event.center.y);
+		this._item = target;
+		this.onDragStart(this._item, this._start, this._offset, {clientX: event.center.x, clientY: event.center.y});
+	},
+
+	_onPanMove: function (event) {
+		this.onDragMove(this._item, this._start, this._offset, {clientX: event.center.x, clientY: event.center.y});
+	},
+
+	_onPanEnd: function (event) {
+		L.DomUtil.enableImageDrag();
+		L.DomUtil.enableTextSelection();
+
+		this.onDragEnd(this._item, this._start, this._offset, {clientX: event.center.x, clientY: event.center.y});
+
+		this._mouseOverEntry = null;
+		this._item = this._start = this._offset = null;
+		this._dragging = false;
 	},
 
 	_mouseEventToCanvasPos: function(canvas, evt) {
@@ -256,6 +347,14 @@ L.Control.Header = L.Control.extend({
 		return {
 			x: evt.clientX - rect.left,
 			y: evt.clientY - rect.top
+		};
+	},
+
+	_hammerEventToCanvasPos: function(canvas, event) {
+		var rect = canvas.getBoundingClientRect();
+		return {
+			x: event.center.x - rect.left,
+			y: event.center.y - rect.top
 		};
 	},
 
@@ -272,8 +371,9 @@ L.Control.Header = L.Control.extend({
 		this._overHeaderArea = false;
 
 		if (this._mouseOverEntry) {
-			this.drawHeaderEntry(this._mouseOverEntry, /*isOver: */ false);
-			this._lastMouseOverIndex = this._mouseOverEntry.index; // used by context menu
+			var mouseOverIsCurrent = (this._mouseOverEntry.index == this._current);
+			this.drawHeaderEntry(this._mouseOverEntry, /*isOver: */ false, null, mouseOverIsCurrent);
+			this._lastMouseOverIndex = this._mouseOverEntry.index + this._startHeaderIndex; // used by context menu
 			this._mouseOverEntry = null;
 		}
 		this._hitResizeArea = false;
@@ -291,27 +391,24 @@ L.Control.Header = L.Control.extend({
 			this._overHeaderArea = true;
 		}
 
+		var mouseOverIndex = this._mouseOverEntry ? this._mouseOverEntry.index : null;
 		var isMouseOverResizeArea = false;
-		var pos = this._getParallelPos(this._mouseEventToCanvasPos(this._canvas, e));
-		pos = pos - this._position;
+		var result = this._entryAtPoint(this._mouseEventToCanvasPos(this._canvas, e));
 
-		var mouseOverIndex = this._mouseOverEntry ? this._mouseOverEntry.index : undefined;
 		var entry = this._data.getFirst();
-		while (entry) {
-			var start = entry.pos - entry.size;
-			var end = entry.pos;
-			if (pos > start && pos <= end) {
-				mouseOverIndex = entry.index;
-				var resizeAreaStart = Math.max(start, end - 3);
-				isMouseOverResizeArea = (pos > resizeAreaStart);
-				break;
-			}
-			entry = this._data.getNext();
+		if (result) {
+			isMouseOverResizeArea = result.hit;
+			mouseOverIndex = result.entry.index;
+			entry = result.entry;
 		}
 
 		if (mouseOverIndex && (!this._mouseOverEntry || mouseOverIndex !== this._mouseOverEntry.index)) {
-			this.drawHeaderEntry(this._mouseOverEntry, false);
-			this.drawHeaderEntry(entry, true);
+			var mouseOverIsCurrent = false;
+			if (this._mouseOverEntry != null) {
+				mouseOverIsCurrent = (this._mouseOverEntry.index == this._current);
+			}
+			this.drawHeaderEntry(this._mouseOverEntry, false, null, mouseOverIsCurrent);
+			this.drawHeaderEntry(entry, true, null, entry.index == this._current);
 			this._mouseOverEntry = entry;
 		}
 
@@ -428,7 +525,7 @@ L.Control.Header = L.Control.extend({
 		this._offset = new L.Point(rect.right - e.clientX, rect.bottom - e.clientY);
 		this._item = target;
 
-		this.onDragStart(this.item, this._start, this._offset, e);
+		this.onDragStart(this._item, this._start, this._offset, e);
 	},
 
 	_onMouseMoveForDragging: function (e) {
@@ -472,7 +569,7 @@ L.Control.Header = L.Control.extend({
 		return Math.round(this._getParallelPos(this.converter(point)));
 	},
 
-	_setCanvasSizeImpl: function (container, canvas, property, value) {
+	_setCanvasSizeImpl: function (container, canvas, property, value, isCorner) {
 		if (!value) {
 			value = parseInt(L.DomUtil.getStyle(container, property));
 		}
@@ -483,28 +580,31 @@ L.Control.Header = L.Control.extend({
 		var scale = L.getDpiScaleFactor();
 		if (property === 'width') {
 			canvas.width = value * scale;
-			this._canvasWidth = value;
+			if (!isCorner)
+				this._canvasWidth = value;
+			console.log('Header._setCanvasSizeImpl: _canvasWidth' + this._canvasWidth);
 		}
 		else if (property === 'height') {
 			canvas.height = value * scale;
-			this._canvasHeight = value;
+			if (!isCorner)
+				this._canvasHeight = value;
 		}
 	},
 
 	_setCanvasWidth: function (width) {
-		this._setCanvasSizeImpl(this._headerContainer, this._canvas, 'width', width);
+		this._setCanvasSizeImpl(this._headerContainer, this._canvas, 'width', width, /*isCorner: */ false);
 	},
 
 	_setCanvasHeight: function (height) {
-		this._setCanvasSizeImpl(this._headerContainer, this._canvas, 'height', height);
+		this._setCanvasSizeImpl(this._headerContainer, this._canvas, 'height', height, /*isCorner: */ false);
 	},
 
 	_setCornerCanvasWidth: function (width) {
-		this._setCanvasSizeImpl(this._cornerHeaderContainer, this._cornerCanvas, 'width', width);
+		this._setCanvasSizeImpl(this._cornerHeaderContainer, this._cornerCanvas, 'width', width, /*isCorner: */ true);
 	},
 
 	_setCornerCanvasHeight: function (height) {
-		this._setCanvasSizeImpl(this._cornerHeaderContainer, this._cornerCanvas, 'height', height);
+		this._setCanvasSizeImpl(this._cornerHeaderContainer, this._cornerCanvas, 'height', height, /*isCorner: */ true);
 	},
 
 	_hitOutline: function (e) {
@@ -612,12 +712,12 @@ L.Control.Header = L.Control.extend({
 
 		ctx.fillStyle = this._borderColor;
 		if (this._isColumn) {
-			var startY = this._cornerCanvas.height - (L.Control.Header.colHeaderHeight + this._borderWidth);
+			var startY = this._cornerCanvas.height / scale - (L.Control.Header.colHeaderHeight + this._borderWidth);
 			if (startY > 0)
 				ctx.fillRect(0, startY, this._cornerCanvas.width, this._borderWidth);
 		}
 		else {
-			var startX = this._cornerCanvas.width - (L.Control.Header.rowHeaderWidth + this._borderWidth);
+			var startX = this._cornerCanvas.width / scale - (L.Control.Header.rowHeaderWidth + this._borderWidth);
 			if (startX > 0)
 				ctx.fillRect(startX, 0, this._borderWidth, this._cornerCanvas.height);
 		}

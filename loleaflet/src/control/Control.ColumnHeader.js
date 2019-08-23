@@ -198,7 +198,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		this._map.fire('updaterowcolumnheaders', {x: this._map._getTopLeftPoint().x, y: 0, offset: {x: undefined, y: 0}});
 	},
 
-	drawHeaderEntry: function (entry, isOver, isHighlighted) {
+	drawHeaderEntry: function (entry, isOver, isHighlighted, isCurrent) {
 		if (!entry)
 			return;
 
@@ -243,6 +243,18 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		// draw background
 		ctx.fillStyle = isHighlighted ? selectionBackgroundGradient : isOver ? this._hoverColor : this._backgroundColor;
 		ctx.fillRect(startPar, startOrt, width, height);
+		// draw resize handle
+		var handleSize = this._resizeHandleSize;
+		if (isCurrent && width > 2 * handleSize) {
+			var center = startPar + width - handleSize / 2;
+			var y = startOrt + 2;
+			var h = height - 4;
+			var size = 2;
+			var offset = 1;
+			ctx.fillStyle = '#BBBBBB';
+			ctx.fillRect(center - size - offset, y + 2, size, h - 4);
+			ctx.fillRect(center + offset, y + 2, size, h - 4);
+		}
 		// draw text content
 		ctx.fillStyle = isHighlighted ? this._selectionTextColor : this._textColor;
 		ctx.font = this._font;
@@ -323,11 +335,13 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		var ctx = this._cornerCanvasContext;
 		var ctrlHeadSize = this._groupHeadSize;
 		var levelSpacing = this._levelSpacing;
+		var scale = L.getDpiScaleFactor();
 
 		var startOrt = levelSpacing + (ctrlHeadSize + levelSpacing) * level;
-		var startPar = this._cornerCanvas.width - (ctrlHeadSize + (L.Control.Header.rowHeaderWidth - ctrlHeadSize) / 2);
+		var startPar = this._cornerCanvas.width / scale - (ctrlHeadSize + (L.Control.Header.rowHeaderWidth - ctrlHeadSize) / 2);
 
 		ctx.save();
+		ctx.scale(scale, scale);
 		ctx.fillStyle = this._hoverColor;
 		ctx.fillRect(startPar, startOrt, ctrlHeadSize, ctrlHeadSize);
 		ctx.strokeStyle = 'black';
@@ -521,7 +535,8 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 			return;
 		}
 
-		var rowOutlineWidth = this._cornerCanvas.width - L.Control.Header.rowHeaderWidth - this._borderWidth;
+		var scale = L.getDpiScaleFactor();
+		var rowOutlineWidth = this._cornerCanvas.width / scale - L.Control.Header.rowHeaderWidth - this._borderWidth;
 		if (pos.x <= rowOutlineWidth) {
 			// empty rectangle on the left select all
 			this._map.sendUnoCommand('.uno:SelectAll');

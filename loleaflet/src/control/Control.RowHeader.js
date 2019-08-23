@@ -191,7 +191,7 @@ L.Control.RowHeader = L.Control.Header.extend({
 		this._map.fire('updaterowcolumnheaders', {x: 0, y: this._map._getTopLeftPoint().y, offset: {x: 0, y: undefined}});
 	},
 
-	drawHeaderEntry: function (entry, isOver, isHighlighted) {
+	drawHeaderEntry: function (entry, isOver, isHighlighted, isCurrent) {
 		if (!entry)
 			return;
 
@@ -236,6 +236,18 @@ L.Control.RowHeader = L.Control.Header.extend({
 		// draw background
 		ctx.fillStyle = isHighlighted ? selectionBackgroundGradient : isOver ? this._hoverColor : this._backgroundColor;
 		ctx.fillRect(startOrt, startPar, width, height);
+		// draw resize handle
+		var handleSize = this._resizeHandleSize;
+		if (isCurrent && height > 2 * handleSize) {
+			var center = startPar + height - handleSize / 2;
+			var x = startOrt + 2;
+			var w = width - 4;
+			var size = 2;
+			var offset = 1;
+			ctx.fillStyle = '#BBBBBB'
+			ctx.fillRect(x + 2, center - size - offset, w - 4, size);
+			ctx.fillRect(x + 2, center + offset, w - 4, size);
+		}
 		// draw text content
 		ctx.fillStyle = isHighlighted ? this._selectionTextColor : this._textColor;
 		ctx.font = this._font;
@@ -312,11 +324,13 @@ L.Control.RowHeader = L.Control.Header.extend({
 		var ctx = this._cornerCanvasContext;
 		var ctrlHeadSize = this._groupHeadSize;
 		var levelSpacing = this._levelSpacing;
+		var scale = L.getDpiScaleFactor();
 
 		var startOrt = levelSpacing + (ctrlHeadSize + levelSpacing) * level;
-		var startPar = this._cornerCanvas.height - (ctrlHeadSize + (L.Control.Header.colHeaderHeight - ctrlHeadSize) / 2);
+		var startPar = this._cornerCanvas.height / scale - (ctrlHeadSize + (L.Control.Header.colHeaderHeight - ctrlHeadSize) / 2);
 
 		ctx.save();
+		ctx.scale(scale, scale);
 		ctx.fillStyle = this._hoverColor;
 		ctx.fillRect(startOrt, startPar, ctrlHeadSize, ctrlHeadSize);
 		ctx.strokeStyle = 'black';
