@@ -21,28 +21,28 @@
 	};
 
 	function getBoxText(name) {
+		var viewId = map._docLayer._viewId;
+		if (viewId === undefined) {
+			return 'screen watermark';
+		}
+
+		var viewInfo = map._viewInfo[viewId];
 		var retString = 'unknow tag name : ' + name;
 		switch (name) {
 		case 'username':
-			if (typeof map._docLayer._viewId === 'undefined') {
-				retString = '';
-			}
-			else {
-				retString = map._viewInfo[map._docLayer._viewId].username;
-			}
+			retString = viewInfo.username;
 			break;
 		case 'date':
 			retString = openDate;
 			break;
 		case 'ip':
-			retString = 'IP : 192.168.56.2';
+			retString = 'IP : ' + (viewInfo.userextrainfo.ip !== undefined ? viewInfo.userextrainfo.ip : 'UNKNOW');
 			break;
 		}
 
-		//return map._viewInfo[map._docLayer._viewId].username;
-		//console.log('viewid : ' + map._docLayer._viewId);
 		return retString;
 	}
+
 	// 建立新的浮水印方塊
 	function createBox(id) {
 		var div = L.DomUtil.create('div', '');
@@ -67,7 +67,7 @@
 				.css('pointer-events', 'none')
 				.css('font-size', 'inherit')
 				.css('white-space', 'nowrap')
-				.html(getBoxText(innerBoxes[i]));
+				.html('');
 		}
 		return div;
 	}
@@ -118,9 +118,6 @@
 				.css('height', boxH)
 				.css('font-size', fontSize + 'px')
 				.css('line-height', lineHeight  + 'px');
-			/*$(boxes[key]).on('DOMSubtreeModified', function (e) {
-				console.log(e);
-			});*/
 		}
 	}
 
@@ -133,11 +130,18 @@
 		map = e;
 		map.on('doclayerinit', onDocLayerInit);
 		map.on('resize', setupWatermark);
-		map.on('addview', function() {
-			var username = getBoxText('username');
-			for (var key in boxes) {
-				var userId = 'watermark_' + key + '_username';
-				$('#' + userId).html(username);
+		map.on('addview', function(info) {
+			var myId = map._docLayer._viewId;
+			// 只顯示自己的資料
+			if (info.viewId === myId)
+			{
+				for (var key in boxes) {
+					var boxId = 'watermark_' + key;
+					for (var i = 0 ; i < innerBoxes.length ; i++) {
+						var lineId = boxId + '_' + innerBoxes[i];
+						$('#' + lineId).html(getBoxText(innerBoxes[i]));
+					}
+				}
 			}
 		});
 	}
