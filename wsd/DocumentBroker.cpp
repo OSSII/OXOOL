@@ -552,6 +552,7 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         wopiInfo->set("DisableExport", wopifileinfo->_disableExport);
         wopiInfo->set("DisableCopy", wopifileinfo->_disableCopy);
         wopiInfo->set("DisableInactiveMessages", wopifileinfo->_disableInactiveMessages);
+        wopiInfo->set("DownloadAsPostMessage", wopifileinfo->_downloadAsPostMessage);
         wopiInfo->set("UserCanNotWriteRelative", wopifileinfo->_userCanNotWriteRelative);
         wopiInfo->set("EnableInsertRemoteImage", wopifileinfo->_enableInsertRemoteImage);
         wopiInfo->set("EnableShare", wopifileinfo->_enableShare);
