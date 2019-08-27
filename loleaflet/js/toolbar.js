@@ -2451,12 +2451,9 @@ function onUpdatePermission(e) {
 		if (e.perm !== 'readonly') {
 			statusbar.show('searchBtn', 'break-searchBtn');
 		}
-		// 編輯模式，且非試算表文件，顯示鍵盤切換圖示
-		if (e.perm === 'edit' && map.getDocType() !== 'spreadsheet') {
-			statusbar.show('keyboardBtn', 'break-keyboardBtn');
-		}
 		// 
 		if (e.perm === 'edit') {
+			statusbar.show('keyboardBtn', 'break-keyboardBtn');
 			mobileEditBar.css('top', toolbarUp.outerHeight() - 1).show();
 			var height = mobileEditBar.outerHeight();
 			moveObjectVertically($('#document-container'), height);
