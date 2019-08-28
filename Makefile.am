@@ -247,6 +247,8 @@ noinst_HEADERS = $(wsd_headers) $(shared_headers) $(kit_headers) \
                  test/test.hpp \
                  test/helpers.hpp
 
+distdir = $(PACKAGE)-$(VERSION)-$(LOOLWSD_BRANCH)
+
 dist-hook:
 	git log -1 --format=%h > $(distdir)/dist_git_hash 2> /dev/null || rm $(distdir)/dist_git_hash
 

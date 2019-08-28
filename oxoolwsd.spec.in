@@ -11,12 +11,12 @@
 
 Name:           @PACKAGE_NAME@
 Version:        @PACKAGE_VERSION@
-Release:        @LOOLWSD_VERSION_DIST@%{?dist}
+Release:        @LOOLWSD_VERSION_DIST@.@LOOLWSD_BRANCH@%{?dist}
 Vendor:         %{vendor}
-Summary:        OxOffice Online WebSocket Daemon
+Summary:        OxOffice Online WebSocket Daemon for @LOOLWSD_BRANCH@
 License:        MPL
 Obsoletes:	oxoolwsd
-Source0:        @PACKAGE_NAME@-%{version}.tar.gz
+Source0:        @PACKAGE_NAME@-%{version}-@LOOLWSD_BRANCH@.tar.gz
 BuildRequires:  libcap-devel libpng-devel poco-devel >= 1.7.5
 %if 0%{?fedora} || 0%{?rhel} >= 7
 BuildRequires:  libpcap kernel-headers
@@ -34,7 +34,7 @@ Requires:       atk avahi-libs bzip2-libs cairo cups-libs dbus-glib dbus-libs fo
 %description
 
 %prep
-%setup -q -n @PACKAGE_NAME@-@PACKAGE_VERSION@
+%setup -q -n %{name}-%{version}-@LOOLWSD_BRANCH@
 
 %build
 %configure \
