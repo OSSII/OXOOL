@@ -120,7 +120,7 @@ L.Control.RowHeader = L.Control.Header.extend({
 		if (this._map._docLayer._selections.getLayers().length === 0) {
 			this._selectRow(index, 0);
 		}
-		this._map.sendUnoCommand('.uno:SetOptimalRowHeight');
+		this._map.sendUnoCommand('.uno:SetOptimalRowHeight?aExtraHeight=0');
 	},
 
 	insertRow: function(index) {
