@@ -123,7 +123,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		if (this._map._docLayer._selections.getLayers().length === 0) {
 			this._selectColumn(index, 0);
 		}
-		this._map.sendUnoCommand('.uno:SetOptimalColumnWidth');
+		this._map.sendUnoCommand('.uno:SetOptimalColumnWidth?aExtraWidth=200');
 	},
 
 	insertColumn: function(index) {
