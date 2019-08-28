@@ -139,7 +139,7 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 		}
 		else if (textMsg.startsWith('loolserver ')) {
 			var oxoolwsdVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
-			$('#version').text(_('Version') + ' : ' + oxoolwsdVersionObj.Version);
+			$('#version').text(_('Version') + ' : ' + oxoolwsdVersionObj.Version + '(' + oxoolwsdVersionObj.Branch + ')');
 		}
 		else if (textMsg.startsWith('lokitversion ')) {
 			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
