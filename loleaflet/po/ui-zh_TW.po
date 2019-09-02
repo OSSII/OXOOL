@@ -832,6 +832,10 @@ msgstr "您確定要刪除這份工作表：%sheet%？"
 msgid "Enter new sheet name"
 msgstr "請輸入新的工作表名稱"
 
+#: src/control/Control.Tabs.js:125
+msgid "Hidden Sheets"
+msgstr "隱藏的工作表"
+
 #: src/control/Ruler.js:96
 msgid "Left Margin"
 msgstr "左邊距"

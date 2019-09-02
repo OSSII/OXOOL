@@ -830,6 +830,10 @@ msgstr ""
 msgid "Enter new sheet name"
 msgstr ""
 
+#: src/control/Control.Tabs.js:125
+msgid "Hidden Sheets"
+msgstr ""
+
 #: src/control/Ruler.js:96
 msgid "Left Margin"
 msgstr ""
