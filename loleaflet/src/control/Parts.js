@@ -285,9 +285,15 @@ L.Map.include({
 		}
 	},
 
-	showPage: function () {
+	showPage: function (sheetName) {
 		if (this.getDocType() === 'spreadsheet' && this.hasAnyHiddenPart()) {
-			this._socket.sendMessage('uno .uno:Show');
+			var args = {
+				'aTableName': {
+					type: 'string',
+					value: sheetName
+				}
+			};
+			this._socket.sendMessage('uno .uno:Show ' + JSON.stringify(args));
 		}
 	},
 

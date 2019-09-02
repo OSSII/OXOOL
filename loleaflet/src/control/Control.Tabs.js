@@ -40,6 +40,7 @@ L.Control.Tabs = L.Control.extend({
 		this._tabsInitialized = false;
 		this._spreadsheetTabs = {};
 		var map = this._map;
+		var that = this;
 		var docContainer = map.options.documentContainer;
 		this._tabsCont = L.DomUtil.create('div', 'spreadsheet-tabs-container', docContainer.parentElement);
 		L.DomEvent.on(this._tabsCont, 'touchstart',
@@ -93,7 +94,7 @@ L.Control.Tabs = L.Control.extend({
 				'showsheets': {
 					name: _UNO('.uno:Show', 'spreadsheet', true),
 					callback: function() {
-						map.showPage();
+						that._showPage();
 					}
 				},
 				'hiddensheets': {
@@ -107,6 +108,32 @@ L.Control.Tabs = L.Control.extend({
 		});
 
 		map.on('updateparts', this._updateDisabled, this);
+	},
+
+	_showPage: function () {
+		var map = this._map;
+		if (!map.hasAnyHiddenPart()) {
+			return;
+		}
+		var hiddenNames = map.getHiddenPartNames().split(',');
+		var sels = '<div style="height:200px; overflow-y:auto; overflow-y:none; padding: 5px; border:1px #bbbbbb solid">';
+		for (var i=0 ; i < hiddenNames.length ; i++) {
+			sels += '<input type="checkbox" name="' + hiddenNames[i] + '" ' +
+					'value="' + hiddenNames[i] + '">' + hiddenNames[i] + '<br>';
+		}
+		vex.dialog.open({
+			message: _('Hidden Sheets'),
+			input: sels,
+			buttons: [
+				$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
+				$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
+			],
+			callback: function(data) {
+				for (var sheet in data) {
+					map.showPage(sheet);
+				}
+			}
+		});
 	},
 
 	_updateDisabled: function (e) {
