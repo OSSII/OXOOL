@@ -25,10 +25,20 @@ L.Draggable = L.Evented.extend({
 		this._element = element;
 		this._dragStartTarget = dragStartTarget || element;
 		this._preventOutline = preventOutline;
+		this._freezeX = false;
+		this._freezeY = false;
+	},
+
+	freezeX: function (boolChoice) {
+		this._freezeX = boolChoice;
+	},
+
+	freezeY: function (boolChoice) {
+		this._freezeY = boolChoice;
 	},
 
 	enable: function () {
-		if (this._enabled) { return; }
+		if (this._manualDrag || this._enabled) { return; }
 
 		L.DomEvent.on(this._dragStartTarget, L.Draggable.START.join(' '), this._onDown, this);
 
@@ -36,7 +46,7 @@ L.Draggable = L.Evented.extend({
 	},
 
 	disable: function () {
-		if (!this._enabled) { return; }
+		if (this._manualDrag || !this._enabled) { return; }
 
 		L.DomEvent.off(this._dragStartTarget, L.Draggable.START.join(' '), this._onDown, this);
 
@@ -79,12 +89,18 @@ L.Draggable = L.Evented.extend({
 		// for scrolling during cursor dragging.
 		this.startOffset = this._startPoint.subtract(new L.Point(startBoundingRect.left, startBoundingRect.top));
 
-		L.DomEvent
-		    .on(document, L.Draggable.MOVE[e.type], this._onMove, this)
-		    .on(document, L.Draggable.END[e.type], this._onUp, this);
+		if (!this._manualDrag) {
+			L.DomEvent
+				.on(document, L.Draggable.MOVE[e.type], this._onMove, this)
+				.on(document, L.Draggable.END[e.type], this._onUp, this);
+		}
 	},
 
 	_onMove: function (e) {
+		if (!this._startPoint) {
+			return;
+		}
+
 		if (e.touches && e.touches.length > 1) {
 			this._moved = true;
 			return;
@@ -133,10 +149,17 @@ L.Draggable = L.Evented.extend({
 		}
 
 		this._newPos = this._startPos.add(offset);
+
+		if (this._freezeY)
+			this._newPos.y = this._startPos.y
+		if (this._freezeX)
+			this._newPos.x = this._startPos.x
+
 		this._moving = true;
 
 		L.Util.cancelAnimFrame(this._animRequest);
 		this._lastEvent = e;
+
 		this._animRequest = L.Util.requestAnimFrame(this._updatePosition, this, true, this._dragStartTarget);
 	},
 
@@ -147,7 +170,7 @@ L.Draggable = L.Evented.extend({
 		this.fire('drag', e);
 	},
 
-	_onUp: function () {
+	_onUp: function (e) {
 		L.DomUtil.removeClass(document.body, 'leaflet-dragging');
 
 		if (this._lastTarget) {
@@ -171,6 +194,8 @@ L.Draggable = L.Evented.extend({
 			this.fire('dragend', {
 				distance: this._newPos.distanceTo(this._startPos)
 			});
+		} else {
+			this.fire('up', {originalEvent: e});
 		}
 
 		this._moving = false;
