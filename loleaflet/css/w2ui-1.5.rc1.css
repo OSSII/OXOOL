@@ -60,7 +60,7 @@
   -o-box-sizing: border-box;
   box-sizing: border-box;
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-reset * {
   color: default;
@@ -83,7 +83,7 @@
 .w2ui-reset table tr th,
 .w2ui-reset table tr td {
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-reset input:not([type=button]):not([type=submit]):not([type=checkbox]):not([type=radio]),
 .w2ui-reset select,
@@ -94,12 +94,12 @@
   vertical-align: baseline;
   padding: 4px;
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-reset select {
   padding: 1px;
   height: 23px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-centered {
   position: absolute;
@@ -122,7 +122,7 @@
   color: #777 !important;
 }
 .w2ui-message {
-  font-size: 12px;
+  font-size: 14px;
   position: absolute;
   z-index: 250;
   background-color: #f9f9f9;
@@ -390,7 +390,7 @@ input[type=checkbox].w2ui-toggle:focus {
   margin-top: 0px;
   background-color: rgba(60, 60, 60, 0.9);
   color: #ffffff !important;
-  font-size: 12px;
+  font-size: 14px;
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   text-shadow: 1px 1px 3px #000;
   line-height: 1.4;
@@ -589,7 +589,7 @@ input[type=checkbox].w2ui-toggle:focus {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 14px;
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   opacity: 0.8;
   filter: alpha(opacity=80);
@@ -644,7 +644,7 @@ button.w2ui-btn {
   margin: 0px 5px;
   padding: 6px 12px;
   color: #666;
-  font-size: 12px;
+  font-size: 14px;
   border: 1px solid #B6B6B6;
   background-image: -webkit-linear-gradient(#ffffff 0%, #e7e7e7 100%);
   background-image: -moz-linear-gradient(#ffffff 0%, #e7e7e7 100%);
@@ -889,7 +889,7 @@ button.w2ui-btn-small:focus:before {
   border-bottom: 1px solid #99bbe8 !important;
   overflow: hidden;
   color: #444444;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
   padding: 8px;
   background-image: -webkit-linear-gradient(#dae6f3, #c2d5ed);
@@ -1169,15 +1169,15 @@ button.w2ui-btn-small:focus:before {
   width: 160px;
 }
 .w2ui-color > table td {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
   text-align: center;
 }
 .w2ui-color > table td div {
   cursor: pointer;
   display: inline-block;
-  width: 16px;
-  height: 17px;
+  width: 24px;
+  height: 24px;
   padding: 1px 4px;
   border: 1px solid transparent;
   color: white;
@@ -1475,7 +1475,7 @@ button.w2ui-btn-small:focus:before {
   white-space: nowrap;
   cursor: default;
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 100%;
   height: 20px;
   overflow: hidden;
@@ -1666,7 +1666,7 @@ button.w2ui-btn-small:focus:before {
   height: 28px;
   overflow: hidden;
   color: #444444;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
   padding: 7px;
   background-image: -webkit-linear-gradient(#dae6f3, #c2d5ed);
@@ -2086,7 +2086,7 @@ button.w2ui-btn-small:focus:before {
   top: 45%;
   transform: translateY(-45%);
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: #666;
 }
 .w2ui-grid .w2ui-changed {
@@ -2178,7 +2178,7 @@ button.w2ui-btn-small:focus:before {
   display: inline-block;
   border-radius: 3px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 16px;
   padding: 1px 5px;
   width: 30px;
@@ -2284,7 +2284,7 @@ button.w2ui-btn-small:focus:before {
   /* do not show changed for spreadsheet */
 }
 .w2ui-info-bubble table {
-  font-size: 12px;
+  font-size: 14px;
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   color: white;
   text-shadow: 1px 1px solid #999;
@@ -2305,7 +2305,7 @@ button.w2ui-btn-small:focus:before {
   cursor: default;
 }
 .w2ui-overlay .w2ui-select-field table {
-  font-size: 12px;
+  font-size: 14px;
   font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
   border-spacing: 0px;
   border-collapse: border-collapse;
@@ -2508,7 +2508,7 @@ button.w2ui-btn-small:focus:before {
   z-index: 100;
 }
 .w2ui-popup .w2ui-popup-body {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 130%;
   padding: 0px 7px 7px 7px;
   color: #000000;
@@ -2519,7 +2519,7 @@ button.w2ui-btn-small:focus:before {
   height: 100%;
 }
 .w2ui-popup .w2ui-popup-buttons {
-  padding: 12px;
+  padding: 14px;
   border-radius: 0px 0px 6px 6px;
   border-top: 1px solid #d5d8d8;
   background-color: #f1f1f1;
@@ -2544,7 +2544,7 @@ button.w2ui-btn-small:focus:before {
 }
 .w2ui-popup .w2ui-alert-msg,
 .w2ui-popup .w2ui-confirm-msg {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 /*************************************************
@@ -2734,7 +2734,7 @@ button.w2ui-btn-small:focus:before {
   margin: 1px 0px 1px 22px;
   position: relative;
   z-index: 1;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-sidebar .w2ui-sidebar-div .w2ui-node-group {
   white-space: nowrap;
@@ -2965,7 +2965,7 @@ button.w2ui-btn-small:focus:before {
 }
 .w2ui-toolbar table.w2ui-button .w2ui-tb-count > span {
   border: 1px solid #f6fcf4;
-  border-radius: 12px;
+  border-radius: 14px;
   width: auto;
   height: 18px;
   padding: 0px 6px 1px 6px;
@@ -3093,13 +3093,13 @@ button.w2ui-btn-small:focus:before {
   word-wrap: break-word;
   max-height: 50px;
   color: #000000;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-listview > ul > li > div > div.description {
   display: none;
   text-align: left;
   color: #777777;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-listview > ul > li > div > div.extra {
   display: none;
@@ -3228,7 +3228,7 @@ button.w2ui-btn-small:focus:before {
 }
 .w2ui-table > ul > li > div > div.extra > div > div {
   display: inline-block;
-  font-size: 12px;
+  font-size: 14px;
 }
 .w2ui-table > ul > li.w2ui-selected div.extra,
 .w2ui-table > ul > li.w2ui-selected.hover div.extra {
