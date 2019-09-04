@@ -970,7 +970,7 @@ function initMobileToolbar(toolItems) {
 	var toolbar = $('#toolbar-up');
 	toolbar.w2toolbar({
 		name: 'actionbar',
-		tooltip: 'bottom',
+		tooltip: null,
 		items: [
 			{type: 'button',  id: 'closemobile',  img: 'closemobile'},
 			{type: 'spacer'},
@@ -984,7 +984,7 @@ function initMobileToolbar(toolItems) {
 			{type: 'break',   id: 'prevnextbreak', hidden: true},
 			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
 			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
-			{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
+			//{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
 			{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
 				'<hr><table class="loleaflet-font" id="editor-btn">' +
 				'<tr>' +
@@ -1027,7 +1027,7 @@ function initMobileToolbar(toolItems) {
 	toolbar = $('#formulabar');
 	toolbar.w2toolbar({
 		name: 'formulabar',
-		tooltip: 'bottom',
+		tooltip: null,
 		hidden: true,
 		items: [
 			{type: 'html',  id: 'left', hidden: true},
@@ -1067,7 +1067,7 @@ function initMobileToolbar(toolItems) {
 	toolbar = $('#spreadsheet-toolbar');
 	toolbar.w2toolbar({
 		name: 'spreadsheet-toolbar',
-		tooltip: 'bottom',
+		tooltip: null,
 		hidden: true,
 		items: [
 			{type: 'button',  id: 'firstrecord',  img: 'firstrecord', hint: _('First sheet'), hidden: true},
@@ -1100,7 +1100,7 @@ function initMobileToolbar(toolItems) {
 	toolbar = $('#toolbar-down');
 	toolbar.w2toolbar({
 		name: 'editbar',
-		tooltip: 'top',
+		tooltip: null,
 		items: toolItems,
 		onClick: function (e) {
 			onClick(e, e.target);
@@ -1108,6 +1108,11 @@ function initMobileToolbar(toolItems) {
 		},
 		onRefresh: function(edata) {
 			if (edata.target === 'styles' || edata.target === 'fonts' || edata.target === 'fontsizes') {
+
+				if (!edata.item) {
+					return;
+				}
+
 				var toolItem = $(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(edata.item.id));
 				if (edata.item.hidden) {
 					toolItem.css('display', 'none');
@@ -1156,6 +1161,7 @@ function initMobileToolbar(toolItems) {
 	$(mobileSearchBar).css('display', 'none')
 		.w2toolbar({
 			name: 'mobileSearchBar',
+			tooltip: null,
 			items: [
 				{type: 'html',  id: 'search',
 				 html: '<div style="padding: 3px 10px;" class="loleaflet-font">' +
@@ -1190,6 +1196,7 @@ function initMobileToolbar(toolItems) {
 	$(mobileEditBar).css('display', 'none')
 	.w2toolbar({
 		name: 'mobileEditBar',
+		tooltip: null,
 		items: [
 			{type: 'button', id: 'mobileCut', uno: 'Cut', img: 'mobilecut', text: _UNO('Cut', 'text'), disabled: true},
 			{type: 'button', id: 'mobileCopy', uno: 'Copy', img: 'mobilecopy', text: _UNO('Copy', 'text'), disabled: true},
@@ -1212,8 +1219,6 @@ function initMobileToolbar(toolItems) {
 			L.DomEvent.preventDefault(e);
 		}
 	});
-
-
 }
 
 function initNormalToolbar(toolItems) {
@@ -2439,7 +2444,6 @@ function onUpdatePermission(e) {
 
 	// 手機模式
 	if (_inMobileMode()) {
-		L.toggleFullScreen();
 		var toolbarUp;
 		var mobileEditBar = $('#mobileEditBar');
 		if (map.getDocType() === 'spreadsheet') {
