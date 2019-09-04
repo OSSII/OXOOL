@@ -2390,8 +2390,15 @@ w2utils.event = {
                     offsetTop = options.pageY;
                 } else {
                     var offset = obj.offset() || {};
-                    X = ((offset.left > 25 ? offset.left : 25) + boxLeft);
-                    Y = (offset.top + w2utils.getSize(obj, 'height') + options.top + 7);
+		    // firefly
+		    if (w2utils.isTouchDevice()) {
+			X = ((window.innerWidth - div1.width()) / 2) + 25;
+			Y = (window.innerHeight - div1.height()) / 2;
+		    } else {
+			X = ((offset.left > 25 ? offset.left : 25) + boxLeft);
+			Y = (offset.top + w2utils.getSize(obj, 'height') + options.top + 7);
+		    }
+		    //-----------------------------------------------
                     offsetTop = offset.top;
                 }
                 div1.css({
@@ -2425,7 +2432,9 @@ w2utils.event = {
                         div2.height(maxHeight).width(w).css({ 'overflow-y': 'auto' });
                         h = maxHeight;
                     }
-                    div1.addClass('bottom-arrow');
+		    if (!w2utils.isTouchDevice()) {
+                    	div1.addClass('bottom-arrow');
+		    }
                     div1.css('top', (offsetTop - h - tipOffset + options.top) + 'px');
                     div1.find('>style').html(
                         '#w2ui-overlay'+ name +':before { margin-left: '+ parseInt(tipLeft) +'px; }'+
@@ -2438,7 +2447,9 @@ w2utils.event = {
                         overflowY = true;
                         div2.height(maxHeight).width(w).css({ 'overflow-y': 'auto' });
                     }
-                    div1.addClass('top-arrow');
+		    if (!w2utils.isTouchDevice()) {
+			div1.addClass('top-arrow');
+		    }
                     div1.find('>style').html(
                         '#w2ui-overlay'+ name +':before { margin-left: '+ parseInt(tipLeft) +'px; }'+
                         '#w2ui-overlay'+ name +':after { margin-left: '+ parseInt(tipLeft) +'px; }'
