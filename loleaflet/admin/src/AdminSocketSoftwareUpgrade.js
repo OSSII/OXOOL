@@ -25,14 +25,6 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		});
 		$('#upload').click(function () {
 			that._fileInfo = $('#filename')[0].files[0];
-			if (that._fileInfo.type !== 'application/gzip' &&
-				that._fileInfo.type !== 'application/x-gzip' &&
-				that._fileInfo.type !== 'application/zip' &&
-				that._fileInfo.type !== 'application/x-zip-compressed')
-			{
-				vex.dialog.alert('軟體升級檔案，只接受 zip 或 .tar.gz 格式！');
-				return;
-			}
 			var fileObj = {name: that._fileInfo.name.toLowerCase(), size:that._fileInfo.size};
 			that.socket.send('uploadUpgradeFile ' + JSON.stringify(fileObj));
 		});

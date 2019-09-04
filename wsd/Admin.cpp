@@ -116,7 +116,9 @@ bool AdminSocketHandler::upgradeSoftware(const std::string& command)
         Poco::Path file(_upgradeFileName);
         std::string ext = file.getExtension();
 
-        if (ext == "zip")
+        if (ext == "rpm")
+            return true;
+        else if (ext == "zip")
             cmd = "unzip \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
         else
             cmd = "tar zxvf \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
