@@ -6,6 +6,8 @@ test -n "$srcdir" || srcdir=.
 olddir=`pwd`
 cd "$srcdir"
 
+./autoclean.sh
+
 function failed {
     cat << EOF 1>&2
 
