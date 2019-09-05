@@ -615,8 +615,8 @@ a.leaflet-control-buttons:hover:first-child {
 
 .leaflet-cursor-header {
         background: black;
-        height: 10px;
-        margin-top: -10px;
+        height: 16px;
+        margin-top: -12px;
         pointer-events: none;
         color: white;
         font-size: 9px;
