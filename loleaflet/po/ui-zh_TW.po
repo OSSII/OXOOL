@@ -162,6 +162,10 @@ msgstr "逾期："
 msgid "Refresh"
 msgstr "重整"
 
+#: admin/admin.strings.js:42
+msgid "Server uptime"
+msgstr "服務時間"
+
 #: admin/src/AdminSocketAnalytics.js:219
 msgid "Received"
 msgstr "已接收"

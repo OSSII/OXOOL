@@ -161,6 +161,10 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
+#: admin/admin.strings.js:42
+msgid "Server uptime"
+msgstr ""
+
 #: admin/src/AdminSocketAnalytics.js:219
 msgid "Received"
 msgstr ""
