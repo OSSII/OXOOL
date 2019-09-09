@@ -2042,6 +2042,11 @@ L.TileLayer = L.GridLayer.extend({
 
 	// Update text selection handlers.
 	_onUpdateTextSelection: function () {
+		// Add by Fiewfly <firefly@ossii.com.tw>
+		// 非觸控模式，不顯示選取邊界圖示
+		if (!L.Browser.mobile)
+			return;
+		//--------------------------------------
 		var startMarker, endMarker;
 		for (var key in this._selectionHandles) {
 			if (key === 'start') {
