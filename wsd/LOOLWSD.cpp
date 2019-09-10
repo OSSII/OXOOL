@@ -90,7 +90,6 @@ using Poco::Net::PartHandler;
 #include <Poco/StreamCopier.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
-#include <Poco/ThreadPool.h>
 #include <Poco/URI.h>
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
