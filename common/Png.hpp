@@ -52,6 +52,10 @@
 #include <cassert>
 #include <chrono>
 
+#ifdef IOS
+#include <Foundation/Foundation.h>
+#endif
+
 #include "Log.hpp"
 #include "SpookyV2.h"
 
@@ -130,8 +134,18 @@ bool encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t startY,
         return false;
     }
 
-#ifdef MOBILEAPP
+#if MOBILEAPP
     png_set_compression_level(png_ptr, Z_BEST_SPEED);
+#else
+    // Level 4 gives virtually identical compression
+    // ratio to level 6, but is between 5-10% faster.
+    // Level 3 runs almost twice as fast, but the
+    // output is typically 2-3x larger.
+    png_set_compression_level(png_ptr, 4);
+#endif
+
+#ifdef IOS
+    auto initialSize = output.size();
 #endif
 
     png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
@@ -165,9 +179,21 @@ bool encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t startY,
 
     totalDuration += duration;
     nCalls += 1;
-    LOG_TRC("Average PNG compression time after " << std::to_string(nCalls) << " calls: " << (totalDuration / static_cast<double>(nCalls)));
+    LOG_TRC("PNG compression took " << duration << " ms (" << output.size()
+                                    << " bytes). Average after " << std::to_string(nCalls)
+                                    << " calls: " << (totalDuration / static_cast<double>(nCalls)));
 
     png_destroy_write_struct(&png_ptr, &info_ptr);
+
+#ifdef IOS
+    auto base64 = [[NSData dataWithBytesNoCopy:output.data() + initialSize length:(output.size() - initialSize) freeWhenDone:NO] base64EncodedDataWithOptions:0];
+
+    const char dataURLStart[] = "data:image/png;base64,";
+
+    output.resize(initialSize);
+    output.insert(output.end(), dataURLStart, dataURLStart + sizeof(dataURLStart)-1);
+    output.insert(output.end(), (char*)base64.bytes, (char*)base64.bytes + base64.length);
+#endif
 
     return true;
 }
