@@ -329,8 +329,15 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:DuplicateSlide', 'presentation'), id: 'duplicatepage', icon: 'img-icon duplicatepage', type: 'action'},
 				{name: _UNO('.uno:DeleteSlide', 'presentation'), id: 'deletepage', icon: 'img-icon deletepage', type: 'action'},
 				{type: 'separator', id: 'fullscreen-presentation-separator'},
-				{name: _('Fullscreen presentation'), id: 'fullscreen-presentation', icon: 'img-icon presentation', type: 'action'}]
-			},
+				{name: _('Fullscreen presentation'), id: 'fullscreen-presentation', icon: 'img-icon presentation', type: 'action'},
+				{type: 'separator'},
+				{name: _('Move'), type: 'menu', icon: 'img-icon movepage', menu: [
+					{uno: '.uno:MovePageFirst', icon: 'img-icon movepagefirst'},
+					{uno: '.uno:MovePageUp', icon: 'img-icon movepageup'},
+					{uno: '.uno:MovePageDown', icon: 'img-icon movepagedown'},
+					{uno: '.uno:MovePageLast', icon: 'img-icon movepagelast'}
+				]}
+			]},
 			{name: _UNO('.uno:ToolsMenu', 'presentation'), id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellOnline'},
 				{name: _UNO('.uno:LanguageMenu'), icon: 'fa fa-language', type: 'menu', menu: [

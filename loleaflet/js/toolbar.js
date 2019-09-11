@@ -1363,6 +1363,14 @@ function initNormalToolbar(toolItems) {
 			{type: 'button',  id: 'insertpage', img: 'insertpage', hint: _UNO('.uno:TaskPaneInsertPage', 'presentation')},
 			{type: 'button',  id: 'duplicatepage', img: 'duplicatepage', hint: _UNO('.uno:DuplicateSlide', 'presentation')},
 			{type: 'button',  id: 'deletepage', img: 'deletepage', hint: _UNO('.uno:DeleteSlide', 'presentation')},
+			{type: 'break', id: 'presentationmovebreak'},
+			{type: 'menu', id: 'movepage', img: 'movepage', hint: _('Move'),
+			items: [
+				{id: 'movepagefirst', text: _UNO('.uno:MovePageFirst', 'presentation'), icon: 'movepagefirst', uno: 'MovePageFirst'},
+				{id: 'movepageup', text: _UNO('.uno:MovePageUp', 'presentation'), icon: 'movepageup', uno: 'MovePageUp'},
+				{id: 'movepagedown', text: _UNO('.uno:MovePageDown', 'presentation'), icon: 'movepagedown', uno: 'MovePageDown'},
+				{id: 'movepagelast', text: _UNO('.uno:MovePageLast', 'presentation'), icon: 'movepagelast', uno: 'MovePageLast'},
+			]},
 			{type: 'html',  id: 'right'}
 		],
 		onClick: function (e) {
@@ -2386,12 +2394,37 @@ function onUpdateParts(e) {
 	if (e.docType === 'presentation') {
 		toolbar.set('prev', {hint: _('Previous slide')});
 		toolbar.set('next', {hint: _('Next slide')});
+		var presentationbar = w2ui['presentation-toolbar'];
+		if (count === 1) {
+			presentationbar.disable('movepage');
+		} else {
+			presentationbar.enable('movepage');
+		}
+
+		if (current === 0) {
+			presentationbar.disable('movepage:movepagefirst', 'movepage:movepageup');
+		} else {
+			presentationbar.enable('movepage:movepagefirst', 'movepage:movepageup');
+		}
+
+		if (current === count - 1) {
+			presentationbar.disable('movepage:movepagelast', 'movepage:movepagedown');
+		} else {
+			presentationbar.enable('movepage:movepagelast', 'movepage:movepagedown');
+		}
+
+		if (current > 0 && current < count -1) {
+			presentationbar.enable('movepage:movepagefirst', 'movepage:movepageup');
+			presentationbar.enable('movepage:movepagelast', 'movepage:movepagedown');
+		}
 	}
 	else {
 		toolbar.hide('presentation');
 		toolbar.hide('insertpage');
 		toolbar.hide('duplicatepage');
 		toolbar.hide('deletepage');
+		toolbar.hide('presentationmovebreak');
+		toolbar.hide('movepage');
 	}
 
 	if (e.docType !== 'spreadsheet') {

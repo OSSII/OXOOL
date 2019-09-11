@@ -376,3 +376,8 @@
 .fullscreen{ background: url('images/lc_fullscreen.svg') no-repeat center !important; }
 .closemobile{ background: url('images/lc_closedocmobile.svg') no-repeat center !important; }
 .datadatapilotrun{ background: url('images/lc_datadatapilotrun.svg') no-repeat center !important; }
+.movepagefirst{ background: url('images/lc_movepagefirst.svg') no-repeat center !important; }
+.movepageup{ background: url('images/lc_movepageup.svg') no-repeat center !important; }
+.movepagedown{ background: url('images/lc_movepagedown.svg') no-repeat center !important; }
+.movepagelast{ background: url('images/lc_movepagelast.svg') no-repeat center !important; }
+.movepage{ background: url('images/lc_movepage.svg') no-repeat center !important; }
