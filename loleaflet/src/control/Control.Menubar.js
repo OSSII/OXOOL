@@ -445,7 +445,9 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:ClearOutline'},
 					{type: 'separator'},
 					{uno: '.uno:HideDetail'},
-					{uno: '.uno:ShowDetail'}]}
+					{uno: '.uno:ShowDetail'}]},
+				{type: 'separator'},
+				{uno: '.uno:DataDataPilotRun', icon: 'img-icon datadatapilotrun'}
 			]},
 			{name: _UNO('.uno:ToolsMenu', 'spreadsheet'), id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellOnline'},
