@@ -141,7 +141,7 @@ bool encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t startY,
     // ratio to level 6, but is between 5-10% faster.
     // Level 3 runs almost twice as fast, but the
     // output is typically 2-3x larger.
-    png_set_compression_level(png_ptr, 4);
+    png_set_compression_level(png_ptr, 1);
 #endif
 
 #ifdef IOS
