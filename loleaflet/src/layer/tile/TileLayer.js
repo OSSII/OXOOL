@@ -2489,7 +2489,7 @@ L.TileLayer = L.GridLayer.extend({
 		if (isNaN(this._docWidthTwips)) { return; }
 		var oldSize = e ? e.oldSize : this._map.getSize();
 		var newSize = e ? e.newSize : this._map.getSize();
-		if (newSize.x - oldSize.x === 0) { return; }
+		if (!L.Browser.mobile && (newSize.x - oldSize.x === 0)) { return; }
 
 		var widthTwips = newSize.x * this._map.options.tileWidthTwips / this._tileSize;
 		var ratio = widthTwips / this._docWidthTwips;
