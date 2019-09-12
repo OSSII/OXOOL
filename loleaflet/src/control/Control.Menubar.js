@@ -198,7 +198,8 @@ L.Control.Menubar = L.Control.extend({
 				{type: 'separator'},
 				{uno: '.uno:FormatColumns', icon: 'fa fa-columns'},
 				{type: 'separator'},
-				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'}
+				{uno: '.uno:FormatPaintbrush', icon :'img-icon copyformat'},
+				{uno: '.uno:ResetAttributes', icon: 'img-icon deleteformat', hotkey: 'Ctrl+M'}
 			]},
 			{name: _UNO('.uno:TableMenu', 'text'), type: 'menu', menu: [
 				{name: _UNO('.uno:TableInsertMenu', 'text'), type: 'menu', menu: [
@@ -400,7 +401,8 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:EditHeaderAndFooter'}
 			]},
 			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), type: 'menu', menu: [
-				{uno: '.uno:ResetAttributes', icon: 'fa fa-eraser', hotkey: 'Ctrl+M'},
+				{uno: '.uno:FormatPaintbrush', icon :'img-icon copyformat'},
+				{uno: '.uno:ResetAttributes', icon: 'img-icon deleteformat', hotkey: 'Ctrl+M'},
 				{uno: '.uno:FormatCellDialog'},
 				{uno: '.uno:PageFormatDialog', icon: 'fa fa-file-o'},
 				{type: 'separator'},
