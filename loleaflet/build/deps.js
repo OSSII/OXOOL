@@ -324,7 +324,7 @@ var deps = {
 
 	ControlContextmenu: {
 		src: ['control/Control.js',
-		      'control/Control.ContextMenu.js'],
+		      'control/Control.DarkContextMenu.js'],
 		heading: 'Controls',
 		desc: 'Context Menu'
 	},

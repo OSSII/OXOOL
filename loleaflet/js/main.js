@@ -87,7 +87,7 @@ map.addControl(L.control.partsPreview());
 map.addControl(L.control.tabs());
 map.addControl(L.control.columnHeader());
 map.addControl(L.control.rowHeader());
-map.addControl(L.control.contextMenu());
+map.addControl(L.control.darkContextMenu());
 map.addControl(L.control.infobar());
 map.loadDocument();
 
