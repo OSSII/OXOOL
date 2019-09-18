@@ -282,7 +282,7 @@ serif;
     top: 3px;
 }
 
-@media (max-width: 640px),(max-device-height: 640px) {
+@media (max-width: 768px),(max-device-height: 768px) {
     .document-logo {
 	width: 35px;
 	height: 38px;
