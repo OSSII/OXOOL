@@ -236,7 +236,9 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:WordCountDialog'},
 				{type: 'separator'},
 				{name: _UNO('.uno:AutoFormatMenu', 'text'), type: 'menu', menu: [
-					{uno: '.uno:OnlineAutoFormat'}]}
+					{uno: '.uno:OnlineAutoFormat'}]},
+				{type: 'separator'},
+				{uno: '.uno:LineNumberingDialog'}
 			]},
 			{name: _UNO('.uno:HelpMenu', 'text'), id: 'help', type: 'menu', menu: [
 				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctel+Shift+?'},
@@ -932,9 +934,9 @@ L.Control.Menubar = L.Control.extend({
 					continue;
 			}
 
-			if (this._map._permission === 'readonly' && menu[i].id === 'last-mod') {
+			/*if (this._map._permission === 'readonly' && menu[i].id === 'last-mod') {
 				continue;
-			}
+			}*/
 
 			if (menu[i].type === 'action') {
 				if ((menu[i].id === 'rev-history' && !revHistoryEnabled) ||
