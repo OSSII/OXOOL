@@ -1581,6 +1581,11 @@ function documentNameConfirm() {
 			// file name must be without the extension
 			if (value.lastIndexOf('.') > 0)
 				value = value.substr(0, value.lastIndexOf('.'));
+			// Add by Firefly <firefly@ossii.com.tw>
+			// 檔名最後一字是中文的話，會掉字，所以加個空白就能避免 XD
+			if (value.length >0 && value.slice(-1).charCodeAt(0) > 127) {
+				value += ' ';
+			}
 			map.renameFile(value);
 		} else {
 			// saveAs for rename
