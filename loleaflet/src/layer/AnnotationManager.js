@@ -26,8 +26,6 @@ L.AnnotationManager = L.Class.extend({
 		this._map.on('AnnotationSave', this._onAnnotationSave, this);
 		this._map.on('RedlineAccept', this._onRedlineAccept, this);
 		this._map.on('RedlineReject', this._onRedlineReject, this);
-
-		this._scaleFactor = 1;
 	},
 
 	// Remove only text comments from the document (excluding change tracking comments)
@@ -210,6 +208,28 @@ L.AnnotationManager = L.Class.extend({
 		return index;
 	},
 
+	getBounds: function () {
+		if (this._items.length <= 0)
+			return null;
+
+		var allCommentsBounds;
+		var idx = 0;
+		while (!allCommentsBounds) {
+			if (this._items[idx].isVisible())
+				allCommentsBounds = this._items[0].getBounds();
+			idx++;
+		}
+
+		for (; idx < this._items.length; idx++) {
+			if (!this._items[idx].isVisible())
+				continue;
+			var bounds = this._items[idx].getBounds();
+			allCommentsBounds.extend(bounds.min);
+			allCommentsBounds.extend(bounds.max);
+		}
+		return allCommentsBounds
+	},
+
 	removeItem: function (id) {
 		var annotation;
 		for (var iterator in this._items) {
@@ -256,12 +276,37 @@ L.AnnotationManager = L.Class.extend({
 		}
 	},
 
+	_checkBounds: function () {
+		if (!this._map || this._map.animatingZoom || this._items.length === 0) {
+			return;
+		}
+		var maxBounds = this._map.getLayerMaxBounds();
+		var thisBounds = this.getBounds();
+		if (!thisBounds)
+			return;
+		var margin = this._items[0].getMargin();
+		if (!maxBounds.contains(thisBounds)) {
+			var docBounds = this._map.getLayerDocBounds();
+			var delta = L.point(Math.max(thisBounds.max.x - docBounds.max.x, 0), Math.max(thisBounds.max.y - docBounds.max.y, 0));
+			if (delta.x > 0) {
+				delta.x += margin.x;
+			}
+			if (delta.y > 0) {
+				delta.y += margin.y;
+			}
+			this._map.fire('updatemaxbounds', {
+				sizeChanged: true,
+				extraSize: delta
+			});
+		}
+	},
+
 	layoutUp: function (commentThread, latLng, layoutBounds) {
 		if (commentThread.length <= 0)
 			return;
 
 		(new L.PosAnimation()).run(commentThread[0]._container, this._map.latLngToLayerPoint(latLng));
-		commentThread[0].setLatLng(latLng);
+		commentThread[0].setLatLng(latLng, /*skip check bounds*/ true);
 		var bounds = commentThread[0].getBounds();
 		var idx = 1;
 		while (idx < commentThread.length) {
@@ -269,21 +314,26 @@ L.AnnotationManager = L.Class.extend({
 			idx++;
 		}
 
-		var pt;
+		var docRight = this._map.project(this._map.options.docBounds.getNorthEast());
+		var posX = docRight.x + this.options.marginX;
+		posX = this._map.latLngToLayerPoint(this._map.unproject(L.point(posX, 0))).x;
+		var posY;
 		if (layoutBounds.intersects(bounds)) {
 			layoutBounds.extend(layoutBounds.min.subtract([0, bounds.getSize().y]));
-			pt = layoutBounds.min;
-		} else {
-			pt = bounds.min;
-			layoutBounds.extend(bounds.min);
+			posY = layoutBounds.min.y;
 		}
+		else {
+			posY = bounds.min.y;
+			layoutBounds.extend(L.point(layoutBounds.min.x, bounds.min.y));
+		}
+		var pt = L.point(posX, posY);
 		layoutBounds.extend(layoutBounds.min.subtract([0, this.options.marginY]));
 
 		idx = 0;
 		for (idx = 0; idx < commentThread.length; ++idx) {
 			latLng = this._map.layerPointToLatLng(pt);
 			(new L.PosAnimation()).run(commentThread[idx]._container, this._map.latLngToLayerPoint(latLng));
-			commentThread[idx].setLatLng(latLng);
+			commentThread[idx].setLatLng(latLng, /*skip check bounds*/ true);
 			commentThread[idx].show();
 
 			var commentBounds = commentThread[idx].getBounds();
@@ -296,7 +346,7 @@ L.AnnotationManager = L.Class.extend({
 			return;
 
 		(new L.PosAnimation()).run(commentThread[0]._container, this._map.latLngToLayerPoint(latLng));
-		commentThread[0].setLatLng(latLng);
+		commentThread[0].setLatLng(latLng, /*skip check bounds*/ true);
 		var bounds = commentThread[0].getBounds();
 		var idx = 1;
 		while (idx < commentThread.length) {
@@ -304,21 +354,26 @@ L.AnnotationManager = L.Class.extend({
 			idx++;
 		}
 
-		var pt;
+		var docRight = this._map.project(this._map.options.docBounds.getNorthEast());
+		var posX = docRight.x + this.options.marginX;
+		posX = this._map.latLngToLayerPoint(this._map.unproject(L.point(posX, 0))).x;
+		var posY;
 		if (layoutBounds.intersects(bounds)) {
-			pt = layoutBounds.getBottomLeft();
+			posY = layoutBounds.getBottomLeft().y;
 			layoutBounds.extend(layoutBounds.max.add([0, bounds.getSize().y]));
-		} else {
-			pt = bounds.min;
-			layoutBounds.extend(bounds.max);
 		}
+		else {
+			posY = bounds.min.y;
+			layoutBounds.extend(L.point(layoutBounds.max.x, bounds.max.y));
+		}
+		var pt = L.point(posX, posY);
 		layoutBounds.extend(layoutBounds.max.add([0, this.options.marginY]));
 
 		idx = 0;
 		for (idx = 0; idx < commentThread.length; ++idx) {
 			latLng = this._map.layerPointToLatLng(pt);
 			(new L.PosAnimation()).run(commentThread[idx]._container, this._map.latLngToLayerPoint(latLng));
-			commentThread[idx].setLatLng(latLng);
+			commentThread[idx].setLatLng(latLng, /*skip check bounds*/ true);
 			commentThread[idx].show();
 
 			var commentBounds = commentThread[idx].getBounds();
@@ -338,7 +393,7 @@ L.AnnotationManager = L.Class.extend({
 				this._items[selectIndexFirst]._data.anchorPix = this._map._docLayer._twipsToPixels(this._items[selectIndexFirst]._data.anchorPos.min);
 			}
 
-			var posX = topRight.x;
+			var posX = docRight.x;
 			var posY = this._items[selectIndexFirst]._data.anchorPix.y;
 			point = this._map._docLayer._twipsToPixels(this._items[selectIndexFirst]._data.anchorPos.min);
 
@@ -385,7 +440,7 @@ L.AnnotationManager = L.Class.extend({
 
 			latlng = this._map.unproject(L.point(posX, posY));
 			(new L.PosAnimation()).run(this._items[selectIndexFirst]._container, this._map.latLngToLayerPoint(latlng));
-			this._items[selectIndexFirst].setLatLng(latlng);
+			this._items[selectIndexFirst].setLatLng(latlng, /*skip check bounds*/ true);
 			layoutBounds = this._items[selectIndexFirst].getBounds();
 
 			// Adjust child comments too, if any
@@ -395,7 +450,7 @@ L.AnnotationManager = L.Class.extend({
 				}
 				latlng = this._map.layerPointToLatLng(layoutBounds.getBottomLeft());
 				(new L.PosAnimation()).run(this._items[idx]._container, layoutBounds.getBottomLeft());
-				this._items[idx].setLatLng(latlng);
+				this._items[idx].setLatLng(latlng, /*skip check bounds*/ true);
 
 				var commentBounds = this._items[idx].getBounds();
 				layoutBounds.extend(layoutBounds.max.add([0, commentBounds.getSize().y]));
@@ -439,8 +494,8 @@ L.AnnotationManager = L.Class.extend({
 			if (!this._selected.isEdit()) {
 				this._selected.show();
 			}
-		} else {
-			point = this._map.latLngToLayerPoint(this._map.unproject(topRight));
+		} else if (this._items.length > 0) {
+			point = this._map.latLngToLayerPoint(this._map.unproject(L.point(topRight.x, this._items[0]._data.anchorPix.y)));
 			layoutBounds = L.bounds(point, point);
 			for (idx = 0; idx < this._items.length;) {
 				commentThread = [];
@@ -457,6 +512,7 @@ L.AnnotationManager = L.Class.extend({
 				idx = idx + commentThread.length;
 			}
 		}
+		this._checkBounds();
 	},
 
 	layout: function (zoom) {
@@ -740,19 +796,24 @@ L.AnnotationManager = L.Class.extend({
 		var initNeeded = (this._initialLayoutData === undefined);
 		var contentWrapperClass = $('.loleaflet-annotation-content-wrapper');
 		if (initNeeded && contentWrapperClass.length > 0) {
-			var userlineClass = $('.loleaflet-annotation-userline');
 			var contentAuthor = $('.loleaflet-annotation-content-author');
 			var dateClass = $('.loleaflet-annotation-date');
 
 			this._initialLayoutData = {
 				wrapperWidth: parseInt(contentWrapperClass.css('width')),
 				wrapperFontSize: parseInt(contentWrapperClass.css('font-size')),
-				authorLineWidth: parseInt(userlineClass.css('width')),
-				authorLineHeight: parseInt(userlineClass.css('height')),
 				authorContentHeight: parseInt(contentAuthor.css('height')),
 				dateFontSize: parseInt(dateClass.css('font-size')),
 			};
 		}
+
+		// What if this._initialLayoutData is still undefined when we get here? (I.e. if
+		// contentWrapperClass.length == 0.) No idea. Using
+		// this._initialLayoutData.menuWidth below will lead to an unhandled exception.
+		// Maybe best to just return then? Somebody who understands the code could fix this
+		// better, perhaps.
+		if (this._initialLayoutData === undefined)
+			return;
 
 		var menuClass = $('.loleaflet-annotation-menu');
 		if ((this._initialLayoutData.menuWidth === undefined) && menuClass.length > 0) {
@@ -785,12 +846,18 @@ L.AnnotationManager = L.Class.extend({
 
 L.Map.include({
 	insertComment: function() {
+		var avatar = undefined;
+		var author = this.getViewName(this._docLayer._viewId);
+		if (author in this._viewInfoByUserName) {
+			avatar = this._viewInfoByUserName[author].userextrainfo.avatar;
+		}
 		this._docLayer.newAnnotation({
 			text: '',
 			textrange: '',
-			author: this.getViewName(this._docLayer._viewId),
+			author: author,
 			dateTime: new Date().toDateString(),
-			id: 'new' // 'new' only when added by us
+			id: 'new', // 'new' only when added by us
+			avatar: avatar
 		});
 	}
 });
