@@ -307,6 +307,12 @@ L.Map = L.Evented.extend({
 	updateModificationIndicator: function(newModificationTime) {
 		this._lastmodtime = newModificationTime;
 		if (this.lastModIndicator !== null && this.lastModIndicator !== undefined) {
+			if (this._permission !== 'edit') {
+				var dd = $.timeago.parse(this._lastmodtime);
+				this.lastModIndicator.innerHTML = dd.toLocaleString();
+				return;
+			}
+
 			// Get locale
 			var special = [ 'bn_IN', 'hi_IN', 'id_ID', 'nb_NO', 'nn_NO', 'pt_BR', 'zh_CN', 'zh_TW'];
 			var locale = String.locale;
