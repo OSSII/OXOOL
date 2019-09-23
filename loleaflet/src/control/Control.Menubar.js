@@ -74,6 +74,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o'},
 				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
 				{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action', icon: 'fa fa-comment-o', hotkey: 'Ctrl+Alt+C'},
+				{uno: '.uno:DrawText', icon: 'img-icon textbox'},
 				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
 				{type: 'separator'},
 				{name: _UNO('.uno:InsertField', 'text'), type: 'menu', menu: [
@@ -289,6 +290,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o'},
 				{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
 				{name: _UNO('.uno:InsertAnnotation', 'presentation'), id: 'insertcomment', type: 'action', icon: 'fa fa-commenting-o', hotkey: 'Ctrl+Alt+C'},
+				{uno: '.uno:Text', icon: 'img-icon textbox'},
 				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrl+K'},
@@ -397,6 +399,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:InsertGraphic', 'spreadsheet'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-picture-o'},
 				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
 				{name: _UNO('.uno:InsertAnnotation', 'spreadsheet'), id: 'insertcomment', type: 'action', icon: 'fa fa-commenting-o', hotkey: 'Ctrl+Alt+C'},
+				{uno: '.uno:DrawText', icon: 'img-icon textbox'},
 				{type: 'separator'},
 				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrk+K'},
 				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
