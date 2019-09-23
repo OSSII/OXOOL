@@ -239,7 +239,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:AutoFormatMenu', 'text'), type: 'menu', menu: [
 					{uno: '.uno:OnlineAutoFormat'}]},
 				{type: 'separator'},
-				{uno: '.uno:LineNumberingDialog'}
+				{uno: '.uno:LineNumberingDialog', icon: 'img-icon linenumberdialog'}
 			]},
 			{name: _UNO('.uno:HelpMenu', 'text'), id: 'help', type: 'menu', menu: [
 				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctel+Shift+?'},
