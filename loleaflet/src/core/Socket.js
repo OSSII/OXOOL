@@ -267,14 +267,8 @@ L.Socket = L.Class.extend({
 		if (textMsg.startsWith('loolserver ')) {
 			// This must be the first message, unless we reconnect.
 			var loolwsdVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
-			var h = loolwsdVersionObj.Hash;
-			if (parseInt(h,16).toString(16) === h.toLowerCase().replace(/^0+/, '')) {
-				h = '<a target="_blank" href="https://hub.libreoffice.org/git-online/' + h + '">' + h + '</a>';
-				$('#loolwsd-version').html(loolwsdVersionObj.Version + ' (git hash: ' + h + ')');
-			}
-			else {
-				$('#loolwsd-version').text(loolwsdVersionObj.Version);
-			}
+			$('#loolwsd-version').text(loolwsdVersionObj.Version +
+				'(' + loolwsdVersionObj.Branch + ')');
 
 			// TODO: For now we expect perfect match in protocol versions
 			if (loolwsdVersionObj.Protocol !== this.ProtocolVersionNumber) {
@@ -283,13 +277,12 @@ L.Socket = L.Class.extend({
 		}
 		else if (textMsg.startsWith('lokitversion ')) {
 			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
-			h = lokitVersionObj.BuildId.substring(0, 7);
+			var h = lokitVersionObj.BuildId.substring(0, 7);
 			if (parseInt(h,16).toString(16) === h.toLowerCase().replace(/^0+/, '')) {
 				h = '<a target="_blank" href="https://hub.libreoffice.org/git-core/' + h + '">' + h + '</a>';
 			}
-			$('#lokit-version').html(lokitVersionObj.ProductName + ' ' +
-			                         lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension.replace('.10.','-') +
-			                         ' (git hash: ' + h + ')');
+			$('#lokit-version').text(lokitVersionObj.ProductName + ' ' +
+			                         lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension.replace('.10.','-'));
 		}
 		else if (textMsg.startsWith('perm:')) {
 			var perm = textMsg.substring('perm:'.length);
