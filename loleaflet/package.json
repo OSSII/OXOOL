@@ -3,6 +3,8 @@
   "version": "0.8.0-dev",
   "description": "LibreOffice online front-end",
   "devDependencies": {
+    "@braintree/sanitize-url": "3.0.0",
+    "@types/jquery": "2.0.40",
     "autolinker": "1.4.3",
     "bootstrap": "3.3.6",
     "browserify": "13.1.0",
@@ -18,7 +20,7 @@
     "json-js": "1.1.2",
     "l10n-for-node": "0.0.1",
     "select2": "4.0.1",
-    "shrinkpack": "0.13.1",
+    "shrinkpack": "1.0.0-alpha",
     "smartmenus": "1.0.0",
     "timeago": "1.5.3",
     "timeago.js": "4.0.0-beta.1",
@@ -36,5 +38,8 @@
     "libreoffice",
     "lool"
   ],
+  "scripts": {
+    "postinstall": "browserify node_modules/@braintree/sanitize-url/index.js --standalone sanitizeUrl > node_modules/@braintree/sanitize-url/dist.js"
+  },
   "license": "BSD-2-Clause"
 }
