@@ -282,18 +282,20 @@ serif;
     top: 3px;
 }
 
-@media (max-width: 768px),(max-device-height: 768px) {
-    .document-logo {
-	width: 35px;
-	height: 38px;
-    }
-
+@media (max-width: 767px),(max-device-height: 767px) {
     #document-titlebar {
         display: none;
     }
 
     .document-title {
 	display: none;
+    }
+}
+
+@media (max-width: 640px),(max-device-height: 640px) {
+    .document-logo {
+	width: 35px;
+	height: 38px;
     }
 
     /* hide the menu in mobile view */

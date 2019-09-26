@@ -113,8 +113,8 @@ body {
         }
 }
 
-@media (max-width: 768px),(max-device-height: 768px) {
-    /* Show slidesorter beyond 768px only */
+@media (max-width: 640px),(max-device-height: 640px) {
+    /* Show slidesorter beyond 640px only */
     #presentation-controls-wrapper {
 	display: none;
     }

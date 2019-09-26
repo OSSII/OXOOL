@@ -794,7 +794,7 @@ input.clipboard {
 	}
 }
 
-@media (max-width: 768px),(max-device-height: 768px) {
+@media (max-width: 640px),(max-device-height: 640px) {
 	.loleaflet-ruler {
 		height: 0px;
 		display: none;
