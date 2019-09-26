@@ -52,7 +52,7 @@ L.Control.Tabs = L.Control.extend({
 			},
 			this);
 
-		$.contextMenu({
+		L.installContextMenu({
 			selector: '.spreadsheet-tab',
 			className: 'loleaflet-font',
 			callback: (function(key) {

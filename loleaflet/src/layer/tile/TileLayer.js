@@ -212,7 +212,7 @@ L.TileLayer = L.GridLayer.extend({
 		this._map._socket.sendMessage('commandvalues command=.uno:LanguageStatus');
 		this._map._socket.sendMessage('commandvalues command=.uno:ViewAnnotations');
 		var that = this;
-		$.contextMenu({
+		L.installContextMenu({
 			selector: '.loleaflet-annotation-menu',
 			trigger: 'none',
 			className: 'loleaflet-font',
@@ -245,7 +245,7 @@ L.TileLayer = L.GridLayer.extend({
 				}
 			}
 		});
-		$.contextMenu({
+		L.installContextMenu({
 			selector: '.loleaflet-annotation-menu-redline',
 			trigger: 'none',
 			className: 'loleaflet-font',

@@ -43,7 +43,7 @@ L.Control.DarkContextMenu = L.Control.extend({
 		}
 
 		var contextMenu = this._createContextMenuStructure(obj);
-		$.contextMenu({
+		L.installContextMenu({
 			selector: '.leaflet-layer',
 			className: 'loleaflet-font',
 			trigger: 'none',
@@ -138,4 +138,27 @@ L.Control.DarkContextMenu = L.Control.extend({
 
 L.control.darkContextMenu = function (options) {
 	return new L.Control.DarkContextMenu(options);
+};
+
+// Using 'click' and <a href='#' is vital for copy/paste security context.
+L.installContextMenu = function(options) {
+	options.itemClickEvent = 'click';
+	var rewrite = function(items) {
+		if (items === undefined)
+			return;
+		var keys = Object.keys(items);
+		for (var i = 0; i < keys.length; i++) {
+			var key = keys[i];
+			if (items[key] === undefined)
+				continue;
+			if (!items[key].isHtmlName) {
+				console.log('re-write name ' + items[key].name);
+				items[key].name = '<a href="#" class="context-menu-link">' + items[key].name + '</a';
+				items[key].isHtmlName = true;
+			}
+			rewrite(items[key].items);
+		}
+	}
+	rewrite(options.items);
+	$.contextMenu(options);
 };

@@ -459,3 +459,8 @@ tr.useritem-avatar > td.usercolor {
     left: 3px;
     position: relative;
 }
+
+.context-menu-link {
+    text-decoration: none;
+    color: black;
+}
