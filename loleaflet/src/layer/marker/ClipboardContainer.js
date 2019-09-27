@@ -80,11 +80,23 @@ L.ClipboardContainer = L.Layer.extend({
 	},
 
 	showCursor: function () {
+		if (!this._map._docLayer._cursorMarker) {
+			return;
+		}
+
 		this._map.addLayer(this._map._docLayer._cursorMarker);
 
 		// move the hidden input field with the cursor
 		var cursorPos = this._map._docLayer._visibleCursor.getNorthWest();
 		L.DomUtil.setPosition(this._container, this._map.latLngToLayerPoint(L.latLng(cursorPos)).round());
+	},
+
+	hideCursor: function () {
+		if (!this._map._docLayer._cursorMarker) {
+			return;
+		}
+
+		this._map.removeLayer(this._map._docLayer._cursorMarker);
 	},
 
 	_setPos: function (pos) {
