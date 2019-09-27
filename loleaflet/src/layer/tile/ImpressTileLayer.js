@@ -29,6 +29,7 @@ L.ImpressTileLayer = L.TileLayer.extend({
 		map.on('AnnotationSave', this.onAnnotationSave, this);
 		map.on('AnnotationScrollUp', this.onAnnotationScrollUp, this);
 		map.on('AnnotationScrollDown', this.onAnnotationScrollDown, this);
+		map.on('resize', this.onResize, this);
 	},
 
 	getAnnotation: function (id) {
@@ -59,6 +60,26 @@ L.ImpressTileLayer = L.TileLayer.extend({
 		if (annotations && annotations.length === count) {
 			this._map._docLayer._updateMaxBounds(true, extraSize);
 		}
+	},
+
+	onResize: function () {
+		if (!L.Browser.mobile) {
+			this._map.setView(this._map.getCenter(), this._map.getZoom(), {reset: true});
+		}
+
+		var presentationControlWrapperElem = L.DomUtil.get('presentation-controls-wrapper');
+		var visible = L.DomUtil.getStyle(presentationControlWrapperElem, 'display');
+
+		if (!this._isSlidePaneVisible && visible !== 'none') {
+			this._map.fire('updateparts', {
+				selectedPart: this._selectedPart,
+				selectedParts: this._selectedParts,
+				parts: this._parts,
+				docType: this._docType,
+				partNames: this._partHashes
+			});
+		}
+		this._isSlidePaneVisible = !(visible === 'none');
 	},
 
 	onAdd: function (map) {
@@ -423,6 +444,7 @@ L.ImpressTileLayer = L.TileLayer.extend({
 			this._map.fire('updatepart', {part: command.part, docType: this._docType});
 		}
 
+		this._map._docPreviews[command.part].invalid = true;
 		this._previewInvalidations.push(invalidBounds);
 		// 1s after the last invalidation, update the preview
 		clearTimeout(this._previewInvalidator);
@@ -439,6 +461,9 @@ L.ImpressTileLayer = L.TileLayer.extend({
 
 	_onStatusMsg: function (textMsg) {
 		var command = this._map._socket.parseServerCmd(textMsg);
+		// Since we have two status commands, remove them so we store and compare payloads only.
+		textMsg = textMsg.replace('status: ', '');
+		textMsg = textMsg.replace('statusupdate: ', '');
 		if (command.width && command.height && this._documentInfo !== textMsg) {
 			this._docWidthTwips = command.width;
 			this._docHeightTwips = command.height;
