@@ -20,6 +20,17 @@ L.Map.Tap = L.Handler.extend({
 		L.DomEvent.off(this._map._container, 'touchstart', this._onDown, this);
 	},
 
+	_onCursorClick: function (e) {
+		L.DomEvent.preventDefault(e.originalEvent);
+
+		var state = this._map['stateChangeHandler'].getItemValue('.uno:Paste');
+		if (state !== 'disabled') {
+			L.setOptions(this._toolbar, {item: 'paste'});
+			this._toolbar._pos = this._map.latLngToContainerPoint(this._map._docLayer._visibleCursor.getNorthWest());
+			this._toolbar.addTo(this._map);
+		}
+	},
+
 	_onDown: function (e) {
 		if (!e.touches || !this._map._docLayer) { return; }
 
@@ -44,19 +55,19 @@ L.Map.Tap = L.Handler.extend({
 			return;
 		}
 
-		var first = e.touches[0];/*,
+		var first = e.touches[0],
 		    containerPoint = this._map.mouseEventToContainerPoint(first),
 		    layerPoint = this._map.containerPointToLayerPoint(containerPoint),
-		    latlng = this._map.layerPointToLatLng(layerPoint);*/
+		    latlng = this._map.layerPointToLatLng(layerPoint);
 		this._startPos = this._newPos = new L.Point(first.clientX, first.clientY);
 
-		/*if (!this._toolbar._map && this._map._docLayer.containsSelection(latlng)) {
+		if (!this._toolbar._map && this._map._docLayer.containsSelection(latlng)) {
 			this._toolbar._pos = containerPoint;
 			this._toolbar.addTo(this._map);
 			return;
-		}*/
+		}
 
-		//this._toolbar.remove();
+		this._toolbar.remove();
 		// simulate long hold but setting a timeout
 		this._fireClick = true;
 		this._holdTimeout = setTimeout(L.bind(function () {

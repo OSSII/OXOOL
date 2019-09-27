@@ -241,6 +241,7 @@ L.Map.Keyboard = L.Handler.extend({
 	},
 
 	_onMouseDown: function () {
+		this._map.notifyActive();
 		if (this._map._permission === 'edit') {
 			return;
 		}
@@ -253,6 +254,7 @@ L.Map.Keyboard = L.Handler.extend({
 	},
 
 	_onKeyDown: function (e, keyEventFn, compEventFn, inputEle) {
+		this._map.notifyActive();
 		if (this._map.slideShow && this._map.slideShow.fullscreen) {
 			return;
 		}
@@ -423,6 +425,7 @@ L.Map.Keyboard = L.Handler.extend({
 	},
 
 	_onIME: function (e) {
+		this._map.notifyActive();
 		if (e.type === 'compositionstart') {
 			this._isComposing = true; // we are starting composing with IME
 		} else if (e.type === 'compositionupdate') {
@@ -527,9 +530,6 @@ L.Map.Keyboard = L.Handler.extend({
 					this._map._docLayer.toggleTileDebugMode();
 					break;
 /*
-				case 84: // Ctrl + Shift + Alt + t 切換事件追蹤開關
-					this._map.switchEventTrack();
-					break;
 				case 85: // Ctrl + Shift + Alt + u for input uno command
 					this._map.executeUnoCommand();
 					break;

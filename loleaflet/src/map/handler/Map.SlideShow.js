@@ -24,6 +24,10 @@ L.Map.SlideShow = L.Handler.extend({
 	},
 
 	_onFullScreen: function () {
+		if (window.ThisIsTheiOSApp) {
+			window.webkit.messageHandlers.lool.postMessage('SLIDESHOW', '*');
+			return;
+		}
 		this._slideShow = L.DomUtil.create('iframe', 'leaflet-slideshow', this._map._container);
 		if (this._slideShow.requestFullscreen) {
 			this._slideShow.requestFullscreen();
@@ -59,6 +63,7 @@ L.Map.SlideShow = L.Handler.extend({
 	_onSlideDownloadReady: function (e) {
 		this._slideShow.src = e.url;
 		this._slideShow.contentWindow.focus();
+		clearInterval(this._slideShow.contentWindow.spinnerInterval);
 	}
 });
 
