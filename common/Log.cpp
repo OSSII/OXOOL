@@ -154,7 +154,10 @@ namespace Log
             }
         }
         else if (withColor)
+        {
             channel = static_cast<Poco::Channel*>(new Poco::ColorConsoleChannel());
+            channel->setProperty("traceColor", "green");
+        }
         else
             channel = static_cast<Poco::Channel*>(new Poco::ConsoleChannel());
 
