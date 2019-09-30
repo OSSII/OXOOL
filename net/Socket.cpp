@@ -158,11 +158,9 @@ void SocketPoll::pollingThreadEntry()
     try
     {
         Util::setThreadName(_name);
-        LOG_INF("Starting polling thread [" << _name << "].");
-
         _owner = std::this_thread::get_id();
-        LOG_DBG("Thread affinity of " << _name << " set to " <<
-                Log::to_string(_owner) << ".");
+        LOG_INF("Starting polling thread [" << _name << "] with thread affinity set to "
+                                            << Log::to_string(_owner) << '.');
 
         // Invoke the virtual implementation.
         pollingThread();
@@ -177,6 +175,7 @@ void SocketPoll::pollingThreadEntry()
     }
 
     _threadFinished = true;
+    LOG_INF("Finished polling thread [" << _name << "].");
 }
 
 void SocketPoll::wakeupWorld()
