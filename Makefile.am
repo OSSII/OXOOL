@@ -403,8 +403,9 @@ clang-tidy:
 # capabilities won't survive packaging anyway. Instead, handle it when
 # installing the RPM or Debian package.
 
-all-local: oxoolforkit oxoolmount @TILECACHE_PATH@ @JAILS_PATH@ $(SYSTEM_STAMP)
+all-local: oxoolwsd oxoolforkit oxoolmount @TILECACHE_PATH@ @JAILS_PATH@ $(SYSTEM_STAMP)
 if ENABLE_SETCAP
+	    sudo @SETCAP@ cap_net_bind_service=+ep oxoolwsd
 	    sudo @SETCAP@ cap_fowner,cap_mknod,cap_sys_chroot=ep oxoolforkit
 	    sudo @SETCAP@ cap_sys_admin=ep oxoolmount
 else
