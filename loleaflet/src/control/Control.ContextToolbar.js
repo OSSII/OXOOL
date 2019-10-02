@@ -60,6 +60,10 @@ L.Control.ContextToolbar = L.Control.extend({
 	},
 
 	onAdded: function () {
+		// 不顯示手機剪下、複製、貼上選單，留待來日加強功能
+		// (增加全選、加入連結、刪除、加入註解等功能)
+		if (true) return;
+		//-------------------------------------------------
 		if (this._pos) {
 			var maxBounds = this._map.getPixelBounds();
 			var size = L.point(this._container.clientWidth,this._container.clientHeight);
