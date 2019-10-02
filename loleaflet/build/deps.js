@@ -356,6 +356,13 @@ var deps = {
 		desc: 'Dialogs'
 	},
 
+	ControlMacroProcess: {
+		src: ['control/Control.js',
+		      'control/Control.MacroProcess.js'],
+		heading: 'Controls',
+		desc: 'Macro Process'
+	},
+
 	ControlTabs: {
 		src: ['control/Control.js',
 		      'dom/DomEvent.js',

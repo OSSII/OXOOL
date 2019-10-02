@@ -557,6 +557,13 @@ L.TileLayer = L.GridLayer.extend({
 					});
 			}
 		}
+		else if (textMsg.startsWith('macroresult:')) {
+			var result = textMsg.substring('macroresult:'.length + 1);
+			this._map.fire('macroresult', {'result': result});
+		}
+		else {
+			console.log('Warning! found unknow message : ', textMsg);
+		}
 	},
 
 	toggleTileDebugModeImpl: function() {

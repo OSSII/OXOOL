@@ -23,6 +23,8 @@
 #include <Poco/URI.h>
 #include <Poco/BinaryReader.h>
 #include <Poco/Base64Decoder.h>
+#include <Poco/FileStream.h>
+#include <Poco/StreamCopier.h>
 
 #include <common/FileUtil.hpp>
 #include <common/JsonUtil.hpp>
@@ -994,9 +996,6 @@ bool ChildSession::unoCommand(const char* /*buffer*/, int /*length*/, const std:
     const bool bNotify = (tokens[1] == ".uno:Save" ||
                           tokens[1] == ".uno:Undo" ||
                           tokens[1] == ".uno:Redo" ||
-                          // Add by Firefly <firefly@ossii.com.tw>
-                          // 亦可執行 macro:///Library.module.function([參數1, 參數2]) 巨集
-                          Util::startsWith(tokens[1], "macro://") ||
                           Util::startsWith(tokens[1], "vnd.sun.star.script:"));
 
     std::unique_lock<std::mutex> lock(_docManager.getDocumentMutex());
@@ -1024,6 +1023,28 @@ bool ChildSession::unoCommand(const char* /*buffer*/, int /*length*/, const std:
                                        bNotify);
     }
 
+    // Add by Firefly <firefly@ossii.com.tw>
+    // 取得巨集執行結果
+    std::size_t found_prefix = tokens[1].find("macro:///", 0);
+    if (found_prefix == 0)
+    {
+        std::size_t found_left = tokens[1].find("(", 0);
+        std::string macroFile = "/tmp/" + tokens[1].substr(9, found_left - 9 );
+        if (File(macroFile).exists())
+        {
+            LOG_DBG("Macro result return file exist: " + macroFile); 
+            Poco::FileInputStream istr(macroFile, std::ios::binary);
+            std::ostringstream ostr;
+            Poco::StreamCopier::copyStream(istr, ostr);
+            LOG_DBG("Macro result: " + ostr.str());
+            sendTextFrame("macroresult: " + ostr.str());
+        }
+        else
+        {
+            LOG_DBG("Did not find the result of the macro result: " + macroFile); 
+        }
+    }
+    //--------------------------------------------------------
     return true;
 }
 
