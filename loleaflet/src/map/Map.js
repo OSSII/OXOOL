@@ -24,7 +24,7 @@ L.Map = L.Evented.extend({
 		center: [0, 0],
 		zoom: 10,
 		minZoom: 1,
-		maxZoom: 20,
+		maxZoom: 14,
 		maxBounds: L.latLngBounds([0, 0], [-100, 100]),
 		fadeAnimation: false, // Not useful for typing.
 		trackResize: true,
@@ -55,6 +55,11 @@ L.Map = L.Evented.extend({
 
 		// hack for https://github.com/Leaflet/Leaflet/issues/1980
 		this._onResize = L.bind(this._onResize, this);
+
+		// Start with readonly toolbars on desktop
+		if (!L.Browser.mobile) {
+			L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
+		}
 
 		this._initEvents();
 
@@ -93,7 +98,6 @@ L.Map = L.Evented.extend({
 		this._serverRecycling = false;
 		this._documentIdle = false;
 		this._helpTarget = null; // help page that fits best the current context
-		this._trackEvent = false; // 追蹤各種事件開關
 
 		vex.dialogID = -1;
 
@@ -104,13 +108,30 @@ L.Map = L.Evented.extend({
 		}
 		this._addLayers(this.options.layers);
 		this._socket = L.socket(this);
-		this._progressBar = L.progressOverlay(this.getCenter(), L.point(150, 25));
+
+		var center = this.getCenter();
+		if (L.Browser.mobile) {
+			var doubledProgressHeight = 200;
+			var size = new L.point(screen.width, screen.height - doubledProgressHeight);
+			center = this.layerPointToLatLng(size._divideBy(2));
+		}
+		this._progressBar = L.progressOverlay(center, new L.point(150, 25));
 
 		if (L.Browser.mobile) {
 			this._clipboardContainer = L.control.mobileInput().addTo(this);
+			if (this.tap !== undefined) {
+				this._clipboardContainer._cursorHandler.on('up', this.tap._onCursorClick, this.tap);
+			}
 		} else {
 			this._clipboardContainer = L.clipboardContainer();
 			this.addLayer(this._clipboardContainer);
+		}
+
+		// Avoid white bar on the bottom - force resize-detector to get full size
+		if (window.mode.isMobile()) {
+			$('#document-container').css('bottom', '0px');
+			this._clipboardContainer._textArea.blur();
+			this._clipboardContainer._textArea.focus();
 		}
 
 		// When all these conditions are met, fire statusindicator:initializationcomplete
@@ -124,12 +145,11 @@ L.Map = L.Evented.extend({
 		this.initComplete = false;
 
 		this.on('updatepermission', function(e) {
-			if (this._trackEvent) {console.debug('updatepermission: ', e);}
 			if (!this.initComplete) {
 				this._fireInitComplete('updatepermission');
 			}
 
-			if (e.perm === 'readonly' || e.perm === 'view') {
+			if (e.perm === 'readonly') {
 				L.DomUtil.addClass(this._container.parentElement, 'readonly');
 				if (!L.Browser.mobile) {
 					L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
@@ -137,7 +157,8 @@ L.Map = L.Evented.extend({
 				L.DomUtil.addClass(L.DomUtil.get('main-menu'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('spreadsheet-row-column-frame'), 'readonly');
-			} else {
+			}
+			else {
 				L.DomUtil.removeClass(this._container.parentElement, 'readonly');
 				if (!L.Browser.mobile) {
 					L.DomUtil.removeClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
@@ -157,7 +178,6 @@ L.Map = L.Evented.extend({
 			}
 		});
 		this.on('updatetoolbarcommandvalues', function(e) {
-			if (this._trackEvent) {console.debug('updatetoolbarcommandvalues: ', e);}
 			if (this.initComplete) {
 				return;
 			}
@@ -188,13 +208,11 @@ L.Map = L.Evented.extend({
 		this._docLoaded = false;
 
 		this.on('commandstatechanged', function(e) {
-			if (this._trackEvent) {console.debug('Command state changed: ', e);}
 			if (e.commandName === '.uno:ModifiedStatus')
-				this._everModified = this._everModified || (e.state === 'true');			
+				this._everModified = this._everModified || (e.state === 'true');
 		}, this);
 
 		this.on('docloaded', function(e) {
-			if (this._trackEvent) {console.debug('docloaded: ', e);}
 			this._docLoaded = e.status;
 			if (this._docLoaded) {
 				// so that dim timer starts from now()
@@ -269,7 +287,7 @@ L.Map = L.Evented.extend({
 	updateAvatars: function() {
 		if (this._docLayer && this._docLayer._annotations && this._docLayer._annotations._items) {
 			for (var idxAnno in this._docLayer._annotations._items) {
-				var annotation = this._docLayer._annotations._items[idxAnno];	
+				var annotation = this._docLayer._annotations._items[idxAnno];
 				var username = annotation._data.author;
 				if (this._viewInfoByUserName[username])
 					annotation._data.avatar = this._viewInfoByUserName[username].userextrainfo.avatar;
@@ -298,8 +316,10 @@ L.Map = L.Evented.extend({
 			// Replace menu button body with new content
 			lastModButton.firstChild.innerHTML = '';
 			lastModButton.firstChild.appendChild(mainSpan);
+
 			if (revHistoryEnabled) {
-				L.DomUtil.setStyle(lastModButton, 'cursor', 'pointer');			}
+				L.DomUtil.setStyle(lastModButton, 'cursor', 'pointer');
+			}
 		}
 	},
 
@@ -307,6 +327,7 @@ L.Map = L.Evented.extend({
 	updateModificationIndicator: function(newModificationTime) {
 		this._lastmodtime = newModificationTime;
 		if (this.lastModIndicator !== null && this.lastModIndicator !== undefined) {
+			// 非編輯模式，顯示最近存檔時間
 			if (this._permission !== 'edit') {
 				var dd = $.timeago.parse(this._lastmodtime);
 				this.lastModIndicator.innerHTML = dd.toLocaleString();
@@ -328,13 +349,6 @@ L.Map = L.Evented.extend({
 		}
 	},
 
-	// 切換追蹤開關
-	switchEventTrack: function() {
-		this._trackEvent = !this._trackEvent;
-		vex.dialog.alert(_('Event tracking status') + ' : ' + (this._trackEvent ? 'On' : 'Off'));
-	},
-	// --------- End of Firefly
-	
 	showBusy: function(label, bar) {
 		// If document is already loaded, ask the toolbar widget to show busy
 		// status on the bottom statusbar
@@ -771,12 +785,22 @@ L.Map = L.Evented.extend({
 		return this.layerPointToLatLng(this.mouseEventToLayerPoint(e));
 	},
 
+	focus: function () {
+		this._clipboardContainer.focus();
+	},
+
 	setHelpTarget: function(page) {
 		this._helpTarget = page;
 	},
 
 	showHelp: function() {
-		// TODO : 實作線上說明
+		/* 取消前往 libreoffice 線上說明網頁
+		var helpURL = 'https://help.libreoffice.org/help.html';
+		var helpVersion = '6.3';
+		if (this._helpTarget !== null) {
+			helpURL += '?Target=' + this._helpTarget + '&Language=' + String.locale + '&System=UNIX&Version=' + helpVersion;
+		}
+		this.fire('hyperlinkclicked', {url: helpURL});*/
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
@@ -791,10 +815,6 @@ L.Map = L.Evented.extend({
 			}
 		}
 	},	
-
-	focus: function () {
-		this._clipboardContainer.focus();
-	},
 
 	_fireInitComplete: function (condition) {
 		if (this.initComplete) {
@@ -1066,6 +1086,10 @@ L.Map = L.Evented.extend({
 		this._socket.sendMessage('userinactive');
 	},
 
+	notifyActive : function() {
+		this.lastActiveTime = Date.now();
+	},
+
 	_dimIfInactive: function () {
 		console.debug('_dimIfInactive: diff=' + (Date.now() - this.lastActiveTime));
 		if (this._docLoaded && // don't dim if document hasn't been loaded yet
@@ -1154,7 +1178,7 @@ L.Map = L.Evented.extend({
 
 	// Our browser tab lost focus.
 	_onGotFocus: function () {
-		this._onEditorLostFocus();
+		this._onEditorGotFocus();
 		this._activate();
 	},
 
@@ -1188,9 +1212,9 @@ L.Map = L.Evented.extend({
 	},
 
 	_handleDOMEvent: function (e) {
-		if (!this._docLayer || !this._loaded || !this._enabled || L.DomEvent._skipped(e)) { return; }
+		this.notifyActive();
 
-		this.lastActiveTime = Date.now();
+		if (!this._docLayer || !this._loaded || !this._enabled || L.DomEvent._skipped(e)) { return; }
 
 		// find the layer the event is propagating from
 		var target = this._targets[L.stamp(e.target || e.srcElement)],
