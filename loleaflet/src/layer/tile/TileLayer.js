@@ -389,7 +389,11 @@ L.TileLayer = L.GridLayer.extend({
 	},
 
 	_onMessage: function (textMsg, img) {
-		if (textMsg.startsWith('commandvalues:')) {
+		// 'tile:' is the most common message type; keep this the first.
+		if (textMsg.startsWith('tile:')) {
+			this._onTileMsg(textMsg, img);
+		}
+		else if (textMsg.startsWith('commandvalues:')) {
 			this._onCommandValuesMsg(textMsg);
 		}
 		else if (textMsg.startsWith('cursorvisible:')) {
@@ -479,9 +483,6 @@ L.TileLayer = L.GridLayer.extend({
 		}
 		else if (textMsg.startsWith('cellautofillarea:')) {
 			this._onCellAutoFillAreaMsg(textMsg);
-		}
-		else if (textMsg.startsWith('tile:')) {
-			this._onTileMsg(textMsg, img);
 		}
 		else if (textMsg.startsWith('windowpaint:')) {
 			this._onDialogPaintMsg(textMsg, img);
@@ -1584,9 +1585,9 @@ L.TileLayer = L.GridLayer.extend({
 		e.tile.onload = null;
 	},
 
-	_clearSelections: function () {
+	_clearSelections: function (calledFromSetPartHandler) {
 		// hide the cursor if not editable
-		this._onUpdateCursor();
+		this._onUpdateCursor(calledFromSetPartHandler);
 		// hide the text selection
 		this._selections.clearLayers();
 		// hide the selection handles
@@ -1627,6 +1628,7 @@ L.TileLayer = L.GridLayer.extend({
 	},
 
 	_postKeyboardEvent: function(type, charcode, keycode) {
+		// console.log('==> _postKeyboardEvent type=' + type + ' charcode=' + charcode + ' keycode=' + keycode);
 		if (this._docType === 'spreadsheet' && this._prevCellCursor && type === 'input') {
 			if (keycode === 1030) { // PgUp
 				if (this._cellCursorOnPgUp) {
@@ -1651,6 +1653,7 @@ L.TileLayer = L.GridLayer.extend({
 	},
 
 	// if winId=0, then event is posted on the document
+	// console.log('==> _postCompositionEvent type=' + type + ' text="' + text + '"');
 	_postCompositionEvent: function(winId, type, text) {
 		this._map._socket.sendMessage('textinput id=' + winId + ' type=' + type + ' text=' + encodeURIComponent(text));
 	},
@@ -1675,14 +1678,12 @@ L.TileLayer = L.GridLayer.extend({
 
 	_onZoomStart: function () {
 		this._isZooming = true;
-		this._onUpdateCursor();
-		this.updateAllViewCursors();
 	},
 
 
 	_onZoomEnd: function () {
 		this._isZooming = false;
-		this._onUpdateCursor();
+		this._onUpdateCursor(null, true);
 		this.updateAllViewCursors();
 	},
 
@@ -1699,20 +1700,24 @@ L.TileLayer = L.GridLayer.extend({
 		}
 
 		this._map._clipboardContainer.showCursor();
+		if (this._map._isFocused && !L.Browser.mobile) {
+			// On mobile, this is causing some key input to get lost.
+			this._map.focus();
+		}
 	},
 
 	// Update cursor layer (blinking cursor).
-	_onUpdateCursor: function (scroll) {
+	_onUpdateCursor: function (scroll, zoom) {
 		var cursorPos = this._visibleCursor.getNorthWest();
 		var docLayer = this._map._docLayer;
 
-		if ((scroll !== false) && !this._map.getBounds().contains(this._visibleCursor) && this._isCursorVisible) {
+		if ((!zoom && scroll !== false) && !this._map.getBounds().contains(this._visibleCursor) && this._isCursorVisible) {
 			var center = this._map.project(cursorPos);
 			center = center.subtract(this._map.getSize().divideBy(2));
 			center.x = Math.round(center.x < 0 ? 0 : center.x);
 			center.y = Math.round(center.y < 0 ? 0 : center.y);
 
-			if (!(this._selectionHandles.start && this._selectionHandles.start.isDragged) &&
+			if (!zoom && !(this._selectionHandles.start && this._selectionHandles.start.isDragged) &&
 			    !(this._selectionHandles.end && this._selectionHandles.end.isDragged) &&
 			    !(docLayer._followEditor || docLayer._followUser)) {
 				this._map.fire('scrollto', {x: center.x, y: center.y, calledFromInvalidateCursorMsg: scroll !== undefined});
@@ -1740,8 +1745,8 @@ L.TileLayer = L.GridLayer.extend({
 		&& !this._isEmptyRectangle(this._visibleCursor)) {
 			this._updateCursorPos();
 		}
-		else if (this._cursorMarker) {
-			this._map.removeLayer(this._cursorMarker);
+		else {
+			this._map._clipboardContainer.hideCursor();
 		}
 	},
 
@@ -1785,6 +1790,7 @@ L.TileLayer = L.GridLayer.extend({
 		else if (viewCursorMarker) {
 			this._viewLayerGroup.removeLayer(viewCursorMarker);
 		}
+		this._viewCursors[viewId].marker.showCursorHeader();
 	},
 
 	updateAllViewCursors : function() {
@@ -1815,7 +1821,7 @@ L.TileLayer = L.GridLayer.extend({
 				center.x = Math.round(center.x < 0 ? 0 : center.x);
 				center.y = Math.round(center.y < 0 ? 0 : center.y);
 
-				this._map.fire('scrollto', {x: center.x, y: center.y});
+				this._map.fire('scrollto', {x: center.x, y: center.y, calledFromInvalidateCursorMsg: true});
 			}
 
 			this._viewCursors[viewId].marker.showCursorHeader();
@@ -2128,7 +2134,7 @@ L.TileLayer = L.GridLayer.extend({
 					center = center.subtract(this._map.getSize().divideBy(2));
 					center.x = Math.round(center.x < 0 ? 0 : center.x);
 					center.y = Math.round(center.y < 0 ? 0 : center.y);
-					this._map.fire('scrollto', {x: center.x, y: center.y});
+					this._map.fire('scrollto', {x: center.x, y: center.y, calledFromInvalidateCursorMsg: true});
 				}
 				this._prevCellCursorXY = this._cellCursorXY;
 			}
@@ -2549,14 +2555,14 @@ L.TileLayer = L.GridLayer.extend({
 					var preview = this._map._docPreviews[key];
 					if (preview.index >= 0 && this._docType === 'text') {
 						// we have a preview for a page
-						if (this._partPageRectanglesTwips.length > preview.index &&
-								invalidBounds.intersects(this._partPageRectanglesTwips[preview.index])) {
+						if (preview.invalid || (this._partPageRectanglesTwips.length > preview.index &&
+								invalidBounds.intersects(this._partPageRectanglesTwips[preview.index]))) {
 							toInvalidate[key] = true;
 						}
 					}
 					else if (preview.index >= 0) {
 						// we have a preview for a part
-						if (preview.index === this._selectedPart ||
+						if (preview.invalid || preview.index === this._selectedPart ||
 								(preview.index === this._prevSelectedPart && this._prevSelectedPartNeedsUpdate)) {
 							// if the current part needs its preview updated OR
 							// the part has been changed and we need to update the previous part preview
@@ -2571,7 +2577,7 @@ L.TileLayer = L.GridLayer.extend({
 						var bounds = new L.Bounds(
 								new L.Point(preview.tilePosX, preview.tilePosY),
 								new L.Point(preview.tilePosX + preview.tileWidth, preview.tilePosY + preview.tileHeight));
-						if ((preview.part === this._selectedPart ||
+						if (preview.invalid || (preview.part === this._selectedPart ||
 								(preview.part === this._prevSelectedPart && this._prevSelectedPartNeedsUpdate)) &&
 								invalidBounds.intersects(bounds)) {
 							// if the current part needs its preview updated OR
