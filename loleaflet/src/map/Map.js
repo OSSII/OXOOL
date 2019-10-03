@@ -100,6 +100,11 @@ L.Map = L.Evented.extend({
 		this._helpTarget = null; // help page that fits best the current context
 
 		vex.dialogID = -1;
+		// Add by Firefly <firefly@ossii.com.tw>
+		// 替 vex dialog 預設按鈕的文字加上 l10n
+		vex.dialog.buttons.YES.text = _('OK');
+		vex.dialog.buttons.NO.text = _('Cancel');
+		// -------------------------------------
 
 		this.callInitHooks();
 
