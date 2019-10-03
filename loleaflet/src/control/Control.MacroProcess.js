@@ -27,7 +27,7 @@ L.Control.MacroProcess = L.Control.extend({
 	/* 文件載入完畢後，會執行這裡 */
 	_onDocLoaded: function (/* e */) {
 		var docType = this._map.getDocType();
-		var macroList;
+		var macroList = [];
 		switch (docType) {
 		case 'text':
 			macroList = this.options.textMacroList;
