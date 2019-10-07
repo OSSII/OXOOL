@@ -1029,8 +1029,8 @@ function initMobileToolbar(toolItems) {
 			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text'), hidden: true},
 			{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text'), hidden: true},
 			{type: 'break',   id: 'prevnextbreak', hidden: true},
-			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
-			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
+			{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', hidden: true, disabled: true},
+			{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', hidden: true, disabled: true},
 			//{type: 'button',  id: 'fullscreen', img: 'fullscreen', hint: _UNO('.uno:FullScreen', 'text')},
 			{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
 				'<hr><table class="loleaflet-font" id="editor-btn">' +
@@ -2559,6 +2559,7 @@ function onUpdatePermission(e) {
 		// 
 		if (e.perm === 'edit') {
 			statusbar.show('keyboardBtn', 'break-keyboardBtn');
+			statusbar.show('undo', 'redo');
 			mobileEditBar.css('top', toolbarUp.outerHeight() - 1).show();
 			var height = mobileEditBar.outerHeight();
 			moveObjectVertically($('#document-container'), height);
