@@ -16,8 +16,8 @@ L.Control.MacroProcess = L.Control.extend({
 	},
 
 	onAdd: function (map) {
-		map.on('docloaded', this._onDocLoaded, this);
-		map.on('macroresult', this._onMacroResult, this);
+		map.on('updatepermission', this._onUpdatePermission, this);
+		this._initialized = false;
 	},
 
 	onRemove: function (/*map*/) {
@@ -25,7 +25,13 @@ L.Control.MacroProcess = L.Control.extend({
 	},
 
 	/* 文件載入完畢後，會執行這裡 */
-	_onDocLoaded: function (/* e */) {
+	_onUpdatePermission: function (/* e */) {
+		if (this._initialized) {
+			return;
+		}
+		this._map.on('macroresult', this._onMacroResult, this);
+		this._initialized = true;
+
 		var docType = this._map.getDocType();
 		var macroList = [];
 		switch (docType) {
@@ -45,8 +51,8 @@ L.Control.MacroProcess = L.Control.extend({
 
 		if (macroList.length > 0) {
 			for (var i = 0 ; i < macroList.length ; i++) {
-				this._map.sendUnoCommand('macro:///' +
-					macroList[i]);
+				// 避免非編輯模式時，this._map.sendUnoCommand() 不執行
+				this._map._socket.sendMessage('uno macro:///' + macroList[i]);
 			}
 		}
 	},
