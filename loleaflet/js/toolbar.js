@@ -328,6 +328,51 @@ function onClick(e, id, item, subItem) {
 	else if (id === 'searchBtn') {
 		toggleMobileSearchBar();
 	}
+	else if (id === 'goToPage') {
+		var numPages, currPage;
+		var options = '', selected = '';
+		var names, i;
+
+		if (docLayer._docType === 'text') {
+			numPages = map.getNumberOfPages();
+			currPage = map.getCurrentPageNumber();
+			for (i = 0 ; i < numPages; i ++) {
+				selected = (i === currPage ? ' selected' : '');
+				options += '<option value="' + i + '"' + selected + '>' + parseInt(i + 1) + '</option>';
+			}
+		}
+		else if (docLayer._docType === 'spreadsheet') {
+			numPages = map.getNumberOfParts();
+			currPage = map.getCurrentPartNumber();
+			names = docLayer._partNames;
+			for (i = 0 ; i < numPages; i ++) {
+				selected = (i === currPage ? ' selected' : '');
+				if (!map.isHiddenPart(i)) {
+					options += '<option value="' + i + '"' + selected + '>' + names[i] + '</option>';
+				}
+			}
+		}
+
+		vex.dialog.open({
+			message: _UNO('.uno:GotoPage', 'text'),
+			input: [
+				'<select name="goPage" size="10" style="font-size:16px; width:300px;">' + options +
+				'</select>'
+			],
+			callback: function (data) {
+				if (data) {
+					var targetPage = parseInt(data.goPage);
+					if (docLayer._docType === 'text') {
+						map.goToPage(targetPage);
+					}
+					else if (docLayer._docType === 'spreadsheet') {
+						map.setPart(targetPage);
+					}
+				}
+				map.focus();
+			}
+		});
+	}
 	else {
 		console.log('有 id 未處理 : ' + id)
 	}
@@ -979,6 +1024,7 @@ function initMobileToolbar(toolItems) {
 			{type: 'button', id: 'keyboard_hideBtn', img: 'keyboard_hide', hidden:true},
 			{type: 'break', id: 'break-keyboardBtn', hidden: true},
 			{type: 'button', id: 'searchBtn', img: 'search', hint:_UNO('.uno:Search', 'text'), hidden:true},
+			{type: 'button', id: 'goToPage', img: 'gotopage', hint:_UNO('.uno:GoToPage', 'text'), hidden:true},
 			{type: 'break', id: 'break-searchBtn', hidden: true},
 			{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text'), hidden: true},
 			{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text'), hidden: true},
@@ -1413,6 +1459,7 @@ function initNormalToolbar(toolItems) {
 					'</div>'
 				},
 				{type: 'break', id: 'userlistbreak', hidden: true, mobile: false },
+				{type: 'button',  id: 'goToPage', img: 'gotopage', hint: _UNO('.uno:GotoPage', 'text'), hidden: true, mobile: false},
 				{type: 'button',  id: 'prev', img: 'prev', hint: _UNO('.uno:PageUp', 'text')},
 				{type: 'button',  id: 'next', img: 'next', hint: _UNO('.uno:PageDown', 'text')},
 				{type: 'break', id: 'prevnextbreak'},
@@ -1894,6 +1941,7 @@ function onDocLayerInit() {
 			]);
 
 			$('#spreadsheet-toolbar').show();
+			statusbar.show('goToPage');
 		}
 		$('#formulabar').show();
 		// Remove irrelevant toolbars
@@ -1933,6 +1981,7 @@ function onDocLayerInit() {
 				},
 				{type: 'break', id: 'break8', mobile: false}
 			]);
+			statusbar.show('goToPage');
 		}
 
 		break;
@@ -2433,11 +2482,13 @@ function onUpdateParts(e) {
 	}
 
 	if (e.docType !== 'spreadsheet') {
+		var goToPageCheck = false;
 		if (current === 0) {
 			toolbar.disable('prev');
 		}
 		else {
 			toolbar.enable('prev');
+			goToPageCheck = true;
 		}
 
 		if (current === count - 1) {
@@ -2445,6 +2496,13 @@ function onUpdateParts(e) {
 		}
 		else {
 			toolbar.enable('next');
+			goToPageCheck = true;
+		}
+		if (goToPageCheck) {
+			toolbar.enable('goToPage');
+		}
+		else {
+			toolbar.disable('goToPage')
 		}
 	}
 }
@@ -2493,6 +2551,10 @@ function onUpdatePermission(e) {
 		// 非唯讀，顯示搜尋按鈕
 		if (e.perm !== 'readonly') {
 			statusbar.show('searchBtn', 'break-searchBtn');
+		}
+		// 手機模式時，文字文件與試算表顯示「前往頁面」按鈕
+		if (map.getDocType() === 'text' || map.getDocType() == 'spreadsheet') {
+			statusbar.show('goToPage');
 		}
 		// 
 		if (e.perm === 'edit') {
