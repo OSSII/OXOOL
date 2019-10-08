@@ -23,7 +23,7 @@ L.Map = L.Evented.extend({
 		crs: L.CRS.Simple,
 		center: [0, 0],
 		zoom: 10,
-		minZoom: 1,
+		minZoom: 4,
 		maxZoom: 14,
 		maxBounds: L.latLngBounds([0, 0], [-100, 100]),
 		fadeAnimation: false, // Not useful for typing.
@@ -135,8 +135,7 @@ L.Map = L.Evented.extend({
 		// Avoid white bar on the bottom - force resize-detector to get full size
 		if (window.mode.isMobile()) {
 			$('#document-container').css('bottom', '0px');
-			this._clipboardContainer._textArea.blur();
-			this._clipboardContainer._textArea.focus();
+			$(this._resizeDetector).css('bottom', '0px');
 		}
 
 		// When all these conditions are met, fire statusindicator:initializationcomplete
@@ -174,6 +173,11 @@ L.Map = L.Evented.extend({
 			}
 		}, this);
 		this.on('doclayerinit', function() {
+			if (window._invalidateSize) {
+				this._size = new L.Point(0,0);
+				this._onResize();
+				delete window._invalidateSize;
+			}
 			if (!this.initComplete) {
 				this._fireInitComplete('doclayerinit');
 			}
@@ -985,6 +989,10 @@ L.Map = L.Evented.extend({
 	},
 
 	_onResize: function () {
+		if (!this || !this._docLayer) {
+			window._invalidateSize = true;
+			return;
+		}
 		L.Util.cancelAnimFrame(this._resizeRequest);
 		this._resizeRequest = L.Util.requestAnimFrame(
 			function () { this.invalidateSize({debounceMoveend: true}); }, this, false, this._container);
