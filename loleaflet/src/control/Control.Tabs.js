@@ -86,7 +86,12 @@ L.Control.Tabs = L.Control.extend({
 									message: _('Enter new sheet name'),
 									input: '<input name="sheetname" type="text" value="' + options.$trigger.text() + '" required />',
 									callback: function(data) {
-										map.renamePage(data.sheetname, nPos);
+										if (map.isSheetnameValid(data.sheetname, nPos)) {
+											map.renamePage(data.sheetname, nPos);
+										} else {
+											var msg = _('Invalid sheet name.\nThe sheet name must not be empty or a duplicate of \nan existing name and may not contain the characters [ ] * ? : / \\ \nor the character \' (apostrophe) as first or last character.');
+											vex.dialog.alert(msg.replace(/\n/g, '<br>'));
+										}
 									}
 								});
 							}).bind(this)
