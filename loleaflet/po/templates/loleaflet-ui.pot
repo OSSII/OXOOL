@@ -834,7 +834,15 @@ msgstr ""
 msgid "Enter new sheet name"
 msgstr ""
 
-#: src/control/Control.Tabs.js:125
+#: src/control/Control.Tabs.js:92
+msgid ""
+"Invalid sheet name.\n"
+"The sheet name must not be empty or a duplicate of \n"
+"an existing name and may not contain the characters [ ] * ? : / \\ \n"
+"or the character ' (apostrophe) as first or last character."
+msgstr ""
+
+#: src/control/Control.Tabs.js:130
 msgid "Hidden Sheets"
 msgstr ""
 
