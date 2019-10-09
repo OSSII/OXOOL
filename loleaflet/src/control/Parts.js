@@ -303,6 +303,43 @@ L.Map.include({
 		}
 	},
 
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 檢查工作表名稱是否合法
+	isSheetnameValid: function (sheetName, nPos) {
+		var partNames = this._docLayer._partNames;
+		var i;
+		var invalidChars = '[]*?:/\\';
+		var name = sheetName.trim();
+		var isValid = (name.length > 0); // 非空字串
+
+		// 工作表名稱頭尾不能有單引號
+		if (isValid) {
+			isValid = !(name.charAt(name.length - 1) === '\'' ||
+			name.charAt(0) === '\'');
+		}
+		// 檢查是否有特殊字元
+		for (i = 0 ; isValid && i < invalidChars.length ; i++) {
+			if (name.includes(invalidChars[i])) {
+				isValid = false;
+			}
+		}
+
+		// nPos = -1 表示檢查是否和現有名稱重複
+		if (nPos === undefined) {
+			nPos = -1;
+		}
+
+		// 是否和現有工作表名稱重複
+		for (i = 0 ; isValid && i < partNames.length ; i++) {
+			// 同位置不檢查
+			if (i !== nPos && name === partNames[i]) {
+				isValid = false;
+			}
+		}
+		return isValid;
+	},
+	//---------------------------------------
+
 	isHiddenPart: function (part) {
 		if (this.getDocType() !== 'spreadsheet')
 			return false;
