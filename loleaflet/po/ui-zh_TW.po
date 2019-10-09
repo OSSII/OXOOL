@@ -836,7 +836,19 @@ msgstr "您確定要刪除這份工作表：%sheet%？"
 msgid "Enter new sheet name"
 msgstr "請輸入新的工作表名稱"
 
-#: src/control/Control.Tabs.js:125
+#: src/control/Control.Tabs.js:92
+msgid ""
+"Invalid sheet name.\n"
+"The sheet name must not be empty or a duplicate of \n"
+"an existing name and may not contain the characters [ ] * ? : / \\ \n"
+"or the character ' (apostrophe) as first or last character."
+msgstr ""
+"工作表名稱無效\n"
+"不能是空白，或和其他工作表名稱重複。\n"
+"也不能包含右列之特殊符號 [ ] * ? : / \\ \n"
+"第一個或最後一個字不能用 ' (單引號)。"
+
+#: src/control/Control.Tabs.js:130
 msgid "Hidden Sheets"
 msgstr "隱藏的工作表"
 
@@ -1112,7 +1124,7 @@ msgstr "上傳中..."
 
 #: src/map/handler/Map.WOPI.js:101
 msgid "Creating new file from template..."
-msgstr "從範本鍵裡新文件…"
+msgstr "從範本建立新文件…"
 
 #: src/map/handler/Map.WOPI.js:289
 msgid "Creating copy..."
