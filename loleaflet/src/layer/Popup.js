@@ -94,6 +94,11 @@ L.Popup = L.Layer.extend({
 		return this;
 	},
 
+	setContainerPoint: function (containerPoint) {
+		this._containerPoint = containerPoint;
+		return this;
+	},
+
 	getContent: function () {
 		return this._content;
 	},
@@ -158,6 +163,9 @@ L.Popup = L.Layer.extend({
 			L.DomEvent.on(closeButton, 'click', this._onCloseButtonClick, this);
 		}
 
+		this._tipContainer = L.DomUtil.create('div', prefix + '-tip-container', container);
+		this._tipUp = L.DomUtil.create('div', prefix + '-tip-up', this._tipContainer);
+
 		var wrapper = this._wrapper = L.DomUtil.create('div', prefix + '-content-wrapper', container);
 		this._contentNode = L.DomUtil.create('div', prefix + '-content', wrapper);
 
@@ -171,6 +179,7 @@ L.Popup = L.Layer.extend({
 
 		if (this.options.backgroundColor) {
 			this._tip.style['background-color'] = this._wrapper.style['background-color'] = this.options.backgroundColor;
+			this._tipUp.style['background-color'] = this._wrapper.style['background-color'] = this.options.backgroundColor;
 		}
 
 		if (this.options.color) {
@@ -231,6 +240,17 @@ L.Popup = L.Layer.extend({
 		var pos = this._map.latLngToLayerPoint(this._latlng),
 		    offset = L.point(this.options.offset);
 
+		var pointY =  (this._containerPoint !== undefined ? this._containerPoint.y : pos.y);
+		var realHeight = this._wrapper.offsetHeight + this._tipContainer.offsetHeight;
+
+		if (pointY < realHeight) {
+			this._tip.style.display='none';
+			this._tipUp.style.display='block';
+		} else {
+			this._tip.style.display='block';
+			this._tipUp.style.display='none';
+		}
+
 		if (this._zoomAnimated) {
 			L.DomUtil.setPosition(this._container, pos);
 		} else {
@@ -238,10 +258,17 @@ L.Popup = L.Layer.extend({
 		}
 
 		var bottom = this._containerBottom = -offset.y,
+		    top = 0,
 		    left = this._containerLeft = -Math.round(this._containerWidth / 2) + offset.x;
 
-		// bottom position the popup in case the height of the popup changes (images loading etc)
-		this._container.style.bottom = bottom + 'px';
+		// If the top space will cover the pop-up window, it will be displayed at the bottom. 
+		if (pointY < realHeight) {
+			this._container.style.top = top + 'px';
+			this._container.style.bottom = '';
+		} else {
+			this._container.style.top = '';
+			this._container.style.bottom = bottom + 'px';
+		}
 		this._container.style.left = left + 'px';
 	},
 

@@ -476,8 +476,8 @@ a.leaflet-control-buttons:hover:first-child {
 	border-radius: 12px;
 	}
 .leaflet-popup-content {
-	margin: 13px 19px;
-	line-height: 1.4;
+	margin: 10px 10px;
+	line-height: 1;
 	}
 .leaflet-popup-content p {
 	margin: 18px 0;
@@ -513,8 +513,20 @@ a.leaflet-control-buttons:hover:first-child {
 	     -o-transform: rotate(45deg);
 	        transform: rotate(45deg);
 	}
+.leaflet-popup-tip-up {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+	margin: 10px auto 0;
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	     -o-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
 .leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
+.leaflet-popup-tip,
+.leaflet-popup-tip-up {
 	background: white;
 	color: #333;
 	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
