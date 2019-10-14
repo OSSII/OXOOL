@@ -1624,15 +1624,23 @@ function documentNameConfirm() {
 	var value = $('#document-name-input').val();
 	if (value !== null && value != '' && value != map['wopi'].BaseFileName) {
 		if (map['wopi'].UserCanRename && map['wopi'].SupportsRename) {
-			// file name must be without the extension
-			if (value.lastIndexOf('.') > 0)
-				value = value.substr(0, value.lastIndexOf('.'));
-			// Add by Firefly <firefly@ossii.com.tw>
-			// 檔名最後一字是中文的話，會掉字，所以加個空白就能避免 XD
-			if (value.length >0 && value.slice(-1).charCodeAt(0) > 127) {
-				value += ' ';
+			if (value.lastIndexOf('.') > 0) {
+				var fname = map['wopi'].BaseFileName;
+				var ext =  fname.substr(fname.lastIndexOf('.')+1, fname.length);
+				// Rename 的副檔名和原先不同，就要另存新檔
+				if (ext != value.substr(value.lastIndexOf('.')+1, value.length)) {
+					map.saveAs(value);
+				} else { // 副檔名相同，就只要 Rename 就好
+					// 更名前要去掉副檔名
+					value = value.substr(0, value.lastIndexOf('.'));
+					// 檔名最後一字是中文的話，會掉字，所以加個空白就能避免 XD
+					if (value.length >0 && value.slice(-1).charCodeAt(0) > 127) {
+						value += ' ';
+					}
+					map.sendUnoCommand('.uno:Save');
+					map._RenameFile = value;
+				}
 			}
-			map.renameFile(value);
 		} else {
 			// saveAs for rename
 			map.saveAs(value);
@@ -2442,6 +2450,12 @@ function onCommandResult(e) {
 		if (e.success) {
 			// Saved a new version; the document is modified.
 			map._everModified = true;
+
+			// document is saved for rename
+			if (map._RenameFile) {
+				map.renameFile(map._RenameFile);
+				map._RenameFile = '';
+			}
 		}
 		var postMessageObj = {
 			success: e.success
