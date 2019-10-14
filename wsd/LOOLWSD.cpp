@@ -3027,7 +3027,7 @@ private:
         std::shared_ptr<ServerSocket> socket = getServerSocket(
             ServerSocket::Type::Local, port, PrisonerPoll, factory);
 
-#ifdef BUILDING_TESTS
+//#ifdef BUILDING_TESTS
         // If we fail, try the next 100 ports.
         for (int i = 0; i < 100 && !socket; ++i)
         {
@@ -3036,7 +3036,7 @@ private:
             socket = getServerSocket(
             ServerSocket::Type::Local, port, PrisonerPoll, factory);
         }
-#endif
+//#endif
 
         if (!socket)
         {
