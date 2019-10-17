@@ -535,6 +535,10 @@ body {
     padding: 0 1em !important;
 }
 
+.ui-widget {
+    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
+}
+
 .vex { z-index: 10000 !important;}
 
 /* Infobar */
