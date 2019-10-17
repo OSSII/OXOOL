@@ -8,6 +8,7 @@
 (function(global) {
 
 var map;
+var symbolDialog = undefined;
 
 // has to match small screen size requirement
 function _inMobileMode() {
@@ -372,6 +373,11 @@ function onClick(e, id, item, subItem) {
 				map.focus();
 			}
 		});
+	}
+	else if (item.id === 'commonsymboltable') {
+		if (symbolDialog !== undefined) {
+			$(symbolDialog).dialog('open');
+		}
 	}
 	else {
 		console.log('有 id 未處理 : ' + id)
@@ -997,6 +1003,11 @@ function createToolbar() {
 			html: '<div id="animationeffects-wrapper"><div id="animationeffects-popup" class="ui-widget ui-widget-content ui-corner-all"><div class="animationeffects-grid"></div></div></div>', hidden: true, mobile: false},
 		{type: 'button',  id: 'link',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true, mobile: false},
 		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), uno: 'InsertSymbol', mobile: false},
+		{type: 'menu', id: 'insertsymbolmenu', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol', '', true), hidden: false, mobile: false,
+			items: [
+				{id: 'commonsymboltable', text: _('Common symbols')},
+				{id: 'moresymbol', text: _('More symbols'), uno: 'InsertSymbol'},
+			]},
 		{type: 'spacer'},
 		{type: 'button',  id: 'edit',  img: 'edit'},
 		{type: 'button',  id: 'fold',  img: 'fold', desktop: true, mobile: false, hidden: true},
@@ -2242,6 +2253,13 @@ function onCommandStateChanged(e) {
 			toolbar.disable('repair');
 		}
 	}
+	else if (commandName === '.uno:InsertSymbol') {
+		if (state === 'enabled') {
+			toolbar.enable('insertsymbolmenu');
+		} else {
+			toolbar.disable('insertsymbolmenu');
+		}
+	}
 
 	var id = unoCmdToToolbarId(commandName);
 	if (state === 'true') {
@@ -2581,6 +2599,10 @@ function onUpdatePermission(e) {
 				break;
 			}
 		}
+		// Get localized custom symbol table
+		if (!_inMobileMode()) {
+			getLocalizedSymbols();
+		}
 	}
 	else {
 		// Disable list boxes
@@ -2633,6 +2655,102 @@ function onUpdatePermission(e) {
 		}
 	}
 	map._docLayer._updateScrollOffset();
+}
+
+// Add by Firefly <firefly@ossii.com.tw>
+// Get localized custom symbol table
+// 讀取該語系自訂符號表
+function getLocalizedSymbols(locale) {
+	// 未指定語系，則採用瀏覽器語系
+	if (locale === undefined) {
+		locale = navigator.language;
+	}
+
+	$.ajax({
+		url: 'uiconfig/symbols/' + locale + '.json',
+		type: 'GET',
+		cache: false,
+		dataType: 'json',
+		success: function (table) {
+			var symbolTabs;
+			var ul;
+			var i, j;
+			symbolDialog = L.DomUtil.create('div', 'lokdialog', document.body);
+			symbolTabs = L.DomUtil.create('div', 'oxtabs_container', symbolDialog);
+
+			ul = L.DomUtil.create('ul', '', symbolTabs);
+			ul.style.background = 'transparent none';
+			ul.style.border = 'none';
+			ul.style.borderBottom = '1px solid #4297d7';
+			ul.style.borderBottomLeftRadius = 0;
+			ul.style.borderBottomRightRadius = 0;
+			for (i = 0 ; i < table.length ; i ++) {
+				var id = 'symbolTab-' + i;
+				var li = L.DomUtil.create('li', '', ul);
+				var ahref = L.DomUtil.create('a', '', li);
+				ahref.href = '#' + id;
+				ahref.innerText = table[i].Type;
+				ahref.style.padding='.15em .15em';
+
+				var symbols = L.DomUtil.createWithId('div', id, symbolTabs);
+				symbols.style.padding = '10px 0px 10px 0px';
+				for (j = 0 ; j < table[i].Symbols.length ; j++) {
+					var sym = L.DomUtil.create('a', 'lolleaflet-symbol', symbols);
+					sym.innerText = table[i].Symbols[j].Text
+					sym.symbolData = table[i].Symbols[j];
+					// 被點擊的話，執行這裡
+					L.DomEvent.on(sym, 'click', function (e) {
+						var data = e.target.symbolData;
+						var args = {
+							Symbols: {
+								type: 'string',
+								value: data.Text
+							}
+						}
+						// 有指定字型名稱的話
+						if (data.Font !== '') {
+							args['FontName'] = {'type': 'string', 'value': data.Font};
+						}
+						map.sendUnoCommand('.uno:InsertSymbol', args);
+						// 非 Calc 且有指定游標回轉的話
+						if (typeof data.Rewind === 'number' && map.getDocType() !== 'spreadsheet') {
+							for (var k=0 ; k < data.Rewind ; k++) {
+								// 送出向左按鍵
+								map._docLayer._postKeyboardEvent('input', 0, 1026);
+							}
+						}
+						map.focus();
+					}, this);
+					if (table[i].Symbols[j].Desc !== '') {
+						sym.title = table[i].Symbols[j].Desc;
+					}
+					if (table[i].Symbols[j].Font !== '') {
+						sym.style.fontFamily = '\'' + table[i].Symbols[j].Font + '\'';
+					}
+				}
+			}
+			$(symbolTabs).tabs();
+			$(symbolDialog).dialog({
+				title: _('Common symbols'),
+				dialogClass: 'oxdialog_container',
+				position: {my: 'left center', at: 'right center', of: window},
+				minWidth: 300,
+				autoOpen: false,
+				modal: false,
+				resizable: true,
+				draggable: true,
+				closeOnEscape: true
+			});
+			var toolbar = w2ui['editbar'];
+			toolbar.hide('insertsymbol');
+			toolbar.show('insertsymbolmenu');
+		},
+		error: function (xhr, textStatus, errorThrown) {
+			console.debug('error get localized symbol table (' + locale + ')',
+				'status : ' + textStatus, 
+				'error : ' + errorThrown, xhr);
+		}
+	});
 }
 
 function onUseritemClicked(e) { // eslint-disable-line no-unused-vars

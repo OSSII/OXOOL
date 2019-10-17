@@ -471,6 +471,36 @@ body {
 	text-indent: 1px;
 }
 
+.lolleaflet-symbol {
+	border:1px dotted #4297d7;
+	color: #000000;
+	margin: 4px;
+	padding: 2px;
+	font-size: 16px;
+	min-width: 24px;
+	min-height: 24px;
+	line-height: 24px;
+	text-align: center;
+	display: inline-block;
+}
+
+.lolleaflet-symbol:hover {
+	background-color: #000000;
+	color: #ffffff;
+	cursor: pointer;
+}
+
+.oxtabs_container.ui-widget-content {
+	border: none;
+}
+
+.oxdialog_container.ui-dialog.ui-widget-content {
+	padding: 0px;
+	width: auto;
+	height: auto;
+	z-index: 1105;
+}
+
 .lokdialog_container.lokdialog_notitle .ui-dialog-titlebar {
 	display: none;
 }
