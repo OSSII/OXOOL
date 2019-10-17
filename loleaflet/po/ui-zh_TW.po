@@ -460,6 +460,14 @@ msgstr "插入本機影像"
 msgid "Insert shapes"
 msgstr "插入形狀"
 
+#: js/toolbar.js:1008 js/toolbar.js:2734
+msgid "Common symbols"
+msgstr "常用符號"
+
+#: js/toolbar.js:1009
+msgid "More symbols"
+msgstr "更多特殊字元"
+
 #: js/toolbar.js:913 js/toolbar.js:1253
 msgid "Always follow the editor"
 msgstr "總是跟隨編輯器"

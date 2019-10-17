@@ -458,6 +458,14 @@ msgstr ""
 msgid "Insert shapes"
 msgstr ""
 
+#: js/toolbar.js:1008 js/toolbar.js:2734
+msgid "Common symbols"
+msgstr ""
+
+#: js/toolbar.js:1009
+msgid "More symbols"
+msgstr ""
+
 #: js/toolbar.js:913 js/toolbar.js:1253
 msgid "Always follow the editor"
 msgstr ""
