@@ -9220,6 +9220,7 @@ w2utils.event = {
         },
 
         columnTooltipShow: function (ind) {
+            if (window.ThisIsTheiOSApp) return;
             if (this.columnTooltip == 'normal') return;
             var $el  = $(this.box).find('#grid_'+ this.name + '_column_'+ ind);
             var item = this.columns[ind];
@@ -9235,6 +9236,7 @@ w2utils.event = {
         },
 
         columnTooltipHide: function (ind) {
+            if (window.ThisIsTheiOSApp) return;
             if (this.columnTooltip == 'normal') return;
             var $el  = $(this.box).find('#grid_'+ this.name + '_column_'+ ind);
             var item = this.columns[ind];
@@ -12929,6 +12931,7 @@ var w2prompt = function (label, title, callBack) {
         },
 
         tooltipShow: function (id, event, forceRefresh) {
+            if (window.ThisIsTheiOSApp) return;
             if (this.tooltip == null) return;
             var $el  = $(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(id));
             var item = this.get(id);
@@ -12949,6 +12952,7 @@ var w2prompt = function (label, title, callBack) {
         },
 
         tooltipHide: function (id) {
+            if (window.ThisIsTheiOSApp) return;
             if (this.tooltip == null) return;
             var $el  = $(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(id));
             var item = this.get(id);
@@ -13920,6 +13924,7 @@ var w2prompt = function (label, title, callBack) {
         },
 
         tooltipShow: function (id, event, forceRefresh) {
+            if (window.ThisIsTheiOSApp) return;
             if (this.tooltip == null) return;
             var $el  = $(this.box).find('#tb_'+ this.name + '_item_'+ w2utils.escapeId(id));
             var item = this.get(id);
@@ -13941,6 +13946,7 @@ var w2prompt = function (label, title, callBack) {
         },
 
         tooltipHide: function (id, event) {
+            if (window.ThisIsTheiOSApp) return;
             if (this.tooltip == null) return;
             var $el  = $(this.box).find('#tb_'+ this.name + '_item_'+ w2utils.escapeId(id));
             var item = this.get(id);
