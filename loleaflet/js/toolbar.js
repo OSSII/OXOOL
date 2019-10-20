@@ -1478,6 +1478,8 @@ function initNormalToolbar(toolItems) {
 				{type: 'menu-radio', id: 'zoom', text: '100%', mobile: false,
 					selected: 'zoom100', hint: _('Zoom factor'),
 					items: [
+						{ id: 'zoom30', text: '30%', scale: 4},
+						{ id: 'zoom40', text: '40%', scale: 5},
 						{ id: 'zoom50', text: '50%', scale: 6},
 						{ id: 'zoom60', text: '60%', scale: 7},
 						{ id: 'zoom70', text: '70%', scale: 8},
@@ -1850,9 +1852,12 @@ function onDocLayerInit() {
 			'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting');
 		toolbarUp.remove('styles');
 
-		toolbarUp.set('zoom', {
+		statusbar.set('zoom', {
 			items: [
 				{ id: 'zoom100', text: '100%', scale: 10},
+				{ id: 'zoom120', text: '120%', scale: 11},
+				{ id: 'zoom150', text: '150%', scale: 12},
+				{ id: 'zoom175', text: '175%', scale: 13},
 				{ id: 'zoom200', text: '200%', scale: 14}
 			]
 		});
@@ -2995,6 +3000,8 @@ function setupToolbar(e) {
 		var zoomPercent = 100;
 		var zoomSelected = null;
 		switch (map.getZoom()) {
+		case 4:  zoomPercent =  30; zoomSelected = 'zoom30'; break;
+		case 5:  zoomPercent =  40; zoomSelected = 'zoom40'; break;
 		case 6:  zoomPercent =  50; zoomSelected = 'zoom50'; break;
 		case 7:  zoomPercent =  60; zoomSelected = 'zoom60'; break;
 		case 8:  zoomPercent =  70; zoomSelected = 'zoom70'; break;
