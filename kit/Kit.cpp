@@ -1972,7 +1972,7 @@ private:
 
     void run() override
     {
-        Util::setThreadName("lokit_" + _docId);
+        Util::setThreadName("lokitbroker_" + _docId);
 
         LOG_DBG("Thread started.");
 #ifndef MOBILEAPP
@@ -2256,6 +2256,7 @@ protected:
             std::string url;
             URI::decode(docKey, url);
             LOG_INF("New session [" << sessionId << "] request on url [" << url << "].");
+            Util::setThreadName("kitbroker_" + docId);
 
             if (!document)
             {
@@ -2330,11 +2331,12 @@ void lokit_main(
                 bool noCapabilities,
                 bool noSeccomp,
                 bool queryVersion,
-                bool displayVersion
+                bool displayVersion,
 #else
                 const std::string& documentUri,
-                int docBrokerSocket
+                int docBrokerSocket,
 #endif
+                size_t spareKitId
                 )
 {
 #ifndef MOBILEAPP
@@ -2344,7 +2346,7 @@ void lokit_main(
     SigUtil::setTerminationSignals();
 #endif
 
-    Util::setThreadName("oxoolkit");
+    Util::setThreadName("kit_spare_" + Util::encodeId(spareKitId, 3));
 
     // Reinitialize logging when forked.
     const bool logToFile = std::getenv("LOOL_LOGFILE");
