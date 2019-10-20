@@ -1035,6 +1035,12 @@ msgid ""
 msgstr ""
 
 #: src/errormessages.js:24
+msgid ""
+"Failed to load the document. This document is either malformed or is taking "
+"more resources than allowed. Please contact the administrator."
+msgstr ""
+
+#: src/errormessages.js:24
 msgid "Invalid link: '%url'"
 msgstr ""
 
