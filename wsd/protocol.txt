@@ -231,6 +231,10 @@ signdocument
 
     Sign the current document with the input cetificate and private key.
 
+removesession <viewid>
+    Requests the removal of a given view from the document. Lower
+    privilege views cannot remove higher ones, eg. a readonly view
+    can't remove an editor.
 
 server -> client
 ================
