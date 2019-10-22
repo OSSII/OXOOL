@@ -426,18 +426,76 @@ L.Map.Keyboard = L.Handler.extend({
 
 	_onIME: function (e) {
 		this._map.notifyActive();
+		var viewId = this._map._docLayer._viewId;
+		var viewInfo = this._map._viewInfo[viewId];
+		// 是否只有自己在編輯
+		var onlyMe = (!viewInfo || Object.keys(this._map._viewInfo).length === 1);
+		// 輸入區容器
+		var clipboardContainer = this._map._clipboardContainer._container;
+		// 輸入區 input html element
+		var clipboard = this._map._clipboardContainer.activeElement();
+		// 實際游標所在容器
+		var cursorMarker = this._map._docLayer._cursorMarker;
 		if (e.type === 'compositionstart') {
 			this._isComposing = true; // we are starting composing with IME
 		} else if (e.type === 'compositionupdate') {
-			this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
+			// 只有自己在編輯的話，就依照原來方式，送出組字資料就結束
+			if (onlyMe) {
+				this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
+				return;
+			}
+
+			// 計算組字區寬度
+			var width = e.originalEvent.data.length * 16;
+			if (width === 0) {
+				return;
+			}
+			var wpx = width + 'px';
+			var cursor;
+			if (cursorMarker) {
+				cursor = cursorMarker._container;
+			}
+
+			if (!L.DomUtil.hasClass(clipboard, 'overspot')) {
+				L.DomUtil.addClass(clipboard, 'overspot')
+			}
+			clipboard.style.width = wpx;
+
+			if (!L.DomUtil.hasClass(clipboardContainer, 'overspot')) {
+				L.DomUtil.addClass(clipboardContainer, 'overspot')
+			}
+			clipboardContainer.style.width = wpx;
+
+			// 共編模式組字區背景色使用該使用者的顏色
+			if (viewInfo) {
+				clipboardContainer.style.background = L.LOUtil.rgbToHex(viewInfo.color);
+			}
+
+			// 輸入區移到游標下方，避免擋住同一行
+			if (cursor) {
+				clipboardContainer.style.top = (cursor.offsetTop + cursor.clientHeight) + 'px';
+			}
 		} else if (e.type === 'compositionend') {
 			this._isComposing = false; // stop of composing with IME
 			// get the composited char codes
 			// clear the input now - best to do this ASAP so the input
 			// is clear for the next word
 			this._map._clipboardContainer.setValue('');
-			// Set all keycodes to zero
-			this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
+			// 只有自己在編輯的話，就依照原來方式，送出結束訊息
+			if (onlyMe) {
+				// Set all keycodes to zero
+				this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
+				return;
+			}
+
+			if (e.originalEvent.data.length > 0) {
+				L.DomUtil.removeClass(clipboard, 'overspot');
+				L.DomUtil.removeClass(clipboardContainer, 'overspot');
+				// 送出所有組字
+				this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
+				// Set all keycodes to zero
+				this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
+			}
 		}
 
 		if (e.type === 'textInput' && !this._keyHandled && !this._isComposing) {

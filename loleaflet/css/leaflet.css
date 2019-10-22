@@ -697,8 +697,19 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 	top: 0px;
 	width: 0px;
 	height: 0px;
-	z-index: 100;
+	z-index: -1;
 	opacity: 0;
+	}
+
+.clipboard-container.overspot {
+	height: 24px;
+	padding: 4px;
+	opacity: 0.9;
+	background: #b45f17;
+	border-radius: 0px 5px 5px 5px;
+	border: 2px #e0e0e0 solid;
+	box-shadow: 5px 5px 5px rgba(128, 128, 128, 0.7);
+	z-index: 100;
 	}
 
 input.clipboard {
@@ -708,6 +719,18 @@ input.clipboard {
 				    the padding to non-zero. Hence, the !important. Otherwise,
 				    clipboard cursor apperas in MSIE and MSEdge */
 	border: 0px !important;
+	z-index: -1;
+}
+
+input.clipboard.overspot {
+	height: 24px;
+	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 24px;
+	background: transparent;
+	color: #ffffff;
+	z-index: 100;
 }
 
 .clipboard:focus {
