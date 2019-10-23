@@ -487,10 +487,10 @@ L.Map.Keyboard = L.Handler.extend({
 				this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
 				return;
 			}
-
+			// 隱藏組字區
+			L.DomUtil.removeClass(clipboard, 'overspot');
+			L.DomUtil.removeClass(clipboardContainer, 'overspot');
 			if (e.originalEvent.data.length > 0) {
-				L.DomUtil.removeClass(clipboard, 'overspot');
-				L.DomUtil.removeClass(clipboardContainer, 'overspot');
 				// 送出所有組字
 				this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
 				// Set all keycodes to zero
