@@ -384,3 +384,6 @@
 .linenumberdialog{background: url('images/lc_linenumberdialog.svg') no-repeat center/contain !important;}
 .textbox{ background: url('images/lc_text.svg') no-repeat center/contain !important;}
 .gotopage{ background: url('images/lc_gotopage.svg') no-repeat center/contain !important;}
+.insertindexesentry{ background: url('images/lc_insertindexesentry.svg') no-repeat center/contain !important;}
+.insertauthoritiesentry{ background: url('images/lc_insertauthoritiesentry.svg') no-repeat center/contain !important;}
+.insertmultiindex{ background: url('images/lc_insertmultiindex.svg') no-repeat center/contain !important;}

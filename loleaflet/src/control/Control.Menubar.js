@@ -109,10 +109,12 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:InsertZWSP'},
 					{uno: '.uno:InsertZWNBSP'},
 					{uno: '.uno:InsertLRM'},
-					{uno: '.uno:InsertRLM'}]}/*,
-				{uno: '.uno:InsertIndexesEntry'}*/
-			]
-			},
+					{uno: '.uno:InsertRLM'}]},
+				{name: _UNO('.uno:IndexesMenu', 'text'), type: 'menu', menu: [
+				{uno: '.uno:InsertIndexesEntry', icon: 'img-icon insertindexesentry'},
+				{uno: '.uno:InsertAuthoritiesEntry', icon: 'img-icon insertauthoritiesentry'},
+				{uno: '.uno:InsertMultiIndex', icon: 'img-icon insertmultiindex'}]},
+			]},
 			{name: _UNO('.uno:FormatMenu', 'text'), type: 'menu', menu: [
 				{name: _UNO('.uno:FormatTextMenu', 'text'), icon:'fa fa-font', type: 'menu', menu: [
 					{uno: '.uno:Bold', icon: 'fa fa-bold', hotkey: 'Ctrl+B'},
