@@ -980,7 +980,7 @@ void DocumentBroker::setLoaded()
     }
 }
 
-bool DocumentBroker::autoSave(const bool force)
+bool DocumentBroker::autoSave(const bool force, const bool dontSaveIfUnmodified)
 {
     assertCorrectThread();
 
@@ -1021,7 +1021,7 @@ bool DocumentBroker::autoSave(const bool force)
         LOG_TRC("Sending forced save command for [" << _docKey << "].");
         // Don't terminate editing as this can be invoked by the admin OOM, but otherwise force saving anyway.
         sent = sendUnoSave(savingSessionId, /*dontTerminateEdit=*/true,
-                           /*dontSaveIfUnmodified=*/true, /*isAutosave=*/false,
+                           dontSaveIfUnmodified, /*isAutosave=*/false,
                            /*isExitSave=*/true);
     }
     else if (_isModified)
@@ -1204,8 +1204,9 @@ size_t DocumentBroker::removeSession(const std::string& id)
                 << it->second->isViewLoaded() << ". markToDestroy: " << _markToDestroy
                 << ", LastEditableSession: " << lastEditableSession);
 
+        const auto dontSaveIfUnmodified = !LOOLWSD::getConfigValue<bool>("per_document.always_save_on_exit", false);
         // If last editable, save and don't remove until after uploading to storage.
-        if (!lastEditableSession || !autoSave(isPossiblyModified()))
+        if (!lastEditableSession || !autoSave(isPossiblyModified(), dontSaveIfUnmodified))
             removeSessionInternal(id);
     }
     catch (const std::exception& ex)
