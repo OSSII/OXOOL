@@ -4,6 +4,7 @@
 
 # Autofoo
 .deps
+.libs
 .dirstamp
 .clang_complete
 .cxx_tags
@@ -15,6 +16,7 @@ Makefile.in
 oxoolwsd.spec
 loolwsd.spec
 oxoolwsd.xml
+oxool.pc
 aclocal.m4
 autom4te.cache
 config.h
@@ -53,6 +55,7 @@ cscope*
 loolwsd.log
 *.log.*.gz
 *.lo
+*.la
 
 # loleaflet
 loleaflet/dist
