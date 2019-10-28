@@ -12,7 +12,7 @@ SUBDIRS = gtk loleaflet
 
 else
 
-SUBDIRS = . loleaflet extensions
+SUBDIRS = src/include src/lib loleaflet extensions
 
 export ENABLE_DEBUG
 
@@ -58,6 +58,12 @@ oxoolwsdconfig_DATA = oxoolwsd.xml \
 		      etc/ca-chain.cert.pem \
 		      etc/cert.pem \
 		      etc/key.pem
+
+oxool_modulesdir = @LOOLWSD_MODULES_DIR@
+
+oxool_module_confdir = @LOOLWSD_MODULE_CONFIG_DIR@
+
+oxool_module_datadir = @LOOLWSD_MODULE_DATA_DIR@
 
 #apache2configdir = ${sysconfdir}/apache2/conf-available
 
@@ -280,6 +286,9 @@ EXTRA_DIST = discovery.xml \
              scripts/unocommands.py \
              $(man_MANS)
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = oxool.pc
+
 if HAVE_LO_PATH
 
 SYSTEM_STAMP = @SYSTEMPLATE_PATH@/system_stamp
@@ -417,3 +426,13 @@ build-nocheck: all-am
 
 endif
 endif
+
+install-data-local:
+	$(MKDIR_P) $(DESTDIR)$(LOOLWSD_MODULES_DIR)
+	$(MKDIR_P) $(DESTDIR)$(LOOLWSD_MODULE_CONFIG_DIR)
+	$(MKDIR_P) $(DESTDIR)$(LOOLWSD_MODULE_DATA_DIR)
+
+uninstall-local:
+	rmdir $(DESTDIR)$(LOOLWSD_MODULES_DIR)
+	rmdir $(DESTDIR)$(LOOLWSD_MODULE_CONFIG_DIR)
+	rmdir $(DESTDIR)$(LOOLWSD_MODULE_CONFIG_DIR)

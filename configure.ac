@@ -638,6 +638,15 @@ AC_SUBST(LOOLWSD_CACHEDIR)
 LOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(LOOLWSD_CONFIGDIR)
 
+LOOLWSD_MODULES_DIR=${libdir}/${PACKAGE}
+AC_SUBST(LOOLWSD_MODULES_DIR)
+
+LOOLWSD_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
+AC_SUBST(LOOLWSD_MODULE_CONFIG_DIR)
+
+LOOLWSD_MODULE_DATA_DIR=/var/lib/${PACKAGE}
+AC_SUBST(LOOLWSD_MODULE_DATA_DIR)
+
 LOOLWSD_DATADIR=${datadir}/${PACKAGE}
 AC_SUBST(LOOLWSD_DATADIR)
 
@@ -665,11 +674,14 @@ AC_LINK_FILES([loleaflet/node_shrinkwrap], [loleaflet/node_shrinkwrap])
 AC_CONFIG_FILES([Makefile
                  gtk/Makefile
                  Mobile/Mobile/Info.plist
+                 src/include/Makefile
+                 src/lib/Makefile
                  loleaflet/Makefile
                  extensions/Makefile
                  loleaflet/npm-shrinkwrap.json
                  oxoolwsd.spec
                  oxoolwsd.xml
+                 oxool.pc
                  debian/loolwsd.postinst])
 AC_OUTPUT
 

@@ -31,6 +31,12 @@ Requires:       poco-crypto >= 1.7.5 poco-foundation >= 1.7.5 poco-json >= 1.7.5
 
 %description
 
+%package	devel
+Summary:	Files for build OxOffice Online.
+Requires:	%{name} = %{version}
+%description	devel
+Files for build OxOffice Online. 
+
 %prep
 %setup -q -n %{name}-%{version}-@LOOLWSD_BRANCH@
 
@@ -51,6 +57,7 @@ make %{?_smp_mflags}
 
 %install
 %make_install
+rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
 
 %__install -D -m 444 oxoolwsd.service %{buildroot}%{_unitdir}/oxoolwsd.service
 
@@ -68,6 +75,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 /usr/bin/oxoolforkit
 /usr/bin/oxoolconvert
 /usr/bin/oxoolconfig
+%{_libdir}/*.so.*
 /usr/share/fonts/SourceHan/*.ttc
 %dir /usr/share/%{name}
 /usr/share/%{name}/loleaflet
@@ -87,6 +95,9 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) /etc/sysconfig/oxoolwsd
 
 %dir /etc/%{name}
+%dir /etc/%{name}/conf.d
+%dir %attr(640, lool, root) /var/lib/%{name}
+%dir %{_libdir}/%{name}
 %config(noreplace) /etc/cron.d/%{name}.cron
 %config(noreplace) /etc/pam.d/%{name}
 %config(noreplace) %attr(640, lool, root) /etc/%{name}/oxoolwsd.xml
@@ -96,6 +107,11 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config %attr(440, root, root) /etc/sudoers.d/lool
 
 %doc README
+
+%files devel
+%{_includedir}/*
+%{_libdir}/*.so
+%{_libdir}/pkgconfig/*.pc
 
 %pre
 getent group lool >/dev/null || groupadd -r lool
