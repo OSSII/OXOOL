@@ -2835,6 +2835,8 @@ Editor to WOPI host
 		    <nobr>UserId: &lt;String&gt;</nobr>
 		    <nobr>UserName: &lt;String&gt;</nobr>
 		    <nobr>Color: &lt;Number&gt;</nobr>
+		    <nobr>ReadOnly: &lt;Boolean&gt;</nobr>
+		    <nobr>IsCurrentView: &lt;Boolean&gt;</nobr>
 		</code></td>
 		<td>Give details of all current views when queried using <code>Get_Views</code>
 		</td>
@@ -2855,6 +2857,23 @@ Editor to WOPI host
 </table>
 
 <h3 id="loleaflet-postmessage-sessions">Session Management</h3>
+WOPI Host to editor
+<table data-id='postmessage-sessions-management'>
+	<tr>
+		<th>MessageId</th>
+		<th>Values</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td><code><b>Action_RemoveView</b></code></td>
+		<td><code>
+			<nobr>ViewId: &lt;Number&gt;</nobr>
+		</code></td>
+		<td>Remove the session</code>.
+		</td>
+	</tr>
+	</table>
+
 Editor to WOPI Host
 <table data-id='postmessage-sessions'>
 	<tr>
@@ -2925,6 +2944,17 @@ WOPI host to editor
 		</td>
 	</tr>
 	<tr>
+		<td><code><b>Action_FollowUser</b></code></td>
+		<td><code>
+			<nobr>Follow: &lt;Boolean&gt;</nobr>
+			<nobr>ViewId: &lt;Number&gt;</nobr>
+		</code></td>
+		<td>Turn on or off the follow user feature.<br/>
+		When <code>Follow</code> is set to true or is not defined enables following the editor, disables following when set to false.<br/>
+		When <code>Follow</code> is set to true or is not defined <code>ViewId</code> parameter specifies user to follow. When <code>ViewId</code> is not defined, the current editor is followed.<br/>
+		</td>
+	</tr>
+	<tr>
 		<td><code><b>Action_Print</b></code></td>
 		<td><code>
 		</code></td>
@@ -2985,6 +3015,20 @@ Actions response
 		in the document to be saved to the storage.
 		This response is only emitted if <code>Notify</code> parameter
 		is mentioned by <code>Action_Save</code> PostMessage API.
+		</td>
+	</tr>
+	<tr>
+		<td><code><b>FollowUser_Changed</b></code></td>
+		<td><code>
+			<nobr>FollowedViewId: &lt;Number&gt;</nobr>
+			<nobr>IsFollowUser: &lt;Boolean&gt;</nobr>
+			<nobr>IsFollowEditor: &lt;Boolean&gt;</nobr>
+		</code></td>
+		<td>Notification about current following state.<br/>
+		<code>FollowedViewId</code> tells which user is followed. <code>IsFollowUser</code> determines if following the specific user is
+		activated. <code>IsFollowEditor</code> determines if following the editor is
+		activated. If both <code>IsFollowUser</code> & <code>IsFollowEditor</code> are false then following is
+		inactive.
 		</td>
 	</tr>
 </table>
@@ -3092,10 +3136,32 @@ WOPI host to editor
 			<code><nobr>id: &lt;string&gt;</nobr></code>
 		</td>
 		<td>
-			Hides a button from the toolbar.<br/>
+			Shows a button from the toolbar.<br/>
 			<code>id</code> is the button ID as defined in the
 			<a href="https://opengrok.libreoffice.org/search?project=online&q=&defs=createToolbar">createToolbar</a>
 			function in <a href="https://opengrok.libreoffice.org/xref/online/loleaflet/js/toolbar.js">loleaflet/js/toolbar.js</a>.
+		</td>
+	</tr>
+	<tr>
+		<td><code><b>Hide_Menu_Item</b></code></td>
+		<td>
+			<code><nobr>id: &lt;string&gt;</nobr></code>
+		</td>
+		<td>
+			Hides an item from the menu.<br/>
+			<code>id</code> is the item ID as defined in the
+			<a href="https://opengrok.libreoffice.org/xref/online/loleaflet/src/control/Control.Menubar.js">loleaflet/src/control/Control.Menubar.js</a>.
+		</td>
+	</tr>
+	<tr>
+		<td><code><b>Show_Menu_Item</b></code></td>
+		<td>
+			<code><nobr>id: &lt;string&gt;</nobr></code>
+		</td>
+		<td>
+			Shows an item from the menu.<br/>
+			<code>id</code> is the item ID as defined in the
+			<a href="https://opengrok.libreoffice.org/xref/online/loleaflet/src/control/Control.Menubar.js">loleaflet/src/control/Control.Menubar.js</a>.
 		</td>
 	</tr>
 </table>
@@ -3114,6 +3180,16 @@ Editor to WOPI host
 		<td>
 		  This event is emitted when the custom button added
 		  via <code>Insert_Button</code> API above is clicked.
+		</td>
+	</tr>
+	<tr>
+		<td><code><b>UI_CreateFile</b></code></td>
+		<td></td>
+		<td>
+		Requests WOPI host to open a new browser tab and create a new
+		document.  The document type is passed as DocumentType
+		argument, and cand be 'text', 'spreadsheet', 'presentation' or
+		'drawing'.
 		</td>
 	</tr>
 	<tr>
