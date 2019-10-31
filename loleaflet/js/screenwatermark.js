@@ -36,7 +36,11 @@
 			retString = openDate;
 			break;
 		case 'ip':
-			retString = 'IP : ' + (viewInfo.userextrainfo.ip !== undefined ? viewInfo.userextrainfo.ip : 'UNKNOW');
+			retString = 'IP : ';
+			if (viewInfo.userextrainfo && viewInfo.userextrainfo.ip !== undefined)
+				retString += viewInfo.userextrainfo.ip
+			else
+				retString += 'UNKNOW';
 			break;
 		}
 
@@ -77,9 +81,15 @@
 		var height = $(map._container).height();
 		var boxW = Math.floor(width / 3); // 每個浮水印佔 1/3 寬度
 		var boxH = Math.floor(height / 3);	// 每個浮水印佔 1/3 高度
-		var lineHeight = Math.floor(boxH / 3);
-		var fontSize = Math.floor(lineHeight / 2);
+		var lineHeight, fontSize; 
 		var top, left;
+
+		if (height < width) 
+			lineHeight = Math.floor(boxH / 3);
+		else
+			lineHeight = Math.floor(boxW / 3);
+
+		fontSize = Math.floor(lineHeight * 0.66);
 
 		for (var key in boxes) {
 			if (!boxes[key]) {
