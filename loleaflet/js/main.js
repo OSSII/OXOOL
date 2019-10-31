@@ -71,12 +71,15 @@ var map = L.map('map', {
 });
 
 ////// Controls /////
+var menubar;
 var xmlmenubar = getParameterByName('xmlmenubar') === 'true';
 if (!xmlmenubar)
-	map.addControl(L.control.menubar());
+	menubar = L.control.menubar();
 else
-	map.addControl(L.control.xmlmenubar());
+	menubar = L.control.xmlmenubar();
 
+map.menubar = menubar;
+map.addControl(menubar);
 setupToolbar(map);
 setupScreenWatermark(map);
 map.addControl(L.control.dialogs());
