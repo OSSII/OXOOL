@@ -2865,9 +2865,11 @@ function updateUserListCount() {
 	$('#zoomlevel').html(zoomlevel);
 
 	if (count > 1) {
+		map.menubar.hideItem('repair');
 		$('#tb_actionbar_item_userlist').show();
 		$('#tb_actionbar_item_userlistbreak').show();
 	} else {
+		map.menubar.showItem('repair');
 		$('#tb_actionbar_item_userlist').hide();
 		$('#tb_actionbar_item_userlistbreak').hide();
 	}
