@@ -1547,6 +1547,7 @@ L.Map = L.Evented.extend({
 		moveObjectVertically($('#spreadsheet-row-column-frame'), height);
 		moveObjectVertically($('#document-container'), height);
 		moveObjectVertically($('#presentation-controls-wrapper'), height);
+		moveObjectVertically($('#sidebar-dock-wrapper'), height);
 	}
 });
 
