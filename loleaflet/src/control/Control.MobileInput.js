@@ -32,25 +32,34 @@ L.Control.MobileInput = L.Control.extend({
 	},
 
 	onGotFocus: function () {
-		if (this._map._docLayer && this._map.getDocType() === 'spreadsheet') {
+		var map = this._map;
+		var docLayer = map._docLayer;
+		if (!this._readOnly) {
+			this._textArea.focus();
+		}
+		if (docLayer && map.getDocType() === 'spreadsheet') {
 			return;
 		}
-		if (this._map._docLayer && this._map._docLayer._cursorMarker) {
-			this._cursorHandler.setLatLng(this._map._docLayer._visibleCursor.getSouthWest());
-			this._map.addLayer(this._map._docLayer._cursorMarker);
-			if (this._map._docLayer._selections.getLayers().length === 0) {
-				this._map.addLayer(this._cursorHandler);
+		if (docLayer && docLayer._cursorMarker) {
+			this._cursorHandler.setLatLng(docLayer._visibleCursor.getSouthWest());
+			map.addLayer(docLayer._cursorMarker);
+			if (docLayer._selections.getLayers().length === 0) {
+				if (!this._readOnly) {
+					map.addLayer(this._cursorHandler);
+				}
 			} else {
-				this._map.removeLayer(this._cursorHandler);
+				map.removeLayer(this._cursorHandler);
 			}
 		}
 	},
 
 	onLostFocus: function () {
-		if (this._map._docLayer && this._map._docLayer._cursorMarker) {
+		var map = this._map;
+		var docLayer = map._docLayer;
+		if (docLayer && docLayer._cursorMarker) {
 			this._textArea.value = '';
-			this._map.removeLayer(this._map._docLayer._cursorMarker);
-			this._map.removeLayer(this._cursorHandler);
+			map.removeLayer(docLayer._cursorMarker);
+			map.removeLayer(this._cursorHandler);
 		}
 	},
 
@@ -61,7 +70,8 @@ L.Control.MobileInput = L.Control.extend({
 
 		this._textArea.blur();
 		if (focus !== false) {
-			this._textArea.focus();
+			this.onGotFocus();
+			//this._textArea.focus();
 		}
 	},
 
@@ -93,12 +103,14 @@ L.Control.MobileInput = L.Control.extend({
 
 	// Add by Firefly <firefly@ossii.com.tw>
 	disableVirtualKeyboard: function () {
-		this._textArea.setAttribute('readonly', true);
+		this._readOnly = true;
+		//this._textArea.setAttribute('readonly', true);
 		this.focus();
 	},
 
 	enableVirtualKeyboard: function () {
-		this._textArea.removeAttribute('readonly');
+		this._readOnly = false;
+		//this._textArea.removeAttribute('readonly');
 		this.focus();
 	},
 
@@ -106,7 +118,7 @@ L.Control.MobileInput = L.Control.extend({
 		var constOff = 'off',
 		stopEvents = 'touchstart touchmove touchend mousedown mousemove mouseout mouseover mouseup mousewheel click scroll',
 		container = this._container = L.DomUtil.create('div', 'loleaflet-mobile-container');
-		
+		this._iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 		this._textArea = L.DomUtil.create('input', 'loleaflet-mobile-input', container);
 		this._textArea.setAttribute('type', 'text');
 		this._textArea.setAttribute('autocorrect', constOff);
@@ -117,7 +129,7 @@ L.Control.MobileInput = L.Control.extend({
 		L.DomEvent.on(this._textArea, stopEvents, L.DomEvent.stopPropagation)
 			.on(this._textArea, 'keydown keypress keyup', this.onKeyEvents, this)
 			.on(this._textArea, 'compositionstart compositionupdate compositionend textInput', this.onCompEvents, this)
-			.on(this._textArea, 'focus', this.onGotFocus, this)
+			/*.on(this._textArea, 'focus', this.onGotFocus, this)*/
 			.on(this._textArea, 'blur', this.onLostFocus, this);
 	},
 
