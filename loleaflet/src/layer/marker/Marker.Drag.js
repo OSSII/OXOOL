@@ -16,6 +16,7 @@ L.Handler.MarkerDrag = L.Handler.extend({
 		}
 
 		this._draggable.on({
+			down: this._onDown,
 			dragstart: this._onDragStart,
 			drag: this._onDrag,
 			dragend: this._onDragEnd,
@@ -27,6 +28,7 @@ L.Handler.MarkerDrag = L.Handler.extend({
 
 	removeHooks: function () {
 		this._draggable.off({
+			down: this._onDown,
 			dragstart: this._onDragStart,
 			drag: this._onDrag,
 			dragend: this._onDragEnd,
@@ -42,11 +44,25 @@ L.Handler.MarkerDrag = L.Handler.extend({
 		return this._draggable && this._draggable._moved;
 	},
 
-	_onDragStart: function () {
+	freezeX: function (boolChoice) {
+		if (this._draggable)
+			this._draggable.freezeX(boolChoice);
+	},
+
+	freezeY: function (boolChoice) {
+		if (this._draggable)
+			this._draggable.freezeY(boolChoice);
+	},
+
+	_onDown: function (e) {
+		this._marker.fire('down', e);
+	},
+
+	_onDragStart: function (e) {
 		this._marker
 		    .closePopup()
-		    .fire('movestart')
-		    .fire('dragstart');
+		    .fire('movestart', e)
+		    .fire('dragstart', e);
 	},
 
 	_onDrag: function (e) {
@@ -70,7 +86,7 @@ L.Handler.MarkerDrag = L.Handler.extend({
 
 	_onDragEnd: function (e) {
 		this._marker
-		    .fire('moveend')
+		    .fire('moveend', e)
 		    .fire('dragend', e);
 	},
 

@@ -131,6 +131,8 @@ namespace LOKitHelper
             return "CONTEXT_CHANGED";
         case LOK_CALLBACK_SIGNATURE_STATUS:
             return "SIGNATURE_STATUS";
+        case LOK_CALLBACK_TABLE_SELECTED:
+            return "TABLE_SELECTED";
        }
 
         return std::to_string(type);
