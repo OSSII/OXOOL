@@ -84,6 +84,7 @@ extern "C"
             CASE(CLIPBOARD_CHANGED);
             CASE(CONTEXT_CHANGED);
             CASE(SIGNATURE_STATUS);
+            CASE(TABLE_SELECTED);
 #undef CASE
         }
         std::cout << " payload: " << payload << std::endl;
