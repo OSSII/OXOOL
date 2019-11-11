@@ -74,6 +74,8 @@ SslContext::SslContext(const std::string& certFilePath,
     // SSL_CTX_set_default_passwd_cb(_ctx, &privateKeyPassphraseCallback);
     ERR_clear_error();
     SSL_CTX_set_options(_ctx, SSL_OP_ALL);
+    SSL_CTX_set_options(_ctx, SSL_OP_NO_SSLv3);
+    SSL_CTX_set_options(_ctx, SSL_OP_NO_TLSv1);
 
     try
     {
