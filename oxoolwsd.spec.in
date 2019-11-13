@@ -96,7 +96,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
 %dir /etc/%{name}
 %dir /etc/%{name}/conf.d
-%dir %attr(640, lool, root) /var/lib/%{name}
+%dir %attr(750, lool, root) /var/lib/%{name}
 %dir %{_libdir}/%{name}
 %config(noreplace) /etc/cron.d/%{name}.cron
 %config(noreplace) /etc/pam.d/%{name}

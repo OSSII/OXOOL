@@ -678,8 +678,13 @@ AC_LINK_FILES([loleaflet/node_shrinkwrap], [loleaflet/node_shrinkwrap])
 AC_CONFIG_FILES([Makefile
                  gtk/Makefile
                  Mobile/Mobile/Info.plist
+                 bundled/include/LibreOfficeKit/Makefile
                  src/include/Makefile
+                 common/Makefile
+                 net/Makefile
                  src/lib/Makefile
+                 wsd/Makefile
+                 kit/Makefile
                  loleaflet/Makefile
                  extensions/Makefile
                  loleaflet/npm-shrinkwrap.json

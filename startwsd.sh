@@ -2,6 +2,7 @@
 thisPath=`pwd`
 while true ; do
     LOOL_SERVE_FROM_FS=1 ./oxoolwsd --o:sys_template_path="$thisPath/systemplate" \
+	--config-file="$thisPath/oxoolwsd.xml" \
 	--o:lo_template_path="/opt/oxoffice" \
 	--o:child_root_path="$thisPath/jails" \
 	--o:storage.filesystem[@allow]=true \

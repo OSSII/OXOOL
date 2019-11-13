@@ -13,4 +13,4 @@ Name: oxool
 Description: 
 Version: @VERSION@
 Libs: -L${libdir} -loxool
-Cflags: -I${includedir}
+Cflags: -I${includedir}/oxool -I${includedir}/oxool/common -I${includedir}/oxool/net -I${includedir}/oxool/wsd -I${includedir}/oxool/kit
