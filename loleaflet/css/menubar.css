@@ -26,21 +26,21 @@
 }
 
 .writer-icon-img {
-        background-image: url('images/lc_logo_odt_scale1.svg');
+        background-image: url('images/writer_icon.png');
         background-size: 30px 30px;
         background-repeat: no-repeat;
         background-position: bottom;
 }
 
 .calc-icon-img {
-        background-image: url('images/lc_logo_ods_scale1.svg');
+        background-image: url('images/calc_icon.png');
         background-size: 30px 30px;
         background-repeat: no-repeat;
         background-position: bottom;
 }
 
 .impress-icon-img {
-        background-image: url('images/lc_logo_odp_scale1.svg');
+        background-image: url('images/impress_icon.png');
         background-size: 30px 30px;
         background-repeat: no-repeat;
         background-position: bottom;
