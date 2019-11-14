@@ -22,7 +22,7 @@ include_paths = -I ${top_srcdir}/src/include -I${top_srcdir}/common -I${top_srcd
 
 AM_CPPFLAGS = -pthread -DLOOLWSD_DATADIR='"@LOOLWSD_DATADIR@"' \
               -DLOOLWSD_CONFIGDIR='"@LOOLWSD_CONFIGDIR@"' \
-              -DDEBUG_ABSSRCDIR='"@abs_srcdir@"' \
+              -DDEBUG_ABSSRCDIR='"@abs_top_srcdir@"' \
               ${include_paths}
 
 if !ENABLE_DEBUG

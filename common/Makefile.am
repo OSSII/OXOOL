@@ -32,7 +32,7 @@ include_paths = -I$(top_srcdir)			\
 
 AM_CPPFLAGS = -DLOOLWSD_DATADIR='"@LOOLWSD_DATADIR@"' \
 	      -DLOOLWSD_CONFIGDIR='"@LOOLWSD_CONFIGDIR@"' \
-	      -DDEBUG_ABSSRCDIR='"@abs_srcdir@"' \
+	      -DDEBUG_ABSSRCDIR='"@abs_top_srcdir@"' \
 	      ${include_paths}
 
 if !ENABLE_DEBUG
