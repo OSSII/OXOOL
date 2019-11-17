@@ -155,7 +155,7 @@ public:
         {
             if (_ws)
             {
-                LOG_TRC("Send DocBroker to Child message: [" << data << "].");
+                LOG_TRC("Send DocBroker to Child message: [" << LOOLProtocol::getAbbreviatedMessage(data) << "].");
                 _ws->sendMessage(data);
                 return true;
             }
@@ -163,11 +163,11 @@ public:
         catch (const std::exception& exc)
         {
             LOG_ERR("Failed to send child [" << _pid << "] data [" <<
-                    data << "] due to: " << exc.what());
+                    LOOLProtocol::getAbbreviatedMessage(data) << "] due to: " << exc.what());
             throw;
         }
 
-        LOG_WRN("No socket between DocBroker and child to send [" << data << "]");
+        LOG_WRN("No socket between DocBroker and child to send [" << LOOLProtocol::getAbbreviatedMessage(data) << "]");
         return false;
     }
 
@@ -221,10 +221,12 @@ public:
     /// Construct DocumentBroker with URI, docKey, and root path.
     DocumentBroker(const std::string& uri,
                    const Poco::URI& uriPublic,
-                   const std::string& docKey,
-                   const std::string& childRoot);
+                   const std::string& docKey);
 
-    ~DocumentBroker();
+    virtual ~DocumentBroker();
+
+    /// Called when removed from the DocBrokers list
+    virtual void dispose() {}
 
     /// Start processing events
     void startThread();
@@ -410,8 +412,9 @@ private:
     /// Sum the I/O stats from all connected sessions
     void getIOStats(uint64_t &sent, uint64_t &recv);
 
+protected:
+    std::string _uriOrig;
 private:
-    const std::string _uriOrig;
     const Poco::URI _uriPublic;
     /// URL-based key. May be repeated during the lifetime of WSD.
     const std::string _docKey;
@@ -478,6 +481,25 @@ private:
 
     /// Unique DocBroker ID for tracing and debugging.
     static std::atomic<unsigned> DocBrokerId;
+};
+
+class ConvertToBroker : public DocumentBroker
+{
+public:
+    /// Construct DocumentBroker with URI and docKey
+    ConvertToBroker(const std::string& uri,
+                    const Poco::URI& uriPublic,
+                    const std::string& docKey);
+    virtual ~ConvertToBroker();
+
+    /// Called when removed from the DocBrokers list
+    void dispose() override;
+
+    /// How many live conversions are running.
+    static size_t getInstanceCount();
+
+    /// Cleanup path and its parent
+    static void removeFile(const std::string &uri);
 };
 
 #endif

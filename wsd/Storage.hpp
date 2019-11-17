@@ -34,11 +34,10 @@ public:
         FileInfo(const std::string& filename,
                  const std::string& ownerId,
                  const Poco::Timestamp& modifiedTime,
-                 size_t size)
+                 size_t /*size*/)
             : _filename(filename),
               _ownerId(ownerId),
-              _modifiedTime(modifiedTime),
-              _size(size)
+              _modifiedTime(modifiedTime)
         {
         }
 
@@ -48,10 +47,18 @@ public:
             return !_filename.empty();
         }
 
+        const std::string& getFilename() const { return _filename; }
+
+        const std::string& getOwnerId() const { return _ownerId; }
+
+        void setModifiedTime(const Poco::Timestamp& modifiedTime) { _modifiedTime = modifiedTime; }
+
+        const Poco::Timestamp& getModifiedTime() const { return _modifiedTime; }
+
+    private:
         std::string _filename;
         std::string _ownerId;
         Poco::Timestamp _modifiedTime;
-        size_t _size;
     };
 
     class SaveResult
@@ -127,7 +134,11 @@ public:
 
     virtual ~StorageBase() {}
 
-    const std::string getUri() const { return _uri.toString(); }
+    const Poco::URI& getUri() const { return _uri; }
+
+    const std::string getUriString() const { return _uri.toString(); }
+
+    const std::string& getJailPath() const { return _jailPath; };
 
     /// Returns the root path to the jailed file.
     const std::string& getRootFilePath() const { return _jailedFilePath; };
@@ -140,28 +151,44 @@ public:
         _jailedFilePath = newPath;
     }
 
+    const std::string& getRootFilePathAnonym() const { return _jailedFilePathAnonym; };
+
+    void setRootFilePathAnonym(const std::string& newPath)
+    {
+        _jailedFilePathAnonym = newPath;
+    }
+
+    void setLoaded(bool loaded) { _isLoaded = loaded; }
+
     bool isLoaded() const { return _isLoaded; }
 
     /// Asks the storage object to force overwrite to storage upon next save
     /// even if document turned out to be changed in storage
-    void forceSave() { _forceSave = true; }
+    void forceSave(bool newSave = true) { _forceSave = newSave; }
+
+    bool getForceSave() const { return _forceSave; }
 
     /// To be able to set the WOPI extension header appropriately.
-    void setUserModified(bool isUserModified) { _isUserModified = isUserModified; }
+    void setUserModified(bool userModified) { _isUserModified = userModified; }
 
-    /// To be able to set the WOPI 'is autosave?' header appropriately.
+    bool isUserModified() const { return _isUserModified; }
+
+    /// To be able to set the WOPI 'is autosave/is exitsave?' headers appropriately.
     void setIsAutosave(bool isAutosave) { _isAutosave = isAutosave; }
+    bool getIsAutosave() const { return _isAutosave; }
     void setIsExitSave(bool exitSave) { _isExitSave = exitSave; }
     bool isExitSave() const { return _isExitSave; }
 
-    /// Returns the basic information about the file.
-    const FileInfo& getFileInfo() const { return _fileInfo; }
+    void setFileInfo(const FileInfo& fileInfo) { _fileInfo = fileInfo; }
 
-    std::string getFileExtension() const { return Poco::Path(_fileInfo._filename).getExtension(); }
+    /// Returns the basic information about the file.
+    FileInfo& getFileInfo() { return _fileInfo; }
+
+    std::string getFileExtension() const { return Poco::Path(_fileInfo.getFilename()).getExtension(); }
 
     /// Returns a local file path for the given URI.
     /// If necessary copies the file locally first.
-    virtual std::string loadStorageFileToLocal(const Authorization& auth) = 0;
+    virtual std::string loadStorageFileToLocal(const Authorization& auth, const std::string& templateUri) = 0;
 
     /// Writes the contents of the file back to the source.
     /// @param savedFile When the operation was saveAs, this is the path to the file that was saved.
@@ -183,7 +210,7 @@ protected:
     /// Returns the root path of the jail directory of docs.
     std::string getLocalRootPath() const;
 
-protected:
+private:
     const Poco::URI _uri;
     std::string _localStorePath;
     std::string _jailPath;
@@ -231,6 +258,10 @@ public:
         {
         }
 
+        const std::string& getUserId() const { return _userId; }
+        const std::string& getUsername() const { return _username; }
+
+    private:
         std::string _userId;
         std::string _username;
     };
@@ -240,7 +271,7 @@ public:
     /// obtained using getFileInfo method
     std::unique_ptr<LocalFileInfo> getLocalFileInfo();
 
-    std::string loadStorageFileToLocal(const Authorization& auth) override;
+    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& templateUri) override;
 
     SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) override;
 
@@ -258,10 +289,15 @@ public:
                 const std::string& localStorePath,
                 const std::string& jailPath) :
         StorageBase(uri, localStorePath, jailPath),
-        _wopiLoadDuration(0)
+        _wopiLoadDuration(0),
+        _reuseCookies(false)
     {
-        LOG_INF("WopiStorage ctor with localStorePath: [" << localStorePath <<
-                "], jailPath: [" << jailPath << "], uri: [" << LOOLWSD::anonymizeUrl(uri.toString()) << "].");
+        const auto& app = Poco::Util::Application::instance();
+        _reuseCookies = app.config().getBool("storage.wopi.reuse_cookies", false);
+        LOG_INF("WopiStorage ctor with localStorePath: ["
+                << localStorePath << "], jailPath: [" << jailPath << "], uri: ["
+                << LOOLWSD::anonymizeUrl(uri.toString()) << "], reuseCookies: [" << _reuseCookies
+                << "].");
     }
 
     class WOPIFileInfo
@@ -280,6 +316,7 @@ public:
                      const std::string& userExtraInfo,
                      const std::string& watermarkText,
                      const std::string& templateSaveAs,
+                     const std::string& templateSource,
                      const bool userCanWrite,
                      const std::string& postMessageOrigin,
                      const bool hidePrintOption,
@@ -306,6 +343,7 @@ public:
               _username(username),
               _watermarkText(watermarkText),
               _templateSaveAs(templateSaveAs),
+              _templateSource(templateSource),
               _userCanWrite(userCanWrite),
               _postMessageOrigin(postMessageOrigin),
               _hidePrintOption(hidePrintOption),
@@ -320,7 +358,7 @@ public:
               _userCanNotWriteRelative(userCanNotWriteRelative),
               _enableInsertRemoteImage(enableInsertRemoteImage),
               _enableShare(enableShare),
-             _hideUserList(hideUserList),
+              _hideUserList(hideUserList),
               _disableChangeTrackingShow(disableChangeTrackingShow),
               _disableChangeTrackingRecord(disableChangeTrackingRecord),
               _hideChangeTrackingControls(hideChangeTrackingControls),
@@ -331,6 +369,65 @@ public:
                 _userExtraInfo = userExtraInfo;
             }
 
+        const std::string& getUserId() const { return _userId; }
+
+        const std::string& getUsername() const { return _username; }
+
+        const std::string& getUserExtraInfo() const { return _userExtraInfo; }
+
+        const std::string& getWatermarkText() const { return _watermarkText; }
+
+        const std::string& getTemplateSaveAs() const { return _templateSaveAs; }
+
+        const std::string& getTemplateSource() const { return _templateSource; }
+
+        bool getUserCanWrite() const { return _userCanWrite; }
+
+        std::string& getPostMessageOrigin() { return _postMessageOrigin; }
+
+        void setHidePrintOption(bool hidePrintOption) { _hidePrintOption = hidePrintOption; }
+
+        bool getHidePrintOption() const { return _hidePrintOption; }
+
+        bool getHideSaveOption() const { return _hideSaveOption; }
+
+        void setHideExportOption(bool hideExportOption) { _hideExportOption = hideExportOption; }
+
+        bool getHideExportOption() const { return _hideExportOption; }
+
+        bool getEnableOwnerTermination() const { return _enableOwnerTermination; }
+
+        bool getDisablePrint() const { return _disablePrint; }
+
+        bool getDisableExport() const { return _disableExport; }
+
+        bool getDisableCopy() const { return _disableCopy; }
+
+        bool getDisableInactiveMessages() const { return _disableInactiveMessages; }
+
+        bool getDownloadAsPostMessage() const { return _downloadAsPostMessage; }
+
+        bool getUserCanNotWriteRelative() const { return _userCanNotWriteRelative; }
+
+        bool getEnableInsertRemoteImage() const { return _enableInsertRemoteImage; }
+
+        bool getEnableShare() const { return _enableShare; }
+
+        bool getSupportsRename() const { return _supportsRename; }
+
+        bool getUserCanRename() const { return _userCanRename; }
+
+        std::string& getHideUserList() { return _hideUserList; }
+
+        TriState getDisableChangeTrackingShow() const { return _disableChangeTrackingShow; }
+
+        TriState getDisableChangeTrackingRecord() const { return _disableChangeTrackingRecord; }
+
+        TriState getHideChangeTrackingControls() const { return _hideChangeTrackingControls; }
+
+        std::chrono::duration<double> getCallDuration() const { return _callDuration; }
+
+private:
         /// User id of the user accessing the file
         std::string _userId;
         /// Obfuscated User id used for logging the UserId.
@@ -341,9 +438,11 @@ public:
         std::string _userExtraInfo;
         /// In case a watermark has to be rendered on each tile.
         std::string _watermarkText;
-        /// If user accessing the file has write permission
         /// In case we want to use this file as a template, it should be first re-saved under this name (using PutRelativeFile).
-         std::string _templateSaveAs;
+        std::string _templateSaveAs;
+        /// In case we want to use this file as a template.
+        std::string _templateSource;
+        /// If user accessing the file has write permission
         bool _userCanWrite;
         /// WOPI Post message property
         std::string _postMessageOrigin;
@@ -367,9 +466,9 @@ public:
         bool _downloadAsPostMessage;
         /// If set to false, users can access the save-as functionality
         bool _userCanNotWriteRelative;
-        /// if set to true, users can access the insert remote image functionality
+        /// If set to true, users can access the insert remote image functionality
         bool _enableInsertRemoteImage;
-        /// if set to true, users can access the file share functionality
+        /// If set to true, users can access the file share functionality
         bool _enableShare;
         /// If set to "true", user list on the status bar will be hidden
         /// If set to "mobile" | "tablet" | "desktop", will be hidden on a specified device
@@ -397,7 +496,7 @@ public:
     std::unique_ptr<WOPIFileInfo> getWOPIFileInfo(const Authorization& auth);
 
     /// uri format: http://server/<...>/wopi*/files/<id>/content
-    std::string loadStorageFileToLocal(const Authorization& auth) override;
+    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& templateUri) override;
 
     SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) override;
 
@@ -407,6 +506,8 @@ public:
 private:
     // Time spend in loading the file from storage
     std::chrono::duration<double> _wopiLoadDuration;
+    /// Whether or not to re-use cookies from the browser for the WOPI requests.
+    bool _reuseCookies;
 };
 
 /// WebDAV protocol backed storage.
@@ -427,7 +528,7 @@ public:
     // Implement me
     // WebDAVFileInfo getWebDAVFileInfo(const Poco::URI& uriPublic);
 
-    std::string loadStorageFileToLocal(const Authorization& auth) override;
+    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& templateUri) override;
 
     SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& saveAsPath, const std::string& saveAsFilename, const bool isRename) override;
 

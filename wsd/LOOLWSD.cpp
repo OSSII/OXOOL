@@ -215,7 +215,7 @@ std::set<std::string> LOOLWSD::EditFileExtensions;
 
 #ifdef MOBILEAPP
 
-// Or can this be retreieved in some other way?
+// Or can this be retrieved in some other way?
 int LOOLWSD::prisonerServerSocketFD;
 
 #else
@@ -407,7 +407,7 @@ static bool cleanupChildren()
     return static_cast<int>(NewChildren.size()) != count;
 }
 
-/// Decides how many children need spawning and spanws.
+/// Decides how many children need spawning and spawns.
 /// Returns the number of children requested to spawn,
 /// -1 for error.
 static int rebalanceChildren(int balance)
@@ -709,7 +709,7 @@ public:
 };
 
 /// This thread listens for and accepts prisoner kit processes.
-/// And also cleans up and balances the correct number of childen.
+/// And also cleans up and balances the correct number of children.
 PrisonerPoll PrisonerPoll;
 
 /// Helper class to hold default configuration entries.
@@ -1703,7 +1703,7 @@ static std::shared_ptr<DocumentBroker> findOrCreateDocBroker(WebSocketHandler& w
 
         // Set the one we just created.
         LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
-        docBroker = std::make_shared<DocumentBroker>(uri, uriPublic, docKey, LOOLWSD::ChildRoot);
+        docBroker = std::make_shared<DocumentBroker>(uri, uriPublic, docKey);
         DocBrokers.emplace(docKey, docBroker);
         LOG_TRC("Have " << DocBrokers.size() << " DocBrokers after inserting [" << docKey << "].");
     }
@@ -2405,7 +2405,7 @@ private:
                     std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
 
                     LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
-                    auto docBroker = std::make_shared<DocumentBroker>(fromPath, uriPublic, docKey, LOOLWSD::ChildRoot);
+                    auto docBroker = std::make_shared<DocumentBroker>(fromPath, uriPublic, docKey);
 
                     cleanupDocBrokers();
 
@@ -2460,7 +2460,7 @@ private:
                             std::vector<char> saveasRequest(saveas.begin(), saveas.end());
                             clientSession->handleMessage(true, WSOpCode::Text, saveasRequest);
                         });
-                        });
+                    });
 
                     sent = true;
                 }
@@ -2832,6 +2832,15 @@ private:
         Poco::JSON::Object::Ptr capabilities = new Poco::JSON::Object;
         capabilities->set("convert-to", convert_to);
 
+        // Supports the TemplateSaveAs in CheckFileInfo?
+        capabilities->set("hasTemplateSaveAs", true);
+
+        // Supports the TemplateSource in CheckFileInfo?
+        capabilities->set("hasTemplateSource", true);
+
+        // Hint to encourage use on mobile devices
+        capabilities->set("hasMobileSupport", true);
+
         std::ostringstream ostrJSON;
         capabilities->stringify(ostrJSON);
         return ostrJSON.str();
@@ -3156,11 +3165,13 @@ int LOOLWSD::innerMain()
         LOG_FTL("Missing --systemplate option");
         throw MissingOptionException("systemplate");
     }
+
     if (LoTemplate.empty())
     {
         LOG_FTL("Missing --lotemplate option");
         throw MissingOptionException("lotemplate");
     }
+
     if (ChildRoot.empty())
     {
         LOG_FTL("Missing --childroot option");
@@ -3275,6 +3286,7 @@ int LOOLWSD::innerMain()
         }
 #endif
     }
+
     // Stop the listening to new connections
     // and wait until sockets close.
     LOG_INF("Stopping server socket listening. ShutdownRequestFlag: " <<
@@ -3346,6 +3358,8 @@ int LOOLWSD::innerMain()
     {
         child->terminate();
     }
+
+    NewChildren.clear();
 
 #ifndef MOBILEAPP
 #ifndef KIT_IN_PROCESS

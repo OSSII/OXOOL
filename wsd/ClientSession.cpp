@@ -205,7 +205,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     {
         // If this session is the owner of the file & 'EnableOwnerTermination' feature
         // is turned on by WOPI, let it close all sessions
-        if (_isDocumentOwner && _wopiFileInfo && _wopiFileInfo->_enableOwnerTermination)
+        if (_isDocumentOwner && _wopiFileInfo && _wopiFileInfo->getEnableOwnerTermination())
         {
             LOG_DBG("Session [" << getId() << "] requested owner termination");
             docBroker->closeDocument("ownertermination");
@@ -432,9 +432,9 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
     LOG_INF("Requesting document load from child.");
     try
     {
-        std::string timestamp;
+        std::string timestamp, doctemplate;
         int loadPart = -1;
-        parseDocOptions(tokens, loadPart, timestamp);
+        parseDocOptions(tokens, loadPart, timestamp, doctemplate);
 
         std::ostringstream oss;
         oss << "load";
@@ -495,6 +495,11 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
         if (!getDocOptions().empty())
         {
             oss << " options=" << getDocOptions();
+        }
+
+        if (_wopiFileInfo && !_wopiFileInfo->getTemplateSource().empty())
+        {
+            oss << " template=" << _wopiFileInfo->getTemplateSource();
         }
 
         return forwardToChild(oss.str(), docBroker);
@@ -610,12 +615,12 @@ bool ClientSession::filterMessage(const std::string& message) const
         std::string id;
         if (getTokenString(tokens[2], "id", id))
         {
-            if (id == "print" && _wopiFileInfo && _wopiFileInfo->_disablePrint)
+            if (id == "print" && _wopiFileInfo && _wopiFileInfo->getDisablePrint())
             {
                 allowed = false;
                 LOG_WRN("WOPI host has disabled print for this session");
             }
-            else if (id == "export" && _wopiFileInfo && _wopiFileInfo->_disableExport)
+            else if (id == "export" && _wopiFileInfo && _wopiFileInfo->getDisableExport())
             {
                 allowed = false;
                 LOG_WRN("WOPI host has disabled export for this session");
@@ -629,7 +634,7 @@ bool ClientSession::filterMessage(const std::string& message) const
     }
     else if (tokens[0] == "gettextselection" || tokens[0] == ".uno:Copy")
     {
-        if (_wopiFileInfo && _wopiFileInfo->_disableCopy)
+        if (_wopiFileInfo && _wopiFileInfo->getDisableCopy())
         {
             allowed = false;
             LOG_WRN("WOPI host has disabled copying from the document");
@@ -950,9 +955,9 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
                 if (unoStatePair.first == ".uno:TrackChanges")
                 {
                     if ((unoStatePair.second == "true" &&
-                         _wopiFileInfo && _wopiFileInfo->_disableChangeTrackingRecord == WopiStorage::WOPIFileInfo::TriState::True) ||
+                         _wopiFileInfo && _wopiFileInfo->getDisableChangeTrackingRecord() == WopiStorage::WOPIFileInfo::TriState::True) ||
                         (unoStatePair.second == "false" &&
-                         _wopiFileInfo && _wopiFileInfo->_disableChangeTrackingRecord == WopiStorage::WOPIFileInfo::TriState::False))
+                         _wopiFileInfo && _wopiFileInfo->getDisableChangeTrackingRecord() == WopiStorage::WOPIFileInfo::TriState::False))
                     {
                         // Toggle the TrackChanges state.
                         LOG_DBG("Forcing " << unoStatePair.first << " toggle per user settings.");
@@ -962,9 +967,9 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
                 else if (unoStatePair.first == ".uno:ShowTrackedChanges")
                 {
                     if ((unoStatePair.second == "true" &&
-                         _wopiFileInfo && _wopiFileInfo->_disableChangeTrackingShow == WopiStorage::WOPIFileInfo::TriState::True) ||
+                         _wopiFileInfo && _wopiFileInfo->getDisableChangeTrackingShow() == WopiStorage::WOPIFileInfo::TriState::True) ||
                         (unoStatePair.second == "false" &&
-                         _wopiFileInfo && _wopiFileInfo->_disableChangeTrackingShow == WopiStorage::WOPIFileInfo::TriState::False))
+                         _wopiFileInfo && _wopiFileInfo->getDisableChangeTrackingShow() == WopiStorage::WOPIFileInfo::TriState::False))
                     {
                         // Toggle the ShowTrackChanges state.
                         LOG_DBG("Forcing " << unoStatePair.first << " toggle per user settings.");
@@ -985,6 +990,13 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
         {
             setViewLoaded();
             docBroker->setLoaded();
+            // Wopi post load actions
+            if (_wopiFileInfo && !_wopiFileInfo->getTemplateSource().empty())
+            {
+                std::string result;
+                LOG_DBG("Saving template [" << _wopiFileInfo->getTemplateSource() << "] to storage");
+                docBroker->saveToStorage(getId(), true, result);
+            }
 
             for(auto &token : tokens)
             {

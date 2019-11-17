@@ -76,7 +76,7 @@ bool Session::sendBinaryFrame(const char *buffer, int length)
     return sendMessage(buffer, length, WSOpCode::Binary) >= length;
 }
 
-void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part, std::string& timestamp)
+void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part, std::string& timestamp, std::string& doctemplate)
 {
     // First token is the "load" command itself.
     size_t offset = 1;
@@ -173,6 +173,11 @@ void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part,
             timestamp = value;
             ++offset;
         }
+        else if (name == "template")
+        {
+            doctemplate = value;
+            ++offset;
+        }
     }
 
     Util::mapAnonymized(_userId, _userIdAnonym);
@@ -254,6 +259,22 @@ void Session::getIOStats(uint64_t &sent, uint64_t &recv)
         sent = 0;
         recv = 0;
     }
+}
+
+void Session::setHash(const std::string& text)
+{
+    int hash = 0x811C9DC5;
+    int prime = 0x1000193;
+
+    if (!text.empty())
+    {
+        for (unsigned int i = 0; i < text.length(); ++i)
+        {
+            hash += hash ^ text[i];
+            hash *= prime;
+        }
+    }
+    _hash = abs(hash);
 }
 
 void Session::dumpState(std::ostream& os)

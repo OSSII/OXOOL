@@ -59,6 +59,13 @@ A string for the domain the host page sends/receives PostMessages from, we only 
 ### Size
 Size of the file in bytes (64bit)
 
+### TemplateSource
+The ID of file (like the wopi/files/ID) can be a non-existing file.  In that case, the file will be created from a template when the template (eg. an OTT file) is specifiend as "TemplateSource" in the CheckFileInfo response.
+
+The TemplateSource is supposed to be an URL like https://somewhere/accessible/file.ott that is accessible by the Online.
+
+For the actual saving of the content, normal PutFile mechanism will be used.
+
 ### UserCanWrite
 A boolean flag, indicating whether the user has permission to edit and/or over-write the file. If not set PutFile will fail.
 
@@ -93,6 +100,13 @@ Disables copying from the document in libreoffice online backend. Pasting into t
 ### DisableInactiveMessages
 Disables displaying of the explanation text on the overlay when the document becomes inactive or killed.  With this, the JS integration must provide the user with appropriate message when it gets Session_Closed or User_Idle postMessage's.
 
+### DownloadAsPostMessage
+Indicate that the integration wants to handle the downloading of pdf for printing or svg for slideshows or experted document, because it cannot rely on browser's support for downloading.
+
+When this is set to true, the user's eg. Print action will trigger a postMessage called Download_As, with the following JSON in the Values:
+
+    { Type: 'print'|'slideshow'|'export', URL: ...url you use for the actual downloading... }
+
 ### EnableOwnerTermination
 If set to true, it allows the document owner (the one with OwnerId =UserId) to send a 'closedocument' message (see protocol.txt)
 
@@ -107,6 +121,12 @@ JSON object that contains additional info about the user, namely the avatar imag
 If set to a non-empty string, is used for rendering a watermark-like text on each tile of the document
 
 **Note:** It is possible to just hide print, save, export options while still being able to access them from other hosts using PostMessage API (see [loleaflet/reference.html](https://www.collaboraoffice.com/collabora-online-editor-api-reference/))
+
+PostMessage extensions
+--------------------------------------
+
+### App_LoadingStatus
+Was extended with field 'Status' with 'Document_Loaded' value when document was loaded successfully and 'Failed' in other case.
 
 Alternative authentication possibility
 --------------------------------------
@@ -165,3 +185,21 @@ Hosts should not save the file to storage in such cases and respond with HTTP 40
 When the user chooses "overwrite" when asked how to resolve the conflict, LibreOffice will attempt one more save operation, but this time it will lack the X-LOOL-WOPI-Timestamp header, which means "save regardless of state of the
 file".
 
+/hosting/capabilities
+---------------------
+
+With new features, it is important for the integrations to know if the Online they are using is supporting them.  For this reason, we have introduced a /hosting/capabilities endpoint that returns a JSON with information about the availability of various features.
+
+Currently the following are present:
+
+* convert-to: {available: true/false }
+
+  The property *available* is *true* when the convert-to functionality is present and correctly accessible from the WOPI host.
+
+* hasTemplateSource: true/false
+
+  is *true* when the Online supports the TemplateSource CheckFileInfo property.
+
+* hasMobileSupport: true/false
+
+  is *true* when the Online has a good support for the mobile devices and responsive design.

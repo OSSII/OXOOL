@@ -124,13 +124,19 @@ public:
 
     const std::string& getJailedFilePathAnonym() const { return _jailedFilePathAnonym; }
 
+    int getHash() { return _hash; }
+
+    void setHash(const std::string& text);
+
+    void setHash(const int hash) { _hash = hash; };
+
 protected:
     Session(const std::string& name, const std::string& id, bool readonly);
     virtual ~Session();
 
     /// Parses the options of the "load" command,
     /// shared between MasterProcessSession::loadDocument() and ChildProcessSession::loadDocument().
-    void parseDocOptions(const std::vector<std::string>& tokens, int& part, std::string& timestamp);
+    void parseDocOptions(const std::vector<std::string>& tokens, int& part, std::string& timestamp, std::string& doctemplate);
 
     void updateLastActivityTime()
     {
@@ -214,6 +220,11 @@ private:
 
     /// Language for the document based on what the user has in the UI.
     std::string _lang;
+
+    /// Hash for normalizedViewId which is basically an identity for the tile to
+    /// choose what to render on and send it to its subscribers
+    /// it is the close-to-unique integer representation of a string like Watermarks etc.
+    int _hash;
 
     /// Client time zone
     std::string _timezone;

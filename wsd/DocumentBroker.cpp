@@ -37,6 +37,7 @@
 #include <common/Message.hpp>
 #include <common/Protocol.hpp>
 #include <common/Unit.hpp>
+#include <common/FileUtil.hpp>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -64,9 +65,10 @@ void ChildProcess::setDocumentBroker(const std::shared_ptr<DocumentBroker>& docB
 
 namespace
 {
+
 void sendLastModificationTime(const std::shared_ptr<Session>& session,
-                             DocumentBroker* documentBroker,
-                             Poco::Timestamp documentLastModifiedTime)
+                              DocumentBroker* documentBroker,
+                              Poco::Timestamp documentLastModifiedTime)
 {
     if (!session)
         return;
@@ -165,13 +167,11 @@ std::atomic<unsigned> DocumentBroker::DocBrokerId(1);
 
 DocumentBroker::DocumentBroker(const std::string& uri,
                                const Poco::URI& uriPublic,
-                               const std::string& docKey,
-                               const std::string& childRoot) :
+                               const std::string& docKey) :
     _uriOrig(uri),
     _uriPublic(uriPublic),
     _docKey(docKey),
     _docId(Util::encodeId(DocBrokerId++, 3)),
-    _childRoot(childRoot),
     _cacheRoot(getCachePath(uriPublic.toString())),
     _documentChangedInStorage(false),
     _lastSaveTime(std::chrono::steady_clock::now()),
@@ -191,10 +191,10 @@ DocumentBroker::DocumentBroker(const std::string& uri,
     _debugRenderedTileCount(0)
 {
     assert(!_docKey.empty());
-    assert(!_childRoot.empty());
+    assert(!LOOLWSD::ChildRoot.empty());
 
     LOG_INF("DocumentBroker [" << LOOLWSD::anonymizeUrl(_uriPublic.toString()) <<
-            "] created with docKey [" << _docKey << "] and root [" << _childRoot << "]");
+            "] created with docKey [" << _docKey << "]");
 }
 
 void DocumentBroker::startThread()
@@ -262,19 +262,19 @@ void DocumentBroker::pollThread()
     LOG_INF("Doc [" << _docKey << "] attached to child [" << _childProcess->getPid() << "].");
 
     static const bool AutoSaveEnabled = !std::getenv("LOOL_NO_AUTOSAVE");
+#ifndef MOBILEAPP
     static const size_t IdleDocTimeoutSecs = LOOLWSD::getConfigValue<int>(
                                                       "per_document.idle_timeout_secs", 3600);
 
-#ifndef MOBILEAPP
     // Used to accumulate B/W deltas.
     uint64_t adminSent = 0;
     uint64_t adminRecv = 0;
     auto lastBWUpdateTime = std::chrono::steady_clock::now();
-#endif
-    auto last30SecCheckTime = std::chrono::steady_clock::now();
 
     const int limit_load_secs = LOOLWSD::getConfigValue<int>("per_document.limit_load_secs", 100);
     const auto loadDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(limit_load_secs);
+#endif
+    auto last30SecCheckTime = std::chrono::steady_clock::now();
 
     // Main polling loop goodness.
     while (!_stop && _poll->continuePolling() && !TerminationFlag)
@@ -294,7 +294,6 @@ void DocumentBroker::pollThread()
 
             if (_childProcess)
                 _childProcess->terminate();
-
             stop("Load timed out");
             continue;
         }
@@ -342,9 +341,11 @@ void DocumentBroker::pollThread()
             last30SecCheckTime = std::chrono::steady_clock::now();
         }
 
+        if (false)
+            ;
+#ifndef MOBILEAPP
         // Remove idle documents after 1 hour.
-        const bool idle = (isLoaded() && getIdleTimeSecs() >= IdleDocTimeoutSecs);
-        if (idle)
+        else if ((isLoaded() && getIdleTimeSecs() >= IdleDocTimeoutSecs))
         {
             // Stop if there is nothing to save.
             LOG_INF("Autosaving idle DocumentBroker for docKey [" << getDocKey() << "] to kill.");
@@ -354,6 +355,7 @@ void DocumentBroker::pollThread()
                 stop("idle");
             }
         }
+#endif
         else if (_sessions.empty() && (isLoaded() || _markToDestroy))
         {
             // If all sessions have been removed, no reason to linger.
@@ -438,9 +440,7 @@ DocumentBroker::~DocumentBroker()
     _poll->joinThread();
 
     if (!_sessions.empty())
-    {
         LOG_WRN("DocumentBroker [" << _docKey << "] still has unremoved sessions.");
-    }
 
     // Need to first make sure the child exited, socket closed,
     // and thread finished before we are destroyed.
@@ -516,20 +516,21 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
     std::string userId, username;
     std::string userExtraInfo;
     std::string watermarkText;
+    std::string templateSource;
 
 #ifndef MOBILEAPP
     std::chrono::duration<double> getInfoCallDuration(0);
-
     WopiStorage* wopiStorage = dynamic_cast<WopiStorage*>(_storage.get());
     if (wopiStorage != nullptr)
     {
         std::unique_ptr<WopiStorage::WOPIFileInfo> wopifileinfo = wopiStorage->getWOPIFileInfo(session->getAuthorization());
-        userId = wopifileinfo->_userId;
-        username = wopifileinfo->_username;
-        userExtraInfo = wopifileinfo->_userExtraInfo;
-        watermarkText = wopifileinfo->_watermarkText;
+        userId = wopifileinfo->getUserId();
+        username = wopifileinfo->getUsername();
+        userExtraInfo = wopifileinfo->getUserExtraInfo();
+        watermarkText = wopifileinfo->getWatermarkText();
+        templateSource = wopifileinfo->getTemplateSource();
 
-        if (!wopifileinfo->_userCanWrite ||
+        if (!wopifileinfo->getUserCanWrite() ||
             LOOLWSD::IsViewFileExtension(wopiStorage->getFileExtension()))
         {
             LOG_DBG("Setting the session as readonly");
@@ -538,46 +539,49 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
 
         // Construct a JSON containing relevant WOPI host properties
         Object::Ptr wopiInfo = new Object();
-        if (!wopifileinfo->_postMessageOrigin.empty())
+        if (!wopifileinfo->getPostMessageOrigin().empty())
         {
             // Update the scheme to https if ssl or ssl termination is on
-            if (wopifileinfo->_postMessageOrigin.substr(0, 7) == "http://" &&
+            if (wopifileinfo->getPostMessageOrigin().substr(0, 7) == "http://" &&
                 (LOOLWSD::isSSLEnabled() || LOOLWSD::isSSLTermination()))
             {
-                wopifileinfo->_postMessageOrigin.replace(0, 4, "https");
-                LOG_DBG("Updating PostMessageOrgin scheme to HTTPS. Updated origin is [" << wopifileinfo->_postMessageOrigin << "].");
+                wopifileinfo->getPostMessageOrigin().replace(0, 4, "https");
+                LOG_DBG("Updating PostMessageOrigin scheme to HTTPS. Updated origin is [" << wopifileinfo->getPostMessageOrigin() << "].");
             }
 
-            wopiInfo->set("PostMessageOrigin", wopifileinfo->_postMessageOrigin);
+            wopiInfo->set("PostMessageOrigin", wopifileinfo->getPostMessageOrigin());
         }
 
         // If print, export are disabled, order client to hide these options in the UI
-        if (wopifileinfo->_disablePrint)
-            wopifileinfo->_hidePrintOption = true;
-        if (wopifileinfo->_disableExport)
-            wopifileinfo->_hideExportOption = true;
+        if (wopifileinfo->getDisablePrint())
+            wopifileinfo->setHidePrintOption(true);
+        if (wopifileinfo->getDisableExport())
+            wopifileinfo->setHideExportOption(true);
 
-        wopiInfo->set("BaseFileName", wopiStorage->getFileInfo()._filename);
+        wopiInfo->set("BaseFileName", wopiStorage->getFileInfo().getFilename());
 
-        if (!wopifileinfo->_templateSaveAs.empty())
-            wopiInfo->set("TemplateSaveAs", wopifileinfo->_templateSaveAs);
+        if (!wopifileinfo->getTemplateSaveAs().empty())
+            wopiInfo->set("TemplateSaveAs", wopifileinfo->getTemplateSaveAs());
 
-        wopiInfo->set("HidePrintOption", wopifileinfo->_hidePrintOption);
-        wopiInfo->set("HideSaveOption", wopifileinfo->_hideSaveOption);
-        wopiInfo->set("HideExportOption", wopifileinfo->_hideExportOption);
-        wopiInfo->set("DisablePrint", wopifileinfo->_disablePrint);
-        wopiInfo->set("DisableExport", wopifileinfo->_disableExport);
-        wopiInfo->set("DisableCopy", wopifileinfo->_disableCopy);
-        wopiInfo->set("DisableInactiveMessages", wopifileinfo->_disableInactiveMessages);
-        wopiInfo->set("DownloadAsPostMessage", wopifileinfo->_downloadAsPostMessage);
-        wopiInfo->set("UserCanNotWriteRelative", wopifileinfo->_userCanNotWriteRelative);
-        wopiInfo->set("EnableInsertRemoteImage", wopifileinfo->_enableInsertRemoteImage);
-        wopiInfo->set("EnableShare", wopifileinfo->_enableShare);
-        wopiInfo->set("HideUserList", wopifileinfo->_hideUserList);
-        wopiInfo->set("SupportsRename", wopifileinfo->_supportsRename);
-        wopiInfo->set("UserCanRename", wopifileinfo->_userCanRename);
-        if (wopifileinfo->_hideChangeTrackingControls != WopiStorage::WOPIFileInfo::TriState::Unset)
-            wopiInfo->set("HideChangeTrackingControls", wopifileinfo->_hideChangeTrackingControls == WopiStorage::WOPIFileInfo::TriState::True);
+        if (!templateSource.empty())
+                wopiInfo->set("TemplateSource", templateSource);
+
+        wopiInfo->set("DownloadAsPostMessage", wopifileinfo->getDownloadAsPostMessage());
+        wopiInfo->set("HidePrintOption", wopifileinfo->getHidePrintOption());
+        wopiInfo->set("HideSaveOption", wopifileinfo->getHideSaveOption());
+        wopiInfo->set("HideExportOption", wopifileinfo->getHideExportOption());
+        wopiInfo->set("DisablePrint", wopifileinfo->getDisablePrint());
+        wopiInfo->set("DisableExport", wopifileinfo->getDisableExport());
+        wopiInfo->set("DisableCopy", wopifileinfo->getDisableCopy());
+        wopiInfo->set("DisableInactiveMessages", wopifileinfo->getDisableInactiveMessages());
+        wopiInfo->set("UserCanNotWriteRelative", wopifileinfo->getUserCanNotWriteRelative());
+        wopiInfo->set("EnableInsertRemoteImage", wopifileinfo->getEnableInsertRemoteImage());
+        wopiInfo->set("EnableShare", wopifileinfo->getEnableShare());
+        wopiInfo->set("HideUserList", wopifileinfo->getHideUserList());
+        wopiInfo->set("SupportsRename", wopifileinfo->getSupportsRename());
+        wopiInfo->set("UserCanRename", wopifileinfo->getUserCanRename());
+        if (wopifileinfo->getHideChangeTrackingControls() != WopiStorage::WOPIFileInfo::TriState::Unset)
+            wopiInfo->set("HideChangeTrackingControls", wopifileinfo->getHideChangeTrackingControls() == WopiStorage::WOPIFileInfo::TriState::True);
 
         std::ostringstream ossWopiInfo;
         wopiInfo->stringify(ossWopiInfo);
@@ -590,13 +594,13 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         session->sendMessage("wopi: " + wopiInfoString);
 
         // Mark the session as 'Document owner' if WOPI hosts supports it
-        if (userId == _storage->getFileInfo()._ownerId)
+        if (userId == _storage->getFileInfo().getOwnerId())
         {
             LOG_DBG("Session [" << sessionId << "] is the document owner");
             session->setDocumentOwner(true);
         }
 
-        getInfoCallDuration = wopifileinfo->_callDuration;
+        getInfoCallDuration = wopifileinfo->getCallDuration();
 
         // Pass the ownership to client session
         session->setWopiFileInfo(wopifileinfo);
@@ -608,8 +612,8 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         if (localStorage != nullptr)
         {
             std::unique_ptr<LocalStorage::LocalFileInfo> localfileinfo = localStorage->getLocalFileInfo();
-            userId = localfileinfo->_userId;
-            username = localfileinfo->_username;
+            userId = localfileinfo->getUserId();
+            username = localfileinfo->getUsername();
 
             if (LOOLWSD::IsViewFileExtension(localStorage->getFileExtension()))
             {
@@ -632,6 +636,10 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
     session->setUserName(username);
     session->setUserExtraInfo(userExtraInfo);
     session->setWatermarkText(watermarkText);
+    if(!watermarkText.empty())
+        session->setHash(watermarkText);
+    else
+        session->setHash(0);
 
     // Basic file information was stored by the above getWOPIFileInfo() or getLocalFileInfo() calls
     const StorageBase::FileInfo fileInfo = _storage->getFileInfo();
@@ -643,21 +651,21 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
 
     if (firstInstance)
     {
-        _documentLastModifiedTime = fileInfo._modifiedTime;
+        _documentLastModifiedTime = fileInfo.getModifiedTime();
         LOG_DBG("Document timestamp: " << _documentLastModifiedTime);
     }
     else
     {
         // Check if document has been modified by some external action
-        LOG_TRC("Document modified time: " << fileInfo._modifiedTime);
+        LOG_TRC("Document modified time: " << fileInfo.getModifiedTime());
         static const Poco::Timestamp Zero(Poco::Timestamp::fromEpochTime(0));
         if (_documentLastModifiedTime != Zero &&
-            fileInfo._modifiedTime != Zero &&
-            _documentLastModifiedTime != fileInfo._modifiedTime)
+            fileInfo.getModifiedTime() != Zero &&
+            _documentLastModifiedTime != fileInfo.getModifiedTime())
         {
             LOG_DBG("Document " << _docKey << "] has been modified behind our back. " <<
                     "Informing all clients. Expected: " << _documentLastModifiedTime <<
-                    ", Actual: " << fileInfo._modifiedTime);
+                    ", Actual: " << fileInfo.getModifiedTime());
 
             _documentChangedInStorage = true;
             std::string message = "close: documentconflict";
@@ -674,7 +682,7 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
     // Let's load the document now, if not loaded.
     if (!_storage->isLoaded())
     {
-        std::string localPath = _storage->loadStorageFileToLocal(session->getAuthorization());
+        std::string localPath = _storage->loadStorageFileToLocal(session->getAuthorization(), templateSource);
 
 #ifndef MOBILEAPP
         // Check if we have a prefilter "plugin" for this document format
@@ -738,17 +746,18 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         LOG_INF("SHA1 for DocKey [" << _docKey << "] of [" << LOOLWSD::anonymizeUrl(localPath) << "]: " <<
                 Poco::DigestEngine::digestToHex(sha1.digest()));
 
-        // LibreOffice can't open files with '#', '%' in the name
+        // LibreOffice can't open files with '#' in the name
         std::string localPathEncoded;
-        Poco::URI::encode(localPath, "#%", localPathEncoded);
+        Poco::URI::encode(localPath, "#", localPathEncoded);
         _uriJailed = Poco::URI(Poco::URI("file://"), localPathEncoded).toString();
         _uriJailedAnonym = Poco::URI(Poco::URI("file://"), LOOLWSD::anonymizeUrl(localPathEncoded)).toString();
 
-        _filename = fileInfo._filename;
+        _filename = fileInfo.getFilename();
 
         // Use the local temp file's timestamp.
-        _lastFileModifiedTime = Poco::File(_storage->getRootFilePath()).getLastModified();
-        _tileCache.reset(new TileCache(_storage->getUri(), _lastFileModifiedTime, _cacheRoot, LOOLWSD::TileCachePersistent));
+        _lastFileModifiedTime = templateSource.empty() ? Poco::File(_storage->getRootFilePath()).getLastModified() :
+                Poco::Timestamp::fromEpochTime(0);
+        _tileCache.reset(new TileCache(_storage->getUriString(), _lastFileModifiedTime, _cacheRoot, LOOLWSD::TileCachePersistent));
         _tileCache->setThreadOwner(std::this_thread::get_id());
     }
 
@@ -781,14 +790,14 @@ bool DocumentBroker::saveToStorage(const std::string& sessionId,
         static const bool always_save = LOOLWSD::getConfigValue<bool>("per_document.always_save_on_exit", false);
         if (always_save)
         {
-             LOG_TRC("Enabling forced saving to storage per always_save_on_exit config.");
+            LOG_TRC("Enabling forced saving to storage per always_save_on_exit config.");
             force = true;
         }
     }
 
     constexpr bool isRename = false;
     const bool res = saveToStorageInternal(sessionId, success, result, /*saveAsPath*/ std::string(),
-                                            /*saveAsFilename*/ std::string(), isRename, force);
+                                           /*saveAsFilename*/ std::string(), isRename, force);
 
     // If marked to destroy, or session is disconnected, remove.
     const auto it = _sessions.find(sessionId);
@@ -813,9 +822,9 @@ bool DocumentBroker::saveAsToStorage(const std::string& sessionId, const std::st
 }
 
 bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool success,
-                                            const std::string& result, const std::string& saveAsPath,
-                                            const std::string& saveAsFilename, const bool isRename,
-                                            const bool force)
+                                           const std::string& result, const std::string& saveAsPath,
+                                           const std::string& saveAsFilename, const bool isRename,
+                                           const bool force)
 {
     assertCorrectThread();
 
@@ -893,7 +902,7 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
             _lastSaveTime = std::chrono::steady_clock::now();
 
             // Save the storage timestamp.
-            _documentLastModifiedTime = _storage->getFileInfo()._modifiedTime;
+            _documentLastModifiedTime = _storage->getFileInfo().getModifiedTime();
 
             // After a successful save, we are sure that document in the storage is same as ours
             _documentChangedInStorage = false;
@@ -939,6 +948,7 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
         }
 
         sendLastModificationTime(it->second, this, _documentLastModifiedTime);
+
         return true;
     }
     else if (storageSaveResult.getResult() == StorageBase::SaveResult::DISKFULL)
@@ -949,7 +959,6 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
         // Make everyone readonly and tell everyone that storage is low on diskspace.
         for (const auto& sessionIt : _sessions)
         {
-            sessionIt.second->setReadOnly();
             sessionIt.second->sendTextFrame("error: cmd=storage kind=savediskfull");
         }
     }
@@ -1032,6 +1041,10 @@ bool DocumentBroker::autoSave(const bool force, const bool dontSaveIfUnmodified)
     {
         LOG_TRC("Sending forced save command for [" << _docKey << "].");
         // Don't terminate editing as this can be invoked by the admin OOM, but otherwise force saving anyway.
+        // Flag isAutosave=false so the WOPI host wouldn't think this is a regular checkpoint and
+        // potentially optimize it away. This is as good as user-issued save, since this is
+        // triggered when the document is closed. In the case of network disconnection or browser crash
+        // most users would want to have had the chance to hit save before the document unloaded.
         sent = sendUnoSave(savingSessionId, /*dontTerminateEdit=*/true,
                            dontSaveIfUnmodified, /*isAutosave=*/false,
                            /*isExitSave=*/true);
@@ -1046,9 +1059,18 @@ bool DocumentBroker::autoSave(const bool force, const bool dontSaveIfUnmodified)
 
         static const int idleSaveDurationMs = LOOLWSD::getConfigValue<int>("per_document.idlesave_duration_secs", 30) * 1000;
         static const int autoSaveDurationMs = LOOLWSD::getConfigValue<int>("per_document.autosave_duration_secs", 300) * 1000;
+        bool save = false;
+        // Zero or negative config value disables save.
         // Either we've been idle long enough, or it's auto-save time.
-        if (inactivityTimeMs >= idleSaveDurationMs ||
-            timeSinceLastSaveMs >= autoSaveDurationMs)
+        if (idleSaveDurationMs > 0 && inactivityTimeMs >= idleSaveDurationMs)
+        {
+            save = true;
+        }
+        if (autoSaveDurationMs > 0 && timeSinceLastSaveMs >= autoSaveDurationMs)
+        {
+            save = true;
+        }
+        if (save)
         {
             LOG_TRC("Sending timed save command for [" << _docKey << "].");
             sent = sendUnoSave(savingSessionId, /*dontTerminateEdit=*/true,
@@ -1121,7 +1143,7 @@ bool DocumentBroker::sendUnoSave(const std::string& sessionId, bool dontTerminat
 std::string DocumentBroker::getJailRoot() const
 {
     assert(!_jailId.empty());
-    return Poco::Path(_childRoot, _jailId).toString();
+    return Poco::Path(LOOLWSD::ChildRoot, _jailId).toString();
 }
 
 size_t DocumentBroker::addSession(const std::shared_ptr<ClientSession>& session)
@@ -1166,6 +1188,11 @@ size_t DocumentBroker::addSessionInternal(const std::shared_ptr<ClientSession>& 
         // some other type of storage somewhere). This message is not sent to all clients,
         // though, just to all sessions of this document.
         alertAllUsers("internal", "diskfull");
+        throw;
+    }
+    catch (const std::exception& exc)
+    {
+        LOG_ERR("loading document exception: " << exc.what());
         throw;
     }
 
@@ -1217,6 +1244,7 @@ size_t DocumentBroker::removeSession(const std::string& id)
                 << it->second->isViewLoaded() << ". markToDestroy: " << _markToDestroy
                 << ", LastEditableSession: " << lastEditableSession
                 << ", dontSaveIfUnmodified: " << dontSaveIfUnmodified);
+
         // If last editable, save and don't remove until after uploading to storage.
         if (!lastEditableSession || !autoSave(isPossiblyModified(), dontSaveIfUnmodified))
             removeSessionInternal(id);
@@ -1685,7 +1713,7 @@ void DocumentBroker::handleTileCombinedResponse(const std::vector<char>& payload
         }
         else
         {
-            LOG_WRN("Dropping empty tilecombine response: " << firstLine);
+            LOG_INF("Dropping empty tilecombine response: " << firstLine);
             // They will get re-issued if we don't forget them.
         }
     }
@@ -1748,7 +1776,7 @@ bool DocumentBroker::forwardToChild(const std::string& viewId, const std::string
         return true;
     }
 
-    LOG_TRC("Forwarding payload to child [" << viewId << "]: " << message);
+    LOG_TRC("Forwarding payload to child [" << viewId << "]: " << getAbbreviatedMessage(message));
 
     std::string msg = "child-" + viewId + ' ' + message;
 
@@ -1772,7 +1800,7 @@ bool DocumentBroker::forwardToChild(const std::string& viewId, const std::string
     }
 
     // try the not yet created sessions
-    LOG_WRN("Child session [" << viewId << "] not found to forward message: " << message);
+    LOG_WRN("Child session [" << viewId << "] not found to forward message: " << getAbbreviatedMessage(message));
 
     return false;
 }
@@ -1925,6 +1953,51 @@ void DocumentBroker::getIOStats(uint64_t &sent, uint64_t &recv)
         sessionIt.second->getIOStats(s, r);
         sent += s;
         recv += r;
+    }
+}
+
+static std::atomic<size_t> NumConverters;
+
+size_t ConvertToBroker::getInstanceCount()
+{
+    return NumConverters;
+}
+
+ConvertToBroker::ConvertToBroker(const std::string& uri,
+                                 const Poco::URI& uriPublic,
+                                 const std::string& docKey)
+    : DocumentBroker(uri, uriPublic, docKey)
+{
+    NumConverters++;
+}
+
+void ConvertToBroker::dispose()
+{
+    if (!_uriOrig.empty())
+    {
+        NumConverters--;
+        removeFile(_uriOrig);
+        _uriOrig.clear();
+    }
+}
+
+ConvertToBroker::~ConvertToBroker()
+{
+    dispose();
+}
+
+void ConvertToBroker::removeFile(const std::string &uriOrig)
+{
+    if (!uriOrig.empty())
+    {
+        try {
+            // Remove source file and directory
+            Poco::Path path = uriOrig;
+            Poco::File(path).remove();
+            Poco::File(path.makeParent()).remove();
+        } catch (const std::exception &ex) {
+            LOG_ERR("Error while removing conversion temporary: '" << uriOrig << "' - " << ex.what());
+        }
     }
 }
 
