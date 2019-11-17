@@ -637,6 +637,17 @@ inline std::string getLaunchURI(const std::string &document)
     return oss.str();
 }
 
+inline std::string getServiceURI(const std::string &sub)
+{
+    std::ostringstream oss;
+
+    oss << getLaunchBase("");
+    oss << LOOLWSD::ServiceRoot;
+    oss << sub;
+
+    return oss.str();
+}
+
 inline std::string getAdminURI(const Poco::Util::LayeredConfiguration &config)
 {
     std::string user = config.getString("admin_console.username", "");
@@ -1150,8 +1161,12 @@ void LOOLWSD::initialize(Application& self)
 
     const std::string adminURI = getAdminURI(config());
     if (!adminURI.empty())
-        std::cerr << "\nOr for the Admin Console:\n\n"
-                  << adminURI << '\n' << std::endl;
+        std::cerr << "\nOr for the admin, capabilities & discovery:\n\n"
+                  << adminURI << "\n"
+                  << getServiceURI("/hosting/capabilities") << "\n"
+                  << getServiceURI("/hosting/discovery") << "\n";
+
+    std::cerr << std::endl;
 #endif
 
 #endif
@@ -2840,6 +2855,9 @@ private:
 
         // Hint to encourage use on mobile devices
         capabilities->set("hasMobileSupport", true);
+
+        // Set the product name
+        capabilities->set("productName", APP_NAME);
 
         std::ostringstream ostrJSON;
         capabilities->stringify(ostrJSON);
