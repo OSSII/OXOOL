@@ -599,7 +599,9 @@ L.Control.Menubar = L.Control.extend({
 		});
 		$('#main-menu').attr('tabindex', 0);
 
-		this._createFileIcon();
+		if (this._map._permission !== 'readonly') {
+			this._createFileIcon();
+		}
 	},
 
 	_onStyleMenu: function (e) {
@@ -911,8 +913,8 @@ L.Control.Menubar = L.Control.extend({
 
 		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
 
-		/*var $docLogo = $(aItem);
-		$docLogo.bind('click', {self: this}, this._createDocument);*/
+		var $docLogo = $(aItem);
+		$docLogo.bind('click', {self: this}, this._createDocument);
 
 	},
 
