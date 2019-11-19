@@ -94,6 +94,16 @@ struct _LibreOfficeKitClass
         @since LibreOffice 6.0
      */
     int (*runMacro) (LibreOfficeKit *pThis, const char* pURL);
+
+    /** @see lok::Office::signDocument().
+        @since LibreOffice 6.2
+     */
+     bool (*signDocument) (LibreOfficeKit* pThis,
+                           const char* pUrl,
+                           const unsigned char* pCertificateBinary,
+                           const int nCertificateBinarySize,
+                           const unsigned char* pPrivateKeyBinary,
+                           const int nPrivateKeyBinarySize);
 };
 
 #define LIBREOFFICEKIT_DOCUMENT_HAS(pDoc,member) LIBREOFFICEKIT_HAS_MEMBER(LibreOfficeKitDocumentClass,member,(pDoc)->pClass->nSize)
@@ -278,7 +288,7 @@ struct _LibreOfficeKitDocumentClass
                          const int width, const int height);
 
     /// @see lok::Document::postWindow().
-    void (*postWindow) (LibreOfficeKitDocument* pThis, unsigned nWindowId, int nAction);
+    void (*postWindow) (LibreOfficeKitDocument* pThis, unsigned nWindowId, int nAction, const char* pData);
 
     /// @see lok::Document::postWindowKeyEvent().
     void (*postWindowKeyEvent) (LibreOfficeKitDocument* pThis,
@@ -318,18 +328,6 @@ struct _LibreOfficeKitDocumentClass
                             const int width, const int height,
                             const double dpiscale);
 
-#ifdef IOS
-    /// @see lok::Document::paintTileToCGContext().
-    void (*paintTileToCGContext) (LibreOfficeKitDocument* pThis,
-                                  void* rCGContext,
-                                  const int nCanvasWidth,
-                                  const int nCanvasHeight,
-                                  const int nTilePosX,
-                                  const int nTilePosY,
-                                  const int nTileWidth,
-                                  const int nTileHeight);
-#endif // IOS
-
 // CERTIFICATE AND SIGNING
 
     /// @see lok::Document::insertCertificate().
@@ -346,6 +344,27 @@ struct _LibreOfficeKitDocumentClass
 
     /// @see lok::Document::getSignatureState().
     int (*getSignatureState) (LibreOfficeKitDocument* pThis);
+// END CERTIFICATE AND SIGNING
+
+    /// @see lok::Document::renderShapeSelection
+    size_t (*renderShapeSelection)(LibreOfficeKitDocument* pThis, char** pOutput);
+
+    /// @see lok::Document::createViewWithOptions().
+    int (*createViewWithOptions) (LibreOfficeKitDocument* pThis, const char* pOptions);
+
+    /// @see lok::Document::postWindowGestureEvent().
+    void (*postWindowGestureEvent) (LibreOfficeKitDocument* pThis,
+                                  unsigned nWindowId,
+                                  const char* pType,
+                                  int nX,
+                                  int nY,
+                                  int nOffset);
+
+    /// @see lok::Document::selectPart().
+    void (*selectPart) (LibreOfficeKitDocument* pThis, int nPart, int nSelect);
+
+    /// @see lok::Document::moveSelectedParts().
+    void (*moveSelectedParts) (LibreOfficeKitDocument* pThis, int nPosition, bool bDuplicate);
 
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };

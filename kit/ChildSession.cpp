@@ -1175,7 +1175,21 @@ bool ChildSession::sendWindowCommand(const char* /*buffer*/, int /*length*/, con
     getLOKitDocument()->setView(_viewId);
 
     if (tokens.size() > 2 && tokens[2] == "close")
-        getLOKitDocument()->postWindow(winId, LOK_WINDOW_CLOSE);
+        getLOKitDocument()->postWindow(winId, LOK_WINDOW_CLOSE, nullptr);
+    else if (tokens.size() > 3 && tokens[2] == "paste")
+    {
+        std::string data;
+        try
+        {
+            URI::decode(tokens[3], data);
+        }
+        catch (Poco::SyntaxException& exc)
+        {
+            sendTextFrame("error: cmd=windowcommand kind=syntax");
+        }
+
+        getLOKitDocument()->postWindow(winId, LOK_WINDOW_PASTE, data.c_str());
+    }
 
     return true;
 }
