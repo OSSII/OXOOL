@@ -21,7 +21,8 @@ oxoolcommon_include_HEADERS = \
 		SpookyV2.h		\
 		Unit.hpp		\
 		UnitHTTP.hpp		\
-		Util.hpp
+		Util.hpp		\
+		Authorization.hpp
 
 include_paths = -I$(top_srcdir)			\
 		-I$(top_srcdir)/src/include	\
@@ -59,4 +60,5 @@ liboxoolcommon_la_SOURCES = \
 		SpookyV2.cpp	\
 		Unit.cpp	\
 		Util.cpp	\
+		Authorization.cpp \
 		Crypto.cpp
