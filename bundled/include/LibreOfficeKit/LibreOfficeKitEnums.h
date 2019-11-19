@@ -42,7 +42,8 @@ LibreOfficeKitTileMode;
 
 typedef enum
 {
-    LOK_WINDOW_CLOSE
+    LOK_WINDOW_CLOSE,
+    LOK_WINDOW_PASTE
 }
 LibreOfficeKitWindowAction;
 
@@ -161,9 +162,11 @@ typedef enum
      */
     LOK_CALLBACK_CURSOR_VISIBLE = 5,
     /**
-     * The size and/or the position of the graphic selection changed.
+     * The size and/or the position of the graphic selection changed and
+     * the rotation angle of the embedded graphic object
      *
-     * Rectangle format is the same as LOK_CALLBACK_INVALIDATE_TILES.
+     * Format is "x, y, width, height, angle", where angle is in 100th
+     * of degree.
      */
     LOK_CALLBACK_GRAPHIC_SELECTION = 6,
 
@@ -349,7 +352,7 @@ typedef enum
 
     /**
      * The size and/or the position of the view cursor changed. A view cursor
-     * is a cursor of another view, the current view can't change it.
+     * is a cursor of an other view, the current view can't change it.
      *
      * The payload format:
      *
@@ -561,6 +564,7 @@ typedef enum
      * "type" tells the type of the window the action is associated with
      *  - "dialog" - window is a dialog
      *  - "child" - window is a floating window (combo boxes, etc.)
+     *  - "deck" - window is a docked/floating deck (i.e. the sidebar)
      *
      * "action" can take following values:
      * - "created" - window is created in the backend, client can render it now
@@ -610,13 +614,19 @@ typedef enum
     LOK_CALLBACK_SIGNATURE_STATUS = 40,
 
     /**
+     * Profiling tracing information single string of multiple lines
+     * containing <pid> <timestamp> and zone start/stop information
+     */
+    LOK_CALLBACK_PROFILE_FRAME = 41,
+
+    /**
      * When the cursor is in a table or a table is selected in the
      * document, this sends the table's column and row border positions
      * to the client. If the payload is empty (empty JSON object), then
      * no table is currently selected or the cursor is not inside a table
      * cell.
      */
-    LOK_CALLBACK_TABLE_SELECTED = 44, 
+    LOK_CALLBACK_TABLE_SELECTED = 44,
 }
 LibreOfficeKitCallbackType;
 
