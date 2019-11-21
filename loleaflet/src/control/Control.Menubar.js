@@ -141,9 +141,6 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:ChangeCaseToSentenceCase'},
 					{uno: '.uno:ChangeCaseToTitleCase'},
 					{uno: '.uno:ChangeCaseToToggleCase'}]},
-				{name: _('Text orientation'), type: 'menu', menu: [
-					{uno: '.uno:ParaLeftToRight'},
-					{uno: '.uno:ParaRightToLeft'}]},
 				{name: _UNO('.uno:FormatSpacingMenu', 'text'), icon: 'fa fa-text-height', type: 'menu', menu: [
 					{uno: '.uno:SpacePara1'},
 					{uno: '.uno:SpacePara15'},
