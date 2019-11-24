@@ -445,6 +445,12 @@ public:
      * By default a loaded document has 1 view.
      * @return the ID of the new view.
      */
+#if 1
+    int createView()
+    {
+        return mpDoc->pClass->createView(mpDoc);
+    }
+#else
     int createView(const char* pOptions = nullptr)
     {
         if (LIBREOFFICEKIT_DOCUMENT_HAS(mpDoc, createViewWithOptions))
@@ -452,6 +458,7 @@ public:
         else
             return mpDoc->pClass->createView(mpDoc);
     }
+#endif
 
     /**
      * Destroy a view of an existing document.

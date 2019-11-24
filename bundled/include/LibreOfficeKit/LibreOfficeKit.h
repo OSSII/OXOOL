@@ -349,8 +349,10 @@ struct _LibreOfficeKitDocumentClass
     /// @see lok::Document::renderShapeSelection
     size_t (*renderShapeSelection)(LibreOfficeKitDocument* pThis, char** pOutput);
 
+#if 0
     /// @see lok::Document::createViewWithOptions().
     int (*createViewWithOptions) (LibreOfficeKitDocument* pThis, const char* pOptions);
+#endif
 
     /// @see lok::Document::postWindowGestureEvent().
     void (*postWindowGestureEvent) (LibreOfficeKitDocument* pThis,
