@@ -90,6 +90,7 @@ using Poco::Net::PartHandler;
 #include <Poco/StreamCopier.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
+#include <Poco/ThreadPool.h>
 #include <Poco/URI.h>
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
@@ -257,7 +258,9 @@ inline void checkSessionLimitsAndWarnClients()
 {
 #ifndef MOBILEAPP
 
-    if (DocBrokers.size() > LOOLWSD::MaxDocuments || LOOLWSD::NumConnections >= LOOLWSD::MaxConnections)
+    ssize_t docBrokerCount = DocBrokers.size() - ConvertToBroker::getInstanceCount();
+    if (LOOLWSD::MaxDocuments < 10000 &&
+        (docBrokerCount > LOOLWSD::MaxDocuments || LOOLWSD::NumConnections >= LOOLWSD::MaxConnections))
     {
         const std::string info = Poco::format(PAYLOAD_INFO_LIMIT_REACHED, LOOLWSD::MaxDocuments, LOOLWSD::MaxConnections);
         LOG_INF("Sending client 'limitreached' message: " << info);
@@ -279,7 +282,6 @@ inline void checkSessionLimitsAndWarnClients()
 /// connected to any document.
 void alertAllUsersInternal(const std::string& msg)
 {
-
     std::lock_guard<std::mutex> docBrokersLock(DocBrokersMutex);
 
     LOG_INF("Alerting all users: [" << msg << "]");
@@ -332,6 +334,7 @@ void cleanupDocBrokers()
         if (!docBroker->isAlive())
         {
             LOG_INF("Removing DocumentBroker for docKey [" << it->first << "].");
+            docBroker->dispose();
             it = DocBrokers.erase(it);
             continue;
         } else {
@@ -362,6 +365,7 @@ void cleanupDocBrokers()
 /// -1 for error.
 static int forkChildren(const int number)
 {
+    LOG_TRC("Request forkit to spawn " << number << " new child(ren)");
     Util::assertIsLocked(NewChildrenMutex);
 
     if (number > 0)
@@ -560,19 +564,33 @@ std::shared_ptr<ChildProcess> getNewChild_Blocks(
 
 #ifndef MOBILEAPP
 
-/// Handles the filename part of the convert-to POST request payload.
+/// Handles the filename part of the convert-to POST request payload,
+/// Also owns the file - cleaning it up when destroyed.
 class ConvertToPartHandler : public PartHandler
 {
-    std::string& _filename;
+    std::string _filename;
 
     /// Is it really a convert-to, ie. use an especially formed path?
     bool _convertTo;
 
 public:
-    ConvertToPartHandler(std::string& filename, bool convertTo = false)
-        : _filename(filename)
-        , _convertTo(convertTo)
+    std::string getFilename() const { return _filename; }
+
+    /// Afterwards someone else is responsible for cleaning that up.
+    void takeFile() { _filename.clear(); }
+
+    ConvertToPartHandler(bool convertTo = false)
+        : _convertTo(convertTo)
     {
+    }
+
+    virtual ~ConvertToPartHandler()
+    {
+        if (!_filename.empty())
+        {
+            LOG_TRC("Remove un-handled temporary file '" << _filename << "'");
+            ConvertToBroker::removeFile(_filename);
+        }
     }
 
     virtual void handlePart(const MessageHeader& header, std::istream& stream) override
@@ -589,6 +607,7 @@ public:
         if (!params.has("filename"))
             return;
 
+        // FIXME: needs wrapping - until then - keep in sync with ~ConvertToBroker
         Path tempPath = _convertTo? Path::forDirectory(Poco::TemporaryFile::tempName("/tmp/convert-to") + "/") :
                                     Path::forDirectory(Poco::TemporaryFile::tempName() + "/");
         File(tempPath).createDirectories();
@@ -611,6 +630,7 @@ public:
 namespace
 {
 
+#if ENABLE_DEBUG
 inline std::string getLaunchBase(const std::string &credentials)
 {
     std::ostringstream oss;
@@ -653,18 +673,18 @@ inline std::string getAdminURI(const Poco::Util::LayeredConfiguration &config)
     std::string user = config.getString("admin_console.username", "");
     std::string passwd = config.getString("admin_console.password", "");
 
-    /*if (user.empty() || passwd.empty())
-        return "";*/
+    if (user.empty() || passwd.empty())
+        return "";
 
     std::ostringstream oss;
 
-    //oss << getLaunchBase(user + ":" + passwd + "@");
-    oss << getLaunchBase("");
+    oss << getLaunchBase(user + ":" + passwd + "@");
     oss << LOOLWSD::ServiceRoot;
     oss << LOOLWSD_TEST_ADMIN_CONSOLE;
 
     return oss.str();
 }
+#endif
 
 } // anonymous namespace
 
@@ -749,7 +769,7 @@ void LOOLWSD::initialize(Application& self)
 #ifndef MOBILEAPP
     if (geteuid() == 0)
     {
-        throw std::runtime_error("Do not run as root. Please run as oxool user.");
+        throw std::runtime_error("Do not run as root. Please run as lool user.");
     }
 #endif
 
@@ -807,12 +827,12 @@ void LOOLWSD::initialize(Application& self)
             { "per_document.limit_stack_mem_kb", "8000" },
             { "per_document.limit_virt_mem_mb", "0" },
             { "per_document.max_concurrency", "4" },
+            { "per_document.redlining_as_comments", "true" },
             { "per_view.idle_timeout_secs", "900" },
             { "per_view.out_of_focus_timeout_secs", "60" },
             { "security.capabilities", "true" },
             { "security.seccomp", "true" },
             { "server_name", "" },
-            { "client_port_number", "9980" },
             { "ssl.ca_file_path", LOOLWSD_CONFIGDIR "/ca-chain.cert.pem" },
             { "ssl.cert_file_path", LOOLWSD_CONFIGDIR "/cert.pem" },
             { "ssl.enable", "true" },
@@ -1022,7 +1042,6 @@ void LOOLWSD::initialize(Application& self)
     LoTemplate = getPathFromConfig("lo_template_path");
     ChildRoot = getPathFromConfig("child_root_path");
     ServerName = config().getString("server_name");
-    ClientPortNumber = getConfigValue<int>(conf, "client_port_number", 9980);
 
     FileServerRoot = getPathFromConfig("file_server_root_path");
     NumPreSpawnedChildren = getConfigValue<int>(conf, "num_prespawn_children", 1);
@@ -1041,6 +1060,13 @@ void LOOLWSD::initialize(Application& self)
     }
     LOG_INF("MAX_CONCURRENCY set to " << maxConcurrency << ".");
 #endif
+
+    const auto redlining = getConfigValue<bool>(conf, "per_document.redlining_as_comments", true);
+    if (!redlining)
+    {
+        setenv("DISABLE_REDLINE", "1", 1);
+        LOG_INF("DISABLE_REDLINE set");
+    }
 
     // Otherwise we profile the soft-device at jail creation time.
     setenv("SAL_DISABLE_OPENCL", "true", 1);
@@ -1505,6 +1531,9 @@ void LOOLWSD::autoSave(const std::string& docKey)
 void PrisonerPoll::wakeupHook()
 {
 #ifndef MOBILEAPP
+    LOG_TRC("PrisonerPoll - wakes up with " << NewChildren.size() <<
+            " new children and " << DocBrokers.size() << " brokers and " <<
+            OutstandingForks << " kits forking");
     if (!LOOLWSD::checkAndRestoreForKit())
     {
         // No children have died.
@@ -1828,9 +1857,7 @@ private:
         try
         {
 #ifndef MOBILEAPP
-            size_t requestSize = 0;
-
-            if (!socket->parseHeader("Prisoner", message, request, &requestSize))
+            if (!socket->parseHeader("Prisoner", message, request))
                 return;
 
             LOG_TRC("Child connection with URI [" << LOOLWSD::anonymizeUrl(request.getURI()) << "].");
@@ -1973,6 +2000,8 @@ public:
                     break;
                 }
             }
+
+            init = true;
         }
         return hosts.match(address);
     }
@@ -1992,7 +2021,7 @@ public:
         // Handle forwarded header and make sure all participating IPs are allowed
         if(request.has("X-Forwarded-For"))
         {
-            std::string fowardedData = request.get("X-Forwarded-For");
+            const std::string fowardedData = request.get("X-Forwarded-For");
             std::vector<std::string> tokens = LOOLProtocol::tokenize(fowardedData, ',');
             for(std::string& token : tokens)
             {
@@ -2050,16 +2079,23 @@ private:
             return;
         }
 
-        Poco::MemoryInputStream message(&socket->getInBuffer()[0],
-                                        socket->getInBuffer().size());;
+        Poco::MemoryInputStream startmessage(&socket->getInBuffer()[0],
+                                             socket->getInBuffer().size());;
         Poco::Net::HTTPRequest request;
-        size_t requestSize = 0;
 
-        if (!socket->parseHeader("Client", message, request, &requestSize))
+        StreamSocket::MessageMap map;
+        if (!socket->parseHeader("Client", startmessage, request, &map))
             return;
 
         try
         {
+            // We may need to re-write the chunks moving the inBuffer.
+            socket->compactChunks(&map);
+            Poco::MemoryInputStream message(&socket->getInBuffer()[0],
+                                            socket->getInBuffer().size());
+            // update the read cursor - headers are not altered by chunks.
+            message.seekg(startmessage.tellg(), std::ios::beg);
+
             // Check and remove the ServiceRoot from the request.getURI()
             if (!Util::startsWith(request.getURI(), LOOLWSD::ServiceRoot))
                 throw BadRequestException("The request does not start with prefix: " + LOOLWSD::ServiceRoot);
@@ -2150,7 +2186,6 @@ private:
                         << "\r\n";
                     socket->send(oss.str());
                     socket->shutdown();
-                    return;
                 }
             }
         }
@@ -2169,12 +2204,11 @@ private:
             // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
             LOG_INF("#" << socket->getFD() << " Exception while processing incoming request: [" <<
                     LOOLProtocol::getAbbreviatedMessage(socket->getInBuffer()) << "]: " << exc.what());
-            return;
         }
 
         // if we succeeded - remove the request from our input buffer
         // we expect one request per socket
-        socket->eraseFirstInputBytes(requestSize);
+        socket->eraseFirstInputBytes(map);
 #else
         Poco::Net::HTTPRequest request;
         handleClientWsUpgrade(request, std::string(socket->getInBuffer().data(), socket->getInBuffer().size()), disposition);
@@ -2212,8 +2246,6 @@ private:
             << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
             << "Content-Length: " << responseString.size() << "\r\n"
             << "Content-Type: " << mimeType << "\r\n"
-            << "X-Content-Type-Options: nosniff\r\n"
-            << "Cache-Control: no-cache,no-store\r\n"
             << "\r\n";
 
         if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET)
@@ -2373,7 +2405,8 @@ private:
         return "application/octet-stream";
     }
 
-    void handlePostRequest(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& message,
+    void handlePostRequest(const Poco::Net::HTTPRequest& request,
+                           Poco::MemoryInputStream& message,
                            SocketDisposition &disposition)
     {
         LOG_INF("Post request: [" << LOOLWSD::anonymizeUrl(request.getURI()) << "]");
@@ -2384,15 +2417,14 @@ private:
         StringTokenizer tokens(request.getURI(), "/?");
         if (tokens.count() > 2 && tokens[2] == "convert-to")
         {
-            std::string fromPath;
-            ConvertToPartHandler handler(fromPath, /*convertTo =*/ true);
+            ConvertToPartHandler handler(/*convertTo =*/ true);
             HTMLForm form(request, message, handler);
 
             std::string format = (form.has("format") ? form.get("format") : "");
 
             if (!allowConvertTo(socket->clientAddress(), request, true))
             {
-                LOG_TRC("Conversion not allowed from this address");
+                LOG_WRN("Conversion requests not allowed from this address: " << socket->clientAddress());
                 std::ostringstream oss;
                 oss << "HTTP/1.1 403\r\n"
                     << "Date: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
@@ -2409,24 +2441,26 @@ private:
                 format = tokens[3];
 
             bool sent = false;
+            std::string fromPath = handler.getFilename();
             LOG_INF("Conversion request for URI [" << fromPath << "] format [" << format << "].");
             if (!fromPath.empty() && !format.empty())
             {
                 Poco::URI uriPublic = DocumentBroker::sanitizeURI(fromPath);
                 const std::string docKey = DocumentBroker::getDocKey(uriPublic);
 
-                    // This lock could become a bottleneck.
-                    // In that case, we can use a pool and index by publicPath.
-                    std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
+                // This lock could become a bottleneck.
+                // In that case, we can use a pool and index by publicPath.
+                std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
 
-                    LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
-                    auto docBroker = std::make_shared<DocumentBroker>(fromPath, uriPublic, docKey);
+                LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
+                auto docBroker = std::make_shared<ConvertToBroker>(fromPath, uriPublic, docKey);
+                handler.takeFile();
 
-                    cleanupDocBrokers();
+                cleanupDocBrokers();
 
-                    LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
-                    DocBrokers.emplace(docKey, docBroker);
-                    LOG_TRC("Have " << DocBrokers.size() << " DocBrokers after inserting [" << docKey << "].");
+                LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
+                DocBrokers.emplace(docKey, docBroker);
+                LOG_TRC("Have " << DocBrokers.size() << " DocBrokers after inserting [" << docKey << "].");
 
                 // Load the document.
                 // TODO: Move to DocumentBroker.
@@ -2494,8 +2528,7 @@ private:
         {
             LOG_INF("Insert file request.");
 
-            std::string tmpPath;
-            ConvertToPartHandler handler(tmpPath);
+            ConvertToPartHandler handler;
             HTMLForm form(request, message, handler);
 
             if (form.has("childid") && form.has("name"))
@@ -2525,7 +2558,7 @@ private:
                                               + JAILED_DOCUMENT_ROOT + "insertfile";
                     File(dirPath).createDirectories();
                     std::string fileName = dirPath + "/" + form.get("name");
-                    File(tmpPath).moveTo(fileName);
+                    File(handler.getFilename()).moveTo(fileName);
                     response.setContentLength(0);
                     socket->send(response);
                     return;
@@ -2833,7 +2866,7 @@ private:
         return ostrXML.str();
     }
 
-    /// Process the capabilities.json file and return as string.
+    /// Create the /hosting/capabilities JSON and return as string.
     std::string getCapabilitiesJson(const Poco::Net::HTTPRequest& request)
     {
         std::shared_ptr<StreamSocket> socket = _socket.lock();
@@ -2843,7 +2876,6 @@ private:
         Poco::Dynamic::Var available = allowConvertTo(socket->clientAddress(), request);
         convert_to->set("available", available);
 
-        // Compose the content of http://server/hosting/capabilities
         Poco::JSON::Object::Ptr capabilities = new Poco::JSON::Object;
         capabilities->set("convert-to", convert_to);
 
@@ -3012,6 +3044,7 @@ public:
                   << "[ " << DocBrokers.size() << " ]:\n";
         for (auto &i : DocBrokers)
             i.second->dumpState(os);
+        os << "Converter count: " << ConvertToBroker::getInstanceCount() << "\n";
 
         Socket::InhibitThreadChecks = false;
         SocketPoll::InhibitThreadChecks = false;
@@ -3164,6 +3197,7 @@ int LOOLWSD::innerMain()
     // Also set to be in online mode.
     ::setenv("ONLINE_MODE", "true", 1);
 
+#ifndef MOBILEAPP
     if (access(Cache.c_str(), R_OK | W_OK | X_OK) != 0)
     {
         const auto err = "Unable to access cache [" + Cache +
@@ -3173,7 +3207,6 @@ int LOOLWSD::innerMain()
         return Application::EXIT_SOFTWARE;
     }
 
-#ifndef MOBILEAPP
     // We use the same option set for both parent and child loolwsd,
     // so must check options required in the parent (but not in the
     // child) separately now. Also check for options that are

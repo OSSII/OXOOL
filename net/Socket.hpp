@@ -782,6 +782,7 @@ public:
         _bytesRecvd(0),
         _wsState(WSState::HTTP),
         _closed(false),
+        _sentHTTPContinue(false),
         _shutdownSignalled(false)
     {
         LOG_DBG("StreamSocket ctor #" << fd);
@@ -929,9 +930,21 @@ public:
         return socket;
     }
 
+        /// Messages can be in chunks, only parts of message being valid.
+    struct MessageMap {
+        MessageMap() : _headerSize(0), _messageSize(0) {}
+        /// Size of HTTP headers
+        size_t _headerSize;
+        /// Entire size of data associated with this message
+        size_t _messageSize;
+        // offset + lengths to collate into the real stream
+        std::vector<std::pair<size_t, size_t>> _spans;
+    };
+
     /// Remove the first @count bytes from input buffer
-    void eraseFirstInputBytes(size_t count)
+    void eraseFirstInputBytes(const MessageMap &map)
     {
+        size_t count = map._headerSize;
         size_t toErase = std::min(count, _inBuffer.size());
         if (toErase < count)
             LOG_ERR("#" << getFD() << ": attempted to remove: " << count << " which is > size: " << _inBuffer.size() << " clamped to " << toErase);
@@ -939,12 +952,16 @@ public:
             _inBuffer.erase(_inBuffer.begin(), _inBuffer.begin() + count);
     }
 
+    /// Compacts chunk headers away leaving just the data we want
+    /// returns true if we did any re-sizing/movement of _inBuffer.
+    bool compactChunks(MessageMap *map);
+
     /// Detects if we have an HTTP header in the provided message and
     /// populates a request for that.
     bool parseHeader(const char *clientLoggingName,
                      Poco::MemoryInputStream &message,
                      Poco::Net::HTTPRequest &request,
-                     size_t *requestSize = nullptr);
+                     MessageMap *map = nullptr);
 
     /// Get input/output statistics on this stream
     void getIOStats(uint64_t &sent, uint64_t &recv)
@@ -964,6 +981,8 @@ public:
     }
 
 protected:
+
+    std::vector<std::pair<size_t, size_t>> findChunks(Poco::Net::HTTPRequest &request);
 
     /// Called when a polling event is received.
     /// @events is the mask of events that triggered the wake.
@@ -1138,6 +1157,9 @@ protected:
 
     /// True if we are already closed.
     bool _closed;
+
+    /// True if we've received a Continue in response to an Expect: 100-continue
+    bool _sentHTTPContinue;
 
     /// True when shutdown was requested via shutdown().
     bool _shutdownSignalled;
