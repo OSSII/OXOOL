@@ -127,6 +127,7 @@ GLOBAL_JS =\
 	global.js
 
 LOLEAFLET_JS = $(strip $(shell NODE_PATH=$(abs_builddir)/node_modules $(NODE) -e "try {console.log(require('$(1)').getFiles().join(' '))} catch(e) {}"))
+LOPLUGIN_JS = $(strip $(shell NODE_PATH=$(abs_builddir)/node_modules $(NODE) -e "try {console.log(require('$(1)').deps.join(' '))} catch(e) {}"))
 
 PLUGINS_JS =\
 	jquery.mCustomScrollbar.js \
@@ -186,7 +187,7 @@ if ENABLE_DEBUG
 $(LOLEAFLET_PREFIX)/dist/loleaflet-src.js: $(LOLEAFLET_JS_DST) $(LOLEAFLET_DRAW_JS_DST) $(LOLEAFLET_PATH_JS_DST) $(PLUGINS_JS_DST)
 	@echo "Checking for loleaflet JS errors..."
 	@NODE_PATH=$(abs_builddir)/node_modules $(NODE) node_modules/eslint/bin/eslint.js $(srcdir)/src \
-		$(srcdir)/plugins/draw-$(DRAW_VERSION)/src  \
+		$(srcdir)/plugins/draw-$(DRAW_VERSION)/src \
 		$(srcdir)/plugins/path-transform/src \
 		$(srcdir)/js --ignore-path $(srcdir)/.eslintignore --config $(srcdir)/.eslintrc
 	@touch $@
