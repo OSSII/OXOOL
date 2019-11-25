@@ -2099,10 +2099,21 @@ L.TileLayer = L.GridLayer.extend({
 		}
 		else if (e.type === 'rotateend') {
 			var center = this._graphicSelectionTwips.getCenter();
+			// Add by Firefly <firefly@ossii.com.tw>
+			// 旋轉角度一律取整數，以餘數是否超過 0.5 度為分界
+			// 高於 0.5 度則進位 1 度，否則捨去 1 度
+			var angle = (((e.rotation * 18000) / Math.PI));
+			var mod = (angle % 100);
+
+			if (mod > 50)
+				this._graphicSelectionAngle = angle  + (100 - mod);
+			else
+				this._graphicSelectionAngle = angle - mod;
+
 			var param = {
 				TransformRotationDeltaAngle: {
 					type: 'long',
-					value: (((e.rotation * 18000) / Math.PI))
+					value: this._graphicSelectionAngle
 				},
 				TransformRotationX: {
 					type: 'long',
