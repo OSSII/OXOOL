@@ -963,6 +963,9 @@ L.Socket = L.Class.extend({
 			else if (tokens[i].substring(0, 7) === 'viewid=') {
 				command.viewid = tokens[i].substring(7);
 			}
+			else if (tokens[i].substring(0, 8) === 'nviewid=') {
+				command.nviewid = tokens[i].substring(8);
+			}
 			else if (tokens[i].substring(0, 7) === 'params=') {
 				command.params = tokens[i].substring(7).split(',');
 			}
@@ -992,6 +995,13 @@ L.Socket = L.Class.extend({
 				command.hiddenparts = [];
 				hiddenparts.forEach(function (item) {
 					command.hiddenparts.push(parseInt(item));
+				});
+			}
+			else if (tokens[i].startsWith('selectedparts=')) {
+				var selectedParts = tokens[i].substring(14).split(',');
+				command.selectedParts = [];
+				selectedParts.forEach(function (item) {
+					command.selectedParts.push(parseInt(item));
 				});
 			}
 		}

@@ -48,12 +48,6 @@ using namespace LOOLProtocol;
 
 using Poco::JSON::Object;
 
-#if ENABLE_DEBUG
-#  define ADD_DEBUG_RENDERID (" renderid=cached\n")
-#else
-#  define ADD_DEBUG_RENDERID ("\n")
-#endif
-
 void ChildProcess::setDocumentBroker(const std::shared_ptr<DocumentBroker>& docBroker)
 {
     assert(docBroker && "Invalid DocumentBroker instance.");
@@ -224,6 +218,7 @@ void DocumentBroker::pollThread()
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
                                                                   _threadStart).count() > timeoutMs)
             break;
+
         // Nominal time between retries, lest we busy-loop. getNewChild could also wait, so don't double that here.
         std::this_thread::sleep_for(std::chrono::milliseconds(CHILD_REBALANCE_INTERVAL_MS / 10));
     }
@@ -262,6 +257,7 @@ void DocumentBroker::pollThread()
     LOG_INF("Doc [" << _docKey << "] attached to child [" << _childProcess->getPid() << "].");
 
     static const bool AutoSaveEnabled = !std::getenv("LOOL_NO_AUTOSAVE");
+
 #ifndef MOBILEAPP
     static const size_t IdleDocTimeoutSecs = LOOLWSD::getConfigValue<int>(
                                                       "per_document.idle_timeout_secs", 3600);
@@ -976,7 +972,8 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
         oss << "error: cmd=storage kind=" << (isRename ? "renamefailed" : "savefailed");
         it->second->sendTextFrame(oss.str());
     }
-    else if (storageSaveResult.getResult() == StorageBase::SaveResult::DOC_CHANGED)
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::DOC_CHANGED
+             || storageSaveResult.getResult() == StorageBase::SaveResult::CONFLICT)
     {
         LOG_ERR("PutFile says that Document changed in storage");
         _documentChangedInStorage = true;
@@ -1393,10 +1390,10 @@ bool DocumentBroker::handleInput(const std::vector<char>& payload)
     return true;
 }
 
-void DocumentBroker::invalidateTiles(const std::string& tiles)
+void DocumentBroker::invalidateTiles(const std::string& tiles, int normalizedViewId)
 {
     // Remove from cache.
-    _tileCache->invalidateTiles(tiles);
+    _tileCache->invalidateTiles(tiles, normalizedViewId);
 }
 
 void DocumentBroker::handleTileRequest(TileDesc& tile,
@@ -1412,7 +1409,11 @@ void DocumentBroker::handleTileRequest(TileDesc& tile,
     std::unique_ptr<std::fstream> cachedTile = _tileCache->lookupTile(tile);
     if (cachedTile)
     {
-        const std::string response = tile.serialize("tile:", ADD_DEBUG_RENDERID);
+#if ENABLE_DEBUG
+        const std::string response = tile.serialize("tile:") + " renderid=cached\n";
+#else
+        const std::string response = tile.serialize("tile:") + '\n';
+#endif
 
         std::vector<char> output;
         output.reserve(static_cast<size_t>(4) * tile.getWidth() * tile.getHeight());
@@ -1542,7 +1543,6 @@ void DocumentBroker::sendRequestedTiles(const std::shared_ptr<ClientSession>& se
     float tilesOnFlyUpperLimit = 0;
     if (normalizedVisArea.hasSurface() && session->getTileWidthInTwips() != 0 && session->getTileHeightInTwips() != 0)
     {
-
         const int tilesFitOnWidth = std::ceil(normalizedVisArea.getRight() / session->getTileWidthInTwips()) -
                                     std::ceil(normalizedVisArea.getLeft() / session->getTileWidthInTwips()) + 1;
         const int tilesFitOnHeight = std::ceil(normalizedVisArea.getBottom() / session->getTileHeightInTwips()) -
@@ -1592,7 +1592,11 @@ void DocumentBroker::sendRequestedTiles(const std::shared_ptr<ClientSession>& se
             if (cachedTile)
             {
                 //TODO: Combine the response to reduce latency.
-                const std::string response = tile.serialize("tile:", ADD_DEBUG_RENDERID);
+#if ENABLE_DEBUG
+                const std::string response = tile.serialize("tile:") + " renderid=cached\n";
+#else
+                const std::string response = tile.serialize("tile:") + "\n";
+#endif
 
                 std::vector<char> output;
                 output.reserve(static_cast<size_t>(4) * tile.getWidth() * tile.getHeight());

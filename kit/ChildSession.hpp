@@ -24,6 +24,7 @@
 #include "Kit.hpp"
 #include "Session.hpp"
 
+class Watermark;
 class ChildSession;
 
 enum class LokEventTargetEnum
@@ -55,6 +56,12 @@ public:
 
     /// Access to the document instance.
     virtual std::shared_ptr<lok::Document> getLOKitDocument() = 0;
+
+    /// Access to the office instance.
+    virtual std::shared_ptr<lok::Office> getLOKit() = 0;
+
+    /// Send msg to all active sessions.
+    virtual bool notifyAll(const std::string& msg) = 0;
 
     /// Send updated view info to all active sessions.
     virtual void notifyViewInfo() = 0;
@@ -233,6 +240,7 @@ public:
     }
 
     using Session::sendTextFrame;
+    std::shared_ptr<Watermark> _docWatermark;
 
 private:
     bool loadDocument(const char* buffer, int length, const std::vector<std::string>& tokens);
@@ -260,10 +268,13 @@ private:
     bool resetSelection(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool saveAs(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool setClientPart(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool selectClientPart(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool moveSelectedClientParts(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool setPage(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool sendWindowCommand(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool signDocumentContent(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool askSignatureStatus(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool renderShapeSelection(const char* buffer, int length, const std::vector<std::string>& tokens);
 
     void rememberEventsForInactiveUser(const int type, const std::string& payload);
 

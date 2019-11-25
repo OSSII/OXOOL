@@ -84,6 +84,9 @@ L.TileLayer = L.GridLayer.extend({
 		}
 		// text, presentation, spreadsheet, etc
 		this._docType = options.docType;
+		// Add by Firefly <firefly@ossii.com.tw>
+		// 目前文件中 focus 的物件型態
+		this._docContext = '';
 		this._documentInfo = '';
 		// Position and size of the visible cursor.
 		this._visibleCursor = new L.LatLngBounds(new L.LatLng(0, 0), new L.LatLng(0, 0));
@@ -410,6 +413,9 @@ L.TileLayer = L.GridLayer.extend({
 		else if (textMsg.startsWith('getchildid:')) {
 			this._onGetChildIdMsg(textMsg);
 		}
+		else if (textMsg.startsWith('shapeselectioncontent:')) {
+			this._onShapeSelectionContent(textMsg);
+		}
 		else if (textMsg.startsWith('graphicselection:')) {
 			this._onGraphicSelectionMsg(textMsg);
 		}
@@ -465,7 +471,7 @@ L.TileLayer = L.GridLayer.extend({
 		else if (textMsg.startsWith('statechanged:')) {
 			this._onStateChangedMsg(textMsg);
 		}
-		else if (textMsg.startsWith('status:')) {
+		else if (textMsg.startsWith('status:') || textMsg.startsWith('statusupdate:')) {
 			this._onStatusMsg(textMsg);
 		}
 		else if (textMsg.startsWith('textselection:')) {
@@ -574,6 +580,14 @@ L.TileLayer = L.GridLayer.extend({
 			var result = textMsg.substring('macroresult:'.length + 1);
 			this._map.fire('macroresult', {'result': result});
 		}
+		// Add by Firefly <firefly@ossii.com.tw>
+		// 目前文件中 focus 的物件型態
+		else if (textMsg.startsWith('context:')) {
+			var context = textMsg.substring('context:'.length + 1).trim().split(' ');
+			this._docContext = context[1];
+			console.debug(this._docContext);
+		}
+		//-- End of add.
 		else {
 			console.log('Warning! found unknow message : ', textMsg);
 		}
@@ -719,22 +733,39 @@ L.TileLayer = L.GridLayer.extend({
 		this._map.fire('childid', {id: command.id});
 	},
 
+	_isGraphicAngleDivisibleBy90: function() {
+		return (this._graphicSelectionAngle % 9000 === 0);
+	},
+
+	_onShapeSelectionContent: function (textMsg) {
+		textMsg = textMsg.substring('shapeselectioncontent:'.length + 1);
+		if (this._graphicMarker) {
+			this._graphicMarker.removeEmbeddedSVG();
+			this._graphicMarker.addEmbeddedSVG(textMsg);
+		}
+	},
+
 	_onGraphicSelectionMsg: function (textMsg) {
 		if (textMsg.match('EMPTY')) {
 			this._graphicSelectionTwips = new L.Bounds(new L.Point(0, 0), new L.Point(0, 0));
 			this._graphicSelection = new L.LatLngBounds(new L.LatLng(0, 0), new L.LatLng(0, 0));
 		}
 		else {
-			textMsg = '[' + textMsg.substr('graphicselection:'.length) + ']';
-			var msgData = JSON.parse(textMsg);
-			var topLeftTwips = new L.Point(msgData[0], msgData[1]);
-			var offset = new L.Point(msgData[2], msgData[3]);
+			var strTwips = textMsg.match(/\d+/g);
+			var topLeftTwips = new L.Point(parseInt(strTwips[0]), parseInt(strTwips[1]));
+			var offset = new L.Point(parseInt(strTwips[2]), parseInt(strTwips[3]));
 			var bottomRightTwips = topLeftTwips.add(offset);
 			this._graphicSelectionTwips = new L.Bounds(topLeftTwips, bottomRightTwips);
 			this._graphicSelection = new L.LatLngBounds(
 							this._twipsToLatLng(topLeftTwips, this._map.getZoom()),
 							this._twipsToLatLng(bottomRightTwips, this._map.getZoom()));
-			this._graphicSelectionAngle = (msgData.length > 4) ? msgData[4] : 0;
+			this._graphicSelectionAngle = (strTwips.length === 5) ? parseInt(strTwips[4]) : 0;
+			// Workaround for tdf#123874. For some reason the handling of the
+			// shapeselectioncontent messages that we get back causes the WebKit process
+			// to crash on iOS.
+			if (!window.ThisIsTheiOSApp) {
+				this._map._socket.sendMessage('rendershapeselection mimetype=image/svg+xml');
+			}
 		}
 
 		this._onUpdateGraphicSelection();
@@ -1579,7 +1610,7 @@ L.TileLayer = L.GridLayer.extend({
 		L.Log.log(textMsg, L.INCOMING, key);
 
 		// Send acknowledgment, that the tile message arrived
-		var tileID = command.part + ':' + command.x + ':' + command.y + ':' + command.tileWidth + ':' + command.tileHeight;
+		var tileID = command.part + ':' + command.x + ':' + command.y + ':' + command.tileWidth + ':' + command.tileHeight + ':' + command.nviewid;
 		this._map._socket.sendMessage('tileprocessed tile=' + tileID);
 	},
 
@@ -1673,8 +1704,8 @@ L.TileLayer = L.GridLayer.extend({
 	},
 
 	// if winId=0, then event is posted on the document
-	// console.log('==> _postCompositionEvent type=' + type + ' text="' + text + '"');
 	_postCompositionEvent: function(winId, type, text) {
+		// console.log('==> _postCompositionEvent type=' + type + ' text="' + text + '"');
 		this._map._socket.sendMessage('textinput id=' + winId + ' type=' + type + ' text=' + encodeURIComponent(text));
 	},
 
@@ -1761,7 +1792,7 @@ L.TileLayer = L.GridLayer.extend({
 		&& this._isCursorVisible        // only when LOK has told us it is ok
 		&& this._isFocused              // not when document is not focused
 		&& !this._isZooming             // not when zooming
-		&& !this.isGraphicVisible()     // not when sizing / positioning graphics
+//		&& !this.isGraphicVisible()     // not when sizing / positioning graphics
 		&& !this._isEmptyRectangle(this._visibleCursor)) {
 			this._updateCursorPos();
 		}
@@ -1810,6 +1841,7 @@ L.TileLayer = L.GridLayer.extend({
 		else if (viewCursorMarker) {
 			this._viewLayerGroup.removeLayer(viewCursorMarker);
 		}
+
 		this._viewCursors[viewId].marker.showCursorHeader();
 	},
 
@@ -1911,19 +1943,177 @@ L.TileLayer = L.GridLayer.extend({
 		}
 	},
 
+	// Update dragged graphics selection
+	_onGraphicMove: function (e) {
+		if (!e.pos) { return; }
+		var aPos = this._latLngToTwips(e.pos);
+		if (e.type === 'graphicmovestart') {
+			this._graphicMarker.isDragged = true;
+			this._graphicMarker._startPos = aPos;
+		}
+		else if (e.type === 'graphicmoveend') {
+			var deltaPos = aPos.subtract(this._graphicMarker._startPos);
+			if (deltaPos.x === 0 && deltaPos.y === 0) {
+				this._graphicMarker.isDragged = false;
+				return;
+			}
+
+			var newPos = this._graphicSelectionTwips.min.add(deltaPos);
+			var size = this._graphicSelectionTwips.getSize();
+
+			// try to keep shape inside document
+			if (newPos.x + size.x > this._docWidthTwips)
+				newPos.x = this._docWidthTwips - size.x;
+			if (newPos.x < 0)
+				newPos.x = 0;
+
+			if (newPos.y + size.y > this._docHeightTwips)
+				newPos.y = this._docHeightTwips - size.y;
+			if (newPos.y < 0)
+				newPos.y = 0;
+
+			var param = {
+				TransformPosX: {
+					type: 'long',
+					value: newPos.x
+				},
+				TransformPosY: {
+					type: 'long',
+					value: newPos.y
+				}
+			};
+			this._map.sendUnoCommand('.uno:TransformDialog ', param);
+			this._graphicMarker.isDragged = false;
+		}
+	},
+
 	// Update dragged graphics selection resize.
 	_onGraphicEdit: function (e) {
-		if (!e.handle) { return; }
+		if (!e.pos) { return; }
 
-		var aPos = this._latLngToTwips(e.handle.getLatLng());
-		if (e.type === 'editstart') {
+		var aPos = this._latLngToTwips(e.pos);
+		var selMin = this._graphicSelectionTwips.min;
+		var selMax = this._graphicSelectionTwips.max;
+
+		if (e.type === 'scalestart') {
 			this._graphicMarker.isDragged = true;
-			this._postSelectGraphicEvent('start',
-						Math.min(aPos.x, this._graphicSelectionTwips.max.x - 1),
-						Math.min(aPos.y, this._graphicSelectionTwips.max.y - 1));
+			if (selMax.x - selMin.x < 2)
+				this._graphicMarker.dragHorizDir = 0; // overlapping handles
+			else if (Math.abs(selMin.x - aPos.x) < 2)
+				this._graphicMarker.dragHorizDir = -1; // left handle
+			else if (Math.abs(selMax.x - aPos.x) < 2)
+				this._graphicMarker.dragHorizDir = 1; // right handle
+			if (selMax.y - selMin.y < 2)
+				this._graphicMarker.dragVertDir = 0; // overlapping handles
+			else if (Math.abs(selMin.y - aPos.y) < 2)
+				this._graphicMarker.dragVertDir = -1; // up handle
+			else if (Math.abs(selMax.y - aPos.y) < 2)
+				this._graphicMarker.dragVertDir = 1; // down handle
 		}
-		else if (e.type === 'editend') {
-			this._postSelectGraphicEvent('end', aPos.x, aPos.y);
+		else if (e.type === 'scaleend') {
+			var oldSize = selMax.subtract(selMin);
+			var newSize = oldSize.clone();
+			var newPos = selMin.clone();
+			var center = this._graphicSelectionTwips.getCenter();
+			var horizDir = this._graphicMarker.dragHorizDir;
+			var vertDir = this._graphicMarker.dragVertDir;
+
+			var computePosAndSize = function (coord) {
+				var direction = (coord === 'x') ? horizDir : vertDir;
+				var delta;
+				if (direction === 0) {
+					newSize[coord] = Math.abs(aPos[coord] - center[coord]);
+					newPos[coord] = (aPos[coord] > center[coord]) ? center[coord] : center[coord] - newSize[coord];
+				}
+				else if (direction === -1) { // left/up handle
+					delta = selMin[coord] - aPos[coord];
+					newSize[coord] = oldSize[coord] + delta;
+					newPos[coord] = aPos[coord];
+				}
+				else if (direction === 1) {  // right/down handle
+					delta = aPos[coord] - selMax[coord];
+					newSize[coord] = oldSize[coord] + delta;
+					newPos[coord] = selMin[coord];
+				}
+			};
+
+			computePosAndSize('x');
+			computePosAndSize('y');
+
+			// do we need to perform uniform scaling ?
+			if (!this._isGraphicAngleDivisibleBy90()) {
+				var delta = 0;
+				if (horizDir !== undefined && vertDir === undefined) {
+					newSize.y = Math.round(oldSize.y * (newSize.x / oldSize.x));
+					delta = newSize.y - oldSize.y;
+					newPos.y = Math.round(selMin.y - delta / 2);
+				}
+				else if (horizDir === undefined && vertDir !== undefined) {
+					newSize.x = Math.round(oldSize.x * (newSize.y / oldSize.y));
+					delta = newSize.x - oldSize.x;
+					newPos.x = Math.round(selMin.x - delta / 2);
+				}
+			}
+
+			// try to keep shape inside document
+			if (newPos.x + newSize.x > this._docWidthTwips)
+				newPos.x = this._docWidthTwips - newSize.x;
+			if (newPos.x < 0)
+				newPos.x = 0;
+
+			if (newPos.y + newSize.y > this._docHeightTwips)
+				newPos.y = this._docHeightTwips - newSize.y;
+			if (newPos.y < 0)
+				newPos.y = 0;
+
+			// fill params for uno command
+			var param = {
+				TransformPosX: {
+					type: 'long',
+					value: newPos.x
+				},
+				TransformPosY: {
+					type: 'long',
+					value: newPos.y
+				},
+				TransformWidth: {
+					type: 'long',
+					value: newSize.x
+				},
+				TransformHeight: {
+					type: 'long',
+					value: newSize.y
+				}
+			};
+
+			this._map.sendUnoCommand('.uno:TransformDialog ', param);
+			this._graphicMarker.isDragged = false;
+			this._graphicMarker.dragHorizDir = undefined;
+			this._graphicMarker.dragVertDir = undefined;
+		}
+	},
+
+	_onGraphicRotate: function (e) {
+		if (e.type === 'rotatestart') {
+			this._graphicMarker.isDragged = true;
+		}
+		else if (e.type === 'rotateend') {
+			var center = this._graphicSelectionTwips.getCenter();
+			var param = {
+				TransformRotationDeltaAngle: {
+					type: 'long',
+					value: (((e.rotation * 18000) / Math.PI))
+				},
+				TransformRotationX: {
+					type: 'long',
+					value: center.x
+				},
+				TransformRotationY: {
+					type: 'long',
+					value: center.y
+				}
+			};
+			this._map.sendUnoCommand('.uno:TransformDialog ', param);
 			this._graphicMarker.isDragged = false;
 		}
 	},
@@ -2086,7 +2276,11 @@ L.TileLayer = L.GridLayer.extend({
 	_onUpdateGraphicSelection: function () {
 		if (this._graphicSelection && !this._isEmptyRectangle(this._graphicSelection)) {
 			if (this._graphicMarker) {
-				this._graphicMarker.off('editstart editend', this._onGraphicEdit, this);
+				this._graphicMarker.removeEventParent(this._map);
+				this._graphicMarker.off('scalestart scaleend', this._onGraphicEdit, this);
+				this._graphicMarker.off('rotatestart rotateend', this._onGraphicRotate, this);
+				this._graphicMarker.dragging.disable();
+				this._graphicMarker.transform.disable();
 				this._map.removeLayer(this._graphicMarker);
 			}
 
@@ -2094,20 +2288,32 @@ L.TileLayer = L.GridLayer.extend({
 				return;
 			}
 
-			this._graphicMarker = L.rectangle(this._graphicSelection, {
-				pointerEvents: 'none',
-				fill: false});
+			this._graphicMarker = L.svgGroup(this._graphicSelection, {
+				draggable: true,
+				transform: true,
+				stroke: false,
+				fillOpacity: 0,
+				fill: true
+			});
+
 			if (!this._graphicMarker) {
 				this._map.fire('error', {msg: 'Graphic marker initialization', cmd: 'marker', kind: 'failed', id: 1});
 				return;
 			}
 
-			this._graphicMarker.editing.enable();
-			this._graphicMarker.on('editstart editend', this._onGraphicEdit, this);
+			this._graphicMarker.on('graphicmovestart graphicmoveend', this._onGraphicMove, this);
+			this._graphicMarker.on('scalestart scaleend', this._onGraphicEdit, this);
+			this._graphicMarker.on('rotatestart rotateend', this._onGraphicRotate, this);
 			this._map.addLayer(this._graphicMarker);
+			this._graphicMarker.dragging.enable();
+			this._graphicMarker.transform.enable({uniformScaling: !this._isGraphicAngleDivisibleBy90()});
 		}
 		else if (this._graphicMarker) {
-			this._graphicMarker.off('editstart editend', this._onGraphicEdit, this);
+			this._graphicMarker.off('graphicmovestart graphicmoveend', this._onGraphicMove, this);
+			this._graphicMarker.off('scalestart scaleend', this._onGraphicEdit, this);
+			this._graphicMarker.off('rotatestart rotateend', this._onGraphicRotate, this);
+			this._graphicMarker.dragging.disable();
+			this._graphicMarker.transform.disable();
 			this._map.removeLayer(this._graphicMarker);
 			this._graphicMarker.isDragged = false;
 		}
@@ -2472,6 +2678,16 @@ L.TileLayer = L.GridLayer.extend({
 			// FIXME apparently we cannot paste the text/html or text/rtf as
 			// produced by LibreOffice in Calc from some reason
 			mimeTypes = [
+				['text/plain', 'text/plain;charset=utf-8'],
+				['Text', 'text/plain;charset=utf-8']
+			];
+		} else if (navigator.platform.startsWith('Mac')) {
+			// Safari provides RTF clipboard content which doesn't contain the
+			// images.  We do not know where the content comes from, so let's
+			// always prefer HTML over RTF on Mac.
+			mimeTypes = [
+				['text/html', 'text/html'],
+				['text/rtf', 'text/rtf'],
 				['text/plain', 'text/plain;charset=utf-8'],
 				['Text', 'text/plain;charset=utf-8']
 			];

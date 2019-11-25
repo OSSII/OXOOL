@@ -29,10 +29,8 @@
 #include <climits>
 #include <condition_variable>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <memory>
-#include <string>
 #include <sstream>
 #include <thread>
 
@@ -69,6 +67,7 @@
 #include <UserMessages.hpp>
 #include <Util.hpp>
 #include "Delta.hpp"
+#include "Watermark.hpp"
 
 #ifndef MOBILEAPP
 #include <common/SigUtil.hpp>
@@ -121,9 +120,9 @@ static std::string ObfuscatedFileId;
 #endif
 
 #if ENABLE_DEBUG
-#  define ADD_DEBUG_RENDERID (" renderid=" + Util::UniqueId() + '\n')
+#  define ADD_DEBUG_RENDERID(s) ((s)+ " renderid=" + Util::UniqueId())
 #else
-#  define ADD_DEBUG_RENDERID ("\n")
+#  define ADD_DEBUG_RENDERID(s) (s)
 #endif
 
 #ifndef MOBILEAPP
@@ -156,7 +155,6 @@ namespace
                 strcmp(path, "share/gallery") != 0 &&
                 strcmp(path, "share/Scripts/java") != 0 &&
                 strcmp(path, "share/Scripts/javascript") != 0 &&
-                strcmp(path, "share/template") != 0 &&
                 // 本行重複 strcmp(path, "share/config/wizard") != 0 &&
                 strcmp(path, "share/config/wizard") != 0;
         default: // LinkOrCopyType::All
@@ -394,20 +392,20 @@ namespace
 /// wherever possible.
 class PngCache
 {
-public:
     typedef std::shared_ptr< std::vector< char > > CacheData;
-private:
+
     struct CacheEntry {
     private:
         size_t    _hitCount;
         TileWireId _wireId;
         CacheData _data;
     public:
-        CacheEntry(const CacheData &data, TileWireId id) :
+        CacheEntry(size_t defaultSize, TileWireId id) :
             _hitCount(1),   // Every entry is used at least once; prevent removal at birth.
             _wireId(id),
-            _data(data)
+            _data( new std::vector< char >() )
         {
+            _data->reserve( defaultSize );
         }
 
         size_t getHitCount() const
@@ -435,7 +433,6 @@ private:
             return _wireId;
         }
     } ;
-
     size_t _cacheSize;
     static const size_t CacheSizeSoftLimit = (1024 * 4 * 32); // 128k of cache
     static const size_t CacheSizeHardLimit = CacheSizeSoftLimit * 2;
@@ -472,8 +469,6 @@ private:
         return id;
     }
 
-public:
-    // Performed only after a complete combinetiles
     void balanceCache()
     {
         // A normalish PNG image size for text in a writer document is
@@ -484,9 +479,9 @@ public:
             for (auto it = _cache.begin(); it != _cache.end(); ++it)
                 avgHits += it->second.getHitCount();
 
-            LOG_DBG("PNG cache has " << _cache.size() << " items total size " <<
+            LOG_DBG("Cache " << _cache.size() << " items total size " <<
                     _cacheSize << " current hits " << avgHits << ", total hit rate " <<
-                    (_cacheHits * 100. / _cacheTests) << "% at balance start");
+                    (_cacheHits * 100. / _cacheTests) << "% at balance start.");
             avgHits /= _cache.size();
 
             for (auto it = _cache.begin(); it != _cache.end();)
@@ -497,7 +492,6 @@ public:
                     // Shrink cache when we exceed the size to maximize
                     // the chance of hitting these entries in the future.
                     _cacheSize -= it->second.getData()->size();
-
                     it = _cache.erase(it);
                 }
                 else
@@ -508,8 +502,8 @@ public:
                 }
             }
 
-            LOG_DBG("PNG cache has " << _cache.size() << " items total size " <<
-                    _cacheSize << " after balance");
+            LOG_DBG("Cache " << _cache.size() << " items with total size of " <<
+                    _cacheSize << " bytes after balance.");
         }
 
         if (_hashToWireId.size() > CacheWidHardLimit)
@@ -529,7 +523,7 @@ public:
 
     /// Lookup an entry in the cache and store the data in output.
     /// Returns true on success, otherwise false.
-    bool copyFromCache(const TileBinaryHash hash, std::vector<char>& output, size_t &imgSize)
+    bool cacheTest(const uint64_t hash, std::vector<char>& output)
     {
         if (hash)
         {
@@ -543,31 +537,55 @@ public:
                               it->second.getData()->begin(),
                               it->second.getData()->end());
                 it->second.incrementHitCount();
-                imgSize = it->second.getData()->size();
-
                 return true;
             }
         }
 
+        LOG_DBG("PNG cache with hash " << hash << " missed.");
         return false;
     }
 
-    void addToCache(const CacheData &data, TileWireId wid, const TileBinaryHash hash)
+    bool cacheEncodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t startY,
+                                   int width, int height,
+                                   int bufferWidth, int bufferHeight,
+                                   std::vector<char>& output, LibreOfficeKitTileMode mode,
+                                   TileBinaryHash hash, TileWireId wid, TileWireId /*oldWid*/)
     {
-        CacheEntry newEntry(data, wid);
+/*
+ *Disable for now - pushed in error.
+ *
+        if (_deltaGen.createDelta(pixmap, startX, startY, width, height,
+                                  bufferWidth, bufferHeight,
+                                  output, wid, oldWid))
+            return true;
+*/
 
-        if (hash)
+        LOG_DBG("Encode a new png for this tile (" << startX << ',' << startY << ").");
+        CacheEntry newEntry(bufferWidth * bufferHeight * 1, wid);
+        if (Png::encodeSubBufferToPNG(pixmap, startX, startY, width, height,
+                                      bufferWidth, bufferHeight,
+                                      *newEntry.getData(), mode))
         {
-            // Adding duplicates causes grim wid mixups
-            assert(hashToWireId(hash) == wid);
-            assert(_cache.find(hash) == _cache.end());
+            if (hash)
+            {
+                newEntry.getData()->shrink_to_fit();
+                _cache.emplace(hash, newEntry);
+                _cacheSize += newEntry.getData()->size();
+                LOG_TRC("Cached new tile (" << startX << ',' << startY << ") with hash " << hash
+                                            << ". New size: " << _cacheSize);
+            }
 
-            data->shrink_to_fit();
-            _cache.emplace(hash, newEntry);
-            _cacheSize += data->size();
+            output.insert(output.end(),
+                          newEntry.getData()->begin(),
+                          newEntry.getData()->end());
+            balanceCache();
+            return true;
         }
+        else
+            return false;
     }
 
+public:
     PngCache()
     {
         clearCache();
@@ -588,273 +606,37 @@ public:
         }
         return wid;
     }
-};
 
-class Watermark
-{
-public:
-    Watermark(const std::shared_ptr<lok::Document>& loKitDoc, const std::string& text,
-    const std::shared_ptr<ChildSession> & session)
-        : _loKitDoc(loKitDoc)
-        , _text(text)
-        , _font("Liberation Sans")
-        , _width(0)
-        , _height(0)
-        , _alphaLevel(session->getWatermarkOpacity())
+    bool encodeBufferToPNG(unsigned char* pixmap, int width, int height,
+                           std::vector<char>& output, LibreOfficeKitTileMode mode,
+                           TileBinaryHash hash, TileWireId wid, TileWireId oldWid)
     {
+        if (cacheTest(hash, output))
+            return true;
+
+        return cacheEncodeSubBufferToPNG(pixmap, 0, 0, width, height,
+                                         width, height, output, mode,
+                                         hash, wid, oldWid);
     }
 
-    ~Watermark()
+    bool encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t startY,
+                              int width, int height,
+                              int bufferWidth, int bufferHeight,
+                              std::vector<char>& output, LibreOfficeKitTileMode mode,
+                              TileBinaryHash hash, TileWireId wid, TileWireId oldWid)
     {
+        if (cacheTest(hash, output))
+            return true;
+
+        return cacheEncodeSubBufferToPNG(pixmap, startX, startY, width, height,
+                                         bufferWidth, bufferHeight, output, mode,
+                                         hash, wid, oldWid);
     }
-
-    void blending(unsigned char* tilePixmap,
-                   int offsetX, int offsetY,
-                   int tilesPixmapWidth, int tilesPixmapHeight,
-                   int tileWidth, int tileHeight,
-                   LibreOfficeKitTileMode /*mode*/)
-    {
-        // set requested watermark size a little bit smaller than tile size
-        int width = tileWidth * 0.9;
-        int height = tileHeight * 0.9;
-
-        const std::vector<unsigned char>* pixmap = getPixmap(width, height);
-
-        if (pixmap && tilePixmap)
-        {
-            // center watermark
-            const int maxX = std::min(tileWidth, _width);
-            const int maxY = std::min(tileHeight, _height);
-            offsetX += (tileWidth - maxX) / 2;
-            offsetY += (tileHeight - maxY) / 2;
-
-            alphaBlend(*pixmap, _width, _height, offsetX, offsetY, tilePixmap, tilesPixmapWidth, tilesPixmapHeight);
-        }
-    }
-
-private:
-    /// Alpha blend pixels from 'from' over the 'to'.
-    void alphaBlend(const std::vector<unsigned char>& from, int from_width, int from_height, int from_offset_x, int from_offset_y,
-            unsigned char* to, int to_width, int to_height)
-    {
-        for (int to_y = from_offset_y, from_y = 0; (to_y < to_height) && (from_y < from_height) ; ++to_y, ++from_y)
-            for (int to_x = from_offset_x, from_x = 0; (to_x < to_width) && (from_x < from_width); ++to_x, ++from_x)
-            {
-                const unsigned char* f = from.data() + 4 * (from_y * from_width + from_x);
-                double src_r = f[0];
-                double src_g = f[1];
-                double src_b = f[2];
-                double src_a = f[3] / 255.0;
-
-                unsigned char* t = to + 4 * (to_y * to_width + to_x);
-                double dst_r = t[0];
-                double dst_g = t[1];
-                double dst_b = t[2];
-                double dst_a = t[3] / 255.0;
-
-                double out_a = src_a + dst_a * (1.0 - src_a);
-                unsigned char out_r = src_r + dst_r * (1.0 - src_a);
-                unsigned char out_g = src_g + dst_g * (1.0 - src_a);
-                unsigned char out_b = src_b + dst_b * (1.0 - src_a);
-
-                t[0] = out_r;
-                t[1] = out_g;
-                t[2] = out_b;
-                t[3] = static_cast<unsigned char>(out_a * 255.0);
-            }
-    }
-
-    /// Create bitmap that we later use as the watermark for every tile.
-    const std::vector<unsigned char>* getPixmap(int width, int height)
-    {
-        if (!_pixmap.empty() && width == _width && height == _height)
-            return &_pixmap;
-
-        _pixmap.clear();
-
-        _width = width;
-        _height = height;
-
-        if (!_loKitDoc)
-        {
-            LOG_ERR("Watermark rendering requested without a valid document.");
-            return nullptr;
-        }
-
-        // renderFont returns a buffer based on RGBA mode, where r, g, b
-        // are always set to 0 (black) and the alpha level is 0 everywhere
-        // except on the text area; the alpha level take into account of
-        // performing anti-aliasing over the text edges.
-        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &_width, &_height);
-
-        if (!textPixels)
-        {
-            LOG_ERR("Watermark: rendering failed.");
-        }
-
-        const unsigned int pixel_count = width * height * 4;
-
-        std::vector<unsigned char> text(textPixels, textPixels + pixel_count);
-        // No longer needed.
-        std::free(textPixels);
-
-        _pixmap.reserve(pixel_count);
-
-        // Create the white blurred background
-        // Use box blur, it's enough for our purposes
-        const int r = 2;
-        const double weight = (r+1) * (r+1);
-        for (int y = 0; y < height; ++y)
-        {
-            for (int x = 0; x < width; ++x)
-            {
-                double t = 0;
-                for (int ky = std::max(y - r, 0); ky <= std::min(y + r, height - 1); ++ky)
-                {
-                    for (int kx = std::max(x - r, 0); kx <= std::min(x + r, width - 1); ++kx)
-                    {
-                        // Pre-multiplied alpha; the text is black, so all the
-                        // information is only in the alpha channel
-                        t += text[4 * (ky * width + kx) + 3];
-                    }
-                }
-
-                // Clamp the result.
-                double avg = t / weight;
-                if (avg > 255.0)
-                    avg = 255.0;
-
-                // Pre-multiplied alpha, but use white for the resulting color
-                const double alpha = avg / 255.0;
-                _pixmap[4 * (y * width + x) + 0] = 0xff * alpha;
-                _pixmap[4 * (y * width + x) + 1] = 0xff * alpha;
-                _pixmap[4 * (y * width + x) + 2] = 0xff * alpha;
-                _pixmap[4 * (y * width + x) + 3] = avg;
-            }
-        }
-
-        // Now copy the (black) text over the (white) blur
-        alphaBlend(text, _width, _height, 0, 0, _pixmap.data(), _width, _height);
-
-        // Make the resulting pixmap semi-transparent
-        for (unsigned char* p = _pixmap.data(); p < _pixmap.data() + pixel_count; p++)
-        {
-            *p = static_cast<unsigned char>(*p * _alphaLevel);
-        }
-
-        return &_pixmap;
-    }
-
-private:
-    std::shared_ptr<lok::Document> _loKitDoc;
-    std::string _text;
-    std::string _font;
-    int _width;
-    int _height;
-    double _alphaLevel;
-    std::vector<unsigned char> _pixmap;
 };
 
 #ifndef MOBILEAPP
 static FILE* ProcSMapsFile = nullptr;
 #endif
-
-class ThreadPool {
-    std::mutex _mutex;
-    std::condition_variable _cond;
-    std::condition_variable _complete;
-    typedef std::function<void()> ThreadFn;
-    std::queue<ThreadFn> _work;
-    std::vector<std::thread> _threads;
-    size_t _working;
-    bool   _shutdown;
-public:
-    ThreadPool()
-        : _working(0),
-          _shutdown(false)
-    {
-        int maxConcurrency = 2;
-#if MOBILEAPP
-#  warning "Good defaults ? - 2 for iOS, 4 for Android ?"
-#else
-        const char *max = getenv("MAX_CONCURRENCY");
-        if (max)
-            maxConcurrency = atoi(max);
-#endif
-        LOG_TRC("PNG compression thread pool size " << maxConcurrency);
-        for (int i = 1; i < maxConcurrency; ++i)
-            _threads.push_back(std::thread(&ThreadPool::work, this));
-    }
-    ~ThreadPool()
-    {
-        {
-            std::unique_lock< std::mutex > lock(_mutex);
-            assert(_working == 0);
-            _shutdown = true;
-        }
-        _cond.notify_all();
-        for (auto &it : _threads)
-            it.join();
-    }
-
-    size_t count() const
-    {
-        return _work.size();
-    }
-
-    void pushWorkUnlocked(const ThreadFn &fn)
-    {
-        _work.push(fn);
-    }
-
-    void runOne(std::unique_lock< std::mutex >& lock)
-    {
-        assert(!_work.empty());
-
-        ThreadFn fn = _work.front();
-        _work.pop();
-        _working++;
-        lock.unlock();
-
-        fn();
-
-        lock.lock();
-        _working--;
-        if (_work.empty() && _working == 0)
-            _complete.notify_all();
-    }
-
-    void run()
-    {
-        std::unique_lock< std::mutex > lock(_mutex);
-        assert(_working == 0);
-
-        // Avoid notifying threads if we don't need to.
-        bool useThreads = _threads.size() > 1 && _work.size() > 1;
-        if (useThreads)
-            _cond.notify_all();
-
-        while(!_work.empty())
-            runOne(lock);
-
-        if (useThreads && (_working > 0 || !_work.empty()))
-            _complete.wait(lock, [this]() { return _working == 0 && _work.empty(); } );
-
-        assert(_working==0);
-        assert(_work.empty());
-    }
-
-    void work()
-    {
-        std::unique_lock< std::mutex > lock(_mutex);
-        while (!_shutdown)
-        {
-            _cond.wait(lock);
-            if (!_shutdown && !_work.empty())
-                runOne(lock);
-        }
-    }
-};
 
 /// A document container.
 /// Owns LOKitDocument instance and connections.
@@ -1057,29 +839,92 @@ public:
 
     void renderTile(const std::vector<std::string>& tokens)
     {
-        TileCombined tileCombined(TileDesc::parse(tokens));
-        renderTiles(tileCombined, false);
+        TileDesc tile = TileDesc::parse(tokens);
+
+        size_t pixmapDataSize = 4 * tile.getWidth() * tile.getHeight();
+        std::vector<unsigned char> pixmap;
+        pixmap.resize(pixmapDataSize);
+
+        std::unique_lock<std::mutex> lock(_documentMutex);
+        if (!_loKitDocument)
+        {
+            LOG_ERR("Tile rendering requested before loading document.");
+            return;
+        }
+
+        if (_loKitDocument->getViewsCount() <= 0)
+        {
+            LOG_ERR("Tile rendering requested without views.");
+            return;
+        }
+
+        const double area = tile.getWidth() * tile.getHeight();
+        Timestamp timestamp;
+        _loKitDocument->paintPartTile(pixmap.data(), tile.getPart(),
+                                      tile.getWidth(), tile.getHeight(),
+                                      tile.getTilePosX(), tile.getTilePosY(),
+                                      tile.getTileWidth(), tile.getTileHeight());
+        const Poco::Timestamp::TimeDiff elapsed = timestamp.elapsed();
+        LOG_TRC("paintTile at (" << tile.getPart() << ',' << tile.getTilePosX() << ',' << tile.getTilePosY() <<
+                ") " << "ver: " << tile.getVersion() << " rendered in " << (elapsed/1000.) <<
+                " ms (" << area / elapsed << " MP/s).");
+        const auto mode = static_cast<LibreOfficeKitTileMode>(_loKitDocument->getTileMode());
+
+        int nViewId = tile.getNormalizedViewId();
+        const auto it = std::find_if(_sessions.begin(), _sessions.end(), [nViewId](const std::pair<std::string, std::shared_ptr<ChildSession>>& val){ return (val.second)->getHash() == nViewId; });
+        const auto& session = it->second;
+
+        if (it == _sessions.end())
+        {
+            LOG_ERR("Session is not found. Maybe exited after rendering request.");
+            return;
+        }
+
+        int pixelWidth = tile.getWidth();
+        int pixelHeight = tile.getHeight();
+
+        if (session->_docWatermark)
+            session->_docWatermark->blending(pixmap.data(), 0, 0, pixelWidth, pixelHeight, pixelWidth, pixelHeight, mode);
+
+        const TileBinaryHash hash = Png::hashBuffer(pixmap.data(), tile.getWidth(), tile.getHeight());
+        TileWireId wid = _pngCache.hashToWireId(hash);
+        TileWireId oldWireId = tile.getOldWireId();
+
+        tile.setWireId(wid);
+
+        if (hash != 0 && oldWireId == wid)
+        {
+            // The tile content is identical to what the client already has, so skip it
+            LOG_TRC("Match oldWireId==wid (" << wid << " for hash " << hash << "); unchanged");
+            return;
+        }
+
+        // Send back the request with all optional parameters given in the request.
+        std::string response = ADD_DEBUG_RENDERID(tile.serialize("tile:")) + "\n";
+
+        std::shared_ptr<std::vector<char>> output = std::make_shared<std::vector<char>>();
+        output->reserve(response.size() + pixmapDataSize);
+        output->resize(response.size());
+        std::memcpy(output->data(), response.data(), response.size());
+
+        if (!_pngCache.encodeBufferToPNG(pixmap.data(), tile.getWidth(), tile.getHeight(), *output, mode, hash, wid, oldWireId))
+        {
+            //FIXME: Return error.
+            //sendTextFrame("error: cmd=tile kind=failure");
+
+            LOG_ERR("Failed to encode tile into PNG.");
+            return;
+        }
+
+        LOG_TRC("Sending render-tile response (" << output->size() << " bytes) for: " << response);
+        postMessage(output, WSOpCode::Binary);
     }
 
     void renderCombinedTiles(const std::vector<std::string>& tokens)
     {
         TileCombined tileCombined = TileCombined::parse(tokens);
-        renderTiles(tileCombined, true);
-    }
-
-    static void pushRendered(std::vector<TileDesc> &renderedTiles,
-                            const TileDesc &desc, TileWireId wireId, size_t imgSize)
-    {
-        renderedTiles.push_back(desc);
-        renderedTiles.back().setWireId(wireId);
-        renderedTiles.back().setImgSize(imgSize);
-    }
-
-    void renderTiles(TileCombined &tileCombined, bool combined)
-    {
         auto& tiles = tileCombined.getTiles();
 
-        // Calculate the area we cover
         Util::Rectangle renderArea;
         std::vector<Util::Rectangle> tileRecs;
         tileRecs.reserve(tiles.size());
@@ -1125,7 +970,6 @@ public:
             return;
         }
 
-        // Render the whole area
         const double area = pixmapWidth * pixmapHeight;
         Timestamp timestamp;
         LOG_TRC("Calling paintPartTile(" << (void*)pixmap.data() << ")");
@@ -1140,17 +984,18 @@ public:
                 " rendered in " << (elapsed/1000.) << " ms (" << area / elapsed << " MP/s).");
         const auto mode = static_cast<LibreOfficeKitTileMode>(_loKitDocument->getTileMode());
 
+        int nViewId = tileCombined.getNormalizedViewId();
+        const auto it = std::find_if(_sessions.begin(), _sessions.end(), [nViewId](const std::pair<std::string, std::shared_ptr<ChildSession>>& val){ return (val.second)->getHash() == nViewId; });
+        const auto& session = it->second;
+
+        if (it == _sessions.end())
+        {
+            LOG_ERR("Session is not found. Maybe exited after rendering request.");
+            return;
+        }
+
         std::vector<char> output;
         output.reserve(pixmapSize);
-
-        // Compress the area as tiles
-        const int pixelWidth = tileCombined.getWidth();
-        const int pixelHeight = tileCombined.getHeight();
-
-        std::vector<TileDesc> renderedTiles;
-        std::vector<TileDesc> duplicateTiles;
-        std::vector<TileBinaryHash> duplicateHashes;
-        std::vector<TileWireId> renderingIds;
 
         size_t tileIndex = 0;
         for (Util::Rectangle& tileRect : tileRecs)
@@ -1158,8 +1003,18 @@ public:
             const size_t positionX = (tileRect.getLeft() - renderArea.getLeft()) / tileCombined.getTileWidth();
             const size_t positionY = (tileRect.getTop() - renderArea.getTop()) / tileCombined.getTileHeight();
 
+            const size_t oldSize = output.size();
+            const int pixelWidth = tileCombined.getWidth();
+            const int pixelHeight = tileCombined.getHeight();
+
             const int offsetX = positionX * pixelWidth;
             const int offsetY = positionY * pixelHeight;
+
+            if (session->_docWatermark)
+                session->_docWatermark->blending(pixmap.data(), offsetX, offsetY,
+                                        pixmapWidth, pixmapHeight,
+                                        pixelWidth, pixelHeight,
+                                        mode);
 
             const uint64_t hash = Png::hashSubBuffer(pixmap.data(), offsetX, offsetY,
                                                      pixelWidth, pixelHeight, pixmapWidth, pixmapHeight);
@@ -1171,107 +1026,27 @@ public:
                 // The tile content is identical to what the client already has, so skip it
                 LOG_TRC("Match for tile #" << tileIndex << " at (" << positionX << "," <<
                         positionY << ") oldhash==hash (" << hash << "), wireId: " << wireId << " skipping");
-                tileIndex++;
+                tiles.erase(tiles.begin() + tileIndex);
                 continue;
             }
 
-            bool skipCompress = false;
-            size_t imgSize = -1;
-            if (_pngCache.copyFromCache(hash, output, imgSize))
+            if (!_pngCache.encodeSubBufferToPNG(pixmap.data(), offsetX, offsetY,
+                                                pixelWidth, pixelHeight, pixmapWidth, pixmapHeight, output, mode,
+                                                hash, wireId, oldWireId))
             {
-                pushRendered(renderedTiles, tiles[tileIndex], wireId, imgSize);
-                skipCompress = true;
-            }
-            else
-            {
-                LOG_DBG("PNG cache with hash " << hash << " missed.");
-
-                // Don't re-compress the same thing multiple times.
-                for (auto id : renderingIds)
-                {
-                    if (wireId == id)
-                    {
-                        pushRendered(duplicateTiles, tiles[tileIndex], wireId, 0);
-                        duplicateHashes.push_back(hash);
-                        skipCompress = true;
-                        LOG_TRC("Rendering duplicate tile #" << tileIndex << " at (" << positionX << "," <<
-                                positionY << ") oldhash==hash (" << hash << "), wireId: " << wireId << " skipping");
-                        break;
-                    }
-                }
+                //FIXME: Return error.
+                //sendTextFrame("error: cmd=tile kind=failure");
+                LOG_ERR("Failed to encode tile into PNG.");
+                return;
             }
 
-            if (!skipCompress)
-            {
-                renderingIds.push_back(wireId);
-                if (_docWatermark)
-                    _docWatermark->blending(pixmap.data(), offsetX, offsetY,
-                                            pixmapWidth, pixmapHeight,
-                                            pixelWidth, pixelHeight,
-                                            mode);
-
-                // Queue to be executed later in parallel inside 'run'
-                _pngPool.pushWorkUnlocked([=,&output,&pixmap,&tiles,&renderedTiles](){
-                    PngCache::CacheData data(new std::vector< char >() );
-                    data->reserve(pixmapWidth * pixmapHeight * 1);
-                    /*
-                     * Disable for now - pushed in error.
-                     *
-                     if (_deltaGen.createDelta(pixmap, startX, startY, width, height,
-                            bufferWidth, bufferHeight,
-                            output, wid, oldWid))
-                     else ...
-                    */
-                    LOG_DBG("Encode a new png for tile #" << tileIndex);
-                    if (!Png::encodeSubBufferToPNG(pixmap.data(), offsetX, offsetY, pixelWidth, pixelHeight,
-                        pixmapWidth, pixmapHeight, *data, mode))
-                    {
-                        // FIXME: Return error.
-                        // sendTextFrame("error: cmd=tile kind=failure");
-                        LOG_ERR("Failed to encode tile into PNG.");
-                        return;
-                    }
- 
-                    LOG_DBG("Tile " << tileIndex << " is " << data->size() << " bytes.");
-                    std::unique_lock<std::mutex> pngLock(_pngMutex);
-                    output.insert(output.end(), data->begin(), data->end());
-                    _pngCache.addToCache(data, wireId, hash);
-                    pushRendered(renderedTiles, tiles[tileIndex], wireId, data->size());
-                });
-            }
-
+            const size_t imgSize = output.size() - oldSize;
             LOG_TRC("Encoded tile #" << tileIndex << " at (" << positionX << "," << positionY << ") with oldWireId=" <<
                     tiles[tileIndex].getOldWireId() << ", hash=" << hash << " wireId: " << wireId << " in " << imgSize << " bytes.");
+            tiles[tileIndex].setWireId(wireId);
+            tiles[tileIndex].setImgSize(imgSize);
             tileIndex++;
         }
-
-        _pngPool.run();
-
-        for (auto &i : renderedTiles)
-        {
-            if (i.getImgSize() == 0)
-            {
-                LOG_ERR("Encoded 0-sized tile!");
-                assert(!"0-sized tile enocded!");
-            }
-        }
-
-        // FIXME: append duplicates - tragically for now as real duplicates
-        // we should append these as
-        {
-            size_t imgSize = -1;
-            assert(duplicateTiles.size() == duplicateHashes.size());
-            for (size_t i = 0; i < duplicateTiles.size(); ++i)
-            {
-                if (_pngCache.copyFromCache(duplicateHashes[i], output, imgSize))
-                    pushRendered(renderedTiles, duplicateTiles[i],
-                                duplicateTiles[i].getWireId(), imgSize);
-                else
-                    LOG_ERR("Horror - tile disappeared while rendering! " << duplicateHashes[i]);
-            }
-        }
-
-        _pngCache.balanceCache();
 
         elapsed = timestamp.elapsed();
         LOG_DBG("renderCombinedTiles at (" << renderArea.getLeft() << ", " << renderArea.getTop() << "), (" <<
@@ -1284,15 +1059,11 @@ public:
             return;
         }
 
-        std::string tileMsg;
-        if (combined)
-            tileMsg = tileCombined.serialize("tilecombine:", ADD_DEBUG_RENDERID, renderedTiles);
-        else
-            tileMsg = tiles[0].serialize("tile:", ADD_DEBUG_RENDERID);
+        const auto tileMsg = ADD_DEBUG_RENDERID(tileCombined.serialize("tilecombine:")) + "\n";
+        LOG_TRC("Sending back painted tiles for " << tileMsg);
 
-        LOG_TRC("Sending back painted tiles for " << tileMsg << " of size " << output.size() << " bytes) for: " << tileMsg);
-
-        std::shared_ptr<std::vector<char>> response = std::make_shared<std::vector<char>>(tileMsg.size() + output.size());
+        std::shared_ptr<std::vector<char>> response = std::make_shared<std::vector<char>>();
+        response->resize(tileMsg.size() + output.size());
         std::copy(tileMsg.begin(), tileMsg.end(), response->begin());
         std::copy(output.begin(), output.end(), response->begin() + tileMsg.size());
 
@@ -1339,6 +1110,18 @@ public:
         {
             // Mark the document password type.
             self->setDocumentPassword(type);
+            return;
+        }
+        else if (type == LOK_CALLBACK_STATUS_INDICATOR_SET_VALUE)
+        {
+            for (auto& it : self->_sessions)
+            {
+                std::shared_ptr<ChildSession> session = it.second;
+                if (session && !session->isCloseFrame())
+                {
+                    session->loKitCallback(type, payload);
+                }
+            }
             return;
         }
         else if (type == LOK_CALLBACK_PROFILE_FRAME)
@@ -1588,6 +1371,15 @@ private:
         return _editorId;
     }
 
+    /// Notify all views with the given message
+    bool notifyAll(const std::string& msg) override
+    {
+        Util::assertIsLocked(_documentMutex);
+
+        // Broadcast updated viewinfo to all clients.
+        return sendTextFrame("client-all " + msg);
+    }
+
     /// Notify all views of viewId and their associated usernames
     void notifyViewInfo() override
     {
@@ -1637,10 +1429,9 @@ private:
 
         oss.seekp(-1, std::ios_base::cur); // Remove last comma.
         oss << "]";
-        const std::string msg = oss.str();
 
         // Broadcast updated viewinfo to all clients.
-        sendTextFrame("client-all " + msg);
+        notifyAll(oss.str());
     }
 
     void updateEditorSpeeds(int id, int speed) override
@@ -1742,6 +1533,10 @@ private:
     {
         const std::string sessionId = session->getId();
 
+        std::string options;
+        if (!lang.empty())
+            options = "Language=" + lang;
+
         std::unique_lock<std::mutex> lock(_documentMutex);
 
         if (!_loKitDocument)
@@ -1765,15 +1560,15 @@ private:
             _jailedUrl = uri;
             _isDocPasswordProtected = false;
 
-            std::string options;
-            if (!lang.empty())
-                options = "Language=" + lang;
-
             LOG_DBG("Calling lokit::documentLoad(" << uriAnonym << ", \"" << options << "\").");
             Timestamp timestamp;
             _loKitDocument.reset(_loKit->documentLoad(docTemplate.empty() ? uri.c_str() : docTemplate.c_str(), options.c_str()));
             LOG_DBG("Returned lokit::documentLoad(" << uriAnonym << ") in " << (timestamp.elapsed() / 1000.) << "ms.");
-
+#ifdef IOS
+            // The iOS app (and the Android one) has max one document open at a time, so we can keep
+            // a pointer to it in a global.
+            lok_document = _loKitDocument.get();
+#endif
             if (!_loKitDocument || !_loKitDocument->get())
             {
                 LOG_ERR("Failed to load: " << uriAnonym << ", error: " << _loKit->getError());
@@ -1805,9 +1600,6 @@ private:
             // Only save the options on opening the document.
             // No support for changing them after opening a document.
             _renderOpts = renderOpts;
-
-            if (!watermarkText.empty())
-                _docWatermark.reset(new Watermark(_loKitDocument, watermarkText, session));
         }
         else
         {
@@ -1833,7 +1625,7 @@ private:
                 }
             }
 
-            LOG_INF("Creating view to url [" << uriAnonym << "] for session [" << sessionId << "].");
+            LOG_INF("Creating view to url [" << uriAnonym << "] for session [" << sessionId << "] with " << options << '.');
             _loKitDocument->createView();
             LOG_TRC("View to url [" << uriAnonym << "] created.");
         }
@@ -1862,6 +1654,14 @@ private:
         LOG_INF("Document url [" << anonymizeUrl(_url) << "] for session [" <<
                 sessionId << "] loaded view [" << viewId << "]. Have " <<
                 viewCount << " view" << (viewCount != 1 ? "s." : "."));
+
+        if (!watermarkText.empty())
+        {
+            session->_docWatermark.reset(new Watermark(_loKitDocument, watermarkText, session));
+            session->setHash(watermarkText);
+        }
+        else
+            session->setHash(0);
 
         return _loKitDocument;
     }
@@ -1976,7 +1776,7 @@ private:
 
     void run() override
     {
-        Util::setThreadName("lokitbroker_" + _docId);
+        Util::setThreadName("kitbroker_" + _docId);
 
         LOG_DBG("Thread started.");
 #ifndef MOBILEAPP
@@ -2118,6 +1918,12 @@ private:
         LOG_DBG("Thread finished.");
     }
 
+    /// Return access to the lok::Office instance.
+    std::shared_ptr<lok::Office> getLOKit() override
+    {
+        return _loKit;
+    }
+
     /// Return access to the lok::Document instance.
     std::shared_ptr<lok::Document> getLOKitDocument() override
     {
@@ -2157,8 +1963,6 @@ private:
     std::shared_ptr<TileQueue> _tileQueue;
     SocketPoll& _socketPoll;
     std::shared_ptr<WebSocketHandler> _websocketHandler;
-
-    std::mutex _pngMutex;
     PngCache _pngCache;
 
     // Document password provided
@@ -2170,17 +1974,12 @@ private:
     // Whether password is required to view the document, or modify it
     PasswordType _docPasswordType;
 
-    // Document watermark
-    std::unique_ptr<Watermark> _docWatermark;
-
     std::atomic<bool> _stop;
     mutable std::mutex _mutex;
 
     /// Mutex guarding the lok::Document so that we can lock operations
     /// like setting a view followed by a tile render, etc.
     std::mutex _documentMutex;
-    
-    ThreadPool _pngPool;
 
     std::condition_variable _cvLoading;
     std::atomic_size_t _isLoading;

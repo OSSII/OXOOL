@@ -87,12 +87,6 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         return false;
     }
 
-    if (tokens.size() < 1)
-    {
-        sendTextFrame("error: cmd=empty kind=unknown");
-        return false;
-    }
-
     LOOLWSD::dumpIncomingTrace(docBroker->getJailId(), getId(), firstLine);
 
     if (LOOLProtocol::tokenIndicatesUserInteraction(tokens[0]))
@@ -103,7 +97,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     }
     if (tokens[0] == "loolclient")
     {
-        if (tokens.size() < 2)
+        if (tokens.size() < 1)
         {
             sendTextFrame("error: cmd=loolclient kind=badprotocolversion");
             return false;
@@ -170,8 +164,11 @@ bool ClientSession::_handleInput(const char *buffer, int length)
              tokens[0] != "selectgraphic" &&
              tokens[0] != "selecttext" &&
              tokens[0] != "setclientpart" &&
+             tokens[0] != "selectclientpart" &&
+             tokens[0] != "moveselectedclientparts" &&
              tokens[0] != "setpage" &&
              tokens[0] != "status" &&
+             tokens[0] != "statusupdate" &&
              tokens[0] != "tile" &&
              tokens[0] != "tilecombine" &&
              tokens[0] != "uno" &&
@@ -181,9 +178,11 @@ bool ClientSession::_handleInput(const char *buffer, int length)
              tokens[0] != "windowcommand" &&
              tokens[0] != "signdocument" &&
              tokens[0] != "asksignaturestatus" &&
+             tokens[0] != "rendershapeselection" &&
              tokens[0] != "removesession" &&
              tokens[0] != "renamefile")
     {
+        LOG_ERR("Session [" << getId() << "] got unknown command [" << tokens[0] << "].");
         sendTextFrame("error: cmd=" + tokens[0] + " kind=unknown");
         return false;
     }
@@ -205,7 +204,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     {
         // If this session is the owner of the file & 'EnableOwnerTermination' feature
         // is turned on by WOPI, let it close all sessions
-        if (_isDocumentOwner && _wopiFileInfo && _wopiFileInfo->getEnableOwnerTermination())
+        if (isDocumentOwner() && _wopiFileInfo && _wopiFileInfo->getEnableOwnerTermination())
         {
             LOG_DBG("Session [" << getId() << "] requested owner termination");
             docBroker->closeDocument("ownertermination");
@@ -246,7 +245,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     {
         return sendFontRendering(buffer, length, tokens, docBroker);
     }
-    else if (tokens[0] == "status")
+    else if (tokens[0] == "status" || tokens[0] == "statusupdate")
     {
         assert(firstLine.size() == static_cast<size_t>(length));
         return forwardToChild(firstLine, docBroker);
@@ -275,6 +274,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             int dontSaveIfUnmodified = 1;
             if (tokens.size() > 2)
                 getTokenInteger(tokens[2], "dontSaveIfUnmodified", dontSaveIfUnmodified);
+
             docBroker->sendUnoSave(getId(), dontTerminateEdit != 0, dontSaveIfUnmodified != 0);
         }
     }
@@ -330,6 +330,42 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             }
         }
     }
+    else if (tokens[0] == "selectclientpart")
+    {
+        if(!_isTextDocument)
+        {
+            int part;
+            int how;
+            if (tokens.size() != 3 ||
+                !getTokenInteger(tokens[1], "part", part) ||
+                !getTokenInteger(tokens[2], "how", how))
+            {
+                sendTextFrame("error: cmd=selectclientpart kind=syntax");
+                return false;
+            }
+            else
+            {
+                return forwardToChild(std::string(buffer, length), docBroker);
+            }
+        }
+    }
+    else if (tokens[0] == "moveselectedclientparts")
+    {
+        if(!_isTextDocument)
+        {
+            int nPosition;
+            if (tokens.size() != 2 ||
+                !getTokenInteger(tokens[1], "position", nPosition))
+            {
+                sendTextFrame("error: cmd=moveselectedclientparts kind=syntax");
+                return false;
+            }
+            else
+            {
+                return forwardToChild(std::string(buffer, length), docBroker);
+            }
+        }
+    }
     else if (tokens[0] == "clientzoom")
     {
         int tilePixelWidth, tilePixelHeight, tileTwipWidth, tileTwipHeight;
@@ -377,19 +413,14 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         return true;
     }
     else if (tokens[0] == "removesession") {
-        if (tokens.size() > 1 && (_isDocumentOwner || !isReadOnly()))
-        {
-            std::string sessionId = Util::encodeId(std::stoi(tokens[1]), 4);
-            docBroker->broadcastMessage(firstLine);
-            docBroker->removeSession(sessionId);
-        }
-        else
-            LOG_WRN("Readonly session '" << getId() << "' trying to kill another view");
+        std::string sessionId = Util::encodeId(std::stoi(tokens[1]), 4);
+        docBroker->broadcastMessage(firstLine);
+        docBroker->removeSession(sessionId);
     }
     else if (tokens[0] == "renamefile")
     {
         std::string encodedWopiFilename;
-        if (!getTokenString(tokens[1], "filename", encodedWopiFilename))
+        if (tokens.size() < 2 || !getTokenString(tokens[1], "filename", encodedWopiFilename))
         {
             LOG_ERR("Bad syntax for: " << firstLine);
             sendTextFrame("error: cmd=renamefile kind=syntax");
@@ -451,12 +482,14 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             std::string encodedUserId;
             Poco::URI::encode(getUserId(), "", encodedUserId);
             oss << " authorid=" << encodedUserId;
-            oss << " xauthorid=" << LOOLWSD::anonymizeUsername(getUserId());
+            Poco::URI::encode(LOOLWSD::anonymizeUsername(getUserId()), "", encodedUserId);
+            oss << " xauthorid=" << encodedUserId;
 
             std::string encodedUserName;
             Poco::URI::encode(getUserName(), "", encodedUserName);
             oss << " author=" << encodedUserName;
-            oss << " xauthor=" << LOOLWSD::anonymizeUsername(getUserName());
+            Poco::URI::encode(LOOLWSD::anonymizeUsername(getUserName()), "", encodedUserName);
+            oss << " xauthor=" << encodedUserName;
         }
 
         if (!getUserExtraInfo().empty())
@@ -493,9 +526,9 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
         if (!getWatermarkText().empty())
         {
             std::string encodedWatermarkText;
-            oss << " watermarkOpacity=" << LOOLWSD::getConfigValue<double>("watermark.opacity", 0.2);
             Poco::URI::encode(getWatermarkText(), "", encodedWatermarkText);
             oss << " watermarkText=" << encodedWatermarkText;
+            oss << " watermarkOpacity=" << LOOLWSD::getConfigValue<double>("watermark.opacity", 0.2);
         }
 
         if (!getDocOptions().empty())
@@ -576,6 +609,7 @@ bool ClientSession::sendTile(const char * /*buffer*/, int /*length*/, const std:
     try
     {
         TileDesc tileDesc = TileDesc::parse(tokens);
+        tileDesc.setNormalizedViewId(getHash());
         docBroker->handleTileRequest(tileDesc, shared_from_this());
     }
     catch (const std::exception& exc)
@@ -593,6 +627,7 @@ bool ClientSession::sendCombinedTiles(const char* /*buffer*/, int /*length*/, co
     try
     {
         TileCombined tileCombined = TileCombined::parse(tokens);
+        tileCombined.setNormalizedViewId(getHash());
         docBroker->handleTileCombinedRequest(tileCombined, shared_from_this());
     }
     catch (const std::exception& exc)
@@ -726,9 +761,6 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
         return false;
     }
 
-
-    const bool isConvertTo = static_cast<bool>(_saveAsSocket);
-
 #ifndef MOBILEAPP
     LOOLWSD::dumpOutgoingTrace(docBroker->getJailId(), getId(), firstLine);
 #endif
@@ -785,30 +817,13 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
                     errorKind == "passwordrequired:to-modify" ||
                     errorKind == "wrongpassword")
                 {
-                    if (isConvertTo)
-                    {
-                        Poco::Net::HTTPResponse response;
-                        response.setStatusAndReason(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
-                        response.set("X-ERROR-KIND", errorKind);
-                        _saveAsSocket->send(response);
-
-                        // Conversion failed, cleanup fake session.
-                        LOG_TRC("Removing save-as ClientSession after conversion error.");
-                        // Remove us.
-                        docBroker->removeSession(getId());
-                        // Now terminate.
-                        docBroker->stop("Aborting saveas handler.");
-                    }
-                    else
-                    {
-                        forwardToClient(payload);
-                    }
+                    forwardToClient(payload);
                     return false;
                 }
             }
             else
             {
-                LOG_WRN(errorCommand << " error failure: " << errorKind);
+                LOG_WRN("Other than load failure: " << errorKind);
             }
         }
     }
@@ -840,6 +855,7 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
 #ifndef MOBILEAPP
     else if (tokens.size() == 3 && tokens[0] == "saveas:")
     {
+        bool isConvertTo = static_cast<bool>(_saveAsSocket);
 
         std::string encodedURL;
         if (!getTokenString(tokens[1], "url", encodedURL))
@@ -933,11 +949,6 @@ bool ClientSession::handleKitToClientMessage(const char* buffer, const int lengt
 
             // Now terminate.
             docBroker->stop("Finished saveas handler.");
-
-            // Remove file and directory
-            Poco::Path path = docBroker->getDocKey();
-            Poco::File(path).remove();
-            Poco::File(path.makeParent()).remove();
         }
 
         return true;
@@ -1201,7 +1212,9 @@ void ClientSession::removeOutdatedTilesOnFly()
         double elapsedTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - tileIter->second).count();
         if(elapsedTimeMs > TILE_ROUNDTRIP_TIMEOUT_MS)
         {
-            LOG_WRN("Tracker tileID was dropped because of time out. Tileprocessed message did not arrive");
+            LOG_WRN("Tracker tileID " << tileIter->first << " was dropped because of time out ("
+                                      << elapsedTimeMs
+                                      << " ms). Tileprocessed message did not arrive in time.");
             _tilesOnFly.erase(tileIter);
         }
         else
@@ -1293,7 +1306,7 @@ void ClientSession::dumpState(std::ostream& os)
     Session::dumpState(os);
 
     os << "\t\tisReadOnly: " << isReadOnly()
-       << "\n\t\tisDocumentOwner: " << _isDocumentOwner
+       << "\n\t\tisDocumentOwner: " << isDocumentOwner()
        << "\n\t\tisAttached: " << _isAttached
        << "\n\t\tkeyEvents: " << _keyEvents;
 
@@ -1313,7 +1326,7 @@ void ClientSession::dumpState(std::ostream& os)
 void ClientSession::handleTileInvalidation(const std::string& message,
     const std::shared_ptr<DocumentBroker>& docBroker)
 {
-    docBroker->invalidateTiles(message);
+    docBroker->invalidateTiles(message, getHash());
 
     // Skip requesting new tiles if we don't have client visible area data yet.
     if(!_clientVisibleArea.hasSurface() ||
@@ -1338,6 +1351,7 @@ void ClientSession::handleTileInvalidation(const std::string& message,
     if( part == -1 ) // If no part is specifed we use the part used by the client
         part = _clientSelectedPart;
 
+    int normalizedViewId=getHash();
 
     std::vector<TileDesc> invalidTiles;
     if(part == _clientSelectedPart || _isTextDocument)
@@ -1353,7 +1367,7 @@ void ClientSession::handleTileInvalidation(const std::string& message,
                 Util::Rectangle tileRect (j * _tileWidthTwips, i * _tileHeightTwips, _tileWidthTwips, _tileHeightTwips);
                 if(invalidateRect.intersects(tileRect))
                 {
-                    invalidTiles.emplace_back(part, _tileWidthPixel, _tileHeightPixel, j * _tileWidthTwips, i * _tileHeightTwips, _tileWidthTwips, _tileHeightTwips, -1, 0, -1, false);
+                    invalidTiles.emplace_back(normalizedViewId, part, _tileWidthPixel, _tileHeightPixel, j * _tileWidthTwips, i * _tileHeightTwips, _tileWidthTwips, _tileHeightTwips, -1, 0, -1, false);
 
                     TileWireId oldWireId = 0;
                     auto iter = _oldWireIds.find(generateTileID(invalidTiles.back()));
@@ -1370,6 +1384,7 @@ void ClientSession::handleTileInvalidation(const std::string& message,
     if(!invalidTiles.empty())
     {
         TileCombined tileCombined = TileCombined::create(invalidTiles);
+        tileCombined.setNormalizedViewId(getHash());
         docBroker->handleTileCombinedRequest(tileCombined, shared_from_this());
     }
 }
@@ -1444,7 +1459,7 @@ std::string ClientSession::generateTileID(const TileDesc& tile) const
 {
     std::ostringstream tileID;
     tileID << tile.getPart() << ":" << tile.getTilePosX() << ":" << tile.getTilePosY() << ":"
-           << tile.getTileWidth() << ":" << tile.getTileHeight();
+           << tile.getTileWidth() << ":" << tile.getTileHeight() << ":" << tile.getNormalizedViewId();
     return tileID.str();
 }
 

@@ -29,23 +29,24 @@ typedef uint64_t TileBinaryHash;
 class TileDesc
 {
 public:
-    TileDesc(int part, int width, int height, int tilePosX, int tilePosY, int tileWidth,
-             int tileHeight, int ver, int imgSize, int id, bool broadcast)
-        : _part(part)
-        , _width(width)
-        , _height(height)
-        , _tilePosX(tilePosX)
-        , _tilePosY(tilePosY)
-        , _tileWidth(tileWidth)
-        , _tileHeight(tileHeight)
-        , _ver(ver)
-        , _imgSize(imgSize)
-        , _id(id)
-        , _broadcast(broadcast)
-        , _oldWireId(0)
-        , _wireId(0)
+    TileDesc(int normalizedViewId, int part, int width, int height, int tilePosX, int tilePosY, int tileWidth, int tileHeight, int ver, int imgSize, int id, bool broadcast) :
+        _normalizedViewId(normalizedViewId),
+        _part(part),
+        _width(width),
+        _height(height),
+        _tilePosX(tilePosX),
+        _tilePosY(tilePosY),
+        _tileWidth(tileWidth),
+        _tileHeight(tileHeight),
+        _ver(ver),
+        _imgSize(imgSize),
+        _id(id),
+        _broadcast(broadcast),
+        _oldWireId(0),
+        _wireId(0)
     {
-        if (_part < 0 ||
+        if (_normalizedViewId < 0 ||
+            _part < 0 ||
             _width <= 0 ||
             _height <= 0 ||
             _tilePosX < 0 ||
@@ -57,7 +58,8 @@ public:
             throw BadArgumentException("Invalid tile descriptor.");
         }
     }
-
+    int getNormalizedViewId() const { return _normalizedViewId; }
+    void setNormalizedViewId(const int normalizedViewId) { _normalizedViewId = normalizedViewId; }
     int getPart() const { return _part; }
     int getWidth() const { return _width; }
     int getHeight() const { return _height; }
@@ -128,7 +130,8 @@ public:
             other.getWidth() != getWidth() ||
             other.getHeight() != getHeight() ||
             other.getTileWidth() != getTileWidth() ||
-            other.getTileHeight() != getTileHeight())
+            other.getTileHeight() != getTileHeight() ||
+            other.getNormalizedViewId() != getNormalizedViewId())
         {
             return false;
         }
@@ -153,11 +156,11 @@ public:
 
     /// Serialize this instance into a string.
     /// Optionally prepend a prefix.
-    std::string serialize(const std::string& prefix = std::string(),
-                          const std::string& suffix = std::string()) const
+    std::string serialize(const std::string& prefix = "") const
     {
         std::ostringstream oss;
         oss << prefix
+            << " nviewid=" << _normalizedViewId
             << " part=" << _part
             << " width=" << _width
             << " height=" << _height
@@ -186,7 +189,6 @@ public:
             oss << " broadcast=yes";
         }
 
-        oss << suffix;
         return oss.str();
     }
 
@@ -225,7 +227,7 @@ public:
         const bool broadcast = (LOOLProtocol::getTokenString(tokens, "broadcast", s) &&
                                 s == "yes");
 
-        TileDesc result(pairs["part"], pairs["width"], pairs["height"],
+        TileDesc result(pairs["nviewid"], pairs["part"], pairs["width"], pairs["height"],
                         pairs["tileposx"], pairs["tileposy"],
                         pairs["tilewidth"], pairs["tileheight"],
                         pairs["ver"],
@@ -243,6 +245,7 @@ public:
     }
 
 private:
+    int _normalizedViewId;
     int _part;
     int _width;
     int _height;
@@ -264,19 +267,22 @@ private:
 class TileCombined
 {
 private:
-    TileCombined(int part, int width, int height,
+    TileCombined(int normalizedViewId, int part, int width, int height,
                  const std::string& tilePositionsX, const std::string& tilePositionsY,
                  int tileWidth, int tileHeight, const std::string& vers,
-                 const std::string& imgSizes,
+                 const std::string& imgSizes, int id,
                  const std::string& oldWireIds,
                  const std::string& wireIds) :
+        _normalizedViewId(normalizedViewId),
         _part(part),
         _width(width),
         _height(height),
         _tileWidth(tileWidth),
-        _tileHeight(tileHeight)
+        _tileHeight(tileHeight),
+        _id(id)
     {
-        if (_part < 0 ||
+        if (_normalizedViewId < 0 ||
+            _part < 0 ||
             _width <= 0 ||
             _height <= 0 ||
             _tileWidth <= 0 ||
@@ -342,54 +348,58 @@ private:
                 throw BadArgumentException("Invalid tilecombine descriptor.");
             }
 
-            _tiles.emplace_back(_part, _width, _height, x, y, _tileWidth, _tileHeight, ver, imgSize, -1, false);
+            _tiles.emplace_back(_normalizedViewId, _part, _width, _height, x, y, _tileWidth, _tileHeight, ver, imgSize, id, false);
             _tiles.back().setOldWireId(oldWireId);
             _tiles.back().setWireId(wireId);
         }
     }
 
 public:
+    int getNormalizedViewId() const { return _normalizedViewId; }
     int getPart() const { return _part; }
     int getWidth() const { return _width; }
     int getHeight() const { return _height; }
     int getTileWidth() const { return _tileWidth; }
     int getTileHeight() const { return _tileHeight; }
 
+    void setNormalizedViewId(int nViewId)
+    {
+        for (auto& tile : getTiles())
+            tile.setNormalizedViewId(nViewId);
+
+        _normalizedViewId = nViewId;
+    }
+
+
     const std::vector<TileDesc>& getTiles() const { return _tiles; }
     std::vector<TileDesc>& getTiles() { return _tiles; }
 
     /// Serialize this instance into a string.
     /// Optionally prepend a prefix.
-    std::string serialize(const std::string& prefix = std::string(),
-                          const std::string& suffix = std::string()) const
-    {
-        return serialize(prefix, suffix, _tiles);
-    }
-
-    std::string serialize(const std::string& prefix, const std::string &suffix,
-                          const std::vector<TileDesc> &tiles) const
+    std::string serialize(const std::string& prefix = "") const
     {
         std::ostringstream oss;
         oss << prefix
+            << " nviewid=" << _normalizedViewId
             << " part=" << _part
             << " width=" << _width
             << " height=" << _height
             << " tileposx=";
-        for (const auto& tile : tiles)
+        for (const auto& tile : _tiles)
         {
             oss << tile.getTilePosX() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Seek back over last comma, overwritten below.
 
         oss << " tileposy=";
-        for (const auto& tile : tiles)
+        for (const auto& tile : _tiles)
         {
             oss << tile.getTilePosY() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Ditto.
 
         oss << " imgsize=";
-        for (const auto& tile : tiles)
+        for (const auto& tile : _tiles)
         {
             oss << tile.getImgSize() << ','; // Ditto.
         }
@@ -399,33 +409,34 @@ public:
             << " tileheight=" << _tileHeight;
 
         oss << " ver=";
-        for (const auto& tile : tiles)
+        for (const auto& tile : _tiles)
         {
             oss << tile.getVersion() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Ditto.
 
         oss << " oldwid=";
-        for (const auto& tile : tiles)
+        for (const auto& tile : _tiles)
         {
             oss << tile.getOldWireId() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Ditto
 
         oss << " wid=";
-
-        bool comma = false;
-        for (const auto& tile : tiles)
+        for (const auto& tile : _tiles)
         {
-            if (comma)
-                oss << ',';
+            oss << tile.getWireId() << ',';
+        }
+        oss.seekp(-1, std::ios_base::cur); // See beow.
 
-            oss << tile.getWireId();
-            comma = true;
+        if (_id >= 0)
+        {
+            oss << " id=" << _id;
         }
 
-        oss << suffix;
-        return oss.str();
+        // Make sure we don't return a potential trailing comma that
+        // we have seeked back over but not overwritten after all.
+        return oss.str().substr(0, oss.tellp());
     }
 
     /// Deserialize a TileDesc from a tokenized string.
@@ -434,6 +445,9 @@ public:
         // We don't expect undocumented fields and
         // assume all values to be int.
         std::map<std::string, int> pairs;
+
+        // Optional.
+        pairs["id"] = -1;
 
         std::string tilePositionsX;
         std::string tilePositionsY;
@@ -483,10 +497,11 @@ public:
             }
         }
 
-        return TileCombined(pairs["part"], pairs["width"], pairs["height"],
+        return TileCombined(pairs["nviewid"], pairs["part"], pairs["width"], pairs["height"],
                             tilePositionsX, tilePositionsY,
                             pairs["tilewidth"], pairs["tileheight"],
-                            versions, imgSizes, oldwireIds, wireIds);
+                            versions,
+                            imgSizes, pairs["id"], oldwireIds, wireIds);
     }
 
     /// Deserialize a TileDesc from a string format.
@@ -515,29 +530,20 @@ public:
         }
 
         vers.seekp(-1, std::ios_base::cur); // Remove last comma.
-        return TileCombined(tiles[0].getPart(), tiles[0].getWidth(), tiles[0].getHeight(),
+        return TileCombined(tiles[0].getNormalizedViewId(), tiles[0].getPart(), tiles[0].getWidth(), tiles[0].getHeight(),
                             xs.str(), ys.str(), tiles[0].getTileWidth(), tiles[0].getTileHeight(),
-                            vers.str(), "", oldhs.str(), hs.str());
-    }
-
-    /// To support legacy / under-used renderTile
-    TileCombined(const TileDesc &desc)
-    {
-        _part = desc.getPart();
-        _width = desc.getWidth();
-        _height = desc.getHeight();
-        _tileWidth = desc.getTileWidth();
-        _tileHeight = desc.getTileHeight();
-        _tiles.push_back(desc);
+                            vers.str(), "", -1, oldhs.str(), hs.str());
     }
 
 private:
     std::vector<TileDesc> _tiles;
+    int _normalizedViewId;
     int _part;
     int _width;
     int _height;
     int _tileWidth;
     int _tileHeight;
+    int _id;
 };
 
 #endif

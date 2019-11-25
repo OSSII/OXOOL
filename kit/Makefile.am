@@ -6,6 +6,7 @@ oxoolforkit_include_HEADERS = \
 		Delta.hpp \
 		DummyLibreOfficeKit.hpp \
 		KitHelper.hpp \
+		Watermark.hpp \
 		Kit.hpp
 
 include_paths = -I ${top_srcdir}/src/include -I${top_srcdir}/common -I${top_srcdir}/net -I${top_srcdir}/wsd -I${top_srcdir}/kit ${ZLIB_CFLAGS}

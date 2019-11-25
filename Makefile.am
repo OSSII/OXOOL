@@ -196,7 +196,8 @@ kit_headers = kit/ChildSession.hpp \
               kit/Delta.hpp \
               kit/DummyLibreOfficeKit.hpp \
               kit/Kit.hpp \
-              kit/KitHelper.hpp
+              kit/KitHelper.hpp \
+              kit/Watermark.hpp
 
 noinst_HEADERS = $(wsd_headers) $(shared_headers) $(kit_headers) \
                  test/WopiTestServer.hpp \
