@@ -583,9 +583,17 @@ L.TileLayer = L.GridLayer.extend({
 		// Add by Firefly <firefly@ossii.com.tw>
 		// 目前文件中 focus 的物件型態
 		else if (textMsg.startsWith('context:')) {
+			var prevContext = this._docContext; // 最近的 context
 			var context = textMsg.substring('context:'.length + 1).trim().split(' ');
-			this._docContext = context[1];
+			this._docContext = context[1]; // 目前的 context
 			console.debug(this._docContext);
+			
+			// 已有選取的物件，且 context 已變更，
+			// 需更新物件選取狀態
+			if (this._graphicMarker && (prevContext !== this._docContext)) {
+				this._onUpdateGraphicSelection();
+				console.debug('Selected context has changed.(' + prevContext + ' -> ' + this._docContext);
+			}
 		}
 		//-- End of add.
 		else {
@@ -731,6 +739,22 @@ L.TileLayer = L.GridLayer.extend({
 	_onGetChildIdMsg: function (textMsg) {
 		var command = this._map._socket.parseServerCmd(textMsg);
 		this._map.fire('childid', {id: command.id});
+	},
+
+	// Add by Firedfly <firefly@ossii.com.tw>
+	// 選取的物件，是否能旋轉？
+	_isGraphicCanBeRotate: function() {
+		var rotate = false;
+
+		switch (this._docContext)
+		{
+		case 'Graphic':
+		case 'Draw':
+		case 'TextObject':
+			rotate = true;
+			break;
+		}
+		return rotate;
 	},
 
 	_isGraphicAngleDivisibleBy90: function() {
@@ -2317,7 +2341,7 @@ L.TileLayer = L.GridLayer.extend({
 			this._graphicMarker.on('rotatestart rotateend', this._onGraphicRotate, this);
 			this._map.addLayer(this._graphicMarker);
 			this._graphicMarker.dragging.enable();
-			this._graphicMarker.transform.enable({uniformScaling: !this._isGraphicAngleDivisibleBy90()});
+			this._graphicMarker.transform.enable({uniformScaling: !this._isGraphicAngleDivisibleBy90(), rotation: this._isGraphicCanBeRotate()});
 		}
 		else if (this._graphicMarker) {
 			this._graphicMarker.off('graphicmovestart graphicmoveend', this._onGraphicMove, this);
