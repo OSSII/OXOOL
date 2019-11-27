@@ -1626,7 +1626,7 @@ private:
             }
 
             LOG_INF("Creating view to url [" << uriAnonym << "] for session [" << sessionId << "] with " << options << '.');
-            _loKitDocument->createView();
+            _loKitDocument->createView(options.c_str());
             LOG_TRC("View to url [" << uriAnonym << "] created.");
         }
 

@@ -445,12 +445,6 @@ public:
      * By default a loaded document has 1 view.
      * @return the ID of the new view.
      */
-#if 1
-    int createView()
-    {
-        return mpDoc->pClass->createView(mpDoc);
-    }
-#else
     int createView(const char* pOptions = nullptr)
     {
         if (LIBREOFFICEKIT_DOCUMENT_HAS(mpDoc, createViewWithOptions))
@@ -458,7 +452,6 @@ public:
         else
             return mpDoc->pClass->createView(mpDoc);
     }
-#endif
 
     /**
      * Destroy a view of an existing document.
@@ -568,6 +561,34 @@ public:
         mpDoc->pClass->postWindowExtTextInputEvent(mpDoc, nWindowId, nType, pText);
     }
 
+#ifdef IOS
+    /**
+     * Renders a subset of the document to a Core Graphics context.
+     *
+     * Note that the buffer size and the tile size implicitly supports
+     * rendering at different zoom levels, as the number of rendered pixels and
+     * the rendered rectangle of the document are independent.
+     *
+     * @param rCGContext the CGContextRef, cast to a void*.
+     * @param nCanvasHeight number of pixels in a column of pBuffer.
+     * @param nTilePosX logical X position of the top left corner of the rendered rectangle, in TWIPs.
+     * @param nTilePosY logical Y position of the top left corner of the rendered rectangle, in TWIPs.
+     * @param nTileWidth logical width of the rendered rectangle, in TWIPs.
+     * @param nTileHeight logical height of the rendered rectangle, in TWIPs.
+     */
+    void paintTileToCGContext(void* rCGContext,
+                              const int nCanvasWidth,
+                              const int nCanvasHeight,
+                              const int nTilePosX,
+                              const int nTilePosY,
+                              const int nTileWidth,
+                              const int nTileHeight)
+    {
+        return mpDoc->pClass->paintTileToCGContext(mpDoc, rCGContext, nCanvasWidth, nCanvasHeight,
+                                                   nTilePosX, nTilePosY, nTileWidth, nTileHeight);
+    }
+#endif // IOS
+
     /**
      *  Insert certificate (in binary form) to the certificate store.
      */
@@ -627,22 +648,6 @@ public:
     {
         return mpDoc->pClass->postWindowGestureEvent(mpDoc, nWindowId, pType, nX, nY, nOffset);
     }
-
-    /// Set a part's selection mode.
-    /// nSelect is 0 to deselect, 1 to select, and 2 to toggle.
-    void selectPart(int nPart, int nSelect)
-    {
-        mpDoc->pClass->selectPart(mpDoc, nPart, nSelect);
-    }
-
-    /// Moves the selected pages/slides to a new position.
-    /// nPosition is the new position where the selection
-    /// should go. bDuplicate when true will copy instead of move.
-    void moveSelectedParts(int nPosition, bool bDuplicate)
-    {
-        mpDoc->pClass->moveSelectedParts(mpDoc, nPosition, bDuplicate);
-    }
-
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
@@ -816,6 +821,24 @@ public:
         return mpThis->pClass->signDocument(mpThis, pURL,
                                             pCertificateBinary, nCertificateBinarySize,
                                             pPrivateKeyBinary, nPrivateKeyBinarySize);
+    }
+
+    /**
+     * Runs the main-loop in the current thread. To trigger this
+     * mode you need to putenv a SAL_LOK_OPTIONS containing 'unipoll'.
+     * The @pPollCallback is called to poll for events from the Kit client
+     * and the @pWakeCallback can be called by internal LibreOfficeKit threads
+     * to wake the caller of 'runLoop' ie. the main thread.
+     *
+     * it is expected that runLoop does not return until Kit exit.
+     *
+     * @pData is a context/closure passed to both methods.
+     */
+    void runLoop(LibreOfficeKitPollCallback pPollCallback,
+                 LibreOfficeKitWakeCallback pWakeCallback,
+                 void* pData)
+    {
+        mpThis->pClass->runLoop(mpThis, pPollCallback, pWakeCallback, pData);
     }
 };
 

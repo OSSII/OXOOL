@@ -162,11 +162,40 @@ typedef enum
      */
     LOK_CALLBACK_CURSOR_VISIBLE = 5,
     /**
-     * The size and/or the position of the graphic selection changed and
-     * the rotation angle of the embedded graphic object
+     * The size and/or the position of the graphic selection changed,
+     * the rotation angle of the embedded graphic object, and a property list
+     * which can be used for informing the client about severl properties.
      *
-     * Format is "x, y, width, height, angle", where angle is in 100th
-     * of degree.
+     * Format is "x, y, width, height, angle, { list of properties }",
+     * where angle is in 100th of degree, and the property list is optional.
+     *
+     * The "{ list of properties }" part is in JSON format.
+     * Follow some examples of the property list part:
+     *
+     * 1) when the selected object is an image inserted in Writer:
+     *
+     *      { "isWriterGraphic": true }
+     *
+     * 2) when the selected object is a chart legend:
+     *
+     *      { "isDraggable": true, "isResizable": true, "isRotatable": false }
+     *
+     * 3) when the selected object is a pie segment in a chart:
+     *
+     *      {
+     *          "isDraggable": true,
+     *          "isResizable": false,
+     *          "isRotatable": false,
+     *          "dragInfo": {
+     *              "dragMethod": "PieSegmentDragging",
+     *              "initialOffset": 50,
+     *              "dragDirection": [x, y],
+     *              "svg": "<svg ..."
+     *          }
+     *      }
+     *
+     *      where the "svg" property is a string containing an svg document
+     *      which is a rapresentation of the pie segment.
      */
     LOK_CALLBACK_GRAPHIC_SELECTION = 6,
 
@@ -352,7 +381,7 @@ typedef enum
 
     /**
      * The size and/or the position of the view cursor changed. A view cursor
-     * is a cursor of an other view, the current view can't change it.
+     * is a cursor of another view, the current view can't change it.
      *
      * The payload format:
      *
@@ -564,7 +593,6 @@ typedef enum
      * "type" tells the type of the window the action is associated with
      *  - "dialog" - window is a dialog
      *  - "child" - window is a floating window (combo boxes, etc.)
-     *  - "deck" - window is a docked/floating deck (i.e. the sidebar)
      *
      * "action" can take following values:
      * - "created" - window is created in the backend, client can render it now
@@ -576,6 +604,8 @@ typedef enum
      * - "cursor_visible" - cursor visible status is changed. Status is available
      *    in "visible" field
      * - "close" - window is closed
+     * - "show" - show the window
+     * - "hide" - hide the window
      */
     LOK_CALLBACK_WINDOW = 36,
 

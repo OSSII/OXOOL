@@ -104,6 +104,12 @@ struct _LibreOfficeKitClass
                            const int nCertificateBinarySize,
                            const unsigned char* pPrivateKeyBinary,
                            const int nPrivateKeyBinarySize);
+
+    /// @see lok::Office::runLoop()
+    void (*runLoop) (LibreOfficeKit* pThis,
+                     LibreOfficeKitPollCallback pPollCallback,
+                     LibreOfficeKitWakeCallback pWakeCallback,
+                     void* pData);
 };
 
 #define LIBREOFFICEKIT_DOCUMENT_HAS(pDoc,member) LIBREOFFICEKIT_HAS_MEMBER(LibreOfficeKitDocumentClass,member,(pDoc)->pClass->nSize)
@@ -328,6 +334,18 @@ struct _LibreOfficeKitDocumentClass
                             const int width, const int height,
                             const double dpiscale);
 
+#ifdef IOS
+    /// @see lok::Document::paintTileToCGContext().
+    void (*paintTileToCGContext) (LibreOfficeKitDocument* pThis,
+                                  void* rCGContext,
+                                  const int nCanvasWidth,
+                                  const int nCanvasHeight,
+                                  const int nTilePosX,
+                                  const int nTilePosY,
+                                  const int nTileWidth,
+                                  const int nTileHeight);
+#endif // IOS
+
 // CERTIFICATE AND SIGNING
 
     /// @see lok::Document::insertCertificate().
@@ -349,11 +367,6 @@ struct _LibreOfficeKitDocumentClass
     /// @see lok::Document::renderShapeSelection
     size_t (*renderShapeSelection)(LibreOfficeKitDocument* pThis, char** pOutput);
 
-#if 0
-    /// @see lok::Document::createViewWithOptions().
-    int (*createViewWithOptions) (LibreOfficeKitDocument* pThis, const char* pOptions);
-#endif
-
     /// @see lok::Document::postWindowGestureEvent().
     void (*postWindowGestureEvent) (LibreOfficeKitDocument* pThis,
                                   unsigned nWindowId,
@@ -362,11 +375,8 @@ struct _LibreOfficeKitDocumentClass
                                   int nY,
                                   int nOffset);
 
-    /// @see lok::Document::selectPart().
-    void (*selectPart) (LibreOfficeKitDocument* pThis, int nPart, int nSelect);
-
-    /// @see lok::Document::moveSelectedParts().
-    void (*moveSelectedParts) (LibreOfficeKitDocument* pThis, int nPosition, bool bDuplicate);
+    /// @see lok::Document::createViewWithOptions().
+    int (*createViewWithOptions) (LibreOfficeKitDocument* pThis, const char* pOptions);
 
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };

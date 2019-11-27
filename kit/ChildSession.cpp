@@ -1526,7 +1526,7 @@ bool ChildSession::selectClientPart(const char* /*buffer*/, int /*length*/, cons
     {
         if (nPart != getLOKitDocument()->getPart())
         {
-            getLOKitDocument()->selectPart(nPart, nSelect);
+            //getLOKitDocument()->selectPart(nPart, nSelect);
 
             // Notify the client of the selection update.
             const std::string status = LOKitHelper::documentStatus(getLOKitDocument()->get());
@@ -1557,7 +1557,7 @@ bool ChildSession::moveSelectedClientParts(const char* /*buffer*/, int /*length*
     getLOKitDocument()->setView(_viewId);
     if (getLOKitDocument()->getDocumentType() != LOK_DOCTYPE_TEXT)
     {
-        getLOKitDocument()->moveSelectedParts(nPosition, false); // Move, don't duplicate.
+        //getLOKitDocument()->moveSelectedParts(nPosition, false); // Move, don't duplicate.
 
         // Get the status to notify clients of the reordering and selection change.
         const std::string status = LOKitHelper::documentStatus(getLOKitDocument()->get());
