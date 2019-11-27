@@ -65,7 +65,7 @@
 .basicshapes_can { background: url('images/lc_basicshapes.can.svg') no-repeat center/contain !important;}
 .basicshapes_cube { background: url('images/lc_cube.svg') no-repeat center/contain !important;}
 .basicshapes_paper { background: url('images/lc_basicshapes.paper.svg') no-repeat center/contain !important;}
-.basicshapes_frame { background: url('images/lc_rect_unfilled.svg') no-repeat center/contain !important;}
+.basicshapes_frame { background: url('images/lc_basicshapes.frame.svg') no-repeat center/contain !important;}
 
 .symbolshapes { background: url('images/lc_symbolshapes.svg') no-repeat center/contain !important;}
 .symbolshapes_sun { background: url('images/lc_symbolshapes.sun.svg') no-repeat center/contain !important;}
