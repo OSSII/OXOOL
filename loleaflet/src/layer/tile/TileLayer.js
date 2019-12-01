@@ -587,12 +587,17 @@ L.TileLayer = L.GridLayer.extend({
 			var context = textMsg.substring('context:'.length + 1).trim().split(' ');
 			this._docContext = context[1]; // 目前的 context
 			console.debug(this._docContext);
-			
+
+			// context 已變更
+			var contextChanged = (prevContext !== this._docContext);
+			if (contextChanged) {
+				console.debug('Context has changed.(' + prevContext + ' -> ' + this._docContext);
+			}
+
 			// 已有選取的物件，且 context 已變更，
 			// 需更新物件選取狀態
-			if (this._graphicMarker && (prevContext !== this._docContext)) {
+			if (this._graphicMarker && contextChanged) {
 				this._onUpdateGraphicSelection();
-				console.debug('Selected context has changed.(' + prevContext + ' -> ' + this._docContext);
 			}
 		}
 		//-- End of add.
@@ -744,17 +749,8 @@ L.TileLayer = L.GridLayer.extend({
 	// Add by Firedfly <firefly@ossii.com.tw>
 	// 選取的物件，是否能旋轉？
 	_isGraphicCanBeRotate: function() {
-		var rotate = false;
-
-		switch (this._docContext)
-		{
-		case 'Graphic':
-		case 'Draw':
-		case 'TextObject':
-			rotate = true;
-			break;
-		}
-		return rotate;
+		var rotateTypes = ['Graphic', 'Draw', 'TextObject'];
+		return rotateTypes.indexOf(this._docContext) < 0 ? false : true;
 	},
 
 	_isGraphicAngleDivisibleBy90: function() {
@@ -770,11 +766,31 @@ L.TileLayer = L.GridLayer.extend({
 	},
 
 	_onGraphicSelectionMsg: function (textMsg) {
+		console.debug('_onGraphicSelectionMsg :', textMsg);
 		if (textMsg.match('EMPTY')) {
 			this._graphicSelectionTwips = new L.Bounds(new L.Point(0, 0), new L.Point(0, 0));
 			this._graphicSelection = new L.LatLngBounds(new L.LatLng(0, 0), new L.LatLng(0, 0));
 		}
 		else {
+			// Add by Firefly <firefly@ossii.com.tw>
+			this._isWriterGraphic = false; // 預設非 Writer 圖片
+			this._isDraggable = true; // 預設可移動
+			this._isResizable = true; // 預設可縮放
+			this._isRotatable = true; // 預設可旋轉
+			// 是否有帶附屬物件？
+			var jsonIdx = textMsg.indexOf('{');
+			if (jsonIdx > 0) {
+				var obj = JSON.parse(textMsg.substring(jsonIdx));
+				console.debug(obj);
+				if (obj.isWriterGraphic !== undefined)
+					this._isWriterGraphic = obj.isWriterGraphic;
+				if (obj.isDraggable !== undefined)
+					this._isDraggable = obj.isDraggable;
+				if (obj.isResizable !== undefined)
+					this._isResizable = obj.isResizable;
+				if (obj.isRotatable !== undefined)
+					this._isRotatable = obj.isRotatable;
+			}
 			var strTwips = textMsg.match(/\d+/g);
 			var topLeftTwips = new L.Point(parseInt(strTwips[0]), parseInt(strTwips[1]));
 			var offset = new L.Point(parseInt(strTwips[2]), parseInt(strTwips[3]));
@@ -2341,7 +2357,11 @@ L.TileLayer = L.GridLayer.extend({
 			this._graphicMarker.on('rotatestart rotateend', this._onGraphicRotate, this);
 			this._map.addLayer(this._graphicMarker);
 			this._graphicMarker.dragging.enable();
-			this._graphicMarker.transform.enable({uniformScaling: !this._isGraphicAngleDivisibleBy90(), rotation: this._isGraphicCanBeRotate()});
+			this._graphicMarker.transform.enable({
+				uniformScaling: !this._isGraphicAngleDivisibleBy90(),
+				scaling: this._isResizable,
+				rotation: this._isGraphicCanBeRotate()
+			});
 		}
 		else if (this._graphicMarker) {
 			this._graphicMarker.off('graphicmovestart graphicmoveend', this._onGraphicMove, this);
@@ -2351,6 +2371,7 @@ L.TileLayer = L.GridLayer.extend({
 			this._graphicMarker.transform.disable();
 			this._map.removeLayer(this._graphicMarker);
 			this._graphicMarker.isDragged = false;
+			this._graphicMarker = null;
 		}
 		this._updateCursorAndOverlay();
 	},
