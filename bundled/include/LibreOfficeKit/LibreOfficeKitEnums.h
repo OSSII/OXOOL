@@ -650,6 +650,22 @@ typedef enum
     LOK_CALLBACK_PROFILE_FRAME = 41,
 
     /**
+     * The position and size of the cell selection area. It is used to
+     * draw the selection handles for cells in Calc documents.
+     *
+     * Rectangle format is the same as LOK_CALLBACK_INVALIDATE_TILES.
+     */
+    LOK_CALLBACK_CELL_SELECTION_AREA = 42,
+
+    /**
+     * The position and size of the cell auto fill area. It is used to
+     * trigger auto fill functionality if that area is hit.
+     *
+     * Rectangle format is the same as LOK_CALLBACK_INVALIDATE_TILES.
+     */
+    LOK_CALLBACK_CELL_AUTO_FILL_AREA = 43,
+
+    /**
      * When the cursor is in a table or a table is selected in the
      * document, this sends the table's column and row border positions
      * to the client. If the payload is empty (empty JSON object), then
