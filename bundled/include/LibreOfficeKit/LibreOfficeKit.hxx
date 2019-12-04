@@ -188,7 +188,7 @@ public:
      *
      * @param nWindowid
      */
-    void postWindow(unsigned nWindowId, int nAction, const char* pData)
+    void postWindow(unsigned nWindowId, int nAction, const char* pData = nullptr)
     {
         return mpDoc->pClass->postWindow(mpDoc, nWindowId, nAction, pData);
     }
@@ -648,6 +648,22 @@ public:
     {
         return mpDoc->pClass->postWindowGestureEvent(mpDoc, nWindowId, pType, nX, nY, nOffset);
     }
+
+    /// Set a part's selection mode.
+    /// nSelect is 0 to deselect, 1 to select, and 2 to toggle.
+    void selectPart(int nPart, int nSelect)
+    {
+        mpDoc->pClass->selectPart(mpDoc, nPart, nSelect);
+    }
+
+    /// Moves the selected pages/slides to a new position.
+    /// nPosition is the new position where the selection
+    /// should go. bDuplicate when true will copy instead of move.
+    void moveSelectedParts(int nPosition, bool bDuplicate)
+    {
+        mpDoc->pClass->moveSelectedParts(mpDoc, nPosition, bDuplicate);
+    }
+
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
