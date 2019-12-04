@@ -918,6 +918,9 @@ L.Control.Menubar = L.Control.extend({
 	_createMenu: function(menu) {
 		var itemList = [];
 		var docType = this._map.getDocType();
+		// Add by Firefly <firefly@ossii.com.tw>
+		var lastItem = null; // 最近新增的 Item;
+		// -------------------------------------
 		for (var i in menu) {
 			if (menu[i].id === 'about' && (L.DomUtil.get('about-dialog') === null)) {
 				continue;
@@ -982,6 +985,20 @@ L.Control.Menubar = L.Control.extend({
 					continue;
 			}
 
+			// 處理分隔線原則：
+			// 1. 第一行不能是分隔線
+			// 2. 不能重複出現分隔線
+			// 3. 最後一行不能是分隔線
+			if (menu[i].type !== undefined && menu[i].type === 'separator') {
+				// 1. 第一行不能是分隔線
+				if (itemList.length === 0)
+					continue;
+				// 2. 不能重複出現分隔線
+				if (lastItem && lastItem.type !== undefined && lastItem.type === 'separator')
+					continue;
+			}
+			lastItem = menu[i]; // 紀錄現在的 Item
+
 			var liItem = L.DomUtil.create('li', '');
 			if (menu[i].id) {
 				liItem.id = 'menu-' + menu[i].id;
@@ -1036,6 +1053,14 @@ L.Control.Menubar = L.Control.extend({
 			}
 
 			itemList.push(liItem);
+		}
+
+		// 3. 最後一行不能是分隔線
+		if (itemList.length > 0) {
+			aItem = itemList[itemList.length - 1].firstChild;
+			if ($(aItem).hasClass('separator')) {
+				itemList.pop();
+			}
 		}
 
 		return itemList;
