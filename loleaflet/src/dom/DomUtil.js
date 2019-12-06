@@ -49,6 +49,10 @@ L.DomUtil = {
 	},
 
 	remove: function (el) {
+		if (!el) {
+			return;
+		}
+
 		var parent = el.parentNode;
 		if (parent) {
 			parent.removeChild(el);
@@ -79,6 +83,10 @@ L.DomUtil = {
 	},
 
 	addClass: function (el, name) {
+		if (!el) {
+			return;
+		}
+
 		if (el.classList !== undefined) {
 			var classes = L.Util.splitWords(name);
 			for (var i = 0, len = classes.length; i < len; i++) {
@@ -91,6 +99,10 @@ L.DomUtil = {
 	},
 
 	removeClass: function (el, name) {
+		if (!el) {
+			return;
+		}
+
 		if (el.classList !== undefined) {
 			el.classList.remove(name);
 		} else {
@@ -182,6 +194,14 @@ L.DomUtil = {
 		// so it's safe to cache the position for performance
 
 		return el._leaflet_pos;
+	},
+
+	isLandscape: function() {
+		return window.matchMedia && window.matchMedia('(orientation: landscape)').matches;
+	},
+
+	isPortrait: function() {
+		return window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
 	}
 };
 
