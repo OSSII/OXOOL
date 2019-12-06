@@ -86,5 +86,28 @@ L.LOUtil = {
 	generateNewFileName: function(oldFileName, suffix) {
 		var idx = oldFileName.lastIndexOf('.');
 		return oldFileName.substring(0, idx) + suffix + oldFileName.substring(idx);
+	},
+
+	commandWithoutIcon: [
+		'InsertPageHeader',
+		'InsertPageFooter',
+		'InsertNonBreakingSpace',
+		'InsertHardHyphen',
+		'InsertSoftHyphen',
+		'InsertZWSP',
+		'InsertZWNBSP',
+		'InsertLRM',
+		'InsertRLM',
+		'None'
+	],
+
+	existsIconForCommand: function(command) {
+		var commandName = command.startsWith('.uno:') ? command.substring('.uno:'.length) : command;
+		var res = !this.commandWithoutIcon.find(function (el) {
+			return el.startsWith(commandName);
+		});
+		if (commandName.indexOf('?')!== -1)
+			return false;
+		return res;
 	}
 };
