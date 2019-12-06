@@ -1,3 +1,4 @@
+/* -*- js-indent-level: 8 -*- */
 
 
 /**
@@ -50,12 +51,13 @@ L.Handler.PathTransform = L.Handler.extend({
 	options: {
 		rotation: true,
 		scaling:  true,
+		scaleSouthAndEastOnly:  false,
 		uniformScaling: true,
 		maxZoom:  22,
 
 		// edge handlers
 		handlerOptions: {
-			radius:      5,
+			radius:      L.Browser.touch && !L.Browser.pointer ? 10 : 5,
 			fillColor:   '#ffffff',
 			color:       '#202020',
 			fillOpacity: 1,
@@ -80,7 +82,7 @@ L.Handler.PathTransform = L.Handler.extend({
 			setCursor: true
 		},
 		// rotation handle length
-		handleLength: 20,
+		handleLength: L.Browser.touch && !L.Browser.pointer ? 40 : 20,
 
 		// maybe I'll add skewing in the future
 		edgesCount:   4,
@@ -237,6 +239,18 @@ L.Handler.PathTransform = L.Handler.extend({
 		return this;
 	},
 
+	/**
+	* @param  {L.Point}   point
+	*/
+	getMarker: function(point) {
+		for (var i = 0, len = this._handlers.length; i < len; i++) {
+			var handler = this._handlers[i];
+			if (handler._containsPoint(point)) {
+				return handler;
+			}
+		}
+		return undefined;
+	},
 
 	/**
 	* Update the polygon and handlers preview, no reprojection
@@ -336,8 +350,6 @@ L.Handler.PathTransform = L.Handler.extend({
 	*/
 	_updateHandlers: function() {
 		var handlersGroup = this._handlersGroup;
-
-		this._rectShape = this._rect.toGeoJSON();
 
 		if (this._handleLine) {
 			this._handlersGroup.removeLayer(this._handleLine);
@@ -539,7 +551,7 @@ L.Handler.PathTransform = L.Handler.extend({
 		L.PathTransform.pointOnLine(
 			map.latLngToLayerPoint(bottom),
 			map.latLngToLayerPoint(topPoint),
-		        (window.ThisIsAMobileApp ? this.options.handleLength * 3 : this.options.handleLength))
+			this.options.handleLength)
 		);
 
 		this._handleLine = new L.Polyline([topPoint, handlerPosition],
@@ -610,6 +622,9 @@ L.Handler.PathTransform = L.Handler.extend({
 	* @param  {Event} evt
 	*/
 	_onRotate: function(evt) {
+		if (!this._rect || !this._rotationStart) {
+			return;
+		}
 		var pos = evt.layerPoint;
 		var previous = this._rotationStart;
 		var origin   = this._rotationOriginPt;
@@ -634,6 +649,9 @@ L.Handler.PathTransform = L.Handler.extend({
 	* @param  {Event} evt
 	*/
 	_onRotateEnd: function(evt) {
+		if (!this._rect || !this._rotationStart) {
+			return;
+		}
 		var pos = evt.layerPoint;
 		var previous = this._rotationStart;
 		var origin = this._rotationOriginPt;
@@ -651,6 +669,8 @@ L.Handler.PathTransform = L.Handler.extend({
 
 		this._apply();
 		this._path.fire('rotateend', { layer: this._path, rotation: angle });
+
+		this._rotationStart = undefined;
 	},
 
 
@@ -692,11 +712,10 @@ L.Handler.PathTransform = L.Handler.extend({
 				pos: this._getPoints()[this._activeMarker.options.index]
 			});
 
-		if (this._handleLine)
+		if (this.options.rotation) {
 			this._map.removeLayer(this._handleLine);
-
-		if (this._rotationMarker)
 			this._map.removeLayer(this._rotationMarker);
+		}
 
 		//this._handleLine = this._rotationMarker = null;
 	},
@@ -706,12 +725,17 @@ L.Handler.PathTransform = L.Handler.extend({
 	* @param  {Event} evt
 	*/
 	_onScale: function(evt) {
+		if (!this._rect || !this._scaleOrigin) {
+			return;
+		}
+
 		var originPoint = this._originMarker._point;
 		var ratioX, ratioY;
 
 		this._handleDragged = true;
 
-		if (this.options.uniformScaling) {
+		if ((window.ThisIsAMobileApp && (this._activeMarker.options.index % 2) == 0) ||
+		    this.options.uniformScaling) {
 			ratioX = originPoint.distanceTo(evt.layerPoint) / this._initialDist;
 			ratioY = ratioX;
 		} else {
@@ -739,16 +763,18 @@ L.Handler.PathTransform = L.Handler.extend({
 	* @param  {Event} evt
 	*/
 	_onScaleEnd: function(/*evt*/) {
+		if (!this._rect || !this._scaleOrigin) {
+			return;
+		}
 		this._activeMarker.removeEventParent(this._map);
 		this._map
 			.off('mousemove', this._onScale,    this)
 			.off('mouseup',   this._onScaleEnd, this);
 
-		if (this._handleLine)
+		if (this.options.rotation) {
 			this._map.addLayer(this._handleLine);
-
-		if (this._rotationMarker)
 			this._map.addLayer(this._rotationMarker);
+		}
 
 		var type;
 		var index = this._activeMarker.options.index;
@@ -768,6 +794,8 @@ L.Handler.PathTransform = L.Handler.extend({
 			scale: this._scale.clone(),
 			pos: this._getPoints()[index]
 		});
+
+		this._scaleOrigin = undefined;
 	},
 
 
@@ -790,13 +818,8 @@ L.Handler.PathTransform = L.Handler.extend({
 	* @return {L.Polygon}
 	*/
 	_getBoundingPolygon: function() {
-		if (this._rectShape) {
-			return L.GeoJSON.geometryToLayer(
-				this._rectShape, this.options.boundsOptions);
-		} else {
-			return new L.Rectangle(
+		return new L.Rectangle(
 			this._path.getBounds(), this.options.boundsOptions);
-		}
 	},
 
 
@@ -809,13 +832,19 @@ L.Handler.PathTransform = L.Handler.extend({
 	*/
 	_createHandler: function(latlng, type, index) {
 		var HandleClass = this.options.handleClass;
+		var options = {
+			className: 'leaflet-drag-transform-marker drag-marker--' +
+			index + ' drag-marker--' + type,
+			index:     index,
+			type:      type,
+		};
+		if (this.options.scaleSouthAndEastOnly && index < 5) {
+			options.opacity = 0;
+			options.fill = false;
+			options.interactive = false;
+		}
 		var marker = new HandleClass(latlng,
-			L.Util.extend({}, this.options.handlerOptions, {
-				className: 'leaflet-drag-transform-marker drag-marker--' +
-				index + ' drag-marker--' + type,
-				index:     index,
-				type:      type
-			})
+			L.Util.extend({}, this.options.handlerOptions, options)
 		);
 
 		marker.on('mousedown', this._onScaleStart, this);
@@ -876,13 +905,6 @@ L.Handler.PathTransform = L.Handler.extend({
 			translate: L.point(matrix[4], matrix[5]),
 			layer: this._path
 		});
-	}
-});
-
-
-L.Path.addInitHook(function() {
-	if (this.options.transform) {
-		this.transform = new L.Handler.PathTransform(this, this.options.transform);
 	}
 });
 
