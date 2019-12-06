@@ -244,6 +244,7 @@ L.Map = L.Evented.extend({
 
 	loadDocument: function() {
 		this._socket.connect();
+		this.removeObjectFocusDarkOverlay();
 	},
 
 	sendInitUNOCommands: function() {
@@ -1548,7 +1549,25 @@ L.Map = L.Evented.extend({
 		moveObjectVertically($('#document-container'), height);
 		moveObjectVertically($('#presentation-controls-wrapper'), height);
 		moveObjectVertically($('#sidebar-dock-wrapper'), height);
-	}
+	},
+
+	hasObjectFocusDarkOverlay: function() {
+		return !!this.focusLayer;
+	},
+
+	addObjectFocusDarkOverlay: function(xTwips, yTwips, wTwips, hTwips) {
+		if (!this.hasObjectFocusDarkOverlay()) {
+			this.focusLayer = new L.ObjectFocusDarkOverlay().addTo(this);
+			this.focusLayer.show({x: xTwips, y: yTwips, w: wTwips, h: hTwips});
+		}
+	},
+
+	removeObjectFocusDarkOverlay: function() {
+		if (this.hasObjectFocusDarkOverlay()) {
+			this.removeLayer(this.focusLayer);
+			this.focusLayer = null;
+		}
+	},
 });
 
 L.map = function (id, options) {
