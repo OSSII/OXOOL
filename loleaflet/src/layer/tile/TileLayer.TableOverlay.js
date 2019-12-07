@@ -5,6 +5,7 @@
 
 L.TileLayer.include({
 	_initializeTableOverlay: function () {
+		this._currentTableData = null;
 		this._tableColumnMarkers = [];
 		this._tableRowMarkers = [];
 		this._tableMarkersDragged = false;
@@ -19,7 +20,7 @@ L.TileLayer.include({
 		return point.x;
 	},
 	hasTableSelection: function () {
-		return this._currentTableData.rows != null || this._currentTableData.columns != null;
+		return this._currentTableData && (this._currentTableData.rows != null || this._currentTableData.columns != null);
 	},
 	_initMoveMarkers: function () {
 		this._tableMoveMarker = L.marker(new L.LatLng(0, 0), {
@@ -126,58 +127,64 @@ L.TileLayer.include({
 		this._map.removeLayer(this._tableMoveMarker);
 
 		// Create markers
-		if (this._currentTableData.rows && this._currentTableData.rows.entries.length > 0 && this._currentTableData.columns && this._currentTableData.columns.entries.length > 0) {
-			this._tablePositionColumnOffset = parseInt(this._currentTableData.columns.tableOffset);
-			this._tablePositionRowOffset = parseInt(this._currentTableData.rows.tableOffset);
-			var firstRowPosition = parseInt(this._currentTableData.rows.left) + this._tablePositionRowOffset;
-			var lastRowPosition = parseInt(this._currentTableData.rows.right) + this._tablePositionRowOffset;
-			var firstColumnPosition = parseInt(this._currentTableData.columns.left) + this._tablePositionColumnOffset;
-			var lastColumnPosition = parseInt(this._currentTableData.columns.right) + this._tablePositionColumnOffset;
+		var rows = this._currentTableData.rows;
+		var columns = this._currentTableData.columns;
+		if (rows && columns) {
+			this._tablePositionColumnOffset = parseInt(columns.tableOffset);
+			this._tablePositionRowOffset = parseInt(rows.tableOffset);
+			var firstRowPosition = parseInt(rows.left) + this._tablePositionRowOffset;
+			var lastRowPosition = parseInt(rows.right) + this._tablePositionRowOffset;
+			var firstColumnPosition = parseInt(columns.left) + this._tablePositionColumnOffset;
+			var lastColumnPosition = parseInt(columns.right) + this._tablePositionColumnOffset;
 			var markerX, i, entry;
 
 			var columnPositions = [];
 			var rowPositions = [];
 
-			columnPositions.push(parseInt(this._currentTableData.columns.left));
-			if (this._map.getDocType() !== 'presentation') {
-				entry = { type: 'left', position: this._currentTableData.columns.left, index: 0 };
+			if (columns.entries.length) {
+				columnPositions.push(parseInt(columns.left));
+				if (this._map.getDocType() !== 'presentation') {
+					entry = { type: 'left', position: columns.left, index: 0 };
+					markerX = this._createMarker('column', entry, firstRowPosition, lastRowPosition);
+					this._tableColumnMarkers.push(markerX);
+				}
+
+				for (i = 0; i < columns.entries.length; i++) {
+					entry = columns.entries[i];
+					columnPositions.push(parseInt(entry.position));
+					entry.type = 'middle';
+					entry.index = i;
+					markerX = this._createMarker('column', entry, firstRowPosition, lastRowPosition);
+					this._tableColumnMarkers.push(markerX);
+				}
+
+				columnPositions.push(parseInt(columns.right));
+
+				entry = { type: 'right', position: columns.right, index: 0 };
 				markerX = this._createMarker('column', entry, firstRowPosition, lastRowPosition);
 				this._tableColumnMarkers.push(markerX);
+
+				this._addSelectionMarkers('column', columnPositions, firstRowPosition, lastRowPosition);
 			}
 
-			for (i = 0; i < this._currentTableData.columns.entries.length; i++) {
-				entry = this._currentTableData.columns.entries[i];
-				columnPositions.push(parseInt(entry.position));
-				entry.type = 'middle';
-				entry.index = i;
-				markerX = this._createMarker('column', entry, firstRowPosition, lastRowPosition);
-				this._tableColumnMarkers.push(markerX);
-			}
+			if (rows.entries.length) {
+				rowPositions.push(parseInt(rows.left));
+				for (i = 0; i < rows.entries.length; i++) {
+					entry = rows.entries[i];
+					rowPositions.push(parseInt(entry.position));
+					entry.type = 'middle';
+					entry.index = i;
+					markerX = this._createMarker('row', entry, firstColumnPosition, lastColumnPosition);
+					this._tableRowMarkers.push(markerX);
+				}
 
-			columnPositions.push(parseInt(this._currentTableData.columns.right));
-
-			entry = { type: 'right', position: this._currentTableData.columns.right, index: 0 };
-			markerX = this._createMarker('column', entry, firstRowPosition, lastRowPosition);
-			this._tableColumnMarkers.push(markerX);
-
-			this._addSelectionMarkers('column', columnPositions, firstRowPosition, lastRowPosition);
-
-			rowPositions.push(parseInt(this._currentTableData.rows.left));
-			for (i = 0; i < this._currentTableData.rows.entries.length; i++) {
-				entry = this._currentTableData.rows.entries[i];
-				rowPositions.push(parseInt(entry.position));
-				entry.type = 'middle';
-				entry.index = i;
+				rowPositions.push(parseInt(rows.right));
+				entry = { type: 'right', position: rows.right };
 				markerX = this._createMarker('row', entry, firstColumnPosition, lastColumnPosition);
 				this._tableRowMarkers.push(markerX);
+
+				this._addSelectionMarkers('row', rowPositions, firstColumnPosition, lastColumnPosition);
 			}
-
-			rowPositions.push(parseInt(this._currentTableData.rows.right));
-			entry = { type: 'right', position: this._currentTableData.rows.right };
-			markerX = this._createMarker('row', entry, firstColumnPosition, lastColumnPosition);
-			this._tableRowMarkers.push(markerX);
-
-			this._addSelectionMarkers('row', rowPositions, firstColumnPosition, lastColumnPosition);
 
 			if (this._map.getDocType() === 'presentation' && this._currentTableData.rectangle) {
 				var topLeftTwips = new L.Point(parseInt(this._currentTableData.rectangle.x), parseInt(this._currentTableData.rectangle.y));
@@ -243,17 +250,21 @@ L.TileLayer.include({
 
 			var bounds = new L.LatLngBounds(point1, point2);
 			var selectionRectangle = new L.Rectangle(bounds, {
-				stroke: true, weight: 1, color: '#777777',
-				fillOpacity: 1, fillColor: '#dddddd'
+				stroke: true, weight: 1, color: '#808080',
+				fillOpacity: 0.9, fillColor: '#eeeeee'
 			});
 
 			selectionRectangle._start = { x: startX, y: startY };
 			selectionRectangle._end = { x: endX, y: endY };
 
-			if (type === 'column')
+			if (type === 'column') {
+				selectionRectangle.options.className = 'table-column-select-cursor';
 				this._tableSelectionColumnMarkers.push(selectionRectangle);
-			else
+			}
+			else {
+				selectionRectangle.options.className = 'table-row-select-cursor';
 				this._tableSelectionRowMarkers.push(selectionRectangle);
+			}
 
 			selectionRectangle.on('click', this._onSelectRowColumnClick, this);
 			this._map.addLayer(selectionRectangle);

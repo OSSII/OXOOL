@@ -100,6 +100,18 @@
 	cursor: move;
 }
 
+.table-column-select-cursor {
+	cursor: url('images/cursors/tblsels.png') 16 30,
+		url('images/cursors/tblsels.cur'),
+		pointer;
+}
+
+.table-row-select-cursor {
+	cursor: url('images/cursors/tblsele.png') 30 16,
+		url('images/cursors/tblsele.cur'),
+		pointer;
+}
+
 body {
     font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
     margin: 0;
