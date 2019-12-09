@@ -51,8 +51,10 @@ L.Handler.PathTransform = L.Handler.extend({
 	options: {
 		rotation: true,
 		scaling:  true,
+		scaleLineOnly:  false,
 		scaleSouthAndEastOnly:  false,
 		uniformScaling: true,
+		angle: 0,
 		maxZoom:  22,
 
 		// edge handlers
@@ -140,6 +142,21 @@ L.Handler.PathTransform = L.Handler.extend({
 			this._map = this._path._map;
 			if (options) {
 				this.setOptions(options);
+			}
+			// 縮放目標是線條
+			if (this.options.scaleLineOnly) {
+				// 不需要設定滑鼠游標
+				this.options.handlerOptions.setCursor = false;
+				// 不顯示範圍方框
+				this.options.boundsOptions.weight = 0;
+				this.options.boundsOptions.opacity = 0;
+				// 不需要旋轉角度
+				this.options.rotation = false;
+			}
+			else {
+				this.options.handlerOptions.setCursor = true;
+				this.options.boundsOptions.weight = 1;
+				this.options.boundsOptions.opacity = 1;
 			}
 			L.Handler.prototype.enable.call(this);
 		}
@@ -838,6 +855,27 @@ L.Handler.PathTransform = L.Handler.extend({
 			index:     index,
 			type:      type,
 		};
+
+		// 縮放目標是線條的話，只要頭尾兩個拖拉點
+		if (this.options.scaleLineOnly) {
+			var angle = this.options.angle;
+			var idxs = [];
+			if ((angle >= 0 && angle <= 9000) ||
+			    (angle >= 18000 && angle <= 27000) ||
+			    (angle <= -9000 && angle >= -18000) ||
+			    (angle <= -27000 && angle >= -35999)) {
+				idxs = [0, 4];
+			}
+			else {
+				idxs = [2, 6];
+			}
+			if (index !== idxs[0] && index !== idxs[1]) {
+				options.opacity = 0;
+				options.fill = false;
+				options.interactive = false;
+			}
+		}
+
 		if (this.options.scaleSouthAndEastOnly && index < 5) {
 			options.opacity = 0;
 			options.fill = false;
