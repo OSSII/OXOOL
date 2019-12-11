@@ -345,13 +345,6 @@ var deps = {
 		desc: 'Menu bar'
 	},
 
-	ControlXmlMenubar: {
-		src: ['control/Control.js',
-		      'control/Control.XmlMenubar.js'],
-		heading: 'Controls',
-		desc: 'Xml Menu bar'
-	},
-
 	ControlDialogs: {
 		src: ['control/Control.js',
 		      'control/Control.Dialogs.js'],
@@ -468,7 +461,7 @@ var deps = {
 			'dom/DomEvent.js',
 			'dom/PosAnimation.js',
 			'map/anim/Map.PanAnimation.js'
-			],
+		],
 		heading: 'Animation',
 		desc: 'Core panning animation support.'
 	},
@@ -483,7 +476,7 @@ var deps = {
 		src: [
 			'map/anim/Map.ZoomAnimation.js',
 			'map/anim/Map.FlyTo.js'
-			],
+		],
 		deps: ['AnimationPan'],
 		desc: 'Smooth zooming animation. Works only on browsers that support CSS3 Transitions.'
 	},

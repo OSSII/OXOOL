@@ -71,13 +71,7 @@ var map = L.map('map', {
 });
 
 ////// Controls /////
-var menubar;
-var xmlmenubar = getParameterByName('xmlmenubar') === 'true';
-if (!xmlmenubar)
-	menubar = L.control.menubar();
-else
-	menubar = L.control.xmlmenubar();
-
+var menubar = L.control.menubar();
 map.menubar = menubar;
 map.addControl(menubar);
 setupToolbar(map);
