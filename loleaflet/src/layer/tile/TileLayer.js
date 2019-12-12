@@ -687,7 +687,9 @@ L.TileLayer = L.GridLayer.extend({
 	_onCursorVisibleMsg: function(textMsg) {
 		var command = textMsg.match('cursorvisible: true');
 		this._isCursorVisible = command ? true : false;
-		this._onUpdateCursor();
+		// 只是通知閃爍游標是否顯示而已，
+		// 無論如何，不須捲動畫面。
+		this._onUpdateCursor(false);
 	},
 
 	_onDownloadAsMsg: function (textMsg) {
