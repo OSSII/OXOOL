@@ -836,6 +836,7 @@ void LOOLWSD::initialize(Application& self)
             { "security.capabilities", "true" },
             { "security.seccomp", "true" },
             { "server_name", "" },
+            { "client_port_number", "9980" },
             { "ssl.ca_file_path", LOOLWSD_CONFIGDIR "/ca-chain.cert.pem" },
             { "ssl.cert_file_path", LOOLWSD_CONFIGDIR "/cert.pem" },
             { "ssl.enable", "true" },
@@ -1048,6 +1049,7 @@ void LOOLWSD::initialize(Application& self)
     LoTemplate = getPathFromConfig("lo_template_path");
     ChildRoot = getPathFromConfig("child_root_path");
     ServerName = config().getString("server_name");
+    ClientPortNumber = config().getUInt("client_port_number", DEFAULT_CLIENT_PORT_NUMBER);
 
     FileServerRoot = getPathFromConfig("file_server_root_path");
     NumPreSpawnedChildren = getConfigValue<int>(conf, "num_prespawn_children", 1);
