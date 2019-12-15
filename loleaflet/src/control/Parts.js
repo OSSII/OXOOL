@@ -1,11 +1,12 @@
 /* -*- js-indent-level: 8 -*- */
 /*
- * Document parts switching handler
+ * Document parts switching and selecting handler
  */
 L.Map.include({
-	setPart: function (part, external) {
+	setPart: function (part, external, calledFromSetPartHandler) {
 		var docLayer = this._docLayer;
 		docLayer._prevSelectedPart = docLayer._selectedPart;
+		docLayer._selectedParts = [];
 		if (part === 'prev') {
 			if (docLayer._selectedPart > 0) {
 				docLayer._selectedPart -= 1;
@@ -22,12 +23,17 @@ L.Map.include({
 		else {
 			return;
 		}
+
+		docLayer._selectedParts.push(docLayer._selectedPart);
+
 		if (docLayer.isCursorVisible()) {
 			// a click outside the slide to clear any selection
 			this._socket.sendMessage('resetselection');
 		}
+
 		this.fire('updateparts', {
 			selectedPart: docLayer._selectedPart,
+			selectedParts: docLayer._selectedParts,
 			parts: docLayer._parts,
 			docType: docLayer._docType
 		});
@@ -41,7 +47,7 @@ L.Map.include({
 		docLayer.eachView(docLayer._cellViewCursors, docLayer._onUpdateCellViewCursor, docLayer);
 		docLayer.eachView(docLayer._graphicViewMarkers, docLayer._onUpdateGraphicViewSelection, docLayer);
 		docLayer.eachView(docLayer._viewSelections, docLayer._onUpdateTextViewSelection, docLayer);
-		docLayer._clearSelections();
+		docLayer._clearSelections(calledFromSetPartHandler);
 		docLayer._updateOnChangePart();
 		docLayer._pruneTiles();
 		docLayer._prevSelectedPartNeedsUpdate = true;
@@ -54,13 +60,41 @@ L.Map.include({
 		}
 	},
 
+	// part is the part index/id
+	// how is 0 to deselect, 1 to select, and 2 to toggle selection
+	selectPart: function (part, how, external) {
+		var docLayer = this._docLayer;
+		var index = docLayer._selectedParts.indexOf(part);
+		if (index >= 0 && how != 1) {
+			// Remove (i.e. deselect)
+			docLayer._selectedParts.splice(index, 1);
+		}
+		else if (how != 0) {
+			// Add (i.e. select)
+			docLayer._selectedParts.push(part);
+		}
+
+		this.fire('updateparts', {
+			selectedPart: docLayer._selectedPart,
+			selectedParts: docLayer._selectedParts,
+			parts: docLayer._parts,
+			docType: docLayer._docType
+		});
+
+		// If this wasn't triggered from the server,
+		// then notify the server of the change.
+		if (!external) {
+			this._socket.sendMessage('selectclientpart part=' + part + ' how=' + how);
+		}
+	},
+
 	getPreview: function (id, index, maxWidth, maxHeight, options) {
 		if (!this._docPreviews) {
 			this._docPreviews = {};
 		}
 		var autoUpdate = options ? !!options.autoUpdate : false;
 		var forAllClients = options ? !!options.broadcast : false;
-		this._docPreviews[id] = {id: id, index: index, maxWidth: maxWidth, maxHeight: maxHeight, autoUpdate: autoUpdate};
+		this._docPreviews[id] = {id: id, index: index, maxWidth: maxWidth, maxHeight: maxHeight, autoUpdate: autoUpdate, invalid: false};
 
 		var docLayer = this._docLayer;
 		if (docLayer._docType === 'text') {
@@ -109,7 +143,7 @@ L.Map.include({
 		}
 		var autoUpdate = options ? options.autoUpdate : false;
 		this._docPreviews[id] = {id: id, part: part, width: width, height: height, tilePosX: tilePosX,
-			tilePosY: tilePosY, tileWidth: tileWidth, tileHeight: tileHeight, autoUpdate: autoUpdate};
+			tilePosY: tilePosY, tileWidth: tileWidth, tileHeight: tileHeight, autoUpdate: autoUpdate, invalid: false};
 
 		var dpiscale = L.getDpiScaleFactor();
 
@@ -147,7 +181,7 @@ L.Map.include({
 		else if (typeof (page) === 'number' && page >= 0 && page < docLayer._pages) {
 			docLayer._currentPage = page;
 		}
-		if (!window.mode.isMobile() && this._permission !== 'edit' && docLayer._partPageRectanglesPixels.length > docLayer._currentPage) {
+		if (this._permission !== 'edit' && docLayer._partPageRectanglesPixels.length > docLayer._currentPage) {
 			// we can scroll to the desired page without having a LOK instance
 			var pageBounds = docLayer._partPageRectanglesPixels[docLayer._currentPage];
 			var pos = new L.Point(
@@ -340,6 +374,20 @@ L.Map.include({
 		}
 		return isValid;
 	},
+
+	getDocName: function () {
+		var file = this.options.wopi ? this.wopi.BaseFileName : this.options.doc;
+		var idx = file.lastIndexOf('.');
+		// 去掉副檔名
+		if (idx >= 0) {
+			file = file.substr(0, idx);
+		}
+
+		idx = file.lastIndexOf('/');
+		file = file.substring(idx + 1);
+		return file;
+	},
+
 	//---------------------------------------
 
 	isHiddenPart: function (part) {

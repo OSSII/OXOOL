@@ -66,6 +66,12 @@ L.Control.Tabs = L.Control.extend({
 			items: {
 				'insertsheetbefore': {name: _('Insert sheet before this')},
 				'insertsheetafter': {name: _('Insert sheet after this')},
+				'movesheets': {
+					name: _UNO('.uno:Move', 'spreadsheet', true),
+					callback: (function() {
+						that._movePart();
+					}).bind(this)
+				},
 				'deletesheet': {name: _UNO('.uno:Remove', 'spreadsheet', true),
 						callback: (function(key, options) {
 							var nPos = this._tabForContextMenu;
@@ -86,6 +92,9 @@ L.Control.Tabs = L.Control.extend({
 									message: _('Enter new sheet name'),
 									input: '<input name="sheetname" type="text" value="' + options.$trigger.text() + '" required />',
 									callback: function(data) {
+										if (!data)
+											return;
+
 										if (map.isSheetnameValid(data.sheetname, nPos)) {
 											map.renamePage(data.sheetname, nPos);
 										} else {
@@ -141,6 +150,55 @@ L.Control.Tabs = L.Control.extend({
 		});
 	},
 
+	_movePart: function () {
+		var map = this._map;
+		var partNames = map._docLayer._partNames;
+		var currPart = map.getCurrentPartNumber();
+		var options = '';
+		for (var i = 0 ; i < partNames.length ; i++) {
+			if (!map.isHiddenPart(i)) {
+				options += '<option value="' + (i+1) + '">' + partNames[i] + '</option>';
+			}
+		}
+		options += '<option value="32767">' + _('- move to end position -') + '</option>';
+		vex.dialog.open({
+			message: _UNO('.uno:Move', 'spreadsheet', true),
+			input: [
+				'<div><input type="radio" id="movepart" name="copypart" value="false" checked><label for="movepart"> ' + _('Move') + '</label>&emsp;&emsp;&emsp;&emsp;' +
+				'<input type="radio" id="copypart" name="copypart" value="true"><label for="copypart"> ' + _('Copy') + '</label></div>',
+				'<div><b>' + _('Insert before') + '</b></div>',
+				'<select name="moveTo" size="10" style="font-size:16px; width: 100%;">' + options + '</select>'
+			],
+			callback: function (data) {
+				if (data !== undefined) {
+					// 移動或複製
+					var copy = (data.copypart === 'true');
+					var pos = data.moveTo;
+					if (pos === undefined) {
+						pos = currPart + 2;
+						if (pos > partNames.length)
+							pos = 32767; // 最後
+					}
+					var params = {
+						'DocName': {
+							'type': 'string',
+							'value': map.getDocName()
+						},
+						'Index': {
+							'type': 'long',
+							'value': pos
+						},
+						'Copy': {
+							'type': 'boolean',
+							'value': copy
+						}
+					}
+					map.sendUnoCommand('.uno:Move', params);
+				}
+			}
+		});
+	},
+
 	_updateDisabled: function (e) {
 		var parts = e.parts;
 		var selectedPart = e.selectedPart;
@@ -187,8 +245,8 @@ L.Control.Tabs = L.Control.extend({
 					L.DomEvent
 						.on(tab, 'click', L.DomEvent.stopPropagation)
 						.on(tab, 'click', L.DomEvent.stop)
-						.on(tab, 'click', this._setPart, this)
-						.on(tab, 'click', this._map.focus, this._map);
+						.on(tab, 'mousedown', this._setPart, this)
+						.on(tab, 'mousedown', this._map.focus, this._map);
 					this._spreadsheetTabs[id] = tab;
 				}
 			}

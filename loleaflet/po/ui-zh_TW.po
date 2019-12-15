@@ -454,7 +454,7 @@ msgstr "插入表格"
 
 #: js/toolbar.js:872
 msgid "Insert Local Image"
-msgstr "插入本機影像"
+msgstr "插入電腦圖片"
 
 #: js/toolbar.js:876
 msgid "Insert shapes"
@@ -664,7 +664,7 @@ msgstr "索引"
 
 #: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:228
 msgid "Comment"
-msgstr "評註"
+msgstr "註解"
 
 #: src/control/Control.DocumentRepair.js:50
 msgid "User name"
@@ -735,7 +735,7 @@ msgstr "修復"
 #: src/control/Control.Menubar.js:74 src/control/Control.Menubar.js:287
 #: src/control/Control.Menubar.js:380
 msgid "Local Image..."
-msgstr "本機影像..."
+msgstr "電腦圖片"
 
 #: src/control/Control.Menubar.js:90 src/control/Control.Menubar.js:92
 msgid "All"
@@ -744,24 +744,6 @@ msgstr "所有"
 #: src/control/Control.Menubar.js:103
 msgid "Horizontal Line"
 msgstr "水平線"
-
-#: src/control/Control.Menubar.js:141
-msgid "Text orientation"
-msgstr "文字方向"
-
-#: src/control/Control.Menubar.js:193
-msgid "Page size"
-msgstr "頁面規格及方向"
-
-#: src/control/Control.Menubar.js:194 src/control/Control.Menubar.js:196
-#: src/control/Control.Menubar.js:198 src/control/Control.Menubar.js:200
-msgid "Portrait"
-msgstr "縱向"
-
-#: src/control/Control.Menubar.js:195 src/control/Control.Menubar.js:197
-#: src/control/Control.Menubar.js:199 src/control/Control.Menubar.js:201
-msgid "Landscape"
-msgstr "橫向"
 
 #: src/control/Control.Menubar.js:230 src/control/Control.Menubar.js:232
 #: src/control/Control.Menubar.js:234 src/control/Control.Menubar.js:331
@@ -860,7 +842,19 @@ msgstr ""
 msgid "Hidden Sheets"
 msgstr "隱藏的工作表"
 
-#: src/control/Ruler.js:96
+#: src/control/Control.Tabs.js:160
+msgid "- move to end position -"
+msgstr "─ 移動到結束位置 ─"
+
+#: src/control/Control.Tabs.js:165
+msgid "Copy"
+msgstr "複製"
+
+#: src/control/Control.Tabs.js:166
+msgid "Insert before"
+msgstr "前置於"
+
+#: src/control/Ruler.js:97
 msgid "Left Margin"
 msgstr "左邊距"
 
@@ -1112,11 +1106,7 @@ msgstr "移除"
 msgid "Initializing..."
 msgstr "初始化中..."
 
-#: src/map/Map.js:319
-msgid "Event tracking status"
-msgstr ""
-
-#: src/map/Map.js:770
+#: src/map/Map.js:812
 msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
 msgstr "請輸入 \".uno:\" 或 \"macro:///\" 開頭的指令"
 
@@ -1160,6 +1150,18 @@ msgstr "另存新檔"
 msgid "Unspecified filename"
 msgstr "未指定檔名"
 
+#~ msgid "Text orientation"
+#~ msgstr "文字方向"
+
+#~ msgid "Page size"
+#~ msgstr "頁面規格及方向"
+
+#~ msgid "Portrait"
+#~ msgstr "縱向"
+
+#~ msgid "Landscape"
+#~ msgstr "橫向"
+
 #~ msgid "Document repair"
 #~ msgstr "文件修復"
 
@@ -1180,9 +1182,6 @@ msgstr "未指定檔名"
 
 #~ msgid "Internal Paste"
 #~ msgstr "內部貼上"
-
-#~ msgid "Internal Paste Special"
-#~ msgstr "內部選擇性貼上"
 
 #~ msgid "Close document"
 #~ msgstr "關閉文件"

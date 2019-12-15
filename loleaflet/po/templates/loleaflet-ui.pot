@@ -743,24 +743,6 @@ msgstr ""
 msgid "Horizontal Line"
 msgstr ""
 
-#: src/control/Control.Menubar.js:141
-msgid "Text orientation"
-msgstr ""
-
-#: src/control/Control.Menubar.js:193
-msgid "Page size"
-msgstr ""
-
-#: src/control/Control.Menubar.js:194 src/control/Control.Menubar.js:196
-#: src/control/Control.Menubar.js:198 src/control/Control.Menubar.js:200
-msgid "Portrait"
-msgstr ""
-
-#: src/control/Control.Menubar.js:195 src/control/Control.Menubar.js:197
-#: src/control/Control.Menubar.js:199 src/control/Control.Menubar.js:201
-msgid "Landscape"
-msgstr ""
-
 #: src/control/Control.Menubar.js:230 src/control/Control.Menubar.js:232
 #: src/control/Control.Menubar.js:234 src/control/Control.Menubar.js:331
 #: src/control/Control.Menubar.js:437
@@ -854,8 +836,16 @@ msgstr ""
 msgid "Hidden Sheets"
 msgstr ""
 
-#: src/control/Ruler.js:96
-msgid "Left Margin"
+#: src/control/Control.Tabs.js:160
+msgid "- move to end position -"
+msgstr ""
+
+#: src/control/Control.Tabs.js:165
+msgid "Copy"
+msgstr ""
+
+#: src/control/Control.Tabs.js:166
+msgid "Insert before"
 msgstr ""
 
 #: src/control/Ruler.js:97
