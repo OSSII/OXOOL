@@ -10,12 +10,40 @@
 #ifndef INCLUDED_OXOOLMODULE_H
 #define INCLUDED_OXOOLMODULE_H
 
+#include <map>
 #include <string>
+#include "config.h"
+#include "Socket.hpp"
+#include "DocumentBroker.hpp"
 
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/MemoryStream.h>
+
+// base class for all shapes
+std::string MODULES_DIR = "/usr/lib64/oxool/";
+std::string MODULES_DATA_DIR = "/var/lib/oxool/";
+class oxoolmodule {
+    public:
+        virtual void handleRequest(std::weak_ptr<StreamSocket>, Poco::MemoryInputStream&, Poco::Net::HTTPRequest&, SocketDisposition&)=0;
+        void setMutex(std::mutex* oDocBrokersMutex, 
+                std::map<std::string, std::shared_ptr<DocumentBroker> > &oDocBrokers, 
+                std::string id)
+        {
+            DocBrokersMutex = oDocBrokersMutex;
+            DocBrokers = &oDocBrokers;
+            _id = id;
+        }
+        std::string extension_dir = "/var/lib/oxool/";
+        std::mutex* DocBrokersMutex;
+        std::map<std::string, std::shared_ptr<DocumentBroker>> *DocBrokers;
+        std::string _id;
+};
+typedef oxoolmodule *maker_t();
+extern std::map<std::string, maker_t *, std::less<std::string> > apilist;
+// our global factory
 #ifdef  __cplusplus
 extern "C" {
 #endif
-
 
 #ifdef  __cplusplus
 }
