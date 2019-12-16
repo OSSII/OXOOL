@@ -856,6 +856,7 @@ L.Handler.PathTransform = L.Handler.extend({
 			type:      type,
 		};
 
+		// Add by Firefly <firefly@ossii.com.tw>
 		// 縮放目標是線條的話，只要頭尾兩個拖拉點
 		if (this.options.scaleLineOnly) {
 			var angle = this.options.angle;
@@ -873,6 +874,13 @@ L.Handler.PathTransform = L.Handler.extend({
 				options.opacity = 0;
 				options.fill = false;
 				options.interactive = false;
+			}
+			// 兩點拖拉圓圈細一點，中間半透明
+			else {
+				options.fillOpacity = 0.3;
+				options.weight = 1;
+				options.fillColor = '#ff8000';
+				options.color = '#808080'
 			}
 		}
 
