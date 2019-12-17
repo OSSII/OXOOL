@@ -435,22 +435,23 @@ L.Control.LokDialog = L.Control.extend({
 			this._postWindowMouseEvent(lokEventType, id, e.offsetX, e.offsetY, 1, buttons, 0);
 			dlgInput.focus();
 		}, this);
-		L.DomEvent.on(dlgInput,
-		              'keyup keypress keydown compositionstart compositionupdate compositionend textInput',
-		              function(e) {
-			              e.originalEvent = e; // _onKeyDown fn below requires real event in e.originalEvent
-			              this._map['keyboard']._onKeyDown(e,
-			                                         L.bind(this._postWindowKeyboardEvent,
-			                                                this,
-			                                                id),
-			                                         L.bind(this._postWindowCompositionEvent,
-			                                                this,
-			                                                id),
-			                                         dlgInput);
+		L.DomEvent.on(dlgInput, 'keyup keypress keydown',
+			function(e) {
+				e.originalEvent = e; // _onKeyDown fn below requires real event in e.originalEvent
+				this._map['keyboard']._onKeyDown(e,
+					L.bind(this._postWindowKeyboardEvent, this, id),
+					L.bind(this._postWindowCompositionEvent, this, id),
+					dlgInput);
 
 			              // Keep map active while user is playing with window.
-			              this._map.lastActiveTime = Date.now();
-		              }, this);
+				this._map.lastActiveTime = Date.now();
+			}, this);
+		L.DomEvent.on(dlgInput, 'compositionstart compositionupdate compositionend textInput',
+			function(e) {
+				this._map['keyboard']._onPrivateIME(e, id);
+				this._map.lastActiveTime = Date.now();
+			}, this);
+
 		L.DomEvent.on(dlgInput, 'paste', function(e) {
 			var clipboardData = e.clipboardData || window.clipboardData;
 			var data, blob;
