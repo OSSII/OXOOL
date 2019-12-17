@@ -20,8 +20,6 @@
 #include <Poco/MemoryStream.h>
 
 // base class for all shapes
-std::string MODULES_DIR = "/usr/lib64/oxool/";
-std::string MODULES_DATA_DIR = "/var/lib/oxool/";
 class oxoolmodule {
     public:
         virtual void handleRequest(std::weak_ptr<StreamSocket>, Poco::MemoryInputStream&, Poco::Net::HTTPRequest&, SocketDisposition&)=0;
