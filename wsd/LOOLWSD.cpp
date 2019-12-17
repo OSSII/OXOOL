@@ -3497,7 +3497,9 @@ void initModule(){
     {
         auto afile = *it;
         auto libpath = std::string(Poco::Path(afile).toString());
+#if ENABLE_DEBUG
         libpath = "./" + libpath;
+#endif
         std::cout << libpath <<"\n";
         void *handle;
         handle = dlopen(libpath.c_str(), RTLD_NOW);
