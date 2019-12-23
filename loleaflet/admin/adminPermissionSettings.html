@@ -1,23 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>LibreOffice Online - Admin console</title>
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    <link rel="localizations" href="%SERVICE_ROOT%/loleaflet/%VERSION%/l10n/admin-localizations.json" type="application/vnd.oftn.l10n+json"/>
-    <style>
-      .material-switch > input[type="checkbox"] {
+{% block css %}
+<style>
+.material-switch > input[type="checkbox"] {
     display: none;   
 }
 
@@ -61,196 +44,159 @@
     background: inherit;
     left: 20px;
 }
-  </style>
-  </head>
-  <body>
-    <script src="%SERVICE_ROOT%/loleaflet/%VERSION%/admin-bundle.js"></script>
-    <!--%BRANDING_JS%-->
-    <script>if (typeof brandProductName !== 'undefined') {l10nstrings.strProductName = brandProductName}</script>
-    <script>document.title = l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole</script>
-    <script>
-        var editMode = false;
-        if (window.location.protocol == "https:") {
-           host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
-        }
-        else {
-           host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
-        }
+</style>
+{% end block %}
+{% block javascript %}
+<script>
+    $(document).ready(function()
+        {
+            $('#saveConfig').attr('disabled', false)
+                .click( function ()
+                    {
+                        vex.dialog.confirm({
+                            message: '更新界面設定？',
+                            buttons: [
+                                $.extend({}, vex.dialog.buttons.YES, { text: '確定' }),
+                                $.extend({}, vex.dialog.buttons.NO, { text: '離開' })
+                            ],
+                            callback: function(value)
+                            {
+                                if (value)
+                                {
+                                    $('#saveConfig').attr('disabled', true);
+                                    var keys = [{key : 'text.showfor', containerId : 'text_showfor_list'},
+                                        {key : 'spreadsheet.showfor', containerId : 'spreadsheet_showfor_list'},
+                                        {key : 'presentation.showfor', containerId : 'presentation_showfor_list'},
+                                        {key : 'toolbar.showfor', containerId : 'toolbar_showfor_list'}];
+                                    var i;
+                                    var json = {};
+                                    for (i = 0; i < keys.length ; i ++)
+                                    {
+                                        json[keys[i].key] = permission.getArray(keys[i].key, keys[i].containerId);
+                                    }
+                                    permission.setPermission(JSON.stringify(json));
+                                }
+                            }
+                        });
+                    });
 
-        var permission = Admin.PermissionSettings(host);
-        Admin.GlobalFunction(host);
-    </script>
+            if (!editMode)
+            {
+                $('#text_showfor_add').hide();
+                $('#spreadsheet_showfor_add').hide();
+                $('#presentation_showfor_add').hide();
+                $('#toolbar_showfor_add').hide();
+            }
+        });
+    var editMode = false;
+    if (window.location.protocol == "https:") {
+        host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
+    }
+    else {
+        host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
+    }
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#"><script>document.write(l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole)</script><br><small id="version"></small><small id="lokit"></small></a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul id="navbar-menu" class="nav navbar-nav navbar-right"></ul>
-        </div>
-      </div>
-    </nav>
+    var permission = Admin.PermissionSettings(host);
+    Admin.GlobalFunction(host);
+</script>
+{% end block %}
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="admin.html"><script>document.write(l10nstrings.strOverview)</script></a></li>
-            <li><a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a></li>
-            <li><a href="adminViewLog.html">檢視日誌</a></li>
-            <li><a href="adminConfigSettings.html">系統設定</script></a></li>
-            <li class="active"><a href="adminPermissionSettings.html">界面設定</a></li>
-            <li><a href="adminSoftwareUpgrade.html">軟體升級</a></li>
-          </ul>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <form id="mainform">
-          <ul class="nav nav-tabs">
+{% block content %}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <form id="mainform">
+        <ul class="nav nav-tabs">
             <li class="active">
-              <a href="#textTab" data-toggle="tab">
-                <h4>文字文件</h4>
-              </a>
+                <a href="#textTab" data-toggle="tab">
+                    <h4>文字文件</h4>
+                </a>
             </li>
             <li>
-              <a href="#spreadsheetTab" data-toggle="tab">
-                <h4>試算表文件</h4>
-              </a>
+                <a href="#spreadsheetTab" data-toggle="tab">
+                    <h4>試算表文件</h4>
+                </a>
             </li>
             <li>
-              <a href="#presentationTab" data-toggle="tab">
-                <h4>簡報文件</h4>
-              </a>
+                <a href="#presentationTab" data-toggle="tab">
+                    <h4>簡報文件</h4>
+                </a>
             </li>
             <li>
-              <a href="#toolbarTab" data-toggle="tab">
-                <h4>工具列</h4>
-              </a>
+                <a href="#toolbarTab" data-toggle="tab">
+                    <h4>工具列</h4>
+                </a>
             </li>
-          </ul>
-          <div class="tab-content">
+        </ul>
+        <div class="tab-content">
             <!-- 文字文件設定 -->
             <div id="textTab" class="active tab-pane">
-              <input type="hidden" id="text.showfor">
-              <table id='text_showfor' class="table table-bordered table-hover">
-                <thead>
-                  <tr class="bg-primary">
-                    <th>功能名稱</th><th>Edit</th><th>View</th><th>Readonly</th><th>說明</th>
-                  </tr>
-                </thead>
-                <tbody id="text_showfor_list"></tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="text_showfor_add">新增文字文件選單項目</button></td>
-                  </tr>
-                </tfoot>
-              </table>
+                <input type="hidden" id="text.showfor">
+                <table id='text_showfor' class="table table-bordered table-hover">
+                    <thead>
+                        <tr class="bg-primary">
+                            <th>功能名稱</th><th>Edit</th><th>View</th><th>Readonly</th><th>說明</th>
+                        </tr>
+                    </thead>
+                    <tbody id="text_showfor_list"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="text_showfor_add">新增文字文件選單項目</button></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
             <!-- 試算表設定 -->
             <div id="spreadsheetTab" class="tab-pane">
-              <input type="hidden" id="spreadsheet.showfor">
-              <table id='spreadsheet_showfor' class="table table-bordered table-hover">
-                <thead>
-                  <tr class="bg-success">
-                    <th>功能名稱</th><th>Edit</th><th>View</th><th>Readonly</th><th>說明</th>
-                  </tr>
-                </thead>
-                <tbody id="spreadsheet_showfor_list"></tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="spreadsheet_showfor_add">新增試算表選單項目</button></td>
-                  </tr>
-                </tfoot>
-              </table>
+                <input type="hidden" id="spreadsheet.showfor">
+                <table id='spreadsheet_showfor' class="table table-bordered table-hover">
+                    <thead>
+                        <tr class="bg-success">
+                            <th>功能名稱</th><th>Edit</th><th>View</th><th>Readonly</th><th>說明</th>
+                        </tr>
+                    </thead>
+                    <tbody id="spreadsheet_showfor_list"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="spreadsheet_showfor_add">新增試算表選單項目</button></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
             <!-- 簡報設定 -->
             <div id="presentationTab" class="tab-pane">
-              <input type="hidden" id="presentation.showfor">
-              <table id='spreadsheet_showfor' class="table table-bordered table-hover">
-                <thead>
-                  <tr class="bg-warning">
-                    <th>功能名稱</th><th>Edit</th><th>View</th><th>Readonly</th><th>說明</th>
-                  </tr>
-                </thead>
-                <tbody id="presentation_showfor_list"></tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="presentation_showfor_add">新增簡報選單項目</button></td>
-                  </tr>
-                </tfoot>
-              </table>
+                <input type="hidden" id="presentation.showfor">
+                <table id='spreadsheet_showfor' class="table table-bordered table-hover">
+                    <thead>
+                        <tr class="bg-warning">
+                            <th>功能名稱</th><th>Edit</th><th>View</th><th>Readonly</th><th>說明</th>
+                        </tr>
+                    </thead>
+                    <tbody id="presentation_showfor_list"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="presentation_showfor_add">新增簡報選單項目</button></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
             <!-- 工具列設定 -->
             <div id="toolbarTab" class="tab-pane">
-              <input type="hidden" id="toolbar.showfor">
-              <table id='toolbar_showfor' class="table table-bordered table-hover">
-                <thead>
-                  <tr class="bg-warning">
-                    <th>功能名稱</th><th>Edit</th><th>說明</th>
-                  </tr>
-                </thead>
-                <tbody id="toolbar_showfor_list"></tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="toolbar_showfor_add">新增工具列項目</button></td>
-                  </tr>
-                </tfoot>
-              </table>
+                <input type="hidden" id="toolbar.showfor">
+                <table id='toolbar_showfor' class="table table-bordered table-hover">
+                    <thead>
+                        <tr class="bg-warning">
+                            <th>功能名稱</th><th>Edit</th><th>說明</th>
+                        </tr>
+                    </thead>
+                    <tbody id="toolbar_showfor_list"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-right"><button type="button" class="btn btn-primary" id="toolbar_showfor_add">新增工具列項目</button></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-          </div>
-          </form>
-          <div><button class="btn btn-info pull-right" id="saveConfig" disabled><strong>更新界面設定</strong></button></div>
         </div>
-      </div>
-    </div>
-<!--%FOOTER%-->
-<script>
-$(document).ready(function()
-{
-  $('#saveConfig').attr('disabled', false)
-  .click( function ()
-  {
-    vex.dialog.confirm({
-      message: '更新界面設定？',
-      buttons: [
-        $.extend({}, vex.dialog.buttons.YES, { text: '確定' }),
-        $.extend({}, vex.dialog.buttons.NO, { text: '離開' })
-      ],
-      callback: function(value)
-      {
-        if (value)
-        {
-          $('#saveConfig').attr('disabled', true);
-          var keys = [{key : 'text.showfor', containerId : 'text_showfor_list'},
-                      {key : 'spreadsheet.showfor', containerId : 'spreadsheet_showfor_list'},
-                      {key : 'presentation.showfor', containerId : 'presentation_showfor_list'},
-                      {key : 'toolbar.showfor', containerId : 'toolbar_showfor_list'}];
-          var i;
-          var json = {};
-          for (i = 0; i < keys.length ; i ++)
-          {
-            json[keys[i].key] = permission.getArray(keys[i].key, keys[i].containerId);
-          }
-          permission.setPermission(JSON.stringify(json));
-        }
-      }
-	  });
-  });
-
-  if (!editMode)
-  {
-    $('#text_showfor_add').hide();
-    $('#spreadsheet_showfor_add').hide();
-    $('#presentation_showfor_add').hide();
-    $('#toolbar_showfor_add').hide();
-  }
-})
-</script>
-  </body>
-</html>
+    </form>
+    <div><button class="btn btn-info pull-right" id="saveConfig" disabled><strong>更新界面設定</strong></button></div>
+</div>
+{% end block %}

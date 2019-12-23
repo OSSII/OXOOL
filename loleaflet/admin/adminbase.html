@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content=""/>
+        <meta name="author" content=""/>
+
+        <title>LibreOffice Online - Admin console</title>
+
+        <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+            <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <link rel="localizations" href="%SERVICE_ROOT%/loleaflet/%VERSION%/l10n/admin-localizations.json" type="application/vnd.oftn.l10n+json"/>
+        {% block css %}
+    </head>
+    <body>
+        <script src="%SERVICE_ROOT%/loleaflet/%VERSION%/admin-bundle.js"></script>
+        <!--%BRANDING_JS%-->
+        <script>if (typeof brandProductName !== 'undefined') {l10nstrings.strProductName = brandProductName}</script>
+        <script>document.title = l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole</script>
+        <script>
+            $(document).ready(function(){
+                // Generate module list
+                var module_list = {{MODULE_LIST}};
+                if (module_list) 
+                {
+                    for (module in module_list)
+                    {
+                        var a_template = `<li><a class="text-primary" href="#">${module_list[module]}</a></li>`;
+                        $("#module_list").append(a_template);
+                    }
+
+                }
+                
+                // set the current activate navbar-item
+                var url = window.location.href;
+                urlToken = url.split("/");
+                endpointName = urlToken[urlToken.length-1].split(".")[0];
+                $("#"+endpointName).addClass("active");
+
+            });
+        </script>
+        {% block javascript %}
+
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#"><script>document.write(l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole)</script><br><small id="version"></small><small id="lokit"></small></a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse btn">
+                    <ul id="navbar-menu" class="nav navbar-nav navbar-right"></ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-3 col-md-2 sidebar">
+                    <ul class="nav nav-sidebar">
+                        <li id="admin">
+                            <a href="admin.html"><script>document.write(l10nstrings.strOverview);</script> <span class="sr-only"><script>document.write(l10nstrings.strCurrent)</script></span></a>
+                        </li>
+                        <li id="adminAnalytics">
+                            <a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a>
+                        </li>
+                        <li id="adminViewLog">
+                            <a href="adminViewLog.html">檢視日誌</a>
+                        </li>
+                        <li id="adminConfigSettings">
+                            <a href="adminConfigSettings.html">系統設定</script></a>
+                        </li>
+                        <li id="adminPermissionSettings">
+                            <a href="adminPermissionSettings.html">界面設定</a>
+                        </li>
+                        <li id="adminSoftwareUpgrade">
+                            <a href="adminSoftwareUpgrade.html">軟體升級</a>
+                        </li>
+                        <li  class="nav-item dropdown">
+                            <a href="#" class="nav-link  dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="fasle">模組列表</a>
+                            <ul class="dropdown-menu" id="module_list" aria-labelledby="navbarDropdown">
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                {% block content %}
+            </div>
+        </div>
+
+            <div id="rowContextMenu" class="dropdown clearfix">
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
+                    <li><a tabindex="-1" href="#"><script>document.write(l10nstrings.strKill)</script></a></li>
+                </ul>
+            </div>
+            <!--%FOOTER%-->
+    </body>
+</html>
