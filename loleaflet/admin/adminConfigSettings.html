@@ -1,4 +1,4 @@
-{% block css %}
+{% BLOCK content %}
 <style>
 .material-switch > input[type="checkbox"] {
     display: none;   
@@ -46,7 +46,6 @@
 }
 </style>
 
-{% block javascript %}
 <script>
     $(document).ready(function() {
         $('#saveConfig').attr('disabled', false)
@@ -103,13 +102,9 @@
         host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
     }
     var config = Admin.ConfigSettings(host);
-    Admin.GlobalFunction(host);
 </script>
-{% end block %}
 
-{% block content %}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <h2 class="page-header">系統設定</script></h2>
+<h2 class="page-header">系統設定</h2>
 <form class="form-horizontal" id="mainform">
     <div class="panel-group">
         <!-- 一般設定 -->
@@ -383,5 +378,4 @@
     </div>
 </form>
 <div><button class="btn btn-info pull-right" id="saveConfig" disabled><strong>更新設定</strong></button></div>
-</div>
-{% end block %}
+{% END BLOCK %}

@@ -31,6 +31,10 @@ class oxoolmodule {
             DocBrokers = &oDocBrokers;
             _id = id;
         }
+        virtual std::string getHTMLFile(std::string fileName)
+        {
+            return fileName;
+        }
         std::string extension_dir = "/var/lib/oxool/";
         std::mutex* DocBrokersMutex;
         std::map<std::string, std::shared_ptr<DocumentBroker>> *DocBrokers;

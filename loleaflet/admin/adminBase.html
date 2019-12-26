@@ -16,11 +16,10 @@
             <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->
         <link rel="localizations" href="%SERVICE_ROOT%/loleaflet/%VERSION%/l10n/admin-localizations.json" type="application/vnd.oftn.l10n+json"/>
-        {% block css %}
-    </head>
-    <body>
         <script src="%SERVICE_ROOT%/loleaflet/%VERSION%/admin-bundle.js"></script>
         <!--%BRANDING_JS%-->
+    </head>
+    <body>
         <script>if (typeof brandProductName !== 'undefined') {l10nstrings.strProductName = brandProductName}</script>
         <script>document.title = l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole</script>
         <script>
@@ -38,14 +37,26 @@
                 }
                 
                 // set the current activate navbar-item
-                var url = window.location.href;
-                urlToken = url.split("/");
-                endpointName = urlToken[urlToken.length-1].split(".")[0];
-                $("#"+endpointName).addClass("active");
+                var href = window.location.href;
+                var url = new URL(href);
+                var module = url.searchParams.get("module");
+                if (module === null)
+                {
+                    var token = href.split("/");
+                    var endpoint = token[token.length-1].split(".")[0];
+                    $("#" + endpoint).addClass("active");
+                }
 
+
+                if (window.location.protocol == "https:") {
+                    var host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
+                }
+                else {
+                    host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
+                }
+                Admin.GlobalFunction(host);
             });
         </script>
-        {% block javascript %}
 
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container-fluid">
@@ -93,7 +104,9 @@
                         </li>
                     </ul>
                 </div>
-                {% block content %}
+                <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+                    {% BLOCK content %}
+                </div>
             </div>
         </div>
 
