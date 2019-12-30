@@ -920,6 +920,7 @@ L.Control.Menubar = L.Control.extend({
 		var docType = this._map.getDocType();
 		// Add by Firefly <firefly@ossii.com.tw>
 		var lastItem = null; // 最近新增的 Item;
+		this._level ++;
 		// -------------------------------------
 		for (var i in menu) {
 			if (menu[i].id === 'about' && (L.DomUtil.get('about-dialog') === null)) {
@@ -1008,23 +1009,50 @@ L.Control.Menubar = L.Control.extend({
 				}
 			}
 			var aItem = L.DomUtil.create('a', menu[i].disabled ? 'disabled' : '', liItem);
+			var iconItem = L.DomUtil.create('i', 'menuicon', aItem);
+			var unoIcon = '';
+			var itemName = '';
 			if (menu[i].name !== undefined) {
-				aItem.innerHTML = menu[i].name;
+				// 若 menu[i].name 是 '.uno:' 開頭
+				if (menu[i].name.startsWith('.uno:')) {
+					itemName = _UNO(menu[i].name, docType, true); // 翻譯選項
+					// 不是 menubar 選項，把這個 uno command 當作選項圖示
+					if (this._level > 1) {
+						unoIcon = menu[i].name;
+					}
+				} else {
+					itemName = menu[i].name;
+				}
 			} else if (menu[i].uno !== undefined) {
-				aItem.innerHTML = _UNO(menu[i].uno, docType, true);
+				unoIcon = menu[i].uno; // 把這個 uno command 當作選項圖示
+				itemName = _UNO(menu[i].uno, docType, true); // 翻譯選項
 			} else {
-				aItem.innerHTML = '';
+				itemName = '';
 			}
-			// Add by Firefly
-			// 有指定 Icon 再加
-			if (menu[i].icon !== undefined) {
-				L.DomUtil.create('i', 'menuicon ' + menu[i].icon, aItem);
+			aItem.appendChild(document.createTextNode(itemName));
+			// 增加 icon 元件
+			if (menu[i].icon !== undefined) { // 有指定 icon
+				// icon 開頭是 .uno: 改用這個 uno icon
+				if (menu[i].icon.startsWith('.uno:')) {
+					unoIcon = menu[i].icon; // 如果 icon 指定某個 uno 指令，優先使用這個圖示
+				} else if (unoIcon === '') { // 只有沒有 uno icon 時，才會把 icon 內容當作 class
+					L.DomUtil.addClass(iconItem, menu[i].icon);
+				}
+			}
+
+			// 使用 uno 對應圖示
+			if (unoIcon !== '') {
+				var iconURL = 'url("' + this._map.getUnoCommandIcon(unoIcon) + '")';
+				L.DomUtil.addClass(iconItem, 'img-icon');
+				$(iconItem).css('background-image', iconURL);
 			}
 			if (menu[i].hotkey !== undefined) {
 				var spanItem = L.DomUtil.create('span', 'hotkey', aItem);
 				spanItem.innerHTML = menu[i].hotkey;
 			}
-			if (menu[i].type === 'menu') {
+
+			switch (menu[i].type) {
+			case 'menu': // 選單
 				var ulItem = L.DomUtil.create('ul', '', liItem);
 				var subitemList = this._createMenu(menu[i].menu);
 				if (!subitemList.length) {
@@ -1033,15 +1061,26 @@ L.Control.Menubar = L.Control.extend({
 				for (var idx in subitemList) {
 					ulItem.appendChild(subitemList[idx]);
 				}
-			} else if (menu[i].type === 'unocommand' || menu[i].uno !== undefined) {
-				$(aItem).data('type', 'unocommand');
-				$(aItem).data('uno', menu[i].uno);
-				$(aItem).data('tag', menu[i].tag);
-			} else if (menu[i].type === 'separator') {
+				break;
+
+			case '--': // 也可以當作分隔線類別，比較直觀
+			case 'separator': // 分隔線
 				$(aItem).addClass('separator');
-			} else if (menu[i].type === 'action') {
+				break;
+
+			case 'action': // 自行處理的功能，需實作功能
 				$(aItem).data('type', 'action');
 				$(aItem).data('id', menu[i].id);
+				break;
+
+			default:
+				// uno 指令
+				if (menu[i].uno !== undefined) {
+					$(aItem).data('type', 'unocommand');
+					$(aItem).data('uno', menu[i].uno);
+					$(aItem).data('tag', menu[i].tag);
+				}
+				break;
 			}
 
 			if (menu[i].tablet == false && window.mode.isTablet()) {
@@ -1062,7 +1101,7 @@ L.Control.Menubar = L.Control.extend({
 				itemList.pop();
 			}
 		}
-
+		this._level --;
 		return itemList;
 	},
 
@@ -1100,6 +1139,7 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_initializeMenu: function(menu) {
+		this._level = 0;
 		var menuHtml = this._createMenu(menu);
 		for (var i in menuHtml) {
 			this._menubarCont.appendChild(menuHtml[i]);

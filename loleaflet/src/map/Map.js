@@ -314,8 +314,7 @@ L.Map = L.Evented.extend({
 	initializeModificationIndicator: function() {
 		var lastModButton = L.DomUtil.get('menu-last-mod');
 		if (lastModButton !== null && lastModButton !== undefined
-			&& lastModButton.firstChild.innerHTML !== null
-			&& lastModButton.firstChild.childElementCount == 0) {
+			&& lastModButton.firstChild.innerHTML !== null) {
 			var mainSpan = document.createElement('span');
 			var label = document.createTextNode(_('Last modification'));
 			var separator = document.createTextNode(': ');

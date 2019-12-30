@@ -84,15 +84,18 @@ serif;
 
 .menuicon, .menuicon:hover {
     position: absolute;
-    top: 7px;
-    left: 12px; /* 選單 ICON 前空白 */
+    left: 24px; /* 選單 ICON 前空白 */
 }
 
 .img-icon {
-    height: 16px;
-    width: 16px;
-    display: inline-block;
-    top: 6px;
+    height: 18px;
+    width: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    -moz-background-size:contain;
+    -webkit-background-size:contain;
+    -o-background-size:contain;
 }
 
 /* item */
@@ -150,7 +153,7 @@ serif;
 
 /* Menu Item */
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
-    padding: 5px 104px 5px 36px; /* ICON */
+    padding: 5px 104px 5px 48px; /* ICON */
     color: #000;
 }
 .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
@@ -347,8 +350,7 @@ serif;
     position: absolute;
     content: '\2713';
     color: blue;
-    left: 12px;
-    top: 5px;
+    left: 8px;
 }
 
 .lo-menu-item-checked:hover::before {

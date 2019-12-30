@@ -26,6 +26,67 @@ L.Map.include({
 		}
 	},
 
+	_iconAlias: {
+		'anchormenu': 'toggleanchortype',
+		'arrangeframemenu': 'bringtofront',
+		'arrangemenu': 'bringtofront',
+		'bulletliststyle': 'defaultbullet',
+		'changesmenu': 'trackchanges',
+		'charactermenu': 'fontdialog',
+		'commonalignleft': 'alignleft',
+		'commonalignhorizontalcenter': 'alignhorizontalcenter',
+		'commonalignright': 'alignright',
+		'commonalignjustified': 'alignblock',
+		'commonaligntop': 'aligntop',
+		'commonalignverticalcenter' : 'alignverticalcenter',
+		'commonalignbottom': 'alignbottom',
+		'convertmenu': 'bezierconvert',
+		'deleteslide': 'deletepage',
+		'drawtext': 'text',
+		'duplicateslide': 'duplicatepage',
+		'editshapehyperlink': 'edithyperlink',
+		'flipmenu': 'fliphorizontal',
+		'footnotecellstyles': 'insertfootnote',
+		'formatbulletsmenu': 'defaultbullet',
+		'formatspacingmenu': 'spacepara15',
+		'formatstylesmenu': 'conditionalformatmenu',
+		'formattextmenu': 'fontdialog',
+		'gridmenu': 'gridvisible',
+		'groupmenu': 'group',
+		'hyperlinkdialog': 'inserthyperlink',
+		'insertcell': 'insertcellsright',
+		'insertdatefield' : 'datefield',
+		'insertobjectchart': 'drawchart',
+		'insertslide': 'insertpage',
+		'inserttimefield' : 'timefield',
+		'languagemenu': 'managelanguage',
+		'mirrorhorz': 'mirror',
+		'mirrormenu': 'rotateleft',
+		'namegroup': 'definename',
+		'notecellstyles': 'showannotations',
+		'numberingmenu': 'outlinebullet',
+		'objectmirrorhorizontal': 'mirror',
+		'objectmirrorvertical': 'mirrorvert',
+		'objecttitledescription': 'insertcaptiondialog',
+		'pageformatdialog': 'pagedialog',
+		'paragraphmenu': 'paragraphdialog',
+		'rotateflipmenu': 'rotateleft',
+		'savegraphic': 'save',
+		'setdefault': 'resetattributes',
+		'showruler': 'ruler',
+		'slidesetup': 'pagesetup',
+		'spellingandgrammardialog': 'spelling',
+		'tableautofitmenu': 'setoptimalrowheight',
+		'tableinsertmenu': 'insertrowsafter',
+		'tabledeletemenu': 'deletetable',
+		'tableselectmenu': 'selecttable',
+		'textalign': 'alignblock',
+		'textattributes': 'fontdialog',
+		'wrapmenu': 'wrapon',
+		'zoomminus': 'zoomout',
+		'zoomplus': 'zoomin',
+	},
+
 	applyFont: function (fontName) {
 		if (this.getPermission() === 'edit') {
 			var msg = 'uno .uno:CharFontName {' +
@@ -170,6 +231,15 @@ L.Map.include({
 			//----------------------------------------
 			this._socket.sendMessage('uno ' + command + (json ? ' ' + JSON.stringify(json) : ''));
 		}
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 把 uno 指令轉換成 icon 圖示 URL
+	getUnoCommandIcon: function(unoCommand) {
+		var command = (unoCommand.startsWith('.uno:') ? unoCommand.substr(5) : unoCommand).toLowerCase();
+		var icon = this._iconAlias[command] !== undefined ? this._iconAlias[command] : command;
+
+		return 'images/cmd/' + icon + '.svg';
 	},
 
 	toggleCommandState: function (unoState) {
