@@ -357,6 +357,10 @@ body {
 
 /* Important to override context-menu-icon's font-family here otherwise, jquery-contextmenu.css
  * will try to load its own font file which is not available in dist/ */
+.context-menu-item {
+	padding-left: 48px !important;
+	line-height: 20px; !important;
+}
 .context-menu-icon::before {
 	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
 }

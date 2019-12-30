@@ -71,7 +71,7 @@ L.Control.DarkContextMenu = L.Control.extend({
 
 	_createContextMenuStructure: function(obj) {
 		var docType = this._map.getDocType();
-		var contextMenu = {};
+		var ctxMenu = {};
 		var sepIdx = 1, itemName;
 		var isLastItemText = false;
 	
@@ -80,59 +80,71 @@ L.Control.DarkContextMenu = L.Control.extend({
 			
 			if (item.enabled === 'false') { continue; }
 
-			if (item.type !== 'separator') {
-				// 取得 uno command 翻譯
-				itemName = _UNO(item.command, docType, true);
-				// 沒有翻譯的話，用 item.text 當選項標題
-				if (item.command === '.uno:' + itemName)
-				{
-					itemName = item.text;
-				}
-			}
-
 			if (item.type === 'separator') {
 				if (isLastItemText) {
-					contextMenu['sep' + sepIdx++] = '---------';
+					ctxMenu['sep' + sepIdx++] = this.options.SEPARATOR;
 				}
 				isLastItemText = false;
+				continue;
 			}
-			else if (item.type === 'command') {
-				contextMenu[item.command] = {
-					name: itemName
-				};
 
-				if (item.checktype === 'checkmark') {
-					if (item.checked === 'true') {
-						contextMenu[item.command]['icon'] = 'lo-checkmark';
-					}
-				} else if (item.checktype === 'radio') {
-					if (item.checked === 'true') {
-						contextMenu[item.command]['icon'] = 'radio';
-					}
+			// 取得 uno command 翻譯
+			itemName = _UNO(item.command, docType, true);
+			// 沒有翻譯的話，用 item.text 當選項標題
+			if (item.command === '.uno:' + itemName)
+			{
+				itemName = item.text;
+			}
+
+			ctxMenu[item.command] = {
+				name: itemName,	// 選項名稱
+				map: this._map
+			};
+
+			if (item.type === 'command') {
+				if (item.checktype !== undefined) {
+					ctxMenu[item.command].checktype = item.checktype;
+					ctxMenu[item.command].checked = (item.checked === 'true');
 				}
 				isLastItemText = true;
 			} else if (item.type === 'menu') {
 				var submenu = this._createContextMenuStructure(item);
 				// ignore submenus with all items disabled
 				if (Object.keys(submenu).length === 0) {
+					delete ctxMenu[item.command];
 					continue;
 				}
-
-				contextMenu[item.command] = {
-					name: itemName,
-					items: submenu
-				};
+				ctxMenu[item.command].items = submenu;
 				isLastItemText = true;
+			} else {
+				console.debug('未知的 item.type', item);
 			}
+			ctxMenu[item.command].icon = this._unoIcon;
 		}
 
 		// Remove separator, if present, at the end
-		var lastItem = Object.keys(contextMenu)[Object.keys(contextMenu).length - 1];
+		var lastItem = Object.keys(ctxMenu)[Object.keys(ctxMenu).length - 1];
 		if (lastItem !== undefined && lastItem.startsWith('sep')) {
-			delete contextMenu[lastItem];
+			delete ctxMenu[lastItem];
 		}
 
-		return contextMenu;
+		return ctxMenu;
+	},
+
+	_unoIcon: function(opt, $itemElement, itemKey, item) {
+		var hasinit = $itemElement.hasClass('_init_');
+		if (hasinit) {return '';}
+		$itemElement.addClass('_init_')
+		// 設定 icon
+		var icon = L.DomUtil.create('i', 'menuicon img-icon');
+		var iconURL = 'url("' + item.map.getUnoCommandIcon(itemKey) + '")';
+		$(icon).css('background-image', iconURL);
+		$itemElement.append(icon);
+		// 如果有 checktype
+		if (item.checktype !== undefined && item.checked) {
+			$itemElement.addClass('lo-menu-item-checked');
+		}
+		return '';
 	}
 });
 
