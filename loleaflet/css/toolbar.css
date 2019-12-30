@@ -411,6 +411,13 @@ button.leaflet-control-search-next
     width: 30px;
     border: 1px solid transparent;
     background: rgba(255, 255, 255, 1);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    -moz-background-size:contain;
+    -webkit-background-size:contain;
+    -o-background-size:contain;
+    cursor: pointer;
 }
 
 .insertshape-grid .row-header {
@@ -431,10 +438,11 @@ button.leaflet-control-search-next
     padding: 2px;
     display: block;
     overflow: auto; /* child margins otherwise don't expand *this* element (parent) */
+    width: 148px;
 }
 
 .animationeffects-grid .row {
-    height: 32px;
+    height: 30px;
 }
 
 .animationeffects-grid .col {
@@ -444,6 +452,13 @@ button.leaflet-control-search-next
     width: 32px;
     border: 1px solid transparent;
     background: rgba(255, 255, 255, 1);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    -moz-background-size:contain;
+    -webkit-background-size:contain;
+    -o-background-size:contain;
+    cursor: pointer;
 }
 
 .animationeffects-grid .col:hover {

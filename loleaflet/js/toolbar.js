@@ -541,160 +541,160 @@ function insertTable() {
 
 var shapes = {
 	'Line': [
-		{img: 'selectobject', uno: 'SelectObject'},
-		{img: 'linearrowend', uno: 'LineArrowEnd'},
-		{img: 'linecirclearrow', uno: 'LineCircleArrow'},
-		{img: 'linesquarearrow', uno: 'LineSquareArrow'},
-		{img: 'linearrows', uno: 'LineArrows'},
-		{img: 'linearrowstart', uno: 'LineArrowStart'},
-		{img: 'linearrowcircle', uno: 'LineArrowCircle'},
-		{img: 'linearrowsquare', uno: 'LineArrowSquare'},
-		{img: 'line', uno: 'Line'},
+		{uno: 'SelectObject'},
+		{uno: 'LineArrowEnd'},
+		{uno: 'LineCircleArrow'},
+		{uno: 'LineSquareArrow'},
+		{uno: 'LineArrows'},
+		{uno: 'LineArrowStart'},
+		{uno: 'LineArrowCircle'},
+		{uno: 'LineArrowSquare'},
+		{uno: 'Line'},
 	],
 
 	'Basic Shapes': [
-		{img: 'basicshapes_rectangle', uno: 'BasicShapes.rectangle'},
-		{img: 'basicshapes_round-rectangle', uno: 'BasicShapes.round-rectangle'},
-		{img: 'basicshapes_quadrat', uno: 'BasicShapes.quadrat'},
-		{img: 'basicshapes_round-quadrat', uno: 'BasicShapes.round-quadrat'},
-		{img: 'basicshapes_circle', uno: 'BasicShapes.circle'},
-		{img: 'basicshapes_ellipse', uno: 'BasicShapes.ellipse'},
+		{uno: 'BasicShapes.rectangle'},
+		{uno: 'BasicShapes.round-rectangle'},
+		{uno: 'BasicShapes.quadrat'},
+		{uno: 'BasicShapes.round-quadrat'},
+		{uno: 'BasicShapes.circle'},
+		{uno: 'BasicShapes.ellipse'},
 
-		{img: 'basicshapes_circle-pie', uno: 'BasicShapes.circle-pie'},
-		{img: 'basicshapes_isosceles-triangle', uno: 'BasicShapes.isosceles-triangle'},
-		{img: 'basicshapes_right-triangle', uno: 'BasicShapes.right-triangle'},
-		{img: 'basicshapes_trapezoid', uno: 'BasicShapes.trapezoid'},
-		{img: 'basicshapes_diamond', uno: 'BasicShapes.diamond'},
-		{img: 'basicshapes_parallelogram', uno: 'BasicShapes.parallelogram'},
+		{uno: 'BasicShapes.circle-pie'},
+		{uno: 'BasicShapes.isosceles-triangle'},
+		{uno: 'BasicShapes.right-triangle'},
+		{uno: 'BasicShapes.trapezoid'},
+		{uno: 'BasicShapes.diamond'},
+		{uno: 'BasicShapes.parallelogram'},
 
-		{img: 'basicshapes_pentagon', uno: 'BasicShapes.pentagon'},
-		{img: 'basicshapes_hexagon', uno: 'BasicShapes.hexagon'},
-		{img: 'basicshapes_octagon', uno: 'BasicShapes.octagon'},
-		{img: 'basicshapes_cross', uno: 'BasicShapes.cross'},
-		{img: 'basicshapes_ring', uno: 'BasicShapes.ring'},
-		{img: 'basicshapes_block-arc', uno: 'BasicShapes.block-arc'},
+		{uno: 'BasicShapes.pentagon'},
+		{uno: 'BasicShapes.hexagon'},
+		{uno: 'BasicShapes.octagon'},
+		{uno: 'BasicShapes.cross'},
+		{uno: 'BasicShapes.ring'},
+		{uno: 'BasicShapes.block-arc'},
 
-		{img: 'basicshapes_can', uno: 'BasicShapes.can'},
-		{img: 'basicshapes_cube', uno: 'BasicShapes.cube'},
-		{img: 'basicshapes_paper', uno: 'BasicShapes.paper'},
-		{img: 'basicshapes_frame', uno: 'BasicShapes.frame'}
+		{uno: 'BasicShapes.can'},
+		{uno: 'BasicShapes.cube'},
+		{uno: 'BasicShapes.paper'},
+		{uno: 'BasicShapes.frame'}
 	],
 
 	'Symbols':  [
-		{img: 'symbolshapes', uno: 'SymbolShapes.smiley'},
-		{img: 'symbolshapes_sun', uno: 'SymbolShapes.sun'},
-		{img: 'symbolshapes_moon', uno: 'SymbolShapes.moon'},
-		{img: 'symbolshapes_lightning', uno: 'SymbolShapes.lightning'},
-		{img: 'symbolshapes_heart', uno: 'SymbolShapes.heart'},
-		{img: 'symbolshapes_flower', uno: 'SymbolShapes.flower'},
+		{uno: 'SymbolShapes.smiley'},
+		{uno: 'SymbolShapes.sun'},
+		{uno: 'SymbolShapes.moon'},
+		{uno: 'SymbolShapes.lightning'},
+		{uno: 'SymbolShapes.heart'},
+		{uno: 'SymbolShapes.flower'},
 
-		{img: 'symbolshapes_cloud', uno: 'SymbolShapes.cloud'},
-		{img: 'symbolshapes_forbidden', uno: 'SymbolShapes.forbidden'},
-		{img: 'symbolshapes_puzzle', uno: 'SymbolShapes.puzzle'},
-		{img: 'symbolshapes_bracket-pair', uno: 'SymbolShapes.bracket-pair'},
-		{img: 'symbolshapes_left-bracket', uno: 'SymbolShapes.left-bracket'},
-		{img: 'symbolshapes_right-bracket', uno: 'SymbolShapes.right-bracket'},
+		{uno: 'SymbolShapes.cloud'},
+		{uno: 'SymbolShapes.forbidden'},
+		{uno: 'SymbolShapes.puzzle'},
+		{uno: 'SymbolShapes.bracket-pair'},
+		{uno: 'SymbolShapes.left-bracket'},
+		{uno: 'SymbolShapes.right-bracket'},
 
-		{img: 'symbolshapes_brace-pair', uno: 'SymbolShapes.brace-pair'},
-		{img: 'symbolshapes_left-brace', uno: 'SymbolShapes.left-brace'},
-		{img: 'symbolshapes_right-brace', uno: 'SymbolShapes.right-brace'},
-		{img: 'symbolshapes_quad-bevel', uno: 'SymbolShapes.quad-bevel'},
-		{img: 'symbolshapes_octagon-bevel', uno: 'SymbolShapes.octagon-bevel'},
-		{img: 'symbolshapes_diamond-bevel', uno: 'SymbolShapes.diamond-bevel'}
+		{uno: 'SymbolShapes.brace-pair'},
+		{uno: 'SymbolShapes.left-brace'},
+		{uno: 'SymbolShapes.right-brace'},
+		{uno: 'SymbolShapes.quad-bevel'},
+		{uno: 'SymbolShapes.octagon-bevel'},
+		{uno: 'SymbolShapes.diamond-bevel'}
 	],
 
 	'Block Arrows': [
-		{img: 'arrowshapes_left-arrow', uno: 'ArrowShapes.left-arrow'},
-		{img: 'arrowshapes_right-arrow', uno: 'ArrowShapes.right-arrow'},
-		{img: 'arrowshapes_up-arrow', uno: 'ArrowShapes.up-arrow'},
-		{img: 'arrowshapes_down-arrow', uno: 'ArrowShapes.down-arrow'},
-		{img: 'arrowshapes_left-right-arrow', uno: 'ArrowShapes.left-right-arrow'},
-		{img: 'arrowshapes_up-down-arrow', uno: 'ArrowShapes.up-down-arrow'},
+		{uno: 'ArrowShapes.left-arrow'},
+		{uno: 'ArrowShapes.right-arrow'},
+		{uno: 'ArrowShapes.up-arrow'},
+		{uno: 'ArrowShapes.down-arrow'},
+		{uno: 'ArrowShapes.left-right-arrow'},
+		{uno: 'ArrowShapes.up-down-arrow'},
 
-		{img: 'arrowshapes_up-right-arrow', uno: 'ArrowShapes.up-right-arrow'},
-		{img: 'arrowshapes_up-right-down-arrow', uno: 'ArrowShapes.up-right-down-arrow'},
-		{img: 'arrowshapes_quad-arrow', uno: 'ArrowShapes.quad-arrow'},
-		{img: 'arrowshapes_corner-right-arrow', uno: 'ArrowShapes.corner-right-arrow'},
-		{img: 'arrowshapes_split-arrow', uno: 'ArrowShapes.split-arrow'},
-		{img: 'arrowshapes_striped-right-arrow', uno: 'ArrowShapes.striped-right-arrow'},
+		{uno: 'ArrowShapes.up-right-arrow'},
+		{uno: 'ArrowShapes.up-right-down-arrow'},
+		{uno: 'ArrowShapes.quad-arrow'},
+		{uno: 'ArrowShapes.corner-right-arrow'},
+		{uno: 'ArrowShapes.split-arrow'},
+		{uno: 'ArrowShapes.striped-right-arrow'},
 
-		{img: 'arrowshapes_notched-right-arrow', uno: 'ArrowShapes.notched-right-arrow'},
-		{img: 'arrowshapes_pentagon-right', uno: 'ArrowShapes.pentagon-right'},
-		{img: 'arrowshapes_chevron', uno: 'ArrowShapes.chevron'},
-		{img: 'arrowshapes_right-arrow-callout', uno: 'ArrowShapes.right-arrow-callout'},
-		{img: 'arrowshapes_left-arrow-callout', uno: 'ArrowShapes.left-arrow-callout'},
-		{img: 'arrowshapes_up-arrow-callout', uno: 'ArrowShapes.up-arrow-callout'},
+		{uno: 'ArrowShapes.notched-right-arrow'},
+		{uno: 'ArrowShapes.pentagon-right'},
+		{uno: 'ArrowShapes.chevron'},
+		{uno: 'ArrowShapes.right-arrow-callout'},
+		{uno: 'ArrowShapes.left-arrow-callout'},
+		{uno: 'ArrowShapes.up-arrow-callout'},
 
-		{img: 'arrowshapes_down-arrow-callout', uno: 'ArrowShapes.down-arrow-callout'},
-		{img: 'arrowshapes_left-right-arrow-callout', uno: 'ArrowShapes.left-right-arrow-callout'},
-		{img: 'arrowshapes_up-down-arrow-callout', uno: 'ArrowShapes.up-down-arrow-callout'},
-		{img: 'arrowshapes_up-right-arrow-callout', uno: 'ArrowShapes.up-right-arrow-callout'},
-		{img: 'arrowshapes_quad-arrow-callout', uno: 'ArrowShapes.quad-arrow-callout'},
-		{img: 'arrowshapes_circular-arrow', uno: 'ArrowShapes.circular-arrow'},
+		{uno: 'ArrowShapes.down-arrow-callout'},
+		{uno: 'ArrowShapes.left-right-arrow-callout'},
+		{uno: 'ArrowShapes.up-down-arrow-callout'},
+		{uno: 'ArrowShapes.up-right-arrow-callout'},
+		{uno: 'ArrowShapes.quad-arrow-callout'},
+		{uno: 'ArrowShapes.circular-arrow'},
 
-		{img: 'arrowshapes_split-round-arrow', uno: 'ArrowShapes.split-round-arrow'},
-		{img: 'arrowshapes_s-sharped-arrow', uno: 'ArrowShapes.s-sharped-arrow'}
+		{uno: 'ArrowShapes.split-round-arrow'},
+		{uno: 'ArrowShapes.s-sharped-arrow'}
 	],
 
 	'Stars': [
-		{img: 'starshapes_bang', uno: 'StarShapes.bang'},
-		{img: 'starshapes_star4', uno: 'StarShapes.star4'},
-		{img: 'starshapes_star5', uno: 'StarShapes.star5'},
-		{img: 'starshapes_star6', uno: 'StarShapes.star6'},
-		{img: 'starshapes_star8', uno: 'StarShapes.star8'},
-		{img: 'starshapes_star12', uno: 'StarShapes.star12'},
+		{uno: 'StarShapes.bang'},
+		{uno: 'StarShapes.star4'},
+		{uno: 'StarShapes.star5'},
+		{uno: 'StarShapes.star6'},
+		{uno: 'StarShapes.star8'},
+		{uno: 'StarShapes.star12'},
 
-		{img: 'starshapes_star24', uno: 'StarShapes.star24'},
-		{img: 'starshapes_concave-star6', uno: 'StarShapes.concave-star6'},
-		{img: 'starshapes_vertical-scroll', uno: 'StarShapes.vertical-scroll'},
-		{img: 'starshapes_horizontal-scroll', uno: 'StarShapes.horizontal-scroll'},
-		{img: 'starshapes_signet', uno: 'StarShapes.signet'},
-		{img: 'starshapes_doorplate', uno: 'StarShapes.doorplate'}
+		{uno: 'StarShapes.star24'},
+		{uno: 'StarShapes.concave-star6'},
+		{uno: 'StarShapes.vertical-scroll'},
+		{uno: 'StarShapes.horizontal-scroll'},
+		{uno: 'StarShapes.signet'},
+		{uno: 'StarShapes.doorplate'}
 	],
 
 	'Callouts': [
-		{img: 'calloutshapes_rectangular-callout', uno: 'CalloutShapes.rectangular-callout'},
-		{img: 'calloutshapes_round-rectangular-callout', uno: 'CalloutShapes.round-rectangular-callout'},
-		{img: 'calloutshapes_round-callout', uno: 'CalloutShapes.round-callout'},
-		{img: 'calloutshapes_cloud-callout', uno: 'CalloutShapes.cloud-callout'},
-		{img: 'calloutshapes_line-callout-1', uno: 'CalloutShapes.line-callout-1'},
-		{img: 'calloutshapes_line-callout-2', uno: 'CalloutShapes.line-callout-2'},
-		{img: 'calloutshapes_line-callout-3', uno: 'CalloutShapes.line-callout-3'}
+		{uno: 'CalloutShapes.rectangular-callout'},
+		{uno: 'CalloutShapes.round-rectangular-callout'},
+		{uno: 'CalloutShapes.round-callout'},
+		{uno: 'CalloutShapes.cloud-callout'},
+		{uno: 'CalloutShapes.line-callout-1'},
+		{uno: 'CalloutShapes.line-callout-2'},
+		{uno: 'CalloutShapes.line-callout-3'}
 	],
 
 	'Flowchart': [
-		{img: 'flowchartshapes_flowchart-process', uno: 'FlowChartShapes.flowchart-process'},
-		{img: 'flowchartshapes_flowchart-alternate-process', uno: 'FlowChartShapes.flowchart-alternate-process'},
-		{img: 'flowchartshapes_flowchart-decision', uno: 'FlowChartShapes.flowchart-decision'},
-		{img: 'flowchartshapes_flowchart-data', uno: 'FlowChartShapes.flowchart-data'},
-		{img: 'flowchartshapes_flowchart-predefined-process', uno: 'FlowChartShapes.flowchart-predefined-process'},
-		{img: 'flowchartshapes_flowchart-internal-storage', uno: 'FlowChartShapes.flowchart-internal-storage'},
+		{uno: 'FlowChartShapes.flowchart-process'},
+		{uno: 'FlowChartShapes.flowchart-alternate-process'},
+		{uno: 'FlowChartShapes.flowchart-decision'},
+		{uno: 'FlowChartShapes.flowchart-data'},
+		{uno: 'FlowChartShapes.flowchart-predefined-process'},
+		{uno: 'FlowChartShapes.flowchart-internal-storage'},
 
-		{img: 'flowchartshapes_flowchart-document', uno: 'FlowChartShapes.flowchart-document'},
-		{img: 'flowchartshapes_flowchart-multidocument', uno: 'FlowChartShapes.flowchart-multidocument'},
-		{img: 'flowchartshapes_flowchart-terminator', uno: 'FlowChartShapes.flowchart-terminator'},
-		{img: 'flowchartshapes_flowchart-preparation', uno: 'FlowChartShapes.flowchart-preparation'},
-		{img: 'flowchartshapes_flowchart-manual-input', uno: 'FlowChartShapes.flowchart-manual-input'},
-		{img: 'flowchartshapes_flowchart-manual-operation', uno: 'FlowChartShapes.flowchart-manual-operation'},
+		{uno: 'FlowChartShapes.flowchart-document'},
+		{uno: 'FlowChartShapes.flowchart-multidocument'},
+		{uno: 'FlowChartShapes.flowchart-terminator'},
+		{uno: 'FlowChartShapes.flowchart-preparation'},
+		{uno: 'FlowChartShapes.flowchart-manual-input'},
+		{uno: 'FlowChartShapes.flowchart-manual-operation'},
 
-		{img: 'flowchartshapes_flowchart-connector', uno: 'FlowChartShapes.flowchart-connector'},
-		{img: 'flowchartshapes_flowchart-off-page-connector', uno: 'FlowChartShapes.flowchart-off-page-connector'},
-		{img: 'flowchartshapes_flowchart-card', uno: 'FlowChartShapes.flowchart-card'},
-		{img: 'flowchartshapes_flowchart-punched-tape', uno: 'FlowChartShapes.flowchart-punched-tape'},
-		{img: 'flowchartshapes_flowchart-summing-junction', uno: 'FlowChartShapes.flowchart-summing-junction'},
-		{img: 'flowchartshapes_flowchart-or', uno: 'FlowChartShapes.flowchart-or'},
+		{uno: 'FlowChartShapes.flowchart-connector'},
+		{uno: 'FlowChartShapes.flowchart-off-page-connector'},
+		{uno: 'FlowChartShapes.flowchart-card'},
+		{uno: 'FlowChartShapes.flowchart-punched-tape'},
+		{uno: 'FlowChartShapes.flowchart-summing-junction'},
+		{uno: 'FlowChartShapes.flowchart-or'},
 
-		{img: 'flowchartshapes_flowchart-collate', uno: 'FlowChartShapes.flowchart-collate'},
-		{img: 'flowchartshapes_flowchart-sort', uno: 'FlowChartShapes.flowchart-sort'},
-		{img: 'flowchartshapes_flowchart-extract', uno: 'FlowChartShapes.flowchart-extract'},
-		{img: 'flowchartshapes_flowchart-merge', uno: 'FlowChartShapes.flowchart-merge'},
-		{img: 'flowchartshapes_flowchart-stored-data', uno: 'FlowChartShapes.flowchart-stored-data'},
-		{img: 'flowchartshapes_flowchart-delay', uno: 'FlowChartShapes.flowchart-delay'},
+		{uno: 'FlowChartShapes.flowchart-collate'},
+		{uno: 'FlowChartShapes.flowchart-sort'},
+		{uno: 'FlowChartShapes.flowchart-extract'},
+		{uno: 'FlowChartShapes.flowchart-merge'},
+		{uno: 'FlowChartShapes.flowchart-stored-data'},
+		{uno: 'FlowChartShapes.flowchart-delay'},
 
-		{img: 'flowchartshapes_flowchart-sequential-access', uno: 'FlowChartShapes.flowchart-sequential-access'},
-		{img: 'flowchartshapes_flowchart-magnetic-disk', uno: 'FlowChartShapes.flowchart-magnetic-disk'},
-		{img: 'flowchartshapes_flowchart-direct-access-storage', uno: 'FlowChartShapes.flowchart-direct-access-storage'},
-		{img: 'flowchartshapes_flowchart-display', uno: 'FlowChartShapes.flowchart-display'}
+		{uno: 'FlowChartShapes.flowchart-sequential-access'},
+		{uno: 'FlowChartShapes.flowchart-magnetic-disk'},
+		{uno: 'FlowChartShapes.flowchart-direct-access-storage'},
+		{uno: 'FlowChartShapes.flowchart-display'}
 	]
 };
 
@@ -720,10 +720,11 @@ function insertShapes() {
 				}
 				var shape = shapes[s][idx++];
 				var $col = $('<div/>').addClass('col w2ui-icon');
-				if (shape.uno !== undefined) {
-					$col.addClass(shape.img).attr('title', _UNO('.uno:' + shape.uno, 'text', true));
-				}
-				$col.data('uno', shape.uno);
+				var unocmd = '.uno:' + shape.uno;
+				var iconURL = 'url("' + map.getUnoCommandIcon(unocmd) + '")';
+				$col.css('background-image', iconURL)
+					.attr('title', _UNO(unocmd, 'text', true))
+					.data('uno', shape.uno);
 				$row.append($col);
 			}
 
@@ -745,12 +746,12 @@ var transition = [
 	{img: 'transition-wipe', label: _('Wipe'), action: {type:1, subtype: 2}}, // 擦去
 	{img: 'transition-wheel', label: _('Wheel'), action: {type:23, subtype: 107}}, // 滾輪
 	{img: 'transition-uncover', label: _('Uncover'), action: {type:36, subtype: 98}}, // 抽出
-	{img: 'transition-bars', label: _('Bars'), action: {type:38, subtype: 13}}, // 條碼
-	{img: 'transition-checkers', label: _('Checkers'), action: {type:39, subtype: 19}}, // 棋盤
+	{img: 'transition-random-bars', label: _('Bars'), action: {type:38, subtype: 13}}, // 條碼
+	{img: 'transition-checkerboard', label: _('Checkers'), action: {type:39, subtype: 19}}, // 棋盤
 	{img: 'transition-shape', label: _('Shape'), action: {type:3, subtype: 12}}, // 形狀
 	{img: 'transition-box', label: _('Box'), action: {type:12, subtype: 25}}, // 方塊
 	{img: 'transition-wedge', label: _('Wedge'), action: {type:25, subtype: 48}}, // 楔入
-	{img: 'transition-venetian', label: _('Venetian Blinds'), action: {type:41, subtype: 13}}, // 百葉窗
+	{img: 'transition-venetian-blinds', label: _('Venetian Blinds'), action: {type:41, subtype: 13}}, // 百葉窗
 	{img: 'transition-fade', label: _('Fade'), action: {type:37, subtype: 104}}, // 淡化
 	{img: 'transition-cut', label: _('Cut'), action: {type:1, subtype: 104}}, // 剪下
 	{img: 'transition-cover', label: _('Cover'), action: {type:36, subtype: 98}}, // 覆蓋
@@ -759,19 +760,19 @@ var transition = [
 	{img: 'transition-comb', label: _('Comb'), action: {type:35, subtype: 110}}, // 梳紋
 	{img: 'transition-push', label: _('Push'), action: {type:35, subtype: 98}}, // 推展
 	{img: 'transition-split', label: _('Split'), action: {type:4, subtype: 14}}, // 分割
-	{img: 'transition-diagonal', label: _('Diagonal'), action: {type:34, subtype: 96}}, // 對角
-	{img: 'transition-tiles', label: _('Tiles'), action: {type:21, subtype: 108}}, // 拼貼
-	{img: 'transition-cube', label: _('Cube'), action: {type:21, subtype:12}}, // 立方體
-	{img: 'transition-circles', label: _('Circles'), action: {type:21, subtype: 27}}, // 圓形
-	{img: 'transition-helix', label: _('Helix'), action: {type:21, subtype: 55}}, // 螺旋
+	{img: 'transition-diagonal-squares', label: _('Diagonal'), action: {type:34, subtype: 96}}, // 對角
+	{img: 'transition-tile-flip', label: _('Tiles'), action: {type:21, subtype: 108}}, // 拼貼
+	{img: 'transition-cube-turning', label: _('Cube'), action: {type:21, subtype:12}}, // 立方體
+	{img: 'transition-revolving-circles', label: _('Circles'), action: {type:21, subtype: 27}}, // 圓形
+	{img: 'transition-turning-helix', label: _('Helix'), action: {type:21, subtype: 55}}, // 螺旋
 	{img: 'transition-fall', label: _('Fall'), action: {type:21, subtype: 1}}, // 向下落
 	{img: 'transition-turn-around', label: _('Turn Around'), action: {type:21, subtype: 2}}, // 左右翻轉
 	{img: 'transition-iris', label: _('Iris'), action: {type:21, subtype: 3}}, // 光圈
 	{img: 'transition-turn-down', label: _('Turn Down'), action: {type:21, subtype: 4}}, // 向下轉
 	{img: 'transition-rochade', label: _('Rochade'), action: {type:21, subtype: 5}}, // 左右置換
-	{img: 'transition-3d-venetian', label: _('3D Denetian'), action: {type:21, subtype: 6}}, // 3D 百葉窗
+	{img: 'transition-venetian-blinds-3d', label: _('3D Denetian'), action: {type:21, subtype: 6}}, // 3D 百葉窗
 	{img: 'transition-static', label: _('Static'), action: {type:21, subtype: 8}}, // 靜態
-	{img: 'transition-fine-dissolve', label: _('Fine Dissolve'), action: {type:21, subtype: 9}}, // 細緻溶解
+	{img: 'transition-finedissolve', label: _('Fine Dissolve'), action: {type:21, subtype: 9}}, // 細緻溶解
 	{img: 'transition-vortex', label: _('Vortex'), action: {type:21, subtype: 13}}, // 漩渦
 	{img: 'transition-ripple', label: _('Ripple'), action: {type:21, subtype: 14}}, // 漣漪
 	{img: 'transition-glitter', label: _('Glitter'), action: {type:21, subtype: 26}}, // 閃耀
@@ -781,7 +782,7 @@ var transition = [
 
 // 投影片轉場
 function animationEffects() {
-	var width = 3;
+	var width = 5;
 	var $grid = $('.animationeffects-grid');
 
 	if ($grid.children().size() > 0)
@@ -797,7 +798,10 @@ function animationEffects() {
 				break;
 			}
 			var shape = transition[idx++];
-			var $col = $('<div/>').addClass('col transition-icon').addClass(shape.img).attr('title', shape.label);
+			var iconURL = 'url("images/' + shape.img + '.svg")'; 
+			var $col = $('<div/>').addClass('col w2ui-icon')
+					.css('background-image', iconURL)
+					.attr('title', shape.label);
 
 			$col.data('action', shape.action);
 			$row.append($col);
@@ -811,6 +815,7 @@ function animationEffects() {
 			var action = $(e.target).data().action;
 			var macro = 'macro:///OxOOL.Impress.SetTransition(' + action.type + ',' + action.subtype + ')';
 			map.sendUnoCommand(macro);
+			closePopup();
 		}
 	});
 }
