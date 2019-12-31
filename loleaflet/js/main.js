@@ -77,7 +77,6 @@ map.addControl(menubar);
 setupToolbar(map);
 setupScreenWatermark(map);
 map.addControl(L.control.dialogs());
-map.addControl(L.control.macroprocess());
 map.addControl(L.control.scroll());
 map.addControl(L.control.alertDialog());
 map.addControl(L.control.lokDialog());

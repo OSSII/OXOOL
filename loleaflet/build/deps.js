@@ -352,13 +352,6 @@ var deps = {
 		desc: 'Dialogs'
 	},
 
-	ControlMacroProcess: {
-		src: ['control/Control.js',
-		      'control/Control.MacroProcess.js'],
-		heading: 'Controls',
-		desc: 'Macro Process'
-	},
-
 	ControlTabs: {
 		src: ['control/Control.js',
 		      'dom/DomEvent.js',
@@ -454,6 +447,11 @@ var deps = {
 	Ruler: {
 		src: ['control/Ruler.js'],
 		desc: 'Ruler to be displayed on the map.'
+	},
+
+	Macro: {
+		src: ['control/Macro.js'],
+		desc: 'Macro handler.'
 	},
 
 	AnimationPan: {

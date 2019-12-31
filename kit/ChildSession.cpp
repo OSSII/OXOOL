@@ -1102,7 +1102,8 @@ bool ChildSession::unoCommand(const char* /*buffer*/, int /*length*/, const std:
     if (found_prefix == 0)
     {
         std::size_t found_left = tokens[1].find("(", 0);
-        std::string macroFile = "/tmp/" + tokens[1].substr(9, found_left - 9 );
+        std::string macroCmd = tokens[1].substr(9, found_left - 9 );
+        std::string macroFile = "/tmp/" + macroCmd;
         if (File(macroFile).exists())
         {
             LOG_DBG("Macro result return file exist: " + macroFile); 
@@ -1110,7 +1111,7 @@ bool ChildSession::unoCommand(const char* /*buffer*/, int /*length*/, const std:
             std::ostringstream ostr;
             Poco::StreamCopier::copyStream(istr, ostr);
             LOG_DBG("Macro result: " + ostr.str());
-            sendTextFrame("macroresult: " + ostr.str());
+            sendTextFrame("macroresult: " + macroCmd + ":" + ostr.str());
         }
         else
         {

@@ -599,8 +599,11 @@ L.TileLayer = L.GridLayer.extend({
 			}
 		}
 		else if (textMsg.startsWith('macroresult:')) {
-			var result = textMsg.substring('macroresult:'.length + 1);
-			this._map.fire('macroresult', {'result': result});
+			var macroData = textMsg.substring('macroresult:'.length + 1);
+			var idx = macroData.indexOf(':');
+			var macroName = L.Util.trim(macroData.substr(0, idx));
+			var macroResult = L.Util.trim(macroData.substring(idx + 1));
+			this._map._macroResult(macroName, macroResult);
 		}
 		// Add by Firefly <firefly@ossii.com.tw>
 		// 目前文件中 focus 的物件型態
