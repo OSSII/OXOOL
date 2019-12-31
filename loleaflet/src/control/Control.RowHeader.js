@@ -66,53 +66,69 @@ L.Control.RowHeader = L.Control.Header.extend({
 			selector: '.spreadsheet-header-rows',
 			className: 'loleaflet-font',
 			items: {
-				'insertrowabove': {
+				'InsertRowsBefore': {
 					name: _UNO('.uno:InsertRowsBefore', 'spreadsheet', true),
 					callback: function() {
 						var index = rowHeaderObj._lastMouseOverIndex;
 						if (index) {
 							rowHeaderObj.insertRow.call(rowHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'deleteselectedrow': {
+				'DeleteRows': {
 					name: _UNO('.uno:DeleteRows', 'spreadsheet', true),
 					callback: function() {
 						var index = rowHeaderObj._lastMouseOverIndex;
 						if (index) {
 							rowHeaderObj.deleteRow.call(rowHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'optimalheight': {
+				'SetOptimalRowHeight': {
 					name: _UNO('.uno:SetOptimalRowHeight', 'spreadsheet', true),
 					callback: function() {
 						var index = rowHeaderObj._lastMouseOverIndex;
 						if (index) {
 							rowHeaderObj.optimalHeight.call(rowHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'hideRow': {
+				'sep01': '----',
+				'HideRow': {
 					name: _UNO('.uno:HideRow', 'spreadsheet', true),
 					callback: function() {
 						var index = rowHeaderObj._lastMouseOverIndex;
 						if (index) {
 							rowHeaderObj.hideRow.call(rowHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'showRow': {
+				'ShowRow': {
 					name: _UNO('.uno:ShowRow', 'spreadsheet', true),
 					callback: function() {
 						var index = rowHeaderObj._lastMouseOverIndex;
 						if (index) {
 							rowHeaderObj.showRow.call(rowHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				}
 			},
-			zIndex: 10
+			zIndex: 100
 		});
 	},
 

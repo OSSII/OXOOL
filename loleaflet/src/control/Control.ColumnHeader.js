@@ -69,53 +69,69 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 			selector: '.spreadsheet-header-columns',
 			className: 'loleaflet-font',
 			items: {
-				'insertcolbefore': {
+				'InsertColumnsBefore': {
 					name: _UNO('.uno:InsertColumnsBefore', 'spreadsheet', true),
 					callback: function() {
 						var index = colHeaderObj._lastMouseOverIndex;
 						if (index) {
 							colHeaderObj.insertColumn.call(colHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'deleteselectedcol': {
+				'DeleteColumns': {
 					name: _UNO('.uno:DeleteColumns', 'spreadsheet', true),
 					callback: function() {
 						var index = colHeaderObj._lastMouseOverIndex;
 						if (index) {
 							colHeaderObj.deleteColumn.call(colHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'optimalwidth': {
+				'SetOptimalColumnWidth': {
 					name: _UNO('.uno:SetOptimalColumnWidth', 'spreadsheet', true),
 					callback: function() {
 						var index = colHeaderObj._lastMouseOverIndex;
 						if (index) {
 							colHeaderObj.optimalWidth.call(colHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'hideColumn': {
+				'sep01': '----',
+				'HideColumn': {
 					name: _UNO('.uno:HideColumn', 'spreadsheet', true),
 					callback: function() {
 						var index = colHeaderObj._lastMouseOverIndex;
 						if (index) {
 							colHeaderObj.hideColumn.call(colHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				},
-				'showColumn': {
+				'ShowColumn': {
 					name: _UNO('.uno:ShowColumn', 'spreadsheet', true),
 					callback: function() {
 						var index = colHeaderObj._lastMouseOverIndex;
 						if (index) {
 							colHeaderObj.showColumn.call(colHeaderObj, index);
 						}
-					}
+					},
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				}
 			},
-			zIndex: 10
+			zIndex: 100
 		});
 	},
 
