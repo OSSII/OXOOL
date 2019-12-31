@@ -151,8 +151,7 @@ L.Control.ContextMenu = L.Control.extend({
 				itemName = _UNO(item.command, docType, true);
 
 				contextMenu[item.command] = {
-					name: _(itemName),
-					map: this._map
+					name: _(itemName)
 				};
 
 				if (item.checktype !== undefined) {
@@ -173,14 +172,15 @@ L.Control.ContextMenu = L.Control.extend({
 
 				contextMenu[item.command] = {
 					name: _(itemName).replace(/\(~[A-Za-z]\)/, '').replace('~', ''),
-					items: submenu,
-					map: this._map
+					items: submenu
 				};
 				isLastItemText = true;
 			} else {
 				console.debug('未知的 item.type', item);
 			}
-			contextMenu[item.command].icon = this._unoIcon;
+			contextMenu[item.command].icon = (function(opt, $itemElement, itemKey, item) {
+				return this._map.contextMenuIcon($itemElement, itemKey, item);
+			}).bind(this)
 		}
 
 		// Remove separator, if present, at the end
@@ -191,22 +191,6 @@ L.Control.ContextMenu = L.Control.extend({
 
 		return contextMenu;
 	},
-
-	_unoIcon: function(opt, $itemElement, itemKey, item) {
-		var hasinit = $itemElement.hasClass('_init_');
-		if (hasinit) {return '';}
-		$itemElement.addClass('_init_')
-		// 設定 icon
-		var icon = L.DomUtil.create('i', 'menuicon img-icon');
-		var iconURL = 'url("' + item.map.getUnoCommandIcon(itemKey) + '")';
-		$(icon).css('background-image', iconURL);
-		$itemElement.append(icon);
-		// 如果有 checktype
-		if (item.checktype !== undefined && item.checked) {
-			$itemElement.addClass('lo-menu-item-checked');
-		}
-		return '';
-	}
 });
 
 L.control.contextMenu = function (options) {

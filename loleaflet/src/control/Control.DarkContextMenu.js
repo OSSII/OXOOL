@@ -98,8 +98,7 @@ L.Control.DarkContextMenu = L.Control.extend({
 			}
 
 			ctxMenu[item.command] = {
-				name: itemName,	// 選項名稱
-				map: this._map
+				name: itemName	// 選項名稱
 			};
 
 			if (item.type === 'command') {
@@ -120,7 +119,9 @@ L.Control.DarkContextMenu = L.Control.extend({
 			} else {
 				console.debug('未知的 item.type', item);
 			}
-			ctxMenu[item.command].icon = this._unoIcon;
+			ctxMenu[item.command].icon = (function(opt, $itemElement, itemKey, item) {
+				return this._map.contextMenuIcon($itemElement, itemKey, item);
+			}).bind(this)
 		}
 
 		// Remove separator, if present, at the end
@@ -130,22 +131,6 @@ L.Control.DarkContextMenu = L.Control.extend({
 		}
 
 		return ctxMenu;
-	},
-
-	_unoIcon: function(opt, $itemElement, itemKey, item) {
-		var hasinit = $itemElement.hasClass('_init_');
-		if (hasinit) {return '';}
-		$itemElement.addClass('_init_')
-		// 設定 icon
-		var icon = L.DomUtil.create('i', 'menuicon img-icon');
-		var iconURL = 'url("' + item.map.getUnoCommandIcon(itemKey) + '")';
-		$(icon).css('background-image', iconURL);
-		$itemElement.append(icon);
-		// 如果有 checktype
-		if (item.checktype !== undefined && item.checked) {
-			$itemElement.addClass('lo-menu-item-checked');
-		}
-		return '';
 	}
 });
 

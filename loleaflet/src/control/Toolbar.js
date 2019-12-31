@@ -281,6 +281,24 @@ L.Map.include({
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
+	// 依據 itemKey 設定右鍵選單 icon 圖示
+	contextMenuIcon: function($itemElement, itemKey, item) {
+		var hasinit = $itemElement.hasClass('_init_');
+		if (hasinit) {return '';}
+		$itemElement.addClass('_init_')
+		// 設定 icon
+		var icon = L.DomUtil.create('i', 'menuicon img-icon');
+		var iconURL = 'url("' + this.getUnoCommandIcon(itemKey) + '")';
+		$(icon).css('background-image', iconURL);
+		$itemElement.append(icon);
+		// 如果有 checktype
+		if (item.checktype !== undefined && item.checked) {
+			$itemElement.addClass('lo-menu-item-checked');
+		}
+		return '';
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
 	// 把 uno 指令轉換成 icon 圖示 URL
 	getUnoCommandIcon: function(unoCommand) {
 		var command = (unoCommand.startsWith('.uno:') ? unoCommand.substr(5) : unoCommand).toLowerCase();
