@@ -47,6 +47,7 @@ L.Control.DarkContextMenu = L.Control.extend({
 			selector: '.leaflet-layer',
 			className: 'loleaflet-font',
 			trigger: 'none',
+			zIndex: 1100,
 			build: function() {
 				return {
 					callback: function(key) {
