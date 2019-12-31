@@ -3,7 +3,7 @@
 * Control.Menubar
 */
 
-/* global $ _ _UNO vex revHistoryEnabled closebutton L */
+/* global $ _ _UNO vex revHistoryEnabled closebutton */
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help)
 	options: {
@@ -15,69 +15,65 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:ToolsMenu')}
 		],
 		text:  [
-			{name: _UNO('.uno:PickList', 'text'), id: 'file', icon:'icon_file', type: 'menu', menu: [
-				{name: _UNO('.uno:Save', 'text'), id: 'save', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S', type: 'action'},
-				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action', icon:'fa fa-download'},
-				//{name: _UNO('.uno:SaveAs', 'text'), id: 'ASUSsaveas', type: 'action', icon:'img-icon saveas'},
-				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
-				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action', icon:'fa fa-print', hotkey: 'Ctrl+P'},
-				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
-				{name: _('Download as'), id: 'downloadas', type: 'menu', icon:'fa fa-cloud-download', menu: [
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o'},
-					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', icon: 'fa fa-file-pdf-o', type: 'action'},
-					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action'},
-					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action', icon: 'fa fa-file-text-o'},
-					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action', icon: 'fa fa-file-word-o'},
-					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action', icon: 'fa fa-file-word-o'},
+			{name: '.uno:PickList', id: 'file', type: 'menu', menu: [
+				{name: '.uno:Save', id: 'save', hotkey: 'Ctrl+S', type: 'action'},
+				{name: '.uno:SaveAs', id: 'saveas', type: 'action'},
+				{name: _('Share...'), id:'shareas', type: 'action', icon: '.uno:ShareDocument'},
+				{name: '.uno:Print', id: 'print', type: 'action', hotkey: 'Ctrl+P'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+					{name: _('TEXT Document (.txt)'), id: 'downloadas-txt', type: 'action'},
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', type: 'action'},
+					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action'},
+					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action'},
+					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action'},
 					{name: _('Rich Text (.rtf)'), id: 'downloadas-rtf', type: 'action'}]},
 				{name: _('Sign document'), id: 'signdocument', type: 'action'},
-				/*{type: 'separator'},
-				{uno: '.uno:SetDocumentProperties'},*/
-				{type: 'separator'},
-				{name: _UNO('CloseDoc'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
+				{type: '--'},
+				{name: '.uno:CloseDoc', id: 'closedocument', type: 'action'}
 			]},
-			{name: _UNO('.uno:EditMenu', 'text'), type: 'menu', menu: [
-				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
-				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
-				{name: _('Repair'), id: 'repair',  type: 'action', icon: 'fa fa-retweet'},
-				{type: 'separator'},
-				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
-				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
-				{uno: '.uno:Paste', icon: 'fa fa-clipboard', hotkey: 'Ctrl+V'},
-				{uno: '.uno:SelectAll', icon: 'fa fa-check-circle', hotkey: 'Ctrl+A'},
-				{type: 'separator'},
-				{uno: '.uno:SearchDialog'},
-				{type: 'separator'},
-				{name: _UNO('.uno:ChangesMenu', 'text'), id: 'changesmenu', type: 'menu', menu: [
+			{name: '.uno:EditMenu', id: 'Edit', type: 'menu', menu: [
+				{uno: '.uno:Undo', hotkey: 'Ctrl+Z'},
+				{uno: '.uno:Redo', hotkey: 'Ctrl+Y'},
+				{name: _('Repair'), id: 'repair',  type: 'action'},
+				{type: '--'},
+				{uno: '.uno:Cut', hotkey: 'Ctrl+X'},
+				{uno: '.uno:Copy', hotkey: 'Ctrl+C'},
+				{uno: '.uno:Paste', hotkey: 'Ctrl+V'},
+				{uno: '.uno:SelectAll', hotkey: 'Ctrl+A'},
+				{type: '--'},
+				{uno: '.uno:SearchDialog', hotkey: 'Ctrl+H'},
+				{type: '--'},
+				{name: '.uno:ChangesMenu', id: 'changesmenu', type: 'menu', menu: [
 					{uno: '.uno:TrackChanges'},
 					{uno: '.uno:ShowTrackedChanges'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:AcceptTrackedChanges'},
 					{uno: '.uno:AcceptAllTrackedChanges'},
 					{uno: '.uno:RejectAllTrackedChanges'},
 					{uno: '.uno:PreviousTrackedChange'},
 					{uno: '.uno:NextTrackedChange'}
-				]}/*,
-				{uno: '.uno:EditStyle'}*/
+				]}
 			]},
-			{name: _UNO('.uno:ViewMenu', 'text'), id: 'view', type: 'menu', menu: [
-				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action', icon: 'fa fa-arrows-alt'},
-				{type: 'separator'},
-				{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action', icon: 'fa fa-search-plus'},
-				{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action', icon: 'fa fa-search-minus'},
-				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-search'},
-				{type: 'separator'},
+			{name: '.uno:ViewMenu', id: 'view', type: 'menu', menu: [
+				{name: '.uno:FullScreen', id: 'fullscreen', type: 'action'},
+				{type: '--'},
+				{name: '.uno:ZoomPlus', id: 'zoomin', type: 'action'},
+				{name: '.uno:ZoomMinus', id: 'zoomout', type: 'action'},
+				{name: '.uno:Zoom100Percent', id: 'zoomreset', type: 'action'},
+				{type: '--'},
 				{uno: '.uno:ControlCodes', hotkey: 'Ctrl+F10'}
 			]
 			},
-			{name: _UNO('.uno:InsertMenu', 'text'), type: 'menu', menu: [
-				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o'},
-				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
-				{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action', icon: 'fa fa-comment-o', hotkey: 'Ctrl+Alt+C'},
-				{uno: '.uno:DrawText', icon: 'img-icon textbox'},
-				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
-				{type: 'separator'},
-				{name: _UNO('.uno:InsertField', 'text'), type: 'menu', menu: [
+			{name: '.uno:InsertMenu', id: 'insert', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: '.uno:InsertGraphic', id: 'insertgraphicremote', type: 'action'},
+				{name: '.uno:InsertAnnotation', id: 'insertcomment', type: 'action', hotkey: 'Ctrl+Alt+C'},
+				{uno: '.uno:DrawText'},
+				{uno: '.uno:InsertObjectChart'},
+				{type: '--'},
+				{name: '.uno:InsertField', type: 'menu', menu: [
 					{uno: '.uno:InsertPageNumberField'},
 					{uno: '.uno:InsertPageCountField'},
 					{uno: '.uno:InsertDateField'},
@@ -86,23 +82,23 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:InsertAuthorField'},
 					{uno: '.uno:InsertTopicField'}
 				]},
-				{name: _UNO('.uno:InsertHeaderFooterMenu', 'text'), type: 'menu', menu: [
-					{name: _UNO('.uno:InsertPageHeader', 'text'), type: 'menu', menu: [
+				{name: '.uno:InsertHeaderFooterMenu', type: 'menu', menu: [
+					{name: '.uno:InsertPageHeader', type: 'menu', menu: [
 						{name: _('All'), disabled: true, id: 'insertheader', tag: '_ALL_', uno: '.uno:InsertPageHeader?'}]},
-					{name: _UNO('.uno:InsertPageFooter', 'text'), type: 'menu', menu: [
+					{name: '.uno:InsertPageFooter', type: 'menu', menu: [
 						{name: _('All'), disabled: true, id: 'insertfooter', tag: '_ALL_', uno: '.uno:InsertPageFooter?'}]}
 				]},
 				{uno: '.uno:InsertFootnote', hotkey: 'Ctrl+Alt+F'},
 				{uno: '.uno:InsertEndnote', hotkey: 'Ctrl+Alt+D'},
-				{type: 'separator'},
-				{uno: '.uno:InsertPagebreak', icon: 'fa fa-wpforms', hotkey: 'Ctrl+Enter'},
-				{uno: '.uno:InsertColumnBreak', icon: 'fa fa-columns', hotkey: 'Ctrl+Shift+Enter'},
-				{type: 'separator'},
-				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrl+K'},
-				{uno: '.uno:InsertBookmark', icon: 'fa fa-bookmark'},
-				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
+				{type: '--'},
+				{uno: '.uno:InsertPagebreak', hotkey: 'Ctrl+Enter'},
+				{uno: '.uno:InsertColumnBreak', hotkey: 'Ctrl+Shift+Enter'},
+				{type: '--'},
+				{uno: '.uno:HyperlinkDialog', hotkey: 'Ctrl+K'},
+				{uno: '.uno:InsertBookmark'},
+				{uno: '.uno:InsertSymbol'},
 				{name: _('Horizontal Line'), uno: '.uno:HorizontalLine'},
-				{name: _UNO('.uno:FormattingMarkMenu', 'text'), type: 'menu', menu: [
+				{name: '.uno:FormattingMarkMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertNonBreakingSpace'},
 					{uno: '.uno:InsertHardHyphen'},
 					{uno: '.uno:InsertSoftHyphen'},
@@ -110,217 +106,213 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:InsertZWNBSP'},
 					{uno: '.uno:InsertLRM'},
 					{uno: '.uno:InsertRLM'}]},
-				{name: _UNO('.uno:IndexesMenu', 'text'), type: 'menu', menu: [
-				{uno: '.uno:InsertIndexesEntry', icon: 'img-icon insertindexesentry'},
-				{uno: '.uno:InsertAuthoritiesEntry', icon: 'img-icon insertauthoritiesentry'},
-				{uno: '.uno:InsertMultiIndex', icon: 'img-icon insertmultiindex'}]},
+				{name: '.uno:IndexesMenu', type: 'menu', menu: [
+					{uno: '.uno:InsertIndexesEntry'},
+					{uno: '.uno:InsertAuthoritiesEntry'},
+					{uno: '.uno:InsertMultiIndex'}]},
 			]},
-			{name: _UNO('.uno:FormatMenu', 'text'), type: 'menu', menu: [
-				{name: _UNO('.uno:FormatTextMenu', 'text'), icon:'fa fa-font', type: 'menu', menu: [
-					{uno: '.uno:Bold', icon: 'fa fa-bold', hotkey: 'Ctrl+B'},
-					{uno: '.uno:Italic', icon: 'fa fa-italic', hotkey: 'Ctrl+I'},
-					{uno: '.uno:Underline', icon: 'fa fa-underline', hotkey: 'Ctrl+U'},
-					{uno: '.uno:UnderlineDouble', icon: 'fa fa-underline', hotkey: 'Ctrl+D'},
-					{uno: '.uno:Strikeout', icon: 'fa fa-strikethrough', hotkey: 'Ctrl+Alt+5'},
+			{name: '.uno:FormatMenu', type: 'menu', menu: [
+				{name: '.uno:FormatTextMenu', type: 'menu', menu: [
+					{uno: '.uno:Bold', hotkey: 'Ctrl+B'},
+					{uno: '.uno:Italic', hotkey: 'Ctrl+I'},
+					{uno: '.uno:Underline', hotkey: 'Ctrl+U'},
+					{uno: '.uno:UnderlineDouble', hotkey: 'Ctrl+D'},
+					{uno: '.uno:Strikeout', hotkey: 'Ctrl+Alt+5'},
 					{uno: '.uno:Overline'},
-					{type: 'separator'},
-					{uno: '.uno:SuperScript', icon: 'fa fa-superscript', hotkey: 'Ctrl+Shift+P'},
-					{uno: '.uno:SubScript', icon: 'fa fa-subscript', hotkey: 'Ctrl+Shift+B'},
+					{type: '--'},
+					{uno: '.uno:SuperScript', hotkey: 'Ctrl+Shift+P'},
+					{uno: '.uno:SubScript', hotkey: 'Ctrl+Shift+B'},
 					{uno: '.uno:SmallCaps'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:Shadowed'},
 					{uno: '.uno:OutlineFont'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:Grow'},
 					{uno: '.uno:Shrink'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:ChangeCaseToUpper'},
 					{uno: '.uno:ChangeCaseToLower'},
 					{uno: '.uno:ChangeCaseRotateCase'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:ChangeCaseToSentenceCase'},
 					{uno: '.uno:ChangeCaseToTitleCase'},
 					{uno: '.uno:ChangeCaseToToggleCase'}]},
-				{name: _UNO('.uno:FormatSpacingMenu', 'text'), icon: 'fa fa-text-height', type: 'menu', menu: [
+				{name: '.uno:FormatSpacingMenu', type: 'menu', menu: [
 					{uno: '.uno:SpacePara1'},
 					{uno: '.uno:SpacePara15'},
 					{uno: '.uno:SpacePara2'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:ParaspaceIncrease'},
 					{uno: '.uno:ParaspaceDecrease'},
-					{type: 'separator'},
-					{uno: '.uno:IncrementIndent', icon: 'fa fa-indent'},
-					{uno: '.uno:DecrementIndent', icon: 'fa fa-outdent'}]},
-				{name: _UNO('.uno:TextAlign', 'text'), icon: 'fa fa-align-justify', type: 'menu', menu: [
-					{uno: '.uno:CommonAlignLeft', icon: 'fa fa-align-left', hotkey: 'Ctrl+L'},
-					{uno: '.uno:CommonAlignHorizontalCenter', icon: 'fa fa-align-center', hotkey: 'Ctrl+E'},
-					{uno: '.uno:CommonAlignRight', icon: 'fa fa-align-right', hotkey: 'Ctrl+R'},
-					{uno: '.uno:CommonAlignJustified', icon: 'fa fa-align-justify', hotkey: 'Ctrl+J'},
-					{type: 'separator'},
-					{uno: '.uno:CommonAlignTop', icon: 'fa fa-chevron-up'},
+					{type: '--'},
+					{uno: '.uno:IncrementIndent'},
+					{uno: '.uno:DecrementIndent'}]},
+				{name: '.uno:TextAlign', type: 'menu', menu: [
+					{uno: '.uno:CommonAlignLeft', hotkey: 'Ctrl+L'},
+					{uno: '.uno:CommonAlignHorizontalCenter', hotkey: 'Ctrl+E'},
+					{uno: '.uno:CommonAlignRight', hotkey: 'Ctrl+R'},
+					{uno: '.uno:CommonAlignJustified', hotkey: 'Ctrl+J'},
+					{type: '--'},
+					{uno: '.uno:CommonAlignTop'},
 					{uno: '.uno:CommonAlignVerticalCenter'},
-					{uno: '.uno:CommonAlignBottom', icon: 'fa fa-chevron-down'}]},
-				{name: _UNO('.uno:FormatBulletsMenu', 'text'), icon: 'fa fa-list', type: 'menu', menu: [
-					{uno: '.uno:DefaultBullet', icon: 'fa fa-list-ul'},
-					{uno: '.uno:DefaultNumbering', icon: 'fa fa-list-ol'},
-					{type: 'separator'},
-					{uno: '.uno:DecrementLevel', icon: 'fa fa-indent'},
-					{uno: '.uno:IncrementLevel', icon: 'fa fa-outdent'},
+					{uno: '.uno:CommonAlignBottom'}]},
+				{name: '.uno:FormatBulletsMenu', type: 'menu', menu: [
+					{uno: '.uno:DefaultBullet'},
+					{uno: '.uno:DefaultNumbering'},
+					{type: '--'},
+					{uno: '.uno:DecrementLevel'},
+					{uno: '.uno:IncrementLevel'},
 					{uno: '.uno:DecrementSubLevels'},
 					{uno: '.uno:IncrementSubLevels'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:MoveDown'},
 					{uno: '.uno:MoveUp'},
 					{uno: '.uno:MoveDownSubItems'},
 					{uno: '.uno:MoveUpSubItems'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:InsertNeutralParagraph'},
 					{uno: '.uno:NumberingStart'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:JumpDownThisLevel'},
 					{uno: '.uno:JumpUpThisLevel'},
 					{uno: '.uno:ContinueNumbering'}]},
-				{type: 'separator'},
+				{type: '--'},
 				{uno: '.uno:FontDialog'},
-				{uno: '.uno:ParagraphDialog', icon: 'fa fa-paragraph'},
+				{uno: '.uno:ParagraphDialog'},
 				{uno: '.uno:OutlineBullet'},
-				{uno: '.uno:PageDialog', icon: 'fa fa-file-o'},
-				{type: 'separator'},
+				{uno: '.uno:PageDialog'},
+				{type: '--'},
 				{uno: '.uno:TransformDialog'},
 				{uno: '.uno:FormatLine'},
 				{uno: '.uno:FormatArea'},
-				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
-					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
-					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup'},
-					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
-					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
+				{uno: '.uno:GroupMenu', type: 'menu', menu: [
+					{uno: '.uno:FormatGroup', hotkey: 'Ctrl+Shift+G'},
+					{uno: '.uno:FormatUngroup'},
+					{uno: '.uno:EnterGroup'},
+					{uno: '.uno:LeaveGroup'}
 				]},
-				{type: 'separator'},
-				{uno: '.uno:FormatColumns', icon: 'fa fa-columns'},
-				{type: 'separator'},
-				{uno: '.uno:FormatPaintbrush', icon :'img-icon copyformat'},
-				{uno: '.uno:ResetAttributes', icon: 'img-icon deleteformat', hotkey: 'Ctrl+M'}
+				{type: '--'},
+				{uno: '.uno:FormatColumns'},
+				{type: '--'},
+				{uno: '.uno:FormatPaintbrush'},
+				{uno: '.uno:ResetAttributes', hotkey: 'Ctrl+M'}
 			]},
-			{name: _UNO('.uno:TableMenu', 'text'), type: 'menu', menu: [
-				{name: _UNO('.uno:TableInsertMenu', 'text'), type: 'menu', menu: [
+			{name: '.uno:TableMenu', type: 'menu', menu: [
+				{name: '.uno:TableInsertMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertRowsBefore'},
 					{uno: '.uno:InsertRowsAfter'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:InsertColumnsBefore'},
 					{uno: '.uno:InsertColumnsAfter'}]},
-				{name: _UNO('.uno:TableDeleteMenu', 'text'), type: 'menu', menu: [
+				{name: '.uno:TableDeleteMenu', type: 'menu', menu: [
 					{uno: '.uno:DeleteRows'},
 					{uno: '.uno:DeleteColumns'},
 					{uno: '.uno:DeleteTable'}]},
-				{name: _UNO('.uno:TableSelectMenu', 'text'), type: 'menu', menu: [
-					{uno: '.uno:SelectTable', icon: 'fa fa-table'},
+				{name: '.uno:TableSelectMenu', type: 'menu', menu: [
+					{uno: '.uno:SelectTable'},
 					{uno: '.uno:EntireRow'},
 					{uno: '.uno:EntireColumn'},
 					{uno: '.uno:EntireCell'}]},
 				{uno: '.uno:MergeCells'},
-				{type: 'separator'},
+				{type: '--'},
 				{uno: '.uno:TableDialog'}
 			]},
-			{name: _UNO('.uno:ToolsMenu', 'text'), id: 'tools', type: 'menu', menu: [
+			{name: '.uno:ToolsMenu', id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellingAndGrammarDialog'},
 				{uno: '.uno:SpellOnline'},
-				//{uno: '.uno:ThesaurusDialog'},
-				{name: _UNO('.uno:LanguageMenu'), icon: 'fa fa-language', type: 'menu', menu: [
-					{name: _UNO('.uno:SetLanguageSelectionMenu', 'text'), type: 'menu', menu: [
+				{name: '.uno:LanguageMenu', type: 'menu', menu: [
+					{name: '.uno:SetLanguageSelectionMenu', type: 'menu', menu: [
 						{name: _('None (Do not check spelling)'), id: 'noneselection', uno: '.uno:LanguageStatus?Language:string=Current_LANGUAGE_NONE'}]},
-					{name: _UNO('.uno:SetLanguageParagraphMenu', 'text'), type: 'menu', menu: [
+					{name: '.uno:SetLanguageParagraphMenu', type: 'menu', menu: [
 						{name: _('None (Do not check spelling)'), id: 'noneparagraph', uno: '.uno:LanguageStatus?Language:string=Paragraph_LANGUAGE_NONE'}]},
-					{name: _UNO('.uno:SetLanguageAllTextMenu', 'text'), type: 'menu', menu: [
+					{name: '.uno:SetLanguageAllTextMenu', type: 'menu', menu: [
 						{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]}
 				]},
 				{uno: '.uno:WordCountDialog'},
-				{type: 'separator'},
-				{name: _UNO('.uno:AutoFormatMenu', 'text'), type: 'menu', menu: [
+				{type: '--'},
+				{name: '.uno:AutoFormatMenu', type: 'menu', menu: [
 					{uno: '.uno:OnlineAutoFormat'}]},
-				{type: 'separator'},
-				{uno: '.uno:LineNumberingDialog', icon: 'img-icon linenumberdialog'}
+				{type: '--'},
+				{uno: '.uno:LineNumberingDialog'}
 			]},
-			{name: _UNO('.uno:HelpMenu', 'text'), id: 'help', type: 'menu', menu: [
-				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctel+Shift+?'},
-				{name: _('About'), id: 'about', type: 'action'}]
+			{name: '.uno:HelpMenu', id: 'help', type: 'menu', menu: [
+				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: '.uno:HelpIndex', hotkey: 'Ctel+Shift+?'},
+				{name: _('About'), id: 'about', type: 'action', icon: '.uno:About'}]
 			},
 			{name: _('Last modification'), id: 'last-mod', type: 'action', mobile: false, tablet: false}
 		],
 
 		presentation: [
-			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
-				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
-				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action', icon:'fa fa-download'},
-				//{name: _UNO('.uno:SaveAs', 'presentation'), id: 'ASUSsaveas', type: 'action', icon:'img-icon saveas'},
-				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
-				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
+			{name: '.uno:PickList', id: 'file', type: 'menu', menu: [
+				{name: '.uno:Save', id: 'save', type: 'action', hotkey: 'Ctrl+S'},
+				{name: '.uno:SaveAs', id: 'saveas', type: 'action'},
+				{name: _('Share...'), id:'shareas', type: 'action', icon: '.uno:ShareDocument'},
+				{name: '.uno:Print', id: 'print', type: 'action', hotkey: 'Ctrl+P'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
-				{name: _('Download as'), id: 'downloadas', icon:'fa fa-cloud-download', type: 'menu', menu: [
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon:'fa fa-file-pdf-o'},
-					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action'},
-					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action', icon: 'fa fa-file-text-o'},
-					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action', icon: 'fa fa-file-powerpoint-o'},
-					{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action', icon: 'fa fa-file-powerpoint-o'}]},
-				/*{type: 'separator'},
-				{uno: '.uno:SetDocumentProperties'},*/
-				{type: 'separator'},
-				{name: _UNO('CloseDoc'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
+				{name: _('Download as'), id: 'downloadas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', type: 'action'},
+					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action'},
+					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action'},
+					{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action'}]},
+				{type: '--'},
+				{name: '.uno:CloseDoc', id: 'closedocument', type: 'action'}
 			]},
-			{name: _UNO('.uno:EditMenu', 'presentation'), type: 'menu', menu: [
-				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
-				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
+			{name: '.uno:EditMenu', type: 'menu', menu: [
+				{uno: '.uno:Undo', hotkey: 'Ctrl+Z'},
+				{uno: '.uno:Redo', hotkey: 'Ctrl+Y'},
 				{name: _('Repair'), id: 'repair',  type: 'action'},
-				{type: 'separator'},
-				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
-				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
-				{uno: '.uno:Paste', icon: 'fa fa-clipboard', hotkey: 'Ctrl+V'},
-				{uno: '.uno:SelectAll', icon: 'fa fa-check-circle', hotkey: 'Ctrl+A'},
-				{type: 'separator'},
-				{uno: '.uno:SearchDialog'}
+				{type: '--'},
+				{uno: '.uno:Cut', hotkey: 'Ctrl+X'},
+				{uno: '.uno:Copy', hotkey: 'Ctrl+C'},
+				{uno: '.uno:Paste', hotkey: 'Ctrl+V'},
+				{uno: '.uno:SelectAll', hotkey: 'Ctrl+A'},
+				{type: '--'},
+				{uno: '.uno:SearchDialog', hotkey: 'Ctrl+H'}
 			]},
-			{name: _UNO('.uno:ViewMenu', 'presentation'), id: 'view', type: 'menu', menu: [
-				{name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen', type: 'action', icon: 'fa fa-arrows-alt'},
-				{type: 'separator'},
-				{name: _UNO('.uno:ZoomPlus', 'presentation'), id: 'zoomin', type: 'action', icon: 'fa fa-search-plus'},
-				{name: _UNO('.uno:ZoomMinus', 'presentation'), id: 'zoomout', type: 'action', icon: 'fa fa-search-minus'},
-				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-search'}]
+			{name: '.uno:ViewMenu', id: 'view', type: 'menu', menu: [
+				{name: '.uno:FullScreen', id: 'fullscreen', type: 'action'},
+				{type: '--'},
+				{name: '.uno:ZoomPlus', id: 'zoomin', type: 'action'},
+				{name: '.uno:ZoomMinus', id: 'zoomout', type: 'action'},
+				{name: '.uno:Zoom100Percent', id: 'zoomreset', type: 'action'}]
 			},
-			{name: _UNO('.uno:InsertMenu', 'presentation'), type: 'menu', menu: [
-				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-file-image-o'},
-				{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-file-image-o'},
-				{name: _UNO('.uno:InsertAnnotation', 'presentation'), id: 'insertcomment', type: 'action', icon: 'fa fa-commenting-o', hotkey: 'Ctrl+Alt+C'},
-				{uno: '.uno:Text', icon: 'img-icon textbox'},
-				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
-				{type: 'separator'},
-				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrl+K'},
-				{type: 'separator'},
-				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
-				{type: 'separator'},
-				{name: _UNO('.uno:HeaderAndFooter', 'presentation'), uno: '.uno:HeaderAndFooter'}]
+			{name: '.uno:InsertMenu', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: '.uno:InsertGraphic', id: 'insertgraphicremote', type: 'action'},
+				{name: '.uno:InsertAnnotation', id: 'insertcomment', type: 'action', hotkey: 'Ctrl+Alt+C'},
+				{uno: '.uno:Text'},
+				{uno: '.uno:InsertObjectChart'},
+				{type: '--'},
+				{uno: '.uno:HyperlinkDialog', hotkey: 'Ctrl+K'},
+				{type: '--'},
+				{uno: '.uno:InsertSymbol'},
+				{type: '--'},
+				{uno: '.uno:HeaderAndFooter'}]
 			},
-			{name: _UNO('.uno:FormatMenu', 'presentation'), type: 'menu', menu: [
-				{uno: '.uno:FontDialog', icon: 'fa fa-font'},
-				{uno: '.uno:ParagraphDialog', icon: 'fa fa-paragraph'},
-				{uno: '.uno:PageSetup', icon: 'fa fa-file-o'},
-				{type: 'separator'},
+			{name: '.uno:FormatMenu', type: 'menu', menu: [
+				{uno: '.uno:FontDialog'},
+				{uno: '.uno:ParagraphDialog'},
+				{uno: '.uno:PageSetup'},
+				{type: '--'},
 				{uno: '.uno:TransformDialog'},
 				{uno: '.uno:FormatLine'},
 				{uno: '.uno:FormatArea'},
-				{type: 'separator'},
-				{uno: '.uno:OutlineBullet', icon: 'fa fa-list'},
-				{type: 'separator'},
-				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
-					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
-					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup'},
-					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
-					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
+				{type: '--'},
+				{uno: '.uno:OutlineBullet'},
+				{type: '--'},
+				{uno: '.uno:GroupMenu', type: 'menu', menu: [
+					{uno: '.uno:FormatGroup', hotkey: 'Ctrl+Shift+G'},
+					{uno: '.uno:FormatUngroup'},
+					{uno: '.uno:EnterGroup'},
+					{uno: '.uno:LeaveGroup'}
 				]}]
 			},
 			{uno: '.uno:TableMenu', type: 'menu', menu: [
 				{uno: '.uno:TableInsertMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertRowsBefore'},
 					{uno: '.uno:InsertRowsAfter'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:InsertColumnsBefore'},
 					{uno: '.uno:InsertColumnsAfter'}]},
 				{uno: '.uno:TableDeleteMenu', type: 'menu', menu: [
@@ -328,148 +320,145 @@ L.Control.Menubar = L.Control.extend({
 					{uno: '.uno:DeleteColumns'}]},
 				{uno: '.uno:MergeCells'}]
 			},
-			{name: _UNO('.uno:SlideMenu', 'presentation'), type: 'menu', menu: [
-				{name: _UNO('.uno:InsertSlide', 'presentation'), id: 'insertpage', icon: 'img-icon insertpage',type: 'action'},
-				{name: _UNO('.uno:DuplicateSlide', 'presentation'), id: 'duplicatepage', icon: 'img-icon duplicatepage', type: 'action'},
-				{name: _UNO('.uno:DeleteSlide', 'presentation'), id: 'deletepage', icon: 'img-icon deletepage', type: 'action'},
-				{type: 'separator', id: 'fullscreen-presentation-separator'},
-				{name: _('Fullscreen presentation'), id: 'fullscreen-presentation', icon: 'img-icon presentation', type: 'action'},
-				{type: 'separator'},
-				{name: _('Move'), type: 'menu', icon: 'img-icon movepage', menu: [
-					{uno: '.uno:MovePageFirst', icon: 'img-icon movepagefirst'},
-					{uno: '.uno:MovePageUp', icon: 'img-icon movepageup'},
-					{uno: '.uno:MovePageDown', icon: 'img-icon movepagedown'},
-					{uno: '.uno:MovePageLast', icon: 'img-icon movepagelast'}
+			{name: '.uno:SlideMenu', type: 'menu', menu: [
+				{name: '.uno:InsertSlide', id: 'insertpage',type: 'action'},
+				{name: '.uno:DuplicateSlide', id: 'duplicatepage', type: 'action'},
+				{name: '.uno:DeleteSlide', id: 'deletepage', type: 'action'},
+				{type: '--', id: 'fullscreen-presentation-separator'},
+				{name: _('Fullscreen presentation'), id: 'fullscreen-presentation', type: 'action', icon: '.uno:Dia'},
+				{type: '--'},
+				{name: _('Move'), icon: '.uno:MovePage', type: 'menu', menu: [
+					{uno: '.uno:MovePageFirst'},
+					{uno: '.uno:MovePageUp'},
+					{uno: '.uno:MovePageDown'},
+					{uno: '.uno:MovePageLast'}
 				]}
 			]},
-			{name: _UNO('.uno:ToolsMenu', 'presentation'), id: 'tools', type: 'menu', menu: [
+			{name: '.uno:ToolsMenu', id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellOnline'},
-				{name: _UNO('.uno:LanguageMenu'), icon: 'fa fa-language', type: 'menu', menu: [
+				{name: '.uno:LanguageMenu', type: 'menu', menu: [
 					{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]}
 			]},
-			{name: _UNO('.uno:HelpMenu', 'presentation'), id: 'help', type: 'menu', menu: [
-				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctrl+Shift+?'},
-				{name: _('About'), id: 'about', type: 'action'}]
+			{name: '.uno:HelpMenu', id: 'help', type: 'menu', menu: [
+				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: '.uno:HelpIndex', hotkey: 'Ctrl+Shift+?'},
+				{name: _('About'), id: 'about', type: 'action', icon: '.uno:About'}]
 			},
 			{name: _('Last modification'), id: 'last-mod', type: 'action', mobile: false, tablet: false}
 		],
 
 		spreadsheet: [
-			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
-				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
-				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action', icon:'fa fa-floppy-o', hotkey: 'Ctrl+S'},
-				//{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'ASUSsaveas', type: 'action', icon:'img-icon saveas', hotkey: 'Ctrl+S'},
-				{name: _('Share...'), id:'shareas', type: 'action', icon: 'fa fa-share-alt'},
-				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action', icon: 'fa fa-print', hotkey: 'Ctrl+P'},
-				{name: _('See revision history'), id: 'rev-history', type: 'action', icon:'fa fa-history'},
-				{name: _('Download as'), id:'downloadas', icon:'fa fa-cloud-download', type: 'menu', menu: [
-					{name: _('HTML Document (.html)'), id: 'downloadas-html', icon: 'fa fa-file-pdf-o', type: 'action'},
-					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action', icon: 'fa fa-file-pdf-o'},
-					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action', icon: 'fa fa-file-text-o'},
-					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action', icon:'fa fa-file-excel-o'},
-					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action', icon:'fa fa-file-excel-o'},
-					{name: _('CSV (.csv)'), id: 'downloadas-csv', icon:'fa fa-file-excel-o', type: 'action'}]},
-				/*{type: 'separator'},
-				{uno: '.uno:SetDocumentProperties'},*/
-				{type: 'separator'},
-				{name: _UNO('CloseDoc'), id: 'closedocument', type: 'action', icon:'fa fa-times-circle'}
+			{name: '.uno:PickList', id: 'file', type: 'menu', menu: [
+				{name: '.uno:Save', id: 'save', type: 'action', hotkey: 'Ctrl+S'},
+				{name: '.uno:SaveAs', id: 'saveas', type: 'action'},
+				{name: _('Share...'), id:'shareas', type: 'action'},
+				{name: '.uno:Print', id: 'print', type: 'action', hotkey: 'Ctrl+P'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: _('Download as'), id:'downloadas', type: 'menu', menu: [
+					{name: _('HTML Document (.html)'), id: 'downloadas-html', type: 'action'},
+					{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action'},
+					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action'},
+					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action'},
+					{name: _('CSV (.csv)'), id: 'downloadas-csv', type: 'action'}]},
+				{type: '--'},
+				{name: '.uno:CloseDoc', id: 'closedocument', type: 'action'}
 			]},
-			{name: _UNO('.uno:EditMenu', 'spreadsheet'), type: 'menu', menu: [
-				{uno: '.uno:Undo', icon: 'fa fa-undo', hotkey: 'Ctrl+Z'},
-				{uno: '.uno:Redo', icon: 'fa fa-repeat', hotkey: 'Ctrl+Y'},
+			{name: '.uno:EditMenu', type: 'menu', menu: [
+				{uno: '.uno:Undo', hotkey: 'Ctrl+Z'},
+				{uno: '.uno:Redo', hotkey: 'Ctrl+Y'},
 				{name: _('Repair'), id: 'repair',  type: 'action'},
-				{type: 'separator'},
-				{uno: '.uno:Cut', icon: 'fa fa-scissors', hotkey: 'Ctrl+X'},
-				{uno: '.uno:Copy', icon: 'fa fa-files-o', hotkey: 'Ctrl+C'},
-				{uno: '.uno:Paste', icon: 'fa fa-clipboard', hotkey: 'Ctrl+V'},
+				{type: '--'},
+				{uno: '.uno:Cut', hotkey: 'Ctrl+X'},
+				{uno: '.uno:Copy', hotkey: 'Ctrl+C'},
+				{uno: '.uno:Paste', hotkey: 'Ctrl+V'},
 				{uno: '.uno:SelectAll'},
-				{type: 'separator'},
-				{uno: '.uno:SearchDialog'}
+				{type: '--'},
+				{uno: '.uno:SearchDialog', hotkey: 'Ctrl+H'}
 			]},
-			{name: _UNO('.uno:ViewMenu', 'spreadsheet'), id: 'view', type: 'menu', menu: [
-				{name: _UNO('.uno:FullScreen', 'spreadsheet'), id: 'fullscreen', type: 'action', icon: 'fa fa-arrows-alt'},
-				{type: 'separator'},
-				{name: _UNO('.uno:ZoomPlus', 'spreadsheet'), id: 'zoomin', type: 'action', icon: 'fa fa-search-plus'},
-				{name: _UNO('.uno:ZoomMinus', 'spreadsheet'), id: 'zoomout', type: 'action', icon: 'fa fa-search-minus'},
-				{name: _('Reset zoom'), id: 'zoomreset', type: 'action', icon: 'fa fa-search'}
+			{name: '.uno:ViewMenu', id: 'view', type: 'menu', menu: [
+				{name: '.uno:FullScreen', id: 'fullscreen', type: 'action'},
+				{type: '--'},
+				{name: '.uno:ZoomPlus', id: 'zoomin', type: 'action'},
+				{name: '.uno:ZoomMinus', id: 'zoomout', type: 'action'},
+				{name: '.uno:Zoom100Percent', id: 'zoomreset', type: 'action'}
 			]},
-			{name: _UNO('.uno:InsertMenu', 'spreadsheet'), type: 'menu', menu: [
-				{name: _('Local Image...'), id: 'insertgraphic', type: 'action', icon: 'fa fa-picture-o'},
-				{name: _UNO('.uno:InsertGraphic', 'spreadsheet'), id: 'insertgraphicremote', type: 'action', icon: 'fa fa-picture-o'},
-				{uno: '.uno:InsertObjectChart', icon: 'fa fa-bar-chart'},
-				{name: _UNO('.uno:InsertAnnotation', 'spreadsheet'), id: 'insertcomment', type: 'action', icon: 'fa fa-commenting-o', hotkey: 'Ctrl+Alt+C'},
-				{uno: '.uno:DrawText', icon: 'img-icon textbox'},
-				{type: 'separator'},
-				{uno: '.uno:HyperlinkDialog', icon: 'fa fa-link', hotkey: 'Ctrk+K'},
-				{uno: '.uno:InsertSymbol', icon: 'fa fa-wikipedia-w'},
+			{name: '.uno:InsertMenu', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: '.uno:InsertGraphic', id: 'insertgraphicremote', type: 'action'},
+				{uno: '.uno:InsertObjectChart'},
+				{name: '.uno:InsertAnnotation', id: 'insertcomment', type: 'action', hotkey: 'Ctrl+Alt+C'},
+				{uno: '.uno:DrawText'},
+				{type: '--'},
+				{uno: '.uno:HyperlinkDialog', hotkey: 'Ctrk+K'},
+				{uno: '.uno:InsertSymbol'},
 				{uno: '.uno:EditHeaderAndFooter'}
 			]},
-			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), type: 'menu', menu: [
-				{uno: '.uno:FormatPaintbrush', icon :'img-icon copyformat'},
-				{uno: '.uno:ResetAttributes', icon: 'img-icon deleteformat', hotkey: 'Ctrl+M'},
+			{name: '.uno:FormatMenu', type: 'menu', menu: [
+				{uno: '.uno:FormatPaintbrush'},
+				{uno: '.uno:ResetAttributes', hotkey: 'Ctrl+M'},
 				{uno: '.uno:FormatCellDialog'},
-				{uno: '.uno:PageFormatDialog', icon: 'fa fa-file-o'},
-				{type: 'separator'},
+				{uno: '.uno:PageFormatDialog'},
+				{type: '--'},
 				{uno: '.uno:TransformDialog'},
 				{uno: '.uno:FormatLine'},
 				{uno: '.uno:FormatArea'},
-				{uno: '.uno:GroupMenu', type: 'menu', icon: 'img-icon formatgroup', menu: [
-					{uno: '.uno:FormatGroup', icon: 'img-icon formatgroup', hotkey: 'Ctrl+Shift+G'},
-					{uno: '.uno:FormatUngroup', icon: 'img-icon formatungroup'},
-					{uno: '.uno:EnterGroup', icon: 'img-icon entergroup'},
-					{uno: '.uno:LeaveGroup', icon: 'img-icon leavegroup'}
+				{uno: '.uno:GroupMenu', type: 'menu', menu: [
+					{uno: '.uno:FormatGroup', hotkey: 'Ctrl+Shift+G'},
+					{uno: '.uno:FormatUngroup'},
+					{uno: '.uno:EnterGroup'},
+					{uno: '.uno:LeaveGroup'}
 				]}
 			]},
-			{name: _UNO('.uno:SheetMenu', 'spreadsheet'), type: 'menu', menu: [
-				{name: _UNO('.uno:InsertRowsMenu', 'spreadsheet'), type: 'menu', menu: [
+			{name: '.uno:SheetMenu', type: 'menu', menu: [
+				{name: '.uno:InsertRowsMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertRowsBefore'},
 					{uno: '.uno:InsertRowsAfter'}]},
-				{name: _UNO('.uno:InsertColumnsMenu', 'spreadsheet'), type: 'menu', menu: [
+				{name: '.uno:InsertColumnsMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertColumnsBefore'},
 					{uno: '.uno:InsertColumnsAfter'}]},
-				{name: _UNO('.uno:InsertBreakMenu', 'spreadsheet'), type: 'menu', menu: [
+				{name: '.uno:InsertBreakMenu', type: 'menu', menu: [
 					{uno: '.uno:InsertRowBreak'},
 					{uno: '.uno:InsertColumnBreak'}]},
-				{type: 'separator'},
+				{type: '--'},
 				{uno: '.uno:DeleteRows'},
 				{uno: '.uno:DeleteColumns'},
-				{name: _UNO('.uno:DelBreakMenu', 'spreadsheet'), type: 'menu', menu: [
+				{name: '.uno:DelBreakMenu', type: 'menu', menu: [
 					{uno: '.uno:DeleteRowbreak'},
 					{uno: '.uno:DeleteColumnbreak'}]}
 			]},
-			{name: _UNO('.uno:DataMenu', 'spreadsheet'), type: 'menu', menu: [
+			{name: '.uno:DataMenu', type: 'menu', menu: [
 				{uno: '.uno:DataSort'},
-				{uno: '.uno:SortAscending', icon: 'fa fa-sort-alpha-asc'},
-				{uno: '.uno:SortDescending', icon: 'fa fa-sort-alpha-desc'},
+				{uno: '.uno:SortAscending'},
+				{uno: '.uno:SortDescending'},
 				{uno: '.uno:Validation'},
-				{type: 'separator'},
-				{uno: '.uno:DataFilterAutoFilter', icon: 'fa fa-filter'},
-				{name: _UNO('.uno:FilterMenu', 'spreadsheet'), type: 'menu', menu: [
+				{type: '--'},
+				{uno: '.uno:DataFilterAutoFilter'},
+				{name: '.uno:FilterMenu', type: 'menu', menu: [
 					{uno: '.uno:DataFilterStandardFilter'},
 					{uno: '.uno:DataFilterSpecialFilter'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:DataFilterRemoveFilter'},
 					{uno: '.uno:DataFilterHideAutoFilter'}]},
-				{type: 'separator'},
-				{name: _UNO('.uno:GroupOutlineMenu', 'spreadsheet'), type: 'menu', menu: [
+				{type: '--'},
+				{name: '.uno:GroupOutlineMenu', type: 'menu', menu: [
 					{uno: '.uno:Group'},
 					{uno: '.uno:Ungroup'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:ClearOutline'},
-					{type: 'separator'},
+					{type: '--'},
 					{uno: '.uno:HideDetail'},
 					{uno: '.uno:ShowDetail'}]},
-				{type: 'separator'},
-				{uno: '.uno:DataDataPilotRun', icon: 'img-icon datadatapilotrun'}
+				{type: '--'},
+				{uno: '.uno:DataDataPilotRun'}
 			]},
-			{name: _UNO('.uno:ToolsMenu', 'spreadsheet'), id: 'tools', type: 'menu', menu: [
+			{name: '.uno:ToolsMenu', id: 'tools', type: 'menu', menu: [
 				{uno: '.uno:SpellOnline'},
-				{name: _UNO('.uno:LanguageMenu'), icon: 'fa fa-language', type: 'menu', menu: [
+				{name: '.uno:LanguageMenu', type: 'menu', menu: [
 					{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]}
 			]},
-			{name: _UNO('.uno:HelpMenu', 'spreadsheet'), id: 'help', type: 'menu', menu: [
-				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: 'fa fa-keyboard-o', hotkey: 'Ctrl+Shift+?'},
-				{name: _('About'), id: 'about', type: 'action'}]
+			{name: '.uno:HelpMenu', id: 'help', type: 'menu', menu: [
+				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: '.uno:HelpIndex', hotkey: 'Ctrl+Shift+?'},
+				{name: _('About'), id: 'about', type: 'action', icon: '.uno:About'}]
 			},
 			{name: _('Last modification'), id: 'last-mod', type: 'action', mobile: false, tablet: false}
 		],
@@ -529,7 +518,6 @@ L.Control.Menubar = L.Control.extend({
 		return liItem;
 	},
 
-
 	_onInitMenu: function (e) {
 		if (e.commandName === '.uno:LanguageStatus' && L.Util.isArray(e.commandValues)) {
 			var translated, neutral;
@@ -557,9 +545,9 @@ L.Control.Menubar = L.Control.extend({
 				$menuParagraph.append(this._createUnoMenuItem(translated, constLang + encodeURIComponent('Paragraph_' + neutral)));
 				$menuDefault.append(this._createUnoMenuItem(translated, constLang + encodeURIComponent('Default_' + neutral)));
 			}
-			$menuSelection.append(this._createMenu([{type: 'separator'}]));
-			$menuParagraph.append(this._createMenu([{type: 'separator'}]));
-			$menuDefault.append(this._createMenu([{type: 'separator'}]));
+			$menuSelection.append(this._createMenu([{type: '--'}]));
+			$menuParagraph.append(this._createMenu([{type: '--'}]));
+			$menuDefault.append(this._createMenu([{type: '--'}]));
 			$menuSelection.append(this._createUnoMenuItem(resetLang, constLang + constCurr));
 			$menuParagraph.append(this._createUnoMenuItem(resetLang, constLang + constPara));
 			$menuDefault.append(this._createUnoMenuItem(resetLang, constLang + constDefa));
@@ -635,7 +623,7 @@ L.Control.Menubar = L.Control.extend({
 		$('#main-menu').bind('click.smapi', {self: this}, this._onClicked);
 
 		$('#main-menu').bind('keydown', {self: this}, this._onKeyDown);
-/*
+		/*
 		// SmartMenus mobile menu toggle button
 		$(function() {
 			var $mainMenuState = $('#main-menu-state');
