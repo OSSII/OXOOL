@@ -13,7 +13,7 @@
 }
 
 #document-container.readonly {
-    top: 41px;
+    top: 31px;
 }
 
 #toolbar-wrapper.readonly {
@@ -136,7 +136,7 @@ body {
 }
 
 #presentation-controls-wrapper.readonly {
-    top: 41px;
+    top: 31px;
 }
 
 #sidebar-dock-wrapper {
