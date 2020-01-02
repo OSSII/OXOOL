@@ -65,6 +65,7 @@ L.Control.RowHeader = L.Control.Header.extend({
 		L.installContextMenu({
 			selector: '.spreadsheet-header-rows',
 			className: 'loleaflet-font',
+			autoHide: true,
 			items: {
 				'InsertRowsBefore': {
 					name: _UNO('.uno:InsertRowsBefore', 'spreadsheet', true),

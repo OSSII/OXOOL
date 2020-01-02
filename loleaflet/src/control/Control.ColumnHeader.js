@@ -68,6 +68,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		L.installContextMenu({
 			selector: '.spreadsheet-header-columns',
 			className: 'loleaflet-font',
+			autoHide: true,
 			items: {
 				'InsertColumnsBefore': {
 					name: _UNO('.uno:InsertColumnsBefore', 'spreadsheet', true),

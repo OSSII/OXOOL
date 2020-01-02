@@ -55,6 +55,7 @@ L.Control.Tabs = L.Control.extend({
 		L.installContextMenu({
 			selector: '.spreadsheet-tab',
 			className: 'loleaflet-font',
+			autoHide: true,
 			callback: (function(key) {
 				if (key === 'InsertColumnsAfter') {
 					map.insertPage(this._tabForContextMenu);
