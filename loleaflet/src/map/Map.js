@@ -331,6 +331,11 @@ L.Map = L.Evented.extend({
 
 			if (revHistoryEnabled) {
 				L.DomUtil.setStyle(lastModButton, 'cursor', 'pointer');
+				var map = this;
+				// 點選的話，發送檢視檔案歷程訊息
+				$(lastModButton).click(function () {
+					map.fire('postMessage', {msgId: 'UI_FileVersions'});
+				});
 			}
 		}
 	},
