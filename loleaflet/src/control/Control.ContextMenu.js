@@ -200,6 +200,15 @@ L.control.contextMenu = function (options) {
 // Using 'click' and <a href='#' is vital for copy/paste security context.
 L.installContextMenu = function(options) {
 	options.itemClickEvent = 'click';
+	// Modify by Firefly <firefly@ossii.com.tw>
+	options.events = {
+		// 顯示右鍵選單前
+		show: function (/*options*/) {
+			$.SmartMenus.hideAll(); // 強制隱藏 Menubar 選單
+			L.hideAllToolbarPopup(); // 強制隱藏所有 Toolbar 選單
+		}
+	};
+
 	var rewrite = function(items) {
 		if (items === undefined)
 			return;
@@ -218,4 +227,22 @@ L.installContextMenu = function(options) {
 	}
 	rewrite(options.items);
 	$.contextMenu(options);
+};
+
+// Add by Firefly <firefly@ossii.com.tw>
+// 強制隱藏所有 toolbar 選單
+L.hideAllToolbarPopup = function() {
+	var w2uiPrefix = '#w2ui-overlay';
+	var $dom = $(w2uiPrefix);
+	// type 為 color & text-color 會在最頂層？(搔頭)
+	if ($dom.length > 0) {
+		$dom.removeData('keepOpen')[0].hide();
+	} else { // 隱藏所有 Toolbar 選單(如果有的話)
+		for (var key in window.w2ui) {
+			$dom = $(w2uiPrefix + '-' + key);
+			if ($dom.length > 0) {
+				$dom.removeData('keepOpen')[0].hide();
+			}
+		}
+	}
 };

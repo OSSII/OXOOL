@@ -676,6 +676,7 @@ L.Control.Menubar = L.Control.extend({
 	_beforeShow: function(e, menu) {
 		var self = e.data.self;
 		var items = $(menu).children().children('a').not('.has-submenu');
+		L.hideAllToolbarPopup();
 		$(items).each(function() {
 			var aItem = this;
 			var type = $(aItem).data('type');
