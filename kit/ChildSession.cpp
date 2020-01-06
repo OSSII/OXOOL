@@ -275,6 +275,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                tokens[0] == "mouse" ||
                tokens[0] == "windowmouse" ||
                tokens[0] == "uno" ||
+               tokens[0] == "getunostates" ||
                tokens[0] == "selecttext" ||
                tokens[0] == "selectgraphic" ||
                tokens[0] == "resetselection" ||
@@ -341,6 +342,10 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         else if (tokens[0] == "uno")
         {
             return unoCommand(buffer, length, tokens);
+        }
+        else if (tokens[0] == "getunostates")
+        {
+            return unoStates(buffer, length, tokens);
         }
         else if (tokens[0] == "selecttext")
         {
@@ -1119,6 +1124,26 @@ bool ChildSession::unoCommand(const char* /*buffer*/, int /*length*/, const std:
         }
     }
     //--------------------------------------------------------
+    return true;
+}
+
+// Add by Firefly <firefly@ossii.com.tw>
+// 送出 getunostates .uno:Acommand,.uno:Bcommand[,.uno:Ccommand] 到後端 Office
+bool ChildSession::unoStates(const char* buffer, int size, const std::vector<std::string>& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        sendTextFrame("error: cmd=getunostates kind=.uno:Acommand,.uno:Bcommand[,.uno:Ccommand]");
+        return false;
+    }
+
+    LOG_DBG("Get UNO command state lists: " + tokens[1]);
+
+    std::unique_lock<std::mutex> lock(_docManager.getDocumentMutex());
+    getLOKitDocument()->setView(_viewId);
+
+    char* values = getLOKitDocument()->getCommandValues(std::string(buffer, size).c_str());
+    std::free(values);
     return true;
 }
 

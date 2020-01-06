@@ -262,6 +262,7 @@ private:
     bool dialogKeyEvent(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool mouseEvent(const char* buffer, int length, const std::vector<std::string>& tokens, const LokEventTargetEnum target);
     bool unoCommand(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool unoStates(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool selectText(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool selectGraphic(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool renderWindow(const char* buffer, int length, const std::vector<std::string>& tokens);
