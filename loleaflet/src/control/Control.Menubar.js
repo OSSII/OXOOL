@@ -7,13 +7,6 @@
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help)
 	options: {
-		initial: [
-			{name: _UNO('.uno:PickList')},
-			{name: _UNO('.uno:EditMenu')},
-			{name: _UNO('.uno:ViewMenu')},
-			{name: _UNO('.uno:InsertMenu')},
-			{name: _UNO('.uno:ToolsMenu')}
-		],
 		text:  [
 			{name: '.uno:PickList', id: 'file', type: 'menu', menu: [
 				{name: '.uno:Save', id: 'save', hotkey: 'Ctrl+S', type: 'action'},
@@ -552,6 +545,7 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_onRefresh: function() {
+		this._unos = [];
 		// clear initial menu
 		while (this._menubarCont.hasChildNodes()) {
 			this._menubarCont.removeChild(this._menubarCont.firstChild);
@@ -566,20 +560,6 @@ L.Control.Menubar = L.Control.extend({
 		} else if (docType === 'presentation' || docType === 'drawing') {
 			this._initializeMenu(this.options.presentation);
 		}
-
-		// initialize menubar plugin
-		$('#main-menu').smartmenus({
-			hideOnClick: true,
-			showOnClick: true,
-			hideTimeout: 0,
-			hideDuration: 0,
-			showDuration: 0,
-			showTimeout: 0,
-			collapsibleHideDuration: 0,
-			subIndicatorsPos: 'append',
-			subIndicatorsText: '&#8250;'
-		});
-		$('#main-menu').attr('tabindex', 0);
 
 		if (this._map._permission !== 'readonly') {
 			this._createFileIcon();
@@ -610,8 +590,6 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_onDocLayerInit: function() {
-		this._onRefresh();
-
 		$('#main-menu').bind('select.smapi', {self: this}, this._onItemSelected);
 		$('#main-menu').bind('mouseenter.smapi', {self: this}, this._onMouseEnter);
 		$('#main-menu').bind('mouseleave.smapi', {self: this}, this._onMouseLeave);
@@ -1061,6 +1039,7 @@ L.Control.Menubar = L.Control.extend({
 					$(aItem).data('type', 'unocommand');
 					$(aItem).data('uno', menu[i].uno);
 					$(aItem).data('tag', menu[i].tag);
+					this._unos.push(menu[i].uno);
 				}
 				break;
 			}
@@ -1126,6 +1105,23 @@ L.Control.Menubar = L.Control.extend({
 		for (var i in menuHtml) {
 			this._menubarCont.appendChild(menuHtml[i]);
 		}
+		// initialize menubar plugin
+		$('#main-menu').smartmenus({
+			hideOnClick: true,
+			showOnClick: true,
+			hideTimeout: 0,
+			hideDuration: 0,
+			showDuration: 0,
+			showTimeout: 0,
+			collapsibleHideDuration: 0,
+			subIndicatorsPos: 'append',
+			subIndicatorsText: '&#8250;'
+		});
+		$('#main-menu').attr('tabindex', 0);
+
+		// 將所有蒐集到的 uno 指令，一次送出，要求自動回報狀態
+		var getunostates = 'getunostates ' + encodeURI(this._unos.join(','));
+		this._map._socket.sendMessage(getunostates);
 	}
 });
 
