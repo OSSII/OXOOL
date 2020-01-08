@@ -88,6 +88,15 @@ L.Control.DarkContextMenu = L.Control.extend({
 				continue;
 			}
 
+			// 是指令且不在白名單中，就不加入右鍵選單
+			// 白名單來源就是 menubar 所有的 uno command
+			if (item.type === 'command' && 
+				!this._map.isAllowedCommand(item.command))
+			{
+				console.debug('command : ' + item.command + ' not allowd!')
+				continue;
+			}
+
 			// 取得 uno command 翻譯
 			itemName = _UNO(item.command, docType, true);
 			// 沒有翻譯的話，用 item.text 當選項標題
