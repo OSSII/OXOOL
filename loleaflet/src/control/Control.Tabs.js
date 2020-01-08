@@ -18,9 +18,6 @@ L.Control.Tabs = L.Control.extend({
 		if (!this._initialized) {
 			this._initialize();
 		}
-		setTimeout(function() {
-			$('.spreadsheet-tab').contextMenu(e.perm === 'edit');
-		}, 100);
 
 		if (window.mode.isMobile() == true) {
 			if (e.perm === 'edit') {
@@ -51,6 +48,11 @@ L.Control.Tabs = L.Control.extend({
 				}
 			},
 			this);
+
+		map.on('updateparts', this._updateDisabled, this);
+
+		if (this._map._permission !== 'edit')
+			return;
 
 		L.installContextMenu({
 			selector: '.spreadsheet-tab',
@@ -147,8 +149,6 @@ L.Control.Tabs = L.Control.extend({
 			},
 			zIndex: 1000
 		});
-
-		map.on('updateparts', this._updateDisabled, this);
 	},
 
 	_showPage: function () {
