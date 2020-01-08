@@ -26,6 +26,25 @@ L.Map.include({
 		}
 	},
 
+	// Add by Firefly <firefly@ossii.com.tw>
+	keyModifier: {
+		shift: 4096,
+		ctrl: 8192,
+		alt: 16384,
+		ctrlMac: 32768
+	},
+
+	_allowCommands: {},
+
+	_hotkeyCommands: {},
+
+	_blockCommands: {
+		text: {},
+		spreadsheet: {},
+		presentation: {}
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
 	_iconAlias: {
 		'addtextbox': 'insertfixedtext',
 		'anchormenu': 'toggleanchortype',
@@ -133,6 +152,7 @@ L.Map.include({
 		'zoomminus': 'zoomout',
 		'zoomplus': 'zoomin',
 	},
+	//-----------------------------------------------------------------
 
 	applyFont: function (fontName) {
 		if (this.getPermission() === 'edit') {
@@ -305,6 +325,155 @@ L.Map.include({
 		var icon = this._iconAlias[command] !== undefined ? this._iconAlias[command] : command;
 
 		return 'images/cmd/' + icon + '.svg';
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 將指令加入白名單中
+	// 指令為 json 物件，內如下：
+	// name: .uno: 開頭的指令，或不重複的 id 名稱
+	// hotkey: 若有快速鍵的話請指定，快速鍵組合依序為 Ctrl + Alt + Shift + Key 字串
+	// callback: 執行該指令所需的 callback 函數
+	addAllowUnoCommand: function(command) {
+		var obj = {
+			setState: false // 尚未啟用自動狀態回報
+		};
+
+		// 有名稱才行
+		if (command.name !== undefined) {
+			var name = command.name;
+			var hotkey = command.hotkey;
+			var callback = command.callback;
+			// 有 hotkey 的話，另外存入 hotkeys 命令列表
+			if (hotkey !== undefined) {
+				// 轉成小寫
+				var compar = hotkey.toLowerCase();
+				if (compar.length > 0) {
+					obj.hotkey = hotkey;
+					var keys = compar.split('+'); // 用 '+' 號切開
+					var ctrl = keys.indexOf('ctrl'); // 有無 Ctrl
+					var alt = keys.indexOf('alt'); // // 有無 Alt
+					var shift = keys.indexOf('shift'); // 有無 shift
+					var key = keys[keys.length-1]; // 取按鍵名稱
+					// 依照 Ctrl+Alt+Shift+Key 順序，重新組合 hotkey
+					keys = [];
+					if (ctrl >= 0) keys.push('Ctrl');
+					if (alt >= 0) keys.push('Alt');
+					if (shift >= 0) keys.push('Shift');
+					if (key.startsWith('arrow'))
+						key = key.substr(5);
+					keys.push(key);
+					hotkey = keys.join('+').toLowerCase(); // 組合回小寫字串
+					this._hotkeyCommands[hotkey] = name;
+				}
+			}
+			// 有 callback 的話，一併紀錄
+			if (callback !== undefined && typeof callback === 'function') {
+				obj.callback = callback;
+			}
+			this._allowCommands[name] = obj;
+		}
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 查詢某指令是否為白名單
+	isAllowedCommand: function(unoCommand) {
+		return (this._allowCommands[unoCommand] !== undefined)
+	},
+
+	// 依據按鍵事件，執行
+	// 傳回 true 表示該按鍵是捷徑，否則傳回 false
+	executeHotkey: function(e) {
+		if (e.type !== 'keydown')
+			return false;
+
+		var hotkey = []; // 準備要組合的按鍵易讀名稱
+		var ctrl = e.originalEvent.ctrlKey ? this.keyModifier.ctrl : 0;
+		var alt = e.originalEvent.altKey ? this.keyModifier.alt : 0;
+		var shift = e.originalEvent.shiftKey ? this.keyModifier.shift : 0;
+		var cmd = e.originalEvent.metaKey ? this.keyModifier.ctrl : 0;
+		var key = e.originalEvent.key;
+		if (ctrl || cmd) hotkey.push('Ctrl');
+		if (alt) hotkey.push('Alt');
+		if (shift) hotkey.push('Shift');
+		if (key.startsWith('Arrow'))
+			key = key.substr(5);
+		hotkey.push(key);
+		var mergeKeys = hotkey.join('+');
+
+		console.debug('Press key = ' + mergeKeys);
+		var matchCommand = this._hotkeyCommands[mergeKeys.toLowerCase()];
+		if (matchCommand !== undefined) {
+			console.debug('Found Hot command->' + matchCommand);
+			this.executeAllowedCommand(matchCommand);
+			e.originalEvent.preventDefault();
+			return true;
+		}
+		return false;
+	},
+
+	/* 執行在白名單中的命令
+	 * 參數可以是 .uno: 開頭的指令或是 menubar 定義過的 ID
+	 */
+	executeAllowedCommand: function (command) {
+		var result = false;
+		if (typeof command === 'string') {
+			var commandData = this._allowCommands[command]; // 找出白名單資料
+			var uno = false, callback = false;
+			// 有找到
+			if (commandData !== undefined) {
+				// 指令開頭是 .uno:，直接執行
+				if (command.startsWith('.uno:')) {
+					this.sendUnoCommand(command);
+					uno = true;
+				}
+				// 有指定 callback，也執行 callback
+				if (commandData.callback !== undefined) {
+					commandData.callback();
+					callback = true;
+				}
+			}
+			// uno 指令或 callback 有一項被執行，才能算成功
+			result = (uno | callback);
+		}
+		return result;
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 查詢某指令是否為黑名單
+	isBlockUnoCommand: function(unoCommand) {
+		var docType = this.getDocType();
+		var blockList;
+		switch (docType) {
+		case 'text':
+			blockList = this._blockCommands.text;
+			break;
+		case 'spreadsheet':
+			blockList = this._blockCommands.spreadsheet;
+			break;
+		default:
+			blockList = this._blockCommands.presentation;
+			break;
+		}
+		return (blockList[unoCommand] !== undefined);
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 啟用白名單中自動回報狀態的指令
+	enableAutoReportState: function () {
+		var unocmds = [];
+		for (var key in this._allowCommands)
+		{
+			// 該指令未啟用過自動回報
+			if (!this._allowCommands[key].setState) {
+				if (key.startsWith('.uno:')) {
+					unocmds.push(key); // 加入啟用列表
+				}
+				this._allowCommands[key].setState = true;
+			}
+		}
+		if (unocmds.length > 0) {
+			this._socket.sendMessage('getunostates ' + encodeURI(unocmds.join(',')));
+		}
 	},
 
 	toggleCommandState: function (unoState) {
