@@ -301,19 +301,16 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::M
                 LOG_DBG("\"" + requestSegments[requestSegments.size() - 1] + "\" does not exists, use empty.png instead.");
                 relPath = "/loleaflet/dist/images/empty.png";
             }
-            else if (!form.empty())
+            else if (requestSegments.size()>=4)
             {
-                moduleName = form.has("module") ? form.get("module") : "";
+                moduleName = requestSegments[3];
                 if (apilist.find(moduleName) == apilist.end())
                 {
                     throw Poco::FileNotFoundException("Invalid URI request: [" + requestUri.toString() + "].");
                 }
-                std::cout << "module: " + moduleName +"\n";
             }
             else
-            {
                 throw Poco::FileNotFoundException("Invalid URI request: [" + requestUri.toString() + "].");
-            }
         }
 
         const auto& config = Application::instance().config();
@@ -353,7 +350,7 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::M
             // Add by Firefly <firefly@ossii.com.tw>
             // 只要是符合 admin*.html 的頁面，一律當成後台管理界面
             const std::string isAdmin = endPoint.substr(0, 5);
-            if ((isAdmin == "admin" && fileType == "html") || moduleName != "")
+            if ((isAdmin == "admin" && fileType == "html") || (moduleName != "" && requestSegments.size()==4 ))
             {
                 preprocessAdminFile(request, socket);
                 return;
@@ -378,10 +375,20 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::M
             // send module resource
             if ( moduleName != "admin" && moduleName != "" )
             {
-                auto apiHandler = apilist.find(moduleName)->second();
-                std::string filePath = apiHandler->getHTMLFile(endPoint);
-                HttpHelper::sendFile(socket, filePath, mimeType, response);
-                return;
+                if(apilist.find(moduleName) != apilist.end())
+                {
+                    if (!LOOLWSD::AdminEnabled)
+                        throw Poco::FileAccessDeniedException("Admin console disabled");
+
+                    if (!FileServerRequestHandler::isAdminLoggedIn(request, response))
+                        throw Poco::Net::NotAuthenticatedException("Invalid admin login");
+                    auto apiHandler = apilist.find(moduleName)->second();
+                    std::size_t target_pos = request.getURI().find(moduleName);
+                    std::string targetFile = request.getURI().substr(target_pos + moduleName.size() + 1);
+                    std::string filePath = apiHandler->getHTMLFile(targetFile);
+                    HttpHelper::sendFile(socket, filePath, mimeType, response);
+                    return;
+                }
             }
 
             auto it = request.find("If-None-Match");
@@ -905,34 +912,25 @@ void FileServerRequestHandler::preprocessAdminFile(const HTTPRequest& request,co
     requestUri.getPathSegments(requestSegments);
     std::string moduleName = "";
     std::string admin_content = "";
-    if (!form.empty())
+    auto dso = apilist.find(requestSegments[3]);
+    if(dso != apilist.end())
     {
-        moduleName = form.has("module") ? form.get("module") : "";
-        auto dso = apilist.find(moduleName);
-        if (dso == apilist.end())
-        {
-            sendError(404, request, socket, "404 -admin not found!",
-                    "There seems to be a problem locating");
-            return;
-        }
-        else
-        {
-            auto apiHandler = dso->second();
-            const std::string endPoint = "admin.html";
-            std::cout << "admin endpoint: " <<endPoint <<std::endl;
-            std::string admin_file = apiHandler->getHTMLFile(endPoint);
-            std::ifstream file(admin_file, std::ios::binary); 
-            std::string file_content((std::istreambuf_iterator<char>(file)),
-                                std::istreambuf_iterator<char>());
-            admin_content = file_content;
-        }
+        moduleName = requestSegments[3];
+        auto apiHandler = dso->second();
+        const std::string endPoint = "admin.html";
+        std::cout << "admin endpoint: " <<endPoint <<std::endl;
+        std::string admin_file = apiHandler->getHTMLFile(endPoint);
+        std::ifstream file(admin_file, std::ios::binary); 
+        std::string file_content((std::istreambuf_iterator<char>(file)),
+                std::istreambuf_iterator<char>());
+        admin_content = file_content;
     }
+
     static const std::string scriptJS("<script src=\"%s/loleaflet/" LOOLWSD_VERSION_HASH "/%s.js\"></script>");
     static const std::string footerPage("<div class=\"footer navbar-fixed-bottom text-info text-center\"><strong>Key:</strong> %s &nbsp;&nbsp;<strong>Expiry Date:</strong> %s</div>");
 
     const std::string relPath = getRequestPathname(request);
     std::string baseFilePath = "/loleaflet/dist/admin/adminBase.html";
-    std::cout <<"baseFilePath:" <<baseFilePath <<std::endl; 
     LOG_DBG("Preprocessing file: " << relPath);
     std::string adminFile = *getUncompressedFile(baseFilePath);
     std::string extendFile;

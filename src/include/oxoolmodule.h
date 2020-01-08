@@ -23,6 +23,10 @@
 class oxoolmodule {
     public:
         virtual void handleRequest(std::weak_ptr<StreamSocket>, Poco::MemoryInputStream&, Poco::Net::HTTPRequest&, SocketDisposition&)=0;
+        virtual std::string handleAdmin(std::string command)
+        {
+            return command;
+        }
         void setMutex(std::mutex* oDocBrokersMutex, 
                 std::map<std::string, std::shared_ptr<DocumentBroker> > &oDocBrokers, 
                 std::string id)

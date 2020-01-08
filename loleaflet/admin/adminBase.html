@@ -30,8 +30,8 @@
                 {
                     for (module in module_list)
                     {
-                        var a_template = `<li><a class="text-primary" href="#">${module_list[module]}</a></li>`;
-                        $("#module_list").append(a_template);
+                        var a_template = `<li><a class="text-primary" href="${module_list[module]}">${module_list[module]}</a></li>`;
+                        $("#module_list").after(a_template);
                     }
 
                 }
@@ -79,6 +79,9 @@
             <div class="row">
                 <div class="col-sm-3 col-md-2 sidebar">
                     <ul class="nav nav-sidebar">
+                        <li class="text-center">
+                            OxOOL 管理列表
+                        </li>
                         <li id="admin">
                             <a href="admin.html"><script>document.write(l10nstrings.strOverview);</script> <span class="sr-only"><script>document.write(l10nstrings.strCurrent)</script></span></a>
                         </li>
@@ -89,7 +92,7 @@
                             <a href="adminViewLog.html">檢視日誌</a>
                         </li>
                         <li id="adminConfigSettings">
-                            <a href="adminConfigSettings.html">系統設定</script></a>
+                            <a href="adminConfigSettings.html">系統設定</a>
                         </li>
                         <li id="adminPermissionSettings">
                             <a href="adminPermissionSettings.html">界面設定</a>
@@ -97,10 +100,9 @@
                         <li id="adminSoftwareUpgrade">
                             <a href="adminSoftwareUpgrade.html">軟體升級</a>
                         </li>
-                        <li  class="nav-item dropdown">
-                            <a href="#" class="nav-link  dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="fasle">模組列表</a>
-                            <ul class="dropdown-menu" id="module_list" aria-labelledby="navbarDropdown">
-                            </ul>
+                        <li class="nav-divider"></li>
+                        <li id="module_list" class="text-center">
+                            模組列表
                         </li>
                     </ul>
                 </div>
