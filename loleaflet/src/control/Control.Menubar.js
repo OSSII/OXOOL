@@ -545,7 +545,6 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_onRefresh: function() {
-		this._unos = [];
 		// clear initial menu
 		while (this._menubarCont.hasChildNodes()) {
 			this._menubarCont.removeChild(this._menubarCont.firstChild);
@@ -553,17 +552,24 @@ L.Control.Menubar = L.Control.extend({
 
 		// Add document specific menu
 		var docType = this._map.getDocType();
-		if (docType === 'text') {
-			this._initializeMenu(this.options.text);
-		} else if (docType === 'spreadsheet') {
-			this._initializeMenu(this.options.spreadsheet);
-		} else if (docType === 'presentation' || docType === 'drawing') {
-			this._initializeMenu(this.options.presentation);
+		this._xmlmenubar = true; //window.getParameterByName('xmlmenubar');
+		if (this._xmlmenubar) {
+			this._getXmlMenubar(docType);
+		} else {
+			switch (docType)
+			{
+			case 'text':
+				this._initializeMenu(this.options.text);
+				break;
+			case 'spreadsheet':
+				this._initializeMenu(this.options.spreadsheet);
+				break;
+			default:
+				this._initializeMenu(this.options.presentation);
+				break;
+			}
 		}
-
-		if (this._map._permission !== 'readonly') {
-			this._createFileIcon();
-		}
+		this._createFileIcon();
 	},
 
 	_onStyleMenu: function (e) {
@@ -734,73 +740,8 @@ L.Control.Menubar = L.Control.extend({
 
 	_executeAction: function(item) {
 		var id = $(item).data('id');
-		if (id === 'save') {
-			this._map.save(true, true);
-		} else if (id === 'saveas') {
-			this._map.fire('postMessage', {msgId: 'UI_SaveAs'});
-		} else if (id === 'ASUSsaveas') {
-			this._map.fire('executeDialog', {dialog: 'saveAs'});
-		} else if (id === 'shareas') {
-			this._map.fire('postMessage', {msgId: 'UI_Share'});
-		} else if (id === 'print') {
-			this._map.print();
-		} else if (id.startsWith('downloadas-')) {
-			var format = id.substring('downloadas-'.length);
-			var fileName = this._map['wopi'].BaseFileName;
-			fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-			fileName = fileName === '' ? 'document' : fileName;
-			this._map.downloadAs(fileName + '.' + format, format);
-		} else if (id === 'signdocument') {
-			this._map.showSignDocument();
-		} else if (id === 'insertcomment') {
-			this._map.insertComment();
-		} else if (id === 'insertgraphic') {
-			L.DomUtil.get('insertgraphic').click();
-		} else if (id === 'insertgraphicremote') {
-			this._map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
-		} else if (id === 'zoomin' && this._map.getZoom() < this._map.getMaxZoom()) {
-			this._map.zoomIn(1);
-		} else if (id === 'zoomout' && this._map.getZoom() > this._map.getMinZoom()) {
-			this._map.zoomOut(1);
-		} else if (id === 'zoomreset') {
-			this._map.setZoom(this._map.options.zoom);
-		} else if (id === 'fullscreen') {
-			L.toggleFullScreen();
-		} else if (id === 'fullscreen-presentation' && this._map.getDocType() === 'presentation') {
-			this._map.fire('fullscreen');
-		} else if (id === 'insertpage') {
-			this._map.insertPage();
-		} else if (id === 'duplicatepage') {
-			this._map.duplicatePage();
-		} else if (id === 'deletepage') {
-			var map = this._map;
-			vex.dialog.confirm({
-				message: _('Are you sure you want to delete this slide?'),
-				callback: function(e) {
-					if (e) {
-						map.deletePage();
-					}
-				}
-			});
-		} else if (id === 'about') {
-			this._map.showLOAboutDialog();
-		} else if (id === 'keyboard-shortcuts') {
-			this._map.showLOKeyboardHelp();
-		} else if (revHistoryEnabled && (id === 'rev-history')) {
-			// if we are being loaded inside an iframe, ask
-			// our host to show revision history mode
-			this._map.fire('postMessage', {msgId: 'rev-history', args: {Deprecated: true}});
-			this._map.fire('postMessage', {msgId: 'UI_FileVersions'});
-		} else if (id === 'closedocument') {
-			if (window.ThisIsAMobileApp) {
-				window.webkit.messageHandlers.lool.postMessage('BYE', '*');
-			} else {
-				this._map.fire('postMessage', {msgId: 'close', args: {EverModified: this._map._everModified, Deprecated: true}});
-				this._map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: this._map._everModified}});
-			}
-			this._map.remove();
-		} else if (id === 'repair') {
-			this._map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');
+		if (!this._map.executeAllowedCommand(id)) {
+			console.debug('未執行的 id :' + id)
 		}
 		// Inform the host if asked
 		if ($(item).data('postmessage') === 'true') {
@@ -813,7 +754,7 @@ L.Control.Menubar = L.Control.extend({
 		if (unoCommand.startsWith('.uno:InsertPageHeader') || unoCommand.startsWith('.uno:InsertPageFooter')) {
 			unoCommand = unoCommand + ($(item).hasClass('lo-menu-item-checked') ? 'On:bool=false' : 'On:bool=true');
 		}
-		this._map.sendUnoCommand(unoCommand);
+		this._map.executeAllowedCommand(unoCommand);
 	},
 
 	_onItemSelected: function(e, item) {
@@ -950,12 +891,12 @@ L.Control.Menubar = L.Control.extend({
 			// 1. 第一行不能是分隔線
 			// 2. 不能重複出現分隔線
 			// 3. 最後一行不能是分隔線
-			if (menu[i].type !== undefined && menu[i].type === 'separator') {
+			if (menu[i].type !== undefined && menu[i].type === '--') {
 				// 1. 第一行不能是分隔線
 				if (itemList.length === 0)
 					continue;
 				// 2. 不能重複出現分隔線
-				if (lastItem && lastItem.type !== undefined && lastItem.type === 'separator')
+				if (lastItem && lastItem.type !== undefined && lastItem.type === '--')
 					continue;
 			}
 			lastItem = menu[i]; // 紀錄現在的 Item
@@ -981,7 +922,7 @@ L.Control.Menubar = L.Control.extend({
 						unoIcon = menu[i].name;
 					}
 				} else {
-					itemName = menu[i].name;
+					itemName = _(menu[i].name);
 				}
 			} else if (menu[i].uno !== undefined) {
 				unoIcon = menu[i].uno; // 把這個 uno command 當作選項圖示
@@ -1031,6 +972,162 @@ L.Control.Menubar = L.Control.extend({
 			case 'action': // 自行處理的功能，需實作功能
 				$(aItem).data('type', 'action');
 				$(aItem).data('id', menu[i].id);
+				var obj = {
+					name: menu[i].id,
+					hotkey: menu[i].hotkey
+				};
+				var map = this._map;
+				var fileName = this._map['wopi'].BaseFileName;
+				fileName = fileName.substr(0, fileName.lastIndexOf('.'));
+				fileName = fileName === '' ? 'document' : fileName;
+
+				switch (menu[i].id) {
+				case 'save': // 儲存
+					obj.callback = function() {map.save(true, true);}
+					break;
+				case 'saveas': // 另存新檔
+					obj.callback = function() {map.fire('postMessage', {msgId: 'UI_SaveAs'});};
+					break;
+				case 'shareas': // 分享
+					obj.callback = function() {map.fire('postMessage', {msgId: 'UI_Share'});};
+					break;
+				case 'print': // 列印
+					obj.callback = function() {map.print();};
+					break;
+				case 'insertgraphic': // 插入電腦圖片
+					obj.callback = function() {L.DomUtil.get('insertgraphic').click();};
+					break;
+				case 'insertgraphicremote': // 插入雲端圖片
+					obj.callback = function() {map.fire('postMessage', {msgId: 'UI_InsertGraphic'});};
+					break;
+				case 'insertcomment': // 插入註解
+					obj.callback = function() {map.insertComment();};
+					break;
+				case 'gotoPage': // 前往頁面
+					obj.callback = function() {map.fire('executeDialog', {dialog: 'gotoPage'});}
+					break;
+				case 'ASUSsaveas': // online 自己的另存新檔 dialog
+					obj.callback = function() {map.fire('executeDialog', {dialog: 'saveAs'});};
+					break;
+				case 'signdocument': // 數位簽章
+					obj.callback = function() {map.showSignDocument();};
+					break;
+				case 'zoomin': // 拉近
+					obj.callback = function() {
+						if (map.getZoom() < map.getMaxZoom()) {
+							map.zoomIn(1);
+						}
+					};
+					break;
+				case 'zoomout': // 拉遠
+					obj.callback = function() {
+						if (map.getZoom() > map.getMinZoom()) {
+							map.zoomOut(1);
+						}
+					}
+					break;
+				case 'zoomreset': // 100%
+					obj.callback = function() {map.setZoom(map.options.zoom);};
+					break;
+				case 'fullscreen': // 全螢幕
+					obj.callback = function() {L.toggleFullScreen();};
+					break;
+				case 'fullscreen-presentation': // 全螢幕播放
+					obj.callback = function() {
+						if (map.getDocType() === 'presentation') {
+							map.fire('fullscreen');
+						}
+					}
+					break;
+				case 'insertpage': // 新增頁面
+					obj.callback = function() {map.insertPage();};
+					break;
+				case 'duplicatepage': // 複製頁面
+					obj.callback = function() {map.duplicatePage();};
+					break;
+				case 'deletepage': // 刪除頁面
+					obj.callback = function() {
+						vex.dialog.confirm({
+							message: _('Are you sure you want to delete this slide?'),
+							callback: function(e) {
+								if (e) {
+									map.deletePage();
+								}
+							}
+						});
+					}
+					break;
+				case 'about': // 顯示關於 dialog
+					obj.callback = function() {map.showLOAboutDialog();};
+					break;
+				case 'keyboard-shortcuts': // 顯示按鍵說明
+					obj.callback = function() {map.showLOKeyboardHelp();};
+					break;
+				case 'rev-history': // 檢視版本
+					obj.callback = function() {
+						if (revHistoryEnabled) {
+							// if we are being loaded inside an iframe, ask
+							// our host to show revision history mode
+							map.fire('postMessage', {msgId: 'rev-history', args: {Deprecated: true}});
+							map.fire('postMessage', {msgId: 'UI_FileVersions'});
+						}
+					}
+					break;
+				case 'closedocument': // 關閉檔案
+					obj.callback = function() {
+						if (window.ThisIsAMobileApp) {
+							window.webkit.messageHandlers.lool.postMessage('BYE', '*');
+						} else {
+							map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
+							map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
+						}
+						map.remove();
+					}
+					break;
+				case 'repair': // 修復
+					obj.callback = function() {
+						map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');
+					};
+					break;
+				case 'downloadas-pdf': // 下載 pdf
+					obj.callback = function() {
+						map.downloadAs(fileName + '.pdf', 'pdf');
+					};
+					break;
+				case 'downloadas-txt': // 下載 txt
+					obj.callback = function() {
+						map.downloadAs(fileName + '.txt', 'txt');
+					};
+					break;
+				case 'downloadas-html': // 下載 html
+					obj.callback = function() {
+						map.downloadAs(fileName + '.html', 'html');
+					};
+					break;
+				case 'downloadas-rtf': // 下載 rtf
+					obj.callback = function() {
+						map.downloadAs(fileName + '.rtf', 'rtf');
+					};
+					break;
+				case 'downloadas-odt': // 下載 odt
+					obj.callback = function() {
+						map.downloadAs(fileName + '.odt', 'odt');
+					};
+					break;
+				case 'downloadas-doc': // 下載 doc
+					obj.callback = function() {
+						map.downloadAs(fileName + '.doc', 'doc');
+					};
+					break;
+				case 'downloadas-docx': // 下載 docx
+					obj.callback = function() {
+						map.downloadAs(fileName + '.docx', 'docx');
+					};
+					break;
+				}
+
+				// 最後將該指令加入白名單中
+				this._map.addAllowUnoCommand(obj);
 				break;
 
 			default:
@@ -1039,7 +1136,8 @@ L.Control.Menubar = L.Control.extend({
 					$(aItem).data('type', 'unocommand');
 					$(aItem).data('uno', menu[i].uno);
 					$(aItem).data('tag', menu[i].tag);
-					this._unos.push(menu[i].uno);
+					// 將該指令加入白名單中
+					this._map.addAllowUnoCommand({name: menu[i].uno, hotkey: menu[i].hotkey});
 				}
 				break;
 			}
@@ -1099,6 +1197,85 @@ L.Control.Menubar = L.Control.extend({
 			$(item).css('display', '');
 	},
 
+	_getXmlMenubar: function(docType) {
+		if (docType === 'drawing') docType = 'presentation';
+
+		var that = this;
+		var xmlUrl = 'uiconfig/' + docType + '/menubar.xml';
+		$.ajax({
+			type: 'GET',
+			url: xmlUrl,
+			cache: false,
+			async: true,
+			dataType: 'xml',
+			success: function(xml) {
+				if (xml.children.length === 1) {
+					var menubar = that._createXmlMenu(xml.children.item(0), docType);
+					that._initializeMenu(menubar);
+					console.debug('XML:', xml);
+					console.debug('XML Menu bar :', menubar);
+				}
+			},
+			error: function(xhr, ajaxOptions, thrownError) {
+				alert(xhr.status);
+				alert(thrownError);
+				alert('An error occurred while processing XML file.');
+			}
+		});
+	},
+
+	_createXmlMenu: function(root, docType) {
+		var menu = [];
+
+		for (var i = 0 ; i < root.children.length ; i ++)
+		{
+			var item = root.children.item(i);
+			var tag = $(item)[0].tagName;
+			if (tag === 'menu:menupopup') continue;
+
+			var obj = {
+				name:	$(item).attr('menu:name'),
+				id:		$(item).attr('menu:id'),
+				icon:	$(item).attr('menu:icon'),
+				hotkey:	$(item).attr('menu:hotkey')
+			};
+
+			switch (tag)
+			{
+			case 'menu:menu':	// 選單
+				// 選單名稱未指定的話，用 uno command 當名稱
+				if (obj.name === undefined) {
+					obj.name = obj.id;
+				}
+				obj.type = 'menu';
+				obj.menu = this._createXmlMenu(item.children.item(0), docType);
+				break;
+			case 'menu:menuitem': // 選項
+				if (obj.id.startsWith('.uno:')) {
+					obj.uno = obj.id;
+					obj.id = undefined;
+				} else {
+					obj.type = 'action';
+				}
+				break;
+			case 'menu:menuseparator': // 分隔線
+				obj.type = '--';
+				break;
+			}
+			for (var k in obj) {
+				if (obj[k] === undefined) {delete obj[k];}
+			}
+			menu.push(obj);
+		}
+		return menu;
+	},
+
+	_itemMenu: function(e) {
+		//var self = e.data.self;
+		var item = e.target;
+		console.debug($(item).data('uno'));
+	},
+
 	_initializeMenu: function(menu) {
 		this._level = 0;
 		var menuHtml = this._createMenu(menu);
@@ -1120,8 +1297,7 @@ L.Control.Menubar = L.Control.extend({
 		$('#main-menu').attr('tabindex', 0);
 
 		// 將所有蒐集到的 uno 指令，一次送出，要求自動回報狀態
-		var getunostates = 'getunostates ' + encodeURI(this._unos.join(','));
-		this._map._socket.sendMessage(getunostates);
+		this._map.enableAutoReportState();
 	}
 });
 
