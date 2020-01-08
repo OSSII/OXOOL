@@ -303,6 +303,10 @@ L.Map.Keyboard = L.Handler.extend({
 			}
 		}
 
+		// 執行 hotkey
+		if (this._map.executeHotkey(e))
+			return;
+
 		if (ctrl || cmd) {
 			if (this._handleCtrlCommand(e)) {
 				return;
@@ -546,59 +550,54 @@ L.Map.Keyboard = L.Handler.extend({
 			e.originalEvent.preventDefault();
 		}
 
-		if (e.originalEvent.ctrlKey && e.originalEvent.shiftKey && e.originalEvent.key === '?') {
-			this._map.showLOKeyboardHelp();
-			e.originalEvent.preventDefault();
-			return true;
-		}
+		// if (e.originalEvent.ctrlKey && e.originalEvent.shiftKey && e.originalEvent.key === '?') {
+		// 	this._map.showLOKeyboardHelp();
+		// 	e.originalEvent.preventDefault();
+		// 	return true;
+		// }
 
-		if (e.originalEvent.ctrlKey && (e.originalEvent.key === 'z' || e.originalEvent.key === 'Z')) {
-			this._map._socket.sendMessage('uno .uno:Undo');
-			e.originalEvent.preventDefault();
-			return true;
-		}
+		// if (e.originalEvent.ctrlKey && (e.originalEvent.key === 'z' || e.originalEvent.key === 'Z')) {
+		// 	this._map._socket.sendMessage('uno .uno:Undo');
+		// 	e.originalEvent.preventDefault();
+		// 	return true;
+		// }
 
-		if (e.originalEvent.ctrlKey && (e.originalEvent.key === 'y' || e.originalEvent.key === 'Y')) {
-			this._map._socket.sendMessage('uno .uno:Redo');
-			e.originalEvent.preventDefault();
-			return true;
-		}
+		// if (e.originalEvent.ctrlKey && (e.originalEvent.key === 'y' || e.originalEvent.key === 'Y')) {
+		// 	this._map._socket.sendMessage('uno .uno:Redo');
+		// 	e.originalEvent.preventDefault();
+		// 	return true;
+		// }
 
 		if (e.originalEvent.altKey || e.originalEvent.shiftKey) {
 
 			// need to handle Ctrl + Alt + C separately for Firefox
-			if (e.originalEvent.key === 'c' && e.originalEvent.altKey) {
-				this._map.insertComment();
-				return true;
-			}
+			// if (e.originalEvent.key === 'c' && e.originalEvent.altKey) {
+			// 	this._map.insertComment();
+			// 	return true;
+			// }
 
 			// Ctrl + Alt
 			if (!e.originalEvent.shiftKey) {
-				switch (e.originalEvent.keyCode) {
-				case 53: // 5
-					this._map._socket.sendMessage('uno .uno:Strikeout');
-					return true;
-				case 70: // f
-					this._map._socket.sendMessage('uno .uno:InsertFootnote');
-					return true;
-				case 67: // c
-				case 77: // m
-					this._map._socket.sendMessage('uno .uno:InsertAnnotation');
-					return true;
-				case 68: // d
-					this._map._socket.sendMessage('uno .uno:InsertEndnote');
-					return true;
-				}
+				// switch (e.originalEvent.keyCode) {
+				// case 53: // 5
+				// 	this._map._socket.sendMessage('uno .uno:Strikeout');
+				// 	return true;
+				// case 70: // f
+				// 	this._map._socket.sendMessage('uno .uno:InsertFootnote');
+				// 	return true;
+				// case 67: // c
+				// case 77: // m
+				// 	this._map._socket.sendMessage('uno .uno:InsertAnnotation');
+				// 	return true;
+				// case 68: // d
+				// 	this._map._socket.sendMessage('uno .uno:InsertEndnote');
+				// 	return true;
+				// }
 			} else if (e.originalEvent.altKey) {
 				switch (e.originalEvent.keyCode) {
 				case 68: // Ctrl + Shift + Alt + d for tile debugging mode
 					this._map._docLayer.toggleTileDebugMode();
 					break;
-/*
-				case 85: // Ctrl + Shift + Alt + u for input uno command
-					this._map.executeUnoCommand();
-					break;
-*/
 				}
 			}
 
