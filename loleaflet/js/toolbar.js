@@ -330,49 +330,7 @@ function onClick(e, id, item, subItem) {
 		toggleMobileSearchBar();
 	}
 	else if (id === 'goToPage') {
-		var numPages, currPage;
-		var options = '', selected = '';
-		var names, i;
-
-		if (docLayer._docType === 'text') {
-			numPages = map.getNumberOfPages();
-			currPage = map.getCurrentPageNumber();
-			for (i = 0 ; i < numPages; i ++) {
-				selected = (i === currPage ? ' selected' : '');
-				options += '<option value="' + i + '"' + selected + '>' + parseInt(i + 1) + '</option>';
-			}
-		}
-		else if (docLayer._docType === 'spreadsheet') {
-			numPages = map.getNumberOfParts();
-			currPage = map.getCurrentPartNumber();
-			names = docLayer._partNames;
-			for (i = 0 ; i < numPages; i ++) {
-				selected = (i === currPage ? ' selected' : '');
-				if (!map.isHiddenPart(i)) {
-					options += '<option value="' + i + '"' + selected + '>' + names[i] + '</option>';
-				}
-			}
-		}
-
-		vex.dialog.open({
-			message: _UNO('.uno:GotoPage', 'text'),
-			input: [
-				'<select name="goPage" size="10" style="font-size:16px; width:300px;">' + options +
-				'</select>'
-			],
-			callback: function (data) {
-				if (data) {
-					var targetPage = parseInt(data.goPage);
-					if (docLayer._docType === 'text') {
-						map.goToPage(targetPage);
-					}
-					else if (docLayer._docType === 'spreadsheet') {
-						map.setPart(targetPage);
-					}
-				}
-				map.focus();
-			}
-		});
+		map.fire('executeDialog', {dialog: 'gotoPage'});
 	}
 	else if (item.id === 'commonsymboltable') {
 		if (symbolDialog !== undefined) {

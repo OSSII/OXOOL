@@ -2,7 +2,7 @@
 /*
  * L.Control.Dialogs
  */
-/* global $ _ w2popup w2alert */
+/* global $ _ w2popup w2alert vex _UNO */
 
 L.Control.Dialogs = L.Control.extend({
 	options: {
@@ -18,10 +18,15 @@ L.Control.Dialogs = L.Control.extend({
 
 	/* Private methods */
 	_onExecuteDialog: function (e) {
-		if (e.dialog === 'saveAs') {
+		switch (e.dialog) {
+		case 'saveAs': // 另存新檔
 			this._saveAs();
 			return;
+		case 'gotoPage':
+			this._gotoPage();
+			return;
 		}
+
 		window.map = this._map;
 		var dialogName = e.dialog + '.js'
 		var dialogURL = 'uiconfig/dialogs/' + dialogName;
@@ -70,6 +75,54 @@ L.Control.Dialogs = L.Control.extend({
 				w2popup.close();
 			} else {
 				w2alert(_('Unspecified filename'));
+			}
+		});
+	},
+
+	_gotoPage: function() {
+		var numPages, currPage;
+		var options = '', selected = '';
+		var names, i;
+		var map = this._map;
+		var docLayer = map._docLayer;
+
+		if (docLayer._docType === 'text') {
+			numPages = map.getNumberOfPages();
+			currPage = map.getCurrentPageNumber();
+			for (i = 0 ; i < numPages; i ++) {
+				selected = (i === currPage ? ' selected' : '');
+				options += '<option value="' + i + '"' + selected + '>' + parseInt(i + 1) + '</option>';
+			}
+		}
+		else if (docLayer._docType === 'spreadsheet') {
+			numPages = map.getNumberOfParts();
+			currPage = map.getCurrentPartNumber();
+			names = docLayer._partNames;
+			for (i = 0 ; i < numPages; i ++) {
+				selected = (i === currPage ? ' selected' : '');
+				if (!map.isHiddenPart(i)) {
+					options += '<option value="' + i + '"' + selected + '>' + names[i] + '</option>';
+				}
+			}
+		}
+
+		vex.dialog.open({
+			message: _UNO('.uno:GotoPage', 'text'),
+			input: [
+				'<select name="goPage" size="10" style="font-size:16px; width:300px;">' + options +
+				'</select>'
+			],
+			callback: function (data) {
+				if (data) {
+					var targetPage = parseInt(data.goPage);
+					if (docLayer._docType === 'text') {
+						map.goToPage(targetPage);
+					}
+					else if (docLayer._docType === 'spreadsheet') {
+						map.setPart(targetPage);
+					}
+				}
+				map.focus();
 			}
 		});
 	}
