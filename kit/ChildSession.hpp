@@ -263,6 +263,7 @@ private:
     bool mouseEvent(const char* buffer, int length, const std::vector<std::string>& tokens, const LokEventTargetEnum target);
     bool unoCommand(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool unoStates(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool runMacro(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool selectText(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool selectGraphic(const char* buffer, int length, const std::vector<std::string>& tokens);
     bool renderWindow(const char* buffer, int length, const std::vector<std::string>& tokens);
@@ -285,6 +286,11 @@ private:
     std::shared_ptr<lok::Document> getLOKitDocument()
     {
         return _docManager.getLOKitDocument();
+    }
+
+    std::shared_ptr<lok::Office> getLOKit()
+    {
+        return _docManager.getLOKit();
     }
 
 private:

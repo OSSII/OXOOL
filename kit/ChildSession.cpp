@@ -276,6 +276,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                tokens[0] == "windowmouse" ||
                tokens[0] == "uno" ||
                tokens[0] == "getunostates" ||
+               tokens[0] == "runmacro" ||
                tokens[0] == "selecttext" ||
                tokens[0] == "selectgraphic" ||
                tokens[0] == "resetselection" ||
@@ -346,6 +347,10 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         else if (tokens[0] == "getunostates")
         {
             return unoStates(buffer, length, tokens);
+        }
+        else if (tokens[0] == "runmacro")
+        {
+            return runMacro(buffer, length, tokens);
         }
         else if (tokens[0] == "selecttext")
         {
@@ -1145,6 +1150,23 @@ bool ChildSession::unoStates(const char* buffer, int size, const std::vector<std
     char* values = getLOKitDocument()->getCommandValues(std::string(buffer, size).c_str());
     std::free(values);
     return true;
+}
+
+bool ChildSession::runMacro(const char* /*buffer*/, int /*size*/, const std::vector<std::string>& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        sendTextFrame("error: cmd=runmacro kind=macro:///Library.module.macro()");
+        return false;
+    }
+
+    std::unique_lock<std::mutex> lock(_docManager.getDocumentMutex());
+    getLOKitDocument()->setView(_viewId);
+
+    bool ret = getLOKit()->runMacro(tokens[1].c_str());
+    LOG_DBG("Run macro : " + tokens[1] + " -> " + (ret ? "success." : "fail."));
+
+    return ret;
 }
 
 bool ChildSession::selectText(const char* /*buffer*/, int /*length*/, const std::vector<std::string>& tokens)
