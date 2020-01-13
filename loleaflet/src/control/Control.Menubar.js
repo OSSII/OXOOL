@@ -505,6 +505,7 @@ L.Control.Menubar = L.Control.extend({
 		$(aItem).data('type', 'unocommand');
 		$(aItem).data('uno', command);
 		$(aItem).data('tag', tag);
+		this._map.addAllowedCommand({name: command});
 		return liItem;
 	},
 
@@ -552,8 +553,8 @@ L.Control.Menubar = L.Control.extend({
 
 		// Add document specific menu
 		var docType = this._map.getDocType();
-		this._xmlmenubar = true; //window.getParameterByName('xmlmenubar');
-		if (this._xmlmenubar) {
+		this._xmlmenubar = window.getParameterByName('xmlmenubar');
+		if (this._xmlmenubar !== '0') {
 			this._getXmlMenubar(docType);
 		} else {
 			switch (docType)
@@ -574,17 +575,16 @@ L.Control.Menubar = L.Control.extend({
 
 	_onStyleMenu: function (e) {
 		if (e.commandName === '.uno:StyleApply') {
-			var style;
-			var constArg = '&';
-			var constHeader = '.uno:InsertPageHeader?PageStyle:string=';
-			var constFooter = '.uno:InsertPageFooter?PageStyle:string=';
-			var $menuHeader = $('#menu-insertheader').parent();
-			var $menuFooter = $('#menu-insertfooter').parent();
+			var $header = $('#menu-insertheader');
+			var $footer = $('#menu-insertfooter');
+			var $menuHeader = $header.parent();
+			var $menuFooter = $footer.parent();
 			var pageStyles = e.commandValues['HeaderFooter'];
+			var style;
 			for (var iterator in pageStyles) {
 				style = pageStyles[iterator];
-				$menuHeader.append(this._createUnoMenuItem(_(style), constHeader + encodeURIComponent(style) + constArg, style));
-				$menuFooter.append(this._createUnoMenuItem(_(style), constFooter + encodeURIComponent(style) + constArg, style));
+				$menuHeader.append(this._createUnoMenuItem(_(style), '.uno:InsertPageHeader', style));
+				$menuFooter.append(this._createUnoMenuItem(_(style), '.uno:InsertPageFooter', style));
 			}
 		}
 	},
@@ -662,19 +662,19 @@ L.Control.Menubar = L.Control.extend({
 		var items = $(menu).children().children('a').not('.has-submenu');
 		L.hideAllToolbarPopup();
 		$(items).each(function() {
+			var constUno = 'uno';
 			var aItem = this;
 			var type = $(aItem).data('type');
 			var id = $(aItem).data('id');
+			var unoCommand = $(aItem).data(constUno);
 			if (self._map._permission === 'edit') {
-				if (type === 'unocommand') { // enable all depending on stored commandStates
+				if (unoCommand !== undefined) { // enable all depending on stored commandStates
 					var data, lang;
-					var constUno = 'uno';
 					var constState = 'stateChangeHandler';
 					var constChecked = 'lo-menu-item-checked';
 					var constLanguage = '.uno:LanguageStatus';
 					var constPageHeader = '.uno:InsertPageHeader';
 					var constPageFooter = '.uno:InsertPageFooter';
-					var unoCommand = $(aItem).data(constUno);
 					var itemState = self._map[constState].getItemValue(unoCommand);
 					if (itemState === 'disabled') {
 						$(aItem).addClass('disabled');
@@ -751,8 +751,12 @@ L.Control.Menubar = L.Control.extend({
 
 	_sendCommand: function (item) {
 		var unoCommand = $(item).data('uno');
-		if (unoCommand.startsWith('.uno:InsertPageHeader') || unoCommand.startsWith('.uno:InsertPageFooter')) {
-			unoCommand = unoCommand + ($(item).hasClass('lo-menu-item-checked') ? 'On:bool=false' : 'On:bool=true');
+		if (unoCommand === '.uno:InsertPageHeader' || unoCommand ==='.uno:InsertPageFooter') {
+			var tag = $(item).data('tag');
+			var state = $(item).hasClass('lo-menu-item-checked');
+			var args = '?PageStyle:string='+ tag + '&On:bool=' + !state;
+			this._map.sendUnoCommand(unoCommand + args);
+			return;
 		}
 		this._map.executeAllowedCommand(unoCommand);
 	},
@@ -899,7 +903,11 @@ L.Control.Menubar = L.Control.extend({
 				if (lastItem && lastItem.type !== undefined && lastItem.type === '--')
 					continue;
 			}
-			lastItem = menu[i]; // 紀錄現在的 Item
+
+			// 紀錄最近的 Item
+			if (menu[i].hide !== true) {
+				lastItem = menu[i];
+			}
 
 			var liItem = L.DomUtil.create('li', '');
 			if (menu[i].id) {
@@ -970,8 +978,18 @@ L.Control.Menubar = L.Control.extend({
 				break;
 
 			case 'action': // 自行處理的功能，需實作功能
+				// 如果 name 是 UNO 指令
+				if (this._map.isUnoCommand(menu[i].name)) {
+					// 把該指令放入該 item 的 data 中
+					$(aItem).data('uno', menu[i].name);
+					// 也把該指令放進白名單，該指令不會被執行，但可以取得狀態回報
+					this._map.addAllowedCommand({name: menu[i].name});
+				}
 				$(aItem).data('type', 'action');
 				$(aItem).data('id', menu[i].id);
+				if (menu[i].hotkey !== undefined) {
+					$(aItem).addClass('item-has-hotkey');
+				}
 				var obj = {
 					name: menu[i].id,
 					hotkey: menu[i].hotkey
@@ -1124,10 +1142,68 @@ L.Control.Menubar = L.Control.extend({
 						map.downloadAs(fileName + '.docx', 'docx');
 					};
 					break;
+				case 'downloadas-ods': // 下載 ods
+					obj.callback = function() {
+						map.downloadAs(fileName + '.ods', 'ods');
+					};
+					break;
+				case 'downloadas-xls': // 下載 xls
+					obj.callback = function() {
+						map.downloadAs(fileName + '.xls', 'xls');
+					};
+					break;
+				case 'downloadas-xlsx': // 下載 xlsx
+					obj.callback = function() {
+						map.downloadAs(fileName + '.xlsx', 'xlsx');
+					};
+					break;
+				case 'downloadas-csv': // 下載 csv
+					obj.callback = function() {
+						map.downloadAs(fileName + '.csv', 'csv');
+					};
+					break;
+				case 'downloadas-odp': // 下載 odp
+					obj.callback = function() {
+						map.downloadAs(fileName + '.odp', 'odp');
+					};
+					break;
+				case 'downloadas-ppt': // 下載 ppt
+					obj.callback = function() {
+						map.downloadAs(fileName + '.ppt', 'ppt');
+					};
+					break;
+				case 'downloadas-pptx': // 下載 xlsx
+					obj.callback = function() {
+						map.downloadAs(fileName + '.pptx', 'pptx');
+					};
+					break;
+				case 'InsertBreak': // 手動分頁
+					obj.callback = function() {
+						alert('InsertBreak');
+					};
+					break;
+				case 'noneselection': // 語言(選取)：無(不拼字檢查)
+					obj.callback = function() {
+						map.sendUnoCommand('.uno:LanguageStatus?Language:string=Current_LANGUAGE_NONE');
+					}
+					break;
+				case 'noneparagraph': // 語言(段落)：無(不拼字檢查)
+					obj.callback = function() {
+						map.sendUnoCommand('.uno:LanguageStatus?Language:string=Paragraph_LANGUAGE_NONE');
+					}
+					break;
+				case 'nonelanguage': // 語言(所有文字)：無(不拼字檢查)
+					obj.callback = function() {
+						map.sendUnoCommand('.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE');
+					}
+					break;
+				default:
+					console.debug('Found unknow menu item action : ' + menu[i].id);
+					break;
 				}
 
-				// 最後將該指令加入白名單中
-				this._map.addAllowUnoCommand(obj);
+				// 最後將該 Action ID 加入白名單中
+				this._map.addAllowedCommand(obj);
 				break;
 
 			default:
@@ -1136,17 +1212,17 @@ L.Control.Menubar = L.Control.extend({
 					$(aItem).data('type', 'unocommand');
 					$(aItem).data('uno', menu[i].uno);
 					$(aItem).data('tag', menu[i].tag);
+					if (menu[i].hotkey !== undefined) {
+						$(aItem).addClass('item-has-hotkey');
+					}
 					// 將該指令加入白名單中
-					this._map.addAllowUnoCommand({name: menu[i].uno, hotkey: menu[i].hotkey});
+					this._map.addAllowedCommand({name: menu[i].uno, hotkey: menu[i].hotkey});
 				}
 				break;
 			}
 
-			if (menu[i].tablet == false && window.mode.isTablet()) {
-				$(aItem).css('display', 'none');
-			}
-
-			if (menu[i].mobile == false && window.mode.isMobile()) {
+			// 被 hide(有可能是功能尚未完成，故不顯示)
+			if (menu[i].hide === true) {
 				$(aItem).css('display', 'none');
 			}
 
@@ -1187,8 +1263,9 @@ L.Control.Menubar = L.Control.extend({
 
 	hideItem: function(targetId) {
 		var item = this._getItem(targetId);
-		if (item)
+		if (item) {
 			$(item).css('display', 'none');
+		}
 	},
 
 	showItem: function(targetId) {
@@ -1206,19 +1283,15 @@ L.Control.Menubar = L.Control.extend({
 			type: 'GET',
 			url: xmlUrl,
 			cache: false,
-			async: true,
+			async: false,
 			dataType: 'xml',
 			success: function(xml) {
 				if (xml.children.length === 1) {
 					var menubar = that._createXmlMenu(xml.children.item(0), docType);
 					that._initializeMenu(menubar);
-					console.debug('XML:', xml);
-					console.debug('XML Menu bar :', menubar);
 				}
 			},
-			error: function(xhr, ajaxOptions, thrownError) {
-				alert(xhr.status);
-				alert(thrownError);
+			error: function(/*xhr, ajaxOptions, thrownError*/) {
 				alert('An error occurred while processing XML file.');
 			}
 		});
@@ -1236,6 +1309,7 @@ L.Control.Menubar = L.Control.extend({
 			var obj = {
 				name:	$(item).attr('menu:name'),
 				id:		$(item).attr('menu:id'),
+				hide:	$(item).attr('menu:hide') === 'true' ? true : undefined,
 				icon:	$(item).attr('menu:icon'),
 				hotkey:	$(item).attr('menu:hotkey')
 			};
@@ -1254,6 +1328,7 @@ L.Control.Menubar = L.Control.extend({
 				if (obj.id.startsWith('.uno:')) {
 					obj.uno = obj.id;
 					obj.id = undefined;
+					obj.type = 'unocommand';
 				} else {
 					obj.type = 'action';
 				}
@@ -1268,12 +1343,6 @@ L.Control.Menubar = L.Control.extend({
 			menu.push(obj);
 		}
 		return menu;
-	},
-
-	_itemMenu: function(e) {
-		//var self = e.data.self;
-		var item = e.target;
-		console.debug($(item).data('uno'));
 	},
 
 	_initializeMenu: function(menu) {
@@ -1295,9 +1364,6 @@ L.Control.Menubar = L.Control.extend({
 			subIndicatorsText: '&#8250;'
 		});
 		$('#main-menu').attr('tabindex', 0);
-
-		// 將所有蒐集到的 uno 指令，一次送出，要求自動回報狀態
-		this._map.enableAutoReportState();
 	}
 });
 
