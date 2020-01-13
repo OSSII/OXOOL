@@ -16,117 +16,77 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
 -->
+<!-- Enhanced by Firefly <firefly@ossii.com.tw> -->
 <menu:menubar xmlns:menu="http://openoffice.org/2001/menu" menu:id="menubar">
-  <menu:menu menu:id=".uno:PickList">
+  <menu:menu menu:name=".uno:PickList" menu:id="file">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:AddDirect"/>
-      <menu:menuitem menu:id=".uno:Open"/>
-      <menu:menuitem menu:id=".uno:OpenRemote" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:RecentFileList"/>
-      <menu:menuitem menu:id=".uno:CloseDoc"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:AutoPilotMenu" menu:style="text"/>
-      <menu:menu menu:id=".uno:TemplateMenu">
-          <menu:menupopup>
-              <menu:menuitem menu:id=".uno:OpenTemplate" menu:style="text"/>
-              <menu:menuitem menu:id=".uno:SaveAsTemplate" menu:style="text"/>
-              <menu:menuseparator/>
-              <menu:menuitem menu:id=".uno:NewDoc" menu:style="text"/>
-          </menu:menupopup>
-      </menu:menu>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Reload" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:VersionDialog" menu:style="text"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Save"/>
-      <menu:menuitem menu:id=".uno:SaveAs"/>
-      <menu:menuitem menu:id=".uno:SaveAsRemote" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:SaveACopy" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:SaveAll" menu:style="text"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:CheckOut" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:CancelCheckOut" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:CheckIn" menu:style="text"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ExportTo"/>
-      <menu:menu menu:id=".uno:ExportAsMenu">
+      <menu:menuitem menu:name=".uno:Save" menu:id="save" menu:hotkey="Ctrl+S"/>
+      <menu:menuitem menu:name=".uno:SaveAs" menu:id="saveas"/>
+      <menu:menuitem menu:name="Share..." menu:id="shareas" menu:icon=".uno:ShareDocument"/>
+      <menu:menuitem menu:name=".uno:Print" menu:id="print" menu:hotkey="Ctrl+P"/>
+      <menu:menuitem menu:name="See revision history" menu:id="rev-history"/>
+      <menu:menu menu:name="Download as" menu:id="downloadas">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:ExportToPDF" menu:style="text"/>
-          <menu:menuitem menu:id=".uno:ExportDirectToPDF" menu:style="text"/>
+          <menu:menuitem menu:name="PDF Document (.pdf)" menu:id="downloadas-pdf"/>
+          <menu:menuitem menu:name="HTML Document (.html)" menu:id="downloadas-html"/>
+          <menu:menuitem menu:name="ODF presentation (.odp)" menu:id="downloadas-odp"/>
+          <menu:menuitem menu:name="PowerPoint 2003 Presentation (.ppt)" menu:id="downloadas-ppt"/>
+          <menu:menuitem menu:name="PowerPoint Presentation (.pptx)" menu:id="downloadas-pptx"/>
         </menu:menupopup>
       </menu:menu>
-      <menu:menu menu:id=".uno:SendToMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:SendMail" menu:style="text"/>
-          <menu:menuitem menu:id=".uno:SendMailDocAsPDF" menu:style="text"/>
-        </menu:menupopup>
-      </menu:menu>
-      <menu:menuitem menu:id=".uno:WebHtml" menu:style="text"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Print"/>
-      <menu:menuitem menu:id=".uno:PrinterSetup" menu:style="text"/>
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:SetDocumentProperties"/>
-      <menu:menu menu:id=".uno:SignaturesMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:Signature" menu:style="text"/>
-          <menu:menuitem menu:id=".uno:SignPDF" menu:style="text"/>
-        </menu:menupopup>
-      </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Quit"/>
+      <menu:menuitem menu:name=".uno:CloseDoc" menu:id="closedocument"/>
     </menu:menupopup>
   </menu:menu>
   <menu:menu menu:id=".uno:EditMenu">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:Undo"/>
-      <menu:menuitem menu:id=".uno:Redo"/>
+      <menu:menuitem menu:id=".uno:Undo" menu:hotkey="Ctrl+Z"/>
+      <menu:menuitem menu:id=".uno:Redo" menu:hotkey="Ctrl+Y"/>
+      <menu:menuitem menu:name="Repair" menu:id="repair"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Cut"/>
-      <menu:menuitem menu:id=".uno:Copy"/>
-      <menu:menuitem menu:id=".uno:Paste"/>
+      <menu:menuitem menu:id=".uno:Cut" menu:hotkey="Ctrl+X"/>
+      <menu:menuitem menu:id=".uno:Copy" menu:hotkey="Ctrl+C"/>
+      <menu:menuitem menu:id=".uno:Paste" menu:hotkey="Ctrl+V"/>
       <menu:menu menu:id=".uno:PasteSpecialMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:PasteUnformatted"/>
-          <menu:menuitem menu:id=".uno:PasteSpecial"/>
+          <menu:menuitem menu:id=".uno:PasteUnformatted" menu:hotkey="Ctrl+Alt+Shift+V"/>
+          <menu:menuitem menu:id=".uno:PasteSpecial" menu:hotkey="Ctrl+Shift-V"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:CopyObjects"/>
-      <menu:menuitem menu:id=".uno:SelectAll"/>
+      <menu:menuitem menu:id=".uno:CopyObjects" menu:hotkey="Shift+F3"/>
+      <menu:menuitem menu:id=".uno:SelectAll" menu:hotkey="Ctrl+A"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id="vnd.sun.star.findbar:FocusToFindbar"/>
-      <menu:menuitem menu:id=".uno:SearchDialog" menu:style="text"/>
+      <menu:menuitem menu:id=".uno:SearchDialog" menu:hotkey="Ctrl+H"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ToggleObjectBezierMode"/>
-      <menu:menuitem menu:id=".uno:GlueEditMode"/>
+      <!--menu:menuitem menu:id=".uno:ToggleObjectBezierMode"/ 接點-->
+      <!--menu:menuitem menu:id=".uno:GlueEditMode"/接著點-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:EditHyperlink" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ModifyField" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ManageLinks" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ObjectMenue" menu:style="text"/>
+      <!--menu:menuitem menu:id=".uno:EditHyperlink"/超連結-->
+      <!--menu:menuitem menu:id=".uno:ModifyField"/欄位-->
+      <!--menu:menuitem menu:id=".uno:ManageLinks"/連結至外部檔案-->
+      <!--menu:menuitem menu:id=".uno:ObjectMenue"/物件-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:EditDoc" menu:style="text"/>
+      <!--menu:menuitem menu:id=".uno:EditDoc"/編輯模式-->
     </menu:menupopup>
   </menu:menu>
-  <menu:menu menu:id=".uno:ViewMenu">
+  <menu:menu menu:name=".uno:ViewMenu" menu:id="view">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:NormalMultiPaneGUI" menu:style="radio"/>
-      <menu:menuitem menu:id=".uno:OutlineMode" menu:style="radio"/>
-      <menu:menuitem menu:id=".uno:NotesMode" menu:style="radio"/>
-      <menu:menuitem menu:id=".uno:DiaMode" menu:style="radio"/>
-      <menu:menuitem menu:id=".uno:SlideMasterPage" menu:style="radio"/>
-      <menu:menuitem menu:id=".uno:NotesMasterPage" menu:style="radio"/>
-      <menu:menuitem menu:id=".uno:HandoutMode" menu:style="radio"/>
+      <!--menu:menuitem menu:id=".uno:NormalMultiPaneGUI"/一般-->
+      <!--menu:menuitem menu:id=".uno:OutlineMode"/大綱-->
+      <!--menu:menuitem menu:id=".uno:NotesMode"/備註-->
+      <!--menu:menuitem menu:id=".uno:DiaMode"/投影片整理-->
+      <!--menu:menuitem menu:id=".uno:SlideMasterPage"/投影片母片-->
+      <!--menu:menuitem menu:id=".uno:NotesMasterPage"/備註母片-->
+      <!--menu:menuitem menu:id=".uno:HandoutMode"/講義母片-->
+      <menu:menuitem menu:name=".uno:FullScreen" menu:id="fullscreen"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ToolbarMode"/>
-      <menu:menuitem menu:id=".uno:AvailableToolbars" menu:style="text"/>
+      <menu:menuitem menu:name=".uno:ZoomPlus" menu:id="zoomin"/>
+      <menu:menuitem menu:name=".uno:ZoomMinus" menu:id="zoomout"/>
+      <menu:menuitem menu:name=".uno:Zoom100Percent" menu:id="zoomreset"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:StatusBarVisible" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:LeftPaneImpress" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ToggleTabBarVisibility" menu:style="text"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ShowRuler"/>
       <menu:menu menu:id=".uno:GridMenu">
         <menu:menupopup>
           <menu:menuitem menu:id=".uno:GridVisible"/>
@@ -148,103 +108,199 @@
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ShowAnnotations"/>
-      <menu:menu menu:id=".uno:DisplayQualityMenu">
+      <!--menu:menuitem menu:id=".uno:ShowAnnotations"/檢視註解-->
+      <!--menu:menu menu:id=".uno:DisplayQualityMenu"彩色/灰階>
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:OutputQualityColor" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:OutputQualityGrayscale" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:OutputQualityBlackWhite" menu:style="radio"/>
+          <menu:menuitem menu:id=".uno:OutputQualityColor"/檢視彩色>
+          <menu:menuitem menu:id=".uno:OutputQualityGrayscale"/檢視灰階>
+          <menu:menuitem menu:id=".uno:OutputQualityBlackWhite"/檢視黑白>
         </menu:menupopup>
-      </menu:menu>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Sidebar"/>
-      <menu:menuitem menu:id=".uno:ModifyPage"/>
-      <menu:menuitem menu:id=".uno:SlideChangeWindow"/>
-      <menu:menuitem menu:id=".uno:CustomAnimation"/>
-      <menu:menuitem menu:id=".uno:ViewSidebarStyles"/>
-      <menu:menuitem menu:id=".uno:Gallery" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:Navigator" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ColorControl"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ZoomPanning"/>
-      <menu:menu menu:id=".uno:ZoomMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:ZoomPage"/>
-          <menu:menuitem menu:id=".uno:ZoomPageWidth"/>
-          <menu:menuitem menu:id=".uno:ZoomOptimal"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:Zoom50Percent"/>
-          <menu:menuitem menu:id=".uno:Zoom75Percent"/>
-          <menu:menuitem menu:id=".uno:Zoom100Percent"/>
-          <menu:menuitem menu:id=".uno:Zoom150Percent"/>
-          <menu:menuitem menu:id=".uno:Zoom200Percent"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:ZoomMode"/>
-          <menu:menuitem menu:id=".uno:ZoomPrevious"/>
-          <menu:menuitem menu:id=".uno:ZoomNext"/>
-          <menu:menuitem menu:id=".uno:ZoomObjects"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:Zoom"/>
-        </menu:menupopup>
-      </menu:menu>
+      </menu:menu-->
     </menu:menupopup>
   </menu:menu>
   <menu:menu menu:id=".uno:InsertMenu">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:InsertGraphic"/>
-      <menu:menuitem menu:id=".uno:InsertAVMedia"/>
+      <menu:menuitem menu:name="Local Image..." menu:id="insertgraphic" menu:icon=".uno:InsertGraphic"/>
+      <menu:menuitem menu:name=".uno:InsertGraphic" menu:id="insertgraphicremote"/>
       <menu:menuitem menu:id=".uno:InsertObjectChart"/>
-      <menu:menuitem menu:id=".uno:InsertTable"/>
-      <menu:menu menu:id=".uno:GraphicMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:Gallery"/>
-          <menu:menuitem menu:id=".uno:PhotoAlbumDialog"/>
-          <menu:menu menu:id=".uno:Scan">
-            <menu:menupopup>
-              <menu:menuitem menu:id=".uno:TwainSelect"/>
-              <menu:menuitem menu:id=".uno:TwainTransfer"/>
-            </menu:menupopup>
-          </menu:menu>
-          <menu:menuitem menu:id=".uno:AnimationObjects"/>
-        </menu:menupopup>
-      </menu:menu>
-      <menu:menu menu:id=".uno:ObjectMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:InsertMath"/>
-          <menu:menuitem menu:id=".uno:InsertObject"/>
-        </menu:menupopup>
-      </menu:menu>
+      <!--menu:menuitem menu:id=".uno:InsertTable"/表格-->
       <menu:menu menu:id=".uno:ShapesMenu">
         <menu:menupopup>
           <menu:menu menu:id=".uno:ShapesLineMenu">
             <menu:menupopup>
+              <menu:menuitem menu:id=".uno:LineArrowEnd"/>
+              <menu:menuitem menu:id=".uno:LineCircleArrow"/>
+              <menu:menuitem menu:id=".uno:LineSquareArrow"/>
+              <menu:menuitem menu:id=".uno:LineArrows"/>
+              <menu:menuitem menu:id=".uno:LineArrowStart"/>
+              <menu:menuitem menu:id=".uno:LineArrowCircle"/>
+              <menu:menuitem menu:id=".uno:LineArrowSquare"/>
               <menu:menuitem menu:id=".uno:Line"/>
-              <menu:menuitem menu:id=".uno:Freeline_Unfilled"/>
-              <menu:menuitem menu:id=".uno:Freeline"/>
-              <menu:menuitem menu:id=".uno:Bezier_Unfilled"/>
-              <menu:menuitem menu:id=".uno:BezierFill"/>
-              <menu:menuitem menu:id=".uno:Polygon_Unfilled"/>
-              <menu:menuitem menu:id=".uno:Polygon_Diagonal_Unfilled"/>
-              <menu:menuitem menu:id=".uno:Polygon_Diagonal"/>
             </menu:menupopup>
           </menu:menu>
-          <menu:menuitem menu:id=".uno:BasicShapes"/>
-          <menu:menuitem menu:id=".uno:SymbolShapes"/>
-          <menu:menuitem menu:id=".uno:ArrowShapes"/>
-          <menu:menuitem menu:id=".uno:FlowChartShapes"/>
-          <menu:menuitem menu:id=".uno:CalloutShapes"/>
-          <menu:menuitem menu:id=".uno:StarShapes"/>
+          <menu:menu menu:id=".uno:BasicShapes">
+            <menu:menupopup>
+              <menu:menuitem menu:id=".uno:BasicShapes.rectangle"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.round-rectangle"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.quadrat"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.round-quadrat"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.parallelogram"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.trapezoid"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:BasicShapes.ellipse"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.circle"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.circle-pie"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.block-arc"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:BasicShapes.isosceles-triangle"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.right-triangle"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.diamond"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.pentagon"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.hexagon"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.octagon"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:BasicShapes.can"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.cube"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.paper"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.cross"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.frame"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.ring"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:ArrowShapes">
+            <menu:menupopup>
+              <menu:menuitem menu:id=".uno:ArrowShapes.right-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.left-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.down-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.left-right-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-down-arrow"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.circular-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.s-sharped-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.split-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.split-round-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.quad-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.corner-right-arrow"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.chevron"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.pentagon-right"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.striped-right-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-down-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.notched-right-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-arrow"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.right-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.left-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.down-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.left-right-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-down-arrow-callout"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.quad-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-arrow-callout"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:SymbolShapes">
+            <menu:menupopup>
+              <menu:menuitem menu:id=".uno:SymbolShapes.smiley"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.heart"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.sun"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.moon"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.cloud"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.lightning"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.flower"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.forbidden"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.puzzle"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.quad-bevel"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.octagon-bevel"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.diamond-bevel"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.bracket-pair"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.left-bracket"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.right-bracket"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.brace-pair"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.left-brace"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.right-brace"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:StarShapes">
+            <menu:menupopup>
+              <menu:menuitem menu:id=".uno:StarShapes.star4"/>
+              <menu:menuitem menu:id=".uno:StarShapes.star5"/>
+              <menu:menuitem menu:id=".uno:StarShapes.star6"/>
+              <menu:menuitem menu:id=".uno:StarShapes.star8"/>
+              <menu:menuitem menu:id=".uno:StarShapes.star12"/>
+              <menu:menuitem menu:id=".uno:StarShapes.star24"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:StarShapes.bang"/>
+              <menu:menuitem menu:id=".uno:StarShapes.vertical-scroll"/>
+              <menu:menuitem menu:id=".uno:StarShapes.horizontal-scroll"/>
+              <menu:menuitem menu:id=".uno:StarShapes.signet"/>
+              <menu:menuitem menu:id=".uno:StarShapes.doorplate"/>
+              <menu:menuitem menu:id=".uno:StarShapes.concave-star6"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:CalloutShapes">
+            <menu:menupopup>
+              <menu:menuitem menu:id=".uno:CalloutShapes.rectangular-callout"/>
+              <menu:menuitem menu:id=".uno:CalloutShapes.round-rectangular-callout"/>
+              <menu:menuitem menu:id=".uno:CalloutShapes.round-callout"/>
+              <menu:menuitem menu:id=".uno:CalloutShapes.cloud-callout"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:CalloutShapes.line-callout-1"/>
+              <menu:menuitem menu:id=".uno:CalloutShapes.line-callout-2"/>
+              <menu:menuitem menu:id=".uno:CalloutShapes.line-callout-3"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:FlowChartShapes">
+            <menu:menupopup>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-process"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-alternate-process"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-decision"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-data"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-predefined-process"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-internal-storage"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-document"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-multidocument"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-terminator"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-preparation"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-manual-input"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-manual-operation"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-connector"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-off-page-connector"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-card"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-punched-tape"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-summing-junction"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-or"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-collate"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-sort"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-extract"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-merge"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-stored-data"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-delay"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-sequential-access"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-magnetic-disk"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-direct-access-storage"/>
+              <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-display"/>
+            </menu:menupopup>
+          </menu:menu>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:CapturePoint" menu:style="text"/>
+      <!--menu:menuitem menu:id=".uno:CapturePoint"/貼附導線-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:Text"/>
-      <menu:menuitem menu:id=".uno:InsertAnnotation"/>
-      <menu:menuitem menu:id=".uno:InsertObjectFloatingFrame" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:FontworkGalleryFloater"/>
+      <menu:menuitem menu:id=".uno:Text" menu:hotkey="F2"/>
+      <menu:menuitem menu:name=".uno:InsertAnnotation" menu:id="insertcomment" menu:hotkey="Ctrl+Alt+C"/>
+      <!--menu:menuitem menu:id=".uno:InsertObjectFloatingFrame"/浮動外框-->
+      <!--menu:menuitem menu:id=".uno:FontworkGalleryFloater"/ 美術字-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:HyperlinkDialog"/>
+      <menu:menuitem menu:id=".uno:HyperlinkDialog" menu:hotkey="Ctrl+K"/>
       <menu:menuitem menu:id=".uno:InsertSymbol"/>
       <menu:menu menu:id=".uno:FormattingMarkMenu">
         <menu:menupopup>
@@ -254,8 +310,6 @@
           <menu:menuitem menu:id=".uno:InsertNarrowNobreakSpace"/>
           <menu:menuitem menu:id=".uno:InsertZWSP"/>
           <menu:menuitem menu:id=".uno:InsertZWNBSP"/>
-          <menu:menuitem menu:id=".uno:InsertLRM"/>
-          <menu:menuitem menu:id=".uno:InsertRLM"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
@@ -271,60 +325,31 @@
           <menu:menuitem menu:id=".uno:InsertSlideField"/>
           <menu:menuitem menu:id=".uno:InsertSlideTitleField"/>
           <menu:menuitem menu:id=".uno:InsertSlidesField"/>
-          <menu:menuitem menu:id=".uno:InsertFileField"/>
+          <!--menu:menuitem menu:id=".uno:InsertFileField"/檔案名稱-->
         </menu:menupopup>
       </menu:menu>
-      <menu:menuitem menu:id=".uno:HeaderAndFooter" menu:style="text"/>
-      <menu:menuseparator/>
-      <menu:menu menu:id=".uno:InsertFormMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:Label"/>
-          <menu:menuitem menu:id=".uno:Edit"/>
-          <menu:menuitem menu:id=".uno:CheckBox"/>
-          <menu:menuitem menu:id=".uno:RadioButton"/>
-          <menu:menuitem menu:id=".uno:ListBox"/>
-          <menu:menuitem menu:id=".uno:ComboBox"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:Pushbutton"/>
-          <menu:menuitem menu:id=".uno:Imagebutton"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:FormattedField"/>
-          <menu:menuitem menu:id=".uno:DateField"/>
-          <menu:menuitem menu:id=".uno:TimeField"/>
-          <menu:menuitem menu:id=".uno:NumericField"/>
-          <menu:menuitem menu:id=".uno:CurrencyField"/>
-          <menu:menuitem menu:id=".uno:PatternField"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:GroupBox"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:ImageControl"/>
-          <menu:menuitem menu:id=".uno:FileControl"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:Grid"/>
-          <menu:menuitem menu:id=".uno:NavigationBar"/>
-        </menu:menupopup>
-      </menu:menu>
+      <!--menu:menuitem menu:id=".uno:HeaderAndFooter"/頁首頁尾-->
     </menu:menupopup>
   </menu:menu>
   <menu:menu menu:id=".uno:FormatMenu">
     <menu:menupopup>
       <menu:menu menu:id=".uno:FormatTextMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:Bold"/>
-          <menu:menuitem menu:id=".uno:Italic"/>
-          <menu:menuitem menu:id=".uno:Underline"/>
+          <menu:menuitem menu:id=".uno:Bold" menu:hotkey="Ctrl+B"/>
+          <menu:menuitem menu:id=".uno:Italic" menu:hotkey="Ctrl+I"/>
+          <menu:menuitem menu:id=".uno:Underline" menu:hotkey="Ctrl+U"/>
           <menu:menuitem menu:id=".uno:UnderlineDouble"/>
           <menu:menuitem menu:id=".uno:Strikeout"/>
           <menu:menuitem menu:id=".uno:Overline"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:SuperScript"/>
-          <menu:menuitem menu:id=".uno:SubScript"/>
+          <menu:menuitem menu:id=".uno:SuperScript" menu:hotkey="Ctrl+Shift+P"/>
+          <menu:menuitem menu:id=".uno:SubScript" menu:hotkey="Ctrl+Shift+B"/>
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:Shadowed"/>
           <menu:menuitem menu:id=".uno:OutlineFont"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:Grow"/>
-          <menu:menuitem menu:id=".uno:Shrink"/>
+          <menu:menuitem menu:id=".uno:Grow" menu:hotkey="Ctrl+]"/>
+          <menu:menuitem menu:id=".uno:Shrink" menu:hotkey="Ctrl+["/>
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:ChangeCaseToUpper"/>
           <menu:menuitem menu:id=".uno:ChangeCaseToLower"/>
@@ -344,9 +369,9 @@
       </menu:menu>
       <menu:menu menu:id=".uno:FormatSpacingMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:SpacePara1"/>
-          <menu:menuitem menu:id=".uno:SpacePara15"/>
-          <menu:menuitem menu:id=".uno:SpacePara2"/>
+          <menu:menuitem menu:id=".uno:SpacePara1" menu:hotkey="Ctrl+1"/>
+          <menu:menuitem menu:id=".uno:SpacePara15" menu:hotkey="Ctrl+5"/>
+          <menu:menuitem menu:id=".uno:SpacePara2" menu:hotkey="Ctrl+2"/>
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:ParaspaceIncrease"/>
           <menu:menuitem menu:id=".uno:ParaspaceDecrease"/>
@@ -357,14 +382,14 @@
       </menu:menu>
       <menu:menu menu:id=".uno:TextAlign">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:LeftPara" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:CenterPara" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:RightPara" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:JustifyPara" menu:style="radio"/>
+          <menu:menuitem menu:id=".uno:LeftPara" menu:hotkey="Ctrl+L"/>
+          <menu:menuitem menu:id=".uno:CenterPara" menu:hotkey="Ctrl+E"/>
+          <menu:menuitem menu:id=".uno:RightPara" menu:hotkey="Ctrl+R"/>
+          <menu:menuitem menu:id=".uno:JustifyPara" menu:hotkey="Ctrl+J"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:CellVertTop" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:CellVertCenter" menu:style="radio"/>
-          <menu:menuitem menu:id=".uno:CellVertBottom" menu:style="radio"/>
+          <menu:menuitem menu:id=".uno:CellVertTop"/>
+          <menu:menuitem menu:id=".uno:CellVertCenter"/>
+          <menu:menuitem menu:id=".uno:CellVertBottom"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menu menu:id=".uno:FormatBulletsMenu">
@@ -372,28 +397,20 @@
           <menu:menuitem menu:id=".uno:DefaultBullet"/>
           <menu:menuitem menu:id=".uno:DefaultNumbering"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:OutlineRight"/>
-          <menu:menuitem menu:id=".uno:OutlineLeft"/>
+          <menu:menuitem menu:id=".uno:OutlineRight" menu:hotkey="Alt+Shift+Right"/>
+          <menu:menuitem menu:id=".uno:OutlineLeft" menu:hotkey="Alt+Shift+Left"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:OutlineDown"/>
-          <menu:menuitem menu:id=".uno:OutlineUp"/>
+          <menu:menuitem menu:id=".uno:OutlineDown" menu:hotkey="Alt+Shift+Down"/>
+          <menu:menuitem menu:id=".uno:OutlineUp" menu:hotkey="Alt+Shift+Up"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:SetDefault" menu:style="text"/>
-      <menu:menu menu:id=".uno:FormatStylesMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:EditStyle"/>
-          <menu:menuitem menu:id=".uno:StyleUpdateByExample"/>
-          <menu:menuitem menu:id=".uno:StyleNewByExample"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:DesignerDialog"/>
-        </menu:menupopup>
-      </menu:menu>
+      <menu:menuitem menu:id=".uno:SetDefault" menu:hotkey="Ctrl+Shift+M"/>
+      <menu:menuitem menu:id=".uno:EditStyle"/>
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:FontDialog"/>
       <menu:menuitem menu:id=".uno:ParagraphDialog"/>
-      <menu:menuitem menu:id=".uno:OutlineBullet"/>
+      <!--menu:menuitem menu:id=".uno:OutlineBullet"/項目符號與編號-->
       <menu:menuseparator/>
       <menu:menu menu:id=".uno:TableMenu">
         <menu:menupopup>
@@ -401,18 +418,18 @@
           <menu:menuitem menu:id=".uno:SetOptimalRowHeight"/>
           <menu:menuitem menu:id=".uno:DistributeRows"/>
           <menu:menuitem menu:id=".uno:EntireRow"/>
-          <menu:menuitem menu:id=".uno:InsertRowDialog"/>
+          <!--menu:menuitem menu:id=".uno:InsertRowDialog"/插入列-->
           <menu:menuitem menu:id=".uno:DeleteRows"/>
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:SetMinimalColumnWidth"/>
           <menu:menuitem menu:id=".uno:SetOptimalColumnWidth"/>
           <menu:menuitem menu:id=".uno:DistributeColumns"/>
           <menu:menuitem menu:id=".uno:EntireColumn"/>
-          <menu:menuitem menu:id=".uno:InsertColumnDialog"/>
+          <!--menu:menuitem menu:id=".uno:InsertColumnDialog"/插入欄-->
           <menu:menuitem menu:id=".uno:DeleteColumns"/>
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:MergeCells"/>
-          <menu:menuitem menu:id=".uno:SplitCell"/>
+          <!--menu:menuitem menu:id=".uno:SplitCell"/分割儲存格-->
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:SelectTable"/>
           <menu:menuitem menu:id=".uno:TableDialog"/>
@@ -420,32 +437,32 @@
       </menu:menu>
       <menu:menu menu:id=".uno:FormatImageMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:Crop"/>
+          <!--menu:menuitem menu:id=".uno:Crop"/裁切-->
           <menu:menuitem menu:id=".uno:OriginalSize"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:ExternalEdit"/>
-          <menu:menuitem menu:id=".uno:ChangePicture"/>
-          <menu:menuitem menu:id=".uno:CompressGraphic"/>
-          <menu:menuitem menu:id=".uno:SaveGraphic"/>
+          <!--menu:menuitem menu:id=".uno:ExternalEdit"/外部工具編輯-->
+          <!--menu:menuitem menu:id=".uno:ChangePicture"/取代-->
+          <!--menu:menuitem menu:id=".uno:CompressGraphic"/壓縮-->
+          <!--menu:menuitem menu:id=".uno:SaveGraphic"/儲存-->
           <menu:menuseparator/>
           <menu:menu menu:id=".uno:FormatImageFilterMenu">
             <menu:menupopup>
-              <menu:menuitem menu:id=".uno:GraphicFilterSepia"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterSepia" menu:hide="true"/><!--老舊感-->
               <menu:menuitem menu:id=".uno:GraphicFilterSobel"/>
               <menu:menuitem menu:id=".uno:GraphicFilterInvert"/>
-              <menu:menuitem menu:id=".uno:GraphicFilterMosaic"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterMosaic" menu:hide="true"/><!--馬賽克-->
               <menu:menuitem menu:id=".uno:GraphicFilterPopart"/>
-              <menu:menuitem menu:id=".uno:GraphicFilterPoster"/>
-              <menu:menuitem menu:id=".uno:GraphicFilterRelief"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterPoster" menu:hide="true"/><!--海報-->
+              <menu:menuitem menu:id=".uno:GraphicFilterRelief" menu:hide="true"/><!--浮雕-->
               <menu:menuitem menu:id=".uno:GraphicFilterRemoveNoise"/>
               <menu:menuitem menu:id=".uno:GraphicFilterSharpen"/>
-              <menu:menuitem menu:id=".uno:GraphicFilterSmooth"/>
-              <menu:menuitem menu:id=".uno:GraphicFilterSolarize"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterSmooth" menu:hide="true"/><!--平滑-->
+              <menu:menuitem menu:id=".uno:GraphicFilterSolarize" menu:hide="true"/><!--中途曝光-->
             </menu:menupopup>
           </menu:menu>
-          <menu:menuitem menu:id=".uno:ColorSettings"/>
+          <!--menu:menuitem menu:id=".uno:ColorSettings"/色彩-->
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:GrafAttrCrop"/>
+          <!--menu:menuitem menu:id=".uno:GrafAttrCrop"/裁切對話視窗-->
         </menu:menupopup>
       </menu:menu>
       <menu:menu menu:id=".uno:FormatObjectMenu">
@@ -459,11 +476,11 @@
       <menu:menuitem menu:id=".uno:FillShadow"/>
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:AnimationEffects"/>
-      <menu:menuitem menu:id=".uno:NameGroup" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ObjectTitleDescription" menu:style="text"/>
+      <!--menu:menuitem menu:id=".uno:NameGroup"/名稱-->
+      <!--menu:menuitem menu:id=".uno:ObjectTitleDescription"/描述說明-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:DistributeSelection"/>
-      <menu:menuitem menu:id=".uno:ToggleObjectRotateMode"/>
+      <!--menu:menuitem menu:id=".uno:DistributeSelection"/分佈-->
+      <!--menu:menuitem menu:id=".uno:ToggleObjectRotateMode"/旋轉-->
       <menu:menu menu:id=".uno:MirrorMenu">
         <menu:menupopup>
           <menu:menuitem menu:id=".uno:MirrorVert"/>
@@ -518,9 +535,12 @@
   </menu:menu>
   <menu:menu menu:id=".uno:SlideMenu">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:InsertSlide"/>
+      <menu:menuitem menu:name=".uno:Presentation" menu:id="fullscreen-presentation" menu:hotkey="F5"/>
+      <menu:menuseparator/>
+      <menu:menuitem menu:id=".uno:InsertSlide" menu:hotkey="Ctrl+M"/>
       <menu:menuitem menu:id=".uno:DuplicateSlide"/>
-      <menu:menuitem menu:id=".uno:ImportSlideFromFile" menu:style="text"/>
+      <menu:menuitem menu:name=".uno:DeleteSlide" menu:id="deletepage"/>
+      <!--menu:menuitem menu:id=".uno:ImportSlideFromFile"/從檔案插入投影片-->
       <menu:menu menu:id=".uno:SlideLayoutMenu">
         <menu:menupopup>
           <menu:menuitem menu:id=".uno:AssignLayout?WhatLayout:long=20"/>
@@ -543,51 +563,50 @@
           <menu:menuitem menu:id=".uno:AssignLayout?WhatLayout:long=30"/>
         </menu:menupopup>
       </menu:menu>
-      <menu:menuitem menu:id=".uno:DeleteSlide"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:SaveBackground"/>
-      <menu:menuitem menu:id=".uno:SelectBackground"/>
+      <!--menu:menuitem menu:id=".uno:SaveBackground"/儲存背景圖片-->
+      <!--menu:menuitem menu:id=".uno:SelectBackground"/設定背景圖片-->
       <menu:menuitem menu:id=".uno:SlideSetup"/>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:PresentationLayout"/>
-      <menu:menuitem menu:id=".uno:InsertMasterPage"/>
-      <menu:menuitem menu:id=".uno:DeleteMasterPage"/>
+      <!--menu:menuitem menu:id=".uno:PresentationLayout"/變更投影片母片-->
+      <!--menu:menuitem menu:id=".uno:InsertMasterPage"/新增母片-->
+      <!--menu:menuitem menu:id=".uno:DeleteMasterPage"/刪除母片-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:DisplayMasterBackground"/>
-      <menu:menuitem menu:id=".uno:DisplayMasterObjects"/>
-      <menu:menuitem menu:id=".uno:MasterLayouts"/>
+      <!--menu:menuitem menu:id=".uno:DisplayMasterBackground"/母片背景-->
+      <!--menu:menuitem menu:id=".uno:DisplayMasterObjects"/母片物件-->
+      <!--menu:menuitem menu:id=".uno:MasterLayouts"/母片元素-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ShowSlide"/>
-      <menu:menuitem menu:id=".uno:HideSlide"/>
-      <menu:menuitem menu:id=".uno:RenameSlide"/>
+      <menu:menuitem menu:id=".uno:ShowSlide" menu:hide="true"/><!--顯示投影片-->
+      <menu:menuitem menu:id=".uno:HideSlide" menu:hide="true"/><!--隱藏投影片-->
+      <menu:menuitem menu:id=".uno:RenameSlide" menu:hide="true"/><!--重新命名投影片-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:RestoreEditingView"/>
+      <menu:menuitem menu:id=".uno:RestoreEditingView" menu:hotkey="Alt+Shift+5" menu:hide="true"/><!--跳到最後修改的投影片-->
       <menu:menu menu:id=".uno:SlideMoveMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:MoveSlideFirst"/>
-          <menu:menuitem menu:id=".uno:MoveSlideUp"/>
-          <menu:menuitem menu:id=".uno:MoveSlideDown"/>
-          <menu:menuitem menu:id=".uno:MoveSlideLast"/>
+          <menu:menuitem menu:id=".uno:MoveSlideFirst" menu:hotkey="Ctrl+Shift+Home"/>
+          <menu:menuitem menu:id=".uno:MoveSlideUp" menu:hotkey="Ctrl+Shift+Up"/>
+          <menu:menuitem menu:id=".uno:MoveSlideDown" menu:hotkey="Ctrl+Shift+Down"/>
+          <menu:menuitem menu:id=".uno:MoveSlideLast" menu:hotkey="Ctrl+Shift+End"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menu menu:id=".uno:NavigateMenu">
         <menu:menupopup>
           <menu:menuitem menu:id=".uno:FirstSlide"/>
-          <menu:menuitem menu:id=".uno:PreviousSlide"/>
-          <menu:menuitem menu:id=".uno:NextSlide"/>
+          <menu:menuitem menu:id=".uno:PreviousSlide" menu:hotkey="PageUp"/>
+          <menu:menuitem menu:id=".uno:NextSlide" menu:hotkey="PageDown"/>
           <menu:menuitem menu:id=".uno:LastSlide"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:SummaryPage" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ExpandPage" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:SlideChangeWindow"/>
+      <menu:menuitem menu:id=".uno:SummaryPage"/>
+      <menu:menuitem menu:id=".uno:ExpandPage"/>
+      <menu:menuitem menu:id=".uno:SlideChangeWindow" menu:hide="true"/><!--投影片轉場-->
     </menu:menupopup>
   </menu:menu>
-  <menu:menu menu:id=".uno:SlideShowMenu">
+  <!--menu:menu menu:id=".uno:SlideShowMenu">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:Presentation"/>
-      <menu:menuitem menu:id=".uno:PresentationCurrentSlide"/>
+      <menu:menuitem menu:id=".uno:Presentation" menu:hotkey="F5"/>
+      <menu:menuitem menu:id=".uno:PresentationCurrentSlide" menu:hotkey="Shift+F5"/>
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:RehearseTimings"/>
       <menu:menuitem menu:id=".uno:CustomShowDialog"/>
@@ -595,90 +614,39 @@
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:PresentationDialog"/>
     </menu:menupopup>
-  </menu:menu>
+  </menu:menu-->
   <menu:menu menu:id=".uno:ToolsMenu">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:SpellDialog"/>
-      <menu:menuitem menu:id=".uno:SpellOnline" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ThesaurusDialog" menu:style="text"/>
+      <menu:menuitem menu:id=".uno:SpellDialog" menu:hotkey="F7"/>
+      <menu:menuitem menu:id=".uno:SpellOnline" menu:hotkey="Shift+F7"/>
+      <menu:menuitem menu:id=".uno:ThesaurusDialog" menu:hotkey="Ctrl+F7" menu:hide="true"/><!--同義字-->
       <menu:menu menu:id=".uno:LanguageMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:SetLanguageAllTextMenu"/>
+          <menu:menuitem menu:id=".uno:Hyphenation"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:Hyphenation" menu:style="text"/>
-          <menu:menuitem menu:id=".uno:ChineseConversion"/>
-          <menu:menuitem menu:id=".uno:HangulHanjaConversion"/>
+          <menu:menuitem menu:id=".uno:ChineseConversion" menu:hide="true"/><!--中文正簡轉換-->
+          <menu:menuitem menu:id=".uno:HangulHanjaConversion" menu:hide="true"/><!--韓文漢字轉換-->
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:MoreDictionaries"/>
+          <menu:menuitem menu:id=".uno:MoreDictionaries" menu:hide="true"/><!--更多線上字典-->
+          <menu:menuseparator/>
+          <menu:menuitem menu:name="None (Do not check spelling)" menu:id="nonelanguage"/>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:AutoCorrectDlg"/>
-      <menu:menuitem menu:id=".uno:RedactDoc" menu:style="text"/>
+      <!--menu:menuitem menu:id=".uno:AutoCorrectDlg"/自動校正選項-->
+      <!--menu:menuitem menu:id=".uno:RedactDoc"/印刷前刪減內容-->
       <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:PresentationMinimizer"/>
-      <menu:menuitem menu:id=".uno:ImageMapDialog" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:BmpMask"/>
-      <menu:menuitem menu:id=".uno:AVMediaPlayer"/>
-      <menu:menuseparator/>
-      <menu:menu menu:id=".uno:ToolsFormsMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:SwitchControlDesignMode"/>
-          <menu:menuitem menu:id=".uno:UseWizards"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:ControlProperties"/>
-          <menu:menuitem menu:id=".uno:FormProperties"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:ShowFmExplorer"/>
-          <menu:menuitem menu:id=".uno:TabDialog"/>
-          <menu:menuitem menu:id=".uno:AddField"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:OpenReadOnly"/>
-          <menu:menuitem menu:id=".uno:AutoControlFocus"/>
-        </menu:menupopup>
-      </menu:menu>
-      <menu:menu menu:id=".uno:MacrosMenu">
-        <menu:menupopup>
-          <menu:menuitem menu:id=".uno:MacroRecorder"/>
-          <menu:menuitem menu:id=".uno:RunMacro"/>
-          <menu:menuitem menu:id=".uno:BasicIDEAppear"/>
-          <menu:menuitem menu:id=".uno:ScriptOrganizer"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:MacroSignature"/>
-          <menu:menuitem menu:id=".uno:MacroOrganizer?TabId:short=1"/>
-          <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:OpenXMLFilterSettings"/>
-        </menu:menupopup>
-      </menu:menu>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id="service:com.sun.star.deployment.ui.PackageManagerDialog" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:ConfigureDialog" menu:style="text"/>
-      <menu:menuitem menu:id=".uno:OptionsTreeDialog"/>
-    </menu:menupopup>
-  </menu:menu>
-  <menu:menu menu:id=".uno:WindowList">
-    <menu:menupopup>
-      <menu:menuitem menu:id=".uno:NewWindow"/>
-      <menu:menuitem menu:id=".uno:CloseWin"/>
+      <menu:menuitem menu:id=".uno:PresentationMinimizer" menu:hide="true"/><!--縮小簡報-->
+      <!--menu:menuitem menu:id=".uno:ImageMapDialog"/影像映射-->
+      <!--menu:menuitem menu:id=".uno:BmpMask"/色彩取代器-->
+      <!--menu:menuitem menu:id=".uno:AVMediaPlayer"/媒體播放器-->
       <menu:menuseparator/>
     </menu:menupopup>
   </menu:menu>
-  <menu:menu menu:id=".uno:HelpMenu">
+  <menu:menu menu:name=".uno:HelpMenu" menu:id="help">
     <menu:menupopup>
-      <menu:menuitem menu:id=".uno:HelpIndex"/>
-      <menu:menuitem menu:id=".uno:ExtendedHelp"/>
-      <menu:menuitem menu:id=".uno:Documentation"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:QuestionAnswers"/>
-      <menu:menuitem menu:id=".uno:SendFeedback"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:SafeMode"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:GetInvolved"/>
-      <menu:menuitem menu:id=".uno:Donation"/>
-      <menu:menuseparator/>
-      <menu:menuitem menu:id=".uno:ShowLicense"/>
-      <menu:menuitem menu:id=".uno:About"/>
+      <menu:menuitem menu:name="Keyboard shortcuts" menu:id="keyboard-shortcuts" menu:icon=".uno:HelpIndex" menu:hotkey="Ctrl+ALt+Shift+?"/>
+      <menu:menuitem menu:name="About" menu:id="about" menu:icon=".uno:About"/>
     </menu:menupopup>
   </menu:menu>
 </menu:menubar>

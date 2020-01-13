@@ -57,7 +57,7 @@
       <menu:menu menu:id=".uno:PasteSpecialMenu">
         <menu:menupopup>
           <menu:menuitem menu:id=".uno:PasteUnformatted" menu:hotkey="Ctrl+Alt+Shift+V"/>
-          <menu:menuitem menu:id=".uno:PasteSpecial" menu:hotkey="Ctrl+Shift-V"/>
+          <menu:menuitem menu:id=".uno:PasteSpecial" menu:hotkey="Ctrl+Shift-V" menu:hide="true"/><!--選擇性貼上對話框-->
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
@@ -79,15 +79,15 @@
           <menu:menuitem menu:id=".uno:RejectTrackedChange"/>
           <menu:menuitem menu:id=".uno:RejectAllTrackedChanges"/>
           <menu:menuseparator/>
-          <menu:menuitem menu:id=".uno:CommentChangeTracking"/>
-          <menu:menuitem menu:id=".uno:ProtectTraceChangeMode"/>
+          <menu:menuitem menu:id=".uno:CommentChangeTracking" menu:hide="true"/><!--註解-->
+          <menu:menuitem menu:id=".uno:ProtectTraceChangeMode" menu:hide="true"/><!--保護-->
         </menu:menupopup>
       </menu:menu>
       <menu:menu menu:id=".uno:EditCommentsMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:ReplyComment"/>
-          <menu:menuitem menu:id=".uno:DeleteComment"/>
-          <menu:menuitem menu:id=".uno:DeleteAuthor"/>
+          <menu:menuitem menu:id=".uno:ReplyComment" menu:hide="true"/><!--回覆註解-->
+          <menu:menuitem menu:id=".uno:DeleteComment" menu:hide="true"/><!--刪除註解-->
+          <menu:menuitem menu:id=".uno:DeleteAuthor" menu:hide="true"/><!--刪除此作者所有註解-->
           <menu:menuitem menu:id=".uno:DeleteAllNotes"/>
         </menu:menupopup>
       </menu:menu>
@@ -138,6 +138,8 @@
         <menu:menupopup>
           <menu:menuitem menu:id=".uno:InsertLinebreak" menu:hotkey="Shift+Enter"/>
           <menu:menuitem menu:id=".uno:InsertColumnBreak" menu:hotkey="Ctrl+Shift+Enter"/>
+          <menu:menuseparator/>
+          <menu:menuitem menu:id=".uno:InsertBreak" menu:hide="true"/><!--手動分隔-->
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
@@ -164,92 +166,102 @@
               <menu:menuitem menu:id=".uno:BasicShapes.round-rectangle"/>
               <menu:menuitem menu:id=".uno:BasicShapes.quadrat"/>
               <menu:menuitem menu:id=".uno:BasicShapes.round-quadrat"/>
-              <menu:menuitem menu:id=".uno:BasicShapes.circle"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.parallelogram"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.trapezoid"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:BasicShapes.ellipse"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.circle"/>
               <menu:menuitem menu:id=".uno:BasicShapes.circle-pie"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.block-arc"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:BasicShapes.isosceles-triangle"/>
               <menu:menuitem menu:id=".uno:BasicShapes.right-triangle"/>
-              <menu:menuitem menu:id=".uno:BasicShapes.trapezoid"/>
               <menu:menuitem menu:id=".uno:BasicShapes.diamond"/>
-              <menu:menuitem menu:id=".uno:BasicShapes.parallelogram"/>
               <menu:menuitem menu:id=".uno:BasicShapes.pentagon"/>
               <menu:menuitem menu:id=".uno:BasicShapes.hexagon"/>
               <menu:menuitem menu:id=".uno:BasicShapes.octagon"/>
-              <menu:menuitem menu:id=".uno:BasicShapes.cross"/>
-              <menu:menuitem menu:id=".uno:BasicShapes.ring"/>
-              <menu:menuitem menu:id=".uno:BasicShapes.block-arc"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:BasicShapes.can"/>
               <menu:menuitem menu:id=".uno:BasicShapes.cube"/>
               <menu:menuitem menu:id=".uno:BasicShapes.paper"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.cross"/>
               <menu:menuitem menu:id=".uno:BasicShapes.frame"/>
+              <menu:menuitem menu:id=".uno:BasicShapes.ring"/>
             </menu:menupopup>
           </menu:menu>
           <menu:menu menu:id=".uno:ArrowShapes">
             <menu:menupopup>
-              <menu:menuitem menu:id=".uno:ArrowShapes.left-arrow"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.right-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.up-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.left-arrow"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.down-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-arrow"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.left-right-arrow"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.up-down-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-down-arrow"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.circular-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.s-sharped-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.split-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.split-round-arrow"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.quad-arrow"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.corner-right-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.split-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.striped-right-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.notched-right-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.pentagon-right"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:ArrowShapes.chevron"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.pentagon-right"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.striped-right-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-down-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.notched-right-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-arrow"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:ArrowShapes.right-arrow-callout"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.left-arrow-callout"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.up-arrow-callout"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.down-arrow-callout"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-arrow-callout"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.left-right-arrow-callout"/>
               <menu:menuitem menu:id=".uno:ArrowShapes.up-down-arrow-callout"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-arrow-callout"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:ArrowShapes.quad-arrow-callout"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.circular-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.split-round-arrow"/>
-              <menu:menuitem menu:id=".uno:ArrowShapes.s-sharped-arrow"/>
+              <menu:menuitem menu:id=".uno:ArrowShapes.up-right-arrow-callout"/>
             </menu:menupopup>
           </menu:menu>
           <menu:menu menu:id=".uno:SymbolShapes">
             <menu:menupopup>
               <menu:menuitem menu:id=".uno:SymbolShapes.smiley"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.heart"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.sun"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.moon"/>
-              <menu:menuitem menu:id=".uno:SymbolShapes.lightning"/>
-              <menu:menuitem menu:id=".uno:SymbolShapes.heart"/>
-              <menu:menuitem menu:id=".uno:SymbolShapes.flower"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.cloud"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.lightning"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.flower"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.forbidden"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.puzzle"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.quad-bevel"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.octagon-bevel"/>
+              <menu:menuitem menu:id=".uno:SymbolShapes.diamond-bevel"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:SymbolShapes.bracket-pair"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.left-bracket"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.right-bracket"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.brace-pair"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.left-brace"/>
               <menu:menuitem menu:id=".uno:SymbolShapes.right-brace"/>
-              <menu:menuitem menu:id=".uno:SymbolShapes.quad-bevel"/>
-              <menu:menuitem menu:id=".uno:SymbolShapes.octagon-bevel"/>
-              <menu:menuitem menu:id=".uno:SymbolShapes.diamond-bevel"/>
             </menu:menupopup>
           </menu:menu>
           <menu:menu menu:id=".uno:StarShapes">
             <menu:menupopup>
-              <menu:menuitem menu:id=".uno:StarShapes.bang"/>
               <menu:menuitem menu:id=".uno:StarShapes.star4"/>
               <menu:menuitem menu:id=".uno:StarShapes.star5"/>
               <menu:menuitem menu:id=".uno:StarShapes.star6"/>
               <menu:menuitem menu:id=".uno:StarShapes.star8"/>
               <menu:menuitem menu:id=".uno:StarShapes.star12"/>
               <menu:menuitem menu:id=".uno:StarShapes.star24"/>
-              <menu:menuitem menu:id=".uno:StarShapes.concave-star6"/>
+              <menu:menuseparator/>
+              <menu:menuitem menu:id=".uno:StarShapes.bang"/>
               <menu:menuitem menu:id=".uno:StarShapes.vertical-scroll"/>
               <menu:menuitem menu:id=".uno:StarShapes.horizontal-scroll"/>
               <menu:menuitem menu:id=".uno:StarShapes.signet"/>
               <menu:menuitem menu:id=".uno:StarShapes.doorplate"/>
+              <menu:menuitem menu:id=".uno:StarShapes.concave-star6"/>
             </menu:menupopup>
           </menu:menu>
           <menu:menu menu:id=".uno:CalloutShapes">
@@ -258,6 +270,7 @@
               <menu:menuitem menu:id=".uno:CalloutShapes.round-rectangular-callout"/>
               <menu:menuitem menu:id=".uno:CalloutShapes.round-callout"/>
               <menu:menuitem menu:id=".uno:CalloutShapes.cloud-callout"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:CalloutShapes.line-callout-1"/>
               <menu:menuitem menu:id=".uno:CalloutShapes.line-callout-2"/>
               <menu:menuitem menu:id=".uno:CalloutShapes.line-callout-3"/>
@@ -271,24 +284,28 @@
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-data"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-predefined-process"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-internal-storage"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-document"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-multidocument"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-terminator"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-preparation"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-manual-input"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-manual-operation"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-connector"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-off-page-connector"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-card"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-punched-tape"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-summing-junction"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-or"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-collate"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-sort"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-extract"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-merge"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-stored-data"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-delay"/>
+              <menu:menuseparator/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-sequential-access"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-magnetic-disk"/>
               <menu:menuitem menu:id=".uno:FlowChartShapes.flowchart-direct-access-storage"/>
@@ -307,6 +324,7 @@
           <menu:menuitem menu:id=".uno:InsertFrame"/>
         </menu:menupopup>
       </menu:menu>
+      <menu:menuitem menu:id=".uno:FontworkGalleryFloater"/>
       <menu:menuitem menu:id=".uno:InsertCaptionDialog"/>
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:HyperlinkDialog"/>
@@ -355,13 +373,23 @@
       </menu:menu>
       <menu:menu menu:id=".uno:InsertHeaderFooterMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:InsertPageHeader"/>
-          <menu:menuitem menu:id=".uno:InsertPageFooter"/>
-          <menu:menuitem menu:id=".uno:UseHeaderFooterMenu"/>
+          <menu:menu menu:name=".uno:InsertPageHeader" menu:id="pageheadermenu">
+            <menu:menupopup>
+              <menu:menuitem menu:name="All" menu:id="insertheader" menu:hide="true"/>
+              <menu:menuseparator/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:name=".uno:InsertPageFooter" menu:id="pagefootermenu">
+            <menu:menupopup>
+              <menu:menuitem menu:name="All" menu:id="insertfooter" menu:hide="true"/>
+              <menu:menuseparator/>
+            </menu:menupopup>
+          </menu:menu>
         </menu:menupopup>
       </menu:menu>
       <menu:menuseparator/>
       <menu:menuitem menu:id=".uno:InsertEnvelope"/>
+      <menu:menuitem menu:id=".uno:InsertSignatureLine"/>
     </menu:menupopup>
   </menu:menu>
   <menu:menu menu:id=".uno:FormatMenu">
@@ -372,7 +400,7 @@
           <menu:menuitem menu:id=".uno:Italic" menu:hotkey="Ctrl+I"/>
           <menu:menuitem menu:id=".uno:Underline" menu:hotkey="Ctrl+U"/>
           <menu:menuitem menu:id=".uno:UnderlineDouble" menu:hotkey="Ctrl+D"/>
-          <menu:menuitem menu:id=".uno:Strikeout"/>
+          <menu:menuitem menu:id=".uno:Strikeout" menu:hotkey="Ctrl+Alt+5"/>
           <menu:menuitem menu:id=".uno:Overline"/>
           <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:SuperScript" menu:hotkey="Ctrl+Shift+P"/>
@@ -460,20 +488,29 @@
       <menu:menuitem menu:id=".uno:TitlePageDialog"/>
       <menu:menuitem menu:id=".uno:RubyDialog"/>
       <menu:menuitem menu:id=".uno:FormatColumns"/>
-      <menu:menuitem menu:id=".uno:Watermark"/>
+      <menu:menuitem menu:id=".uno:Watermark" menu:hide="true"/><!--文字浮水印-->
       <menu:menuitem menu:id=".uno:EditRegion"/>
       <menu:menuseparator/>
       <menu:menu menu:id=".uno:FormatImageMenu">
         <menu:menupopup>
+        <menu:menuitem menu:id=".uno:CompressGraphic" menu:hide="true"/><!--壓縮-->
           <menu:menu menu:id=".uno:FormatImageFilterMenu">
             <menu:menupopup>
+              <menu:menuitem menu:id=".uno:GraphicFilterSepia" menu:hide="true"/><!--老舊感-->
               <menu:menuitem menu:id=".uno:GraphicFilterSobel"/>
               <menu:menuitem menu:id=".uno:GraphicFilterInvert"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterMosaic" menu:hide="true"/><!--馬賽克-->
               <menu:menuitem menu:id=".uno:GraphicFilterPopart"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterPoster" menu:hide="true"/><!--海報-->
+              <menu:menuitem menu:id=".uno:GraphicFilterRelief" menu:hide="true"/><!--浮雕-->
               <menu:menuitem menu:id=".uno:GraphicFilterRemoveNoise"/>
               <menu:menuitem menu:id=".uno:GraphicFilterSharpen"/>
+              <menu:menuitem menu:id=".uno:GraphicFilterSmooth" menu:hide="true"/><!--平滑-->
+              <menu:menuitem menu:id=".uno:GraphicFilterSolarize" menu:hide="true"/><!--中途曝光-->
             </menu:menupopup>
           </menu:menu>
+          <!--menu:menuitem menu:id=".uno:ColorSettings"/-->
+          <menu:menuseparator/>
           <menu:menuitem menu:id=".uno:GraphicDialog"/>
         </menu:menupopup>
       </menu:menu>
@@ -638,9 +675,21 @@
       <menu:menuitem menu:id=".uno:SpellOnline" menu:hotkey="Shift+F7"/>
       <menu:menu menu:id=".uno:LanguageMenu">
         <menu:menupopup>
-          <menu:menuitem menu:id=".uno:SetLanguageSelectionMenu"/>
-          <menu:menuitem menu:id=".uno:SetLanguageParagraphMenu"/>
-          <menu:menuitem menu:id=".uno:SetLanguageAllTextMenu"/>
+          <menu:menu menu:id=".uno:SetLanguageSelectionMenu">
+            <menu:menupopup>
+              <menu:menuitem menu:name="None (Do not check spelling)" menu:id="noneselection"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:SetLanguageParagraphMenu">
+            <menu:menupopup>
+              <menu:menuitem menu:name="None (Do not check spelling)" menu:id="noneparagraph"/>
+            </menu:menupopup>
+          </menu:menu>
+          <menu:menu menu:id=".uno:SetLanguageAllTextMenu">
+            <menu:menupopup>
+              <menu:menuitem menu:name="None (Do not check spelling)" menu:id="nonelanguage"/>
+            </menu:menupopup>
+          </menu:menu>
         </menu:menupopup>
       </menu:menu>
       <menu:menuitem menu:id=".uno:WordCountDialog"/>
