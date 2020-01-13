@@ -90,10 +90,9 @@ L.Control.DarkContextMenu = L.Control.extend({
 
 			// 是指令且不在白名單中，就不加入右鍵選單
 			// 白名單來源就是 menubar 所有的 uno command
-			if (item.type === 'command' && 
+			if (item.type === 'command' &&
 				!this._map.isAllowedCommand(item.command))
 			{
-				console.debug('command : ' + item.command + ' not allowd!')
 				continue;
 			}
 
