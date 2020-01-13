@@ -367,6 +367,9 @@ body {
 .context-menu-icon-lo-checkmark:before {
 	content: '\2713';
 }
+.context-menu-separator {
+    margin: .35em 0 0.35em 44px !important;
+}
 
 .loleaflet-annotation {
 	position: absolute;
