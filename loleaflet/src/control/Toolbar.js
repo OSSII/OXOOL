@@ -38,10 +38,30 @@ L.Map.include({
 
 	_hotkeyCommands: {},
 
-	_blockCommands: {
-		text: {},
-		spreadsheet: {},
-		presentation: {}
+	// 右鍵選單會出現 _allowCommands 沒有的指令，暫時作法是列入未知名單中，且標記是否可用
+	_whiteCommandList: {
+		'.uno:Crop': false, // 裁剪
+		'.uno:ExternalEdit': false, // 開啟外部編輯器
+		'.uno:ChangePicture': false, // 變更圖片
+		'.uno:SaveGraphic': false, // 儲存圖片
+		'.uno:ToggleObjectBezierMode': false, // 接點
+		'.uno:ToggleObjectRotateMode': false, // 旋轉
+		'.uno:AddTextBox': false, // 在圖案中加入文字方塊
+		'.uno:RemoveTextBox': false, // 移除在圖案中的文字方塊
+		'.uno:ObjectAlignLeft': true,
+		'.uno:AlignCenter': true,
+		'.uno:ObjectAlignRight': true,
+		'.uno:AlignUp': true,
+		'.uno:AlignMiddle': true,
+		'.uno:AlignDown': true,
+		'.uno:OutlineBullet': true,
+		'.uno:RemoveBullets': true,
+		'.uno:FrameDialog': true,
+		'.uno:ObjectMenue?VerbID:short=-1': true,
+		'.uno:OpenHyperlinkOnCursor': true,
+		'.uno:CopyHyperlinkLocation': true,
+		'.uno:RemoveHyperlink': true,
+		'.uno:CurrentFootnoteDialog': true,
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
@@ -333,16 +353,14 @@ L.Map.include({
 	// name: .uno: 開頭的指令，或不重複的 id 名稱
 	// hotkey: 若有快速鍵的話請指定，快速鍵組合依序為 Ctrl + Alt + Shift + Key 字串
 	// callback: 執行該指令所需的 callback 函數
-	addAllowUnoCommand: function(command) {
-		var obj = {
-			setState: false // 尚未啟用自動狀態回報
-		};
-
+	addAllowedCommand: function(command) {
 		// 有名稱才行
+		var obj = {};
 		if (command.name !== undefined) {
-			var name = command.name;
+			var name = command.name.trim();
 			var hotkey = command.hotkey;
 			var callback = command.callback;
+			var isExists = (this._allowCommands[name] !== undefined); // 是否已經存在了
 			// 有 hotkey 的話，另外存入 hotkeys 命令列表
 			if (hotkey !== undefined) {
 				// 轉成小寫
@@ -371,15 +389,32 @@ L.Map.include({
 				obj.callback = callback;
 			}
 			this._allowCommands[name] = obj;
+			// 第一次加入 且是 uno 指令的話，設定狀態自動回報
+			if (!isExists && name.startsWith('.uno:'))
+				this._socket.sendMessage('getunostates ' + encodeURI(name));
 		}
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
 	// 查詢某指令是否為白名單
 	isAllowedCommand: function(unoCommand) {
-		return (this._allowCommands[unoCommand] !== undefined)
+		var whiteList = this._whiteCommandList[unoCommand];
+		var allowed = this._allowCommands[unoCommand];
+		if (whiteList === undefined && allowed === undefined) {
+			console.debug('Warning! ' + unoCommand + ' not in white list and allowed commands!');
+			return false;
+		}
+
+		return (whiteList === true || allowed !== undefined);
 	},
 
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 查詢字串是否為 uno 指令
+	isUnoCommand: function(unoCommand) {
+		return (typeof unoCommand === 'string' && unoCommand.startsWith('.uno:'));
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
 	// 依據按鍵事件，執行
 	// 傳回 true 表示該按鍵是捷徑，否則傳回 false
 	executeHotkey: function(e) {
@@ -400,7 +435,6 @@ L.Map.include({
 		hotkey.push(key);
 		var mergeKeys = hotkey.join('+');
 
-		console.debug('Press key = ' + mergeKeys);
 		var matchCommand = this._hotkeyCommands[mergeKeys.toLowerCase()];
 		if (matchCommand !== undefined) {
 			console.debug('Found Hot command->' + matchCommand);
@@ -411,6 +445,7 @@ L.Map.include({
 		return false;
 	},
 
+	// Add by Firefly <firefly@ossii.com.tw>
 	/* 執行在白名單中的命令
 	 * 參數可以是 .uno: 開頭的指令或是 menubar 定義過的 ID
 	 */
@@ -436,44 +471,6 @@ L.Map.include({
 			result = (uno | callback);
 		}
 		return result;
-	},
-
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 查詢某指令是否為黑名單
-	isBlockUnoCommand: function(unoCommand) {
-		var docType = this.getDocType();
-		var blockList;
-		switch (docType) {
-		case 'text':
-			blockList = this._blockCommands.text;
-			break;
-		case 'spreadsheet':
-			blockList = this._blockCommands.spreadsheet;
-			break;
-		default:
-			blockList = this._blockCommands.presentation;
-			break;
-		}
-		return (blockList[unoCommand] !== undefined);
-	},
-
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 啟用白名單中自動回報狀態的指令
-	enableAutoReportState: function () {
-		var unocmds = [];
-		for (var key in this._allowCommands)
-		{
-			// 該指令未啟用過自動回報
-			if (!this._allowCommands[key].setState) {
-				if (key.startsWith('.uno:')) {
-					unocmds.push(key); // 加入啟用列表
-				}
-				this._allowCommands[key].setState = true;
-			}
-		}
-		if (unocmds.length > 0) {
-			this._socket.sendMessage('getunostates ' + encodeURI(unocmds.join(',')));
-		}
 	},
 
 	toggleCommandState: function (unoState) {
