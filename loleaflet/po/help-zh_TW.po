@@ -736,7 +736,7 @@ msgstr "Ctrl + Alt + D"
 #: html/loleaflet-help.html%2Bdiv.div.table.tr.td:121-18
 #: html/loleaflet-help.html%2Bdiv.div.table.tr.td:142-18
 msgid "Insert comment"
-msgstr "插入評註"
+msgstr "插入註解"
 
 #: html/loleaflet-help.html%2Bdiv.div.table.tr.td:121-59
 #: html/loleaflet-help.html%2Bdiv.div.table.tr.td:142-59
@@ -814,7 +814,7 @@ msgstr "儲存格格式化"
 
 #: html/loleaflet-help.html%2Bdiv.div.table.tr.td:143-18
 msgid "Display comment"
-msgstr "顯示評註"
+msgstr "顯示註解"
 
 #: html/loleaflet-help.html%2Bdiv.div.table.tr.td:143-60
 msgid "Ctrl + F1"

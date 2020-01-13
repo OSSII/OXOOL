@@ -739,7 +739,7 @@ msgstr "電腦圖片"
 
 #: src/control/Control.Menubar.js:90 src/control/Control.Menubar.js:92
 msgid "All"
-msgstr "所有"
+msgstr "全部"
 
 #: src/control/Control.Menubar.js:103
 msgid "Horizontal Line"
