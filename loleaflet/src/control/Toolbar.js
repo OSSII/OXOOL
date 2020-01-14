@@ -433,9 +433,12 @@ L.Map.include({
 		if (key.startsWith('Arrow'))
 			key = key.substr(5);
 		hotkey.push(key);
-		var mergeKeys = hotkey.join('+');
+		var mergeKeys = hotkey.join('+').toLowerCase();
+		// 如果是 Ctrl+C、Ctrl+V、Ctrl+X 就不攔截，交給系統處理
+		if (mergeKeys === 'ctrl+c' || mergeKeys === 'ctrl+v' || mergeKeys === 'ctrl+x')
+			return false;
 
-		var matchCommand = this._hotkeyCommands[mergeKeys.toLowerCase()];
+		var matchCommand = this._hotkeyCommands[mergeKeys];
 		if (matchCommand !== undefined) {
 			console.debug('Found Hot command->' + matchCommand);
 			this.executeAllowedCommand(matchCommand);
