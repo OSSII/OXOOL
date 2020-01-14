@@ -58,7 +58,6 @@
     display: inline-block;
     table-layout: fixed;
     border-spacing: 5px 0px;
-    max-height: 39px;
 }
 
 .main-nav {
@@ -360,9 +359,19 @@ serif;
     color: #fff;
 }
 
+#menu-last-mod {
+    position: relative;
+    display: inline-block;
+    table-layout: fixed;
+    /*border-spacing: 5px 0px;*/
+}
+
 #menu-last-mod a {
+    display: table-cell;
+    vertical-align: middle;
+    height: 30px;
+    white-space: nowrap;
     color: grey;
     font-size: 12px;
-    line-height: 30px;
     text-decoration: underline;
 }
