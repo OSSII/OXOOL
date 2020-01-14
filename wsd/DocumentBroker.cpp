@@ -972,6 +972,16 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
         oss << "error: cmd=storage kind=" << (isRename ? "renamefailed" : "savefailed");
         it->second->sendTextFrame(oss.str());
     }
+    // Add by Firefly <firefly@ossii.com.tw>
+    // 收到 http code 409 (衝突)
+    // 把錯誤訊息轉給 client
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::CONFLICT)
+    {
+        LOG_ERR("Conflict: docKey [" << _docKey << "] to URI [" << uriAnonym << "]. (Message:\"" << storageSaveResult.getResponseString() << "\")");
+        std::ostringstream oss;
+        oss << "warning: " << storageSaveResult.getResponseString();
+        it->second->sendTextFrame(oss.str());
+    }
     else if (storageSaveResult.getResult() == StorageBase::SaveResult::DOC_CHANGED
              || storageSaveResult.getResult() == StorageBase::SaveResult::CONFLICT)
     {

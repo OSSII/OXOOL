@@ -105,10 +105,26 @@ public:
             return _saveAsUrl;
         }
 
+        // Add by Firefly <firefly@ossii.com.tw>
+        // 紀錄回應訊息
+        void setResponseString(const std::string& message)
+        {
+            _saveResponseString = message;
+        }
+
+
+        // 取得回應訊息
+        const std::string& getResponseString() const
+        {   
+            return _saveResponseString;
+        }
+
     private:
         Result _result;
         std::string _saveAsName;
         std::string _saveAsUrl;
+        // Add by Firefly <firefly@ossii.com.tw>
+        std::string  _saveResponseString;
     };
 
     enum class LOOLStatusCode

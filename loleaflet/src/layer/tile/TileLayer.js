@@ -432,6 +432,11 @@ L.TileLayer = L.GridLayer.extend({
 		else if (textMsg.startsWith('error:')) {
 			this._onErrorMsg(textMsg);
 		}
+		// Add by Firefly <firefly@ossii.com.tw>
+		// 顯示警示訊息
+		else if (textMsg.startsWith('warning:')) {
+			this._onWarningMsg(textMsg);
+		}
 		else if (textMsg.startsWith('getchildid:')) {
 			this._onGetChildIdMsg(textMsg);
 		}
@@ -766,6 +771,14 @@ L.TileLayer = L.GridLayer.extend({
 		}
 
 		this._map.fire('error', {cmd: command.errorCmd, kind: command.errorKind, id: errorId, code: errorCode});
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 顯示警示訊息
+	_onWarningMsg: function (textMsg) {
+		textMsg = textMsg.substring('warning:'.length + 1);
+		this._map.hideBusy();
+		this._map.fire('warn', {msg: textMsg});
 	},
 
 	_onGetChildIdMsg: function (textMsg) {
