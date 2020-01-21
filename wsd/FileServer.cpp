@@ -285,13 +285,23 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::M
 
         std::vector<std::string> requestSegments;
         requestUri.getPathSegments(requestSegments);
-        const std::string relPath = getRequestPathname(request);
+        std::string relPath = getRequestPathname(request);
         // Is this a file we read at startup - if not; its not for serving.
         std::string moduleName = "";
         Poco::Net::HTMLForm form(request);
         if (requestSegments.size() < 1 || FileHash.find(relPath) == FileHash.end())
         {
-            if (!form.empty())
+            // Modify by Firefly <firefly@ossii.com.tw>
+            // 如果要求的是 images/cmd/ 之下不存在的檔案，則傳回 empty.png
+            // 避免 404 not found.
+            bool isImages = requestSegments[requestSegments.size() - 3] == "images" ? true : false;
+            bool isCmd = requestSegments[requestSegments.size() - 2] == "cmd" ? true : false;
+            if (isImages && isCmd)
+            {
+                LOG_DBG("\"" + requestSegments[requestSegments.size() - 1] + "\" does not exists, use empty.png instead.");
+                relPath = "/loleaflet/dist/images/empty.png";
+            }
+            else if (!form.empty())
             {
                 moduleName = form.has("module") ? form.get("module") : "";
                 if (apilist.find(moduleName) == apilist.end())
@@ -360,6 +370,8 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request, Poco::M
                 mimeType = "image/png";
             else if (fileType == "svg")
                 mimeType = "image/svg+xml";
+            else if (fileType == "xml")
+                mimeType = "text/xml";
             else
                 mimeType = "text/plain";
 
