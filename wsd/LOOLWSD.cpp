@@ -1786,7 +1786,9 @@ static std::shared_ptr<ClientSession> createNewClientSession(const WebSocketHand
         // In case of WOPI, if this session is not set as readonly, it might be set so
         // later after making a call to WOPI host which tells us the permission on files
         // (UserCanWrite param).
-        return std::make_shared<ClientSession>(id, docBroker, uriPublic, isReadOnly);
+        auto session = std::make_shared<ClientSession>(id, docBroker, uriPublic, isReadOnly);
+        session->construct();
+        return session;
     }
     catch (const std::exception& exc)
     {
