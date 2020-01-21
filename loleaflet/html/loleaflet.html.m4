@@ -54,7 +54,6 @@ ifelse(MOBILEAPP,[true],
     [<link rel="stylesheet" href="%SERVICE_ROOT%/loleaflet/%VERSION%/bundle.css" />
   ])dnl
 )dnl
-<!--%BRANDING_CSS%--> <!-- add your logo here -->
 ifelse(MOBILEAPP,[true],
   [<link rel="localizations" href="l10n/localizations.json" type="application/vnd.oftn.l10n+json"/>
    <link rel="localizations" href="l10n/locore-localizations.json" type="application/vnd.oftn.l10n+json"/>
@@ -94,7 +93,7 @@ ifelse(MOBILEAPP,[true],
     <table id="toolbar-wrapper">
     <tr>
       <td id="toolbar-logo"></td>
-      <td id="toolbar-up"</td>
+      <td id="toolbar-up"></td>
       <td id="toolbar-hamburger">
         <label class="main-menu-btn" for="main-menu-state">
           <span class="main-menu-btn-icon"></span>
@@ -200,5 +199,4 @@ ifelse(MOBILEAPP,[true],
   [    <script src="%SERVICE_ROOT%/loleaflet/%VERSION%/bundle.js"></script>
   ])
 )dnl
-    <!--%BRANDING_JS%--> <!-- logo onclick handler -->
 </body></html>
