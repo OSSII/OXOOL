@@ -359,7 +359,7 @@ body {
  * will try to load its own font file which is not available in dist/ */
 .context-menu-item {
 	padding-left: 48px !important;
-	line-height: 20px; !important;
+	line-height: 20px !important;
 }
 .context-menu-icon::before {
 	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
@@ -598,7 +598,7 @@ body {
 	cursor: pointer;
 }
 
-.oxtabs_container.ui-widget-content {
+/* .oxtabs_container.ui-widget-content {
 	border: none;
 }
 
@@ -607,7 +607,7 @@ body {
 	width: auto;
 	height: auto;
 	z-index: 1105;
-}
+} */
 
 .lokdialog_container.lokdialog_notitle .ui-dialog-titlebar {
 	display: none;
@@ -637,10 +637,6 @@ body {
         -khtml-user-select: none;
         -webkit-user-select: none;
         -o-user-select: none;
-}
-
-.ui-dialog-titlebar {
-    padding: 0 1em !important;
 }
 
 .ui-widget {

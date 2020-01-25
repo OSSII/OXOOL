@@ -24,7 +24,7 @@ $(L10N_IOS_ALL_JS) : $(wildcard $(srcdir)/po/ui-*.po) $(shell find $(srcdir)/l10
 	done
 endif
 
-JQUERY_UI_IMAGE_PATH = node_modules/jquery-ui/themes/ui-lightness/images
+JQUERY_UI_IMAGE_PATH = node_modules/jquery-ui/images
 JQUERY_UI_IMAGES = $(wildcard $(JQUERY_UI_IMAGE_PATH)/*.png)
 JQUERY_UI_DIST_IMAGES = $(patsubst $(JQUERY_UI_IMAGE_PATH)/%.png,$(builddir)/dist/images/%.png,$(JQUERY_UI_IMAGES))
 
@@ -90,7 +90,7 @@ LOLEAFLET_CSS =\
 	$(builddir)/node_modules/smartmenus/dist/css/sm-simple/sm-simple.css \
 	$(srcdir)/css/menubar.css \
 	$(builddir)/fonts/font-awesome.min.css \
-	$(builddir)/node_modules/jquery-ui/themes/redmond/jquery-ui.css
+	$(builddir)/node_modules/jquery-ui/jquery-ui.css
 
 LOLEAFLET_CSS_DST = $(foreach file,$(LOLEAFLET_CSS),$(builddir)/dist/$(notdir $(file)))
 LOLEAFLET_CSS_M4 = $(strip $(foreach file,$(LOLEAFLET_CSS),$(notdir $(file))))

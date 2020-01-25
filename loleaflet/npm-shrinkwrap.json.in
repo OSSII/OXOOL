@@ -1838,9 +1838,8 @@
       "dev": true
     },
     "jquery-ui": {
-      "version": "1.10.5",
-      "resolved": "file:node_shrinkwrap/jquery-ui-1.10.5.tgz",
-      "integrity": "sha1-gmrtPdH4jTKudddN9IZD3EMaWBU=",
+      "version": "1.12.1",
+      "resolved": "file:node_shrinkwrap/jquery-ui-1.12.1.tgz",
       "dev": true
     },
     "js-yaml": {
