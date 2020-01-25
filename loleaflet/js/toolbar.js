@@ -330,7 +330,7 @@ function onClick(e, id, item, subItem) {
 		toggleMobileSearchBar();
 	}
 	else if (id === 'goToPage') {
-		map.fire('executeDialog', {dialog: 'gotoPage'});
+		map.fire('executeDialog', {dialog: 'GotoPage'});
 	}
 	else if (item.id === 'commonsymboltable') {
 		if (symbolDialog !== undefined) {
@@ -2644,7 +2644,7 @@ function getLocalizedSymbols(locale) {
 			var ul;
 			var i, j;
 			symbolDialog = L.DomUtil.create('div', 'lokdialog', document.body);
-			symbolTabs = L.DomUtil.create('div', 'oxtabs_container', symbolDialog);
+			symbolTabs = L.DomUtil.create('div', '', symbolDialog);
 
 			ul = L.DomUtil.create('ul', '', symbolTabs);
 			ul.style.background = 'transparent none';
@@ -2700,7 +2700,6 @@ function getLocalizedSymbols(locale) {
 			$(symbolTabs).tabs();
 			$(symbolDialog).dialog({
 				title: _('Common symbols'),
-				dialogClass: 'oxdialog_container',
 				position: {my: 'left center', at: 'right center', of: window},
 				minWidth: 300,
 				autoOpen: false,
