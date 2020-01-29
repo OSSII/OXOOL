@@ -3,60 +3,14 @@
 * Control.ContextMenu
 */
 
-/* global $ _ _UNO */
+/* global $ _UNO*/
 L.Control.ContextMenu = L.Control.extend({
 	options: {
-		SEPARATOR: '---------',
-		/*
-		 * Enter UNO commands that should appear in the context menu.
-		 * Entering a UNO command under `general' would enable it for all types
-		 * of documents. If you do not want that, whitelist it in document specific filter.
-		 *
-		 * UNOCOMMANDS_EXTRACT_START <- don't remove this line, it's used by unocommands.py
-		 */
-		whitelist: {
-			/*
-			 * UNO commands for menus are not available sometimes. Presence of Menu commands
-			 * in following list is just for reference and ease of locating uno command
-			 * from context menu structure.
-			 */
-			general: ['Cut', 'Copy', 'Paste', 'PasteSpecialMenu', 'PasteUnformatted',
-					  'NumberingStart', 'ContinueNumbering', 'IncrementLevel', 'DecrementLevel',
-					  'OpenHyperlinkOnCursor', 'CopyHyperlinkLocation', 'RemoveHyperlink',
-					  'AnchorMenu', 'SetAnchorToPage', 'SetAnchorToPara', 'SetAnchorAtChar',
-					  'SetAnchorToChar', 'SetAnchorToFrame',
-					  'WrapMenu', 'WrapOff', 'WrapOn', 'WrapIdeal', 'WrapLeft', 'WrapRight', 'WrapThrough',
-					  'WrapThroughTransparent', 'WrapContour', 'WrapAnchorOnly',
-					  'ArrangeFrameMenu', 'ArrangeMenu', 'BringToFront', 'ObjectForwardOne', 'ObjectBackOne', 'SendToBack', 'GropuMenu', 'FormatGroup', 'FormatUngroup', 'EnterGroup', 'LeaveGroup',
-					  'TransformDialog', 'FormatLine', 'FormatArea',
-					  'RotateMenu', 'RotateLeft', 'RotateRight', 'FormatPaintbrush'],
-
-			text: ['TableInsertMenu',
-				   'InsertRowsBefore', 'InsertRowsAfter', 'InsertColumnsBefore', 'InsertColumnsAfter',
-				   'TableDeleteMenu',
-				   'DeleteRows', 'DeleteColumns', 'DeleteTable',
-				   'MergeCells', 'SetOptimalColumnWidth', 'SetOptimalRowHeight',
-				   'UpdateCurIndex','RemoveTableOf',
-				   'ReplyComment', 'DeleteComment', 'DeleteAuthor', 'DeleteAllNotes',
-				   'FormatPaintbrush', 'CharacterMenu', 'ParagraphMenu'],
-			asuswriter:['FormatPaintbrush','ResetAttributes','Rotate180','InsertAnnotation',
-				   'AlignCenter','AlignDown','AlignMiddle','AlignUp','ObjectAlignLeft','ObjectAlignRight',
-				   'FlipHorizontal','FlipVertical'],
-			asuscalc:['OriginalSize','FitCellSize'],
-
-			spreadsheet: ['MergeCells', 'SplitCell', 'RecalcPivotTable', 'FormatCellDialog'],
-
-			presentation: ['TransformDialog', 'FormatLine', 'FormatArea'],
-			drawing: []
-		}
-		// UNOCOMMANDS_EXTRACT_END <- don't remove this line, it's used by unocommands.py
+		SEPARATOR: '---------'
 	},
 
-
-
-	onAdd: function (map) {
+	onAdd: function(map) {
 		this._prevMousePos = null;
-
 		map.on('updatepermission', this._onUpdatePermission, this); // Check Permission
 	},
 
@@ -117,80 +71,74 @@ L.Control.ContextMenu = L.Control.extend({
 
 	_createContextMenuStructure: function(obj) {
 		var docType = this._map.getDocType();
-		var contextMenu = {};
+		var ctxMenu = {};
 		var sepIdx = 1, itemName;
 		var isLastItemText = false;
+	
 		for (var idx in obj.menu) {
 			var item = obj.menu[idx];
-			if (item.enabled === 'false') {
-				continue;
-			}
+			
+			if (item.enabled === 'false') { continue; }
 
 			if (item.type === 'separator') {
 				if (isLastItemText) {
-					contextMenu['sep' + sepIdx++] = this.options.SEPARATOR;
+					ctxMenu['sep' + sepIdx++] = this.options.SEPARATOR;
 				}
 				isLastItemText = false;
 				continue;
 			}
-			else if (item.type === 'command') {
-				// Only show whitelisted items
-				// Command name (excluding '.uno:') starts from index = 5
-				var commandName = item.command.substring(5);
-				if (this.options.whitelist.general.indexOf(commandName) === -1 &&
-					!(docType === 'text' && this.options.whitelist.text.indexOf(commandName) !== -1) &&
-					!(docType === 'spreadsheet' && this.options.whitelist.spreadsheet.indexOf(commandName) !== -1) &&
-					!(docType === 'presentation' && this.options.whitelist.presentation.indexOf(commandName) !== -1) &&
-					!(docType === 'drawing' && this.options.whitelist.drawing.indexOf(commandName) !== -1) &&
-                    !(docType === 'text' && this.options.whitelist.asuswriter.indexOf(commandName) !== -1) &&
-                    !(docType === 'spreadsheet' && this.options.whitelist.asuscalc.indexOf(commandName) !== -1)) {
-					continue;
-				}
 
-				// Get the translated text associated with the command
-				itemName = _UNO(item.command, docType, true);
+			// 是指令且不在白名單中，就不加入右鍵選單
+			// 白名單來源就是 menubar 所有的 uno command
+			if (item.type === 'command' &&
+				!this._map.isAllowedCommand(item.command))
+			{
+				continue;
+			}
 
-				contextMenu[item.command] = {
-					name: _(itemName)
-				};
+			// 取得 uno command 翻譯
+			itemName = _UNO(item.command, docType, true);
+			// 沒有翻譯的話，用 item.text 當選項標題
+			if (item.command === '.uno:' + itemName)
+			{
+				itemName = item.text;
+			}
 
+			ctxMenu[item.command] = {
+				name: itemName	// 選項名稱
+			};
+
+			if (item.type === 'command') {
 				if (item.checktype !== undefined) {
-					contextMenu[item.command].checktype = item.checktype;
-					contextMenu[item.command].checked = (item.checked === 'true');
+					ctxMenu[item.command].checktype = item.checktype;
+					ctxMenu[item.command].checked = (item.checked === 'true');
 				}
 				isLastItemText = true;
 			} else if (item.type === 'menu') {
-				itemName = item.text;
-				if (itemName.replace('~', '') === 'Paste Special') {
-					itemName = _('Internal Paste Special');
-				}
 				var submenu = this._createContextMenuStructure(item);
 				// ignore submenus with all items disabled
 				if (Object.keys(submenu).length === 0) {
+					delete ctxMenu[item.command];
 					continue;
 				}
-
-				contextMenu[item.command] = {
-					name: _(itemName).replace(/\(~[A-Za-z]\)/, '').replace('~', ''),
-					items: submenu
-				};
+				ctxMenu[item.command].items = submenu;
 				isLastItemText = true;
 			} else {
 				console.debug('未知的 item.type', item);
 			}
-			contextMenu[item.command].icon = (function(opt, $itemElement, itemKey, item) {
+			ctxMenu[item.command].icon = (function(opt, $itemElement, itemKey, item) {
 				return this._map.contextMenuIcon($itemElement, itemKey, item);
 			}).bind(this)
 		}
 
 		// Remove separator, if present, at the end
-		var lastItem = Object.keys(contextMenu)[Object.keys(contextMenu).length - 1];
+		var lastItem = Object.keys(ctxMenu)[Object.keys(ctxMenu).length - 1];
 		if (lastItem !== undefined && lastItem.startsWith('sep')) {
-			delete contextMenu[lastItem];
+			delete ctxMenu[lastItem];
 		}
 
-		return contextMenu;
-	},
+		return ctxMenu;
+	}
 });
 
 L.control.contextMenu = function (options) {
