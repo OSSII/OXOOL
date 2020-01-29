@@ -632,6 +632,24 @@ body {
     font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
 }
 
+.ui-dialog {
+	-webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
+	 box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+	margin-top: .2em !important;
+	padding: .3em .4em .2em .4em !important;
+}
+
+.ui-dialog-titlebar {
+	padding: 3px !important;
+}
+
+.ui-dialog-buttonpane button {
+	margin: .1em .4em .1em 0 !important;
+}
+
 .vex { z-index: 10000 !important;}
 
 /* Infobar */
