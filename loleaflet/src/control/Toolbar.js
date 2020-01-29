@@ -66,6 +66,7 @@ L.Map.include({
 
 	// Add by Firefly <firefly@ossii.com.tw>
 	_iconAlias: {
+		'addprintarea': 'inserttable',
 		'addtextbox': 'insertfixedtext',
 		'anchormenu': 'toggleanchortype',
 		'arrangeframemenu': 'bringtofront',
@@ -96,6 +97,10 @@ L.Map.include({
 		'bulletliststyle': 'defaultbullet',
 		'changesmenu': 'trackchanges',
 		'charactermenu': 'fontdialog',
+		'centerpara': 'alignhorizontalcenter',
+		'cellverttop': 'aligntop',
+		'cellvertcenter': 'alignverticalcenter',
+		'cellvertbottom': 'alignbottom',
 		'commonalignleft': 'alignleft',
 		'commonalignhorizontalcenter': 'alignhorizontalcenter',
 		'commonalignright': 'alignright',
@@ -104,63 +109,108 @@ L.Map.include({
 		'commonalignverticalcenter' : 'alignverticalcenter',
 		'commonalignbottom': 'alignbottom',
 		'convertmenu': 'bezierconvert',
+		'convertinto3dlathefast': 'convertinto3dlathe',
+		'defaultcellstyles': 'defaultcharstyle',
+		'deleteallnotes': 'deleteallannotation',
 		'deletecell': 'delete',
 		'deletenote': 'deleteannotation',
+		'deleteprintarea': 'delete',
 		'drawtext': 'text',
+		'editprintarea': 'editdoc',
 		'editshapehyperlink': 'edithyperlink',
 		'deleteshapehyperlink': 'removehyperlink',
 		'openhyperlinkoncursor': 'inserthyperlink',
+		'fieldnames': 'addfield',
 		'flipmenu': 'mirror',
 		'fliphorizontal': 'mirror',
 		'flipvertical': 'mirrorvert',
 		'footnotecellstyles': 'insertfootnote',
 		'formatarea': 'backgroundcolor',
 		'formatbulletsmenu': 'defaultbullet',
+		'formatimagemenu': 'graphicdialog',
+		'formatobjectmenu': 'text',
 		'formatspacingmenu': 'spacepara15',
 		'formatstylesmenu': 'colorscaleformatdialog',
+		'functiondialog': 'dbviewfunctions',
 		'conditionalformatmenu': 'colorscaleformatdialog',
 		'formattextmenu': 'fontdialog',
 		'gridmenu': 'gridvisible',
 		'groupmenu': 'group',
+		'heading1cellstyles': 'heading1parastyle',
+		'heading2cellstyles': 'heading2parastyle',
 		'hyperlinkdialog': 'inserthyperlink',
 		'indexesmenu': 'insertindexesentry',
+		'insert': 'insertspreadsheet',
 		'insertannotation': 'shownote',
 		'insertauthorfield': 'dbviewaliases',
 		'insertcurrentdate': 'datefield',
 		'insertcurrenttime': 'timefield',
+		'insertfootnotemenu': 'insertfootnote',
 		'insertrowbreak': 'insertpagebreak',
 		'insertcell': 'insertcellsright',
 		'insertcolumnsmenu': 'insertcolumns',
 		'insertdatefield' : 'datefield',
+		'insertdatefieldfix': 'datefield',
+		'insertdatefieldvar': 'datefield',
 		'insertfield': 'addfield',
 		'insertheaderfootermenu': 'editheaderandfooter',
 		'insertobjectchart': 'drawchart',
+		'insertslidefield': 'insertpagenumberfield',
+		'insertslidesfield': 'insertpagecountfield',
+		'insertslidetitlefield': 'inserttitlefield',
 		'insertrowsmenu': 'insertrows',
+		'insertframemenu': 'insertframe',
 		'inserttimefield' : 'timefield',
+		'inserttimefieldfix': 'timefield',
+		'inserttimefieldvar': 'timefield',
+		'justifypara': 'alignblock',
 		'languagemenu': 'managelanguage',
+		'leftpara': 'alignleft',
 		'mirrorhorz': 'mirror',
 		'mirrormenu': 'rotateleft',
 		'movepagedown': 'downsearch',
 		'movepageup': 'upsearch',
+		'moveslidefirst': 'movepagefirst',
+		'moveslidelast': 'movepagelast',
+		'moveslideup': 'upsearch',
+		'moveslidedown': 'downsearch',
+		'firstslide': 'firstpage',
+		'lastslide': 'lastrecord',
+		'previousslide': 'prevrecord',
+		'nextslide': 'nextrecord',
 		'namegroup': 'definename',
 		'notecellstyles': 'showannotations',
+		'numberformatcurrency': 'currencyfield',
+		'numberformattime': 'timefield',
 		'numberingmenu': 'outlinebullet',
 		'numberliststyle': 'defaultnumbering',
 		'objectalign': 'objectalignleft',
 		'objectmirrorhorizontal': 'mirror',
 		'objectmirrorvertical': 'mirrorvert',
 		'objecttitledescription': 'insertcaptiondialog',
+		'outlineup': 'moveup',
+		'outlinedown': 'movedown',
+		'outlineright': 'decrementlevel',
+		'outlineleft': 'decrementindent',
 		'pageformatdialog': 'pagedialog',
 		'paragraphmenu': 'paragraphdialog',
+		'pastespecialmenu': 'pastespecial',
 		'previoustrackedchange': 'prevrecord',
 		'nexttrackedchange': 'nextrecord',
+		'repaginate': 'insertpagenumberfield',
+		'rightpara': 'alignright',
 		'rotateflipmenu': 'rotateleft',
 		'savegraphic': 'save',
 		'setdefault': 'resetattributes',
+		'setobjecttoforeground': 'bringtofront',
 		'setobjecttobackground': 'sendtoback',
+		'shapeslinemenu': 'line',
+		'shapesmenu': 'insertdraw',
+		'showgraphics': 'graphic',
 		'showruler': 'ruler',
 		'showtrackedchanges': 'addwatch',
 		'slidesetup': 'pagesetup',
+		'spelldialog': 'spelling',
 		'spellingandgrammardialog': 'spelling',
 		'tableautofitmenu': 'setoptimalrowheight',
 		'tableinsertmenu': 'insertrowsafter',
@@ -168,6 +218,13 @@ L.Map.include({
 		'tableselectmenu': 'selecttable',
 		'textalign': 'alignblock',
 		'textattributes': 'fontdialog',
+		'updateall': 'reload',
+		'updateallindexes': 'insertmultiindex',
+		'updatealllinks': 'inserthyperlink',
+		'updatecharts': 'drawchart',
+		'updatecurindex': 'insertindexesentry',
+		'updatefields': 'addfield',
+		'updatemenu': 'reload',
 		'wrapmenu': 'wrapon',
 		'zoomminus': 'zoomout',
 		'zoomplus': 'zoomin',
@@ -321,6 +378,17 @@ L.Map.include({
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
+	// 取得文件式樣列表
+	getStyleFamilies: function() {
+		return this.getToolbarCommandValues('.uno:StyleApply');
+	},
+
+	// 取得字型列表
+	getFontList: function() {
+		return this.getToolbarCommandValues('.uno:CharFontName');
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
 	// 依據 itemKey 設定右鍵選單 icon 圖示
 	contextMenuIcon: function($itemElement, itemKey, item) {
 		var hasinit = $itemElement.hasClass('_init_');
@@ -452,26 +520,46 @@ L.Map.include({
 	/* 執行在白名單中的命令
 	 * 參數可以是 .uno: 開頭的指令或是 menubar 定義過的 ID
 	 */
-	executeAllowedCommand: function (command) {
+	executeAllowedCommand: function(command) {
 		var result = false;
 		if (typeof command === 'string') {
 			var commandData = this._allowCommands[command]; // 找出白名單資料
-			var uno = false, callback = false;
+			var uno = false, dialog = false, action = false, callback = false;
 			// 有找到
 			if (commandData !== undefined) {
 				// 指令開頭是 .uno:，直接執行
 				if (command.startsWith('.uno:')) {
 					this.sendUnoCommand(command);
 					uno = true;
+				// 指令開頭是 dialog:，執行該 dialog
+				} else if (command.startsWith('dialog:')) {
+					var args = {};
+					var url = document.createElement('a'); 
+					url.href = command;
+					if (url.search.length) {
+						var query = url.search.substring(1); // 去掉前置 '?'
+						var params = query.split('&');
+						for (var idx in params) {
+							if (params[idx].length) {
+								var keyvalue = params[idx].split('=');
+								args[keyvalue[0]] = keyvalue[1]; 
+							}
+						}
+					}
+					this.fire('executeDialog', {dialog: url.pathname, args: args});
+					dialog = true;
+				} else {
+					this.fire('executeDialog', {dialog: 'Action', id: command});
+					dialog = true;
 				}
 				// 有指定 callback，也執行 callback
-				if (commandData.callback !== undefined) {
+				if (typeof commandData.callback === 'function') {
 					commandData.callback();
 					callback = true;
 				}
 			}
 			// uno 指令或 callback 有一項被執行，才能算成功
-			result = (uno | callback);
+			result = (uno | dialog | action | callback);
 		}
 		return result;
 	},
