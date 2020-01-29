@@ -3,7 +3,7 @@
  * L.Control.Tabs is used to switch sheets in Calc
  */
 
-/* global $ vex _ _UNO */
+/* global $ _ _UNO */
 L.Control.Tabs = L.Control.extend({
 	onAdd: function(map) {
 		map.on('updatepermission', this._onUpdatePermission, this);
@@ -38,7 +38,6 @@ L.Control.Tabs = L.Control.extend({
 		this._spreadsheetTabs = {};
 		this._tabForContextMenu = 0;
 		var map = this._map;
-		var that = this;
 		var docContainer = map.options.documentContainer;
 		this._tabsCont = L.DomUtil.create('div', 'spreadsheet-tabs-container', docContainer.parentElement);
 		L.DomEvent.on(this._tabsCont, 'touchstart',
@@ -82,61 +81,29 @@ L.Control.Tabs = L.Control.extend({
 				'DuplicatePage': {
 					name: _UNO('.uno:Move', 'spreadsheet', true),
 					callback: (function() {
-						that._movePart();
+						map.fire('executeDialog', {dialog: 'MoveTable'});
 					}).bind(this),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
 				'DeleteTable': {name: _UNO('.uno:Remove', 'spreadsheet', true),
-						callback: (function(key, options) {
-							var nPos = this._tabForContextMenu;
-							vex.dialog.confirm({
-								message: _('Are you sure you want to delete sheet, %sheet% ?').replace('%sheet%', options.$trigger.text()),
-								callback: function(data) {
-									if (data) {
-										map.deletePage(nPos);
-									}
-								}
-							});
+						callback: (function(/*key, options*/) {
+							map.fire('executeDialog', {dialog: 'RemoveTable'});
 						}).bind(this),
 						icon: (function(opt, $itemElement, itemKey, item) {
 							return this._map.contextMenuIcon($itemElement, itemKey, item);
 						}).bind(this)
 				 },
 				'DBTableRename': {name: _UNO('.uno:RenameTable', 'spreadsheet', true),
-							callback: (function(key, options) {
-								var nPos = this._tabForContextMenu;
-								vex.dialog.open({
-									message: _('Enter new sheet name'),
-									input: '<input name="sheetname" type="text" value="' + options.$trigger.text() + '" required />',
-									callback: function(data) {
-										if (!data)
-											return;
-
-										if (map.isSheetnameValid(data.sheetname, nPos)) {
-											map.renamePage(data.sheetname, nPos);
-										} else {
-											var msg = _('Invalid sheet name.\nThe sheet name must not be empty or a duplicate of \nan existing name and may not contain the characters [ ] * ? : / \\ \nor the character \' (apostrophe) as first or last character.');
-											vex.dialog.alert(msg.replace(/\n/g, '<br>'));
-										}
-									}
-								});
+							callback: (function(/*key, options*/) {
+								map.fire('executeDialog', {dialog: 'RenameTable'});
 							}).bind(this),
 							icon: (function(opt, $itemElement, itemKey, item) {
 								return this._map.contextMenuIcon($itemElement, itemKey, item);
 							}).bind(this)
 				} ,
 				'sep01': '----',
-				'Show': {
-					name: _UNO('.uno:Show', 'spreadsheet', true),
-					callback: (function() {
-						that._showPage();
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
 				'Hide': {
 					name: _UNO('.uno:Hide', 'spreadsheet', true),
 					callback: (function() {
@@ -145,84 +112,28 @@ L.Control.Tabs = L.Control.extend({
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
+				},
+				'Show': {
+					name: _UNO('.uno:Show', 'spreadsheet', true),
+					callback: (function() {
+						map.fire('executeDialog', {dialog: 'ShowTable'});
+					}).bind(this),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'sep02': '----',
+				'ToggleSheetGrid': {
+					name: _UNO('.uno:ToggleSheetGrid', 'spreadsheet', true),
+					callback: (function() {
+						map.sendUnoCommand('.uno:ToggleSheetGrid');
+					}).bind(this),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
 				}
 			},
 			zIndex: 1000
-		});
-	},
-
-	_showPage: function () {
-		var map = this._map;
-		if (!map.hasAnyHiddenPart()) {
-			return;
-		}
-		var hiddenNames = map.getHiddenPartNames().split(',');
-		var sels = '<div style="height:200px; overflow-y:auto; overflow-y:none; padding: 5px; border:1px #bbbbbb solid">';
-		for (var i=0 ; i < hiddenNames.length ; i++) {
-			sels += '<input type="checkbox" name="' + hiddenNames[i] + '" ' +
-					'value="' + hiddenNames[i] + '">' + hiddenNames[i] + '<br>';
-		}
-		vex.dialog.open({
-			message: _('Hidden Sheets'),
-			input: sels,
-			buttons: [
-				$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
-				$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
-			],
-			callback: function(data) {
-				for (var sheet in data) {
-					map.showPage(sheet);
-				}
-			}
-		});
-	},
-
-	_movePart: function () {
-		var map = this._map;
-		var partNames = map._docLayer._partNames;
-		var currPart = map.getCurrentPartNumber();
-		var options = '';
-		for (var i = 0 ; i < partNames.length ; i++) {
-			if (!map.isHiddenPart(i)) {
-				options += '<option value="' + (i+1) + '">' + partNames[i] + '</option>';
-			}
-		}
-		options += '<option value="32767">' + _('- move to end position -') + '</option>';
-		vex.dialog.open({
-			message: _UNO('.uno:Move', 'spreadsheet', true),
-			input: [
-				'<div><input type="radio" id="movepart" name="copypart" value="false" checked><label for="movepart"> ' + _('Move') + '</label>&emsp;&emsp;&emsp;&emsp;' +
-				'<input type="radio" id="copypart" name="copypart" value="true"><label for="copypart"> ' + _('Copy') + '</label></div>',
-				'<div><b>' + _('Insert before') + '</b></div>',
-				'<select name="moveTo" size="10" style="font-size:16px; width: 100%;">' + options + '</select>'
-			],
-			callback: function (data) {
-				if (data !== undefined) {
-					// 移動或複製
-					var copy = (data.copypart === 'true');
-					var pos = data.moveTo;
-					if (pos === undefined) {
-						pos = currPart + 2;
-						if (pos > partNames.length)
-							pos = 32767; // 最後
-					}
-					var params = {
-						'DocName': {
-							'type': 'string',
-							'value': map.getDocName()
-						},
-						'Index': {
-							'type': 'long',
-							'value': pos
-						},
-						'Copy': {
-							'type': 'boolean',
-							'value': copy
-						}
-					}
-					map.sendUnoCommand('.uno:Move', params);
-				}
-			}
 		});
 	},
 
