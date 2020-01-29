@@ -27,7 +27,7 @@ L.dialog.ExampleDialog = {
 	},
 
 	// 每次都會從這裡開始
-	run: function(/*paramater*/) {
+	run: function(/*parameter*/) {
 		this._dialog = L.DomUtil.createWithId('div', '', document.body);
 		this._dialog.innerHTML = '';
 		$(this._dialog).dialog({

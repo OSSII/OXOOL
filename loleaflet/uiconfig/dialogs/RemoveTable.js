@@ -1,12 +1,12 @@
 /* -*- js-indent-level: 8 -*- */
 /*
- * L.dialog.OXSaveAs
- * OXOOL 自帶的 SaveAs 對話盒
+ * L.dialog.RemoveTable
+ * Calc: 刪除工作表
  *
  * Author: Firefly <firefly@ossii.com.tw>
  */
-/* global $ _ */
-L.dialog.OXSaveAs = {
+/* global $ _ _UNO */
+L.dialog.RemoveTable = {
 	_dialog: undefined,
 
 	init: function(map) {
@@ -15,15 +15,17 @@ L.dialog.OXSaveAs = {
 
 	run: function(/*parameter*/) {
 		var map = this._map;
+		var currPart = map.getCurrentPartNumber();
+		var currName = map._docLayer._partNames[currPart];
 		this._dialog = L.DomUtil.createWithId('div', '', document.body);
 		this._dialog.innerHTML = '<p>' +
-		'<b>' + _('File name:') + '<b><br><input type="text" id="newFileName" style="width:100%" autofocus>' +
+		_('Are you sure you want to delete sheet, %sheet% ?').replace('%sheet%', currName) +
 		'</p>';
 
 		$(this._dialog).dialog({
-			title: _('Please enter a new filename.'),
+			title: _UNO('.uno:Remove', 'spreadsheet', true),
 			position: {my: 'center', at: 'center', of: window},
-			minWidth: 250,
+			minWidth: 320,
 			autoOpen: true, // 自動顯示對話框
 			modal: true,
 			resizable: false,
@@ -37,10 +39,7 @@ L.dialog.OXSaveAs = {
 				{
 					text: _('OK'),
 					click: function() {
-						var val = $('#newFileName').val();
-						if (val.length) {
-							map.saveAs(val);
-						}
+						map.deletePage(currPart);
 						$(this).dialog('close');
 					}
 				},

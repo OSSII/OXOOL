@@ -13,7 +13,7 @@ L.dialog.GotoPage = {
 		this._map = map;
 	},
 
-	run: function(/*paramater*/) {
+	run: function(/*parameter*/) {
 		var numPages, currPage;
 		var options = '', selected = '';
 		var names, i;

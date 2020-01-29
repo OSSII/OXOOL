@@ -14,7 +14,7 @@ L.dialog.InsertBreak = {
 		this._map = map;
 	},
 
-	run: function(/*paramater*/) {
+	run: function(/*parameter*/) {
 		var pageStyles = this._map.getStyleFamilies().PageStyles; // 頁面式樣
 		var options = '<option value="">' + _('None') + '</option>';
 		var that = this;
@@ -29,7 +29,7 @@ L.dialog.InsertBreak = {
 		'<div><label><input type="radio" name="Kind" value="3" checked> ' + _('Page break') + '</label></div>' +
 		'<div style="margin-top:16px;"><b>' + _('Style') + ' :</b></div>' +
 		'<select name="TemplateName" id="TemplateName">' + options + '</select>' +
-		'<label><input type="checkbox" name="PageNumberFilled" id="PageNumberFilled" disabled> ' + ('Change page number') + '</label>' +
+		'<label><input type="checkbox" name="PageNumberFilled" id="PageNumberFilled" disabled> ' + _('Change page number') + '</label>' +
 		'<input id="PageNumber" name="PageNumber" disabled>';
 
 		$(this._dialog).dialog({
