@@ -2,11 +2,12 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#: uiconfig/dialogs/ExampleDialog.js:34
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-17 12:07+0800\n"
+"POT-Creation-Date: 2020-01-28 21:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -118,7 +119,7 @@ msgstr "CPU-grafika"
 msgid "Network Graph"
 msgstr "Syćowa grafika"
 
-#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:232
+#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:241
 msgid "Save"
 msgstr "Składować"
 
@@ -166,6 +167,10 @@ msgstr "Spadnjeny:"
 msgid "Refresh"
 msgstr "Wobnowić"
 
+#: admin/admin.strings.js:42
+msgid "Server uptime"
+msgstr ""
+
 #: admin/src/AdminSocketAnalytics.js:219
 msgid "Received"
 msgstr "Přijate"
@@ -174,15 +179,15 @@ msgstr "Přijate"
 msgid "Sent"
 msgstr "Wotpósłane"
 
-#: admin/src/AdminSocketBase.js:46
+#: admin/src/AdminSocketBase.js:54
 msgid "Connection error"
 msgstr "Zwiskowy zmylk"
 
-#: admin/src/AdminSocketOverview.js:101
+#: admin/src/AdminSocketOverview.js:102
 msgid "Are you sure you want to terminate this session?"
 msgstr "Chceće tute posedźenje woprawdźe skónčić?"
 
-#: admin/src/AdminSocketOverview.js:182 admin/src/AdminSocketOverview.js:284
+#: admin/src/AdminSocketOverview.js:183 admin/src/AdminSocketOverview.js:285
 msgid "Documents"
 msgstr "Dokumenty"
 
@@ -216,8 +221,13 @@ msgid "Verification"
 msgstr ""
 
 #: admin/src/AdminSocketGlobalFunction.js:35
-#: admin/src/AdminSocketGlobalFunction.js:59 js/toolbar.js:749
-#: js/toolbar.js:916 src/layer/marker/Annotation.js:171
+#: admin/src/AdminSocketGlobalFunction.js:59 js/toolbar.js:1059
+#: js/toolbar.js:1310 src/layer/marker/Annotation.js:181 src/map/Map.js:106
+#: uiconfig/dialogs/AddTableAtEnd.js:46 uiconfig/dialogs/ExampleDialog.js:54
+#: uiconfig/dialogs/GotoPage.js:76 uiconfig/dialogs/InsertBreak.js:57
+#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
+#: uiconfig/dialogs/OXSaveAs.js:48 uiconfig/dialogs/RemoveTable.js:47
+#: uiconfig/dialogs/RenameTable.js:49 uiconfig/dialogs/ShowTable.js:55
 msgid "Cancel"
 msgstr "Přetorhnyć"
 
@@ -229,7 +239,12 @@ msgstr ""
 msgid "Confirm password"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:58
+#: admin/src/AdminSocketGlobalFunction.js:58 src/map/Map.js:105
+#: uiconfig/dialogs/AddTableAtEnd.js:39 uiconfig/dialogs/ExampleDialog.js:48
+#: uiconfig/dialogs/GotoPage.js:63 uiconfig/dialogs/InsertBreak.js:50
+#: uiconfig/dialogs/InsertTable.js:64 uiconfig/dialogs/MoveTable.js:51
+#: uiconfig/dialogs/OXSaveAs.js:38 uiconfig/dialogs/RemoveTable.js:40
+#: uiconfig/dialogs/RenameTable.js:42 uiconfig/dialogs/ShowTable.js:46
 msgid "OK"
 msgstr ""
 
@@ -245,21 +260,21 @@ msgstr ""
 msgid "Change account password"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:129
+#: admin/src/AdminSocketGlobalFunction.js:128
 msgid "The account or password is inconsistent with the system!"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:139
+#: admin/src/AdminSocketGlobalFunction.js:138
 msgid ""
 "The account and password have been updated and will take effect after the "
 "next service restart."
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:143
+#: admin/src/AdminSocketGlobalFunction.js:142
 msgid "Version"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:147
+#: admin/src/AdminSocketGlobalFunction.js:146
 msgid "Core"
 msgstr ""
 
@@ -291,219 +306,359 @@ msgstr " mjeń"
 msgid " s"
 msgstr " sek"
 
-#: js/toolbar.js:153
+#: js/toolbar.js:208
 msgid "Are you sure you want to delete this page?"
 msgstr "Chceće tutu stronu woprawdźe zhašeć?"
 
-#: js/toolbar.js:622
-msgid "Document repair"
-msgstr "Dokument porjedźić"
-
-#: js/toolbar.js:662
-msgid "Insert table"
-msgstr "Tabelu zasadźić"
-
-#: js/toolbar.js:664
-msgid "Borders"
-msgstr "Kromy"
-
-#: js/toolbar.js:672
-msgid "More..."
-msgstr "Wjace..."
-
-#: js/toolbar.js:684
-msgid "Insert shapes"
-msgstr "Twary zasadźić"
-
-#: js/toolbar.js:691
-msgid "Insert Local Image"
-msgstr "Lokalny wobraz zasadźić"
-
-#: js/toolbar.js:719 js/toolbar.js:1033
-msgid "Always follow the editor"
-msgstr "Přeco wobdźěłarjej slědować"
-
-#: js/toolbar.js:722 js/toolbar.js:1036
-msgid "Current"
-msgstr "Aktualny"
-
-#: js/toolbar.js:747 js/toolbar.js:914 js/toolbar.js:1454
-msgid "Sum"
-msgstr "Suma"
-
-#: js/toolbar.js:748 js/toolbar.js:915
-msgid "Function"
-msgstr "Funkcija"
-
-#: js/toolbar.js:750 js/toolbar.js:917
-msgid "Accept"
-msgstr "Akceptować"
-
-#: js/toolbar.js:783 js/toolbar.js:972
-msgid "First sheet"
-msgstr "Prěnja tabela"
-
-#: js/toolbar.js:784 js/toolbar.js:973
-msgid "Previous sheet"
-msgstr "Předchadna tabela"
-
-#: js/toolbar.js:785 js/toolbar.js:974
-msgid "Next sheet"
-msgstr "Přichodna tabela"
-
-#: js/toolbar.js:786 js/toolbar.js:975
-msgid "Last sheet"
-msgstr "Poslednja tabela"
-
-#: js/toolbar.js:787 js/toolbar.js:976
-msgid "Insert sheet"
-msgstr "Tabelu zasadźić"
-
-#: js/toolbar.js:948 src/control/Control.Menubar.js:32
-msgid "Sign document"
-msgstr "Dokument signować"
-
-#: js/toolbar.js:953
-msgid "Logout"
-msgstr "Wotzjewjenje"
-
-#: js/toolbar.js:993 src/control/Control.Menubar.js:299
-msgid "Fullscreen presentation"
-msgstr "Prezentacija połneje wobrazowki"
-
-#: js/toolbar.js:1017
-msgid "Search:"
-msgstr "Pytać:"
-
-#: js/toolbar.js:1024
-msgid "Cancel the search"
-msgstr "Pytanje přetorhnyć"
-
-#: js/toolbar.js:1029
-msgid "No users"
-msgstr "Žani wužiwarjo"
-
-#: js/toolbar.js:1043 src/control/Control.Menubar.js:65
-#: src/control/Control.Menubar.js:263
-msgid "Reset zoom"
-msgstr "Skalowanje wróćo stajić"
-
-#: js/toolbar.js:1087
-msgid "%user has joined"
-msgstr "%user je so přidružił"
-
-#: js/toolbar.js:1088
-msgid "%user has left"
-msgstr "%user je wopušćił"
-
-#: js/toolbar.js:1432
-msgid "Number of Sheets"
-msgstr "Ličba tabelow"
-
-#: js/toolbar.js:1435
-msgid "Selected range of cells"
-msgstr "Wubrany celowy wobłuk"
-
-#: js/toolbar.js:1438 js/toolbar.js:1477
-msgid "Entering text mode"
-msgstr "Tekstowy modus zmóžnić"
-
-#: js/toolbar.js:1441 js/toolbar.js:1483 js/toolbar.js:1510
-msgid "Text Language"
-msgstr "Tekstowa rěč"
-
-#: js/toolbar.js:1444 js/toolbar.js:1480
-msgid "Selection Mode"
-msgstr "Wuběranski modus"
-
-#: js/toolbar.js:1447
-msgid "Choice of functions"
-msgstr "Wuběr funkcijow"
-
-#: js/toolbar.js:1449
-msgid "Average"
-msgstr "Přerězk"
-
-#: js/toolbar.js:1450
-msgid "CountA"
-msgstr "Ličba2"
-
-#: js/toolbar.js:1451
-msgid "Count"
-msgstr "Ličba"
-
-#: js/toolbar.js:1452
-msgid "Maximum"
-msgstr "Maksimum"
-
-#: js/toolbar.js:1453
-msgid "Minimum"
-msgstr "Minimum"
-
-#: js/toolbar.js:1455
-msgid "Selection count"
-msgstr "Wuběrowa ličba"
-
-#: js/toolbar.js:1456
+#: js/toolbar.js:703 js/toolbar.js:1869 uiconfig/dialogs/InsertBreak.js:19
 msgid "None"
 msgstr "Žadyn"
 
-#: js/toolbar.js:1471
+#: js/toolbar.js:704
+msgid "Wipe"
+msgstr ""
+
+#: js/toolbar.js:705
+msgid "Wheel"
+msgstr ""
+
+#: js/toolbar.js:706
+msgid "Uncover"
+msgstr ""
+
+#: js/toolbar.js:707
+msgid "Bars"
+msgstr ""
+
+#: js/toolbar.js:708
+msgid "Checkers"
+msgstr ""
+
+#: js/toolbar.js:709
+msgid "Shape"
+msgstr ""
+
+#: js/toolbar.js:710
+msgid "Box"
+msgstr ""
+
+#: js/toolbar.js:711
+msgid "Wedge"
+msgstr ""
+
+#: js/toolbar.js:712
+msgid "Venetian Blinds"
+msgstr ""
+
+#: js/toolbar.js:713
+msgid "Fade"
+msgstr ""
+
+#: js/toolbar.js:714
+msgid "Cut"
+msgstr ""
+
+#: js/toolbar.js:715
+msgid "Cover"
+msgstr ""
+
+#: js/toolbar.js:716
+msgid "Dissolve"
+msgstr ""
+
+#: js/toolbar.js:717
+msgid "Random"
+msgstr ""
+
+#: js/toolbar.js:718
+msgid "Comb"
+msgstr ""
+
+#: js/toolbar.js:719
+msgid "Push"
+msgstr ""
+
+#: js/toolbar.js:720
+msgid "Split"
+msgstr ""
+
+#: js/toolbar.js:721
+msgid "Diagonal"
+msgstr ""
+
+#: js/toolbar.js:722
+msgid "Tiles"
+msgstr ""
+
+#: js/toolbar.js:723
+msgid "Cube"
+msgstr ""
+
+#: js/toolbar.js:724
+msgid "Circles"
+msgstr ""
+
+#: js/toolbar.js:725
+msgid "Helix"
+msgstr ""
+
+#: js/toolbar.js:726
+msgid "Fall"
+msgstr ""
+
+#: js/toolbar.js:727
+msgid "Turn Around"
+msgstr ""
+
+#: js/toolbar.js:728
+msgid "Iris"
+msgstr ""
+
+#: js/toolbar.js:729
+msgid "Turn Down"
+msgstr ""
+
+#: js/toolbar.js:730
+msgid "Rochade"
+msgstr ""
+
+#: js/toolbar.js:731
+msgid "3D Denetian"
+msgstr ""
+
+#: js/toolbar.js:732
+msgid "Static"
+msgstr ""
+
+#: js/toolbar.js:733
+msgid "Fine Dissolve"
+msgstr ""
+
+#: js/toolbar.js:734
+msgid "Vortex"
+msgstr ""
+
+#: js/toolbar.js:735
+msgid "Ripple"
+msgstr ""
+
+#: js/toolbar.js:736
+msgid "Glitter"
+msgstr ""
+
+#: js/toolbar.js:737
+msgid "Honeycomb"
+msgstr ""
+
+#: js/toolbar.js:738
+msgid "Newsflash"
+msgstr ""
+
+#: js/toolbar.js:833
+msgid "More..."
+msgstr "Wjace..."
+
+#: js/toolbar.js:894
+msgid "Borders"
+msgstr "Kromy"
+
+#: js/toolbar.js:954
+msgid "Insert table"
+msgstr "Tabelu zasadźić"
+
+#: js/toolbar.js:959
+msgid "Insert Local Image"
+msgstr "Lokalny wobraz zasadźić"
+
+#: js/toolbar.js:963
+msgid "Insert shapes"
+msgstr "Twary zasadźić"
+
+#: js/toolbar.js:971 js/toolbar.js:2702
+msgid "Common symbols"
+msgstr ""
+
+#: js/toolbar.js:972
+msgid "More symbols"
+msgstr ""
+
+#: js/toolbar.js:1012 js/toolbar.js:1428
+msgid "Always follow the editor"
+msgstr "Přeco wobdźěłarjej slědować"
+
+#: js/toolbar.js:1015 js/toolbar.js:1431
+msgid "Current"
+msgstr "Aktualny"
+
+#: js/toolbar.js:1060 js/toolbar.js:1311
+msgid "Accept"
+msgstr "Akceptować"
+
+#: js/toolbar.js:1093 js/toolbar.js:1358
+msgid "First sheet"
+msgstr "Prěnja tabela"
+
+#: js/toolbar.js:1094 js/toolbar.js:1359
+msgid "Previous sheet"
+msgstr "Předchadna tabela"
+
+#: js/toolbar.js:1095 js/toolbar.js:1360
+msgid "Next sheet"
+msgstr "Přichodna tabela"
+
+#: js/toolbar.js:1096 js/toolbar.js:1361
+msgid "Last sheet"
+msgstr "Poslednja tabela"
+
+#: js/toolbar.js:1097 js/toolbar.js:1362
+msgid "Insert sheet"
+msgstr "Tabelu zasadźić"
+
+#: js/toolbar.js:1188 js/toolbar.js:1412
+msgid "Search:"
+msgstr "Pytać:"
+
+#: js/toolbar.js:1195 js/toolbar.js:1419
+msgid "Cancel the search"
+msgstr "Pytanje přetorhnyć"
+
+#: js/toolbar.js:1227
+msgid "Delete"
+msgstr ""
+
+#: js/toolbar.js:1380 src/control/Control.Menubar.js:320
+msgid "Fullscreen presentation"
+msgstr "Prezentacija połneje wobrazowki"
+
+#: js/toolbar.js:1386 src/control/Control.Menubar.js:322
+#: uiconfig/dialogs/MoveTable.js:28
+msgid "Move"
+msgstr ""
+
+#: js/toolbar.js:1439
+msgid "Reset zoom"
+msgstr "Skalowanje wróćo stajić"
+
+#: js/toolbar.js:1442
+msgid "Zoom factor"
+msgstr ""
+
+#: js/toolbar.js:1512
+msgid "%user has joined"
+msgstr "%user je so přidružił"
+
+#: js/toolbar.js:1513
+msgid "%user has left"
+msgstr "%user je wopušćił"
+
+#: js/toolbar.js:1833
+msgid "Number of Sheets"
+msgstr "Ličba tabelow"
+
+#: js/toolbar.js:1838
+msgid "Selected range of cells"
+msgstr "Wubrany celowy wobłuk"
+
+#: js/toolbar.js:1843 js/toolbar.js:1902
+msgid "Entering text mode"
+msgstr "Tekstowy modus zmóžnić"
+
+#: js/toolbar.js:1848 js/toolbar.js:1912 js/toolbar.js:1937
+msgid "Text Language"
+msgstr "Tekstowa rěč"
+
+#: js/toolbar.js:1853 js/toolbar.js:1907
+msgid "Selection Mode"
+msgstr "Wuběranski modus"
+
+#: js/toolbar.js:1858
+msgid "Choice of functions"
+msgstr "Wuběr funkcijow"
+
+#: js/toolbar.js:1862
+msgid "Average"
+msgstr "Přerězk"
+
+#: js/toolbar.js:1863
+msgid "CountA"
+msgstr "Ličba2"
+
+#: js/toolbar.js:1864
+msgid "Count"
+msgstr "Ličba"
+
+#: js/toolbar.js:1865
+msgid "Maximum"
+msgstr "Maksimum"
+
+#: js/toolbar.js:1866
+msgid "Minimum"
+msgstr "Minimum"
+
+#: js/toolbar.js:1867
+msgid "Sum"
+msgstr "Suma"
+
+#: js/toolbar.js:1868
+msgid "Selection count"
+msgstr "Wuběrowa ličba"
+
+#: js/toolbar.js:1892
 msgid "Number of Pages"
 msgstr "Ličba stronow"
 
-#: js/toolbar.js:1474
+#: js/toolbar.js:1897
 msgid "Word Counter"
 msgstr "Ličba słowow"
 
-#: js/toolbar.js:1505
+#: js/toolbar.js:1932
 msgid "Number of Slides"
 msgstr "Ličba folijow"
 
-#: js/toolbar.js:1537
+#: js/toolbar.js:1969
 msgid "%n users"
 msgstr "%n wužiwarjow"
 
-#: js/toolbar.js:1538
+#: js/toolbar.js:1970
 msgid "1 user"
 msgstr "1 wužiwar"
 
-#: js/toolbar.js:1539
+#: js/toolbar.js:1971
 msgid "0 users"
 msgstr "0 wužiwarjow"
 
-#: js/toolbar.js:1669
+#: js/toolbar.js:2166
 msgid "Document saved"
 msgstr "Dokument je so składował"
 
-#: js/toolbar.js:1819
+#: js/toolbar.js:2327 uiconfig/dialogs/InsertBreak.js:30
 msgid "Style"
 msgstr "Stil"
 
-#: js/toolbar.js:1841
+#: js/toolbar.js:2350
 msgid "Font"
 msgstr "Pismo"
 
-#: js/toolbar.js:1886
+#: js/toolbar.js:2371
 msgid "Previous slide"
 msgstr "Předchadna folija"
 
-#: js/toolbar.js:1887
+#: js/toolbar.js:2372
 msgid "Next slide"
 msgstr "Přichodna folija"
 
-#: js/toolbar.js:1949
+#: js/toolbar.js:2458
 msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to resolve"
 msgstr ""
 "Konflikt při cofnjenju/wospjetowanju z wjacorymi wužiwarjemi. Prošu "
 "wužiwajće dokumentowe porjedźenje za rozrisanje"
 
-#: js/toolbar.js:2177 src/control/Control.DocumentRepair.js:95
+#: js/toolbar.js:2869 src/control/Control.DocumentRepair.js:95
 msgid "You"
 msgstr "Wy"
 
-#: js/toolbar.js:2183
+#: js/toolbar.js:2875
 msgid "Readonly"
 msgstr "Přećiwo pisanju škitany"
 
@@ -519,19 +674,7 @@ msgstr ""
 msgid "The server encountered a %0 error while parsing the %1 command."
 msgstr "Serwer je při wuwjedźenju přikaza %1 na zmylk %0 storčił."
 
-#: src/control/Control.ContextMenu.js:132
-msgid "Internal Cut"
-msgstr "Interne wutřihanje"
-
-#: src/control/Control.ContextMenu.js:135
-msgid "Internal Copy"
-msgstr "Interne kopěrowanje"
-
-#: src/control/Control.ContextMenu.js:138
-msgid "Internal Paste"
-msgstr "Interne zasadźenje"
-
-#: src/control/Control.ContextMenu.js:160
+#: src/control/Control.ContextMenu.js:165
 msgid "Internal Paste Special"
 msgstr "Interne zasadźenje wobsaha"
 
@@ -539,7 +682,7 @@ msgstr "Interne zasadźenje wobsaha"
 msgid "Repair Document"
 msgstr "Dokument porjedźić"
 
-#: src/control/Control.DocumentRepair.js:44
+#: src/control/Control.DocumentRepair.js:44 uiconfig/dialogs/InsertBreak.js:26
 msgid "Type"
 msgstr "Typ"
 
@@ -547,7 +690,7 @@ msgstr "Typ"
 msgid "Index"
 msgstr "Indeks"
 
-#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:226
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:265
 msgid "Comment"
 msgstr "Komentar"
 
@@ -563,117 +706,130 @@ msgstr "Časowy kołk"
 msgid "Jump to state"
 msgstr "K statusej přeńć"
 
-#: src/control/Control.Menubar.js:21
+#: src/control/Control.Menubar.js:14 src/control/Control.Menubar.js:241
+#: src/control/Control.Menubar.js:344
 msgid "Share..."
 msgstr "Dźělić..."
 
-#: src/control/Control.Menubar.js:23 src/control/Control.Menubar.js:236
-#: src/control/Control.Menubar.js:317
+#: src/control/Control.Menubar.js:16 src/control/Control.Menubar.js:243
+#: src/control/Control.Menubar.js:346
 msgid "See revision history"
 msgstr "Wersijowu historiju pokazać"
 
-#: src/control/Control.Menubar.js:24 src/control/Control.Menubar.js:237
-#: src/control/Control.Menubar.js:318
+#: src/control/Control.Menubar.js:17 src/control/Control.Menubar.js:244
+#: src/control/Control.Menubar.js:347
 msgid "Download as"
 msgstr "Sćahnyć jako"
 
-#: src/control/Control.Menubar.js:25 src/control/Control.Menubar.js:238
-#: src/control/Control.Menubar.js:320
+#: src/control/Control.Menubar.js:18 src/control/Control.Menubar.js:245
+#: src/control/Control.Menubar.js:349
 msgid "PDF Document (.pdf)"
 msgstr "PDF-dokument (.pdf)"
 
-#: src/control/Control.Menubar.js:26
+#: src/control/Control.Menubar.js:19
 msgid "TEXT Document (.txt)"
 msgstr ""
 
-#: src/control/Control.Menubar.js:27 src/control/Control.Menubar.js:239
-#: src/control/Control.Menubar.js:319
+#: src/control/Control.Menubar.js:20 src/control/Control.Menubar.js:246
+#: src/control/Control.Menubar.js:348
 msgid "HTML Document (.html)"
 msgstr ""
 
-#: src/control/Control.Menubar.js:28
+#: src/control/Control.Menubar.js:21
 msgid "ODF text document (.odt)"
 msgstr "Tekstowy dokument ODF (.odt)"
 
-#: src/control/Control.Menubar.js:29
+#: src/control/Control.Menubar.js:22
 msgid "Word 2003 Document (.doc)"
 msgstr "Dokument Word 2003 (.doc)"
 
-#: src/control/Control.Menubar.js:30
+#: src/control/Control.Menubar.js:23
 msgid "Word Document (.docx)"
 msgstr "Dokument Word (.docx)"
 
-#: src/control/Control.Menubar.js:31
+#: src/control/Control.Menubar.js:24
 msgid "Rich Text (.rtf)"
 msgstr "Rich Text (.rtf)"
 
-#: src/control/Control.Menubar.js:39 src/control/Control.Menubar.js:249
-#: src/control/Control.Menubar.js:331
+#: src/control/Control.Menubar.js:25
+msgid "Sign document"
+msgstr "Dokument signować"
+
+#: src/control/Control.Menubar.js:32 src/control/Control.Menubar.js:256
+#: src/control/Control.Menubar.js:360
 msgid "Repair"
 msgstr "Porjedźić"
 
-#: src/control/Control.Menubar.js:71 src/control/Control.Menubar.js:266
-#: src/control/Control.Menubar.js:344
+#: src/control/Control.Menubar.js:63 src/control/Control.Menubar.js:273
+#: src/control/Control.Menubar.js:377
 msgid "Local Image..."
 msgstr "Lokalny wobraz..."
 
-#: src/control/Control.Menubar.js:87 src/control/Control.Menubar.js:89
+#: src/control/Control.Menubar.js:80 src/control/Control.Menubar.js:82
 msgid "All"
 msgstr "Wšě"
 
-#: src/control/Control.Menubar.js:136
-msgid "Text orientation"
-msgstr "Tekstowe wusměrjenje"
+#: src/control/Control.Menubar.js:93
+msgid "Horizontal Line"
+msgstr ""
 
-#: src/control/Control.Menubar.js:214 src/control/Control.Menubar.js:216
-#: src/control/Control.Menubar.js:218 src/control/Control.Menubar.js:304
-#: src/control/Control.Menubar.js:399
+#: src/control/Control.Menubar.js:218 src/control/Control.Menubar.js:220
+#: src/control/Control.Menubar.js:222 src/control/Control.Menubar.js:332
+#: src/control/Control.Menubar.js:448
 msgid "None (Do not check spelling)"
 msgstr "Žadyn (prawopis njekontrolować)"
 
-#: src/control/Control.Menubar.js:226 src/control/Control.Menubar.js:307
-#: src/control/Control.Menubar.js:402
+#: src/control/Control.Menubar.js:232 src/control/Control.Menubar.js:335
+#: src/control/Control.Menubar.js:451
 msgid "Keyboard shortcuts"
 msgstr "Tastowe skrótšenki"
 
-#: src/control/Control.Menubar.js:227 src/control/Control.Menubar.js:308
-#: src/control/Control.Menubar.js:403
+#: src/control/Control.Menubar.js:233 src/control/Control.Menubar.js:336
+#: src/control/Control.Menubar.js:452
 msgid "About"
 msgstr "Wo"
 
-#: src/control/Control.Menubar.js:240
+#: src/control/Control.Menubar.js:247
 msgid "ODF presentation (.odp)"
 msgstr "ODF-prezentacija (.odp)"
 
-#: src/control/Control.Menubar.js:241
+#: src/control/Control.Menubar.js:248
 msgid "PowerPoint 2003 Presentation (.ppt)"
 msgstr "Prezentacija Powerpoint 2003 (.ppt)"
 
-#: src/control/Control.Menubar.js:242
+#: src/control/Control.Menubar.js:249
 msgid "PowerPoint Presentation (.pptx)"
 msgstr "Prezentacija Powerpoint (.pptx)"
 
-#: src/control/Control.Menubar.js:321
+#: src/control/Control.Menubar.js:350
 msgid "ODF spreadsheet (.ods)"
 msgstr "Tabelowy dokument ODF (.ods)"
 
-#: src/control/Control.Menubar.js:322
+#: src/control/Control.Menubar.js:351
 msgid "Excel 2003 Spreadsheet (.xls)"
 msgstr "Tabelowy dokument Excel 2003 (.xls)"
 
-#: src/control/Control.Menubar.js:323
+#: src/control/Control.Menubar.js:352
 msgid "Excel Spreadsheet (.xlsx)"
 msgstr "Tabelowy dokument Excel (.xlsx)"
 
-#: src/control/Control.Menubar.js:324
+#: src/control/Control.Menubar.js:353
 msgid "CSV (.csv)"
 msgstr ""
 
-#: src/control/Control.Menubar.js:470
+#: src/control/Control.Menubar.js:527
 msgid "Reset to Default Language"
 msgstr "Na standardnu rěč wróćo stajić"
 
-#: src/control/Control.Menubar.js:731
+#: src/control/Control.Menubar.js:770
+msgid "All contents of the header will be deleted and can not be restored."
+msgstr ""
+
+#: src/control/Control.Menubar.js:772
+msgid "All contents of the footer will be deleted and can not be restored."
+msgstr ""
+
+#: src/control/Control.Menubar.js:1096
 msgid "Are you sure you want to delete this slide?"
 msgstr "Chceće tutu foliju woprawdźe zhašeć?"
 
@@ -685,39 +841,35 @@ msgstr "Přispomnjenki horje kulić"
 msgid "Scroll down annotations"
 msgstr "Přispomnjenki dele kulić"
 
-#: src/control/Control.Tabs.js:55
+#: src/control/Control.Tabs.js:70
 msgid "Insert sheet before this"
 msgstr "Tabelu před tym zasadźić"
 
-#: src/control/Control.Tabs.js:56
+#: src/control/Control.Tabs.js:76
 msgid "Insert sheet after this"
 msgstr "Tabelu za tym zasadźić"
 
-#: src/control/Control.Tabs.js:61
-msgid "Are you sure you want to delete sheet, %sheet% ?"
-msgstr "Chceće tabelu %sheet% woprawdźe zhašeć?"
-
-#: src/control/Control.Tabs.js:74
-msgid "Enter new sheet name"
-msgstr "Nowe tabelowe mjeno zapodać"
-
-#: src/control/Ruler.js:95
+#: src/control/Ruler.js:97
 msgid "Left Margin"
 msgstr "Lěwa kroma"
 
-#: src/control/Ruler.js:96
+#: src/control/Ruler.js:98
 msgid "Right Margin"
 msgstr "Prawa kroma"
 
-#: src/control/Toolbar.js:75 src/control/Toolbar.js:84
+#: src/control/Toolbar.js:258 src/control/Toolbar.js:270
 msgid "Downloading..."
 msgstr "Sćahuje so..."
 
-#: src/control/Toolbar.js:99 src/map/Map.js:1039
+#: src/control/Toolbar.js:286 src/map/Map.js:1232
 msgid "Saving..."
 msgstr "Składuje so..."
 
-#: src/control/Toolbar.js:260
+#: src/control/Toolbar.js:297
+msgid "Renaming..."
+msgstr ""
+
+#: src/control/Toolbar.js:658
 msgid "This version of %productName is powered by"
 msgstr "Tuta wersija %productName spěchuje so wot"
 
@@ -737,33 +889,33 @@ msgstr ""
 msgid "Oops, there is a problem connecting to LibreOffice Online : "
 msgstr "Hopla, je problem při zwjazowanju z Libre Office Online wustupił: "
 
-#: src/core/Socket.js:276
+#: src/core/Socket.js:274
 msgid "Unsupported server version."
 msgstr "Serwerowa wersija so njepodpěruje."
 
-#: src/core/Socket.js:327
+#: src/core/Socket.js:325
 msgid "Session terminated by document owner"
 msgstr "Posedźenje bu wot dokumentoweho swójstwownika skónčene"
 
-#: src/core/Socket.js:331
+#: src/core/Socket.js:329
 msgid "Idle document - please click to reload and resume editing"
 msgstr ""
 "Inaktiwny dokument - prošu klikńće, zo byšće znowa začitał a z "
 "wobdźěłowanjom pokročował"
 
-#: src/core/Socket.js:338
+#: src/core/Socket.js:336
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr "Serwer so za wothladowanje wupina (awtomatiske zwěsćenje)"
 
-#: src/core/Socket.js:342
+#: src/core/Socket.js:340
 msgid "Oops, there is a problem connecting the document"
 msgstr "Hopla, je problem při zwjazowanju z dokumentom"
 
-#: src/core/Socket.js:346
+#: src/core/Socket.js:344
 msgid "Server is recycling and will be available shortly"
 msgstr "Serwer so znowa startuje a budźe bórze k dispoziciji"
 
-#: src/core/Socket.js:377
+#: src/core/Socket.js:376
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
@@ -771,7 +923,7 @@ msgstr ""
 "Dokument je so w składowaku změnił. Nowy dokument so začita. Waša wersija je "
 "jako předźěłana wersija k dispoziciji."
 
-#: src/core/Socket.js:383
+#: src/core/Socket.js:382
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
@@ -779,7 +931,7 @@ msgstr ""
 "Starša wersija so wobnowja. Njeskładowane změny so we wersijowej historiji "
 "wobchowaja"
 
-#: src/core/Socket.js:501
+#: src/core/Socket.js:504
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
@@ -787,40 +939,40 @@ msgstr ""
 "Dokument je so w składowaku změnił. Što chceće ze swojimi njeskładowanymi "
 "změnami činić?"
 
-#: src/core/Socket.js:506
+#: src/core/Socket.js:509
 msgid "Discard"
 msgstr "Zaćisnyć"
 
-#: src/core/Socket.js:511
+#: src/core/Socket.js:514
 msgid "Overwrite"
 msgstr "Přepisać"
 
-#: src/core/Socket.js:516
+#: src/core/Socket.js:519
 msgid "Save to new file"
 msgstr "Do noweje dataje składować"
 
-#: src/core/Socket.js:584
+#: src/core/Socket.js:590
 msgid "Document requires password to view."
 msgstr "Dokument sej hesło wužaduje, zo by so pokazał."
 
-#: src/core/Socket.js:587
+#: src/core/Socket.js:593
 msgid "Document requires password to modify."
 msgstr "Dokument sej hesło wužaduje, zo by so změnił."
 
-#: src/core/Socket.js:589
+#: src/core/Socket.js:595
 msgid "Hit Cancel to open in view-only mode."
 msgstr ""
 "Klikńće na Přetorhnyć, zo byšće dokument we wobhladanskim modusu wočinił."
 
-#: src/core/Socket.js:593
+#: src/core/Socket.js:599
 msgid "Wrong password provided. Please try again."
 msgstr "Wopačne hesło podate. Prošu spytajće hišće raz."
 
-#: src/core/Socket.js:706
+#: src/core/Socket.js:715
 msgid "Connecting..."
 msgstr "Zwjazuje so..."
 
-#: src/core/Socket.js:858
+#: src/core/Socket.js:875
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -911,14 +1063,20 @@ msgstr ""
 "podpěruje a wobškodźeny njeje, a spytajće potom hišće raz."
 
 #: src/errormessages.js:24
-msgid "Invalid link: '%url'"
+msgid ""
+"Failed to load the document. This document is either malformed or is taking "
+"more resources than allowed. Please contact the administrator."
 msgstr ""
 
 #: src/errormessages.js:25
+msgid "Invalid link: '%url'"
+msgstr ""
+
+#: src/errormessages.js:26
 msgid "You are leaving the editor, are you sure you want to proceed?"
 msgstr ""
 
-#: src/errormessages.js:28
+#: src/errormessages.js:29
 #, javascript-format
 msgid ""
 "Failed to read document from storage. Please contact your storage server "
@@ -927,7 +1085,7 @@ msgstr ""
 "Dokument njeda so ze składowaka čitać. Prošu stajće so z administratorom "
 "swojeho składowakeho serwera (%storageserver) do zwiska."
 
-#: src/errormessages.js:29
+#: src/errormessages.js:30
 #, javascript-format
 msgid ""
 "Save failed due to no disk space left on storage server. Document will now "
@@ -939,12 +1097,12 @@ msgstr ""
 "administratorom (%storageserver) do zwiska, zo byšće z wobdźěłowanjom "
 "pokročował."
 
-#: src/errormessages.js:30
+#: src/errormessages.js:31
 msgid "Document cannot be saved due to expired or invalid access token."
 msgstr ""
 "Dokument njeda so spadnjeneho abo njepłaćiweho přistupneho tokena składować."
 
-#: src/errormessages.js:31
+#: src/errormessages.js:32
 msgid ""
 "Document cannot be saved. Check your permissions or contact the storage "
 "server administrator."
@@ -952,50 +1110,175 @@ msgstr ""
 "Dokument njeda so składować. Přepruwujće swoje prawa abo stajće so z "
 "administratorom składowanskeho serwera do zwiska."
 
-#: src/layer/marker/Annotation.js:201
+#: src/layer/marker/Annotation.js:210
 msgid "Accept change"
 msgstr "Změnu přiwzać"
 
-#: src/layer/marker/Annotation.js:206
+#: src/layer/marker/Annotation.js:215
 msgid "Reject change"
 msgstr "Změnu wotpokazać"
 
-#: src/layer/marker/Annotation.js:215
+#: src/layer/marker/Annotation.js:224
 msgid "Open menu"
 msgstr "Meni wočinić"
 
-#: src/layer/marker/Annotation.js:235 src/layer/tile/TileLayer.js:199
+#: src/layer/marker/Annotation.js:244 src/layer/tile/TileLayer.js:238
 msgid "Reply"
 msgstr "Wotmołwić"
 
-#: src/layer/tile/TileLayer.js:193
+#: src/layer/tile/TileLayer.js:232
 msgid "Modify"
 msgstr "Změnić"
 
-#: src/layer/tile/TileLayer.js:205
+#: src/layer/tile/TileLayer.js:244
 msgid "Remove"
 msgstr "Wotstronić"
 
-#: src/map/Map.js:146
+#: src/map/Map.js:201
 msgid "Initializing..."
 msgstr "Inicializuje so..."
 
-#: src/map/Map.js:911
+#: src/map/Map.js:319
+msgid "Last modification"
+msgstr ""
+
+#: src/map/Map.js:816
+msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
+msgstr ""
+
+#: src/map/Map.js:819
+msgid "Invalid Command."
+msgstr ""
+
+#: src/map/Map.js:1092
 msgid "Inactive document - please click to resume editing"
 msgstr ""
 "Inaktiwny dokument - prošu klikńće, zo byšće z wobdźěłowanjom pokročował"
 
-#: src/map/Map.js:1042
+#: src/map/Map.js:1235
 msgid "Loading..."
 msgstr "Čita so..."
 
-#: src/map/handler/Map.FileInserter.js:82
+#: src/map/handler/Map.FileInserter.js:105
 msgid "Uploading..."
 msgstr "Nahrawa so..."
 
-#: src/map/handler/Map.WOPI.js:276
+#: src/map/handler/Map.WOPI.js:103
+msgid "Creating new file from template..."
+msgstr ""
+
+#: src/map/handler/Map.WOPI.js:318
 msgid "Creating copy..."
 msgstr "Kopija so wutworja..."
+
+#: uiconfig/dialogs/AddTableAtEnd.js:20 uiconfig/dialogs/RenameTable.js:23
+msgid "Enter new sheet name"
+msgstr "Nowe tabelowe mjeno zapodać"
+
+#: uiconfig/dialogs/AddTableAtEnd.js:21
+msgid "Automatic naming"
+msgstr ""
+
+#: uiconfig/dialogs/AddTableAtEnd.js:60 uiconfig/dialogs/InsertTable.js:92
+#: uiconfig/dialogs/RenameTable.js:64
+msgid ""
+"Invalid sheet name.\n"
+"The sheet name must not be empty or a duplicate of \n"
+"an existing name and may not contain the characters [ ] * ? : / \\ \n"
+"or the character ' (apostrophe) as first or last character."
+msgstr ""
+
+#: uiconfig/dialogs/InsertBreak.js:27
+msgid "Line break"
+msgstr ""
+
+#: uiconfig/dialogs/InsertBreak.js:28
+msgid "Column break"
+msgstr ""
+
+#: uiconfig/dialogs/InsertBreak.js:29
+msgid "Page break"
+msgstr ""
+
+#: uiconfig/dialogs/InsertBreak.js:32
+msgid "Change page number"
+msgstr ""
+
+#: uiconfig/dialogs/InsertTable.js:21
+msgid "Position"
+msgstr ""
+
+#: uiconfig/dialogs/InsertTable.js:22
+msgid "Before current sheet"
+msgstr ""
+
+#: uiconfig/dialogs/InsertTable.js:23
+msgid "After current sheet"
+msgstr ""
+
+#: uiconfig/dialogs/InsertTable.js:27
+msgid "Sheet"
+msgstr ""
+
+#: uiconfig/dialogs/InsertTable.js:28
+msgid "No. of sheets"
+msgstr ""
+
+#: uiconfig/dialogs/InsertTable.js:29
+msgid "Name"
+msgstr ""
+
+#: uiconfig/dialogs/MoveTable.js:26
+msgid "- move to end position -"
+msgstr ""
+
+#: uiconfig/dialogs/MoveTable.js:29
+msgid "Copy"
+msgstr ""
+
+#: uiconfig/dialogs/MoveTable.js:30
+msgid "Insert before"
+msgstr ""
+
+#: uiconfig/dialogs/OXSaveAs.js:20
+msgid "File name:"
+msgstr ""
+
+#: uiconfig/dialogs/OXSaveAs.js:24
+msgid "Please enter a new filename."
+msgstr ""
+
+#: uiconfig/dialogs/RemoveTable.js:22
+msgid "Are you sure you want to delete sheet, %sheet% ?"
+msgstr "Chceće tabelu %sheet% woprawdźe zhašeć?"
+
+#: uiconfig/dialogs/ShowTable.js:29
+msgid "Hidden Sheets"
+msgstr ""
+
+#~ msgid "Document repair"
+#~ msgstr "Dokument porjedźić"
+
+#~ msgid "Function"
+#~ msgstr "Funkcija"
+
+#~ msgid "Logout"
+#~ msgstr "Wotzjewjenje"
+
+#~ msgid "No users"
+#~ msgstr "Žani wužiwarjo"
+
+#~ msgid "Internal Cut"
+#~ msgstr "Interne wutřihanje"
+
+#~ msgid "Internal Copy"
+#~ msgstr "Interne kopěrowanje"
+
+#~ msgid "Internal Paste"
+#~ msgstr "Interne zasadźenje"
+
+#~ msgid "Text orientation"
+#~ msgstr "Tekstowe wusměrjenje"
 
 #~ msgid "Close document"
 #~ msgstr "Dokument začinić"
