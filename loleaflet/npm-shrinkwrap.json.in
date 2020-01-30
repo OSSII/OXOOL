@@ -1842,6 +1842,11 @@
       "resolved": "file:node_shrinkwrap/jquery-ui-1.12.1.tgz",
       "dev": true
     },
+    "jquery-ui-touch-punch": {
+      "version": "0.2.3",
+      "resolved": "file:node_shrinkwrap/jquery-ui-touch-punch-0.2.3.tgz",
+      "dev": true
+    },
     "js-yaml": {
       "version": "3.11.0",
       "resolved": "file:node_shrinkwrap/js-yaml-3.11.0.tgz",

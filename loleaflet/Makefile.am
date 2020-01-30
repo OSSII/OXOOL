@@ -103,6 +103,7 @@ NODE_MODULES_JS =\
 	node_modules/jquery-mousewheel/jquery.mousewheel.js \
 	node_modules/jquery-contextmenu/dist/jquery.contextMenu.js \
 	node_modules/jquery-ui/jquery-ui.js \
+	node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.js \
 	node_modules/smartmenus/dist/jquery.smartmenus.js \
 	node_modules/timeago/jquery.timeago.js \
 	node_modules/timeago.js/dist/timeago.min.js \
