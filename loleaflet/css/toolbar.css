@@ -268,13 +268,11 @@ button.leaflet-control-search-next
 /* select box */
 .select2-results__option {
     padding: 5px;
-    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
     font-size: 14px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .select2-selection__rendered {
-    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
     font-size: 14px;
 }
 .styles-select {

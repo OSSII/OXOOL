@@ -113,7 +113,6 @@
 }
 
 body {
-    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
     margin: 0;
     overflow: hidden;
     overscroll-behavior-y: none; /* disable the pull to reload gesture */
@@ -293,7 +292,6 @@ body {
 }
 
 .loleaflet-font {
-    font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
     font-size: 14px !important;
     font-weight: normal !important;
 }
@@ -309,7 +307,6 @@ body {
 }
 
 .loleaflet-controls {
-    	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
 	margin-right: 10px;
 }
 
@@ -361,9 +358,7 @@ body {
 	padding-left: 48px !important;
 	line-height: 20px !important;
 }
-.context-menu-icon::before {
-	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
-}
+
 .context-menu-icon-lo-checkmark:before {
 	content: '\2713';
 }
@@ -382,7 +377,6 @@ body {
 
 .loleaflet-annotation-content-wrapper, .loleaflet-annotation-redline-content-wrapper {
 	padding: 8px;
-	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif;
 	font-size: 14px;
 	text-align: left;
 	background-color: #efefef;
@@ -425,7 +419,6 @@ body {
 }
 
 .loleaflet-annotation-textarea {
-	font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
 	font-size: 14px;
 	border: 1px solid #c8c8c8;
 	background-color: white;
@@ -628,7 +621,25 @@ body {
         -o-user-select: none;
 }
 
-.ui-widget {
+body,
+input,
+.lo-menu a,
+.lo-menu a:hover,
+.lo-menu a:focus,
+.lo-menu a:active,
+.vex.vex-theme-default .vex-content, 
+.loleaflet-font,
+.loleaflet-controls,
+.context-menu-icon,
+.loleaflet-annotation-content-wrapper,
+.loleaflet-annotation-redline-content-wrapper,
+.loleaflet-annotation-textarea,
+.spreadsheet-tab,
+.ui-widget,
+.ui-widget input,
+.ui-widget select,
+.ui-widget textarea,
+.ui-widget button {
     font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif !important;
 }
 
