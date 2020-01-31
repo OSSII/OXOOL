@@ -1388,8 +1388,7 @@
 			{
 				"name": ".uno:Delete",
 				"id": "dialog:DeleteCell",
-				"hotkey": "Backspace",
-				"hide": true
+				"hotkey": "Backspace"
 			},
 			{
 				"name": ".uno:FillCellsMenu",
@@ -1547,6 +1546,21 @@
 			},
 			{
 				"type": "--"
+			},
+			{
+				"name": ".uno:DataPilotMenu",
+				"id": ".uno:DataPilotMenu",
+				"menu":[
+					{
+						"id": ".uno:InsertPivotTable"
+					},
+					{
+						"id": ".uno:RecalcPivotTable"
+					},
+					{
+						"id": ".uno:DeletePivotTable"
+					}
+				]
 			},
 			{
 				"type": "--"
