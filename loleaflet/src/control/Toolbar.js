@@ -3,7 +3,7 @@
  * Toolbar handler
  */
 
-/* global $ window vex brandProductName _ _UNOTARGET*/
+/* global $ vex brandProductName _ _UNOTARGET*/
 L.Map.include({
 
 	// a mapping of uno commands to more readable toolbar items
@@ -24,14 +24,6 @@ L.Map.include({
 			padding : '20px',
 			border : '2px solid #000'
 		}
-	},
-
-	// Add by Firefly <firefly@ossii.com.tw>
-	keyModifier: {
-		shift: 4096,
-		ctrl: 8192,
-		alt: 16384,
-		ctrlMac: 32768
 	},
 
 	_allowCommands: {},
@@ -110,6 +102,7 @@ L.Map.include({
 		'commonalignbottom': 'alignbottom',
 		'convertmenu': 'bezierconvert',
 		'convertinto3dlathefast': 'convertinto3dlathe',
+		'datapilotmenu': 'datadatapilotrun',
 		'defaultcellstyles': 'defaultcharstyle',
 		'deleteallnotes': 'deleteallannotation',
 		'deletecell': 'delete',
@@ -198,6 +191,7 @@ L.Map.include({
 		'previoustrackedchange': 'prevrecord',
 		'nexttrackedchange': 'nextrecord',
 		'repaginate': 'insertpagenumberfield',
+		'recalcpivottable': 'calculate',
 		'rightpara': 'alignright',
 		'rotateflipmenu': 'rotateleft',
 		'savegraphic': 'save',
@@ -486,22 +480,27 @@ L.Map.include({
 	// 依據按鍵事件，執行
 	// 傳回 true 表示該按鍵是捷徑，否則傳回 false
 	executeHotkey: function(e) {
+		// 只處理 keydown 事件
 		if (e.type !== 'keydown')
 			return false;
 
+		// 如果在 Calc 儲存格編輯狀態，就不攔截
+		if (this.getDocType() === 'spreadsheet' &&
+			this._docLayer._docContext === 'EditCell') {
+			return false;
+		}
+
+		var event = e.originalEvent;
 		var hotkey = []; // 準備要組合的按鍵易讀名稱
-		var ctrl = e.originalEvent.ctrlKey ? this.keyModifier.ctrl : 0;
-		var alt = e.originalEvent.altKey ? this.keyModifier.alt : 0;
-		var shift = e.originalEvent.shiftKey ? this.keyModifier.shift : 0;
-		var cmd = e.originalEvent.metaKey ? this.keyModifier.ctrl : 0;
-		var key = e.originalEvent.key;
-		if (ctrl || cmd) hotkey.push('Ctrl');
-		if (alt) hotkey.push('Alt');
-		if (shift) hotkey.push('Shift');
+		var key = event.key;
+		if (event.ctrlKey || event.metaKey) hotkey.push('Ctrl');
+		if (event.altKey) hotkey.push('Alt');
+		if (event.shiftKey) hotkey.push('Shift');
 		if (key.startsWith('Arrow'))
 			key = key.substr(5);
 		hotkey.push(key);
 		var mergeKeys = hotkey.join('+').toLowerCase();
+
 		// 如果是 Ctrl+C、Ctrl+V、Ctrl+X 就不攔截，交給系統處理
 		if (mergeKeys === 'ctrl+c' || mergeKeys === 'ctrl+v' || mergeKeys === 'ctrl+x')
 			return false;
