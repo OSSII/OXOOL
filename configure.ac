@@ -691,7 +691,7 @@ AC_CONFIG_FILES([Makefile
                  oxoolwsd.spec
                  oxoolwsd.xml
                  oxool.pc
-                 debian/loolwsd.postinst])
+                 debian/oxool.postinst])
 AC_OUTPUT
 
 AC_LANG_POP
