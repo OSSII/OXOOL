@@ -533,11 +533,19 @@ L.Map.include({
 				// 指令開頭是 dialog:，執行該 dialog
 				} else if (command.startsWith('dialog:')) {
 					var args = {};
-					var url = document.createElement('a'); 
-					url.href = command;
-					if (url.search.length) {
-						var query = url.search.substring(1); // 去掉前置 '?'
-						var params = query.split('&');
+					var dialogName = '';
+					var startPos = 'dialog:'.length;
+					var queryIdx = command.indexOf('?');
+					var queryString = '';
+					if (queryIdx >= 0) {
+						dialogName = command.substring(startPos, queryIdx);
+						queryString = command.substr(queryIdx + 1);
+					} else {
+						dialogName = command.substr(startPos);
+					}
+
+					if (queryString.length) {
+						var params = queryString.split('&');
 						for (var idx in params) {
 							if (params[idx].length) {
 								var keyvalue = params[idx].split('=');
@@ -545,7 +553,7 @@ L.Map.include({
 							}
 						}
 					}
-					this.fire('executeDialog', {dialog: url.pathname, args: args});
+					this.fire('executeDialog', {dialog: dialogName, args: args});
 					dialog = true;
 				} else {
 					this.fire('executeDialog', {dialog: 'Action', id: command});
