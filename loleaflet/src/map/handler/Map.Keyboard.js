@@ -440,7 +440,7 @@ L.Map.Keyboard = L.Handler.extend({
 		var viewId = this._map._docLayer._viewId;
 		var viewInfo = this._map._viewInfo[viewId];
 		// 是否只有自己在編輯
-		var onlyMe = (!viewInfo || Object.keys(this._map._viewInfo).length === 1);
+		var onlyMe = false; /*(!viewInfo || Object.keys(this._map._viewInfo).length === 1);*/
 		// 輸入區容器
 		var clipboardContainer = this._map._clipboardContainer._container;
 		// 輸入區 input html element
