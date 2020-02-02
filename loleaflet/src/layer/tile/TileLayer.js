@@ -103,7 +103,9 @@ L.TileLayer = L.GridLayer.extend({
 		// Are we zooming currently ? - if so, no cursor.
 		this._isZooming = false;
 		// Cursor is visible or hidden (e.g. for graphic selection).
-		this._isCursorVisible = true;
+		// Modify by Firefly <firefly@ossii.com.tw>
+		// 文字文件預設游標是開啟狀態
+		this._isCursorVisible = (this._docType === 'text');
 		// Original rectangle graphic selection in twips
 		this._graphicSelectionTwips = new L.Bounds(new L.Point(0, 0), new L.Point(0, 0));
 		// Rectangle graphic selection
@@ -950,6 +952,16 @@ L.TileLayer = L.GridLayer.extend({
 							this._twipsToLatLng(topLeftTwips, this._map.getZoom()),
 							this._twipsToLatLng(bottomRightTwips, this._map.getZoom()));
 			this._cellCursorXY = new L.Point(parseInt(strTwips[4]), parseInt(strTwips[5]));
+
+			var offsetCur = new L.Point(parseInt(strTwips[0]), parseInt(strTwips[3]));
+			// Add by Firefly <firefly@ossii.com.tw>
+			// 把文字游標(blink cursor)移至儲存格開頭
+			var bottomRightTwipsCur = topLeftTwips.add(offsetCur);
+			this._visibleCursor = new L.LatLngBounds(
+						this._twipsToLatLng(topLeftTwips, this._map.getZoom()),
+						this._twipsToLatLng(bottomRightTwipsCur, this._map.getZoom()));
+			this._updateCursorPos();
+			//--------------------------------------------------------
 		}
 
 		var horizontalDirection = 0;
