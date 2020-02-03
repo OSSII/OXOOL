@@ -1,3 +1,9 @@
+oxool (3.2.3-1.master) unstable; urgency=low
+
+  * Release 3.2.3
+
+ -- Firefly <firefly@ossii.com.tw>  Mon, 03 Feb 2020 11:52:23 +0800
+
 oxool (3.2.2-1.master) unstable; urgency=low
 
   * Initial release
