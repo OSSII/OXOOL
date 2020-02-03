@@ -217,16 +217,17 @@ EXTRA_DIST = discovery.xml \
              oxoolwsd.spec \
              oxoolwsd.xml.in \
              oxoolwsd.service \
+             debian/changelog \
              debian/compat \
+             debian/control \
              debian/copyright \
-             debian/loolwsd.cron.d \
-             debian/loolwsd.preinst \
-             debian/loolwsd.service \
+             debian/oxool.cron.d \
+             debian/oxool.postinst \
+             debian/oxool.postrm \
+             debian/oxool.preinst \
+             debian/oxool.service \
              debian/rules \
              debian/source/format \
-             debian/changelog \
-             debian/control \
-             debian/loolwsd.postinst \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
