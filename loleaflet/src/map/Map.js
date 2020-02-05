@@ -180,6 +180,19 @@ L.Map = L.Evented.extend({
 			}
 			if (!this.initComplete) {
 				this._fireInitComplete('doclayerinit');
+				// Add by Firefly <firefly@ossii.com.tw>
+				// 動態載入該文件類型的 style.css
+				var docType = this._docLayer._docType;
+				if (docType === 'draw')
+					docType = 'presentation';
+
+				var head  = document.getElementsByTagName('head')[0];
+				var link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.media = 'all';
+				link.href = 'uiconfig/' + docType + '/style.css';
+				head.appendChild(link);
 			}
 			if (!L.Browser.mobile && this._docLayer._docType == 'text') {
 				var interactiveRuler = this._permission === 'edit' ? true : false;
