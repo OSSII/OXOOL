@@ -175,19 +175,29 @@ serif;
 .lo-menu > li > ul {
     margin-top: -1px !important;
 }
-.lo-menu > li > a span.sub-arrow {
+.lo-menu > li > a .sub-arrow {
     display: none;
 }
 .lo-menu ul {
     border: 1px solid #bbbbbb;
     background: white;
 }
-.lo-menu ul a span.sub-arrow {
+.lo-menu ul a .sub-arrow {
     right: 0;
-    margin-right: 5px;
-    width: auto;
-    background: transparent; /* we want them to be transparent always whether mobile or desktop */
+    left: auto;
+    margin-right: 8px;
+    width: 5px;
+    background: url('images/submenu.svg') no-repeat center/contain;
 }
+
+.sub-arrow::before {
+    content: ''  !important;
+}
+
+.highlighted sub-arrow::before {
+    content: ''  !important;
+}
+
 .lo-menu ul > li {
     border-left: 0;
     border-top: none;

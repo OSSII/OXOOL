@@ -1143,8 +1143,7 @@ L.Control.Menubar = L.Control.extend({
 			showDuration: 0,
 			showTimeout: 0,
 			collapsibleHideDuration: 0,
-			subIndicatorsPos: 'append',
-			subIndicatorsText: '&#8250;'
+			subIndicatorsPos: 'append'
 		});
 		$('#main-menu').attr('tabindex', 0);
 	}

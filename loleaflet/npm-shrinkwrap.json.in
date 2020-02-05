@@ -2733,9 +2733,8 @@
       "dev": true
     },
     "smartmenus": {
-      "version": "1.0.0",
-      "resolved": "file:node_shrinkwrap/smartmenus-1.0.0.tgz",
-      "integrity": "sha1-I0eRsyetTbSFwC0wSckne+f4o78=",
+      "version": "1.1.0",
+      "resolved": "file:node_shrinkwrap/smartmenus-1.1.0.tgz",
       "dev": true,
       "requires": {
         "jquery": "2.2.4"
