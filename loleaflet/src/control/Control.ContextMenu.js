@@ -97,7 +97,7 @@ L.Control.ContextMenu = L.Control.extend({
 			}
 
 			// 取得 uno command 翻譯
-			itemName = _UNO(item.command, docType, true);
+			itemName = _UNO(item.command, docType, false);
 			// 沒有翻譯的話，用 item.text 當選項標題
 			if (item.command === '.uno:' + itemName)
 			{
@@ -149,13 +149,19 @@ L.control.contextMenu = function (options) {
 L.installContextMenu = function(options) {
 	options.itemClickEvent = 'click';
 	// Modify by Firefly <firefly@ossii.com.tw>
-	options.events = {
-		// 顯示右鍵選單前
-		show: function (/*options*/) {
+	var events = options.events;
+	if (events === undefined) {
+		events = {};
+	}
+	if (events.show === undefined) {
+		events.show = function(/*options*/) {
+			// 顯示右鍵選單前
 			$.SmartMenus.hideAll(); // 強制隱藏 Menubar 選單
 			L.hideAllToolbarPopup(); // 強制隱藏所有 Toolbar 選單
-		}
-	};
+		};
+	}
+	options.events = events;
+	//------------------------------------------------------
 
 	var rewrite = function(items) {
 		if (items === undefined)
