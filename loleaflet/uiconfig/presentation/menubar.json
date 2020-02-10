@@ -1534,8 +1534,8 @@
 			{
 				"icon": ".uno:HelpIndex",
 				"name": "Keyboard shortcuts",
-				"id": "keyboard-shortcuts",
-				"hotkey": "Ctrl+ALt+Shift+?"
+				"id": "dialog:ShowKeyboardHelp",
+				"hotkey": "Ctrl+Shift+?"
 			},
 			{
 				"icon": ".uno:About",

@@ -96,7 +96,7 @@ L.dialog.Action = {
 			map.showLOAboutDialog();
 			break;
 		case 'keyboard-shortcuts': // 顯示按鍵說明
-			map.showLOKeyboardHelp();
+			map.fire('executeDialog', {dialog: 'ShowKeyboardHelp'});
 			break;
 		case 'rev-history': // 檢視版本
 			if (revHistoryEnabled) {
