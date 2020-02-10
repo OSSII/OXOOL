@@ -251,6 +251,9 @@ L.TileLayer = L.GridLayer.extend({
 			},
 			events: {
 				show: function (options) {
+					// 顯示右鍵選單前
+					$.SmartMenus.hideAll(); // 強制隱藏 Menubar 選單
+					L.hideAllToolbarPopup(); // 強制隱藏所有 Toolbar 選單
 					options.$trigger.get(0).annotation._contextMenu = true;
 				},
 				hide: function (options) {
