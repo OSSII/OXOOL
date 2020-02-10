@@ -187,7 +187,7 @@ serif;
     left: auto;
     margin-right: 8px;
     width: 5px;
-    background: url('images/submenu.svg') no-repeat center/contain;
+    background: url('images/submenuarrow.svg') no-repeat center/contain;
 }
 
 .sub-arrow::before {
