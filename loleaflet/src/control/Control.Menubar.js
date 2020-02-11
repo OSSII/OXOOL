@@ -677,7 +677,8 @@ L.Control.Menubar = L.Control.extend({
 			var aItem = this;
 			var type = $(aItem).data('type');
 			var id = $(aItem).data('id');
-			var unoCommand = $(aItem).data(constUno) || id;
+			var stateUno = $(aItem).data('state');
+			var unoCommand = stateUno || $(aItem).data(constUno) || id;
 			if (self._map._permission === 'edit') {
 				if (unoCommand !== undefined) { // enable all depending on stored commandStates
 					var data, lang;
@@ -1023,6 +1024,7 @@ L.Control.Menubar = L.Control.extend({
 				if (map.isUnoCommand(menu[i].name)) {
 					// 該指令放進白名單，該指令不會被執行，但可以取得狀態回報
 					map.addAllowedCommand({name: menu[i].name});
+					$(aItem).data('state', menu[i].name);
 				}
 				if (map.isUnoCommand(menu[i].id)) {
 					$(aItem).data('type', 'unocommand');
