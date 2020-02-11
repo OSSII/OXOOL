@@ -157,7 +157,8 @@
 				"id": ".uno:ChangesMenu",
 				"menu": [
 					{
-						"id": ".uno:TraceChangeMode"
+						"name": ".uno:TraceChangeMode",
+						"id": "dialog:TraceChangeMode"
 					},
 					{
 						"id": ".uno:ShowChanges"

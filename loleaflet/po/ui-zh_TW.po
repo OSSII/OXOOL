@@ -1251,6 +1251,14 @@ msgstr "您確定要刪除這份工作表：%sheet%？"
 msgid "Hidden Sheets"
 msgstr "隱藏的工作表"
 
+#: uiconfig/dialogs/TraceChangeMode.js:41
+msgid "Stop tracking changes, will lose information about the changes."
+msgstr "停止追蹤修訂，將會遺失所有更改的資訊。"
+
+#: uiconfig/dialogs/TraceChangeMode.js:44
+msgid "Warning"
+msgstr "警告"
+
 #~ msgid "Are you sure you want to delete this page?"
 #~ msgstr "您確定要刪除這個頁面？"
 
