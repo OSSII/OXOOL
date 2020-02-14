@@ -380,7 +380,7 @@ L.Control.Menubar = L.Control.extend({
 				{name: '.uno:InsertAnnotation', id: 'insertcomment', type: 'action', hotkey: 'Ctrl+Alt+C'},
 				{uno: '.uno:DrawText'},
 				{type: '--'},
-				{uno: '.uno:HyperlinkDialog', hotkey: 'Ctrk+K'},
+				{uno: '.uno:HyperlinkDialog', hotkey: 'Ctrl+K'},
 				{uno: '.uno:InsertSymbol'},
 				{uno: '.uno:EditHeaderAndFooter'}
 			]},
