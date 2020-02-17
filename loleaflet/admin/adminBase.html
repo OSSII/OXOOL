@@ -30,7 +30,7 @@
                 {
                     for (module in module_list)
                     {
-                        var a_template = `<li><a class="text-primary" href="${module_list[module]}">${module_list[module]}</a></li>`;
+                        var a_template = `<li id="${module_list[module]}"><a class="text-primary" href="${module_list[module]}">${module_list[module]}</a></li>`;
                         $("#module_list").after(a_template);
                     }
 

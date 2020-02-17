@@ -2181,6 +2181,7 @@ private:
                     oxoolmodule *apiHandler = dso->second();
                     apiHandler->setMutex(&DocBrokersMutex, DocBrokers, _id);
                     apiHandler->handleRequest(_socket, message, request, disposition);
+                    _module_exit_application = apiHandler->exit_application;
                 }
             }
             else
@@ -2250,6 +2251,17 @@ private:
 
     void performWrites() override
     {
+    }
+
+    void onDisconnect() override
+    {
+        if (_module_exit_application)
+        {
+            std::cout << "close fork process" << std::endl;
+            auto socket = _socket.lock();
+            socket->closeConnection();
+            _exit(Application::EXIT_SOFTWARE);
+        }
     }
 
 #ifndef MOBILEAPP
@@ -2929,6 +2941,9 @@ private:
 
     /// Cache for static files, to avoid reading and processing from disk.
     static std::map<std::string, std::string> StaticFileContentCache;
+
+    /// This is for module application exit the fork process
+    bool _module_exit_application = false;
 };
 
 std::map<std::string, std::string> ClientRequestDispatcher::StaticFileContentCache;

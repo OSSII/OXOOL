@@ -18,6 +18,8 @@
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/MemoryStream.h>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/StringTokenizer.h>
 
 // base class for all shapes
 class oxoolmodule {
@@ -43,7 +45,43 @@ class oxoolmodule {
         std::mutex* DocBrokersMutex;
         std::map<std::string, std::shared_ptr<DocumentBroker>> *DocBrokers;
         std::string _id;
+        bool exit_application = false;
+        void quickHttpRes(std::weak_ptr<StreamSocket> _socket,
+                Poco::Net::HTTPResponse::HTTPStatus errorCode,
+                const std::string msg="")
+        {
+            auto socket = _socket.lock();
+            Poco::Net::HTTPResponse response;
+            response.setContentType("charset=UTF-8");
+            response.setContentLength(msg.size());
+            response.setStatusAndReason(
+                    errorCode,
+                    msg.c_str());
+            socket->send(response);
+            socket->send(msg);
+        }
+        std::string getMimeType(std::string filepath)
+        {
+            auto tokenOpts = Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM;
+            std::string cmd = "file --mime-type " + filepath;
+            std::string out = "";
+            char buf[128];
+            FILE* fp = popen(cmd.c_str(), "r");
+            while (fgets(buf, sizeof(buf), fp))
+            {
+                out.append(buf);
+            }
+            pclose(fp);
+            std::cout << "mime-type: " << out << std::endl;
+
+            Poco::StringTokenizer tokens(out, ":", tokenOpts);
+            if (tokens.count() >= 2)
+                return tokens[1];
+            else
+                return "NULL";
+        }
 };
+
 typedef oxoolmodule *maker_t();
 extern std::map<std::string, maker_t *, std::less<std::string> > apilist;
 // our global factory
