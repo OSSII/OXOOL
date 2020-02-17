@@ -125,7 +125,11 @@ L.Control.MobileInput = L.Control.extend({
 		this._textArea.setAttribute('autocapitalize', constOff);
 		this._textArea.setAttribute('autocomplete', constOff);
 		this._textArea.setAttribute('spellcheck', 'false');
-		this.disableVirtualKeyboard();
+		if (window.mode.isTablet()) {
+			this.enableVirtualKeyboard();
+		} else {
+			this.disableVirtualKeyboard();
+		}
 		L.DomEvent.on(this._textArea, stopEvents, L.DomEvent.stopPropagation)
 			.on(this._textArea, 'keydown keypress keyup', this.onKeyEvents, this)
 			.on(this._textArea, 'compositionstart compositionupdate compositionend textInput', this.onCompEvents, this)
