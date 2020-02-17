@@ -5,8 +5,10 @@
         bottom: 74px;
 }
 
-#document-container.spreadsheet-document.readonly {
-        top: 50px;
+#document-container.spreadsheet-document.tablet,
+#document-container.spreadsheet-document.readonly,
+#document-container.spreadsheet-document.readonly.tablet {
+        top: 102px;
 }
 
 .spreadsheet-tabs-container {
@@ -75,6 +77,11 @@
 
 #spreadsheet-row-column-frame.readonly {
         top: 31px;
+}
+
+#spreadsheet-row-column-frame.tablet,
+#spreadsheet-row-column-frame.readonly.tablet {
+        top: 82px;
 }
 
 #spreadsheet-header-corner-container {

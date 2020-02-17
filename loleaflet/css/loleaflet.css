@@ -8,7 +8,8 @@
 	left: 0px;
 }
 
-#document-container.tablet {
+#document-container.tablet,
+#document-container.readonly.tablet {
     top: 41px;
 }
 
