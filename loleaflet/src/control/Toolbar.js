@@ -49,7 +49,7 @@ L.Map.include({
 		'.uno:OutlineBullet': true,
 		'.uno:RemoveBullets': true,
 		'.uno:FrameDialog': true,
-		'.uno:ObjectMenue?VerbID:short=-1': true,
+		'.uno:ObjectMenue?VerbID:short=-1': false,
 		'.uno:OpenHyperlinkOnCursor': true,
 		'.uno:CopyHyperlinkLocation': true,
 		'.uno:RemoveHyperlink': true,
