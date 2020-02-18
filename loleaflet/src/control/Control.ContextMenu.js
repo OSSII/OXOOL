@@ -3,7 +3,7 @@
 * Control.ContextMenu
 */
 
-/* global $ _UNO*/
+/* global $ _UNO _ removeAccessKey */
 L.Control.ContextMenu = L.Control.extend({
 	options: {
 		SEPARATOR: '---------'
@@ -97,11 +97,11 @@ L.Control.ContextMenu = L.Control.extend({
 			}
 
 			// 取得 uno command 翻譯
-			itemName = _UNO(item.command, docType, false);
+			itemName = _UNO(item.command, docType, true);
 			// 沒有翻譯的話，用 item.text 當選項標題
 			if (item.command === '.uno:' + itemName)
 			{
-				itemName = item.text;
+				itemName = removeAccessKey(_(item.text));
 			}
 
 			ctxMenu[item.command] = {
