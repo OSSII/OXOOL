@@ -11843,40 +11843,34 @@ var unoCommandsArray = {
 
 window._UNO = function(string, component, isContext) {
 	var command = (string.startsWith('.uno:') ? string.substr(5) : string);
+	var entry = unoCommandsArray[command]; // 取得該指令資料
 
-	var context = 'menu';
-	if (isContext === true) {
-		context = 'context';
-	}
-
-	var entry = unoCommandsArray[command];
+	// 找不到 uno command 就直接傳回該指令
 	if (entry === undefined) {
 		return command;
 	}
 
+	// 取得文件類別(text, spreadsheet, presentation)
 	var componentEntry = entry[component];
+	// 指令資料不含指定的文件類別
 	if (componentEntry === undefined) {
+		// 取 global 紀錄
 		componentEntry = entry['global'];
+		// 連 global 也沒有，就直接傳回指令名稱
 		if (componentEntry === undefined) {
 			return command;
 		}
 	}
-	var text = componentEntry[context];
-	if (text === undefined) {
-		text = componentEntry['menu'];
-		if (text === undefined) {
-			return command;
-		}
+
+	var priority = isContext === true ? ['context', 'menu'] : ['menu', 'context'];
+	var text = undefined;
+	for (var i = 0 ; text === undefined && i < priority.length ; i++) {
+		text = componentEntry[priority[i]];
 	}
 
-	text = _(text);
-	// Remove access key markers from translated strings
-	// 1. access key in parenthesis in case of non-latin scripts
-	text = text.replace(/\(~[A-Za-z]\)/, '');
-	// 2. remove normal access key
-	text = text.replace('~', '');
+	if (text === undefined ) return command;
 
-	return text;
+	return this.removeAccessKey(_(text) );
 }
 
 window._UNOTARGET = function(string, component) {
@@ -11906,15 +11900,21 @@ window._UNOICON = function(string, component) {
 
     var componentEntry = entry[component];
     if (componentEntry === undefined) {
-	componentEntry = entry[fallback];
-	if (componentEntry === undefined) {
-	    return '';
-	}
+	    componentEntry = entry[fallback];
+	    if (componentEntry === undefined) {
+            return '';
+        }
     }
 
-    var  showicon = componentEntry['properties']
-    if (showicon === undefined)
-	return '';
-
     return command.toLowerCase();
+}
+
+window.removeAccessKey = function(text) {
+    // Remove access key markers from translated strings
+	// 1. access key in parenthesis in case of non-latin scripts
+	text = text.replace(/\(~[A-Za-z]\)/, '');
+	// 2. remove normal access key
+	text = text.replace('~', '');
+
+	return text;
 }
