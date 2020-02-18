@@ -952,7 +952,7 @@ L.Control.Menubar = L.Control.extend({
 			if (menu[i].name !== undefined) {
 				// 若 menu[i].name 是 UNO 指令
 				if (this._map.isUnoCommand(menu[i].name)) {
-					itemName = _UNO(menu[i].name, docType, false); // 翻譯選項
+					itemName = _UNO(menu[i].name, docType, true); // 翻譯選項
 					// 不是 menubar 選項，把這個 uno command 當作選項圖示
 					if (this._level > 1) {
 						unoIcon = menu[i].name;
@@ -962,10 +962,10 @@ L.Control.Menubar = L.Control.extend({
 				}
 			} else if (menu[i].uno !== undefined) {
 				unoIcon = menu[i].uno; // 把這個 uno command 當作選項圖示
-				itemName = _UNO(menu[i].uno, docType, false); // 翻譯選項
+				itemName = _UNO(menu[i].uno, docType, true); // 翻譯選項
 			} else if (menu[i].id !== undefined && this._map.isUnoCommand(menu[i].id)) {
 				unoIcon = menu[i].id; // 把這個 uno command 當作選項圖示
-				itemName = _UNO(menu[i].id, docType, false); // 翻譯選項
+				itemName = _UNO(menu[i].id, docType, true); // 翻譯選項
 			} else {
 				itemName = '';
 			}
