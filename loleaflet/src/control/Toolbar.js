@@ -3,7 +3,7 @@
  * Toolbar handler
  */
 
-/* global $ vex brandProductName _ _UNOTARGET*/
+/* global $ vex brandProductName _ _UNO _UNOTARGET*/
 L.Map.include({
 
 	// a mapping of uno commands to more readable toolbar items
@@ -50,10 +50,68 @@ L.Map.include({
 		'.uno:RemoveBullets': true,
 		'.uno:FrameDialog': true,
 		'.uno:ObjectMenue?VerbID:short=-1': false,
-		'.uno:OpenHyperlinkOnCursor': true,
-		'.uno:CopyHyperlinkLocation': true,
-		'.uno:RemoveHyperlink': true,
+		'.uno:EditHyperlink': true, // 超連結
+		'.uno:OpenHyperlinkOnCursor': true, // 開啟超連結
+		'.uno:CopyHyperlinkLocation': true, // 複製超連結位址
+		'.uno:RemoveHyperlink': true, // 移除超連結
 		'.uno:CurrentFootnoteDialog': true,
+		'.uno:SetAnchorToPage': true,
+		'.uno:SetAnchorToPara': true,
+		'.uno:SetAnchorAtChar': true,
+		'.uno:SetAnchorToChar': true,
+		'.uno:WrapOff': true,
+		'.uno:WrapOn': true,
+		'.uno:WrapLeft': true,
+		'.uno:WrapRight': true,
+		'.uno:WrapThrough': true,
+		'.uno:WrapThroughTransparencyToggle': true,
+		'.uno:WrapContour': true,
+		'.uno:WrapAnchorOnly': true,
+		'.uno:WrapIdeal': true, // 最佳頁面環繞
+		'.uno:TextWrap': true, // 編輯...
+		'.uno:BringToFront': true, // 移動到最上層
+		'.uno:ObjectForwardOne': true, // 上移一層
+		'.uno:Forward': true, // 上移一層
+		'.uno:ObjectBackOne': true, // 下移一層
+		'.uno:Backward': true, // 下移一層
+		'.uno:SendToBack': true, // 移動到最下層
+		'.uno:BeforeObject': true, // 物件之前
+		'.uno:BehindObject': true, // 物件之後
+		'.uno:SetObjectToBackground': true, // 移到背景
+		'.uno:SetObjectToForeground': true, // 移到前景
+		'.uno:RotateRight': true, // 向右旋轉 90°
+		'.uno:RotateLeft': true, // 向左旋轉 90°
+		'.uno:Rotate180': true, // 旋轉 180°
+		'.uno:FlipVertical': true, // 垂直翻轉
+		'.uno:FlipHorizontal': true, // 水平翻轉
+		'.uno:DefaultCharStyle': true, // 預設字元
+		'.uno:EmphasisCharStyle': true, // 強調
+		'.uno:StrongEmphasisCharStyle': true, // 特別強調
+		'.uno:QuoteCharStyle': true, // 引文
+		'.uno:SourceCharStyle': true, // 源碼文字
+		'.uno:TextBodyParaStyle': true, // 內文
+		'.uno:Heading1ParaStyle': true, // 標題 1
+		'.uno:Heading2ParaStyle': true, // 標題 2
+		'.uno:Heading3ParaStyle': true, // 標題 3
+		'.uno:PreformattedParaStyle': true, // 已先格式設定文字
+		'.uno:BulletListStyle': true, // 項目符號清單
+		'.uno:NumberListStyle': true, // 數字清單
+		'.uno:AlphaListStyle': true, // 大寫英文字母清單
+		'.uno:AlphaLowListStyle': true, // 小寫英文字母清單
+		'.uno:RomanListStyle': true, // 大寫羅馬數字清單
+		'.uno:RomanLowListStyle': true, // 小寫羅馬數字清單
+		'.uno:PasteUnformatted': true, // 貼上無格式設定的文字
+		'.uno:SetOptimalRowHeight': true, // 最適列高
+		'.uno:DistributeRows': true, // 平均分配列高
+		'.uno:DistributeColumns': true, // 平均分配欄寬
+		'.uno:HeadingRowsRepeat': true, // 跨頁重複標題列
+		'.uno:RowSplit': true, // 列可跨頁中斷
+		'.uno:MergeCells': true, // 合併儲存格
+		'.uno:OriginalSize': true, // 原始大小
+		'.uno:FitCellSize': true, // 符合儲存格大小
+		'.uno:SetAnchorToCell': true, // 至儲存格
+		'.uno:SetAnchorToCellResize': true, // 至儲存格 (隨儲存格調整大小)
+		'.uno:SetDefault': true, // 清除所有格式設定
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
@@ -466,7 +524,7 @@ L.Map.include({
 		var whiteList = this._whiteCommandList[unoCommand];
 		var allowed = this._allowCommands[unoCommand];
 		if (whiteList === undefined && allowed === undefined) {
-			console.debug('Warning! ' + unoCommand + ' not in white list and allowed commands!');
+			console.debug('Warning! ' + unoCommand + ' not in white list and allowed commands!\n', '\'' + unoCommand + '\': true, // ' + _UNO(unoCommand, this.getDocType(), true));
 			return false;
 		}
 
