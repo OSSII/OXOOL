@@ -7,7 +7,7 @@
         host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
     }
 
-    Admin.Analytics(host);
+    var socketAnalytics = Admin.Analytics(host);
 </script>
 <ul class="nav nav-tabs">
     <li class="active">
@@ -44,7 +44,7 @@
     <div id="networkview" class="tab-pane">
         <div class="graph-container">
             <div>
-                <svg id="NetVisualisation" width="1010" height="510"></svg>
+                <svg id="NetVisualisation" width="1100" height="600"></svg>
             </div>
         </div>
     </div>

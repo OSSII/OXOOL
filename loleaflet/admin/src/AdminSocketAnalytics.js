@@ -23,7 +23,7 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 	_cpuStatsSize: 0,
 	_cpuStatsInterval: 0,
 
-	_netAvgSize: 10,
+	_netAvgSize: 1,
 	_netStatsSize: 0,
 	_netStatsInterval: 0,
 
@@ -88,7 +88,7 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 	_graphWidth: 1000,
 	_graphHeight: 500,
 	_graphMargins: {
-		top: 20,
+		top: 50,
 		right: 20,
 		bottom: 20,
 		left: 100
@@ -142,7 +142,7 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 			.y(function(d) {
 				return yScale(d.value);
 			})
-			.interpolate('basis');
+			.interpolate('monotone');
 
 		if (option === 'mem') {
 			this._xMemScale = xScale;
@@ -240,6 +240,29 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 					.style('fill', legendData[i].color)
 					.style('stroke', 'black');
 			}
+			vis
+				.append('g')
+				.attr('id', 'focus')
+				.style('display', 'none')
+				.append('circle')
+				.style('fill', 'none')
+				.attr('stroke', 'black')
+				.attr('r', 5)
+				.style('opacity', 1);
+			vis
+				.append('g')
+				.attr('id', 'focusText')
+				.style('display', 'none')
+				.append('text')
+				.attr('text-anchor', 'middle')
+				.attr('alignment-baseline', 'middle')
+				.attr('transform', 'translate(0,-15)');
+			vis
+				.on('mouseover', this.mouseover)
+				.on('mousemove', this.mousemove)
+				.on('mouseout', this.mouseout);
+
+
 		}
 
 		vis.append('svg:g')
@@ -369,10 +392,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 
 		this._setUpAxis('net');
 
-		svg.select('.lineSent')
-		.attr('d', this._d3NetSentLine(this._sentAvgStats));
-		svg.select('.lineRecv')
-		.attr('d', this._d3NetRecvLine(this._recvAvgStats));
 
 		svg.select('.x-axis')
 		.call(this._d3NetXAxis);
@@ -381,6 +400,10 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 		.select('.y-axis')
 		.duration(500)
 		.call(this._d3NetYAxis);
+		svg.select('.lineSent')
+		.attr('d', this._d3NetSentLine(this._sentAvgStats));
+		svg.select('.lineRecv')
+		.attr('d', this._d3NetRecvLine(this._recvAvgStats));
 	},
 
 	_updateAverage: function(option, reset) {
@@ -405,9 +428,23 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 			}
 		}
 		else {
-			tempSum = res[res.length - 1].value + (data[data.length - 1].value - data[data.length - 1 - this._netAvgSize].value) / this._netAvgSize;
-
-			this._addNewData(res, tempSum, 'sent_avg');
+			//var current = res[res.length - 1].value;
+			tempSum=0;
+			for (var index = data.length-1; index >= data.length - this._netAvgSize; index--) {
+				tempSum += data[index].value;
+			}
+			tempSum /= this._netAvgSize;
+			/*
+			var star1  = data[data.length - 1].value;
+			var star10 = data[data.length - 1 - this._netAvgSize].value;
+			tempSum = current + (star1 - star10) / this._netAvgSize;
+			*/
+			if (tempSum < 0)
+				console.log('tempSum: ' + tempSum);
+			if (option === 'sent')
+				this._addNewData(res, tempSum, 'sent_avg');
+			if (option === 'recv')
+				this._addNewData(res, tempSum, 'recv_avg');
 		}
 	},
 
@@ -577,6 +614,44 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 
 	onSocketClose: function() {
 		clearInterval(this._basicStatsIntervalId);
+	},
+	mouseover: function() {
+		d3.select('#focus').style('display', '');
+		d3.select('#focusText').style('display', '');
+	},
+	mousemove: function() {
+		// recover coordinate we need
+
+		var x = window.socketAnalytics._xNetScale;
+		var y = window.socketAnalytics._yNetScale;
+		var x0 = window.socketAnalytics._xNetScale.invert(d3.mouse(this)[0]);
+		var bisect = d3.bisector(function(d) { return d.time;  }).left;
+		var i = bisect(window.socketAnalytics._sentAvgStats, x0, 1);
+		var selectedData = window.socketAnalytics._sentAvgStats[i-1];
+		var d = Math.abs(selectedData.time / 1000);
+		var sUnit = 0;
+		i = 0;
+		var formatTime;
+		var units = ['s', 'min', 'hr'];
+		for (i  = 0; i < units.length && Math.abs(d) >= 60; i++) {
+			sUnit = parseInt(d % 60);
+			d = parseInt(d / 60);
+		}
+		if (i !== 0 && sUnit !== 0) {
+			formatTime = d + units[i][0] + ' ' + sUnit + units[i-1][0];
+		}
+		else
+			formatTime = d + units[i];
+		d3.select('#focus').attr('transform', 'translate(' + x(selectedData.time) +','+ y(selectedData.value) + ')');
+		d3.select('#focusText')
+			.attr('transform', 'translate(' + x(selectedData.time) +','+ y(selectedData.value) + ')')
+			.select('text').text('時間:' + formatTime + '  ,  ' + '流量:' + Util.humanizeMem(selectedData.value/1000) + '/sec');
+
+	},
+	mouseout: function() {
+		d3.select('#focus').style('display', 'none');
+		d3.select('#focusText').style('display', 'none');
+
 	}
 });
 

@@ -48,7 +48,7 @@ using Poco::StringTokenizer;
 using Poco::Util::Application;
 
 const int Admin::MinStatsIntervalMs = 50;
-const int Admin::DefStatsIntervalMs = 2500;
+const int Admin::DefStatsIntervalMs = 1000;
 // Add by Firefly <firefly@ossii.com.tw>
 using Poco::Path;
 
@@ -892,7 +892,7 @@ Admin::Admin() :
     _lastRecvCount(0),
     _cpuStatsTaskIntervalMs(DefStatsIntervalMs),
     _memStatsTaskIntervalMs(DefStatsIntervalMs * 2),
-    _netStatsTaskIntervalMs(DefStatsIntervalMs * 2)
+    _netStatsTaskIntervalMs(DefStatsIntervalMs)
 {
     LOG_INF("Admin ctor.");
 
