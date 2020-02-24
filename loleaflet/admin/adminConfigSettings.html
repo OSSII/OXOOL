@@ -65,11 +65,13 @@
                             var arr = document.getElementsByClassName(id + '[]');
                             for (var j = 0 ; j < arr.length ; j++)
                             {
-                                json[id + '[' + j + ']'] = arr[j].textContent;
+                                var pad = '0000';
+                                var zj = (pad + j).slice(-pad.length);
+                                json[id + '[' + zj + ']'] = arr[j].textContent;
                                 var allow = arr[j].attributes.allow;
                                 if (typeof allow != 'undefined')
                                 {
-                                    json[id + '[' + j + '][@allow]'] = allow.value;
+                                    json[id + '[' + zj + '][@allow]'] = allow.value;
                                 }
                             }
                             continue;
