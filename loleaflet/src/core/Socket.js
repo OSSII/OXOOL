@@ -276,8 +276,14 @@ L.Socket = L.Class.extend({
 		}
 		else if (textMsg.startsWith('lokitversion ')) {
 			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
-			$('#lokit-version').text(lokitVersionObj.ProductName + '(' +
-			                         lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension + ')');
+			if (lokitVersionObj.ProductName === 'OxOffice') {
+				$('#lokit-version').text(lokitVersionObj.ProductName + ' ' +
+				lokitVersionObj.ProductVersion + '(' +
+				lokitVersionObj.ProductExtension + ')');
+			} else {
+				$('#lokit-version').text(lokitVersionObj.ProductName + '(' +
+				lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension + ')');
+			}
 		}
 		else if (textMsg.startsWith('perm:')) {
 			var perm = textMsg.substring('perm:'.length);

@@ -143,10 +143,17 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 		}
 		else if (textMsg.startsWith('lokitversion ')) {
 			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
-			$('#lokit').text(' , ' + _('Core') + ' : ' +
-							lokitVersionObj.ProductName + '(' +
-							lokitVersionObj.ProductVersion +
-							lokitVersionObj.ProductExtension + ')');
+			if (lokitVersionObj.ProductName === 'OxOffice') {
+				$('#lokit').text(' , ' + _('Core') + ' : ' +
+				lokitVersionObj.ProductName + ' ' +
+				lokitVersionObj.ProductVersion + '(' +
+				lokitVersionObj.ProductExtension + ')');
+			} else {
+				$('#lokit').text(' , ' + _('Core') + ' : ' +
+				lokitVersionObj.ProductName + '(' +
+				lokitVersionObj.ProductVersion +
+				lokitVersionObj.ProductExtension + ')');
+			}
 		}
 	},
 
