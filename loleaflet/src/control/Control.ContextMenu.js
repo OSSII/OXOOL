@@ -3,10 +3,23 @@
 * Control.ContextMenu
 */
 
-/* global $ _UNO _ removeAccessKey */
+/* global $ _UNO _ removeAccessKey loleafletLogging */
 L.Control.ContextMenu = L.Control.extend({
 	options: {
 		SEPARATOR: '---------'
+	},
+
+	// 替代命令(有些指令無法直接執行，但有替代命令)
+	_alternativeCommand: {
+		'text': {
+
+		},
+		'spreadsheet': {
+			'.uno:Delete': 'dialog:DeleteCell',
+		},
+		'presentation': {
+
+		}
 	},
 
 	onAdd: function(map) {
@@ -37,12 +50,31 @@ L.Control.ContextMenu = L.Control.extend({
 	},
 
 	_onContextMenu: function(obj) {
+		var that = this;
 		var map = this._map;
 		if (map._permission !== 'edit' && map._permission !== 'view') {
 			return;
 		}
 
 		var contextMenu = this._createContextMenuStructure(obj);
+
+		// debug mode 在右鍵選單最後加上輸入框，方便直接執行 uno 指令
+		if (loleafletLogging === 'true') {
+			contextMenu['sepuno'] = this.options.SEPARATOR;
+			contextMenu['unocmdtext'] = {
+				name: 'UNO command',
+				type: 'text',
+				events :{
+					keyup: function(e) {
+						if (e.keyCode === 13) { // 按下 Enter
+							console.debug(e.target.value);
+							map.sendUnoCommand(e.target.value);
+						}
+					}
+				}
+			};
+		}
+
 		L.installContextMenu({
 			selector: '.leaflet-layer',
 			className: 'loleaflet-font',
@@ -56,7 +88,13 @@ L.Control.ContextMenu = L.Control.extend({
 						if (key === '.uno:InsertAnnotation')
 							map.insertComment();
 						else {
-							map.sendUnoCommand(key);
+							var docType = map.getDocType();
+							if (docType === 'draw') {
+								docType = 'presentation';
+							}
+							// 是否有替代指令？
+							var altCmd = that._alternativeCommand[docType][key];
+							map.executeAllowedCommand(altCmd !== undefined ? altCmd : key);
 							// Give the stolen focus back to map
 							map.focus();
 						}
