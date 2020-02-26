@@ -112,6 +112,9 @@ L.Map.include({
 		'.uno:SetAnchorToCell': true, // 至儲存格
 		'.uno:SetAnchorToCellResize': true, // 至儲存格 (隨儲存格調整大小)
 		'.uno:SetDefault': true, // 清除所有格式設定
+		'.uno:EditCurrentRegion': true, // 編輯區段...
+		'.uno:EditShapeHyperlink': true, // 編輯超連結
+		'.uno:DeleteShapeHyperlink': true, // 移除超連結
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
@@ -483,6 +486,7 @@ L.Map.include({
 			var name = command.name.trim();
 			var hotkey = command.hotkey;
 			var callback = command.callback;
+			var hide = command.hide;
 			var isExists = (this._allowCommands[name] !== undefined); // 是否已經存在了
 			// 有 hotkey 的話，另外存入 hotkeys 命令列表
 			if (hotkey !== undefined) {
@@ -508,8 +512,12 @@ L.Map.include({
 				}
 			}
 			// 有 callback 的話，一併紀錄
-			if (callback !== undefined && typeof callback === 'function') {
+			if (typeof callback === 'function') {
 				obj.callback = callback;
+			}
+			// 是否隱藏
+			if (typeof hide === 'boolean') {
+				obj.hide = hide;
 			}
 			this._allowCommands[name] = obj;
 			// 第一次加入 且是 uno 指令的話，設定狀態自動回報
@@ -523,6 +531,10 @@ L.Map.include({
 	isAllowedCommand: function(unoCommand) {
 		var whiteList = this._whiteCommandList[unoCommand];
 		var allowed = this._allowCommands[unoCommand];
+		// 如果該指令被隱藏起來，就當作不存在白名單中
+		if (allowed !== undefined && allowed.hide === true) {
+			return false;
+		}
 		if (whiteList === undefined && allowed === undefined) {
 			console.debug('Warning! ' + unoCommand + ' not in white list and allowed commands!\n', '\'' + unoCommand + '\': true, // ' + _UNO(unoCommand, this.getDocType(), true));
 			return false;
@@ -569,9 +581,10 @@ L.Map.include({
 		var matchCommand = this._hotkeyCommands[mergeKeys];
 		if (matchCommand !== undefined) {
 			console.debug('Found Hot command->' + matchCommand);
-			this.executeAllowedCommand(matchCommand);
-			e.originalEvent.preventDefault();
-			return true;
+			if (this.executeAllowedCommand(matchCommand)) {
+				e.originalEvent.preventDefault();
+				return true;
+			}
 		}
 		return false;
 	},
@@ -584,9 +597,13 @@ L.Map.include({
 		var result = false;
 		if (typeof command === 'string') {
 			var commandData = this._allowCommands[command]; // 找出白名單資料
+			// 白名單沒有的話，找右鍵選單的白名單
+			if (commandData === undefined) {
+				commandData = this._whiteCommandList[command];
+			}
 			var uno = false, dialog = false, action = false, callback = false;
-			// 有找到
-			if (commandData !== undefined) {
+			// 有找到且該指令沒被隱藏
+			if (commandData !== undefined && commandData.hide !== true) {
 				// 指令開頭是 .uno:，直接執行
 				if (command.startsWith('.uno:')) {
 					this.sendUnoCommand(command);

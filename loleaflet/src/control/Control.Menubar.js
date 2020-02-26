@@ -1018,7 +1018,8 @@ L.Control.Menubar = L.Control.extend({
 			case 'action': // 自行處理的功能，需實作功能
 				var obj = {
 					name: menu[i].id,
-					hotkey: menu[i].hotkey
+					hotkey: menu[i].hotkey,
+					hide: menu[i].hide
 				};
 				// 如果 name 是 UNO 指令
 				if (map.isUnoCommand(menu[i].name)) {
@@ -1051,7 +1052,7 @@ L.Control.Menubar = L.Control.extend({
 						$(aItem).addClass('item-has-hotkey');
 					}
 					// 將該指令加入白名單中
-					map.addAllowedCommand({name: menu[i].uno, hotkey: menu[i].hotkey});
+					map.addAllowedCommand({name: menu[i].uno, hotkey: menu[i].hotkey, hide: menu[i].hide});
 				}
 				break;
 			}
