@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-31 16:08+0800\n"
+"POT-Creation-Date: 2020-02-27 15:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -221,10 +221,11 @@ msgstr "驗證"
 #: js/toolbar.js:1291 src/layer/marker/Annotation.js:181 src/map/Map.js:106
 #: uiconfig/dialogs/AddTableAtEnd.js:46 uiconfig/dialogs/DeleteCell.js:86
 #: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
-#: uiconfig/dialogs/InsertBreak.js:57 uiconfig/dialogs/InsertTable.js:71
-#: uiconfig/dialogs/MoveTable.js:58 uiconfig/dialogs/OXSaveAs.js:48
+#: uiconfig/dialogs/InsertBreak.js:57 uiconfig/dialogs/InsertCell.js:54
+#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
+#: uiconfig/dialogs/OXSaveAs.js:48 uiconfig/dialogs/RemoveCell.js:54
 #: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
-#: uiconfig/dialogs/ShowTable.js:55
+#: uiconfig/dialogs/ShowTable.js:55 uiconfig/dialogs/TraceChangeMode.js:65
 msgid "Cancel"
 msgstr "取消"
 
@@ -239,10 +240,11 @@ msgstr "確認密碼"
 #: admin/src/AdminSocketGlobalFunction.js:58 src/map/Map.js:105
 #: uiconfig/dialogs/AddTableAtEnd.js:39 uiconfig/dialogs/DeleteCell.js:66
 #: uiconfig/dialogs/ExampleDialog.js:48 uiconfig/dialogs/GotoPage.js:63
-#: uiconfig/dialogs/InsertBreak.js:50 uiconfig/dialogs/InsertTable.js:64
-#: uiconfig/dialogs/MoveTable.js:51 uiconfig/dialogs/OXSaveAs.js:38
+#: uiconfig/dialogs/InsertBreak.js:50 uiconfig/dialogs/InsertCell.js:41
+#: uiconfig/dialogs/InsertTable.js:64 uiconfig/dialogs/MoveTable.js:51
+#: uiconfig/dialogs/OXSaveAs.js:38 uiconfig/dialogs/RemoveCell.js:41
 #: uiconfig/dialogs/RemoveTable.js:40 uiconfig/dialogs/RenameTable.js:42
-#: uiconfig/dialogs/ShowTable.js:46
+#: uiconfig/dialogs/ShowTable.js:46 uiconfig/dialogs/TraceChangeMode.js:58
 msgid "OK"
 msgstr "確定"
 
@@ -272,7 +274,8 @@ msgstr "帳號及密碼已更新，將在下次服務重新啟動後生效。"
 msgid "Version"
 msgstr "版本"
 
-#: admin/src/AdminSocketGlobalFunction.js:146
+#: admin/src/AdminSocketGlobalFunction.js:147
+#: admin/src/AdminSocketGlobalFunction.js:152
 msgid "Core"
 msgstr "核心"
 
@@ -678,7 +681,7 @@ msgstr "類型"
 msgid "Index"
 msgstr "索引"
 
-#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:265
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:270
 msgid "Comment"
 msgstr "註解"
 
@@ -768,7 +771,7 @@ msgid "None (Do not check spelling)"
 msgstr "無 (不檢查拼字)"
 
 #: src/control/Control.Menubar.js:232 src/control/Control.Menubar.js:335
-#: src/control/Control.Menubar.js:451
+#: src/control/Control.Menubar.js:451 uiconfig/dialogs/ShowKeyboardHelp.js:59
 msgid "Keyboard shortcuts"
 msgstr "鍵盤快捷鍵"
 
@@ -809,11 +812,11 @@ msgstr ""
 msgid "Reset to Default Language"
 msgstr "重設回預設語言"
 
-#: src/control/Control.Menubar.js:772
+#: src/control/Control.Menubar.js:773
 msgid "All contents of the header will be deleted and can not be restored."
 msgstr "會刪除此頁首的所有內容，而且無法復原。"
 
-#: src/control/Control.Menubar.js:774
+#: src/control/Control.Menubar.js:775
 msgid "All contents of the footer will be deleted and can not be restored."
 msgstr "會刪除此頁尾的所有內容，而且無法復原。"
 
@@ -841,19 +844,19 @@ msgstr "左邊距"
 msgid "Right Margin"
 msgstr "右邊距"
 
-#: src/control/Toolbar.js:274 src/control/Toolbar.js:286
+#: src/control/Toolbar.js:338 src/control/Toolbar.js:350
 msgid "Downloading..."
 msgstr "下載中..."
 
-#: src/control/Toolbar.js:302 src/map/Map.js:1232
+#: src/control/Toolbar.js:366 src/map/Map.js:1245
 msgid "Saving..."
 msgstr "儲存中..."
 
-#: src/control/Toolbar.js:313
+#: src/control/Toolbar.js:377
 msgid "Renaming..."
 msgstr "正在更改檔名…"
 
-#: src/control/Toolbar.js:682
+#: src/control/Toolbar.js:696
 msgid "This version of %productName is powered by"
 msgstr "此 %productName 版本源自"
 
@@ -876,77 +879,77 @@ msgstr "糟糕，連接至 LibreOffice Online 時發生問題："
 msgid "Unsupported server version."
 msgstr "未支援的伺服器版本。"
 
-#: src/core/Socket.js:325
+#: src/core/Socket.js:331
 msgid "Session terminated by document owner"
 msgstr "作業階段由文件擁有者終止"
 
-#: src/core/Socket.js:329
+#: src/core/Socket.js:335
 msgid "Idle document - please click to reload and resume editing"
 msgstr "閒置文件 - 請點按以重新載入並繼續編輯"
 
-#: src/core/Socket.js:336
+#: src/core/Socket.js:342
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr "伺服器正在關機作維護（自動存檔中）"
 
-#: src/core/Socket.js:340
+#: src/core/Socket.js:346
 msgid "Oops, there is a problem connecting the document"
 msgstr "糟糕…連接文件時發生了問題"
 
-#: src/core/Socket.js:344
+#: src/core/Socket.js:350
 msgid "Server is recycling and will be available shortly"
 msgstr "伺服器正在重啟循環，即將無法使用"
 
-#: src/core/Socket.js:376
+#: src/core/Socket.js:382
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr "儲存空間內的文件已經變更。載入新文件中。您的版本會以修訂形式存在。"
 
-#: src/core/Socket.js:382
+#: src/core/Socket.js:388
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr "還原舊的版本。任何尚未儲存的變更都會放在版本歷史中。"
 
-#: src/core/Socket.js:504
+#: src/core/Socket.js:510
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr "儲存位置中的文件已經變更。對於您尚未儲存的變更，您希望怎麼處理？"
 
-#: src/core/Socket.js:509
+#: src/core/Socket.js:515
 msgid "Discard"
 msgstr "放棄"
 
-#: src/core/Socket.js:514
+#: src/core/Socket.js:520
 msgid "Overwrite"
 msgstr "覆寫"
 
-#: src/core/Socket.js:519
+#: src/core/Socket.js:525
 msgid "Save to new file"
 msgstr "儲存為新檔案"
 
-#: src/core/Socket.js:590
+#: src/core/Socket.js:596
 msgid "Document requires password to view."
 msgstr "文件需要密碼才能檢視。"
 
-#: src/core/Socket.js:593
+#: src/core/Socket.js:599
 msgid "Document requires password to modify."
 msgstr "文件需要密碼才能修改。"
 
-#: src/core/Socket.js:595
+#: src/core/Socket.js:601
 msgid "Hit Cancel to open in view-only mode."
 msgstr "點按「取消」以唯讀模式開啟。"
 
-#: src/core/Socket.js:599
+#: src/core/Socket.js:605
 msgid "Wrong password provided. Please try again."
 msgstr "提供的密碼錯誤。請重試。"
 
-#: src/core/Socket.js:715
+#: src/core/Socket.js:721
 msgid "Connecting..."
 msgstr "連接中..."
 
-#: src/core/Socket.js:875
+#: src/core/Socket.js:881
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -1069,39 +1072,39 @@ msgstr "拒絕更改"
 msgid "Open menu"
 msgstr "開啟選單"
 
-#: src/layer/marker/Annotation.js:244 src/layer/tile/TileLayer.js:238
+#: src/layer/marker/Annotation.js:244 src/layer/tile/TileLayer.js:240
 msgid "Reply"
 msgstr "回覆"
 
-#: src/layer/tile/TileLayer.js:232
+#: src/layer/tile/TileLayer.js:234
 msgid "Modify"
 msgstr "修改"
 
-#: src/layer/tile/TileLayer.js:244
+#: src/layer/tile/TileLayer.js:246
 msgid "Remove"
 msgstr "移除"
 
-#: src/map/Map.js:201
+#: src/map/Map.js:214
 msgid "Initializing..."
 msgstr "初始化中..."
 
-#: src/map/Map.js:319
+#: src/map/Map.js:332
 msgid "Last modification"
 msgstr "最後修改"
 
-#: src/map/Map.js:816
+#: src/map/Map.js:829
 msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
 msgstr "請輸入 \".uno:\" 或 \"macro:///\" 開頭的指令"
 
-#: src/map/Map.js:819
+#: src/map/Map.js:832
 msgid "Invalid Command."
 msgstr "不合法的命令"
 
-#: src/map/Map.js:1092
+#: src/map/Map.js:1105
 msgid "Inactive document - please click to resume editing"
 msgstr "非使用中文件 - 請點按按鍵繼續編輯"
 
-#: src/map/Map.js:1235
+#: src/map/Map.js:1248
 msgid "Loading..."
 msgstr "載入中..."
 
@@ -1142,7 +1145,8 @@ msgstr ""
 "也不能包含右列之特殊符號 [ ] * ? : / \\ \n"
 "第一個或最後一個字不能用 ' (單引號)。"
 
-#: uiconfig/dialogs/DeleteCell.js:20
+#: uiconfig/dialogs/DeleteCell.js:20 uiconfig/dialogs/InsertCell.js:18
+#: uiconfig/dialogs/RemoveCell.js:18
 msgid "Selection"
 msgstr "選取"
 
@@ -1179,7 +1183,8 @@ msgstr "格式"
 msgid "Objects"
 msgstr "物件"
 
-#: uiconfig/dialogs/DeleteCell.js:51
+#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/InsertCell.js:27
+#: uiconfig/dialogs/RemoveCell.js:27
 msgid "Close"
 msgstr "關閉"
 
@@ -1198,6 +1203,22 @@ msgstr "分頁"
 #: uiconfig/dialogs/InsertBreak.js:32
 msgid "Change page number"
 msgstr "變更頁碼"
+
+#: uiconfig/dialogs/InsertCell.js:19
+msgid "Shift cells down"
+msgstr "下移儲存格"
+
+#: uiconfig/dialogs/InsertCell.js:20
+msgid "Shift cells right"
+msgstr "右移儲存格"
+
+#: uiconfig/dialogs/InsertCell.js:21
+msgid "Entire row"
+msgstr "整列"
+
+#: uiconfig/dialogs/InsertCell.js:22
+msgid "Entire column"
+msgstr "整欄"
 
 #: uiconfig/dialogs/InsertTable.js:21
 msgid "Position"
@@ -1242,6 +1263,22 @@ msgstr "檔案名稱："
 #: uiconfig/dialogs/OXSaveAs.js:24
 msgid "Please enter a new filename."
 msgstr "請輸入新的檔案名稱"
+
+#: uiconfig/dialogs/RemoveCell.js:19
+msgid "Shift cells up"
+msgstr "向上移動儲存格"
+
+#: uiconfig/dialogs/RemoveCell.js:20
+msgid "Shift cells left"
+msgstr "向左移動儲存格"
+
+#: uiconfig/dialogs/RemoveCell.js:21
+msgid "Delete entire row(s)"
+msgstr "刪除整列"
+
+#: uiconfig/dialogs/RemoveCell.js:22
+msgid "Delete entire column(s)"
+msgstr "刪除整欄"
 
 #: uiconfig/dialogs/RemoveTable.js:22
 msgid "Are you sure you want to delete sheet, %sheet% ?"
