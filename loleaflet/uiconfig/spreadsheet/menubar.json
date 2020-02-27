@@ -1311,6 +1311,11 @@
 		"id": ".uno:SheetMenu",
 		"menu": [
 			{
+				"name": ".uno:InsertCell",
+				"id": "dialog:InsertCell",
+				"hotkey": "Ctrl++"
+			},
+			{
 				"name": ".uno:InsertRowsMenu",
 				"id": ".uno:InsertRowsMenu",
 				"menu": [
@@ -1348,6 +1353,11 @@
 			},
 			{
 				"type": "--"
+			},
+			{
+				"name": ".uno:DeleteCell",
+				"id": "dialog:RemoveCell",
+				"hotkey": "Ctrl+-"
 			},
 			{
 				"id": ".uno:DeleteRows"

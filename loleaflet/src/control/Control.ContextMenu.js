@@ -15,6 +15,8 @@ L.Control.ContextMenu = L.Control.extend({
 
 		},
 		'spreadsheet': {
+			'.uno:InsertCell': 'dialog:InsertCell',
+			'.uno:DeleteCell': 'dialog:RemoveCell',
 			'.uno:Delete': 'dialog:DeleteCell',
 		},
 		'presentation': {
