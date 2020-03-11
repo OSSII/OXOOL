@@ -168,6 +168,35 @@
 				"type": "--"
 			},
 			{
+				"id": ".uno:NormalMultiPaneGUI"
+			},
+			{
+				"id": ".uno:OutlineMode",
+				"hide": true
+			},
+			{
+				"id": ".uno:NotesMode",
+				"hide": true
+			},
+			{
+				"id": ".uno:DiaMode",
+				"hide": true
+			},
+			{
+				"id": ".uno:SlideMasterPage"
+			},
+			{
+				"id": ".uno:NotesMasterPage",
+				"hide": true
+			},
+			{
+				"id": ".uno:HandoutMode",
+				"hide": true
+			},
+			{
+				"type": "--"
+			},
+			{
 				"name": ".uno:GridMenu",
 				"id": ".uno:GridMenu",
 				"menu": [
