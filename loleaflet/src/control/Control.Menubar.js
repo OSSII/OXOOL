@@ -7,7 +7,7 @@
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help)
 	options: {
-		text:  [
+		/* text:  [
 			{name: '.uno:PickList', id: 'file', type: 'menu', menu: [
 				{name: '.uno:Save', id: 'save', hotkey: 'Ctrl+S', type: 'action'},
 				{name: '.uno:SaveAs', id: 'saveas', type: 'action'},
@@ -451,24 +451,25 @@ L.Control.Menubar = L.Control.extend({
 				{name: _('Keyboard shortcuts'), id: 'keyboard-shortcuts', type: 'action', icon: '.uno:HelpIndex', hotkey: 'Ctrl+Shift+?'},
 				{name: _('About'), id: 'about', type: 'action', icon: '.uno:About'}]
 			}
-		],
+		], */
 
 		commandStates: {},
 
+		// Only these menu options will be visible in view mode
+		allowedViewMenus: ['file', 'downloadas', 'view', 'help'],
+
 		// Only these menu options will be visible in readonly mode
-		allowedReadonlyMenus: ['file', 'downloadas', 'view', 'help'],
+		allowedReadonlyMenus: ['help'],
 
 		allowedViewModeActions: [
-			'downloadas-pdf', 'downloadas-odt', 'downloadas-doc', 'downloadas-docx', 'downloadas-rtf', // file menu
-			'downloadas-odp', 'downloadas-ppt', 'downloadas-pptx', 'print', // file menu
-			'downloadas-ods', 'downloadas-xls', 'downloadas-xlsx', 'closedocument', // file menu
-			'downloadas-csv', 'downloadas-html', 'downloadas-txt',  // file menu
+			'dialog:DownloadAs?ext=pdf', 'dialog:DownloadAs?ext=odt', 'dialog:DownloadAs?ext=doc', 'dialog:DownloadAs?ext=docx', 'dialog:DownloadAs?ext=rtf', // file menu
+			'dialog:DownloadAs?ext=odp', 'dialog:DownloadAs?ext=ppt', 'dialog:DownloadAs?ext=pptx', 'print', // file menu
+			'dialog:DownloadAs?ext=ods', 'dialog:DownloadAs?ext=xls', 'dialog:DownloadAs?ext=xlsx', 'closedocument', // file menu
+			'dialog:DownloadAs?ext=csv', 'dialog:DownloadAs?ext=html', 'dialog:DownloadAs?ext=txt',  // file menu
 			'fullscreen', 'zoomin', 'zoomout', 'zoomreset', // view menu
-			'about', 'keyboard-shortcuts' // help menu
+			'about' // help menu
 		]
 	},
-
-	_newMenubar: true,
 
 	onAdd: function (map) {
 		this._initialized = false;
@@ -562,24 +563,7 @@ L.Control.Menubar = L.Control.extend({
 		}
 
 		// Add document specific menu
-		var docType = this._map.getDocType();
-		this._newMenubar = window.getParameterByName('menubar') !== 'old';
-		if (this._newMenubar) {
-			this._loadMenubar(docType);
-		} else {
-			switch (docType)
-			{
-			case 'text':
-				this._initializeMenu(this.options.text);
-				break;
-			case 'spreadsheet':
-				this._initializeMenu(this.options.spreadsheet);
-				break;
-			default:
-				this._initializeMenu(this.options.presentation);
-				break;
-			}
-		}
+		this._loadMenubar(this._map.getDocType());
 		this._createFileIcon();
 	},
 
@@ -869,10 +853,22 @@ L.Control.Menubar = L.Control.extend({
 				continue;
 			}
 
-			if (this._map._permission === 'readonly' && menu[i].type === 'menu') {
-				var found = false;
-				for (var j in this.options.allowedReadonlyMenus) {
+			var found = false, j;
+			if (this._map._permission === 'readonly' && menu[i].menu !== undefined) {
+				
+				for (j in this.options.allowedReadonlyMenus) {
 					if (this.options.allowedReadonlyMenus[j] === menu[i].id) {
+						found = true;
+						break;
+					}
+				}
+				if (!found)
+					continue;
+			}
+
+			if (this._map._permission === 'view' && menu[i].menu !== undefined) {
+				for (j in this.options.allowedViewMenus) {
+					if (this.options.allowedViewMenus[j] === menu[i].id) {
 						found = true;
 						break;
 					}
@@ -907,12 +903,12 @@ L.Control.Menubar = L.Control.extend({
 			if (menu[i].id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
 				continue;
 
-			// Keep track of all 'downloadas-' options and register them as
+			// Keep track of all 'dialog:DownloadAs?ext=' options and register them as
 			// export formats with docLayer which can then be publicly accessed unlike
 			// this Menubar control for which there doesn't seem to be any easy way
 			// to get access to.
-			if (menu[i].id && menu[i].id.startsWith('downloadas-')) {
-				var format = menu[i].id.substring('downloadas-'.length);
+			if (menu[i].id && menu[i].id.startsWith('dialog:DownloadAs?ext=')) {
+				var format = menu[i].id.substring('dialog:DownloadAs?ext='.length);
 				this._map._docLayer.registerExportFormat(menu[i].name, format);
 
 				if (this._map['wopi'].HideExportOption)
