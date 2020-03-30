@@ -48,9 +48,9 @@ if __name__ == "__main__":
 
         sys.stderr.write('Generating ' + lang + '...\n')
 
-        # extract 'Clear formatting' and some status bar strings
+        # extract 'Clear formatting', shape group names, and some status bar strings
         poFile = dir + lang + '/svx/messages.po'
-        extractFromPo(poFile, ["RID_SVXSTR_CLEARFORM", "RID_SVXSTR_OVERWRITE_TEXT", "selectionmenu|"], translations)
+        extractFromPo(poFile, ["RID_SVXSTR_CLEARFORM", "RID_SVXSTR_OVERWRITE_TEXT", "RID_SVXITEMS_PAGE_LAND_TRUE", "RID_SVXITEMS_PAGE_LAND_FALSE", "selectionmenu|", "defaultshapespanel|"], translations)
 
         # extract Writer style names and status bar strings
         poFile = dir + lang + '/sw/messages.po'
@@ -58,11 +58,15 @@ if __name__ == "__main__":
 
         # extract Impress/Draw style names, layout names and 'Slide %1 of %2'
         poFile = dir + lang + '/sd/messages.po'
-        extractFromPo(poFile, ["STR_STANDARD_STYLESHEET_NAME", "STR_POOL", "STR_PSEUDOSHEET", "STR_AUTOLAYOUT", "STR_AL_", "STR_SD_PAGE_COUNT"], translations)
+        extractFromPo(poFile, ["STR_STANDARD_STYLESHEET_NAME", "STR_POOL", "STR_PSEUDOSHEET", "STR_AUTOLAYOUT", "STR_AL_", "STR_SD_PAGE_COUNT", "drawpagedialog|DrawPageDialog"], translations)
 
         # extract Calc style names and strings for status bar
         poFile = dir + lang + '/sc/messages.po'
         extractFromPo(poFile, ["STR_STYLENAME_", "STR_FILTER_SELCOUNT", "STR_ROWCOL_SELCOUNT", "STR_FUN_TEXT_", "STR_UNDO_INSERTCELLS", "STR_TABLE_COUNT"], translations)
+
+        # extract Function Wizard name for formula bar
+        poFile = dir + lang +'/formula/messages.po'
+        extractFromPo(poFile, ["STR_TITLE1"], translations)
 
         # extract language names
         poFile = dir + lang + '/svtools/messages.po'

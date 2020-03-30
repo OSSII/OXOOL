@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- tab-width: 4; indent-tabs-mode: nil; py-indent-offset: 4 -*-
 #
 # This file is part of the LibreOffice project.
@@ -86,6 +86,7 @@ def extractMenuCommands(path):
 
 # Extract all the uno commands we are using in the Online context menu
 def extractContextCommands(path):
+    commandsToIgnore = ["FontDialogForParagraph"]
     commands = []
 
     # extract from the comments whitelist
@@ -114,6 +115,7 @@ def extractContextCommands(path):
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
+    commands = [command for command in commands if command not in commandsToIgnore]
     # may the list unique
     return set(commands)
 
@@ -122,7 +124,7 @@ def extractToolbarCommands(path):
     commands = []
 
     # extract from the menu specifications
-    f = open(path + '/loleaflet/js/toolbar.js', 'r')
+    f = open(path + '/loleaflet/src/control/Control.Toolbar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
@@ -201,20 +203,19 @@ def writeUnocommandsJS(onlineDir, lofficeDir, menuCommands, contextCommands, too
             descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, toolbarCommands, 'Label', type)
 
     # output the unocommands.js
-    f = open(onlineDir + '/loleaflet/src/unocommands.js', 'w')
+    f = open(onlineDir + '/loleaflet/src/unocommands.js', 'w', encoding='utf-8')
     f.write('''// Don't modify, generated using unocommands.py
 
 var unoCommandsArray = {\n''')
 
     for key in sorted(descriptions.keys()):
-        #f.write(('    ' + key + ": _('" + descriptions[key] + "'),\n").encode('utf-8'))
-        f.write(('\t' + key + ':{').encode('utf-8'))
+        f.write('\t' + key + ':{')
         for type in sorted(descriptions[key].keys()):
-            f.write((type + ':{').encode('utf-8'))
+            f.write(type + ':{')
             for menuType in sorted(descriptions[key][type].keys()):
-                f.write((menuType + ":_('" + descriptions[key][type][menuType] + "'),").encode('utf-8'))
-            f.write(('},').encode('utf-8'))
-        f.write(('},\n').encode('utf-8'))
+                f.write(menuType + ":_('" + descriptions[key][type][menuType] + "'),")
+            f.write('},')
+        f.write('},\n')
 
     f.write('''};
 
@@ -243,6 +244,10 @@ window._UNO = function(string, component, isContext) {
 \t\t}
 \t}
 
+\treturn this.removeAccessKey(text);
+}
+
+window.removeAccessKey = function(text) {
 \t// Remove access key markers from translated strings
 \t// 1. access key in parenthesis in case of non-latin scripts
 \ttext = text.replace(/\(~[A-Za-z]\)/, '');
@@ -258,10 +263,9 @@ window._UNO = function(string, component, isContext) {
 def parseUnocommandsJS(onlineDir):
     strings = {}
 
-    f = open(onlineDir + '/loleaflet/src/unocommands.js', 'r')
+    f = open(onlineDir + '/loleaflet/src/unocommands.js', 'r', encoding='utf-8')
     readingCommands = False
     for line in f:
-        line = line.decode('utf-8')
         m = re.match(r"\t([^:]*):.*", line)
         if m:
             command = m.group(1)
@@ -296,7 +300,7 @@ def writeTranslations(onlineDir, translationsDir, strings):
                         if text == entry.msgid:
                             translations[entry.msgid] = entry.msgstr
 
-        f = open(onlineDir + '/loleaflet/l10n/uno/' + lang + '.json', 'w')
+        f = open(onlineDir + '/loleaflet/l10n/uno/' + lang + '.json', 'w', encoding='utf-8')
         f.write('{\n')
 
         writeComma = False
@@ -305,7 +309,7 @@ def writeTranslations(onlineDir, translationsDir, strings):
                 f.write(',\n')
             else:
                 writeComma = True
-            f.write(('"' + key.replace('"','\\\"') + '":"' + translations[key].replace('"','\\\"') + '"').encode('utf-8'))
+            f.write('"' + key.replace('"','\\\"') + '":"' + translations[key].replace('"','\\\"') + '"')
 
         f.write('\n}\n')
 
