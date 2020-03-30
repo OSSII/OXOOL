@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="temp_file_saving_disabled">Este documento é apenas de leitura, salvaguardar está desabilitado.</string>
+    <string name="storage_permission_required">Permissão de armazenamento é requirida</string>
+    <string name="failed_to_load_file">Falha no carregamento do documento</string>
+    <string name="failed_to_insert_image">Falha ao inserir imagem</string>
+    <string name="cannot_open_file_chooser">Não foi possível abrir o gestor de arquivos</string>
+    <!-- Loading SlideShow Dialog Strings -->
+    <string name="loading">Carregando...</string>
+    <string name="saving">Salvando...</string>
+    <string name="preparing_for_the_first_start_after_an_update">Preparando para iniciar após uma atualização.</string>
+    <string name="rate_now">Avaliar agora</string>
+    <string name="rate_our_app_text">Se gostou dele, marque 5 estrelas no Google Play. Sua avaliação positiva é nossa melhor motivação.</string>
+    <string name="rate_our_app_title">Obrigado por usar %1$s!</string>
+    <string name="later">Mais tarde</string>
+    <string name="exiting">Saindo...</string>
+</resources>

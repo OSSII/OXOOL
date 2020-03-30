@@ -1,0 +1,15 @@
+.gradle
+.idea
+/android.iml
+/gradle
+/local.properties
+/lib/src/main/assets/etc/
+/lib/src/main/assets/example.odt
+/lib/src/main/assets/license.txt
+/lib/src/main/assets/license.html
+/lib/src/main/assets/notice.txt
+/lib/src/main/assets/program/
+/lib/src/main/assets/share/
+/lib/src/main/assets/unpack/
+/lib/src/main/assets/user/
+/lib/src/main/cpp/lib

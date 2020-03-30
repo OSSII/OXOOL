@@ -1,0 +1,15 @@
+ext {
+    liboAppName         = '@APP_NAME@'
+    liboSrcRoot         = '@LOBUILDDIR@'
+    liboInstdir         = '@LOBUILDDIR@/instdir'
+    liboEtcFolder       = 'program'
+    liboUreMiscFolder   = 'program'
+    liboSharedResFolder = 'program/resource'
+    liboExampleDocument = '@LOBUILDDIR@/android/default-document/example.odt'
+    liboVersionMajor    = '@LOOLWSD_VERSION_MAJOR@'
+    liboVersionMinor    = '@LOOLWSD_VERSION_MAJOR@'
+    liboGitFullCommit   = '@LOOLWSD_VERSION_HASH@'
+    liboApplicationId   = '@ANDROID_PACKAGE_NAME@'
+    liboAndroidAbi      = '@ANDROID_ABI@'
+    liboGooglePlay      = '@APP_GOOGLE_PLAY@'
+}

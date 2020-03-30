@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name_settings">Agordaro</string>
+    <string name="action_settings">Agordaro</string>
+    <string name="action_about">Pri</string>
+    <string name="title_activity_show_html">Pri</string>
+    <string name="loading">Ŝargas...</string>
+    <string name="sort">Ordigi laŭ</string>
+    <string name="filter">Filtri laŭ</string>
+    <string name="default_document_name">sentitola</string>
+    <string name="title_browser">Ĉiuj dosieroj</string>
+    <string name="open">Malfermi</string>
+    <string name="user_name">Uzantnomo</string>
+    <string name="password">Pasvorto</string>
+    <string name="cancel_label">Rezigni</string>
+    <string name="action_cancel">Rezigni</string>
+    <string name="negative_cancel">Rezigni</string>
+    <string name="about_moreinfo">Pli da informoj</string>
+    <string name="pref_show_hidden_files">Kaŝitaj dosieroj/dosierujoj</string>
+    <string name="list_view">Listo</string>
+    <string name="temp_file_saving_disabled">La dosiero estas nurlegebla; la konservo estas malŝaltita.</string>
+    <string name="app_version">Versio: %1$s. Kunmetaĵa identigilo: %2$s</string>
+</resources>
