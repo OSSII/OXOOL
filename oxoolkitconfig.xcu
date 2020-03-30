@@ -7,10 +7,13 @@
 <!-- Dialogs have limited real estate, limit drop-down height -->
 <item oor:path="/org.openoffice.Office.Common/Accessibility"><prop oor:name="ListBoxMaximumLineCount" oor:op="fuse"><value>11</value></prop></item>
 
+<!-- Disable two capitals at start autocorrect -->
+<item oor:path="/org.openoffice.Office.Common/AutoCorrect"><prop oor:name="TwoCapitalsAtStart" oor:op="fuse"><value>false</value></prop></item>
+
 <!-- The Help root URL, or empty for no help (hides the help buttons) -->
 <item oor:path="/org.openoffice.Office.Common/Help"><prop oor:name="HelpRootURL" oor:op="fuse"><value>https://help.libreoffice.org/help.html?</value></prop></item>
 
-<!-- Enable spell-checking by default -->
+<!-- Disable spell-checking by default -->
 <item oor:path="/org.openoffice.Office.Linguistic/SpellChecking"><prop oor:name="IsSpellAuto" oor:op="fuse"><value>false</value></prop></item>
 
 <!-- Save memory by avoiding collecting autocompletion words  -->
@@ -21,5 +24,11 @@
 
 <!-- Enable thumbnail generation by default (disabling saves CPU time) -->
 <item oor:path="/org.openoffice.Office.Common/Save/Document"><prop oor:name="GenerateThumbnail" oor:op="fuse"><value>true</value></prop></item>
+
+<!-- Use the colibre_svg theme for the sidebar -->
+<item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="SymbolStyle" oor:op="fuse"><value>colibre_svg</value></prop></item>
+
+<!-- Disable GIO UCP we don't want -->
+<item oor:path="/org.openoffice.ucb.Configuration/ContentProviders/Local/SecondaryKeys/Office/ProviderData/Provider999"><prop oor:name="URLTemplate" oor:op="fuse"><value>NeverMatchAnyUrlSuffix</value></prop></item>
 
 </oor:items>
