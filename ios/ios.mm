@@ -8,6 +8,8 @@
 
 #include <cstring>
 
+#include "ios.h"
+
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 
@@ -16,13 +18,7 @@ extern "C" {
 }
 
 int loolwsd_server_socket_fd = -1;
-
-const char* lo_ios_app_getCacheDir()
-{
-    static NSString *cachePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    static const char* result = strdup([cachePath UTF8String]);
-
-    return result;
-}
+lok::Document *lok_document = nullptr;
+LibreOfficeKit *lo_kit;
 
 // vim:set shiftwidth=4 softtabstop=4 expandtab:

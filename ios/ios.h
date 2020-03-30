@@ -7,8 +7,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-extern const char *lo_ios_app_getCacheDir();
+#include <mutex>
+
+#include <LibreOfficeKit/LibreOfficeKit.hxx>
 
 extern int loolwsd_server_socket_fd;
+extern lok::Document *lok_document;
+
+extern LibreOfficeKit *lo_kit;
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

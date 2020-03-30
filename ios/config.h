@@ -1,6 +1,8 @@
 /* config.h.  Manually edited from config.h.in.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+#define APP_NAME "LibreOffice Online"
+
 /* Whether to disable SECCOMP */
 #define DISABLE_SECCOMP 1
 
@@ -66,14 +68,11 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
-/* Cache folder */
-#define LOOLWSD_CACHEDIR lo_ios_app_getCacheDir()
-
 /* LibreOffice Online WebSocket server version */
-#define LOOLWSD_VERSION "master" // ???
+#define LOOLWSD_VERSION "master.."
 
 /* LibreOffice Online git hash if present */
-#define LOOLWSD_VERSION_HASH "xxxxxx" // ???
+#define LOOLWSD_VERSION_HASH "272715a96"
 
 /* Path to LibreOffice installation */
 #define LO_PATH "."
@@ -86,6 +85,9 @@
 
 /* Limit the maximum number of open documents */
 #define MAX_DOCUMENTS 1
+
+/* Define to 1 if this is a mobileapp (eg. Android) build. */
+#define MOBILEAPP 1
 
 /* Name of package */
 #undef PACKAGE
@@ -110,6 +112,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
+
+/* Default value of per_documents.document_signing_url */
+#define VEREIGN_URL ""
 
 /* Version number of package */
 /* #undef VERSION */
