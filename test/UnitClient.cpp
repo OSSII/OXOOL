@@ -7,7 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-// Runs client tests in their own thread inside a WSD process.
+// Runs old-style CPPUNIT tests in their own thread inside a WSD process.
+// Depending which cppunit objects this is linked with this runs different
+// tests.
 
 #include <config.h>
 
@@ -70,7 +72,9 @@ UnitBase *unit_create_wsd(void)
 }
 
 // Allows re-use of UnitClient in test.cpp impls.
-#define UNIT_CLIENT_TESTS
+#ifdef STANDALONE_CPPUNIT
+#  error "Should never be compiled this way";
+#endif
 #include <test.cpp>
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

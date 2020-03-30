@@ -9,20 +9,13 @@
 
 #include <config.h>
 
-#include <Poco/DOM/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/NodeList.h>
 #include <Poco/Net/AcceptCertificateHandler.h>
 #include <Poco/Net/FilePartSource.h>
 #include <Poco/Net/HTMLForm.h>
 #include <Poco/Net/HTTPClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/InvalidCertificateHandler.h>
-#include <Poco/Net/PrivateKeyPassphraseHandler.h>
 #include <Poco/Net/SSLManager.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/StreamCopier.h>
@@ -32,7 +25,6 @@
 
 #include <Common.hpp>
 #include <common/FileUtil.hpp>
-#include <Util.hpp>
 
 #include <countloolkits.hpp>
 #include <helpers.hpp>
@@ -44,24 +36,22 @@ class HTTPServerTest : public CPPUNIT_NS::TestFixture
 
     CPPUNIT_TEST_SUITE(HTTPServerTest);
 
-    CPPUNIT_TEST(testDiscovery);
-    CPPUNIT_TEST(testCapabilities);
     CPPUNIT_TEST(testLoleafletGet);
     CPPUNIT_TEST(testLoleafletPost);
     CPPUNIT_TEST(testScriptsAndLinksGet);
     CPPUNIT_TEST(testScriptsAndLinksPost);
     CPPUNIT_TEST(testConvertTo);
+    CPPUNIT_TEST(testConvertTo2);
     CPPUNIT_TEST(testConvertToWithForwardedClientIP);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void testDiscovery();
-    void testCapabilities();
     void testLoleafletGet();
     void testLoleafletPost();
     void testScriptsAndLinksGet();
     void testScriptsAndLinksPost();
     void testConvertTo();
+    void testConvertTo2();
     void testConvertToWithForwardedClientIP();
 
 public:
@@ -102,99 +92,17 @@ public:
     // A server URI which was not added to loolwsd.xml as post_allow IP or a wopi storage host
     Poco::URI getNotAllowedTestServerURI()
     {
-        static const char* clientPort = std::getenv("LOOL_TEST_CLIENT_PORT");
-
         static std::string serverURI(
 #if ENABLE_SSL
-        "https://165.227.162.232:"
+            "https://165.227.162.232:9980"
 #else
-        "http://165.227.162.232:"
+            "http://165.227.162.232:9980"
 #endif
-            + (clientPort? std::string(clientPort) : std::to_string(DEFAULT_CLIENT_PORT_NUMBER)));
+            );
 
         return Poco::URI(serverURI);
     }
 };
-
-
-void HTTPServerTest::testDiscovery()
-{
-    std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
-
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/hosting/discovery");
-    session->sendRequest(request);
-
-    Poco::Net::HTTPResponse response;
-    session->receiveResponse(response);
-    CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
-    CPPUNIT_ASSERT_EQUAL(std::string("text/xml"), response.getContentType());
-}
-
-
-void HTTPServerTest::testCapabilities()
-{
-    std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
-
-    // Get discovery first and extract the urlsrc of the capabilities end point
-    std::string capabiltiesURI;
-    {
-
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/hosting/discovery");
-        session->sendRequest(request);
-
-        Poco::Net::HTTPResponse response;
-        std::istream& rs = session->receiveResponse(response);
-        CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
-        CPPUNIT_ASSERT_EQUAL(std::string("text/xml"), response.getContentType());
-
-        std::string discoveryXML;
-        Poco::StreamCopier::copyToString(rs, discoveryXML);
-
-        Poco::XML::DOMParser parser;
-        Poco::XML::AutoPtr<Poco::XML::Document> docXML = parser.parseString(discoveryXML);
-        Poco::XML::AutoPtr<Poco::XML::NodeList> listNodes = docXML->getElementsByTagName("action");
-        bool foundCapabilities = false;
-        for (unsigned long index = 0; index < listNodes->length(); ++index)
-        {
-            Poco::XML::Element* elem = static_cast<Poco::XML::Element*>(listNodes->item(index));
-            Poco::XML::Element* parent = elem->parentNode() ? static_cast<Poco::XML::Element*>(elem->parentNode()) : nullptr;
-            if(parent && parent->getAttribute("name") == "Capabilities")
-            {
-                foundCapabilities = true;
-                capabiltiesURI = elem->getAttribute("urlsrc");
-                break;
-            }
-        }
-
-        CPPUNIT_ASSERT(foundCapabilities);
-        CPPUNIT_ASSERT_EQUAL(_uri.toString() + CAPABILITIES_END_POINT, capabiltiesURI);
-    }
-
-    // Then get the capabilities json
-    {
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, CAPABILITIES_END_POINT);
-        session->sendRequest(request);
-
-        Poco::Net::HTTPResponse response;
-        std::istream& rs = session->receiveResponse(response);
-        CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
-        CPPUNIT_ASSERT_EQUAL(std::string("application/json"), response.getContentType());
-
-        std::ostringstream oss;
-        Poco::StreamCopier::copyStream(rs, oss);
-        std::string responseString = oss.str();
-
-        Poco::JSON::Parser parser;
-        Poco::Dynamic::Var jsonFile = parser.parse(responseString);
-        Poco::JSON::Object::Ptr features = jsonFile.extract<Poco::JSON::Object::Ptr>();
-        CPPUNIT_ASSERT(features);
-        CPPUNIT_ASSERT(features->has("convert-to"));
-
-        Poco::JSON::Object::Ptr convert_to = features->get("convert-to").extract<Poco::JSON::Object::Ptr>();
-        CPPUNIT_ASSERT(convert_to->has("available"));
-        CPPUNIT_ASSERT(convert_to->get("available"));
-    }
-}
 
 
 void HTTPServerTest::testLoleafletGet()
@@ -207,15 +115,15 @@ void HTTPServerTest::testLoleafletGet()
 
     Poco::Net::HTTPResponse response;
     std::istream& rs = session->receiveResponse(response);
-    CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
-    CPPUNIT_ASSERT_EQUAL(std::string("text/html"), response.getContentType());
+    LOK_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
+    LOK_ASSERT_EQUAL(std::string("text/html"), response.getContentType());
 
     std::string html;
     Poco::StreamCopier::copyToString(rs, html);
 
-    CPPUNIT_ASSERT(html.find(param["access_token"]) != std::string::npos);
-    CPPUNIT_ASSERT(html.find(_uri.getHost()) != std::string::npos);
-    CPPUNIT_ASSERT(html.find(std::string(LOOLWSD_VERSION_HASH)) != std::string::npos);
+    LOK_ASSERT(html.find(param["access_token"]) != std::string::npos);
+    LOK_ASSERT(html.find(_uri.getHost()) != std::string::npos);
+    LOK_ASSERT(html.find(std::string(LOOLWSD_VERSION_HASH)) != std::string::npos);
 }
 
 void HTTPServerTest::testLoleafletPost()
@@ -231,13 +139,13 @@ void HTTPServerTest::testLoleafletPost()
 
     Poco::Net::HTTPResponse response;
     std::istream& rs = session->receiveResponse(response);
-    CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
+    LOK_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
 
     std::string html;
     Poco::StreamCopier::copyToString(rs, html);
 
-    CPPUNIT_ASSERT(html.find(form["access_token"]) != std::string::npos);
-    CPPUNIT_ASSERT(html.find(_uri.getHost()) != std::string::npos);
+    LOK_ASSERT(html.find(form["access_token"]) != std::string::npos);
+    LOK_ASSERT(html.find(_uri.getHost()) != std::string::npos);
 }
 
 namespace
@@ -251,7 +159,7 @@ void assertHTTPFilesExist(const Poco::URI& uri, Poco::RegularExpression& expr, c
     for (int offset = 0; expr.match(html, offset, matches) > 0; offset = static_cast<int>(matches[0].offset + matches[0].length))
     {
         found = true;
-        CPPUNIT_ASSERT_EQUAL(2, (int)matches.size());
+        LOK_ASSERT_EQUAL(2, (int)matches.size());
         Poco::URI uriScript(html.substr(matches[1].offset, matches[1].length));
         if (uriScript.getHost().empty())
         {
@@ -268,14 +176,14 @@ void assertHTTPFilesExist(const Poco::URI& uri, Poco::RegularExpression& expr, c
 
             Poco::Net::HTTPResponse responseScript;
             session->receiveResponse(responseScript);
-            CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, responseScript.getStatus());
+            LOK_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, responseScript.getStatus());
 
             if (!mimetype.empty())
-            CPPUNIT_ASSERT_EQUAL(mimetype, responseScript.getContentType());
+            LOK_ASSERT_EQUAL(mimetype, responseScript.getContentType());
         }
     }
 
-    CPPUNIT_ASSERT_MESSAGE("No match found", found);
+    LOK_ASSERT_MESSAGE("No match found", found);
 }
 
 }
@@ -289,7 +197,7 @@ void HTTPServerTest::testScriptsAndLinksGet()
 
     Poco::Net::HTTPResponse response;
     std::istream& rs = session->receiveResponse(response);
-    CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
+    LOK_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
 
     std::string html;
     Poco::StreamCopier::copyToString(rs, html);
@@ -312,7 +220,7 @@ void HTTPServerTest::testScriptsAndLinksPost()
 
     Poco::Net::HTTPResponse response;
     std::istream& rs = session->receiveResponse(response);
-    CPPUNIT_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
+    LOK_ASSERT_EQUAL(Poco::Net::HTTPResponse::HTTP_OK, response.getStatus());
 
     std::string html;
     Poco::StreamCopier::copyToString(rs, html);
@@ -326,9 +234,12 @@ void HTTPServerTest::testScriptsAndLinksPost()
 
 void HTTPServerTest::testConvertTo()
 {
+    const char *testname = "testConvertTo";
     const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", "convertTo_");
     std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
-    session->setTimeout(Poco::Timespan(2, 0)); // 2 seconds.
+    session->setTimeout(Poco::Timespan(5, 0)); // 5 seconds.
+
+    TST_LOG("Convert-to odt -> txt");
 
     Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to");
     Poco::Net::HTMLForm form;
@@ -336,7 +247,16 @@ void HTTPServerTest::testConvertTo()
     form.set("format", "txt");
     form.addPart("data", new Poco::Net::FilePartSource(srcPath));
     form.prepareSubmit(request);
-    form.write(session->sendRequest(request));
+    try
+    {
+        form.write(session->sendRequest(request));
+    }
+    catch (const std::exception& ex)
+    {
+        // In case the server is still starting up.
+        sleep(5);
+        form.write(session->sendRequest(request));
+    }
 
     Poco::Net::HTTPResponse response;
     std::stringstream actualStream;
@@ -355,27 +275,83 @@ void HTTPServerTest::testConvertTo()
     std::string actualString = actualStream.str();
     if (actualString.size() > 3 && actualString[0] == '\xEF' && actualString[1] == '\xBB' && actualString[2] == '\xBF')
         actualString = actualString.substr(3);
-    CPPUNIT_ASSERT_EQUAL(expectedStream.str(), actualString);
+    LOK_ASSERT_EQUAL(expectedStream.str(), actualString);
 }
 
+void HTTPServerTest::testConvertTo2()
+{
+    const char *testname = "testConvertTo2";
+    const std::string srcPath = FileUtil::getTempFilePath(TDOC, "convert-to.xlsx", "convertTo_");
+    std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
+    session->setTimeout(Poco::Timespan(10, 0)); // 10 seconds.
+
+    TST_LOG("Convert-to #2 xlsx -> png");
+
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to");
+    Poco::Net::HTMLForm form;
+    form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
+    form.set("format", "png");
+    form.addPart("data", new Poco::Net::FilePartSource(srcPath));
+    form.prepareSubmit(request);
+    try
+    {
+        form.write(session->sendRequest(request));
+    }
+    catch (const std::exception& ex)
+    {
+        // In case the server is still starting up.
+        sleep(5);
+        form.write(session->sendRequest(request));
+    }
+
+    Poco::Net::HTTPResponse response;
+    std::stringstream actualStream;
+    std::istream& responseStream = session->receiveResponse(response);
+    Poco::StreamCopier::copyStream(responseStream, actualStream);
+
+    // Remove the temp files.
+    FileUtil::removeFile(srcPath);
+
+    std::string actualString = actualStream.str();
+    LOK_ASSERT(actualString.size() >= 100);
+//  LOK_ASSERT_EQUAL(actualString[0], 0x89);
+    LOK_ASSERT_EQUAL(actualString[1], 'P');
+    LOK_ASSERT_EQUAL(actualString[2], 'N');
+    LOK_ASSERT_EQUAL(actualString[3], 'G');
+}
 
 void HTTPServerTest::testConvertToWithForwardedClientIP()
 {
+    const std::string testname = "convertToWithForwardedClientIP-";
+    constexpr int TimeoutSeconds = 10; // Sometimes dns resolving is slow.
+
     // Test a forwarded IP which is not allowed to use convert-to feature
+    try
     {
-        const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", "testConvertToWithForwardedClientIP_");
+        TST_LOG("Converting from a disallowed IP.");
+
+        const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", testname + "disallowed");
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
-        session->setTimeout(Poco::Timespan(2, 0)); // 2 seconds.
+        session->setTimeout(Poco::Timespan(TimeoutSeconds, 0));
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to");
-        CPPUNIT_ASSERT(!request.has("X-Forwarded-For"));
+        LOK_ASSERT(!request.has("X-Forwarded-For"));
         request.add("X-Forwarded-For", getNotAllowedTestServerURI().getHost() + ", " + _uri.getHost());
         Poco::Net::HTMLForm form;
         form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
         form.set("format", "txt");
         form.addPart("data", new Poco::Net::FilePartSource(srcPath));
         form.prepareSubmit(request);
-        form.write(session->sendRequest(request));
+        try
+        {
+            form.write(session->sendRequest(request));
+        }
+        catch (const std::exception& ex)
+        {
+            // In case the server is still starting up.
+            sleep(2);
+            form.write(session->sendRequest(request));
+        }
 
         Poco::Net::HTTPResponse response;
         std::stringstream actualStream;
@@ -386,17 +362,24 @@ void HTTPServerTest::testConvertToWithForwardedClientIP()
         FileUtil::removeFile(srcPath);
 
         std::string actualString = actualStream.str();
-        CPPUNIT_ASSERT(actualString.empty()); // <- we did not get the converted file
+        LOK_ASSERT(actualString.empty()); // <- we did not get the converted file
+    }
+    catch(const Poco::Exception& exc)
+    {
+        LOK_ASSERT_FAIL(exc.displayText() + ": " + (exc.nested() ? exc.nested()->displayText() : ""));
     }
 
     // Test a forwarded IP which is allowed to use convert-to feature
+    try
     {
-        const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", "testConvertToWithForwardedClientIP_");
+        TST_LOG("Converting from an allowed IP.");
+
+        const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", testname + "allowed");
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
-        session->setTimeout(Poco::Timespan(2, 0)); // 2 seconds.
+        session->setTimeout(Poco::Timespan(TimeoutSeconds, 0));
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to");
-        CPPUNIT_ASSERT(!request.has("X-Forwarded-For"));
+        LOK_ASSERT(!request.has("X-Forwarded-For"));
         request.add("X-Forwarded-For", _uri.getHost() + ", " + _uri.getHost());
         Poco::Net::HTMLForm form;
         form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
@@ -422,17 +405,24 @@ void HTTPServerTest::testConvertToWithForwardedClientIP()
         std::string actualString = actualStream.str();
         if (actualString.size() > 3 && actualString[0] == '\xEF' && actualString[1] == '\xBB' && actualString[2] == '\xBF')
             actualString = actualString.substr(3);
-        CPPUNIT_ASSERT_EQUAL(expectedStream.str(), actualString); // <- we got the converted file
+        LOK_ASSERT_EQUAL(expectedStream.str(), actualString); // <- we got the converted file
+    }
+    catch(const Poco::Exception& exc)
+    {
+        LOK_ASSERT_FAIL(exc.displayText() + ": " + (exc.nested() ? exc.nested()->displayText() : ""));
     }
 
     // Test a forwarded header with three IPs, one is not allowed -> request is denied.
+    try
     {
-        const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", "testConvertToWithForwardedClientIP_");
+        TST_LOG("Converting from multiple IPs, on disallowed.");
+
+        const std::string srcPath = FileUtil::getTempFilePath(TDOC, "hello.odt", testname + "disallowed-multi");
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
-        session->setTimeout(Poco::Timespan(2, 0)); // 2 seconds.
+        session->setTimeout(Poco::Timespan(TimeoutSeconds, 0));
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to");
-        CPPUNIT_ASSERT(!request.has("X-Forwarded-For"));
+        LOK_ASSERT(!request.has("X-Forwarded-For"));
         request.add("X-Forwarded-For", _uri.getHost() + ", "
                                        + getNotAllowedTestServerURI().getHost() + ", "
                                        + _uri.getHost());
@@ -452,7 +442,11 @@ void HTTPServerTest::testConvertToWithForwardedClientIP()
         FileUtil::removeFile(srcPath);
 
         std::string actualString = actualStream.str();
-        CPPUNIT_ASSERT(actualString.empty()); // <- we did not get the converted file
+        LOK_ASSERT(actualString.empty()); // <- we did not get the converted file
+    }
+    catch(const Poco::Exception& exc)
+    {
+        LOK_ASSERT_FAIL(exc.displayText() + ": " + (exc.nested() ? exc.nested()->displayText() : ""));
     }
 }
 

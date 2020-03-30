@@ -9,7 +9,7 @@
 
 #include <config.h>
 
-#include <cppunit/extensions/HelperMacros.h>
+#include <test/lokassert.hpp>
 
 #include <Common.hpp>
 #include <Protocol.hpp>
@@ -70,11 +70,11 @@ class TileQueueTests : public CPPUNIT_NS::TestFixture
 
 void TileQueueTests::testTileQueuePriority()
 {
-    const std::string reqHigh = "tile part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0";
-    const std::string resHigh = "tile part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1";
+    const std::string reqHigh = "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0";
+    const std::string resHigh = "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1";
     const TileQueue::Payload payloadHigh(resHigh.data(), resHigh.data() + resHigh.size());
-    const std::string reqLow = "tile part=0 width=256 height=256 tileposx=0 tileposy=253440 tilewidth=3840 tileheight=3840 oldwid=0 wid=0";
-    const std::string resLow = "tile part=0 width=256 height=256 tileposx=0 tileposy=253440 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1";
+    const std::string reqLow = "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=253440 tilewidth=3840 tileheight=3840 oldwid=0 wid=0";
+    const std::string resLow = "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=253440 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1";
     const TileQueue::Payload payloadLow(resLow.data(), resLow.data() + resLow.size());
 
     TileQueue queue;
@@ -84,8 +84,8 @@ void TileQueueTests::testTileQueuePriority()
     queue.put(reqHigh);
 
     // Original order.
-    CPPUNIT_ASSERT_EQUAL(payloadLow, queue.get());
-    CPPUNIT_ASSERT_EQUAL(payloadHigh, queue.get());
+    LOK_ASSERT_EQUAL(payloadLow, queue.get());
+    LOK_ASSERT_EQUAL(payloadHigh, queue.get());
 
     // Request the tiles.
     queue.put(reqLow);
@@ -97,34 +97,34 @@ void TileQueueTests::testTileQueuePriority()
     queue.updateCursorPosition(0, 0, 0, 0, 10, 100);
 
     // Prioritized order.
-    CPPUNIT_ASSERT_EQUAL(payloadHigh, queue.get());
-    CPPUNIT_ASSERT_EQUAL(payloadLow, queue.get());
+    LOK_ASSERT_EQUAL(payloadHigh, queue.get());
+    LOK_ASSERT_EQUAL(payloadLow, queue.get());
 
     // Repeat with cursor position set.
     queue.put(reqLow);
     queue.put(reqHigh);
-    CPPUNIT_ASSERT_EQUAL(payloadHigh, queue.get());
-    CPPUNIT_ASSERT_EQUAL(payloadLow, queue.get());
+    LOK_ASSERT_EQUAL(payloadHigh, queue.get());
+    LOK_ASSERT_EQUAL(payloadLow, queue.get());
 
     // Repeat by changing cursor position.
     queue.put(reqLow);
     queue.put(reqHigh);
     queue.updateCursorPosition(0, 0, 0, 253450, 10, 100);
-    CPPUNIT_ASSERT_EQUAL(payloadLow, queue.get());
-    CPPUNIT_ASSERT_EQUAL(payloadHigh, queue.get());
+    LOK_ASSERT_EQUAL(payloadLow, queue.get());
+    LOK_ASSERT_EQUAL(payloadHigh, queue.get());
 }
 
 void TileQueueTests::testTileCombinedRendering()
 {
-    const std::string req1 = "tile part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840";
-    const std::string req2 = "tile part=0 width=256 height=256 tileposx=3840 tileposy=0 tilewidth=3840 tileheight=3840";
-    const std::string req3 = "tile part=0 width=256 height=256 tileposx=0 tileposy=3840 tilewidth=3840 tileheight=3840";
+    const std::string req1 = "tile nviewid=0 nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840";
+    const std::string req2 = "tile nviewid=0 part=0 width=256 height=256 tileposx=3840 tileposy=0 tilewidth=3840 tileheight=3840";
+    const std::string req3 = "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=3840 tilewidth=3840 tileheight=3840";
 
-    const std::string resHor = "tilecombine part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 imgsize=0,0 tilewidth=3840 tileheight=3840 ver=-1,-1 oldwid=0,0 wid=0,0";
+    const std::string resHor = "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 imgsize=0,0 tilewidth=3840 tileheight=3840 ver=-1,-1 oldwid=0,0 wid=0,0";
     const TileQueue::Payload payloadHor(resHor.data(), resHor.data() + resHor.size());
-    const std::string resVer = "tilecombine part=0 width=256 height=256 tileposx=0,0 tileposy=0,3840 imgsize=0,0 tilewidth=3840 tileheight=3840 ver=-1,-1 oldwid=0,0 wid=0,0";
+    const std::string resVer = "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,0 tileposy=0,3840 imgsize=0,0 tilewidth=3840 tileheight=3840 ver=-1,-1 oldwid=0,0 wid=0,0";
     const TileQueue::Payload payloadVer(resVer.data(), resVer.data() + resVer.size());
-    const std::string resFull = "tilecombine part=0 width=256 height=256 tileposx=0,3840,0 tileposy=0,0,3840 imgsize=0,0,0 tilewidth=3840 tileheight=3840 ver=-1,-1,-1 oldwid=0,0,0 wid=0,0,0";
+    const std::string resFull = "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,0 tileposy=0,0,3840 imgsize=0,0,0 tilewidth=3840 tileheight=3840 ver=-1,-1,-1 oldwid=0,0,0 wid=0,0,0";
     const TileQueue::Payload payloadFull(resFull.data(), resFull.data() + resFull.size());
 
     TileQueue queue;
@@ -132,18 +132,18 @@ void TileQueueTests::testTileCombinedRendering()
     // Horizontal.
     queue.put(req1);
     queue.put(req2);
-    CPPUNIT_ASSERT_EQUAL(payloadHor, queue.get());
+    LOK_ASSERT_EQUAL(payloadHor, queue.get());
 
     // Vertical.
     queue.put(req1);
     queue.put(req3);
-    CPPUNIT_ASSERT_EQUAL(payloadVer, queue.get());
+    LOK_ASSERT_EQUAL(payloadVer, queue.get());
 
     // Vertical.
     queue.put(req1);
     queue.put(req2);
     queue.put(req3);
-    CPPUNIT_ASSERT_EQUAL(payloadFull, queue.get());
+    LOK_ASSERT_EQUAL(payloadFull, queue.get());
 }
 
 namespace {
@@ -159,19 +159,19 @@ void TileQueueTests::testTileRecombining()
 {
     TileQueue queue;
 
-    queue.put("tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840");
-    queue.put("tilecombine part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
+    queue.put("tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840");
+    queue.put("tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
 
     // the tilecombine's get merged, resulting in 3 "tile" messages
-    CPPUNIT_ASSERT_EQUAL(3, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(3, static_cast<int>(queue.getQueue().size()));
 
     // but when we later extract that, it is just one "tilecombine" message
     std::string message(payloadAsString(queue.get()));
 
-    CPPUNIT_ASSERT_EQUAL(std::string("tilecombine part=0 width=256 height=256 tileposx=7680,0,3840 tileposy=0,0,0 imgsize=0,0,0 tilewidth=3840 tileheight=3840 ver=-1,-1,-1 oldwid=0,0,0 wid=0,0,0"), message);
+    LOK_ASSERT_EQUAL(std::string("tilecombine nviewid=0 part=0 width=256 height=256 tileposx=7680,0,3840 tileposy=0,0,0 imgsize=0,0,0 tilewidth=3840 tileheight=3840 ver=-1,-1,-1 oldwid=0,0,0 wid=0,0,0"), message);
 
     // and nothing remains in the queue
-    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
 }
 
 void TileQueueTests::testViewOrder()
@@ -188,22 +188,22 @@ void TileQueueTests::testViewOrder()
 
     const std::vector<std::string> tiles =
     {
-        "tile part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
-        "tile part=0 width=256 height=256 tileposx=0 tileposy=7680 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
-        "tile part=0 width=256 height=256 tileposx=0 tileposy=15360 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
-        "tile part=0 width=256 height=256 tileposx=0 tileposy=23040 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1"
+        "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
+        "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=7680 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
+        "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=15360 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
+        "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=23040 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1"
     };
 
     for (auto &tile : tiles)
         queue.put(tile);
 
-    CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(4, static_cast<int>(queue.getQueue().size()));
 
     // should result in the 3, 2, 1, 0 order of the tiles thanks to the cursor
     // positions
     for (size_t i = 0; i < tiles.size(); ++i)
     {
-        CPPUNIT_ASSERT_EQUAL(tiles[3 - i], payloadAsString(queue.get()));
+        LOK_ASSERT_EQUAL(tiles[3 - i], payloadAsString(queue.get()));
     }
 }
 
@@ -214,10 +214,10 @@ void TileQueueTests::testPreviewsDeprioritization()
     // simple case - put previews to the queue and get everything back again
     const std::vector<std::string> previews =
     {
-        "tile part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=0",
-        "tile part=1 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=1",
-        "tile part=2 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=2",
-        "tile part=3 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=3"
+        "tile nviewid=0 part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=0",
+        "tile nviewid=0 part=1 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=1",
+        "tile nviewid=0 part=2 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=2",
+        "tile nviewid=0 part=3 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1 id=3"
     };
 
     for (auto &preview : previews)
@@ -225,19 +225,19 @@ void TileQueueTests::testPreviewsDeprioritization()
 
     for (size_t i = 0; i < previews.size(); ++i)
     {
-        CPPUNIT_ASSERT_EQUAL(previews[i], payloadAsString(queue.get()));
+        LOK_ASSERT_EQUAL(previews[i], payloadAsString(queue.get()));
     }
 
     // stays empty after all is done
-    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
 
     // re-ordering case - put previews and normal tiles to the queue and get
     // everything back again but this time the tiles have to interleave with
     // the previews
     const std::vector<std::string> tiles =
     {
-        "tile part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
-        "tile part=0 width=256 height=256 tileposx=0 tileposy=7680 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1"
+        "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=0 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1",
+        "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=7680 tilewidth=3840 tileheight=3840 oldwid=0 wid=0 ver=-1"
     };
 
     for (auto &preview : previews)
@@ -245,18 +245,18 @@ void TileQueueTests::testPreviewsDeprioritization()
 
     queue.put(tiles[0]);
 
-    CPPUNIT_ASSERT_EQUAL(previews[0], payloadAsString(queue.get()));
-    CPPUNIT_ASSERT_EQUAL(tiles[0], payloadAsString(queue.get()));
-    CPPUNIT_ASSERT_EQUAL(previews[1], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(previews[0], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(tiles[0], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(previews[1], payloadAsString(queue.get()));
 
     queue.put(tiles[1]);
 
-    CPPUNIT_ASSERT_EQUAL(previews[2], payloadAsString(queue.get()));
-    CPPUNIT_ASSERT_EQUAL(tiles[1], payloadAsString(queue.get()));
-    CPPUNIT_ASSERT_EQUAL(previews[3], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(previews[2], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(tiles[1], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(previews[3], payloadAsString(queue.get()));
 
     // stays empty after all is done
-    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
 
     // cursor positioning case - the cursor position should not prioritize the
     // previews
@@ -265,11 +265,11 @@ void TileQueueTests::testPreviewsDeprioritization()
     queue.put(tiles[1]);
     queue.put(previews[0]);
 
-    CPPUNIT_ASSERT_EQUAL(tiles[1], payloadAsString(queue.get()));
-    CPPUNIT_ASSERT_EQUAL(previews[0], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(tiles[1], payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(previews[0], payloadAsString(queue.get()));
 
     // stays empty after all is done
-    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(0, static_cast<int>(queue.getQueue().size()));
 }
 
 void TileQueueTests::testSenderQueue()
@@ -279,8 +279,8 @@ void TileQueueTests::testSenderQueue()
     std::shared_ptr<Message> item;
 
     // Empty queue
-    CPPUNIT_ASSERT_EQUAL(false, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(false, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 
     const std::vector<std::string> messages =
     {
@@ -294,21 +294,21 @@ void TileQueueTests::testSenderQueue()
         queue.enqueue(std::make_shared<Message>(msg, Message::Dir::Out));
     }
 
-    CPPUNIT_ASSERT_EQUAL(3UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(3), queue.size());
 
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(2UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(messages[0], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(2), queue.size());
+    LOK_ASSERT_EQUAL(messages[0], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(1UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(messages[1], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(1), queue.size());
+    LOK_ASSERT_EQUAL(messages[1], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(messages[2], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
+    LOK_ASSERT_EQUAL(messages[2], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 }
 
 void TileQueueTests::testSenderQueueTileDeduplication()
@@ -318,14 +318,14 @@ void TileQueueTests::testSenderQueueTileDeduplication()
     std::shared_ptr<Message> item;
 
     // Empty queue
-    CPPUNIT_ASSERT_EQUAL(false, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(false, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 
     const std::vector<std::string> part_messages =
     {
-        "tile: part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=0",
-        "tile: part=1 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=1",
-        "tile: part=2 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1"
+        "tile: nviewid=0 part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=0",
+        "tile: nviewid=0 part=1 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=1",
+        "tile: nviewid=0 part=2 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1"
     };
 
     for (const auto& msg : part_messages)
@@ -333,18 +333,18 @@ void TileQueueTests::testSenderQueueTileDeduplication()
         queue.enqueue(std::make_shared<Message>(msg, Message::Dir::Out));
     }
 
-    CPPUNIT_ASSERT_EQUAL(3UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(3), queue.size());
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
 
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 
     const std::vector<std::string> dup_messages =
     {
-        "tile: part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1",
-        "tile: part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=1",
-        "tile: part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=1"
+        "tile: nviewid=0 part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=-1",
+        "tile: nviewid=0 part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=1",
+        "tile: nviewid=0 part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 ver=1"
     };
 
     for (const auto& msg : dup_messages)
@@ -352,13 +352,13 @@ void TileQueueTests::testSenderQueueTileDeduplication()
         queue.enqueue(std::make_shared<Message>(msg, Message::Dir::Out));
     }
 
-    CPPUNIT_ASSERT_EQUAL(1UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(1), queue.size());
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
 
     // The last one should persist.
-    CPPUNIT_ASSERT_EQUAL(dup_messages[2], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(dup_messages[2], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 }
 
 void TileQueueTests::testInvalidateViewCursorDeduplication()
@@ -368,8 +368,8 @@ void TileQueueTests::testInvalidateViewCursorDeduplication()
     std::shared_ptr<Message> item;
 
     // Empty queue
-    CPPUNIT_ASSERT_EQUAL(false, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(false, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 
     const std::vector<std::string> view_messages =
     {
@@ -383,21 +383,21 @@ void TileQueueTests::testInvalidateViewCursorDeduplication()
         queue.enqueue(std::make_shared<Message>(msg, Message::Dir::Out));
     }
 
-    CPPUNIT_ASSERT_EQUAL(3UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(3), queue.size());
 
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(2UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(view_messages[0], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(2), queue.size());
+    LOK_ASSERT_EQUAL(view_messages[0], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(1UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(view_messages[1], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(1), queue.size());
+    LOK_ASSERT_EQUAL(view_messages[1], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(view_messages[2], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
+    LOK_ASSERT_EQUAL(view_messages[2], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 
     const std::vector<std::string> dup_messages =
     {
@@ -411,13 +411,13 @@ void TileQueueTests::testInvalidateViewCursorDeduplication()
         queue.enqueue(std::make_shared<Message>(msg, Message::Dir::Out));
     }
 
-    CPPUNIT_ASSERT_EQUAL(1UL, queue.size());
-    CPPUNIT_ASSERT_EQUAL(true, queue.dequeue(item));
+    LOK_ASSERT_EQUAL(static_cast<size_t>(1), queue.size());
+    LOK_ASSERT_EQUAL(true, queue.dequeue(item));
 
     // The last one should persist.
-    CPPUNIT_ASSERT_EQUAL(dup_messages[2], std::string(item->data().data(), item->data().size()));
+    LOK_ASSERT_EQUAL(dup_messages[2], std::string(item->data().data(), item->data().size()));
 
-    CPPUNIT_ASSERT_EQUAL(0UL, queue.size());
+    LOK_ASSERT_EQUAL(static_cast<size_t>(0), queue.size());
 }
 
 void TileQueueTests::testCallbackInvalidation()
@@ -428,23 +428,23 @@ void TileQueueTests::testCallbackInvalidation()
     queue.put("callback all 0 284, 1418, 11105, 275, 0");
     queue.put("callback all 0 4299, 1418, 7090, 275, 0");
 
-    CPPUNIT_ASSERT_EQUAL(1, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(1, static_cast<int>(queue.getQueue().size()));
 
-    CPPUNIT_ASSERT_EQUAL(std::string("callback all 0 284, 1418, 11105, 275, 0"), payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(std::string("callback all 0 284, 1418, 11105, 275, 0"), payloadAsString(queue.get()));
 
-    // invalidate everywhing with EMPTY, but keep the different part intact
+    // invalidate everything with EMPTY, but keep the different part intact
     queue.put("callback all 0 284, 1418, 11105, 275, 0");
     queue.put("callback all 0 4299, 1418, 7090, 275, 1");
     queue.put("callback all 0 4299, 10418, 7090, 275, 0");
     queue.put("callback all 0 4299, 20418, 7090, 275, 0");
 
-    CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(4, static_cast<int>(queue.getQueue().size()));
 
     queue.put("callback all 0 EMPTY, 0");
 
-    CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(queue.getQueue().size()));
-    CPPUNIT_ASSERT_EQUAL(std::string("callback all 0 4299, 1418, 7090, 275, 1"), payloadAsString(queue.get()));
-    CPPUNIT_ASSERT_EQUAL(std::string("callback all 0 EMPTY, 0"), payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(2, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(std::string("callback all 0 4299, 1418, 7090, 275, 1"), payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(std::string("callback all 0 EMPTY, 0"), payloadAsString(queue.get()));
 }
 
 void TileQueueTests::testCallbackIndicatorValue()
@@ -455,8 +455,8 @@ void TileQueueTests::testCallbackIndicatorValue()
     queue.put("callback all 10 25");
     queue.put("callback all 10 50");
 
-    CPPUNIT_ASSERT_EQUAL(1, static_cast<int>(queue.getQueue().size()));
-    CPPUNIT_ASSERT_EQUAL(std::string("callback all 10 50"), payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(1, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(std::string("callback all 10 50"), payloadAsString(queue.get()));
 }
 
 void TileQueueTests::testCallbackPageSize()
@@ -467,8 +467,8 @@ void TileQueueTests::testCallbackPageSize()
     queue.put("callback all 13 12474, 188626");
     queue.put("callback all 13 12474, 205748");
 
-    CPPUNIT_ASSERT_EQUAL(1, static_cast<int>(queue.getQueue().size()));
-    CPPUNIT_ASSERT_EQUAL(std::string("callback all 13 12474, 205748"), payloadAsString(queue.get()));
+    LOK_ASSERT_EQUAL(1, static_cast<int>(queue.getQueue().size()));
+    LOK_ASSERT_EQUAL(std::string("callback all 13 12474, 205748"), payloadAsString(queue.get()));
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TileQueueTests);

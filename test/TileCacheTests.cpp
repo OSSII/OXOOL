@@ -57,8 +57,10 @@ class TileCacheTests : public CPPUNIT_NS::TestFixture
 
     CPPUNIT_TEST_SUITE(TileCacheTests);
 
+    CPPUNIT_TEST(testDesc);
     CPPUNIT_TEST(testSimple);
     CPPUNIT_TEST(testSimpleCombine);
+    CPPUNIT_TEST(testSize);
     CPPUNIT_TEST(testCancelTiles);
     // unstable
     // CPPUNIT_TEST(testCancelTilesMultiView);
@@ -91,8 +93,10 @@ class TileCacheTests : public CPPUNIT_NS::TestFixture
 
     CPPUNIT_TEST_SUITE_END();
 
+    void testDesc();
     void testSimple();
     void testSimpleCombine();
+    void testSize();
     void testCancelTiles();
     void testCancelTilesMultiView();
     void testDisconnectMultiView();
@@ -124,6 +128,7 @@ class TileCacheTests : public CPPUNIT_NS::TestFixture
                     const std::string& name = "checkTiles ");
 
     void requestTiles(std::shared_ptr<LOOLWebSocket>& socket,
+                      const std::string& docType,
                       const int part,
                       const int docWidth,
                       const int docHeight,
@@ -173,6 +178,15 @@ public:
     }
 };
 
+void TileCacheTests::testDesc()
+{
+    TileCacheDesc descA = TileDesc(0, 0, 256, 256, 0, 0, 3200, 3200, /* ignored in cache */ 0, 1234, 1, true);
+    TileCacheDesc descB = TileDesc(0, 0, 256, 256, 0, 0, 3200, 3200, /* ignored in cache */ 1, 1235, 2, false);
+
+    LOK_ASSERT_MESSAGE("versions do match", descA.getVersion() != descB.getVersion());
+    LOK_ASSERT_MESSAGE("Compare includes fields it should not", descA == descB);
+}
+
 void TileCacheTests::testSimple()
 {
     if (isStandalone())
@@ -183,8 +197,9 @@ void TileCacheTests::testSimple()
 
     // Create TileCache and pretend the file was modified as recently as
     // now, so it discards the cached data.
-    TileCache tc("doc.ods", Poco::Timestamp(), "/tmp/tile_cache_tests", true);
+    TileCache tc("doc.ods", std::chrono::system_clock::time_point());
 
+    int nviewid = 0;
     int part = 0;
     int width = 256;
     int height = 256;
@@ -192,11 +207,11 @@ void TileCacheTests::testSimple()
     int tilePosY = 0;
     int tileWidth = 3840;
     int tileHeight = 3840;
-    TileDesc tile(part, width, height, tilePosX, tilePosY, tileWidth, tileHeight, -1, 0, -1, false);
+    TileDesc tile(nviewid, part, width, height, tilePosX, tilePosY, tileWidth, tileHeight, -1, 0, -1, false);
 
     // No Cache
-    std::unique_ptr<std::fstream> file = tc.lookupTile(tile);
-    CPPUNIT_ASSERT_MESSAGE("found tile when none was expected", !file);
+    TileCache::Tile tileData = tc.lookupTile(tile);
+    LOK_ASSERT_MESSAGE("found tile when none was expected", !tileData);
 
     // Cache Tile
     const int size = 1024;
@@ -204,17 +219,16 @@ void TileCacheTests::testSimple()
     tc.saveTileAndNotify(tile, data.data(), size);
 
     // Find Tile
-    file = tc.lookupTile(tile);
-    CPPUNIT_ASSERT_MESSAGE("tile not found when expected", file && file->is_open());
-    const std::vector<char> tileData = readDataFromFile(file);
-    CPPUNIT_ASSERT_MESSAGE("cached tile corrupted", data == tileData);
+    tileData = tc.lookupTile(tile);
+    LOK_ASSERT_MESSAGE("tile not found when expected", tileData);
+    LOK_ASSERT_MESSAGE("cached tile corrupted", data == *tileData);
 
     // Invalidate Tiles
-    tc.invalidateTiles("invalidatetiles: EMPTY");
+    tc.invalidateTiles("invalidatetiles: EMPTY", nviewid);
 
     // No Cache
-    file = tc.lookupTile(tile);
-    CPPUNIT_ASSERT_MESSAGE("found tile when none was expected", !file);
+    tileData = tc.lookupTile(tile);
+    LOK_ASSERT_MESSAGE("found tile when none was expected", !tileData);
 }
 
 void TileCacheTests::testSimpleCombine()
@@ -226,52 +240,81 @@ void TileCacheTests::testSimpleCombine()
     // First.
     std::shared_ptr<LOOLWebSocket> socket1 = loadDocAndGetSocket(_uri, documentURL, "simpleCombine-1 ");
 
-    sendTextFrame(socket1, "tilecombine part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
+    sendTextFrame(socket1, "tilecombine nviewid=0  part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
 
     std::vector<char> tile1a = getResponseMessage(socket1, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1a.empty());
+    LOK_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1a.empty());
     std::vector<char> tile1b = getResponseMessage(socket1, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1b.empty());
-    sendTextFrame(socket1, "tilecombine part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
+    LOK_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1b.empty());
+    sendTextFrame(socket1, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
 
     tile1a = getResponseMessage(socket1, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1a.empty());
+    LOK_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1a.empty());
     tile1b = getResponseMessage(socket1, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1b.empty());
+    LOK_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile1b.empty());
 
     // Second.
-    std::cerr << "Connecting second client." << std::endl;
+    TST_LOG("Connecting second client.");
     std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket(_uri, documentURL, "simpleCombine-2 ", true);
 
-    sendTextFrame(socket2, "tilecombine part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
+    sendTextFrame(socket2, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840");
 
     std::vector<char> tile2a = getResponseMessage(socket2, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile2a.empty());
+    LOK_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile2a.empty());
     std::vector<char> tile2b = getResponseMessage(socket2, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile2b.empty());
+    LOK_ASSERT_MESSAGE("did not receive a tile: message as expected", !tile2b.empty());
+}
+
+void TileCacheTests::testSize()
+{
+    // Create TileCache and pretend the file was modified as recently as
+    // now, so it discards the cached data.
+    TileCache tc("doc.ods", std::chrono::system_clock::time_point());
+
+    int nviewid = 0;
+    int part = 0;
+    int width = 256;
+    int height = 256;
+    int tilePosX = 0;
+    int tileWidth = 3840;
+    int tileHeight = 3840;
+    TileWireId id = 0;
+    const std::vector<char> data = genRandomData(4096);
+
+    // Churn the cache somewhat
+    size_t maxSize = (data.size() + sizeof (TileDesc)) * 10;
+    tc.setMaxCacheSize(maxSize);
+    for (int tilePosY = 0; tilePosY < 20; tilePosY++)
+    {
+        TileDesc tile(nviewid, part, width, height, tilePosX, tilePosY * tileHeight,
+                      tileWidth, tileHeight, -1, 0, -1, false);
+        tile.setWireId(id++);
+        tc.saveTileAndNotify(tile, data.data(), data.size());
+    }
+    LOK_ASSERT_MESSAGE("tile cache too big", tc.getMemorySize() < maxSize);
 }
 
 void TileCacheTests::testCancelTiles()
 {
-    const char* testName = "cancelTiles ";
+    const char* testname = "cancelTiles ";
 
     // The tile response can race past the canceltiles,
     // so be forgiving to avoid spurious failures.
     const size_t repeat = 4;
     for (size_t i = 1; i <= repeat; ++i)
     {
-        std::cerr << "cancelTiles try #" << i << std::endl;
+        TST_LOG("cancelTiles try #" << i);
 
         // Wait to clear previous sessions.
         countLoolKitProcesses(InitialLoolKitCount);
 
-        std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("setclientpart.ods", _uri, testName);
+        std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("setclientpart.ods", _uri, testname);
 
         // Request a huge tile, and cancel immediately.
-        sendTextFrame(socket, "tilecombine part=0 width=2560 height=2560 tileposx=0 tileposy=0 tilewidth=38400 tileheight=38400");
+        sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=2560 height=2560 tileposx=0 tileposy=0 tilewidth=38400 tileheight=38400");
         sendTextFrame(socket, "canceltiles");
 
-        const auto res = getResponseString(socket, "tile:", testName, 1000);
+        const auto res = getResponseString(socket, "tile:", testname, 1000);
         if (res.empty())
         {
             break;
@@ -280,16 +323,17 @@ void TileCacheTests::testCancelTiles()
         {
             if (i == repeat)
             {
-                CPPUNIT_ASSERT_MESSAGE("Did not expect getting message [" + res + "].", res.empty());
+                LOK_ASSERT_MESSAGE("Did not expect getting message [" + res + "].", res.empty());
             }
 
-            std::cerr << "Unexpected: [" << res << "]" << std::endl;
+            TST_LOG("Unexpected: [" << res << "]");
         }
     }
 }
 
 void TileCacheTests::testCancelTilesMultiView()
 {
+    const char* testname = "testCancelTilesMultiView";
     std::string documentPath, documentURL;
     getDocumentPathAndURL("setclientpart.ods", documentPath, documentURL, "cancelTilesMultiView ");
 
@@ -298,7 +342,7 @@ void TileCacheTests::testCancelTilesMultiView()
     const size_t repeat = 4;
     for (size_t j = 1; j <= repeat; ++j)
     {
-        std::cerr << "cancelTilesMultiView try #" << j << std::endl;
+        TST_LOG("cancelTilesMultiView try #" << j);
 
         // Wait to clear previous sessions.
         countLoolKitProcesses(InitialLoolKitCount);
@@ -307,8 +351,8 @@ void TileCacheTests::testCancelTilesMultiView()
         std::shared_ptr<LOOLWebSocket> socket1 = loadDocAndGetSocket(_uri, documentURL, "cancelTilesMultiView-1 ");
         std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket(_uri, documentURL, "cancelTilesMultiView-2 ", true);
 
-        sendTextFrame(socket1, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680,11520,0,3840,7680,11520 tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-1 ");
-        sendTextFrame(socket2, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680,0 tileposy=0,0,0,22520 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-2 ");
+        sendTextFrame(socket1, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680,11520,0,3840,7680,11520 tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-1 ");
+        sendTextFrame(socket2, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680,0 tileposy=0,0,0,22520 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-2 ");
 
         sendTextFrame(socket1, "canceltiles");
         const auto res1 = getResponseString(socket1, "tile:", "cancelTilesMultiView-1 ", 500);
@@ -316,10 +360,10 @@ void TileCacheTests::testCancelTilesMultiView()
         {
             if (j == repeat)
             {
-                CPPUNIT_ASSERT_MESSAGE("Did not expect getting message [" + res1 + "].", res1.empty());
+                LOK_ASSERT_MESSAGE("Did not expect getting message [" + res1 + "].", res1.empty());
             }
 
-            std::cerr << "Unexpected: [" << res1 << "]" << std::endl;
+            TST_LOG("Unexpected: [" << res1 << "]");
             continue;
         }
 
@@ -337,10 +381,10 @@ void TileCacheTests::testCancelTilesMultiView()
         {
             if (j == repeat)
             {
-                CPPUNIT_ASSERT_MESSAGE("Did not expect getting message [" + res2 + "].", res1.empty());
+                LOK_ASSERT_MESSAGE("Did not expect getting message [" + res2 + "].", res1.empty());
             }
 
-            std::cerr << "Unexpected: [" << res2 << "]" << std::endl;
+            TST_LOG("Unexpected: [" << res2 << "]");
             continue;
         }
 
@@ -353,13 +397,14 @@ void TileCacheTests::testCancelTilesMultiView()
 
 void TileCacheTests::testDisconnectMultiView()
 {
+    const char* testname = "testDisconnectMultiView";
     std::string documentPath, documentURL;
     getDocumentPathAndURL("setclientpart.ods", documentPath, documentURL, "disconnectMultiView ");
 
     const size_t repeat = 4;
     for (size_t j = 1; j <= repeat; ++j)
     {
-        std::cerr << "disconnectMultiView try #" << j << std::endl;
+        TST_LOG("disconnectMultiView try #" << j);
 
         // Wait to clear previous sessions.
         countLoolKitProcesses(InitialLoolKitCount);
@@ -368,8 +413,8 @@ void TileCacheTests::testDisconnectMultiView()
         std::shared_ptr<LOOLWebSocket> socket1 = loadDocAndGetSocket(_uri, documentURL, "disconnectMultiView-1 ");
         std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket(_uri, documentURL, "disconnectMultiView-2 ", true);
 
-        sendTextFrame(socket1, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680,11520,0,3840,7680,11520 tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-1 ");
-        sendTextFrame(socket2, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680,0 tileposy=0,0,0,22520 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-2 ");
+        sendTextFrame(socket1, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680,11520,0,3840,7680,11520 tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-1 ");
+        sendTextFrame(socket2, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680,0 tileposy=0,0,0,22520 tilewidth=3840 tileheight=3840", "cancelTilesMultiView-2 ");
 
         socket1->shutdown();
 
@@ -385,19 +430,24 @@ void TileCacheTests::testDisconnectMultiView()
 
 void TileCacheTests::testUnresponsiveClient()
 {
+    const std::string testname = "unresponsiveClient-";
+
+    TST_LOG("testUnresponsiveClient.");
+
     std::string documentPath, documentURL;
-    getDocumentPathAndURL("hello.odt", documentPath, documentURL, "unresponsiveClient ");
+    getDocumentPathAndURL("hello.odt", documentPath, documentURL, testname);
 
-    std::cerr << "Connecting first client." << std::endl;
-    std::shared_ptr<LOOLWebSocket> socket1 = loadDocAndGetSocket(_uri, documentURL, "unresponsiveClient-1 ");
+    TST_LOG("Connecting first client.");
+    std::shared_ptr<LOOLWebSocket> socket1
+        = loadDocAndGetSocket(_uri, documentURL, testname + "1 ");
 
-    std::cerr << "Connecting second client." << std::endl;
-    std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket(_uri, documentURL, "unresponsiveClient-2 ");
+    TST_LOG("Connecting second client.");
+    std::shared_ptr<LOOLWebSocket> socket2
+        = loadDocAndGetSocket(_uri, documentURL, testname + "2 ");
 
     // Pathologically request tiles and fail to read (say slow connection).
     // Meanwhile, verify that others can get all tiles fine.
     // TODO: Track memory consumption to verify we don't buffer too much.
-
     std::ostringstream oss;
     for (int i = 0; i < 1000; ++i)
     {
@@ -408,24 +458,32 @@ void TileCacheTests::testUnresponsiveClient()
     for (int x = 0; x < 8; ++x)
     {
         // Invalidate to force re-rendering.
-        sendTextFrame(socket2, "uno .uno:SelectAll");
-        sendTextFrame(socket2, "uno .uno:Delete");
-        assertResponseString(socket2, "invalidatetiles:", "client2 ");
-        sendTextFrame(socket2, "paste mimetype=text/html\n" + documentContents);
-        assertResponseString(socket2, "invalidatetiles:", "client2 ");
+        sendTextFrame(socket2, "uno .uno:SelectAll", testname);
+        sendTextFrame(socket2, "uno .uno:Delete", testname);
+        assertResponseString(socket2, "invalidatetiles:", testname + "2 ");
+        sendTextFrame(socket2, "paste mimetype=text/html\n" + documentContents, testname + "2 ");
+        assertResponseString(socket2, "invalidatetiles:", testname + "2 ");
 
         // Ask for tiles and don't read!
-        sendTextFrame(socket1, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680,11520,0,3840,7680,11520 tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840");
+        sendTextFrame(socket1, "tilecombine nviewid=0 part=0 width=256 height=256 "
+                               "tileposx=0,3840,7680,11520,0,3840,7680,11520 "
+                               "tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 "
+                               "tileheight=3840",
+                      testname + "1 ");
 
         // Verify that we get all 8 tiles.
-        sendTextFrame(socket2, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680,11520,0,3840,7680,11520 tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840");
+        sendTextFrame(socket2, "tilecombine nviewid=0 part=0 width=256 height=256 "
+                               "tileposx=0,3840,7680,11520,0,3840,7680,11520 "
+                               "tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 "
+                               "tileheight=3840",
+                      testname + "2 ");
         for (int i = 0; i < 8; ++i)
         {
-            std::vector<char> tile = getResponseMessage(socket2, "tile:", "client2 ");
-            CPPUNIT_ASSERT_MESSAGE("Did not receive tile #" + std::to_string(i+1) + " of 8: message as expected", !tile.empty());
+            std::vector<char> tile = getResponseMessage(socket2, "tile:", testname + "2 ");
+            LOK_ASSERT_MESSAGE("Did not receive tile #" + std::to_string(i+1) + " of 8: message as expected", !tile.empty());
         }
         /// Send canceltiles message to clear tiles-on-fly list, otherwise wsd waits for tileprocessed messages
-        sendTextFrame(socket2, "canceltiles");
+        sendTextFrame(socket2, "canceltiles", testname + "2 ");
     }
 }
 
@@ -436,12 +494,12 @@ void TileCacheTests::testImpressTiles()
         const std::string testName = "impressTiles ";
         std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("setclientpart.odp", _uri, testName);
 
-        sendTextFrame(socket, "tile part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 id=0", testName);
+        sendTextFrame(socket, "tile nviewid=0 part=0 width=180 height=135 tileposx=0 tileposy=0 tilewidth=15875 tileheight=11906 id=0", testName);
         getTileMessage(*socket, testName);
     }
     catch (const Poco::Exception& exc)
     {
-        CPPUNIT_FAIL(exc.displayText());
+        LOK_ASSERT_FAIL(exc.displayText());
     }
 }
 
@@ -458,7 +516,7 @@ void TileCacheTests::testClientPartImpress()
     }
     catch (const Poco::Exception& exc)
     {
-        CPPUNIT_FAIL(exc.displayText());
+        LOK_ASSERT_FAIL(exc.displayText());
     }
 }
 
@@ -475,7 +533,7 @@ void TileCacheTests::testClientPartCalc()
     }
     catch (const Poco::Exception& exc)
     {
-        CPPUNIT_FAIL(exc.displayText());
+        LOK_ASSERT_FAIL(exc.displayText());
     }
 }
 
@@ -493,15 +551,15 @@ void TileCacheTests::testTilesRenderedJustOnce()
         sendTextFrame(socket, "ping", testname);
         const auto ping1 = assertResponseString(socket, "pong", testname);
         int renderCount1 = 0;
-        CPPUNIT_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
-        CPPUNIT_ASSERT_EQUAL(i * 3, renderCount1);
+        LOK_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
+        LOK_ASSERT_EQUAL(i * 3, renderCount1);
 
         // Modify.
         sendText(socket, "a", testname);
         assertResponseString(socket, "invalidatetiles:", testname);
 
         // Get 3 tiles.
-        sendTextFrame(socket, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname);
+        sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname);
         assertResponseString(socket, "tile:", testname);
         assertResponseString(socket, "tile:", testname);
         assertResponseString(socket, "tile:", testname);
@@ -510,32 +568,32 @@ void TileCacheTests::testTilesRenderedJustOnce()
         sendTextFrame(socket, "ping", testname);
         const auto ping2 = assertResponseString(socket, "pong", testname);
         int renderCount2 = 0;
-        CPPUNIT_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
-        CPPUNIT_ASSERT_EQUAL((i+1) * 3, renderCount2);
+        LOK_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
+        LOK_ASSERT_EQUAL((i+1) * 3, renderCount2);
 
         // Get same 3 tiles.
-        sendTextFrame(socket, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname);
+        sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname);
         const auto tile1 = assertResponseString(socket, "tile:", testname);
         std::string renderId1;
         LOOLProtocol::getTokenStringFromMessage(tile1, "renderid", renderId1);
-        CPPUNIT_ASSERT_EQUAL(std::string("cached"), renderId1);
+        LOK_ASSERT_EQUAL(std::string("cached"), renderId1);
 
         const auto tile2 = assertResponseString(socket, "tile:", testname);
         std::string renderId2;
         LOOLProtocol::getTokenStringFromMessage(tile2, "renderid", renderId2);
-        CPPUNIT_ASSERT_EQUAL(std::string("cached"), renderId2);
+        LOK_ASSERT_EQUAL(std::string("cached"), renderId2);
 
         const auto tile3 = assertResponseString(socket, "tile:", testname);
         std::string renderId3;
         LOOLProtocol::getTokenStringFromMessage(tile3, "renderid", renderId3);
-        CPPUNIT_ASSERT_EQUAL(std::string("cached"), renderId3);
+        LOK_ASSERT_EQUAL(std::string("cached"), renderId3);
 
         // Get new rendercount.
         sendTextFrame(socket, "ping", testname);
         const auto ping3 = assertResponseString(socket, "pong", testname);
         int renderCount3 = 0;
-        CPPUNIT_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
-        CPPUNIT_ASSERT_EQUAL(renderCount2, renderCount3);
+        LOK_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
+        LOK_ASSERT_EQUAL(renderCount2, renderCount3);
     }
 }
 
@@ -550,13 +608,13 @@ void TileCacheTests::testTilesRenderedJustOnceMultiClient()
     std::string documentPath, documentURL;
     getDocumentPathAndURL("with_comment.odt", documentPath, documentURL, testname);
 
-    std::cerr << "Connecting first client." << std::endl;
+    TST_LOG("Connecting first client.");
     std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket(_uri, documentURL, testname1);
-    std::cerr << "Connecting second client." << std::endl;
+    TST_LOG("Connecting second client.");
     std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket(_uri, documentURL, testname2);
-    std::cerr << "Connecting third client." << std::endl;
+    TST_LOG("Connecting third client.");
     std::shared_ptr<LOOLWebSocket> socket3 = loadDocAndGetSocket(_uri, documentURL, testname3);
-    std::cerr << "Connecting fourth client." << std::endl;
+    TST_LOG("Connecting fourth client.");
     std::shared_ptr<LOOLWebSocket> socket4 = loadDocAndGetSocket(_uri, documentURL, "tilesRenderdJustOnce-4 ");
 
     for (int i = 0; i < 10; ++i)
@@ -571,33 +629,33 @@ void TileCacheTests::testTilesRenderedJustOnceMultiClient()
         sendTextFrame(socket, "ping", testname1);
         const auto ping1 = assertResponseString(socket, "pong", testname1);
         int renderCount1 = 0;
-        CPPUNIT_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
-        CPPUNIT_ASSERT_EQUAL(i * 3, renderCount1);
+        LOK_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
+        LOK_ASSERT_EQUAL(i * 3, renderCount1);
 
         // Modify.
         sendText(socket, "a", testname1);
         assertResponseString(socket, "invalidatetiles:", testname1);
 
         // Get 3 tiles.
-        sendTextFrame(socket, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname1);
+        sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname1);
         assertResponseString(socket, "tile:", testname1);
         assertResponseString(socket, "tile:", testname1);
         assertResponseString(socket, "tile:", testname1);
 
         assertResponseString(socket2, "invalidatetiles:", testname2);
-        sendTextFrame(socket2, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname2);
+        sendTextFrame(socket2, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname2);
         assertResponseString(socket2, "tile:", testname2);
         assertResponseString(socket2, "tile:", testname2);
         assertResponseString(socket2, "tile:", testname2);
 
         assertResponseString(socket3, "invalidatetiles:", testname3);
-        sendTextFrame(socket3, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname3);
+        sendTextFrame(socket3, "tilecombine nviewid=0 part=0 nviewid=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname3);
         assertResponseString(socket3, "tile:", testname3);
         assertResponseString(socket3, "tile:", testname3);
         assertResponseString(socket3, "tile:", testname3);
 
         assertResponseString(socket4, "invalidatetiles:", testname4);
-        sendTextFrame(socket4, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname4);
+        sendTextFrame(socket4, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname4);
         assertResponseString(socket4, "tile:", testname4);
         assertResponseString(socket4, "tile:", testname4);
         assertResponseString(socket4, "tile:", testname4);
@@ -606,43 +664,44 @@ void TileCacheTests::testTilesRenderedJustOnceMultiClient()
         sendTextFrame(socket, "ping", testname1);
         const auto ping2 = assertResponseString(socket, "pong", testname1);
         int renderCount2 = 0;
-        CPPUNIT_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
-        CPPUNIT_ASSERT_EQUAL((i+1) * 3, renderCount2);
+        LOK_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
+        LOK_ASSERT_EQUAL((i+1) * 3, renderCount2);
 
         // Get same 3 tiles.
-        sendTextFrame(socket, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname1);
+        sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname1);
         const auto tile1 = assertResponseString(socket, "tile:", testname1);
         std::string renderId1;
         LOOLProtocol::getTokenStringFromMessage(tile1, "renderid", renderId1);
-        CPPUNIT_ASSERT_EQUAL(std::string("cached"), renderId1);
+        LOK_ASSERT_EQUAL(std::string("cached"), renderId1);
 
         const auto tile2 = assertResponseString(socket, "tile:", testname1);
         std::string renderId2;
         LOOLProtocol::getTokenStringFromMessage(tile2, "renderid", renderId2);
-        CPPUNIT_ASSERT_EQUAL(std::string("cached"), renderId2);
+        LOK_ASSERT_EQUAL(std::string("cached"), renderId2);
 
         const auto tile3 = assertResponseString(socket, "tile:", testname1);
         std::string renderId3;
         LOOLProtocol::getTokenStringFromMessage(tile3, "renderid", renderId3);
-        CPPUNIT_ASSERT_EQUAL(std::string("cached"), renderId3);
+        LOK_ASSERT_EQUAL(std::string("cached"), renderId3);
 
         // Get new rendercount.
         sendTextFrame(socket, "ping", testname1);
         const auto ping3 = assertResponseString(socket, "pong", testname1);
         int renderCount3 = 0;
-        CPPUNIT_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
-        CPPUNIT_ASSERT_EQUAL(renderCount2, renderCount3);
+        LOK_ASSERT(LOOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
+        LOK_ASSERT_EQUAL(renderCount2, renderCount3);
     }
 }
 
 void TileCacheTests::testSimultaneousTilesRenderedJustOnce()
 {
+    const char* testname = "testSimultaneousTilesRenderedJustOnce";
     std::string documentPath, documentURL;
     getDocumentPathAndURL("hello.odt", documentPath, documentURL, "simultaneousTilesrenderedJustOnce ");
 
-    std::cerr << "Connecting first client." << std::endl;
+    TST_LOG("Connecting first client.");
     std::shared_ptr<LOOLWebSocket> socket1 = loadDocAndGetSocket(_uri, documentURL, "simultaneousTilesRenderdJustOnce-1 ");
-    std::cerr << "Connecting second client." << std::endl;
+    TST_LOG("Connecting second client.");
     std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket(_uri, documentURL, "simultaneousTilesRenderdJustOnce-2 ");
 
     // Wait for the invalidatetile events to pass, otherwise they
@@ -650,8 +709,8 @@ void TileCacheTests::testSimultaneousTilesRenderedJustOnce()
     assertResponseString(socket1, "statechanged:", "client1 ");
     assertResponseString(socket2, "statechanged:", "client2 ");
 
-    sendTextFrame(socket1, "tile part=42 width=400 height=400 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
-    sendTextFrame(socket2, "tile part=42 width=400 height=400 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
+    sendTextFrame(socket1, "tile nviewid=0 part=42 width=400 height=400 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
+    sendTextFrame(socket2, "tile nviewid=0 part=42 width=400 height=400 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
 
     const auto response1 = assertResponseString(socket1, "tile:", "client1 ");
     const auto response2 = assertResponseString(socket2, "tile:", "client2 ");
@@ -663,7 +722,7 @@ void TileCacheTests::testSimultaneousTilesRenderedJustOnce()
         std::string renderId2;
         LOOLProtocol::getTokenStringFromMessage(response2, "renderid", renderId2);
 
-        CPPUNIT_ASSERT(renderId1 == renderId2 ||
+        LOK_ASSERT(renderId1 == renderId2 ||
                        (renderId1 == "cached" && renderId2 != "cached") ||
                        (renderId1 != "cached" && renderId2 == "cached"));
     }
@@ -692,11 +751,11 @@ void TileCacheTests::testLoad12ods()
     }
     catch (const Poco::Exception& exc)
     {
-        CPPUNIT_FAIL(exc.displayText());
+        LOK_ASSERT_FAIL(exc.displayText());
     }
     catch (...)
     {
-        CPPUNIT_FAIL("Unexpected exception thrown during ods load");
+        LOK_ASSERT_FAIL("Unexpected exception thrown during ods load");
     }
 }
 
@@ -727,9 +786,9 @@ void TileCacheTests::checkBlackTile(std::stringstream& tile)
         }
     }
 
-    CPPUNIT_ASSERT_MESSAGE("The tile is 100% black", black != height * width);
+    LOK_ASSERT_MESSAGE("The tile is 100% black", black != height * width);
     assert(height * width != 0);
-    CPPUNIT_ASSERT_MESSAGE("The tile is 90% black", (black * 100) / (height * width) < 90);
+    LOK_ASSERT_MESSAGE("The tile is 90% black", (black * 100) / (height * width) < 90);
 }
 
 void TileCacheTests::checkBlackTiles(std::shared_ptr<LOOLWebSocket>& socket, const int /*part*/, const int /*docWidth*/, const int /*docHeight*/, const std::string& name)
@@ -738,13 +797,13 @@ void TileCacheTests::checkBlackTiles(std::shared_ptr<LOOLWebSocket>& socket, con
     // render correctly and there are no black tiles.
     // Current cap of table size ends at 257280 twips (for load12.ods),
     // otherwise 2035200 should be rendered successfully.
-    const char* req = "tile part=0 width=256 height=256 tileposx=0 tileposy=253440 tilewidth=3840 tileheight=3840";
+    const char* req = "tile nviewid=0 part=0 width=256 height=256 tileposx=0 tileposy=253440 tilewidth=3840 tileheight=3840";
     sendTextFrame(socket, req);
 
     const std::vector<char> tile = getResponseMessage(socket, "tile:", name);
     if (!tile.size())
     {
-        CPPUNIT_FAIL("No tile returned to checkBlackTiles - failed load ?");
+        LOK_ASSERT_FAIL("No tile returned to checkBlackTiles - failed load ?");
         return;
     }
 
@@ -792,7 +851,7 @@ void TileCacheTests::testTileInvalidateWriter()
     }
 
     // While extra invalidates are not desirable, they are inevitable at the moment.
-    //CPPUNIT_ASSERT_MESSAGE("received unexpected invalidatetiles: message", getResponseMessage(socket, "invalidatetiles:").empty());
+    //LOK_ASSERT_MESSAGE("received unexpected invalidatetiles: message", getResponseMessage(socket, "invalidatetiles:").empty());
 
     // TODO: implement a random-sequence "monkey test"
 }
@@ -814,9 +873,9 @@ void TileCacheTests::testTileInvalidateWriterPage()
 
     const auto res = assertResponseString(socket, "invalidatetiles:", testname);
     int part = -1;
-    CPPUNIT_ASSERT_MESSAGE("No part# in invalidatetiles message.",
+    LOK_ASSERT_MESSAGE("No part# in invalidatetiles message.",
                            LOOLProtocol::getTokenIntegerFromMessage(res, "part", part));
-    CPPUNIT_ASSERT_EQUAL(0, part);
+    LOK_ASSERT_EQUAL(0, part);
 }
 
 // This isn't yet used
@@ -916,7 +975,7 @@ void TileCacheTests::testTileInvalidateCalc()
         assertResponseString(socket, "invalidatetiles:", testname);
     }
 
-    std::cerr << "Sending enters" << std::endl;
+    TST_LOG("Sending enters");
     text = "\n\n\n";
     for (char ch : text)
     {
@@ -961,12 +1020,12 @@ void TileCacheTests::testTileInvalidatePartCalc()
         const auto response1 = assertResponseString(socket1, "invalidatetiles:", testname1);
         int value1;
         LOOLProtocol::getTokenIntegerFromMessage(response1, "part", value1);
-        CPPUNIT_ASSERT_EQUAL(2, value1);
+        LOK_ASSERT_EQUAL(2, value1);
 
         const auto response2 = assertResponseString(socket2, "invalidatetiles:", testname2);
         int value2;
         LOOLProtocol::getTokenIntegerFromMessage(response2, "part", value2);
-        CPPUNIT_ASSERT_EQUAL(5, value2);
+        LOK_ASSERT_EQUAL(5, value2);
     }
 }
 
@@ -1000,17 +1059,18 @@ void TileCacheTests::testTileInvalidatePartImpress()
         const auto response1 = assertResponseString(socket1, "invalidatetiles:", testname1);
         int value1;
         LOOLProtocol::getTokenIntegerFromMessage(response1, "part", value1);
-        CPPUNIT_ASSERT_EQUAL(2, value1);
+        LOK_ASSERT_EQUAL(2, value1);
 
         const auto response2 = assertResponseString(socket2, "invalidatetiles:", testname2);
         int value2;
         LOOLProtocol::getTokenIntegerFromMessage(response2, "part", value2);
-        CPPUNIT_ASSERT_EQUAL(5, value2);
+        LOK_ASSERT_EQUAL(5, value2);
     }
 }
 
 void TileCacheTests::checkTiles(std::shared_ptr<LOOLWebSocket>& socket, const std::string& docType, const std::string& name)
 {
+    const char* testname = "checkTiles";
     const std::string current = "current=";
     const std::string height = "height=";
     const std::string parts = "parts=";
@@ -1030,8 +1090,18 @@ void TileCacheTests::checkTiles(std::shared_ptr<LOOLWebSocket>& socket, const st
         std::istringstream istr(response.substr(8));
         std::getline(istr, line);
 
-        Poco::StringTokenizer tokens(line, " ", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), tokens.count());
+        StringVector tokens(LOOLProtocol::tokenize(line, ' '));
+#if defined CPPUNIT_ASSERT_GREATEREQUAL
+        if (docType == "presentation")
+            CPPUNIT_ASSERT_GREATEREQUAL(static_cast<size_t>(7), tokens.size()); // We have an extra field.
+        else
+            CPPUNIT_ASSERT_GREATEREQUAL(static_cast<size_t>(6), tokens.size());
+#else
+        if (docType == "presentation")
+            LOK_ASSERT_EQUAL(static_cast<size_t>(7), tokens.size()); // We have an extra field.
+        else
+            LOK_ASSERT_EQUAL(static_cast<size_t>(6), tokens.size());
+#endif
 
         // Expected format is something like 'type= parts= current= width= height='.
         const std::string text = tokens[0].substr(type.size());
@@ -1039,18 +1109,18 @@ void TileCacheTests::checkTiles(std::shared_ptr<LOOLWebSocket>& socket, const st
         currentPart = std::stoi(tokens[2].substr(current.size()));
         docWidth = std::stoi(tokens[3].substr(width.size()));
         docHeight = std::stoi(tokens[4].substr(height.size()));
-        CPPUNIT_ASSERT_EQUAL(docType, text);
-        CPPUNIT_ASSERT_EQUAL(10, totalParts);
-        CPPUNIT_ASSERT(currentPart > -1);
-        CPPUNIT_ASSERT(docWidth > 0);
-        CPPUNIT_ASSERT(docHeight > 0);
+        LOK_ASSERT_EQUAL(docType, text);
+        LOK_ASSERT_EQUAL(10, totalParts);
+        LOK_ASSERT(currentPart > -1);
+        LOK_ASSERT(docWidth > 0);
+        LOK_ASSERT(docHeight > 0);
     }
 
     if (docType == "presentation")
     {
         // request tiles
-        std::cerr << "Requesting Impress tiles." << std::endl;
-        requestTiles(socket, currentPart, docWidth, docHeight, name);
+        TST_LOG("Requesting Impress tiles.");
+        requestTiles(socket, docType, currentPart, docWidth, docHeight, name);
     }
 
     // random setclientpart
@@ -1070,7 +1140,7 @@ void TileCacheTests::checkTiles(std::shared_ptr<LOOLWebSocket>& socket, const st
             // issue a new tile request as a response, which a real client would do).
             assertResponseString(socket, "setpart:", name);
 
-            requestTiles(socket, it, docWidth, docHeight, name);
+            requestTiles(socket, docType, it, docWidth, docHeight, name);
 
             if (++requests >= 3)
             {
@@ -1083,7 +1153,9 @@ void TileCacheTests::checkTiles(std::shared_ptr<LOOLWebSocket>& socket, const st
     }
 }
 
-void TileCacheTests::requestTiles(std::shared_ptr<LOOLWebSocket>& socket, const int part, const int docWidth, const int docHeight, const std::string& name)
+void TileCacheTests::requestTiles(std::shared_ptr<LOOLWebSocket>& socket,
+                                  const std::string& , const int part, const int docWidth,
+                                  const int docHeight, const std::string& name)
 {
     // twips
     const int tileSize = 3840;
@@ -1122,21 +1194,22 @@ void TileCacheTests::requestTiles(std::shared_ptr<LOOLWebSocket>& socket, const 
             tileHeight = tileSize;
             tileX = tileSize * itCol;
             tileY = tileSize * itRow;
-            text = Poco::format("tile part=%d width=%d height=%d tileposx=%d tileposy=%d tilewidth=%d tileheight=%d",
+            text = Poco::format("tile nviewid=0 part=%d width=%d height=%d tileposx=%d tileposy=%d tilewidth=%d tileheight=%d",
                                 part, pixTileSize, pixTileSize, tileX, tileY, tileWidth, tileHeight);
 
             sendTextFrame(socket, text, name);
             tile = assertResponseString(socket, "tile:", name);
             // expected tile: part= width= height= tileposx= tileposy= tilewidth= tileheight=
-            Poco::StringTokenizer tokens(tile, " ", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-            CPPUNIT_ASSERT_EQUAL(std::string("tile:"), tokens[0]);
-            CPPUNIT_ASSERT_EQUAL(part, std::stoi(tokens[1].substr(std::string("part=").size())));
-            CPPUNIT_ASSERT_EQUAL(pixTileSize, std::stoi(tokens[2].substr(std::string("width=").size())));
-            CPPUNIT_ASSERT_EQUAL(pixTileSize, std::stoi(tokens[3].substr(std::string("height=").size())));
-            CPPUNIT_ASSERT_EQUAL(tileX, std::stoi(tokens[4].substr(std::string("tileposx=").size())));
-            CPPUNIT_ASSERT_EQUAL(tileY, std::stoi(tokens[5].substr(std::string("tileposy=").size())));
-            CPPUNIT_ASSERT_EQUAL(tileWidth, std::stoi(tokens[6].substr(std::string("tileWidth=").size())));
-            CPPUNIT_ASSERT_EQUAL(tileHeight, std::stoi(tokens[7].substr(std::string("tileHeight=").size())));
+            StringVector tokens(LOOLProtocol::tokenize(tile, ' '));
+            LOK_ASSERT_EQUAL(std::string("tile:"), tokens[0]);
+            LOK_ASSERT_EQUAL(0, std::stoi(tokens[1].substr(std::string("nviewid=").size())));
+            LOK_ASSERT_EQUAL(part, std::stoi(tokens[2].substr(std::string("part=").size())));
+            LOK_ASSERT_EQUAL(pixTileSize, std::stoi(tokens[3].substr(std::string("width=").size())));
+            LOK_ASSERT_EQUAL(pixTileSize, std::stoi(tokens[4].substr(std::string("height=").size())));
+            LOK_ASSERT_EQUAL(tileX, std::stoi(tokens[5].substr(std::string("tileposx=").size())));
+            LOK_ASSERT_EQUAL(tileY, std::stoi(tokens[6].substr(std::string("tileposy=").size())));
+            LOK_ASSERT_EQUAL(tileWidth, std::stoi(tokens[7].substr(std::string("tileWidth=").size())));
+            LOK_ASSERT_EQUAL(tileHeight, std::stoi(tokens[8].substr(std::string("tileHeight=").size())));
         }
     }
 }
@@ -1158,7 +1231,7 @@ void TileCacheTests::testTileRequestByInvalidation()
 
     // Since we did not set client visible area wsd won't send tile
     std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("Not expected tile message arrived!", tile.empty());
+    LOK_ASSERT_MESSAGE("Not expected tile message arrived!", tile.empty());
 
     // 2. use case: invalidation of one tile inside the client visible area
     // Now set the client visible area
@@ -1191,13 +1264,13 @@ void TileCacheTests::testTileRequestByZoom()
     sendTextFrame(socket, "clientzoom tilepixelwidth=256 tilepixelheight=256 tiletwipwidth=3200 tiletwipheight=3200");
 
     // Request all tile of the visible area (it happens by zoom)
-    sendTextFrame(socket, "tilecombine part=0 width=256 height=256 tileposx=0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800 tileposy=0,0,0,0,0,3200,3200,3200,3200,3200,6400,6400,6400,6400,6400,9600,9600,9600,9600,9600 tilewidth=3200 tileheight=3200");
+    sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800 tileposy=0,0,0,0,0,3200,3200,3200,3200,3200,6400,6400,6400,6400,6400,9600,9600,9600,9600,9600 tilewidth=3200 tileheight=3200");
 
     // Check that we get all the tiles without we send back the tileprocessed message
     for (int i = 0; i < 20; ++i)
     {
         std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
-        CPPUNIT_ASSERT_MESSAGE("Did not get tile as expected!", !tile.empty());
+        LOK_ASSERT_MESSAGE("Did not get tile as expected!", !tile.empty());
     }
 }
 
@@ -1220,34 +1293,31 @@ void TileCacheTests::testTileWireIDHandling()
     assertResponseString(socket, "invalidatetiles:", testname);
 
     // For the first input wsd will send all invalidated tiles
-    int arrivedTiles = 0;
-    bool gotTile = false;
-    do
-    {
-        std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
-        gotTile = !tile.empty();
-        if(gotTile)
-            ++arrivedTiles;
-    } while(gotTile);
+    LOK_ASSERT_MESSAGE("Expected at least two tiles.", countMessages(socket, "tile:", testname, 500) > 1);
 
-    CPPUNIT_ASSERT_MESSAGE("We expect two tiles at least!", arrivedTiles > 1);
+    // Let WSD know we got these so it wouldn't stop sending us modified tiles automatically.
+    sendTextFrame(socket, "tileprocessed tile=0:0:0:3840:3840:0", testname);
+    sendTextFrame(socket, "tileprocessed tile=0:3840:0:3840:3840:0", testname);
+    sendTextFrame(socket, "tileprocessed tile=0:7680:0:3840:3840:0", testname);
 
     // Type an other character
-    sendChar(socket, 'x', skNone, testname);
+    sendChar(socket, 'y', skNone, testname);
     assertResponseString(socket, "invalidatetiles:", testname);
 
-    // For the second input wsd will send one tile, since some of them are indentical
-    arrivedTiles = 0;
-    gotTile = false;
-    do
-    {
-        std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
-        gotTile = !tile.empty();
-        if(gotTile)
-            ++arrivedTiles;
-    } while(gotTile);
+    // For the second input wsd will send one tile, since some of them are identical.
+    const int arrivedTiles = countMessages(socket, "tile:", testname, 500);
+    if (arrivedTiles == 1)
+        return;
 
-    CPPUNIT_ASSERT_EQUAL(1, arrivedTiles);
+    // Or, at most 2. The reason is that sometimes we get line antialiasing differences that
+    // are sub-pixel different, and that results in a different hash.
+    LOK_ASSERT_EQUAL(2, arrivedTiles);
+
+    // The third time, however, we shouldn't see anything but the tile we change.
+    sendChar(socket, 'z', skNone, testname);
+    assertResponseString(socket, "invalidatetiles:", testname);
+
+    LOK_ASSERT_MESSAGE("Expected exactly one tile.", countMessages(socket, "tile:", testname, 500) == 1);
 }
 
 void TileCacheTests::testTileProcessed()
@@ -1264,7 +1334,7 @@ void TileCacheTests::testTileProcessed()
     sendTextFrame(socket, "clientzoom tilepixelwidth=256 tilepixelheight=256 tiletwipwidth=3200 tiletwipheight=3200");
 
     // Request a lots of tiles (more than wsd can send once)
-    sendTextFrame(socket, "tilecombine part=0 width=256 height=256 tileposx=0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800 tileposy=0,0,0,0,0,3200,3200,3200,3200,3200,6400,6400,6400,6400,6400,9600,9600,9600,9600,9600,12800,12800,12800,12800,12800 tilewidth=3200 tileheight=3200");
+    sendTextFrame(socket, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800,0,3200,6400,9600,12800 tileposy=0,0,0,0,0,3200,3200,3200,3200,3200,6400,6400,6400,6400,6400,9600,9600,9600,9600,9600,12800,12800,12800,12800,12800 tilewidth=3200 tileheight=3200");
 
     std::vector<std::string> tileIDs;
     int arrivedTile = 0;
@@ -1278,28 +1348,28 @@ void TileCacheTests::testTileProcessed()
             ++arrivedTile;
 
             // Store tileID, so we can send it back
-            Poco::StringTokenizer tokens(tile, " ", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-            std::string tileID = tokens[1].substr(std::string("part=").size()) + ":" +
-                                 tokens[4].substr(std::string("tileposx=").size()) + ":" +
-                                 tokens[5].substr(std::string("tileposy=").size()) + ":" +
-                                 tokens[6].substr(std::string("tileWidth=").size()) + ":" +
-                                 tokens[7].substr(std::string("tileHeight=").size());
+            StringVector tokens(LOOLProtocol::tokenize(tile, ' '));
+            std::string tileID = tokens[2].substr(std::string("part=").size()) + ":" +
+                                 tokens[5].substr(std::string("tileposx=").size()) + ":" +
+                                 tokens[6].substr(std::string("tileposy=").size()) + ":" +
+                                 tokens[7].substr(std::string("tileWidth=").size()) + ":" +
+                                 tokens[8].substr(std::string("tileHeight=").size()) + ":" +
+                                 tokens[1].substr(std::string("nviewid=").size());
             tileIDs.push_back(tileID);
         }
 
     } while(gotTile);
 
-    CPPUNIT_ASSERT_MESSAGE("We expect two tiles at least!", arrivedTile > 1);
-    CPPUNIT_ASSERT_MESSAGE("We expect that wsd can't send all the tiles!", arrivedTile < 25);
+    LOK_ASSERT_MESSAGE("We expect two tiles at least!", arrivedTile > 1);
+    LOK_ASSERT_MESSAGE("We expect that wsd can't send all the tiles!", arrivedTile < 25);
 
     for(std::string& tileID : tileIDs)
     {
-        sendTextFrame(socket, "tileprocessed tile=" + tileID);
+        sendTextFrame(socket, "tileprocessed tile=" + tileID, testname);
     }
 
     // Now we can get the remaining tiles
     int arrivedTile2 = 0;
-    gotTile = false;
     do
     {
         std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
@@ -1309,7 +1379,7 @@ void TileCacheTests::testTileProcessed()
 
     } while(gotTile);
 
-    CPPUNIT_ASSERT_MESSAGE("We expect one tile at least!", arrivedTile2 > 1);
+    LOK_ASSERT_MESSAGE("We expect one tile at least!", arrivedTile2 > 1);
 }
 
 void TileCacheTests::testTileInvalidatedOutside()
@@ -1326,7 +1396,7 @@ void TileCacheTests::testTileInvalidatedOutside()
 
     // First wsd forwards the invalidation
     std::string sInvalidate = assertResponseString(socket, "invalidatetiles:", testname);
-    Poco::StringTokenizer tokens(sInvalidate, " ", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
+    StringVector tokens(LOOLProtocol::tokenize(sInvalidate, ' '));
     int y = std::stoi(tokens[3].substr(std::string("y=").size()));
     int height = std::stoi(tokens[5].substr(std::string("height=").size()));
 
@@ -1347,7 +1417,7 @@ void TileCacheTests::testTileInvalidatedOutside()
     // wsd does not send a new tile even if some of the invalidated tiles
     // are partly visible.
     std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
-    CPPUNIT_ASSERT_MESSAGE("Not expected tile message arrived!", tile.empty());
+    LOK_ASSERT_MESSAGE("Not expected tile message arrived!", tile.empty());
 }
 
 void TileCacheTests::testTileBeingRenderedHandling()
@@ -1371,38 +1441,32 @@ void TileCacheTests::testTileBeingRenderedHandling()
     assertResponseString(socket, "invalidatetiles:", testname);
 
     // For the first input wsd will send all invalidated tiles
-    int arrivedTiles = 0;
-    bool gotTile = false;
-    do
-    {
-        std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
-        gotTile = !tile.empty();
-        if(gotTile)
-            ++arrivedTiles;
-    } while(gotTile);
-
-    CPPUNIT_ASSERT_MESSAGE("We expect two tiles at least!", arrivedTiles > 1);
+    LOK_ASSERT_MESSAGE("Expected at least two tiles.", countMessages(socket, "tile:", testname, 500) > 1);
 
     // For the later inputs wsd will send one tile, since other ones are indentical
     for(int i = 0; i < 5; ++i)
     {
+        sendTextFrame(socket, "tileprocessed tile=0:0:0:3200:3200:0", testname);
+
         // Type an other character
-        sendChar(socket, 'x', skNone, testname);
+        sendChar(socket, 'y', skNone, testname);
         assertResponseString(socket, "invalidatetiles:", testname);
 
-        arrivedTiles = 0;
-        gotTile = false;
-        do
+        const int arrivedTiles = countMessages(socket, "tile:", testname, 500);
+        if (arrivedTiles != 1)
         {
-            std::vector<char> tile = getResponseMessage(socket, "tile:", testname, 500);
-            gotTile = !tile.empty();
-            if(gotTile)
-                ++arrivedTiles;
-        } while(gotTile);
+            // Or, at most 2. The reason is that sometimes we get line antialiasing differences that
+            // are sub-pixel different, and that results in a different hash.
+            LOK_ASSERT_EQUAL(2, arrivedTiles);
 
-        CPPUNIT_ASSERT_EQUAL(1, arrivedTiles);
+            sendTextFrame(socket, "tileprocessed tile=0:0:0:3200:3200:0", testname);
 
-        sendTextFrame(socket, "tileprocessed tile=0:0:0:3200:3200");
+            // The third time, however, we shouldn't see anything but the tile we change.
+            sendChar(socket, 'z', skNone, testname);
+            assertResponseString(socket, "invalidatetiles:", testname);
+
+            LOK_ASSERT_MESSAGE("Expected exactly one tile.", countMessages(socket, "tile:", testname, 500) == 1);
+        }
     }
 }
 
@@ -1431,55 +1495,42 @@ void TileCacheTests::testWireIDFilteringOnWSDSide()
     assertResponseString(socket1, "invalidatetiles:", testname);
 
     // For the first input wsd will send all invalidated tiles
-    int arrivedTiles = 0;
-    bool gotTile = false;
-    do
-    {
-        std::vector<char> tile = getResponseMessage(socket1, "tile:", testname, 5000);
-        gotTile = !tile.empty();
-        if(gotTile)
-            ++arrivedTiles;
-    } while(gotTile);
+    LOK_ASSERT_MESSAGE("Expected at least two tiles.", countMessages(socket1, "tile:", testname, 500) > 1);
 
-    CPPUNIT_ASSERT_MESSAGE("We expect two tiles at least!", arrivedTiles > 1);
+    // Let WSD know we got these so it wouldn't stop sending us modified tiles automatically.
+    sendTextFrame(socket1, "tileprocessed tile=0:0:0:3840:3840:0", testname);
+    sendTextFrame(socket1, "tileprocessed tile=0:3840:0:3840:3840:0", testname);
+    sendTextFrame(socket1, "tileprocessed tile=0:7680:0:3840:3840:0", testname);
 
     // Type an other character
-    sendChar(socket1, 'x', skNone, testname);
+    sendChar(socket1, 'y', skNone, testname);
     assertResponseString(socket1, "invalidatetiles:", testname);
 
-    // For the second input wsd will send one tile, since other tiles are indentical
-    arrivedTiles = 0;
-    gotTile = false;
-    do
-    {
-        std::vector<char> tile = getResponseMessage(socket1, "tile:", testname, 1000);
-        gotTile = !tile.empty();
-        if(gotTile)
-            ++arrivedTiles;
-    } while(gotTile);
+    // For the second input wsd will send one tile, since some of them are identical.
+    const int arrivedTiles = countMessages(socket1, "tile:", testname, 500);
+    if (arrivedTiles == 1)
+        return;
 
-    CPPUNIT_ASSERT_EQUAL(1, arrivedTiles);
+    // Or, at most 2. The reason is that sometimes we get line antialiasing differences that
+    // are sub-pixel different, and that results in a different hash.
+    LOK_ASSERT_MESSAGE("Expected at most 3 tiles.", arrivedTiles <= 3);
+
+    // The third time, however, we shouldn't see anything but the tile we change.
+    sendChar(socket1, 'z', skNone, testname);
+    assertResponseString(socket1, "invalidatetiles:", testname);
+
+    LOK_ASSERT_MESSAGE("Expected exactly one tile.", countMessages(socket1, "tile:", testname, 500) == 1);
 
     //2. Now request the same tiles by the other client (e.g. scroll to the same view)
 
-    sendTextFrame(socket2, "tilecombine part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840");
+    sendTextFrame(socket2, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840");
 
     // We expect three tiles sent to the second client
-    arrivedTiles = 0;
-    gotTile = false;
-    do
-    {
-        std::vector<char> tile = getResponseMessage(socket2, "tile:", testname, 1000);
-        gotTile = !tile.empty();
-        if(gotTile)
-            ++arrivedTiles;
-    } while(gotTile);
-
-    CPPUNIT_ASSERT_EQUAL(3, arrivedTiles);
+    LOK_ASSERT_EQUAL(3, countMessages(socket2, "tile:", testname, 500));
 
     // wsd should not send tiles messages for the first client
     std::vector<char> tile = getResponseMessage(socket1, "tile:", testname, 1000);
-    CPPUNIT_ASSERT_MESSAGE("Not expected tile message arrived!", tile.empty());
+    LOK_ASSERT_MESSAGE("Not expected tile message arrived!", tile.empty());
 }
 
 void TileCacheTests::testLimitTileVersionsOnFly()
@@ -1511,7 +1562,6 @@ void TileCacheTests::testLimitTileVersionsOnFly()
     sendChar(socket, 'x', skNone, testname);
 
     // Handle all tiles sent by wsd
-    getTileResp = false;
     do
     {
         std::string tile = getResponseString(socket, "tile:", testname, 1000);
@@ -1523,11 +1573,11 @@ void TileCacheTests::testLimitTileVersionsOnFly()
     sendChar(socket, 'x', skNone, testname);
 
     std::vector<char> tile1 = getResponseMessage(socket, "tile:", testname, 1000);
-    CPPUNIT_ASSERT_MESSAGE("Not expected tile message arrived!", tile1.empty());
+    LOK_ASSERT_MESSAGE("Not expected tile message arrived!", tile1.empty());
 
     // When the next tileprocessed message arrive with correct tileID
     // wsd sends the delayed tile
-    sendTextFrame(socket, "tileprocessed tile=0:0:0:3200:3200");
+    sendTextFrame(socket, "tileprocessed tile=0:0:0:3200:3200:0", testname);
 
     int arrivedTiles = 0;
     bool gotTile = false;
@@ -1539,7 +1589,7 @@ void TileCacheTests::testLimitTileVersionsOnFly()
             ++arrivedTiles;
     } while(gotTile);
 
-    CPPUNIT_ASSERT_EQUAL(1, arrivedTiles);
+    LOK_ASSERT_EQUAL(1, arrivedTiles);
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TileCacheTests);

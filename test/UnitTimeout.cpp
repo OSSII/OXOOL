@@ -10,14 +10,11 @@
 #include <config.h>
 
 #include <cassert>
-
-#include <Poco/Util/Application.h>
+#include <sysexits.h>
 
 #include <Log.hpp>
 #include <Util.hpp>
 #include <Unit.hpp>
-
-using Poco::Timestamp;
 
 class UnitTimeout : public UnitWSD
 {
@@ -38,14 +35,14 @@ public:
         if (!_timedOut)
         {
             LOG_INF("Failed to timeout");
-            retValue = Poco::Util::Application::EXIT_SOFTWARE;
+            retValue = EX_SOFTWARE;
         }
         else
         {
             assert(_setRetValue);
-            assert(_retValue == Poco::Util::Application::EXIT_SOFTWARE);
+            assert(_retValue == EX_SOFTWARE);
             // we wanted a timeout.
-            retValue = Poco::Util::Application::EXIT_OK;
+            retValue = EX_OK;
         }
     }
 

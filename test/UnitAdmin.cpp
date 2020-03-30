@@ -17,8 +17,6 @@
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/NameValueCollection.h>
 #include <Poco/Net/NetException.h>
-#include <Poco/StringTokenizer.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/URI.h>
 
 #include <Common.hpp>
@@ -35,7 +33,6 @@ using Poco::Net::HTTPCookie;
 using Poco::Net::HTTPRequest;
 using Poco::Net::HTTPResponse;
 using Poco::Net::HTTPClientSession;
-using Poco::StringTokenizer;
 
 // Inside the WSD process
 class UnitAdmin : public UnitWSD
@@ -98,9 +95,9 @@ private:
         response.getCookies(cookies);
 
         // For now we only set one cookie
-        CPPUNIT_ASSERT_EQUAL(1, static_cast<int>(cookies.size()));
+        LOK_ASSERT_EQUAL(1, static_cast<int>(cookies.size()));
         // and it is jwt=
-        CPPUNIT_ASSERT_EQUAL(std::string("jwt"), cookies[0].getName());
+        LOK_ASSERT_EQUAL(std::string("jwt"), cookies[0].getName());
 
         // Check cookie properties
         std::string cookiePath = cookies[0].getPath();
@@ -143,8 +140,8 @@ private:
         }
         lock.unlock();
 
-        StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        if (tokens.count() != 1 ||
+        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        if (tokens.size() != 1 ||
             tokens[0] != "NotAuthenticated")
         {
             LOG_INF("testWebSocketWithoutAuth: Unrecognized message format");
@@ -174,8 +171,8 @@ private:
         }
         lock.unlock();
 
-        StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        if (tokens.count() != 1 ||
+        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        if (tokens.size() != 1 ||
             tokens[0] != "InvalidAuthToken")
         {
             LOG_INF("testWebSocketWithIncorrectAuthToken: Unrecognized message format");
@@ -226,10 +223,10 @@ private:
         lock.unlock();
 
         {
-            StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-            if (tokens.count() != 5 ||
+            StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+            if (tokens.size() != 5 ||
                 tokens[0] != "adddoc" ||
-                tokens[2] != documentPath1.substr(documentPath1.find_last_of("/") + 1) )
+                tokens[2] != documentPath1.substr(documentPath1.find_last_of('/') + 1) )
             {
                 LOG_INF("testAddDocNotify: Unrecognized message format");
                 return TestResult::Failed;
@@ -254,10 +251,10 @@ private:
         lock.unlock();
 
         {
-            StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-            if (tokens.count() != 5 ||
+            StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+            if (tokens.size() != 5 ||
                 tokens[0] != "adddoc" ||
-                tokens[2] != documentPath1.substr(documentPath1.find_last_of("/") + 1) )
+                tokens[2] != documentPath1.substr(documentPath1.find_last_of('/') + 1) )
             {
                 LOG_INF("testAddDocNotify: Unrecognized message format");
                 return TestResult::Failed;
@@ -289,10 +286,10 @@ private:
         lock.unlock();
 
         {
-            StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-            if (tokens.count() != 5 ||
+            StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+            if (tokens.size() != 5 ||
                 tokens[0] != "adddoc" ||
-                tokens[2] != documentPath2.substr(documentPath2.find_last_of("/") + 1) )
+                tokens[2] != documentPath2.substr(documentPath2.find_last_of('/') + 1) )
             {
                 LOG_INF("testAddDocNotify: Unrecognized message format");
                 return TestResult::Failed;
@@ -322,8 +319,8 @@ private:
         }
         lock.unlock();
 
-        StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        if (tokens.count() != 2 ||
+        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        if (tokens.size() != 2 ||
             tokens[0] != "active_users_count")
         {
             LOG_INF("testUsersCount: Unrecognized message format");
@@ -355,8 +352,8 @@ private:
         }
         lock.unlock();
 
-        StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        if (tokens.count() != 2 ||
+        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        if (tokens.size() != 2 ||
             tokens[0] != "active_docs_count" ||
             std::stoi(tokens[1]) != _docsCount)
         {
@@ -391,8 +388,8 @@ private:
         }
         lock.unlock();
 
-        StringTokenizer tokens(_messageReceived, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        if (tokens.count() != 3 ||
+        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        if (tokens.size() != 3 ||
             tokens[0] != "rmdoc" ||
             stoi(tokens[1]) != _docPid1)
         {

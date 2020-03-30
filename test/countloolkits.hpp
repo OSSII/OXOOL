@@ -18,7 +18,6 @@
 #include <Poco/DirectoryIterator.h>
 #include <Poco/FileStream.h>
 #include <Poco/StreamCopier.h>
-#include <Poco/StringTokenizer.h>
 
 #include <Common.hpp>
 #include "test.hpp"
@@ -59,8 +58,22 @@ static int countLoolKitProcesses(const int expected)
     TST_LOG_END;
     if (expected != count)
     {
-        TST_LOG("Found " << count << " LoKit processes but was expecting " << expected << ".");
+        TST_LOG_BEGIN("Found " << count << " LoKit processes but was expecting " << expected << ": [");
+        for (int i : getKitPids())
+        {
+            TST_LOG_APPEND(i << ' ');
+        }
+        TST_LOG_APPEND(']');
+        TST_LOG_END;
+
     }
+
+    std::vector<int> pids = getKitPids();
+    std::ostringstream oss;
+    oss << "Test kit pids are ";
+    for (auto i : pids)
+        oss << i << " ";
+    TST_LOG(oss.str());
 
     return count;
 }
@@ -81,7 +94,7 @@ static void testCountHowManyLoolkits()
 
     InitialLoolKitCount = countLoolKitProcesses(InitialLoolKitCount);
     TST_LOG("Initial loolkit count is " << InitialLoolKitCount);
-    CPPUNIT_ASSERT(InitialLoolKitCount > 0);
+    LOK_ASSERT(InitialLoolKitCount > 0);
 
     TestStartTime = std::chrono::steady_clock::now();
 }
@@ -90,7 +103,7 @@ static void testNoExtraLoolKitsLeft()
 {
     const char testname[] = "noExtraLoolKitsLeft ";
     const int countNow = countLoolKitProcesses(InitialLoolKitCount);
-    CPPUNIT_ASSERT_EQUAL(InitialLoolKitCount, countNow);
+    LOK_ASSERT_EQUAL(InitialLoolKitCount, countNow);
 
     const auto duration = (std::chrono::steady_clock::now() - TestStartTime);
     const std::chrono::milliseconds::rep durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();

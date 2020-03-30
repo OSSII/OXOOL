@@ -23,7 +23,6 @@
 #include <helpers.hpp>
 
 #include <Poco/Timestamp.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTMLForm.h>
 #include <Poco/Net/StringPartSource.h>
@@ -76,7 +75,6 @@ public:
                 form.write(session->sendRequest(request));
 
                 Poco::Net::HTTPResponse response;
-                std::stringstream actualStream;
                 try {
                     session->receiveResponse(response);
                 } catch (Poco::Net::NoMessageException &) {

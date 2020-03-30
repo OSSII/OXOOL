@@ -21,7 +21,6 @@
 #include <Util.hpp>
 
 #include <Poco/Timestamp.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/Net/HTTPServerRequest.h>
 
 // Inside the WSD process
@@ -114,17 +113,9 @@ public:
                 c |= 0x80;
         }
 
-        replace.reset(fuzzed.release());
+        replace = std::move(fuzzed);
 
         return true;
-    }
-
-    virtual bool filterHandleRequest(
-        TestRequest /* type */,
-        SocketDisposition & /* disposition */,
-        WebSocketHandler & /* socket */) override
-    {
-        return false;
     }
 };
 

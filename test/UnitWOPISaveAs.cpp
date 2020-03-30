@@ -34,18 +34,20 @@ public:
     void assertPutRelativeFileRequest(const Poco::Net::HTTPRequest& request) override
     {
         // spec says UTF-7...
-        CPPUNIT_ASSERT_EQUAL(std::string("/jan/hole+AWE-ovsk+AP0-/hello world+ACU-1.pdf"), request.get("X-WOPI-SuggestedTarget"));
+        LOK_ASSERT_EQUAL(std::string("/jan/hole+AWE-ovsk+AP0-/hello world+ACU-1.pdf"), request.get("X-WOPI-SuggestedTarget"));
 
         // make sure it is a pdf - or at least that it is larger than what it
         // used to be
-        CPPUNIT_ASSERT(std::stoul(request.get("X-WOPI-Size")) > _fileContent.size());
+        LOK_ASSERT(std::stoul(request.get("X-WOPI-Size")) > getFileContent().size());
     }
 
     bool filterSendMessage(const char* data, const size_t len, const WSOpCode /* code */, const bool /* flush */, int& /*unitReturn*/) override
     {
         const std::string message(data, len);
-        const std::string expected("saveas: url=" + helpers::getTestServerURI() + "/something%20wopi/files/1?access_token=anything filename=hello%20world%251.pdf");
-        if (message.find(expected) == 0)
+
+        if (message.find("saveas: url=") != std::string::npos &&
+            message.find(helpers::getTestServerURI()) != std::string::npos &&
+            message.find("filename=hello%20world%251.pdf") != std::string::npos)
         {
             // successfully exit the test if we also got the outgoing message
             // notifying about saving the file
@@ -65,8 +67,8 @@ public:
             {
                 initWebsocket("/wopi/files/0?access_token=anything");
 
-                helpers::sendTextFrame(*_ws->getLOOLWebSocket(), "load url=" + _wopiSrc, testName);
-                helpers::sendTextFrame(*_ws->getLOOLWebSocket(), "saveas url=wopi:///jan/hole%C5%A1ovsk%C3%BD/hello%20world%251.pdf", testName);
+                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
+                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "saveas url=wopi:///jan/hole%C5%A1ovsk%C3%BD/hello%20world%251.pdf", testName);
                 SocketPoll::wakeupWorld();
 
                 _phase = Phase::Polling;
