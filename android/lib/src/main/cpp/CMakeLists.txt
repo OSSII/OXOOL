@@ -1,0 +1,111 @@
+cmake_minimum_required(VERSION 3.4.1)
+
+add_library(androidapp SHARED
+            androidapp.cpp
+            ../../../../../common/FileUtil.cpp
+            ../../../../../common/Log.cpp
+            ../../../../../common/MessageQueue.cpp
+            ../../../../../common/Protocol.cpp
+	    ../../../../../common/StringVector.cpp
+            ../../../../../common/Session.cpp
+            ../../../../../common/SigUtil.cpp
+            ../../../../../common/SpookyV2.cpp
+            ../../../../../common/Unit.cpp
+            ../../../../../common/Util.cpp
+            ../../../../../kit/ChildSession.cpp
+            ../../../../../kit/Kit.cpp
+            ../../../../../net/FakeSocket.cpp
+            ../../../../../net/Socket.cpp
+            ../../../../../wsd/ClientSession.cpp
+            ../../../../../wsd/DocumentBroker.cpp
+            ../../../../../wsd/LOOLWSD.cpp
+            ../../../../../wsd/Storage.cpp
+            ../../../../../wsd/TileCache.cpp)
+
+target_compile_definitions(androidapp PRIVATE LOOLWSD_CONFIGDIR="/assets/etc/loolwsd")
+
+# According to the ABI, we need to use different source trees
+if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
+    set(LOBUILDDIR_ABI )
+    set(POCOINCLUDE_ABI )
+    set(POCOLIB_ABI )
+elseif(${ANDROID_ABI} STREQUAL "arm64-v8a")
+    set(LOBUILDDIR_ABI )
+    set(POCOINCLUDE_ABI )
+    set(POCOLIB_ABI )
+else()
+    MESSAGE(FATAL_ERROR "Cannot build for ABI ${ANDROID_ABI}, please add support for that.")
+endif()
+
+target_include_directories(androidapp PRIVATE
+                           .                     # path to androidapp.h
+                           ../../../../..        # path to config.h
+                           ../../../../../common # the needed loolwsd includes
+                           ../../../../../kit
+                           ../../../../../net
+                           ../../../../../wsd
+                           ${POCOINCLUDE_ABI}         # POCO
+                           ${LOBUILDDIR_ABI}/workdir/UnpackedTarball/libpng # libpng
+                           ${LOBUILDDIR_ABI}/include                        # LibreOfficeKit
+)
+
+add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}/liblo-native-code.so"
+                   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libfreebl3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libfreebl3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libnspr4.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libnspr4.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libnss3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libnss3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libnssckbi.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libnssckbi.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libnssdbm3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libnssdbm3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libnssutil3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libnssutil3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libplc4.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libplc4.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libplds4.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libplds4.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libsmime3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libsmime3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libsoftokn3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libsoftokn3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libsqlite3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libsqlite3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/instdir/program/libssl3.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/instdir/program/libssl3.so
+
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LOBUILDDIR_ABI}/android/source/jniLibs/${ANDROID_ABI}/liblo-native-code.so "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}"
+                   DEPENDS ${LOBUILDDIR_ABI}/android/source/jniLibs/${ANDROID_ABI}/liblo-native-code.so
+
+                   COMMENT "Copied liblo-native-code.so and its dependencies to the tree."
+)
+
+
+add_custom_target(copy_native_code DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}/liblo-native-code.so")
+
+target_link_libraries(androidapp
+                      android
+                      log
+                      ${LOBUILDDIR_ABI}/workdir/LinkTarget/StaticLibrary/liblibpng.a
+                      ${POCOLIB_ABI}/libPocoEncodings.a
+                      ${POCOLIB_ABI}/libPocoNet.a
+                      ${POCOLIB_ABI}/libPocoRedis.a
+                      ${POCOLIB_ABI}/libPocoUtil.a
+                      ${POCOLIB_ABI}/libPocoXML.a
+                      ${POCOLIB_ABI}/libPocoJSON.a
+                      ${POCOLIB_ABI}/libPocoFoundation.a
+                      "${CMAKE_CURRENT_SOURCE_DIR}/lib/${ANDROID_ABI}/liblo-native-code.so"
+)
