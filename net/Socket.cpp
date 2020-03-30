@@ -16,6 +16,8 @@
 #include <iomanip>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/un.h>
 #include <zlib.h>
 
 #include <Poco/DateTime.h>
@@ -28,7 +30,7 @@
 
 #include <SigUtil.hpp>
 #include "ServerSocket.hpp"
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 #include "SslSocket.hpp"
 #endif
 #include "WebSocketHandler.hpp"
@@ -37,10 +39,20 @@ int SocketPoll::DefaultPollTimeoutMs = 5000;
 std::atomic<bool> SocketPoll::InhibitThreadChecks(false);
 std::atomic<bool> Socket::InhibitThreadChecks(false);
 
+#define SOCKET_ABSTRACT_UNIX_NAME "0loolwsd-"
+
 int Socket::createSocket(Socket::Type type)
 {
-#ifndef MOBILEAPP
-    int domain = type == Type::IPv4 ? AF_INET : AF_INET6;
+#if !MOBILEAPP
+    int domain = AF_UNSPEC;
+    switch (type)
+    {
+    case Type::IPv4: domain = AF_INET;  break;
+    case Type::IPv6: domain = AF_INET6; break;
+    case Type::All:  domain = AF_INET6; break;
+    case Type::Unix: domain = AF_UNIX;  break;
+    default: assert (false); break;
+    }
     return socket(domain, SOCK_STREAM | SOCK_NONBLOCK, 0);
 #else
     return fakeSocketSocket();
@@ -71,7 +83,7 @@ SocketPoll::SocketPoll(const std::string& threadName)
 {
     // Create the wakeup fd.
     if (
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         ::pipe2(_wakeup, O_CLOEXEC | O_NONBLOCK) == -1
 #else
         fakeSocketPipe2(_wakeup) == -1
@@ -99,7 +111,7 @@ SocketPoll::~SocketPoll()
             getWakeupsArray().erase(it);
     }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     ::close(_wakeup[0]);
     ::close(_wakeup[1]);
 #else
@@ -188,15 +200,17 @@ void SocketPoll::wakeupWorld()
         wakeup(fd);
 }
 
-void SocketPoll::insertNewWebSocketSync(
-#ifndef MOBILEAPP
-                                        const Poco::URI &uri,
-#else
-                                        int peerSocket,
-#endif
-                                        const std::shared_ptr<SocketHandlerInterface>& websocketHandler)
+bool ProtocolHandlerInterface::hasPendingWork() const
 {
-#ifndef MOBILEAPP
+    return _msgHandler && _msgHandler->hasQueuedMessages();
+}
+
+#if !MOBILEAPP
+
+void SocketPoll::insertNewWebSocketSync(
+    const Poco::URI &uri,
+    const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler)
+{
     LOG_INF("Connecting to " << uri.getHost() << " : " << uri.getPort() << " : " << uri.getPath());
 
     // FIXME: put this in a ClientSocket class ?
@@ -246,24 +260,7 @@ void SocketPoll::insertNewWebSocketSync(
                     if (socket)
                     {
                         LOG_DBG("Connected to client websocket " << uri.getHost() << " #" << socket->getFD());
-
-                        // cf. WebSocketHandler::upgradeToWebSocket (?)
-                        // send Sec-WebSocket-Key: <hmm> ... Sec-WebSocket-Protocol: chat, Sec-WebSocket-Version: 13
-
-                        std::ostringstream oss;
-                        oss << "GET " << uri.getPathAndQuery() << " HTTP/1.1\r\n"
-                            "Connection:Upgrade\r\n"
-                            "User-Foo: Adminbits\r\n"
-                            "Sec-WebSocket-Key:fxTaWTEMVhq1PkWsMoLxGw==\r\n"
-                            "Upgrade:websocket\r\n"
-                            "Accept-Language:en\r\n"
-                            "Cache-Control:no-cache\r\n"
-                            "Pragma:no-cache\r\n"
-                            "Sec-WebSocket-Version:13\r\n"
-                            "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-                            "\r\n";
-                        socket->send(oss.str());
-                        websocketHandler->onConnect(socket);
+                        clientRequestWebsocketUpgrade(socket, websocketHandler, uri.getPathAndQuery());
                         insertNewSocket(socket);
                     }
                     else
@@ -281,7 +278,72 @@ void SocketPoll::insertNewWebSocketSync(
     }
     else
         LOG_ERR("Failed to lookup client websocket host '" << uri.getHost() << "' skipping");
+}
+
+// should this be a static method in the WebsocketHandler(?)
+void SocketPoll::clientRequestWebsocketUpgrade(const std::shared_ptr<StreamSocket>& socket,
+                                               const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler,
+                                               const std::string &pathAndQuery)
+{
+    // cf. WebSocketHandler::upgradeToWebSocket (?)
+    // send Sec-WebSocket-Key: <hmm> ... Sec-WebSocket-Protocol: chat, Sec-WebSocket-Version: 13
+
+    LOG_TRC("Requesting upgrade of websocket at path " << pathAndQuery << " #" << socket->getFD());
+
+    std::ostringstream oss;
+    oss << "GET " << pathAndQuery << " HTTP/1.1\r\n"
+        "Connection:Upgrade\r\n"
+        "User-Foo: Adminbits\r\n"
+        "Sec-WebSocket-Key:fxTaWTEMVhq1PkWsMoLxGw==\r\n"
+        "Upgrade:websocket\r\n"
+        "Accept-Language:en\r\n"
+        "Cache-Control:no-cache\r\n"
+        "Pragma:no-cache\r\n"
+        "Sec-WebSocket-Version:13\r\n"
+        "User-Agent: " WOPI_AGENT_STRING "\r\n"
+        "\r\n";
+    socket->send(oss.str());
+    websocketHandler->onConnect(socket);
+}
+
+void SocketPoll::insertNewUnixSocket(
+    const std::string &location,
+    const std::string &pathAndQuery,
+    const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler)
+{
+    int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+
+    struct sockaddr_un addrunix;
+    std::memset(&addrunix, 0, sizeof(addrunix));
+    addrunix.sun_family = AF_UNIX;
+    addrunix.sun_path[0] = '\0'; // abstract name
+    memcpy(&addrunix.sun_path[1], location.c_str(), location.length());
+
+    int res = connect(fd, (const struct sockaddr *)&addrunix, sizeof(addrunix));
+    if (fd < 0 || (res < 0 && errno != EINPROGRESS))
+    {
+        LOG_ERR("Failed to connect to unix socket at " << location);
+        ::close(fd);
+    }
+    else
+    {
+        std::shared_ptr<StreamSocket> socket;
+        socket = StreamSocket::create<StreamSocket>(fd, true, websocketHandler);
+        if (socket)
+        {
+            LOG_DBG("Connected to local UDS " << location << " #" << socket->getFD());
+            clientRequestWebsocketUpgrade(socket, websocketHandler, pathAndQuery);
+            insertNewSocket(socket);
+        }
+    }
+}
+
 #else
+
+void SocketPoll::insertNewFakeSocket(
+    int peerSocket,
+    const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler)
+{
     LOG_INF("Connecting to " << peerSocket);
     int fd = fakeSocketSocket();
     int res = fakeSocketConnect(fd, peerSocket);
@@ -306,8 +368,8 @@ void SocketPoll::insertNewWebSocketSync(
             fakeSocketClose(fd);
         }
     }
-#endif
 }
+#endif
 
 void ServerSocket::dumpState(std::ostream& os)
 {
@@ -345,7 +407,8 @@ void StreamSocket::dumpState(std::ostream& os)
     int events = getPollEvents(std::chrono::steady_clock::now(), timeoutMaxMs);
     os << "\t" << getFD() << "\t" << events << "\t"
        << _inBuffer.size() << "\t" << _outBuffer.size() << "\t"
-       << " r: " << _bytesRecvd << "\t w: " << _bytesSent << "\t";
+       << " r: " << _bytesRecvd << "\t w: " << _bytesSent << "\t"
+       << clientAddress() << "\t";
     _socketHandler->dumpState(os);
     if (_inBuffer.size() > 0)
         Util::dumpHex(os, "\t\tinBuffer:\n", "\t\t", _inBuffer);
@@ -356,7 +419,7 @@ void StreamSocket::dumpState(std::ostream& os)
 void StreamSocket::send(Poco::Net::HTTPResponse& response)
 {
     response.set("User-Agent", HTTP_AGENT_STRING);
-    response.set("Date", Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT));
+    response.set("Date", Util::getHttpTimeNow());
 
     std::ostringstream oss;
     response.write(oss);
@@ -379,7 +442,7 @@ void SocketPoll::dumpState(std::ostream& os)
 /// Returns true on success only.
 bool ServerSocket::bind(Type type, int port)
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     // Enable address reuse to avoid stalling after
     // recycling, when previous socket is TIME_WAIT.
     //TODO: Might be worth refactoring out.
@@ -389,6 +452,7 @@ bool ServerSocket::bind(Type type, int port)
 
     int rc;
 
+    assert (_type != Socket::Type::Unix);
     if (_type == Socket::Type::IPv4)
     {
         struct sockaddr_in addrv4;
@@ -429,7 +493,143 @@ bool ServerSocket::bind(Type type, int port)
 #endif
 }
 
-#ifndef MOBILEAPP
+std::shared_ptr<Socket> ServerSocket::accept()
+{
+    // Accept a connection (if any) and set it to non-blocking.
+    // There still need the client's address to filter request from POST(call from REST) here.
+#if !MOBILEAPP
+    assert(_type != Socket::Type::Unix);
+
+    struct sockaddr_in6 clientInfo;
+    socklen_t addrlen = sizeof(clientInfo);
+    const int rc = ::accept4(getFD(), (struct sockaddr *)&clientInfo, &addrlen, SOCK_NONBLOCK);
+#else
+    const int rc = fakeSocketAccept4(getFD());
+#endif
+    LOG_DBG("Accepted socket #" << rc << ", creating socket object.");
+    try
+    {
+        // Create a socket object using the factory.
+        if (rc != -1)
+        {
+            std::shared_ptr<Socket> _socket = _sockFactory->create(rc);
+
+#if !MOBILEAPP
+            char addrstr[INET6_ADDRSTRLEN];
+
+            const void *inAddr;
+            if (clientInfo.sin6_family == AF_INET)
+            {
+                auto ipv4 = (struct sockaddr_in *)&clientInfo;
+                inAddr = &(ipv4->sin_addr);
+            }
+            else
+            {
+                auto ipv6 = (struct sockaddr_in6 *)&clientInfo;
+                inAddr = &(ipv6->sin6_addr);
+            }
+
+            inet_ntop(clientInfo.sin6_family, inAddr, addrstr, sizeof(addrstr));
+            _socket->setClientAddress(addrstr);
+
+            LOG_DBG("Accepted socket has family " << clientInfo.sin6_family <<
+                    " address " << _socket->clientAddress());
+#endif
+            return _socket;
+        }
+        return std::shared_ptr<Socket>(nullptr);
+    }
+    catch (const std::exception& ex)
+    {
+        LOG_SYS("Failed to create client socket #" << rc << ". Error: " << ex.what());
+    }
+
+    return nullptr;
+}
+
+#if !MOBILEAPP
+
+int Socket::getPid() const
+{
+    struct ucred creds;
+    socklen_t credSize = sizeof(struct ucred);
+    if (getsockopt(_fd, SOL_SOCKET, SO_PEERCRED, &creds, &credSize) < 0)
+    {
+        LOG_TRC("Failed to get pid via peer creds on " << _fd << " " << strerror(errno));
+        return -1;
+    }
+    return creds.pid;
+}
+
+std::shared_ptr<Socket> LocalServerSocket::accept()
+{
+    const int rc = ::accept4(getFD(), nullptr, nullptr, SOCK_NONBLOCK);
+    try
+    {
+        LOG_DBG("Accepted prisoner socket #" << rc << ", creating socket object.");
+        if (rc < 0)
+            return std::shared_ptr<Socket>(nullptr);
+
+        std::shared_ptr<Socket> _socket = _sockFactory->create(rc);
+        // Sanity check this incoming socket
+        struct ucred creds;
+        socklen_t credSize = sizeof(struct ucred);
+        if (getsockopt(getFD(), SOL_SOCKET, SO_PEERCRED, &creds, &credSize) < 0)
+        {
+            LOG_ERR("Failed to get peer creds on " << getFD() << " " << strerror(errno));
+            ::close(rc);
+            return std::shared_ptr<Socket>(nullptr);
+        }
+
+        uid_t uid = getuid();
+        uid_t gid = getgid();
+        if (creds.uid != uid || creds.gid != gid)
+        {
+            LOG_ERR("Peercred mis-match on domain socket - closing connection. uid: " <<
+                    creds.uid << "vs." << uid << " gid: " << creds.gid << "vs." << gid);
+            ::close(rc);
+            return std::shared_ptr<Socket>(nullptr);
+        }
+        std::string addr("uds-to-pid-");
+        addr.append(std::to_string(creds.pid));
+        _socket->setClientAddress(addr);
+
+        LOG_DBG("Accepted socket is UDS - address " << addr <<
+                " and uid/gid " << creds.uid << "/" << creds.gid);
+        return _socket;
+    }
+    catch (const std::exception& ex)
+    {
+        LOG_SYS("Failed to create client socket #" << rc << ". Error: " << ex.what());
+        return std::shared_ptr<Socket>(nullptr);
+    }
+}
+
+/// Returns true on success only.
+std::string LocalServerSocket::bind()
+{
+    int rc;
+    struct sockaddr_un addrunix;
+    do
+    {
+        std::memset(&addrunix, 0, sizeof(addrunix));
+        addrunix.sun_family = AF_UNIX;
+        std::memcpy(addrunix.sun_path, SOCKET_ABSTRACT_UNIX_NAME, sizeof(SOCKET_ABSTRACT_UNIX_NAME));
+        addrunix.sun_path[0] = '\0'; // abstract name
+
+        std::string rand = Util::rng::getFilename(8);
+        memcpy(addrunix.sun_path + sizeof(SOCKET_ABSTRACT_UNIX_NAME) - 1, rand.c_str(), 8);
+
+        rc = ::bind(getFD(), (const sockaddr *)&addrunix, sizeof(struct sockaddr_un));
+        LOG_TRC("Bind to location " << std::string(&addrunix.sun_path[1]) <<
+                " result - " << rc << "errno: " << ((rc >= 0) ? "no error" : ::strerror(errno)));
+    } while (rc < 0 && errno == EADDRINUSE);
+
+    if (rc >= 0)
+        return std::string(&addrunix.sun_path[1]);
+
+    return "";
+}
 
 // For a verbose life, tweak here:
 #if 0
@@ -741,7 +941,7 @@ namespace HttpHelper
 
 bool StreamSocket::sniffSSL() const
 {
-    // Only sniffing the first bytes of a sockte.
+    // Only sniffing the first bytes of a socket.
     if (_bytesSent > 0 || _bytesRecvd != _inBuffer.size() || _bytesRecvd < 6)
         return false;
 

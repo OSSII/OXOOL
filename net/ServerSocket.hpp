@@ -29,25 +29,28 @@ class ServerSocket : public Socket
 public:
     ServerSocket(Socket::Type type, SocketPoll& clientPoller, std::shared_ptr<SocketFactory> sockFactory) :
         Socket(type),
+#if !MOBILEAPP
         _type(type),
+#endif
         _clientPoller(clientPoller),
         _sockFactory(std::move(sockFactory))
     {
     }
 
+    /// Control access to a bound TCP socket
     enum Type { Local, Public };
 
     /// Binds to a local address (Servers only).
     /// Does not retry on error.
     /// Returns true only on success.
-    bool bind(Type type, int port);
+    virtual bool bind(Type type, int port);
 
     /// Listen to incoming connections (Servers only).
     /// Does not retry on error.
     /// Returns true on success only.
     bool listen(const int backlog = 64)
     {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         const int rc = ::listen(getFD(), backlog);
 #else
         const int rc = fakeSocketListen(getFD());
@@ -60,58 +63,7 @@ public:
     /// Accepts an incoming connection (Servers only).
     /// Does not retry on error.
     /// Returns a valid Socket shared_ptr on success only.
-    std::shared_ptr<Socket> accept()
-    {
-        // Accept a connection (if any) and set it to non-blocking.
-        // There still need the client's address to filter request from POST(call from REST) here.
-#ifndef MOBILEAPP
-        struct sockaddr_in6 clientInfo;
-        socklen_t addrlen = sizeof(clientInfo);
-        const int rc = ::accept4(getFD(), (struct sockaddr *)&clientInfo, &addrlen, SOCK_NONBLOCK);
-#else
-        const int rc = fakeSocketAccept4(getFD());
-#endif
-        LOG_DBG("Accepted socket #" << rc << ", creating socket object.");
-        try
-        {
-            // Create a socket object using the factory.
-            if (rc != -1)
-            {
-#ifndef MOBILEAPP
-                char addrstr[INET6_ADDRSTRLEN];
-
-                const void *inAddr;
-                if (clientInfo.sin6_family == AF_INET)
-                {
-                    auto ipv4 = (struct sockaddr_in *)&clientInfo;
-                    inAddr = &(ipv4->sin_addr);
-                }
-                else
-                {
-                    auto ipv6 = (struct sockaddr_in6 *)&clientInfo;
-                    inAddr = &(ipv6->sin6_addr);
-                }
-
-                inet_ntop(clientInfo.sin6_family, inAddr, addrstr, sizeof(addrstr));
-                std::shared_ptr<Socket> _socket = _sockFactory->create(rc);
-                _socket->setClientAddress(addrstr);
-                LOG_DBG("Accepted socket has family " << clientInfo.sin6_family <<
-                        " address " << _socket->clientAddress());
-#else
-                std::shared_ptr<Socket> _socket = _sockFactory->create(rc);
-                _socket->setClientAddress("dummy");
-#endif
-                return _socket;
-            }
-            return std::shared_ptr<Socket>(nullptr);
-        }
-        catch (const std::exception& ex)
-        {
-            LOG_SYS("Failed to create client socket #" << rc << ". Error: " << ex.what());
-        }
-
-        return nullptr;
-    }
+    virtual std::shared_ptr<Socket> accept();
 
     int getPollEvents(std::chrono::steady_clock::time_point /* now */,
                       int & /* timeoutMaxMs */) override
@@ -140,10 +92,33 @@ public:
     }
 
 private:
+#if !MOBILEAPP
     Socket::Type _type;
+#endif
     SocketPoll& _clientPoller;
+protected:
     std::shared_ptr<SocketFactory> _sockFactory;
 };
+
+#if !MOBILEAPP
+
+/// A non-blocking, streaming Unix Domain Socket for local use
+class LocalServerSocket : public ServerSocket
+{
+public:
+    LocalServerSocket(SocketPoll& clientPoller, std::shared_ptr<SocketFactory> sockFactory) :
+        ServerSocket(Socket::Type::Unix, clientPoller, std::move(sockFactory))
+    {
+    }
+    virtual bool bind(Type, int) override { assert(false); return false; }
+    virtual std::shared_ptr<Socket> accept() override;
+    std::string bind();
+
+private:
+    std::string _name;
+};
+
+#endif
 
 #endif
 
