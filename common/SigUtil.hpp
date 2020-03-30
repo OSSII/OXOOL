@@ -13,27 +13,38 @@
 #include <atomic>
 #include <mutex>
 
-#ifndef MOBILEAPP
-/// Flag to commence clean shutdown
-extern std::atomic<bool> ShutdownRequestFlag;
-#else
+#if MOBILEAPP
 static constexpr bool ShutdownRequestFlag(false);
+extern std::atomic<bool> MobileTerminationFlag;
 #endif
-
-/// Flag to stop pump loops.
-extern std::atomic<bool> TerminationFlag;
-
-/// Flag to dump internal state
-extern std::atomic<bool> DumpGlobalState;
-
-#ifndef MOBILEAPP
-
-/// Mutex to trap signal handler, if any,
-/// and prevent _Exit while collecting backtrace.
-extern std::mutex SigHandlerTrap;
 
 namespace SigUtil
 {
+    /// Get the flag used to commence clean shutdown.
+    /// requestShutdown() is used to set the flag.
+    bool getShutdownRequestFlag();
+
+    /// Get the flag to stop pump loops forcefully.
+    bool getTerminationFlag();
+    /// Set the flag to stop pump loops forcefully.
+    void setTerminationFlag();
+#if MOBILEAPP
+    /// Reset the flag to stop pump loops forcefully.
+    /// Only necessary in Mobile.
+    void resetTerminationFlag();
+#endif
+
+    /// Get the flag to dump internal state.
+    bool getDumpGlobalState();
+    /// Reset the flag to dump internal state.
+    void resetDumpGlobalState();
+
+#if !MOBILEAPP
+
+    /// Wait for the signal handler, if any,
+    /// and prevent _Exit while collecting backtrace.
+    void waitSigHandlerTrap();
+
     /// Returns the name of the signal.
     const char* signalName(int signo);
 
@@ -47,6 +58,9 @@ namespace SigUtil
 
     /// Trap generally useful signals
     void setUserSignals();
+
+    /// Trap to unpause the process
+    void setDebuggerSignal();
 
     /// Requests the server to initiate graceful shutdown.
     /// Shutting down is a multi-stage process, because
@@ -65,9 +79,9 @@ namespace SigUtil
     /// Dump a signal-safe back-trace
     void dumpBacktrace();
 
-} // end namespace SigUtil
-
 #endif // !MOBILEAPP
+
+} // end namespace SigUtil
 
 #endif
 

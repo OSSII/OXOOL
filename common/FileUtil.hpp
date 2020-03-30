@@ -17,6 +17,16 @@
 
 namespace FileUtil
 {
+    /// Used for anonymizing URLs
+    void setUrlAnonymization(bool anonymize, const std::uint64_t salt);
+
+    /// Anonymize the basename of filenames, preserving the path and extension.
+    std::string anonymizeUrl(const std::string& url);
+
+    /// Anonymize user names and IDs.
+    /// Will use the Obfuscated User ID if one is provied via WOPI.
+    std::string anonymizeUsername(const std::string& username);
+
     /// Create a secure, random directory path.
     std::string createRandomDir(const std::string& path);
 
@@ -70,14 +80,21 @@ namespace FileUtil
         removeFile(path.toString(), recursive);
     }
 
+    /// Copy a file from @fromPath to @toPath, throws on failure.
+    void copyFileTo(const std::string &fromPath, const std::string &toPath);
+
+    /// Make a temp copy of a file, and prepend it with a prefix.
+    std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename,
+                                const std::string& dstFilenamePrefix);
+
     /// Make a temp copy of a file.
     /// Primarily used by tests to avoid tainting the originals.
     /// srcDir shouldn't end with '/' and srcFilename shouldn't contain '/'.
     /// Returns the created file path.
-    std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename);
-
-    /// Make a temp copy of a file, and prepend it with a prefix.
-    std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename, const std::string& dstFilenamePrefix);
+    inline std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename)
+    {
+        return getTempFilePath(srcDir, srcFilename, std::string());
+    }
 
 } // end namespace FileUtil
 

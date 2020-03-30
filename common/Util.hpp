@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <cerrno>
+#include <cinttypes>
 #include <cstddef>
 #include <cstring>
 #include <atomic>
@@ -21,6 +22,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <inttypes.h>
 
 #include <memory.h>
 
@@ -36,6 +38,8 @@
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
+#include <StringVector.hpp>
+
 namespace Util
 {
     namespace rng
@@ -46,6 +50,12 @@ namespace Util
         /// Generate an array of random characters.
         std::vector<char> getBytes(const size_t length);
 
+        /// Generate a string of random characters.
+        std::string getHexString(const size_t length);
+
+        /// Generate a hard random string of characters.
+        std::string getHardRandomHexString(const size_t length);
+
         /// Generates a random string suitable for
         /// file/directory names.
         std::string getFilename(const size_t length);
@@ -54,26 +64,27 @@ namespace Util
     /// Create randomized temporary directory
     std::string createRandomTmpDir();
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     /// Get number of threads in this process or -1 on error
     int getProcessThreadCount();
 
     /// Spawn a process if stdInput is non-NULL it contains a writable descriptor
     /// to send data to the child.
-    int spawnProcess(const std::string &cmd, const std::vector<std::string> &args,
-                     int *stdInput = nullptr);
+    int spawnProcess(const std::string &cmd, const StringVector &args,
+                     const std::vector<int>* fdsToKeep = nullptr, int *stdInput = nullptr);
+    
 #endif
 
     /// Hex to unsigned char
     bool dataFromHexString(const std::string& hexString, std::vector<unsigned char>& data);
     /// Encode an integral ID into a string, with padding support.
-    std::string encodeId(const unsigned number, const int padding = 5);
+    std::string encodeId(const std::uint64_t number, const int padding = 5);
     /// Decode an integral ID from a string.
-    unsigned decodeId(const std::string& str);
+    std::uint64_t decodeId(const std::string& str);
 
     bool windowingAvailable();
 
-#if !defined(BUILDING_TESTS) && !defined(KIT_IN_PROCESS) && !defined(MOBILEAPP)
+#if !defined(BUILDING_TESTS) && !defined(KIT_IN_PROCESS) && !MOBILEAPP
 
     /// Send a message to all clients.
     void alertAllUsers(const std::string& msg);
@@ -117,7 +128,7 @@ namespace Util
 #endif
     }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     /// Print given number of bytes in human-understandable form (KB,MB, etc.)
     std::string getHumanizedBytes(unsigned long nBytes);
 
@@ -155,9 +166,6 @@ namespace Util
 
     /// Get version information
     void getVersionInfo(std::string& version, std::string& hash);
-
-    /// Get version & branch information
-    void getVersionInfo(std::string& version, std::string& hash, std::string& branch);
 
     /// Return a string that is unique across processes and calls.
     std::string UniqueId();
@@ -245,6 +253,14 @@ namespace Util
         os.flush();
     }
 
+    inline void dumpHex (std::ostream &os, const char *legend, const char *prefix,
+                         const std::string &str, bool skipDup = true,
+                         const unsigned int width = 32)
+    {
+        std::vector<char> buffer(str.begin(), str.end());
+        dumpHex(os, legend, prefix, buffer, skipDup, width);
+    }
+
     inline std::string dumpHex (const char *legend, const char *prefix,
                                 const std::vector<char>::iterator &startIt,
                                 const std::vector<char>::iterator &endIt,
@@ -255,6 +271,8 @@ namespace Util
         dumpHex(oss, legend, prefix, data, skipDup, width);
         return oss.str();
     }
+
+    size_t findInVector(const std::vector<char>& tokens, const char *cstring);
 
     /// Trim spaces from the left. Just spaces.
     inline std::string& ltrim(std::string& s)
@@ -683,11 +701,11 @@ int main(int argc, char**argv)
         return std::string(message, size);
     }
 
-    /// Split a string in two at the delimeter, removing it.
+    /// Split a string in two at the delimiter, removing it.
     inline
-    std::pair<std::string, std::string> split(const char* s, const int length, const char delimeter = ' ', bool removeDelim = true)
+    std::pair<std::string, std::string> split(const char* s, const int length, const char delimiter = ' ', bool removeDelim = true)
     {
-        const size_t size = getDelimiterPosition(s, length, delimeter);
+        const size_t size = getDelimiterPosition(s, length, delimiter);
 
         std::string after;
         int after_pos = size + (removeDelim? 1: 0);
@@ -697,18 +715,18 @@ int main(int argc, char**argv)
         return std::make_pair(std::string(s, size), after);
     }
 
-    /// Split a string in two at the delimeter, removing it.
+    /// Split a string in two at the delimiter, removing it.
     inline
-    std::pair<std::string, std::string> split(const std::string& s, const char delimeter = ' ', bool removeDelim = true)
+    std::pair<std::string, std::string> split(const std::string& s, const char delimiter = ' ', bool removeDelim = true)
     {
-        return split(s.c_str(), s.size(), delimeter, removeDelim);
+        return split(s.c_str(), s.size(), delimiter, removeDelim);
     }
 
-    /// Split a string in two at the delimeter.
+    /// Split a string in two at the delimiter.
     inline
-    std::pair<std::string, std::string> splitLast(const char* s, const int length, const char delimeter = ' ', bool removeDelim = true)
+    std::pair<std::string, std::string> splitLast(const char* s, const int length, const char delimiter = ' ', bool removeDelim = true)
     {
-        const size_t size = getLastDelimiterPosition(s, length, delimeter);
+        const size_t size = getLastDelimiterPosition(s, length, delimiter);
 
         std::string after;
         int after_pos = size + (removeDelim? 1: 0);
@@ -718,11 +736,37 @@ int main(int argc, char**argv)
         return std::make_pair(std::string(s, size), after);
     }
 
-    /// Split a string in two at the delimeter, removing it.
+    /// Split a string in two at the delimiter, removing it.
     inline
-    std::pair<std::string, std::string> splitLast(const std::string& s, const char delimeter = ' ', bool removeDelim = true)
+    std::pair<std::string, std::string> splitLast(const std::string& s, const char delimiter = ' ', bool removeDelim = true)
     {
-        return splitLast(s.c_str(), s.size(), delimeter, removeDelim);
+        return splitLast(s.c_str(), s.size(), delimiter, removeDelim);
+    }
+
+    /// Append a length bytes to a vector, or strlen of data as a C string if not provided
+    /// returns count of bytes appended.
+    inline void vectorAppend(std::vector<char> &vector, const char *data, ssize_t length = -1)
+    {
+        size_t vlen = vector.size();
+
+        if (!data)
+        {
+            return;
+        }
+
+        size_t dataLen = length;
+        if (length < 0)
+            dataLen = strlen(data);
+        vector.resize(vlen+dataLen);
+        std::memcpy(vector.data() + vlen, data, dataLen);
+    }
+
+    /// Append a number as hexadecimal to a vector
+    inline void vectorAppendHex(std::vector<char> &vector, uint64_t number)
+    {
+        char output[32];
+        sprintf(output, "%" PRIx64, number);
+        vectorAppend(vector, output);
     }
 
     /// Splits a URL into path (with protocol), filename, extension, parameters.
@@ -739,14 +783,14 @@ int main(int argc, char**argv)
 
     /// Anonymize a sensitive string to avoid leaking it.
     /// Called on strings to be logged or exposed.
-    std::string anonymize(const std::string& text);
+    std::string anonymize(const std::string& text, const std::uint64_t nAnonymizationSalt);
 
     /// Sets the anonymized version of a given plain-text string.
     /// After this, 'anonymize(plain)' will return 'anonymized'.
     void mapAnonymized(const std::string& plain, const std::string& anonymized);
 
     /// Anonymize the basename of filenames only, preserving the path and extension.
-    std::string anonymizeUrl(const std::string& url);
+    std::string anonymizeUrl(const std::string& url, const std::uint64_t nAnonymizationSalt);
 
     /// Extract and return the filename given a url or path.
     std::string getFilenameFromURL(const std::string& url);
@@ -881,6 +925,53 @@ int main(int argc, char**argv)
             _value = value;
         }
     };
+
+    //// Return current time in HTTP format.
+    std::string getHttpTimeNow();
+
+    //// Return time in HTTP format.
+    std::string getHttpTime(std::chrono::system_clock::time_point time);
+
+    //// Return timestamp of file
+    std::chrono::system_clock::time_point getFileTimestamp(std::string str_path);
+
+    //// Return time in ISO8061 fraction format
+    std::string getIso8601FracformatTime(std::chrono::system_clock::time_point time);
+
+    /// Convert a time_point to iso8601 formatted string.
+    std::string time_point_to_iso8601(std::chrono::system_clock::time_point tp);
+
+    /// Convert time from ISO8061 fraction format
+    std::chrono::system_clock::time_point iso8601ToTimestamp(const std::string& iso8601Time, const std::string& logName);
+
+    /// conversion from steady_clock for debugging / tracing
+    std::string getSteadyClockAsString(const std::chrono::steady_clock::time_point &time);
+
+    /// Automatically execute code at end of current scope.
+    /// Used for exception-safe code.
+    class ScopeGuard
+    {
+    public:
+        template <typename T>
+        explicit ScopeGuard(T const &func) : m_func(func) {}
+
+        ~ScopeGuard()
+        {
+            if (m_func)
+                m_func();
+        }
+    private:
+        ScopeGuard(const ScopeGuard &) = delete;
+        ScopeGuard &operator=(const ScopeGuard &) = delete;
+
+        std::function<void()> m_func;
+    };
+
+    /**
+     * Avoid using the configuration layer and rely on defaults which is only useful for special
+     * test tool targets (typically fuzzing) where start-up speed is critical.
+     */
+    bool isFuzzing();
 } // end namespace Util
 
 #endif

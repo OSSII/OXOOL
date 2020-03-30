@@ -29,7 +29,6 @@
 #include <Poco/Exception.h>
 #include <Poco/Path.h>
 #include <Poco/String.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/URI.h>
 
 #include "Common.hpp"
@@ -45,7 +44,9 @@ using namespace LOOLProtocol;
 using Poco::Exception;
 using std::size_t;
 
-Session::Session(const std::string& name, const std::string& id, bool readOnly) :
+Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
+                 const std::string& name, const std::string& id, bool readOnly) :
+    MessageHandlerInterface(protocol),
     _id(id),
     _name(name),
     _disconnected(false),
@@ -66,17 +67,29 @@ Session::~Session()
 
 bool Session::sendTextFrame(const char* buffer, const int length)
 {
+    if (!_protocol)
+    {
+        LOG_TRC("ERR - missing protocol " << getName() << ": Send: [" << getAbbreviatedMessage(buffer, length) << "].");
+        return false;
+    }
+
     LOG_TRC(getName() << ": Send: [" << getAbbreviatedMessage(buffer, length) << "].");
-    return sendMessage(buffer, length, WSOpCode::Text) >= length;
+    return _protocol->sendTextMessage(buffer, length) >= length;
 }
 
 bool Session::sendBinaryFrame(const char *buffer, int length)
 {
+    if (!_protocol)
+    {
+        LOG_TRC("ERR - missing protocol " << getName() << ": Send: " << std::to_string(length) << " binary bytes.");
+        return false;
+    }
+
     LOG_TRC(getName() << ": Send: " << std::to_string(length) << " binary bytes.");
-    return sendMessage(buffer, length, WSOpCode::Binary) >= length;
+    return _protocol->sendBinaryMessage(buffer, length) >= length;
 }
 
-void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part, std::string& timestamp, std::string& doctemplate)
+void Session::parseDocOptions(const StringVector& tokens, int& part, std::string& timestamp, std::string& doctemplate)
 {
     // First token is the "load" command itself.
     size_t offset = 1;
@@ -152,12 +165,6 @@ void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part,
             _lang = value;
             ++offset;
         }
-        // Add by Firefly <firefly@ossii.com.tw>
-        else if (name == "timezone")
-        {
-            _timezone = value;
-            ++offset;
-        } //--------------------
         else if (name == "watermarkText")
         {
             Poco::URI::decode(value, _watermarkText);
@@ -189,7 +196,7 @@ void Session::parseDocOptions(const std::vector<std::string>& tokens, int& part,
         if (getTokenString(tokens[offset], "options", _docOptions))
         {
             if (tokens.size() > offset + 1)
-                _docOptions += Poco::cat(std::string(" "), tokens.begin() + offset + 1, tokens.end());
+                _docOptions += tokens.cat(std::string(" "), offset + 1);
         }
     }
 }
@@ -203,35 +210,34 @@ void Session::disconnect()
     }
 }
 
-bool Session::handleDisconnect()
+void Session::shutdown(bool goingAway, const std::string& statusMessage)
 {
-    _disconnected = true;
-    shutdown();
-    return false;
-}
-
-void Session::shutdown(const WebSocketHandler::StatusCodes statusCode, const std::string& statusMessage)
-{
-    LOG_TRC("Shutting down WS [" << getName() << "] with statusCode [" <<
-            static_cast<unsigned>(statusCode) << "] and reason [" << statusMessage << "].");
+    LOG_TRC("Shutting down WS [" << getName() << "] " <<
+            (goingAway ? "going" : "normal") <<
+            " and reason [" << statusMessage << "].");
 
     // See protocol.txt for this application-level close frame.
-    sendMessage("close: " + statusMessage);
-
-    WebSocketHandler::shutdown(statusCode, statusMessage);
+    if (_protocol)
+    {
+        // skip the queue; FIXME: should we flush SessionClient's queue ?
+        std::string closeMsg = "close: " + statusMessage;
+        _protocol->sendTextMessage(closeMsg.c_str(), closeMsg.size());
+        _protocol->shutdown(goingAway, statusMessage);
+    }
 }
 
-void Session::handleMessage(bool /*fin*/, WSOpCode /*code*/, std::vector<char> &data)
+void Session::handleMessage(const std::vector<char> &data)
 {
     try
     {
         std::unique_ptr< std::vector<char> > replace;
-        if (UnitBase::get().filterSessionInput(this, &data[0], data.size(), replace))
+        if (!Util::isFuzzing() && UnitBase::get().filterSessionInput(this, &data[0], data.size(), replace))
         {
             if (!replace || replace->empty())
                 _handleInput(replace->data(), replace->size());
             return;
         }
+
         if (!data.empty())
             _handleInput(&data[0], data.size());
     }
@@ -251,21 +257,18 @@ void Session::handleMessage(bool /*fin*/, WSOpCode /*code*/, std::vector<char> &
 
 void Session::getIOStats(uint64_t &sent, uint64_t &recv)
 {
-    std::shared_ptr<StreamSocket> socket = getSocket().lock();
-    if (socket)
-        socket->getIOStats(sent, recv);
-    else
+    if (!_protocol)
     {
-        sent = 0;
-        recv = 0;
+        LOG_TRC("ERR - missing protocol " << getName() << ": Get IO stats.");
+        return;
     }
+
+    _protocol->getIOStats(sent, recv);
 }
 
 void Session::dumpState(std::ostream& os)
 {
-    WebSocketHandler::dumpState(os);
-
-    os <<   "\t\tid: " << _id
+    os << "\t\tid: " << _id
        << "\n\t\tname: " << _name
        << "\n\t\tdisconnected: " << _disconnected
        << "\n\t\tisActive: " << _isActive

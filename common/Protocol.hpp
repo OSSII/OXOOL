@@ -15,11 +15,10 @@
 #include <cstring>
 #include <iomanip>
 #include <map>
+#include <regex>
 #include <sstream>
 #include <string>
-
-#include <Poco/Format.h>
-#include <Poco/StringTokenizer.h>
+#include <vector>
 
 #include <Poco/Net/WebSocket.h>
 
@@ -76,19 +75,17 @@ namespace LOOLProtocol
     bool getTokenString(const std::string& token, const std::string& name, std::string& value);
     bool getTokenKeyword(const std::string& token, const std::string& name, const std::map<std::string, int>& map, int& value);
 
-    bool getTokenInteger(const Poco::StringTokenizer& tokens, const std::string& name, int& value);
-    bool getTokenString(const Poco::StringTokenizer& tokens, const std::string& name, std::string& value);
-    bool getTokenKeyword(const Poco::StringTokenizer& tokens, const std::string& name, const std::map<std::string, int>& map, int& value);
+    bool getTokenKeyword(const StringVector& tokens, const std::string& name, const std::map<std::string, int>& map, int& value);
 
-    bool getTokenInteger(const std::vector<std::string>& tokens, const std::string& name, int& value);
+    bool getTokenInteger(const StringVector& tokens, const std::string& name, int& value);
 
-    inline bool getTokenString(const std::vector<std::string>& tokens,
+    inline bool getTokenString(const StringVector& tokens,
                                const std::string& name,
                                std::string& value)
     {
         for (const auto& token : tokens)
         {
-            if (getTokenString(token, name, value))
+            if (getTokenString(tokens.getParam(token), name, value))
             {
                 return true;
             }
@@ -102,49 +99,62 @@ namespace LOOLProtocol
 
     /// Tokenize space-delimited values until we hit new-line or the end.
     inline
-    std::vector<std::string> tokenize(const char* data, const size_t size, const char delimeter = ' ')
+    StringVector tokenize(const char* data, const size_t size, const char delimiter = ' ')
     {
-        std::vector<std::string> tokens;
+        std::vector<StringToken> tokens;
         if (size == 0 || data == nullptr)
         {
-            return tokens;
+            return StringVector(std::string(), {});
         }
+        tokens.reserve(8);
 
         const char* start = data;
         const char* end = data;
         for (size_t i = 0; i < size && data[i] != '\n'; ++i, ++end)
         {
-            if (data[i] == delimeter)
+            if (data[i] == delimiter)
             {
-                if (start != end && *start != delimeter)
+                if (start != end && *start != delimiter)
                 {
-                    tokens.emplace_back(start, end);
+                    tokens.emplace_back(start - data, end - start);
                 }
 
                 start = end;
             }
-            else if (*start == delimeter)
+            else if (*start == delimiter)
             {
                 ++start;
             }
         }
 
-        if (start != end && *start != delimeter && *start != '\n')
+        if (start != end && *start != delimiter && *start != '\n')
         {
-            tokens.emplace_back(start, end);
+            tokens.emplace_back(start - data, end - start);
         }
 
+        return StringVector(std::string(data, size), tokens);
+    }
+
+    inline
+    StringVector tokenize(const std::string& s, const char delimiter = ' ')
+    {
+        return tokenize(s.data(), s.size(), delimiter);
+    }
+
+    /// Tokenize according to the regex, potentially skip empty tokens.
+    inline
+    std::vector<std::string> tokenize(const std::string& s, const std::regex& pattern, bool skipEmpty = false)
+    {
+        std::vector<std::string> tokens;
+        if (skipEmpty)
+            std::copy_if(std::sregex_token_iterator(s.begin(), s.end(), pattern, -1), std::sregex_token_iterator(), std::back_inserter(tokens), [](std::string in) { return !in.empty(); });
+        else
+            std::copy(std::sregex_token_iterator(s.begin(), s.end(), pattern, -1), std::sregex_token_iterator(), std::back_inserter(tokens));
         return tokens;
     }
 
     inline
-    std::vector<std::string> tokenize(const std::string& s, const char delimeter = ' ')
-    {
-        return tokenize(s.data(), s.size(), delimeter);
-    }
-
-    inline
-    std::vector<int> tokenizeInts(const char* data, const size_t size, const char delimeter = ',')
+    std::vector<int> tokenizeInts(const char* data, const size_t size, const char delimiter = ',')
     {
         std::vector<int> tokens;
         if (size == 0 || data == nullptr)
@@ -154,27 +164,27 @@ namespace LOOLProtocol
         const char* end = data;
         for (size_t i = 0; i < size && data[i] != '\n'; ++i, ++end)
         {
-            if (data[i] == delimeter)
+            if (data[i] == delimiter)
             {
-                if (start != end && *start != delimeter)
+                if (start != end && *start != delimiter)
                     tokens.emplace_back(std::atoi(start));
 
                 start = end;
             }
-            else if (*start == delimeter)
+            else if (*start == delimiter)
                 ++start;
         }
 
-        if (start != end && *start != delimeter && *start != '\n')
+        if (start != end && *start != delimiter && *start != '\n')
             tokens.emplace_back(std::atoi(start));
 
         return tokens;
     }
 
     inline
-    std::vector<int> tokenizeInts(const std::string& s, const char delimeter = ',')
+    std::vector<int> tokenizeInts(const std::string& s, const char delimiter = ',')
     {
-        return tokenizeInts(s.data(), s.size(), delimeter);
+        return tokenizeInts(s.data(), s.size(), delimiter);
     }
 
     inline bool getTokenIntegerFromMessage(const std::string& message, const std::string& name, int& value)
@@ -286,7 +296,7 @@ namespace LOOLProtocol
 
     inline std::string getAbbreviatedMessage(const std::string& message)
     {
-        const size_t pos = Util::getDelimiterPosition(message.data(), std::min(message.size(), 501UL), '\n');
+        const size_t pos = Util::getDelimiterPosition(message.data(), std::min<size_t>(message.size(), 501), '\n');
 
         // If first line is less than the length (minus newline), add ellipsis.
         if (pos < static_cast<std::string::size_type>(message.size()) - 1)

@@ -63,7 +63,7 @@ public:
 /// Unit test stub for a server request
 class UnitHTTPServerRequest : public Poco::Net::HTTPServerRequest
 {
-protected:
+private:
     UnitHTTPServerResponse& _response;
     Poco::Net::SocketAddress _clientAddress;
     Poco::Net::SocketAddress _serverAddress;
@@ -74,7 +74,7 @@ public:
     UnitHTTPServerRequest(UnitHTTPServerResponse& inResponse,
                           const std::string& uri) :
         _response(inResponse),
-        _serverAddress(MasterPortNumber)
+        _serverAddress(9981) // FIXME: Unix Sockets now ...
     {
         setURI(uri);
     }

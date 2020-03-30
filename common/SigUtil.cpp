@@ -11,7 +11,9 @@
 
 #include "SigUtil.hpp"
 
-#include <execinfo.h>
+#if !defined(__ANDROID__)
+#  include <execinfo.h>
+#endif
 #include <csignal>
 #include <sys/poll.h>
 #include <sys/stat.h>
@@ -36,16 +38,85 @@
 #include "Common.hpp"
 #include "Log.hpp"
 
-std::atomic<bool> TerminationFlag(false);
-std::atomic<bool> DumpGlobalState(false);
-
-#ifndef MOBILEAPP
-std::atomic<bool> ShutdownRequestFlag(false);
-
-std::mutex SigHandlerTrap;
+static std::atomic<bool> TerminationFlag(false);
+static std::atomic<bool> DumpGlobalState(false);
+#if MOBILEAPP
+std::atomic<bool> MobileTerminationFlag(false);
+#else
+// Mobile defines its own, which is constexpr.
+static std::atomic<bool> ShutdownRequestFlag(false);
+#endif
 
 namespace SigUtil
 {
+    bool getShutdownRequestFlag()
+    {
+        return ShutdownRequestFlag;
+    }
+
+    bool getTerminationFlag()
+    {
+        return TerminationFlag;
+    }
+
+    void setTerminationFlag()
+    {
+        TerminationFlag = true;
+    }
+
+#if MOBILEAPP
+    void resetTerminationFlag()
+    {
+        TerminationFlag = false;
+    }
+#endif
+
+    bool getDumpGlobalState()
+    {
+        return DumpGlobalState;
+    }
+
+    void resetDumpGlobalState()
+    {
+        DumpGlobalState = false;
+    }
+}
+
+#if !MOBILEAPP
+namespace SigUtil
+{
+    /// This traps the signal-handler so we don't _Exit
+    /// while dumping stack trace. It's re-entrant.
+    /// Used to safely increment and decrement the signal-handler trap.
+    class SigHandlerTrap
+    {
+        static std::atomic<int> SigHandling;
+    public:
+        SigHandlerTrap() { ++SigHandlerTrap::SigHandling; }
+        ~SigHandlerTrap() { --SigHandlerTrap::SigHandling; }
+
+        /// Check that we have exclusive access to the trap.
+        /// Otherwise, there is another signal in progress.
+        bool isExclusive() const
+        {
+            // Return true if we are alone.
+            return SigHandlerTrap::SigHandling == 1;
+        }
+
+        /// Wait for the trap to clear.
+        static void wait()
+        {
+            while (SigHandlerTrap::SigHandling)
+                sleep(1);
+        }
+    };
+    std::atomic<int> SigHandlerTrap::SigHandling;
+
+    void waitSigHandlerTrap()
+    {
+        SigHandlerTrap::wait();
+    }
+
     const char *signalName(const int signo)
     {
         switch (signo)
@@ -165,19 +236,17 @@ namespace SigUtil
     static
     void handleFatalSignal(const int signal)
     {
-        std::unique_lock<std::mutex> lock(SigHandlerTrap);
+        SigHandlerTrap guard;
+        bool bReEntered = !guard.isExclusive();
 
         Log::signalLogPrefix();
-        Log::signalLog(" Fatal signal received: ");
-        Log::signalLog(signalName(signal));
-        Log::signalLog("\n");
 
-        if (std::getenv("LOOL_DEBUG"))
-        {
-            Log::signalLog(FatalGdbString);
-            LOG_ERR("Sleeping 30s to allow debugging.");
-            sleep(30);
-        }
+        // Heap corruption can re-enter through backtrace.
+        if (bReEntered)
+            Log::signalLog(" Fatal double signal received: ");
+        else
+            Log::signalLog(" Fatal signal received: ");
+        Log::signalLog(signalName(signal));
 
         struct sigaction action;
 
@@ -187,45 +256,34 @@ namespace SigUtil
 
         sigaction(signal, &action, nullptr);
 
-        dumpBacktrace();
+        if (!bReEntered)
+            dumpBacktrace();
 
         // let default handler process the signal
-        kill(Poco::Process::id(), signal);
+        kill(getpid(), signal);
     }
 
     void dumpBacktrace()
     {
-        char header[32];
-        sprintf(header, "Backtrace %d:\n", getpid());
+#if !defined(__ANDROID__)
+        Log::signalLog("\nBacktrace ");
+        Log::signalLogNumber(getpid());
+        Log::signalLog(":\n");
 
         const int maxSlots = 50;
         void *backtraceBuffer[maxSlots];
-        int numSlots = backtrace(backtraceBuffer, maxSlots);
+        const int numSlots = backtrace(backtraceBuffer, maxSlots);
         if (numSlots > 0)
         {
-            char **symbols = backtrace_symbols(backtraceBuffer, numSlots);
-            if (symbols != nullptr)
-            {
-                struct iovec ioVector[maxSlots*2+1];
-                ioVector[0].iov_base = static_cast<void*>(header);
-                ioVector[0].iov_len = std::strlen(static_cast<const char*>(ioVector[0].iov_base));
-                for (int i = 0; i < numSlots; i++)
-                {
-                    ioVector[1+i*2+0].iov_base = symbols[i];
-                    ioVector[1+i*2+0].iov_len = std::strlen(static_cast<const char *>(ioVector[1+i*2+0].iov_base));
-                    ioVector[1+i*2+1].iov_base = const_cast<void*>(static_cast<const void*>("\n"));
-                    ioVector[1+i*2+1].iov_len = 1;
-                }
-
-                if (writev(STDERR_FILENO, ioVector, numSlots*2+1) == -1)
-                {
-                    LOG_SYS("Failed to dump backtrace to stderr.");
-                }
-            }
+            backtrace_symbols_fd(backtraceBuffer, numSlots, STDERR_FILENO);
         }
+#else
+        LOG_SYS("Backtrace not available on Android.");
+#endif
 
         if (std::getenv("LOOL_DEBUG"))
         {
+            Log::signalLog(FatalGdbString);
             LOG_ERR("Sleeping 30s to allow debugging.");
             sleep(30);
         }
@@ -245,12 +303,12 @@ namespace SigUtil
         sigaction(SIGILL, &action, nullptr);
         sigaction(SIGFPE, &action, nullptr);
 
-        // prepare this in advance just in case.
+        // Prepare this in advance just in case.
         std::ostringstream stream;
-        stream << "\nFatal signal! Attach debugger with:\n"
-               << "sudo gdb --pid=" << Poco::Process::id() << "\n or \n"
+        stream << "\nERROR: Fatal signal! Attach debugger with:\n"
+               << "sudo gdb --pid=" << getpid() << "\n or \n"
                << "sudo gdb --q --n --ex 'thread apply all backtrace full' --batch --pid="
-               << Poco::Process::id() << "\n";
+               << getpid() << "\n";
         std::string streamStr = stream.str();
         assert (sizeof (FatalGdbString) > strlen(streamStr.c_str()) + 1);
         strncpy(FatalGdbString, streamStr.c_str(), sizeof(FatalGdbString)-1);
@@ -271,6 +329,10 @@ namespace SigUtil
         }
     }
 
+    static
+    void handleDebuggerSignal(const int /*signal*/)
+    {}
+
     void setUserSignals()
     {
         struct sigaction action;
@@ -278,6 +340,17 @@ namespace SigUtil
         sigemptyset(&action.sa_mask);
         action.sa_flags = 0;
         action.sa_handler = handleUserSignal;
+
+        sigaction(SIGUSR1, &action, nullptr);
+    }
+
+    void setDebuggerSignal()
+    {
+        struct sigaction action;
+
+        sigemptyset(&action.sa_mask);
+        action.sa_flags = 0;
+        action.sa_handler = handleDebuggerSignal;
 
         sigaction(SIGUSR1, &action, nullptr);
     }

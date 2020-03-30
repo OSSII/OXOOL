@@ -21,7 +21,6 @@
 #include <Poco/Buffer.h>
 #include <Poco/Path.h>
 #include <Poco/Process.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/Types.h>
 
 #include "Protocol.hpp"
@@ -65,7 +64,7 @@ public:
 };
 
 /// Base class of a WebSocket session.
-class Session : public WebSocketHandler
+class Session : public MessageHandlerInterface
 {
 public:
     const std::string& getId() const { return _id; }
@@ -75,8 +74,32 @@ public:
     virtual void setReadOnly() { _isReadOnly = true; }
     bool isReadOnly() const { return _isReadOnly; }
 
+    /// overridden to prepend client ids on messages by the Kit
     virtual bool sendBinaryFrame(const char* buffer, int length);
     virtual bool sendTextFrame(const char* buffer, const int length);
+
+    /// Get notified that the underlying transports disconnected
+    void onDisconnect() override { /* ignore */ }
+
+    bool hasQueuedMessages() const override
+    {
+        // queued in Socket output buffer
+        return false;
+    }
+
+    // By default rely on the socket buffer.
+    void writeQueuedMessages() override
+    {
+        assert(false);
+    }
+
+    /// Sends a WebSocket Text message.
+    int sendMessage(const std::string& msg)
+    {
+        return sendTextFrame(msg.data(), msg.size());
+    }
+
+    // FIXME: remove synonym - and clean from WebSocketHandler too ... (?)
     bool sendTextFrame(const std::string& text)
     {
         return sendTextFrame(text.data(), text.size());
@@ -93,16 +116,16 @@ public:
         return (buffer != nullptr ? sendTextFrame(buffer, std::strlen(buffer)) : false);
     }
 
-    virtual void handleMessage(bool fin, WSOpCode code, std::vector<char> &data) override;
+    virtual void handleMessage(const std::vector<char> &data) override;
 
     /// Invoked when we want to disconnect a session.
     virtual void disconnect();
 
-    /// Called to handle disconnection command from socket.
-    virtual bool handleDisconnect();
+    /// clean & normal shutdown
+    void shutdownNormal(const std::string& statusMessage = "")    { shutdown(false, statusMessage); }
 
-    void shutdown(const WebSocketHandler::StatusCodes statusCode = WebSocketHandler::StatusCodes::NORMAL_CLOSE,
-                  const std::string& statusMessage = "");
+    /// abnormal / hash shutdown end-point going away
+    void shutdownGoingAway(const std::string& statusMessage = "") { shutdown(true, statusMessage); }
 
     bool isActive() const { return _isActive; }
     void setIsActive(bool active) { _isActive = active; }
@@ -145,8 +168,6 @@ public:
 
     const std::string& getLang() const { return _lang; }
 
-    const std::string& getTimezone() const { return _timezone; }
-
     bool getHaveDocPassword() const { return _haveDocPassword; }
 
     const std::string& getDocPassword() const { return _docPassword; }
@@ -166,27 +187,25 @@ public:
     }
 
 protected:
-    Session(const std::string& name, const std::string& id, bool readonly);
+    Session(const std::shared_ptr<ProtocolHandlerInterface> &handler,
+            const std::string& name, const std::string& id, bool readonly);
     virtual ~Session();
 
     /// Parses the options of the "load" command,
     /// shared between MasterProcessSession::loadDocument() and ChildProcessSession::loadDocument().
-    void parseDocOptions(const std::vector<std::string>& tokens, int& part, std::string& timestamp, std::string& doctemplate);
+    void parseDocOptions(const StringVector& tokens, int& part, std::string& timestamp, std::string& doctemplate);
 
     void updateLastActivityTime()
     {
         _lastActivityTime = std::chrono::steady_clock::now();
     }
 
-    /// Internal lock shared with derived classes.
-    std::unique_lock<std::mutex> getLock()
-    {
-        return std::unique_lock<std::mutex>(_mutex);
-    }
-
     void dumpState(std::ostream& os) override;
 
 private:
+
+    void shutdown(bool goingAway = false, const std::string& statusMessage = "");
+
     virtual bool _handleInput(const char* buffer, int length) = 0;
 
     /// A session ID specific to an end-to-end connection (from user to lokit).
@@ -258,9 +277,6 @@ private:
 
     /// the canonical id unique to the set of rendering properties of this session
     int _canonicalViewId;
-
-    /// Client time zone
-    std::string _timezone;
 };
 
 #endif

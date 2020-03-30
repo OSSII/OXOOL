@@ -19,10 +19,6 @@
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
-#include <Poco/StringTokenizer.h>
-
-using Poco::StringTokenizer;
-
 namespace LOOLProtocol
 {
     std::tuple<int, int, std::string> ParseVersion(const std::string& version)
@@ -31,23 +27,23 @@ namespace LOOLProtocol
         int minor = -1;
         std::string patch;
 
-        StringTokenizer firstTokens(version, ".", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        if (firstTokens.count() > 0)
+        StringVector firstTokens(tokenize(version, '.'));
+        if (firstTokens.size() > 0)
         {
             major = std::stoi(firstTokens[0]);
 
-            std::unique_ptr<StringTokenizer> secondTokens;
-            if (firstTokens.count() > 1)
+            StringVector secondTokens;
+            if (firstTokens.size() > 1)
             {
-                secondTokens.reset(new StringTokenizer(firstTokens[1], "-", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM));
+                secondTokens = tokenize(firstTokens[1], '-');
             }
-            if (secondTokens && secondTokens->count() > 0)
+            if (secondTokens.size() > 0)
             {
-                minor = std::stoi((*secondTokens)[0]);
+                minor = std::stoi(secondTokens[0]);
             }
 
-            if (secondTokens && secondTokens->count() > 1)
-                patch = (*secondTokens)[1];
+            if (secondTokens.size() > 1)
+                patch = secondTokens[1];
         }
         return std::make_tuple(major, minor, patch);
     }
@@ -174,9 +170,9 @@ namespace LOOLProtocol
         return false;
     }
 
-    bool getTokenInteger(const Poco::StringTokenizer& tokens, const std::string& name, int& value)
+    bool getTokenInteger(const StringVector& tokens, const std::string& name, int& value)
     {
-        for (size_t i = 0; i < tokens.count(); i++)
+        for (size_t i = 0; i < tokens.size(); i++)
         {
             if (getTokenInteger(tokens[i], name, value))
                 return true;
@@ -184,36 +180,13 @@ namespace LOOLProtocol
         return false;
     }
 
-    bool getTokenString(const Poco::StringTokenizer& tokens, const std::string& name, std::string& value)
+    bool getTokenKeyword(const StringVector& tokens, const std::string& name, const std::map<std::string, int>& map, int& value)
     {
-        for (size_t i = 0; i < tokens.count(); i++)
-        {
-            if (getTokenString(tokens[i], name, value))
-                return true;
-        }
-        return false;
-    }
-
-    bool getTokenKeyword(const Poco::StringTokenizer& tokens, const std::string& name, const std::map<std::string, int>& map, int& value)
-    {
-        for (size_t i = 0; i < tokens.count(); i++)
+        for (size_t i = 0; i < tokens.size(); i++)
         {
             if (getTokenKeyword(tokens[i], name, map, value))
                 return true;
         }
-        return false;
-    }
-
-    bool getTokenInteger(const std::vector<std::string>& tokens, const std::string& name, int& value)
-    {
-        for (const auto& pair : tokens)
-        {
-            if (getTokenInteger(pair, name, value))
-            {
-                return true;
-            }
-        }
-
         return false;
     }
 
@@ -242,8 +215,7 @@ namespace LOOLProtocol
 
     bool getTokenKeywordFromMessage(const std::string& message, const std::string& name, const std::map<std::string, int>& map, int& value)
     {
-        Poco::StringTokenizer tokens(message, " \n", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-        return getTokenKeyword(tokens, name, map, value);
+        return getTokenKeyword(tokenize(message), name, map, value);
     }
 };
 

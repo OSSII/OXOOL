@@ -11,7 +11,6 @@
 
 #include "Util.hpp"
 
-#include <execinfo.h>
 #include <csignal>
 #include <sys/poll.h>
 #ifdef __linux
@@ -33,16 +32,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <unordered_map>
 #include <random>
 #include <sstream>
 #include <string>
 #include <thread>
 
 #include <Poco/Base64Encoder.h>
+#include <Poco/HexBinaryEncoder.h>
 #include <Poco/ConsoleChannel.h>
 #include <Poco/Exception.h>
 #include <Poco/Format.h>
@@ -53,7 +55,6 @@
 #include <Poco/Process.h>
 #include <Poco/RandomStream.h>
 #include <Poco/TemporaryFile.h>
-#include <Poco/Thread.h>
 #include <Poco/Timestamp.h>
 #include <Poco/Util/Application.h>
 
@@ -97,6 +98,36 @@ namespace Util
             std::vector<char> v(length);
             _randBuf.readFromDevice(v.data(), v.size());
             return v;
+        }
+
+        /// Generate a string of random characters.
+        std::string getHexString(const size_t length)
+        {
+            std::stringstream ss;
+            Poco::HexBinaryEncoder hex(ss);
+            hex.write(getBytes(length).data(), length);
+            return ss.str().substr(0, length);
+        }
+
+        /// Generate a string of harder random characters.
+        std::string getHardRandomHexString(const size_t length)
+        {
+            std::stringstream ss;
+            Poco::HexBinaryEncoder hex(ss);
+
+            // a poor fallback but something.
+            std::vector<char> random = getBytes(length);
+            int fd = open("/dev/urandom", O_RDONLY);
+            int len = 0;
+            if (fd < 0 ||
+                (len = read(fd, random.data(), length)) < 0 ||
+                size_t(len) < length)
+            {
+                LOG_ERR("failed to read " << length << " hard random bytes, got " << len << " for hash: " << errno);
+            }
+            close(fd);
+            hex.write(random.data(), length);
+            return ss.str().substr(0, length);
         }
 
         /// Generates a random string in Base64.
@@ -147,7 +178,7 @@ namespace Util
         return newTmp;
     }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     int getProcessThreadCount()
     {
         DIR *fdDir = opendir("/proc/self/task");
@@ -168,7 +199,7 @@ namespace Util
     }
 
     // close what we have - far faster than going up to a 1m open_max eg.
-    static bool closeFdsFromProc()
+    static bool closeFdsFromProc(std::map<int, int> *mapFdsToKeep = nullptr)
     {
           DIR *fdDir = opendir("/proc/self/fd");
           if (!fdDir)
@@ -192,6 +223,9 @@ namespace Util
               if (fd < 3)
                   continue;
 
+              if (mapFdsToKeep && mapFdsToKeep->find(fd) != mapFdsToKeep->end())
+                  continue;
+
               if (close(fd) < 0)
                   std::cerr << "Unexpected failure to close fd " << fd << std::endl;
           }
@@ -200,33 +234,47 @@ namespace Util
           return true;
     }
 
-    static void closeFds()
+    static void closeFds(std::map<int, int> *mapFdsToKeep = nullptr)
     {
-        if (!closeFdsFromProc())
+        if (!closeFdsFromProc(mapFdsToKeep))
         {
             std::cerr << "Couldn't close fds efficiently from /proc" << std::endl;
             for (int fd = 3; fd < sysconf(_SC_OPEN_MAX); ++fd)
-                close(fd);
+                if (mapFdsToKeep->find(fd) != mapFdsToKeep->end())
+                    close(fd);
         }
     }
 
-    int spawnProcess(const std::string &cmd, const std::vector<std::string> &args, int *stdInput)
+    int spawnProcess(const std::string &cmd, const StringVector &args, const std::vector<int>* fdsToKeep, int *stdInput)
     {
         int pipeFds[2] = { -1, -1 };
         if (stdInput)
         {
-            if (pipe(pipeFds) < 0)
+            if (pipe2(pipeFds, O_NONBLOCK) < 0)
             {
                 LOG_ERR("Out of file descriptors spawning " << cmd);
                 throw Poco::SystemException("Out of file descriptors");
             }
         }
 
+        // Create a vector of zero-terminated strings.
+        std::vector<std::string> argStrings(args.size());
+        for (const auto& arg : args)
+        {
+            argStrings.emplace_back(args.getParam(arg));
+        }
+
         std::vector<char *> params;
         params.push_back(const_cast<char *>(cmd.c_str()));
-        for (const auto& i : args)
+        for (const auto& i : argStrings)
             params.push_back(const_cast<char *>(i.c_str()));
         params.push_back(nullptr);
+
+        std::map<int, int> mapFdsToKeep;
+
+        if (fdsToKeep)
+            for (const auto& i : *fdsToKeep)
+                mapFdsToKeep[i] = i;
 
         int pid = fork();
         if (pid < 0)
@@ -239,7 +287,7 @@ namespace Util
             if (stdInput)
                 dup2(pipeFds[0], STDIN_FILENO);
 
-            closeFds();
+            closeFds(&mapFdsToKeep);
 
             int ret = execvp(params[0], &params[0]);
             if (ret < 0)
@@ -255,6 +303,7 @@ namespace Util
         }
         return pid;
     }
+
 #endif
 
     bool dataFromHexString(const std::string& hexString, std::vector<unsigned char>& data)
@@ -278,16 +327,16 @@ namespace Util
         return true;
     }
 
-    std::string encodeId(const unsigned number, const int padding)
+    std::string encodeId(const std::uint64_t number, const int padding)
     {
         std::ostringstream oss;
         oss << std::hex << std::setw(padding) << std::setfill('0') << number;
         return oss.str();
     }
 
-    unsigned decodeId(const std::string& str)
+    std::uint64_t decodeId(const std::string& str)
     {
-        unsigned id = 0;
+        std::uint64_t id = 0;
         std::stringstream ss;
         ss << std::hex << str;
         ss >> id;
@@ -299,7 +348,7 @@ namespace Util
         return std::getenv("DISPLAY") != nullptr;
     }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
     static const char *startsWith(const char *line, const char *tag)
     {
@@ -554,7 +603,7 @@ namespace Util
     }
 
 #ifdef __linux
-    static __thread pid_t ThreadTid = 0;
+    static thread_local pid_t ThreadTid = 0;
 
     pid_t getThreadId()
 #else
@@ -573,21 +622,15 @@ namespace Util
 
     void getVersionInfo(std::string& version, std::string& hash)
     {
-        version = std::string(LOOLWSD_VERSION) + "-" + std::string(LOOLWSD_VERSION_DIST);
+        version = std::string(LOOLWSD_VERSION);
         hash = std::string(LOOLWSD_VERSION_HASH);
         hash.resize(std::min(8, (int)hash.length()));
-    }
-
-    void getVersionInfo(std::string& version, std::string& hash, std::string& branch)
-    {
-        getVersionInfo(version, hash);
-        branch = std::string(LOOLWSD_BRANCH);
     }
 
     std::string UniqueId()
     {
         static std::atomic_int counter(0);
-        return std::to_string(Poco::Process::id()) + '/' + std::to_string(counter++);
+        return std::to_string(getpid()) + '/' + std::to_string(counter++);
     }
 
     std::map<std::string, std::string> JsonToMap(const std::string& jsonString)
@@ -639,13 +682,13 @@ namespace Util
         return true;
     }
 
-    /// Split a string in two at the delimeter and give the delimiter to the first.
+    /// Split a string in two at the delimiter and give the delimiter to the first.
     static
-    std::pair<std::string, std::string> splitLast2(const char* s, const int length, const char delimeter = ' ')
+    std::pair<std::string, std::string> splitLast2(const char* s, const int length, const char delimiter = ' ')
     {
         if (s != nullptr && length > 0)
         {
-            const int pos = getLastDelimiterPosition(s, length, delimeter);
+            const int pos = getLastDelimiterPosition(s, length, delimiter);
             if (pos < length)
                 return std::make_pair(std::string(s, pos + 1), std::string(s + pos + 1));
         }
@@ -675,8 +718,8 @@ namespace Util
         return std::make_tuple(base, filename, ext, params);
     }
 
-    static std::map<std::string, std::string> AnonymizedStrings;
-    static std::atomic<unsigned> AnonymizationSalt(0);
+    static std::unordered_map<std::string, std::string> AnonymizedStrings;
+    static std::atomic<unsigned> AnonymizationCounter(0);
     static std::mutex AnonymizedMutex;
 
     void mapAnonymized(const std::string& plain, const std::string& anonymized)
@@ -684,14 +727,15 @@ namespace Util
         if (plain.empty() || anonymized.empty())
             return;
 
-        LOG_TRC("Anonymizing [" << plain << "] -> [" << anonymized << "].");
+        if (Log::traceEnabled() && plain != anonymized)
+            LOG_TRC("Anonymizing [" << plain << "] -> [" << anonymized << "].");
 
         std::unique_lock<std::mutex> lock(AnonymizedMutex);
 
         AnonymizedStrings[plain] = anonymized;
     }
 
-    std::string anonymize(const std::string& text)
+    std::string anonymize(const std::string& text, const std::uint64_t nAnonymizationSalt)
     {
         {
             std::unique_lock<std::mutex> lock(AnonymizedMutex);
@@ -699,20 +743,32 @@ namespace Util
             const auto it = AnonymizedStrings.find(text);
             if (it != AnonymizedStrings.end())
             {
-                LOG_TRC("Found anonymized [" << text << "] -> [" << it->second << "].");
+                if (Log::traceEnabled() && text != it->second)
+                    LOG_TRC("Found anonymized [" << text << "] -> [" << it->second << "].");
                 return it->second;
             }
         }
 
-        // We just need something irreversible, short, and
-        // quite simple.
-        std::size_t hash = 0;
+        // Modified 64-bit FNV-1a to add salting.
+        // For the algorithm and the magic numbers, see http://isthe.com/chongo/tech/comp/fnv/
+        std::uint64_t hash = 0xCBF29CE484222325LL;
+        hash ^= nAnonymizationSalt;
+        hash *= 0x100000001b3ULL;
         for (const char c : text)
-            hash += c;
+        {
+            hash ^= static_cast<std::uint64_t>(c);
+            hash *= 0x100000001b3ULL;
+        }
+
+        hash ^= nAnonymizationSalt;
+        hash *= 0x100000001b3ULL;
 
         // Generate the anonymized string. The '#' is to hint that it's anonymized.
-        // Prepend with salt to make it unique, in case we get collisions (which we will, eventually).
-        const std::string res = '#' + Util::encodeId(AnonymizationSalt++, 0) + '#' + Util::encodeId(hash, 0) + '#';
+        // Prepend with count to make it unique within a single process instance,
+        // in case we get collisions (which we will, eventually). N.B.: Identical
+        // strings likely to have different prefixes when logged in WSD process vs. Kit.
+        const std::string res
+            = '#' + Util::encodeId(AnonymizationCounter++, 0) + '#' + Util::encodeId(hash, 0) + '#';
         mapAnonymized(text, res);
         return res;
     }
@@ -727,7 +783,7 @@ namespace Util
         return filename;
     }
 
-    std::string anonymizeUrl(const std::string& url)
+    std::string anonymizeUrl(const std::string& url, const std::uint64_t nAnonymizationSalt)
     {
         std::string base;
         std::string filename;
@@ -735,7 +791,143 @@ namespace Util
         std::string params;
         std::tie(base, filename, ext, params) = Util::splitUrl(url);
 
-        return base + Util::anonymize(filename) + ext + params;
+        return base + Util::anonymize(filename, nAnonymizationSalt) + ext + params;
+    }
+
+    std::string getHttpTimeNow()
+    {
+        char time_now[64];
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+        std::tm now_tm = *std::gmtime(&now_c);
+        strftime(time_now, sizeof(time_now), "%a, %d %b %Y %T", &now_tm);
+
+        return time_now;
+    }
+
+    std::string getHttpTime(std::chrono::system_clock::time_point time)
+    {
+        char http_time[64];
+        std::time_t time_c = std::chrono::system_clock::to_time_t(time);
+        std::tm time_tm = *std::gmtime(&time_c);
+        strftime(http_time, sizeof(http_time), "%a, %d %b %Y %T", &time_tm);
+
+        return http_time;
+    }
+
+    size_t findInVector(const std::vector<char>& tokens, const char *cstring)
+    {
+        assert(cstring);
+        for (size_t i = 0; i < tokens.size(); ++i)
+        {
+            size_t j;
+            for (j = 0; i + j < tokens.size() && cstring[j] != '\0' && tokens[i + j] == cstring[j]; ++j)
+                ;
+            if (cstring[j] == '\0')
+                return i;
+        }
+        return std::string::npos;
+    }
+
+    std::chrono::system_clock::time_point getFileTimestamp(std::string str_path)
+    {
+        struct stat file;
+        stat(str_path.c_str(), &file);
+        std::chrono::seconds ns{file.st_mtime};
+        std::chrono::system_clock::time_point mod_time_point{ns};
+
+        return mod_time_point;
+    }
+
+    std::string getIso8601FracformatTime(std::chrono::system_clock::time_point time){
+        char time_modified[64];
+        std::time_t lastModified_us_t = std::chrono::system_clock::to_time_t(time);
+        std::tm lastModified_tm = *std::gmtime(&lastModified_us_t);
+        strftime(time_modified, sizeof(time_modified), "%FT%T.", &lastModified_tm);
+
+        auto lastModified_s = std::chrono::time_point_cast<std::chrono::seconds>(time);
+
+        std::ostringstream oss;
+        oss << std::setfill('0')
+            << time_modified
+            << std::setw(6)
+            << (time - lastModified_s).count() / 1000
+            << "Z";
+
+        return oss.str();
+    }
+
+    std::string time_point_to_iso8601(std::chrono::system_clock::time_point tp)
+    {
+        const std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+        std::tm tm;
+        gmtime_r(&tt, &tm);
+
+        std::ostringstream oss;
+        oss << tm.tm_year + 1900 << '-' << std::setfill('0') << std::setw(2) << tm.tm_mon + 1 << '-'
+            << std::setfill('0') << std::setw(2) << tm.tm_mday << 'T';
+        oss << std::setfill('0') << std::setw(2) << tm.tm_hour << ':';
+        oss << std::setfill('0') << std::setw(2) << tm.tm_min << ':';
+        const std::chrono::duration<double> sec
+            = tp - std::chrono::system_clock::from_time_t(tt) + std::chrono::seconds(tm.tm_sec);
+        if (sec.count() < 10)
+            oss << '0';
+        oss << std::fixed << sec.count() << 'Z';
+
+        return oss.str();
+    }
+
+    std::chrono::system_clock::time_point iso8601ToTimestamp(const std::string& iso8601Time,
+                                                             const std::string& logName)
+    {
+        std::chrono::system_clock::time_point timestamp;
+        std::tm tm;
+        const char* cstr = iso8601Time.c_str();
+        const char* trailing;
+        if (!(trailing = strptime(cstr, "%Y-%m-%dT%H:%M:%S", &tm)))
+        {
+            LOG_WRN(logName << " [" << iso8601Time << "] is in invalid format."
+                            << "Returning " << timestamp.time_since_epoch().count());
+            return timestamp;
+        }
+
+        timestamp += std::chrono::seconds(timegm(&tm));
+        if (trailing[0] == '\0')
+            return timestamp;
+
+        if (trailing[0] != '.')
+        {
+            LOG_WRN(logName << " [" << iso8601Time << "] is in invalid format."
+                            << ". Returning " << timestamp.time_since_epoch().count());
+            return timestamp;
+        }
+
+        char* end = nullptr;
+        const size_t us = strtoul(trailing + 1, &end, 10); // Skip the '.' and read as integer.
+        const std::size_t seconds_us = us * std::chrono::system_clock::period::den
+                                       / std::chrono::system_clock::period::num / 1000000;
+
+        timestamp += std::chrono::system_clock::duration(seconds_us);
+
+        return timestamp;
+    }
+
+    std::string getSteadyClockAsString(const std::chrono::steady_clock::time_point &time)
+    {
+        auto now = std::chrono::steady_clock::now();
+        const std::time_t t = std::chrono::system_clock::to_time_t(
+            std::chrono::time_point_cast<std::chrono::seconds>(
+                std::chrono::system_clock::now() + (time - now)));
+        return std::ctime(&t);
+    }
+
+    bool isFuzzing()
+    {
+#if LIBFUZZER
+        return true;
+#else
+        return false;
+#endif
     }
 }
 

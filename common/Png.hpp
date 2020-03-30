@@ -138,17 +138,22 @@ inline bool impl_encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size
         return false;
     }
 
-#ifdef MOBILEAPP
+#if MOBILEAPP
     png_set_compression_level(png_ptr, Z_BEST_SPEED);
 #else
-    png_set_compression_level(png_ptr, 1);
+    // Level 4 gives virtually identical compression
+    // ratio to level 6, but is between 5-10% faster.
+    // Level 3 runs almost twice as fast, but the
+    // output is typically 2-3x larger.
+    png_set_compression_level(png_ptr, 4);
 #endif
 
 #ifdef IOS
     auto initialSize = output.size();
 #endif
 
-    png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     png_set_write_fn(png_ptr, &output, user_write_fn, user_flush_fn);
     png_set_write_status_fn(png_ptr, user_write_status_fn);
@@ -207,7 +212,7 @@ inline bool encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t st
         ++nCalls;
         LOG_TRC("PNG compression took "
                 << duration << " ms (" << output.size() << " bytes). Average after " << nCalls
-                << " calls: " << (totalDuration / static_cast<double>(nCalls)));
+                << " calls: " << (totalDuration / static_cast<double>(nCalls)) << " ms.");
     }
 
     return res;

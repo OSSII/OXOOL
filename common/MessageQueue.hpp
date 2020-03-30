@@ -79,6 +79,22 @@ public:
         return get_impl();
     }
 
+    /// Get a message without waiting
+    Payload pop()
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        if (_queue.empty())
+            return Payload();
+        return get_impl();
+    }
+
+    /// Anything in the queue ?
+    bool isEmpty()
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        return _queue.empty();
+    }
+
     /// Thread safe removal of all the pending messages.
     void clear()
     {
@@ -125,7 +141,6 @@ private:
     std::vector<Payload> _queue;
     mutable std::mutex _mutex;
     std::condition_variable _cv;
-
 };
 
 typedef MessageQueueBase<std::vector<char>> MessageQueue;

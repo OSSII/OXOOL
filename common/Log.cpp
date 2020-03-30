@@ -24,6 +24,7 @@
 #include <sstream>
 #include <string>
 
+#include <Poco/AutoPtr.h>
 #include <Poco/ConsoleChannel.h>
 #include <Poco/DateTimeFormatter.h>
 #include <Poco/FileChannel.h>
@@ -31,7 +32,6 @@
 #include <Poco/PatternFormatter.h>
 #include <Poco/Process.h>
 #include <Poco/SplitterChannel.h>
-#include <Poco/Thread.h>
 #include <Poco/Timestamp.h>
 
 #include "Log.hpp"
@@ -45,11 +45,13 @@ namespace Log
     struct StaticNameHelper
     {
     private:
-        std::atomic<bool> _inited;
+        Poco::Logger* _logger;
         std::string _name;
         std::string _id;
+        std::atomic<bool> _inited;
     public:
         StaticNameHelper() :
+            _logger(nullptr),
             _inited(true)
         {
         }
@@ -67,8 +69,12 @@ namespace Log
         void setName(const std::string& name) { _name = name; }
 
         const std::string& getName() const { return _name; }
+
+        void setLogger(Poco::Logger* logger) { _logger = logger; };
+        Poco::Logger* getLogger() { return _logger; }
     };
     static StaticNameHelper Source;
+    bool IsShutdown = false;
 
     // We need a signal safe means of writing messages
     //   $ man 7 signal
@@ -77,7 +83,7 @@ namespace Log
         while (true)
         {
             const int length = std::strlen(message);
-            const int written = write (STDERR_FILENO, message, length);
+            const int written = write(STDERR_FILENO, message, length);
             if (written < 0)
             {
                 if (errno == EINTR)
@@ -110,12 +116,10 @@ namespace Log
     char* prefix(char* buffer, const std::size_t len, const char* level)
     {
         const char *threadName = Util::getThreadName();
+        Poco::DateTime time;
 #ifdef __linux
         const long osTid = Util::getThreadId();
-#elif defined IOS
-        const auto osTid = pthread_mach_thread_np(pthread_self());
-#endif
-        Poco::DateTime time;
+        // Note that snprintf is deemed signal-safe in most common implementations.
         snprintf(buffer, len, "%s-%.05lu %.4u-%.2u-%.2u %.2u:%.2u:%.2u.%.6u [ %s ] %s  ",
                     (Source.getInited() ? Source.getId().c_str() : "<shutdown>"),
                     osTid,
@@ -123,6 +127,17 @@ namespace Log
                     time.hour(), time.minute(), time.second(),
                     time.millisecond() * 1000 + time.microsecond(),
                     threadName, level);
+#elif defined IOS
+        uint64_t osTid;
+        pthread_threadid_np(nullptr, &osTid);
+        snprintf(buffer, len, "%s-%#.05llx %.4u-%.2u-%.2u %.2u:%.2u:%.2u.%.6u [ %s ] %s  ",
+                    (Source.getInited() ? Source.getId().c_str() : "<shutdown>"),
+                    osTid,
+                    time.year(), time.month(), time.day(),
+                    time.hour(), time.minute(), time.second(),
+                    time.millisecond() * 1000 + time.microsecond(),
+                    threadName, level);
+#endif
         return buffer;
     }
 
@@ -142,9 +157,9 @@ namespace Log
         Source.setName(name);
         std::ostringstream oss;
         oss << Source.getName();
-#ifndef MOBILEAPP // Just one process in a mobile app, the pid is uninteresting.
+#if !MOBILEAPP // Just one process in a mobile app, the pid is uninteresting.
         oss << '-'
-            << std::setw(5) << std::setfill('0') << Poco::Process::id();
+            << std::setw(5) << std::setfill('0') << getpid();
 #endif
         Source.setId(oss.str());
 
@@ -153,7 +168,7 @@ namespace Log
 
         if (logToFile)
         {
-            channel = static_cast<Poco::Channel*>(new FileChannel("oxoolwsd.log"));
+            channel = static_cast<Poco::Channel*>(new FileChannel("loolwsd.log"));
             for (const auto& pair : config)
             {
                 channel->setProperty(pair.first, pair.second);
@@ -175,6 +190,7 @@ namespace Log
          * */
         channel->open();
         auto& logger = Poco::Logger::create(Source.getName(), channel, Poco::Message::PRIO_TRACE);
+        Source.setLogger(&logger);
 
         logger.setLevel(logLevel.empty() ? std::string("trace") : logLevel);
 
@@ -197,18 +213,24 @@ namespace Log
 
     Poco::Logger& logger()
     {
-        return Poco::Logger::get(Source.getInited() ? Source.getName() : std::string());
+        Poco::Logger* pLogger = Source.getLogger();
+        return pLogger ? *pLogger
+                       : Poco::Logger::get(Source.getInited() ? Source.getName() : std::string());
     }
 
     void shutdown()
     {
-        logger().shutdown();
+#if !MOBILEAPP
+        IsShutdown = true;
+
+        Poco::Logger::shutdown();
 
         // Flush
         std::flush(std::cout);
         fflush(stdout);
         std::flush(std::cerr);
         fflush(stderr);
+#endif
     }
 }
 

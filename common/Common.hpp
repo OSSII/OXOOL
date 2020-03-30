@@ -7,12 +7,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <string>
+
 // Default values and other shared data between processes.
 #ifndef INCLUDED_COMMON_HPP
 #define INCLUDED_COMMON_HPP
 
 constexpr int DEFAULT_CLIENT_PORT_NUMBER = 9980;
-constexpr int DEFAULT_MASTER_PORT_NUMBER = 9981;
 
 constexpr int COMMAND_TIMEOUT_MS = 5000;
 constexpr int CHILD_TIMEOUT_MS = COMMAND_TIMEOUT_MS;
@@ -39,14 +40,14 @@ constexpr const char LO_JAIL_SUBPATH[] = "lo";
 constexpr const char CAPABILITIES_END_POINT[] = "/hosting/capabilities";
 
 /// The HTTP response User-Agent.
-constexpr const char* HTTP_AGENT_STRING = "LOOLWSD HTTP Agent " LOOLWSD_VERSION;
+#define HTTP_AGENT_STRING "LOOLWSD HTTP Agent " LOOLWSD_VERSION
 
 /// The WOPI User-Agent.
-constexpr const char* WOPI_AGENT_STRING = "LOOLWSD WOPI Agent " LOOLWSD_VERSION;
+#define WOPI_AGENT_STRING "LOOLWSD WOPI Agent " LOOLWSD_VERSION
 
 // The client port number, both loolwsd and the kits have this.
 extern int ClientPortNumber;
-extern int MasterPortNumber;
+extern std::string MasterLocation;
 
 #endif
 

@@ -138,15 +138,20 @@ public:
         return *Global;
     }
 
+    static std::string getUnitLibPath() { return std::string(UnitLibPath); }
+
 private:
-    void setHandle(void *dlHandle) { _dlHandle = dlHandle; }
+    void setHandle(void *dlHandle)
+    {
+        _dlHandle = dlHandle;
+    }
     static UnitBase *linkAndCreateUnit(UnitType type, const std::string& unitLibPath);
 
     void *_dlHandle;
+    static char *UnitLibPath;
     bool _setRetValue;
     int _retValue;
     int _timeoutMilliSeconds;
-    std::atomic<bool> _timeoutShutdown;
     static UnitBase *Global;
     UnitType _type;
 };
@@ -196,15 +201,6 @@ public:
     {
         return false;
     }
-    /// Intercept incoming requests, so unit tests can silently communicate
-    virtual bool filterHandleRequest(
-        TestRequest /* type */,
-        SocketDisposition & /* disposition */,
-        WebSocketHandler & /* handler */)
-    {
-        return false;
-    }
-
     /// Child sent a message
     virtual bool filterChildMessage(const std::vector<char>& /* payload */)
     {
@@ -214,7 +210,8 @@ public:
     // ---------------- TileCache hooks ----------------
     /// Called before the lookupTile call returns. Should always be called to fire events.
     virtual void lookupTile(int part, int width, int height, int tilePosX, int tilePosY,
-                            int tileWidth, int tileHeight, std::unique_ptr<std::fstream>& cacheFile);
+                            int tileWidth, int tileHeight,
+                            std::shared_ptr<std::vector<char>> &tile);
 
     // ---------------- DocumentBroker hooks ----------------
     virtual bool filterLoad(const std::string& /* sessionId */,
@@ -226,6 +223,12 @@ public:
 
     /// To force the save operation being handled as auto-save from a unit test.
     virtual bool isAutosave()
+    {
+        return false;
+    }
+
+    /// hook and allow through clipboard authentication
+    virtual bool filterClipboardAuth(const std::string & /* serverId */, const std::string &/* tag */)
     {
         return false;
     }
@@ -257,7 +260,10 @@ public:
     virtual ~UnitKit();
     static UnitKit& get()
     {
-        assert(Global && Global->_type == UnitType::Kit);
+        assert(Global);
+#if !MOBILEAPP && !defined(KIT_IN_PROCESS)
+        assert(Global->_type == UnitType::Kit);
+#endif
         return *static_cast<UnitKit *>(Global);
     }
 
@@ -276,6 +282,12 @@ public:
 
     /// Kit got a message
     virtual bool filterKitMessage(WebSocketHandler *, std::string &/* message */ )
+    {
+        return false;
+    }
+
+    /// LOKit (and some synthetic internal) callbacks
+    virtual bool filterLoKitCallback(const int /* type */, const std::string& /* payload */)
     {
         return false;
     }

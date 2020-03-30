@@ -27,7 +27,17 @@
 #include <mutex>
 #include <string>
 
-#include <Poco/TemporaryFile.h>
+#if HAVE_STD_FILESYSTEM
+# if HAVE_STD_FILESYSTEM_EXPERIMENTAL
+#  include <experimental/filesystem>
+namespace filesystem = ::std::experimental::filesystem;
+# else
+#  include <filesystem>
+namespace filesystem = ::std::filesystem;
+# endif
+#else
+# include <Poco/TemporaryFile.h>
+#endif
 
 #include "Log.hpp"
 #include "Util.hpp"
@@ -37,9 +47,32 @@ namespace
 {
     void alertAllUsersAndLog(const std::string& message, const std::string& cmd, const std::string& kind)
     {
-        LOG_ERR(message << " " << cmd << " " << kind);
-        //Util::alertAllUsers(cmd, kind);
+        LOG_ERR(message);
+        Util::alertAllUsers(cmd, kind);
     }
+
+#if HAVE_STD_FILESYSTEM
+/// Class to delete files when the process ends.
+class FileDeleter
+{
+    std::vector<std::string> _filesToDelete;
+    std::mutex _lock;
+public:
+    FileDeleter() {}
+    ~FileDeleter()
+    {
+        std::unique_lock<std::mutex> guard(_lock);
+        for (const std::string& file: _filesToDelete)
+            filesystem::remove(file);
+    }
+
+    void registerForDeletion(const std::string& file)
+    {
+        std::unique_lock<std::mutex> guard(_lock);
+        _filesToDelete.push_back(file);
+    }
+};
+#endif
 }
 
 namespace FileUtil
@@ -47,23 +80,105 @@ namespace FileUtil
     std::string createRandomDir(const std::string& path)
     {
         const std::string name = Util::rng::getFilename(64);
+#if HAVE_STD_FILESYSTEM
+        filesystem::create_directory(path + '/' + name);
+#else
         Poco::File(Poco::Path(path, name)).createDirectories();
+#endif
         return name;
+    }
+
+    void copyFileTo(const std::string &fromPath, const std::string &toPath)
+    {
+        int from = -1, to = -1;
+        try {
+            from = open(fromPath.c_str(), O_RDONLY);
+            if (from < 0)
+            {
+                LOG_SYS("Failed to open src " << anonymizeUrl(fromPath));
+                throw;
+            }
+
+            struct stat st;
+            if (fstat(from, &st) != 0)
+            {
+                LOG_SYS("Failed to fstat src " << anonymizeUrl(fromPath));
+                throw;
+            }
+
+            to = open(toPath.c_str(), O_CREAT | O_TRUNC | O_WRONLY, st.st_mode);
+            if (to < 0)
+            {
+                LOG_SYS("Failed to fstat dest " << anonymizeUrl(toPath));
+                throw;
+            }
+
+            LOG_INF("Copying " << st.st_size << " bytes from " << anonymizeUrl(fromPath) << " to " << anonymizeUrl(toPath));
+
+            char buffer[64 * 1024];
+
+            int n;
+            off_t bytesIn = 0;
+            do {
+                while ((n = ::read(from, buffer, sizeof(buffer))) < 0 && errno == EINTR)
+                    LOG_TRC("EINTR reading from " << anonymizeUrl(fromPath));
+                if (n < 0)
+                {
+                    LOG_SYS("Failed to read from " << anonymizeUrl(fromPath) << " at " << bytesIn << " bytes in");
+                    throw;
+                }
+                bytesIn += n;
+                if (n == 0) // EOF
+                    break;
+                assert (off_t(sizeof (buffer)) >= n);
+                // Handle short writes and EINTR
+                for (int j = 0; j < n;)
+                {
+                    int written;
+                    while ((written = ::write(to, buffer + j, n - j)) < 0 && errno == EINTR)
+                        LOG_TRC("EINTR writing to " << anonymizeUrl(toPath));
+                    if (written < 0)
+                    {
+                        LOG_SYS("Failed to write " << n << " bytes to " << anonymizeUrl(toPath) << " at " <<
+                                bytesIn << " bytes into " << anonymizeUrl(fromPath));
+                        throw;
+                    }
+                    j += written;
+                }
+            } while(true);
+            if (bytesIn != st.st_size)
+            {
+                LOG_WRN("Unusual: file " << anonymizeUrl(fromPath) << " changed size "
+                        "during copy from " << st.st_size << " to " << bytesIn);
+            }
+        }
+        catch (...)
+        {
+            LOG_SYS("Failed to copy from " << anonymizeUrl(fromPath) << " to " << anonymizeUrl(toPath));
+            close(from);
+            close(to);
+            unlink(toPath.c_str());
+            throw Poco::Exception("failed to copy");
+        }
     }
 
     std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename, const std::string& dstFilenamePrefix)
     {
         const std::string srcPath = srcDir + '/' + srcFilename;
         const std::string dstFilename = dstFilenamePrefix + Util::encodeId(Util::rng::getNext()) + '_' + srcFilename;
-        const std::string dstPath = Poco::Path(Poco::Path::temp(), dstFilename).toString();
-        Poco::File(srcPath).copyTo(dstPath);
-        Poco::TemporaryFile::registerForDeletion(dstPath);
-        return dstPath;
-    }
+#if HAVE_STD_FILESYSTEM
+        const std::string dstPath = filesystem::temp_directory_path() / dstFilename;
+        filesystem::copy(srcPath, dstPath);
 
-    std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename)
-    {
-        return getTempFilePath(srcDir, srcFilename, "");
+        static FileDeleter fileDeleter;
+        fileDeleter.registerForDeletion(dstPath);
+#else
+        const std::string dstPath = Poco::Path(Poco::Path::temp(), dstFilename).toString();
+        copyFileTo(srcPath, dstPath);
+        Poco::TemporaryFile::registerForDeletion(dstPath);
+#endif
+
+        return dstPath;
     }
 
     bool saveDataToFileSafely(const std::string& fileName, const char *data, size_t size)
@@ -121,6 +236,7 @@ namespace FileUtil
         }
     }
 
+#if 1 // !HAVE_STD_FILESYSTEM
     static int nftw_cb(const char *fpath, const struct stat*, int type, struct FTW*)
     {
         if (type == FTW_DP)
@@ -135,9 +251,22 @@ namespace FileUtil
         // Always continue even when things go wrong.
         return 0;
     }
+#endif
 
     void removeFile(const std::string& path, const bool recursive)
     {
+// Amazingly filesystem::remove_all silently fails to work on some
+// systems. No real need to be using experimental API here either.
+#if 0 // HAVE_STD_FILESYSTEM
+        std::error_code ec;
+        if (recursive)
+            filesystem::remove_all(path, ec);
+        else
+            filesystem::remove(path, ec);
+
+        // Already removed or we don't care about failures.
+        (void) ec;
+#else
         try
         {
             struct stat sb;
@@ -156,6 +285,7 @@ namespace FileUtil
         {
             // Already removed or we don't care about failures.
         }
+#endif
     }
 
 
@@ -166,20 +296,25 @@ namespace
 
     struct fs
     {
-        fs(const std::string& p, dev_t d)
-            : path(p), dev(d)
+        fs(const std::string& path, dev_t dev)
+            : _path(path), _dev(dev)
         {
         }
 
-        std::string path;
-        dev_t dev;
+        const std::string& getPath() const { return _path; }
+
+        dev_t getDev() const { return _dev; }
+
+    private:
+        std::string _path;
+        dev_t _dev;
     };
 
     struct fsComparator
     {
         bool operator() (const fs& lhs, const fs& rhs) const
         {
-            return (lhs.dev < rhs.dev);
+            return (lhs.getDev() < rhs.getDev());
         }
     };
 
@@ -190,7 +325,7 @@ namespace
 
 namespace FileUtil
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     void registerFileSystemForDiskSpaceChecks(const std::string& path)
     {
         const std::string::size_type lastSlash = path.rfind('/');
@@ -226,9 +361,9 @@ namespace FileUtil
 
         for (const auto& i: filesystems)
         {
-            if (!checkDiskSpace(i.path))
+            if (!checkDiskSpace(i.getPath()))
             {
-                return i.path;
+                return i.getPath();
             }
         }
 
@@ -240,14 +375,19 @@ namespace FileUtil
     {
         assert(!path.empty());
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         bool hookResult;
         if (UnitBase::get().filterCheckDiskSpace(path, hookResult))
             return hookResult;
 #endif
 
-        // we should be able to run just OK with 5GB
-        constexpr int64_t ENOUGH_SPACE = int64_t(5)*1024*1024*1024;
+        // we should be able to run just OK with 5GB for production or 1GB for development
+#if ENABLE_DEBUG
+        const int64_t gb(1);
+#else
+        const int64_t gb(5);
+#endif
+        constexpr int64_t ENOUGH_SPACE = gb*1024*1024*1024;
 
 #ifdef __linux
         struct statfs sfs;
@@ -277,6 +417,30 @@ namespace FileUtil
 #endif
 
         return true;
+    }
+
+    namespace {
+        bool AnonymizeUserData = false;
+        std::uint64_t AnonymizationSalt = 82589933;
+    }
+
+    void setUrlAnonymization(bool anonymize, const std::uint64_t salt)
+    {
+        AnonymizeUserData = anonymize;
+        AnonymizationSalt = salt;
+    }
+
+    /// Anonymize the basename of filenames, preserving the path and extension.
+    std::string anonymizeUrl(const std::string& url)
+    {
+        return AnonymizeUserData ? Util::anonymizeUrl(url, AnonymizationSalt) : url;
+    }
+
+    /// Anonymize user names and IDs.
+    /// Will use the Obfuscated User ID if one is provied via WOPI.
+    std::string anonymizeUsername(const std::string& username)
+    {
+        return AnonymizeUserData ? Util::anonymize(username, AnonymizationSalt) : username;
     }
 
 } // namespace FileUtil

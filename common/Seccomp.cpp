@@ -42,7 +42,16 @@
 
 #if defined(__x86_64__)
 #  define AUDIT_ARCH_NR AUDIT_ARCH_X86_64
-#  define REG_SYSCALL   REG_RAX
+#  define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.gregs[(_reg)])
+#  define SECCOMP_SYSCALL(_ctx)   SECCOMP_REG(_ctx, REG_RAX)
+#elif defined(__aarch64__)
+#  define AUDIT_ARCH_NR AUDIT_ARCH_AARCH64
+#  define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.regs[_reg])
+#  define SECCOMP_SYSCALL(_ctx)   SECCOMP_REG(_ctx, 8)
+#elif defined(__arm__)
+#  define AUDIT_ARCH_NR AUDIT_ARCH_ARM
+#  define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.arm_##_reg)
+#  define SECCOMP_SYSCALL(_ctx)   SECCOMP_REG(_ctx, r7)
 #else
 #  error "Platform does not support seccomp filtering yet - unsafe."
 #endif
@@ -65,7 +74,7 @@ static void handleSysSignal(int /* signal */,
 	if (info->si_code != SYS_SECCOMP || !uctx)
 		return;
 
-	unsigned int syscall = uctx->uc_mcontext.gregs[REG_SYSCALL];
+    unsigned int syscall = SECCOMP_SYSCALL (uctx);
 
     Log::signalLogPrefix();
     Log::signalLog(" seccomp trapped signal, un-authorized sys-call: ");
@@ -92,9 +101,12 @@ bool lockdown(Type type)
         BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, __NR_##name, 0, 1), \
         BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ALLOW)
 
-    #define KILL_SYSCALL(name) \
-        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, __NR_##name, 0, 1), \
+    #define KILL_SYSCALL_FULL(fullname) \
+        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, fullname, 0, 1), \
         BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_TRAP)
+
+    #define KILL_SYSCALL(name) \
+        KILL_SYSCALL_FULL(__NR_##name)
 
     struct sock_filter filterCode[] = {
         // Check our architecture is correct.
@@ -102,7 +114,7 @@ bool lockdown(Type type)
         BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, AUDIT_ARCH_NR, 1, 0),
         BPF_STMT(BPF_RET+BPF_K,         SECCOMP_RET_KILL),
 
-        // Load sycall number
+        // Load syscall number
         BPF_STMT(BPF_LD+BPF_W+BPF_ABS,  offsetof(struct seccomp_data, nr)),
 
         // First white-list the syscalls we frequently use.
@@ -111,9 +123,17 @@ bool lockdown(Type type)
         ACCEPT_SYSCALL(futex),
 
         // glibc's 'poll' has to answer for this lot:
+#if !defined(__NR_epoll_wait) && defined(__NR_epoll_pwait)
+        ACCEPT_SYSCALL(epoll_pwait),
+#else
         ACCEPT_SYSCALL(epoll_wait),
+#endif
         ACCEPT_SYSCALL(epoll_ctl),
+#if !defined(__NR_epoll_create) && defined(__NR_epoll_create1)
+        ACCEPT_SYSCALL(epoll_create1),
+#else
         ACCEPT_SYSCALL(epoll_create),
+#endif
         ACCEPT_SYSCALL(close),
         ACCEPT_SYSCALL(nanosleep),
 
@@ -142,10 +162,17 @@ bool lockdown(Type type)
         KILL_SYSCALL(shmctl),
         KILL_SYSCALL(ptrace), // tracing
         KILL_SYSCALL(capset),
+#ifdef __NR_uselib
         KILL_SYSCALL(uselib),
+#endif
         KILL_SYSCALL(personality), // !
         KILL_SYSCALL(vhangup),
+#ifdef __NR_modify_ldt
         KILL_SYSCALL(modify_ldt), // !
+#endif
+#ifdef __PNR_modify_ldt
+        KILL_SYSCALL_FULL(__PNR_modify_ldt), // !
+#endif
         KILL_SYSCALL(pivot_root), // !
         KILL_SYSCALL(chroot),
         KILL_SYSCALL(acct),   // !
@@ -165,7 +192,9 @@ bool lockdown(Type type)
         KILL_SYSCALL(add_key),     // kernel keyring
         KILL_SYSCALL(request_key), // kernel keyring
         KILL_SYSCALL(keyctl),      // kernel keyring
+#ifdef __NR_inotify_init
         KILL_SYSCALL(inotify_init),
+#endif
         KILL_SYSCALL(inotify_add_watch),
         KILL_SYSCALL(inotify_rm_watch),
         KILL_SYSCALL(unshare),
@@ -256,7 +285,7 @@ void setRLimit(rlim_t confLim, int resource, const std::string &resourceText, co
         LOG_INF("Ignored setting " << resourceText << " to " << limTextWithUnit << ".");
 }
 
-bool handleSetrlimitCommand(const std::vector<std::string>& tokens)
+bool handleSetrlimitCommand(const StringVector& tokens)
 {
     if (tokens.size() == 3 && tokens[0] == "setconfig")
     {

@@ -13,6 +13,7 @@
 #include <atomic>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "Protocol.hpp"
 #include "Log.hpp"
@@ -79,11 +80,11 @@ public:
     size_t size() const { return _data.size(); }
     const std::vector<char>& data() const { return _data; }
 
-    const std::vector<std::string>& tokens() const { return _tokens; }
+    const StringVector& tokens() const { return _tokens; }
     const std::string& forwardToken() const { return _forwardToken; }
-    const std::string& firstToken() const { return _tokens[0]; }
+    std::string firstToken() const { return _tokens[0]; }
     const std::string& firstLine() const { return _firstLine; }
-    const std::string& operator[](size_t index) const { return _tokens[index]; }
+    std::string operator[](size_t index) const { return _tokens[index]; }
 
     bool getTokenInteger(const std::string& name, int& value)
     {
@@ -116,6 +117,18 @@ public:
 
     /// Returns true if and only if the payload is considered Binary.
     bool isBinary() const { return _type == Type::Binary; }
+
+    /// Allows some in-line re-writing of the message
+    void rewriteDataBody(std::function<bool (std::vector<char> &)> func)
+    {
+        if (func(_data))
+        {
+            // Check - just the body.
+            assert(_firstLine == LOOLProtocol::getFirstLine(_data.data(), _data.size()));
+            assert(_abbr == _id + ' ' + LOOLProtocol::getAbbreviatedMessage(_data.data(), _data.size()));
+            assert(_type == detectType());
+        }
+    }
 
 private:
 
@@ -164,7 +177,7 @@ private:
 private:
     const std::string _forwardToken;
     std::vector<char> _data;
-    const std::vector<std::string> _tokens;
+    const StringVector _tokens;
     const std::string _id;
     const std::string _firstLine;
     const std::string _abbr;

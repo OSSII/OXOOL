@@ -15,9 +15,10 @@
 #include <cassert>
 #include <dlfcn.h>
 #include <fstream>
+#include <sysexits.h>
+#include <thread>
 
-#include <Poco/Thread.h>
-#include <Poco/Util/Application.h>
+#include <Poco/Util/LayeredConfiguration.h>
 
 #include "Log.hpp"
 #include "Util.hpp"
@@ -25,18 +26,23 @@
 #include <common/SigUtil.hpp>
 
 UnitBase *UnitBase::Global = nullptr;
-
-static Poco::Thread TimeoutThread("unit timeout");
+char * UnitBase::UnitLibPath;
+static std::thread TimeoutThread;
+static std::atomic<bool> TimeoutThreadRunning(false);
+std::timed_mutex TimeoutThreadMutex;
 
 UnitBase *UnitBase::linkAndCreateUnit(UnitType type, const std::string &unitLibPath)
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     void *dlHandle = dlopen(unitLibPath.c_str(), RTLD_GLOBAL|RTLD_NOW);
     if (!dlHandle)
     {
         LOG_ERR("Failed to load " << unitLibPath << ": " << dlerror());
         return nullptr;
     }
+
+    // avoid std:string de-allocation during failure / exit.
+    UnitLibPath = strdup(unitLibPath.c_str());
 
     const char *symbol = nullptr;
     switch (type)
@@ -68,19 +74,35 @@ UnitBase *UnitBase::linkAndCreateUnit(UnitType type, const std::string &unitLibP
 
 bool UnitBase::init(UnitType type, const std::string &unitLibPath)
 {
+#if !MOBILEAPP
     assert(!Global);
+#else
+    // The LOOLWSD initialization is called in a loop on mobile, allow reuse
+    if (Global)
+        return true;
+#endif
+
     if (!unitLibPath.empty())
     {
         Global = linkAndCreateUnit(type, unitLibPath);
         if (Global && type == UnitType::Kit)
         {
-            TimeoutThread.startFunc([](){
-                    Poco::Thread::trySleep(Global->_timeoutMilliSeconds);
-                    if (!Global->_timeoutShutdown)
+            TimeoutThreadMutex.lock();
+            TimeoutThread = std::thread([]{
+                    TimeoutThreadRunning = true;
+                    Util::setThreadName("unit timeout");
+
+                    if (TimeoutThreadMutex.try_lock_for(std::chrono::milliseconds(Global->_timeoutMilliSeconds)))
+                    {
+                        LOG_DBG("Unit test finished in time");
+                        TimeoutThreadMutex.unlock();
+                    }
+                    else
                     {
                         LOG_ERR("Unit test timeout");
                         Global->timeout();
                     }
+                    TimeoutThreadRunning = false;
                 });
         }
     }
@@ -113,7 +135,7 @@ bool UnitBase::isUnitTesting()
 
 void UnitBase::setTimeout(int timeoutMilliSeconds)
 {
-    assert(!TimeoutThread.isRunning());
+    assert(!TimeoutThreadRunning);
     _timeoutMilliSeconds = timeoutMilliSeconds;
 }
 
@@ -122,7 +144,6 @@ UnitBase::UnitBase()
       _setRetValue(false),
       _retValue(0),
       _timeoutMilliSeconds(30 * 1000),
-      _timeoutShutdown(false),
       _type(UnitType::Wsd)
 {
 }
@@ -155,20 +176,16 @@ void UnitWSD::configure(Poco::Util::LayeredConfiguration &config)
         // Force console output - easier to debug.
         config.setBool("logging.file[@enable]", false);
     }
-    // else - a product run.
 }
 
 void UnitWSD::lookupTile(int part, int width, int height, int tilePosX, int tilePosY,
-                         int tileWidth, int tileHeight, std::unique_ptr<std::fstream>& cacheFile)
+                         int tileWidth, int tileHeight,
+                         std::shared_ptr<std::vector<char>> &tile)
 {
-    if (cacheFile && cacheFile->is_open())
-    {
+    if (tile)
         onTileCacheHit(part, width, height, tilePosX, tilePosY, tileWidth, tileHeight);
-    }
     else
-    {
         onTileCacheMiss(part, width, height, tilePosX, tilePosY, tileWidth, tileHeight);
-    }
 }
 
 UnitKit::UnitKit()
@@ -181,12 +198,17 @@ UnitKit::~UnitKit()
 
 void UnitBase::exitTest(TestResult result)
 {
-    LOG_INF("exitTest: " << (int)result << ". Flagging for termination.");
+    if (_setRetValue)
+    {
+        return;
+    }
+
+    LOG_INF("exitTest: " << (int)result << ". Flagging to shutdown.");
     _setRetValue = true;
-    _retValue = result == TestResult::Ok ?
-        Poco::Util::Application::EXIT_OK :
-        Poco::Util::Application::EXIT_SOFTWARE;
-    TerminationFlag = true;
+    _retValue = result == TestResult::Ok ? EX_OK : EX_SOFTWARE;
+#if !MOBILEAPP
+    SigUtil::requestShutdown();
+#endif
     SocketPoll::wakeupWorld();
 }
 
@@ -204,9 +226,10 @@ void UnitBase::returnValue(int &retValue)
     if (_setRetValue)
         retValue = _retValue;
 
-    _timeoutShutdown = true;
-    TimeoutThread.wakeUp();
-    TimeoutThread.join();
+    // tell the timeout thread that the work has finished
+    TimeoutThreadMutex.unlock();
+    if (TimeoutThread.joinable())
+        TimeoutThread.join();
 
     delete Global;
     Global = nullptr;
