@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <numeric>
+#include <sysexits.h>
 #include <thread>
 
 #include <Poco/Net/HTTPRequest.h>
@@ -33,6 +34,8 @@
 #include <TraceFile.hpp>
 #include <test/helpers.hpp>
 
+int ClientPortNumber = DEFAULT_CLIENT_PORT_NUMBER;
+
 /// Stress testing and performance/scalability benchmarking tool.
 class Stress: public Poco::Util::Application
 {
@@ -42,6 +45,7 @@ public:
     static bool Benchmark;
     static size_t Iterations;
     static bool NoDelay;
+private:
     unsigned _numClients;
     std::string _serverURI;
 
@@ -191,7 +195,7 @@ private:
 
         static std::atomic<unsigned> SessionId;
         const size_t sessionId = ++SessionId;
-        std::shared_ptr<Connection> connection = Connection::create(_serverUri, _uri, std::to_string(sessionId));
+        std::shared_ptr<Connection> connection = Connection::create(getServerUri(), getUri(), std::to_string(sessionId));
 
         connection->load();
 
@@ -257,7 +261,7 @@ void Stress::handleOption(const std::string& optionName,
         helpFormatter.setUsage("OPTIONS");
         helpFormatter.setHeader("LibreOffice Online tool.");
         helpFormatter.format(std::cerr);
-        std::exit(Application::EXIT_OK);
+        std::exit(EX_OK);
     }
     else if (optionName == "bench")
         Stress::Benchmark = true;
@@ -282,10 +286,10 @@ int Stress::main(const std::vector<std::string>& args)
 
     if (args.size() == 0)
     {
-        std::cerr << "Usage: oxoolstress [--bench] <tracefile | url> " << std::endl;
+        std::cerr << "Usage: loolstress [--bench] <tracefile | url> " << std::endl;
         std::cerr << "       Trace files may be plain text or gzipped (with .gz extension)." << std::endl;
         std::cerr << "       --help for full arguments list." << std::endl;
-        return Application::EXIT_NOINPUT;
+        return EX_NOINPUT;
     }
 
     std::vector<std::shared_ptr<Worker>> workers;
@@ -346,7 +350,7 @@ int Stress::main(const std::vector<std::string>& args)
         }
     }
 
-    return Application::EXIT_OK;
+    return EX_OK;
 }
 
 POCO_APP_MAIN(Stress)

@@ -12,6 +12,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <sysexits.h>
 #include <termios.h>
 
 #include <openssl/rand.h>
@@ -46,9 +47,18 @@ public:
 
 struct AdminConfig
 {
-    unsigned pwdSaltLength = 128;
-    unsigned pwdIterations = 10000;
-    unsigned pwdHashLength = 128;
+private:
+    unsigned _pwdSaltLength = 128;
+    unsigned _pwdIterations = 10000;
+    unsigned _pwdHashLength = 128;
+public:
+
+    void setPwdSaltLength(unsigned pwdSaltLength) { _pwdSaltLength = pwdSaltLength; }
+    unsigned getPwdSaltLength() const { return _pwdSaltLength; }
+    void setPwdIterations(unsigned pwdIterations) { _pwdIterations = pwdIterations; }
+    unsigned getPwdIterations() const { return _pwdIterations; }
+    void setPwdHashLength(unsigned pwdHashLength) { _pwdHashLength = pwdHashLength; }
+    unsigned getPwdHashLength() const { return _pwdHashLength; }
 };
 
 // Config tool to change loolwsd configuration (loolwsd.xml)
@@ -65,6 +75,8 @@ public:
     static std::string ConfigFile;
     static std::string SupportKeyString;
     static bool SupportKeyStringProvided;
+    static std::uint64_t AnonymizationSalt;
+    static bool AnonymizationSaltProvided;
 
 protected:
     void defineOptions(OptionSet&) override;
@@ -78,10 +90,12 @@ std::string Config::ConfigFile =
 #else
     LOOLWSD_CONFIGDIR
 #endif
-    "/" PACKAGE_NAME ".xml";
+    "/loolwsd.xml";
 
 std::string Config::SupportKeyString;
 bool Config::SupportKeyStringProvided = false;
+std::uint64_t Config::AnonymizationSalt = 0;
+bool Config::AnonymizationSaltProvided = false;
 
 void Config::displayHelp()
 {
@@ -98,6 +112,7 @@ void Config::displayHelp()
     // Command list
     std::cout << std::endl
               << "Commands: " << std::endl
+              << "    anonymize [string-1]...[string-n]" << std::endl
               << "    set-admin-password" << std::endl
 #if ENABLE_SUPPORT_KEY
               << "    set-support-key" << std::endl
@@ -137,6 +152,11 @@ void Config::defineOptions(OptionSet& optionSet)
                         .repeatable(false)
                         .argument("key"));
 #endif
+
+    optionSet.addOption(Option("anonymization-salt", "", "Anonymize strings with the given 64-bit salt instead of the one in the config file.")
+                        .required(false)
+                        .repeatable(false)
+                        .argument("salt"));
 }
 
 void Config::handleOption(const std::string& optionName, const std::string& optionValue)
@@ -145,7 +165,7 @@ void Config::handleOption(const std::string& optionName, const std::string& opti
     if (optionName == "help")
     {
         displayHelp();
-        std::exit(Application::EXIT_OK);
+        std::exit(EX_OK);
     }
     else if (optionName == "config-file")
     {
@@ -159,7 +179,7 @@ void Config::handleOption(const std::string& optionName, const std::string& opti
             len = MIN_PWD_SALT_LENGTH;
             std::cout << "Password salt length adjusted to minimum " << len << std::endl;
         }
-        _adminConfig.pwdSaltLength = len;
+        _adminConfig.setPwdSaltLength(len);
     }
     else if (optionName == "pwd-iterations")
     {
@@ -169,7 +189,7 @@ void Config::handleOption(const std::string& optionName, const std::string& opti
             len = MIN_PWD_ITERATIONS;
             std::cout << "Password iteration adjusted to minimum " << len << std::endl;
         }
-        _adminConfig.pwdIterations = len;
+        _adminConfig.setPwdIterations(len);
     }
     else if (optionName == "pwd-hash-length")
     {
@@ -179,12 +199,18 @@ void Config::handleOption(const std::string& optionName, const std::string& opti
             len = MIN_PWD_HASH_LENGTH;
             std::cout << "Password hash length adjusted to minimum " << len << std::endl;
         }
-        _adminConfig.pwdHashLength = len;
+        _adminConfig.setPwdHashLength(len);
     }
     else if (optionName == "support-key")
     {
         SupportKeyString = optionValue;
         SupportKeyStringProvided = true;
+    }
+    else if (optionName == "anonymization-salt")
+    {
+        AnonymizationSalt = std::stoull(optionValue);
+        AnonymizationSaltProvided = true;
+        std::cout << "Anonymization Salt: [" << AnonymizationSalt << "]." << std::endl;
     }
 }
 
@@ -194,19 +220,19 @@ int Config::main(const std::vector<std::string>& args)
     {
         std::cerr << "Nothing to do." << std::endl;
         displayHelp();
-        return Application::EXIT_NOINPUT;
+        return EX_NOINPUT;
     }
 
-    int retval = Application::EXIT_OK;
+    int retval = EX_OK;
     bool changed = false;
     _loolConfig.load(ConfigFile);
 
     if (args[0] == "set-admin-password")
     {
 #if HAVE_PKCS5_PBKDF2_HMAC
-        unsigned char pwdhash[_adminConfig.pwdHashLength];
-        unsigned char salt[_adminConfig.pwdSaltLength];
-        RAND_bytes(salt, _adminConfig.pwdSaltLength);
+        unsigned char pwdhash[_adminConfig.getPwdHashLength()];
+        unsigned char salt[_adminConfig.getPwdSaltLength()];
+        RAND_bytes(salt, _adminConfig.getPwdSaltLength());
         std::stringstream stream;
 
         // Ask for admin username
@@ -237,18 +263,18 @@ int Config::main(const std::vector<std::string>& args)
         if (adminPwd != reAdminPwd)
         {
             std::cout << "Password mismatch." << std::endl;
-            return Application::EXIT_DATAERR;
+            return EX_DATAERR;
         }
 
         // Do the magic !
         PKCS5_PBKDF2_HMAC(adminPwd.c_str(), -1,
-                          salt, _adminConfig.pwdSaltLength,
-                          _adminConfig.pwdIterations,
+                          salt, _adminConfig.getPwdSaltLength(),
+                          _adminConfig.getPwdIterations(),
                           EVP_sha512(),
-                          _adminConfig.pwdHashLength, pwdhash);
+                          _adminConfig.getPwdHashLength(), pwdhash);
 
         // Make salt randomness readable
-        for (unsigned j = 0; j < _adminConfig.pwdSaltLength; ++j)
+        for (unsigned j = 0; j < _adminConfig.getPwdSaltLength(); ++j)
             stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(salt[j]);
         const std::string saltHash = stream.str();
 
@@ -257,12 +283,12 @@ int Config::main(const std::vector<std::string>& args)
         stream.clear();
 
         // Make the hashed password readable
-        for (unsigned j = 0; j < _adminConfig.pwdHashLength; ++j)
+        for (unsigned j = 0; j < _adminConfig.getPwdHashLength(); ++j)
             stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(pwdhash[j]);
         const std::string passwordHash = stream.str();
 
         std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
-        pwdConfigValue << std::to_string(_adminConfig.pwdIterations) << ".";
+        pwdConfigValue << std::to_string(_adminConfig.getPwdIterations()) << ".";
         pwdConfigValue << saltHash << "." << passwordHash;
         _loolConfig.setString("admin_console.username", adminUser);
         _loolConfig.setString("admin_console.secure_password[@desc]",
@@ -272,7 +298,7 @@ int Config::main(const std::vector<std::string>& args)
         changed = true;
 #else
         std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/loolwsd/loolwsd.xml." << std::endl;
-        return Application::EXIT_UNAVAILABLE;
+        return EX_UNAVAILABLE;
 #endif
     }
 #if ENABLE_SUPPORT_KEY
@@ -344,6 +370,20 @@ int Config::main(const std::vector<std::string>& args)
         retval = system(command);
         if (retval != 0)
             std::cerr << "Error when executing command." << std::endl;
+    }
+    else if (args[0] == "anonymize")
+    {
+        if (!AnonymizationSaltProvided)
+        {
+            const std::string val = _loolConfig.getString("logging.anonymize.anonymization_salt");
+            AnonymizationSalt = std::stoull(val);
+            std::cout << "Anonymization Salt: [" << AnonymizationSalt << "]." << std::endl;
+        }
+
+        for (std::size_t i = 1; i < args.size(); ++i)
+        {
+            std::cout << "[" << args[i] << "]: " << Util::anonymizeUrl(args[i], AnonymizationSalt) << std::endl;
+        }
     }
     else
     {

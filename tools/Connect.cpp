@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <sysexits.h>
 #include <thread>
 
 #include <Poco/Net/AcceptCertificateHandler.h>
@@ -26,7 +27,6 @@
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/SSLManager.h>
 #include <Poco/SharedPtr.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/Thread.h>
 #include <Poco/URI.h>
@@ -55,7 +55,6 @@ using Poco::Net::WebSocket;
 using Poco::Net::WebSocketException;
 using Poco::Runnable;
 using Poco::SharedPtr;
-using Poco::StringTokenizer;
 using Poco::TemporaryFile;
 using Poco::Thread;
 using Poco::URI;
@@ -91,9 +90,9 @@ public:
                     }
 
                     std::string firstLine = getFirstLine(buffer, n);
-                    StringTokenizer tokens(firstLine, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
+                    StringVector tokens(LOOLProtocol::tokenize(firstLine, ' '));
 
-                    if (std::getenv("DISPLAY") != nullptr && tokens[0] == "tile:")
+                    if (std::getenv("DISPLAY") != nullptr && tokens.equals(0, "tile:"))
                     {
                         TemporaryFile pngFile;
                         std::ofstream pngStream(pngFile.path(), std::ios::binary);
@@ -114,7 +113,7 @@ public:
                 std::cout << "CLOSE frame received" << std::endl;
             }
             if (!closeExpected)
-                std::_Exit(Application::EXIT_SOFTWARE);
+                std::_Exit(EX_SOFTWARE);
         }
         catch (WebSocketException& exc)
         {
@@ -123,6 +122,7 @@ public:
         }
     }
 
+private:
     LOOLWebSocket& _ws;
 };
 
@@ -145,7 +145,7 @@ protected:
         if (args.size() < 1)
         {
             LOG_ERR("Usage: connect documentURI [serverURI]");
-            return Application::EXIT_USAGE;
+            return EX_USAGE;
         }
 
         if (args.size() > 1)
@@ -227,7 +227,7 @@ protected:
         ws.shutdown();
         thread.join();
 
-        return Application::EXIT_OK;
+        return EX_OK;
     }
 
 private:

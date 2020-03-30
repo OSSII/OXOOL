@@ -18,7 +18,7 @@
 
 int main(int argc, char **argv)
 {
-    if (!hasCorrectUID("oxoolmount"))
+    if (!hasCorrectUID("loolmount"))
         return 1;
 
     if (argc < 3)

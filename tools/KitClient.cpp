@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <sysexits.h>
 
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
@@ -22,7 +23,6 @@
 #include <Poco/Buffer.h>
 #include <Poco/Process.h>
 #include <Poco/String.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/URI.h>
 #include <Poco/Util/Application.h>
@@ -30,8 +30,8 @@
 #include <KitHelper.hpp>
 #include <Png.hpp>
 #include <Util.hpp>
+#include <Protocol.hpp>
 
-using Poco::StringTokenizer;
 using Poco::TemporaryFile;
 using Poco::Util::Application;
 
@@ -39,58 +39,8 @@ extern "C"
 {
     static void myCallback(int type, const char* payload, void*)
     {
-        std::cout << "Callback: ";
-        switch ((LibreOfficeKitCallbackType) type)
-        {
-#define CASE(x) case LOK_CALLBACK_##x: std::cout << #x; break
-            CASE(INVALIDATE_TILES);
-            CASE(INVALIDATE_VISIBLE_CURSOR);
-            CASE(TEXT_SELECTION);
-            CASE(TEXT_SELECTION_START);
-            CASE(TEXT_SELECTION_END);
-            CASE(CURSOR_VISIBLE);
-            CASE(GRAPHIC_SELECTION);
-            CASE(CELL_CURSOR);
-            CASE(CELL_FORMULA);
-            CASE(HYPERLINK_CLICKED);
-            CASE(MOUSE_POINTER);
-            CASE(STATE_CHANGED);
-            CASE(STATUS_INDICATOR_START);
-            CASE(STATUS_INDICATOR_SET_VALUE);
-            CASE(STATUS_INDICATOR_FINISH);
-            CASE(SEARCH_NOT_FOUND);
-            CASE(SEARCH_RESULT_SELECTION);
-            CASE(DOCUMENT_SIZE_CHANGED);
-            CASE(SET_PART);
-            CASE(UNO_COMMAND_RESULT);
-            CASE(DOCUMENT_PASSWORD);
-            CASE(DOCUMENT_PASSWORD_TO_MODIFY);
-            CASE(ERROR);
-            CASE(CONTEXT_MENU);
-            CASE(INVALIDATE_VIEW_CURSOR);
-            CASE(TEXT_VIEW_SELECTION);
-            CASE(CELL_VIEW_CURSOR);
-            CASE(GRAPHIC_VIEW_SELECTION);
-            CASE(VIEW_CURSOR_VISIBLE);
-            CASE(VIEW_LOCK);
-            CASE(REDLINE_TABLE_SIZE_CHANGED);
-            CASE(REDLINE_TABLE_ENTRY_MODIFIED);
-            CASE(COMMENT);
-            CASE(INVALIDATE_HEADER);
-            CASE(CELL_ADDRESS);
-            CASE(RULER_UPDATE);
-            CASE(WINDOW);
-            CASE(VALIDITY_LIST_BUTTON);
-            CASE(CLIPBOARD_CHANGED);
-            CASE(CONTEXT_CHANGED);
-            CASE(SIGNATURE_STATUS);
-            CASE(PROFILE_FRAME);
-            CASE(CELL_SELECTION_AREA);
-            CASE(CELL_AUTO_FILL_AREA);
-            CASE(TABLE_SELECTED);
-#undef CASE
-        }
-        std::cout << " payload: " << payload << std::endl;
+        std::cout << "Callback: " << lokCallbackTypeToString(type)
+                  << " payload: " << payload << std::endl;
     }
 }
 
@@ -104,7 +54,7 @@ protected:
         if (args.size() != 2)
         {
             logger().fatal("Usage: lokitclient /path/to/lo/installation/program /path/to/document");
-            return Application::EXIT_USAGE;
+            return EX_USAGE;
         }
 
         LibreOfficeKit *loKit;
@@ -114,7 +64,7 @@ protected:
         if (!loKit)
         {
             logger().fatal("LibreOfficeKit initialisation failed");
-            return Application::EXIT_UNAVAILABLE;
+            return EX_UNAVAILABLE;
         }
 
 
@@ -122,7 +72,7 @@ protected:
         if (!loKitDocument)
         {
             logger().fatal("Document loading failed: " + std::string(loKit->pClass->getError(loKit)));
-            return Application::EXIT_UNAVAILABLE;
+            return EX_UNAVAILABLE;
         }
 
         loKitDocument->pClass->registerCallback(loKitDocument, myCallback, nullptr);
@@ -139,12 +89,12 @@ protected:
             std::string line;
             std::getline(std::cin, line);
 
-            StringTokenizer tokens(line, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
+            StringVector tokens(LOOLProtocol::tokenize(line, ' '));
 
-            if (tokens.count() == 0)
+            if (tokens.size() == 0)
                 continue;
 
-            if (tokens[0] == "?" || tokens[0] == "help")
+            if (tokens.equals(0, "?") || tokens.equals(0, "help"))
             {
                 std::cout <<
                     "Commands mimic LOOL protocol but we talk directly to LOKit:" << std::endl <<
@@ -153,9 +103,9 @@ protected:
                     "    tile part pixelwidth pixelheight docposx docposy doctilewidth doctileheight" << std::endl <<
                     "        calls LibreOfficeKitDocument::paintTile" << std::endl;
             }
-            else if (tokens[0] == "status")
+            else if (tokens.equals(0, "status"))
             {
-                if (tokens.count() != 1)
+                if (tokens.size() != 1)
                 {
                     std::cout << "? syntax" << std::endl;
                     continue;
@@ -166,9 +116,9 @@ protected:
                     std::cout << "  " << i << ": '" << loKitDocument->pClass->getPartName(loKitDocument, i) << "'" << std::endl;
                 }
             }
-            else if (tokens[0] == "tile")
+            else if (tokens.equals(0, "tile"))
             {
-                if (tokens.count() != 8)
+                if (tokens.size() != 8)
                 {
                     std::cout << "? syntax" << std::endl;
                     continue;
@@ -212,7 +162,7 @@ protected:
         }
 
         // Safest to just bluntly exit
-        std::_Exit(Application::EXIT_OK);
+        std::_Exit(EX_OK);
     }
 };
 

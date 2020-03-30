@@ -17,7 +17,6 @@
 #include <Poco/MemoryStream.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/Util/XMLConfiguration.h>
 
 #include <Log.hpp>
@@ -43,15 +42,15 @@ public:
 
 private:
     /// Process incoming websocket messages
-    void handleMessage(bool fin, WSOpCode code, std::vector<char> &data)
+    void handleMessage(const std::vector<char> &data) override
     {
-        std::cout << "WebSocket message code " << (int)code << " fin " << fin << " data:\n";
+        std::cout << "WebSocket message data:\n";
         Util::dumpHex(std::cout, "", "    ", data, false);
     }
 };
 
 /// Handles incoming connections and dispatches to the appropriate handler.
-class ClientRequestDispatcher : public SocketHandlerInterface
+class ClientRequestDispatcher : public SimpleSocketHandler
 {
 public:
     ClientRequestDispatcher()
@@ -136,9 +135,7 @@ private:
             LOG_INF("Incoming websocket request: " << request.getURI());
 
             const std::string& requestURI = request.getURI();
-            Poco::StringTokenizer pathTokens(requestURI, "/", Poco::StringTokenizer::TOK_IGNORE_EMPTY |
-                                                              Poco::StringTokenizer::TOK_TRIM);
-
+            StringVector pathTokens(LOOLProtocol::tokenize(requestURI, '/'));
             if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
             {
                 auto dumpHandler = std::make_shared<DumpSocketHandler>(_socket, request);
@@ -161,7 +158,7 @@ private:
             // Bad request.
             std::ostringstream oss;
             oss << "HTTP/1.1 400\r\n"
-                << "Date: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
+                << "Date: " << Util::getHttpTimeNow() << "\r\n"
                 << "User-Agent: LOOLWSD WOPI Agent\r\n"
                 << "Content-Length: 0\r\n"
                 << "\r\n";
