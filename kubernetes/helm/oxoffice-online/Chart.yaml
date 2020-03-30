@@ -1,0 +1,4 @@
+apiVersion: v1
+description: OxOffice Online helm chart
+name: oxoffice-online
+version: 1.1.0
