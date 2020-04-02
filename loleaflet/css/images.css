@@ -115,6 +115,7 @@
                        background-position: 2px center, 20px center, 38px center, 56px center, 74px center !important;
                                       width: 94px !important;}
 
+.ossiilogo {background: url('images/ossii.png') no-repeat center/contain !important;}
 .accepttrackedchanges{ background: url('images/cmd/ok.svg') no-repeat center/contain !important;}
 .alignblock{ background: url('images/cmd/alignblock.svg') no-repeat center/contain !important;}
 .alignhorizontal{ background: url('images/cmd/alignhorizontalcenter.svg') no-repeat center/contain !important;}
