@@ -737,7 +737,7 @@ function animationEffects() {
 				break;
 			}
 			var shape = transition[idx++];
-			var iconURL = 'url("images/' + shape.img + '.svg")'; 
+			var iconURL = 'url("images/' + shape.img + '.svg")';
 			var $col = $('<div/>').addClass('col w2ui-icon')
 					.css('background-image', iconURL)
 					.attr('title', shape.label);
@@ -1782,7 +1782,7 @@ function onDocLayerInit() {
 		if (docType === 'text' || docType === 'spreadsheet')
 			statusbar.remove('prev', 'next', 'prevnextbreak');
 	}
-	// 檢視模式時文字文件與試算表的上下頁也不能用，一併藏起來 
+	// 檢視模式時文字文件與試算表的上下頁也不能用，一併藏起來
 	if (map._permission === 'view') {
 		if (docType === 'text' || docType === 'spreadsheet')
 			statusbar.remove('prev', 'next', 'prevnextbreak');
@@ -2144,6 +2144,7 @@ function onCommandStateChanged(e) {
 		if (modifiedStatus) {
 			html = $('#modifiedstatuslabel').html('').parent().html();
 			w2ui['editbar'].set('save', {img:'savemodified'});
+			w2ui['editbar'].enable('save');
 		}
 		else {
 			html = $('#modifiedstatuslabel').html(_('Document saved')).parent().html();
@@ -2468,7 +2469,7 @@ function onUpdatePermission(e) {
 		if (map.getDocType() === 'text' || map.getDocType() == 'spreadsheet') {
 			statusbar.show('goToPage');
 		}
-		// 
+		//
 		if (e.perm === 'edit') {
 			statusbar.show('keyboardBtn', 'break-keyboardBtn');
 			statusbar.show('undo', 'redo');
@@ -2482,7 +2483,7 @@ function onUpdatePermission(e) {
 			}
 		}
 	}
-	
+
 	// copy the first array
 	var items = toolbar.items.slice();
 	for (var idx in items) {
@@ -2698,7 +2699,7 @@ function getLocalizedSymbols(locale) {
 		},
 		error: function (xhr, textStatus, errorThrown) {
 			console.debug('error get localized symbol table (' + locale + ')',
-				'status : ' + textStatus, 
+				'status : ' + textStatus,
 				'error : ' + errorThrown, xhr);
 		}
 	});
