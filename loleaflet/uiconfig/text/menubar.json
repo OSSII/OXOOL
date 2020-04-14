@@ -57,6 +57,10 @@
 					{
 						"name": "Rich Text (.rtf)",
 						"id": "dialog:DownloadAs?ext=rtf"
+					},
+					{
+						"name": "EPUB Document (.epub)",
+						"id": "dialog:DownloadAs?ext=epub"
 					}
 				]
 			},

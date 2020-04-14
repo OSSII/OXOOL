@@ -187,6 +187,7 @@ L.Control.Preview = L.Control.extend({
 					{id: 'downloadas-doc', text: _('Word 2003 Document (.doc)')},
 					{id: 'downloadas-docx', text: _('Word Document (.docx)')},
 					{id: 'downloadas-rtf', text: _('Rich Text (.rtf)')},
+					{id: 'downloadas-epub', text: _('EPUB Document (.epub)')},
 				]
 			},
 			'spreadsheet': {

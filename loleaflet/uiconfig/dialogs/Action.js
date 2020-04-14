@@ -21,9 +21,7 @@ L.dialog.Action = {
 		if (id === undefined)
 			return;
 
-		var fileName = map['wopi'].BaseFileName;
-		fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-		fileName = fileName === '' ? 'document' : fileName;
+		var fileName = map.getDocName();
 
 		switch (id) {
 		case 'save': // 儲存
@@ -129,6 +127,9 @@ L.dialog.Action = {
 			break;
 		case 'downloadas-rtf': // 下載 rtf
 			map.downloadAs(fileName + '.rtf', 'rtf');
+			break;
+		case 'downloadas-epub': // 下載 EPUB
+			map.downloadAs(fileName + '.epub', 'epub');
 			break;
 		case 'downloadas-odt': // 下載 odt
 			map.downloadAs(fileName + '.odt', 'odt');
