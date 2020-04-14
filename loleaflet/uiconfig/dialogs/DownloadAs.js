@@ -17,9 +17,7 @@ L.dialog.DownloadAs = {
 		if (args === undefined)
 			return;
 
-		var fileName = this._map['wopi'].BaseFileName;
-		fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-		fileName = fileName === '' ? 'document' : fileName;
+		var fileName = this._map.getDocName();
 		this._map.downloadAs(fileName + '.' + args.ext, args.ext);
 	},
 };
