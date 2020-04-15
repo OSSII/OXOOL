@@ -66,109 +66,97 @@ L.Control.RowHeader = L.Control.Header.extend({
 			selector: '.spreadsheet-header-rows',
 			className: 'loleaflet-font',
 			autoHide: true,
+			callback: function(key/*, opt*/) {
+				rowHeaderObj._map.executeAllowedCommand(key);
+				rowHeaderObj._updateRowHeader();
+			},
 			items: {
-				'InsertRowsBefore': {
-					name: _UNO('.uno:InsertRowsBefore', 'spreadsheet', true),
-					callback: function() {
-						var index = rowHeaderObj._lastMouseOverIndex;
-						if (index) {
-							rowHeaderObj.insertRow.call(rowHeaderObj, index);
-						}
-					},
+				'.uno:Cut': {
+					name: _UNO('.uno:Cut', 'spreadsheet'),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
-				'DeleteRows': {
-					name: _UNO('.uno:DeleteRows', 'spreadsheet', true),
-					callback: function() {
-						var index = rowHeaderObj._lastMouseOverIndex;
-						if (index) {
-							rowHeaderObj.deleteRow.call(rowHeaderObj, index);
-						}
-					},
+				'.uno:Copy': {
+					name: _UNO('.uno:Copy', 'spreadsheet'),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
-				'SetOptimalRowHeight': {
-					name: _UNO('.uno:SetOptimalRowHeight', 'spreadsheet', true),
-					callback: function() {
-						var index = rowHeaderObj._lastMouseOverIndex;
-						if (index) {
-							rowHeaderObj.optimalHeight.call(rowHeaderObj, index);
-						}
+				'.uno:Paste': {
+					name: _UNO('.uno:Paste', 'spreadsheet'),
+					visible: function(key/*, opt*/) {
+						var state = rowHeaderObj._map['stateChangeHandler'].getItemProperty(key);
+						return (state.enabled === true);
 					},
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
 				'sep01': '----',
-				'HideRow': {
-					name: _UNO('.uno:HideRow', 'spreadsheet', true),
+				'.uno:InsertRowsBefore': {
+					name: _UNO('.uno:InsertRowsBefore', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'.uno:InsertRowsAfter': {
+					name: _UNO('.uno:InsertRowsAfter', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'.uno:DeleteRows': {
+					name: _UNO('.uno:DeleteRows', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'dialog:DeleteCell': {
+					name: _UNO('.uno:Delete', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'sep02': '----',
+				'dialog:RowHeight': {
+					name: _UNO('.uno:RowHeight', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'.uno:SetOptimalRowHeight': {
+					name: _UNO('.uno:SetOptimalRowHeight', 'spreadsheet'),
 					callback: function() {
-						var index = rowHeaderObj._lastMouseOverIndex;
-						if (index) {
-							rowHeaderObj.hideRow.call(rowHeaderObj, index);
-						}
+						rowHeaderObj._map.sendUnoCommand('.uno:SetOptimalRowHeight?aExtraHeight:long=0');
 					},
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
-				'ShowRow': {
-					name: _UNO('.uno:ShowRow', 'spreadsheet', true),
-					callback: function() {
-						var index = rowHeaderObj._lastMouseOverIndex;
-						if (index) {
-							rowHeaderObj.showRow.call(rowHeaderObj, index);
-						}
-					},
+				'sep03': '----',
+				'.uno:HideRow': {
+					name: _UNO('.uno:HideRow', 'spreadsheet'),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
-				}
+				},
+				'.uno:ShowRow': {
+					name: _UNO('.uno:ShowRow', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'sep04': '----',
+				'.uno:FormatCellDialog': {
+					name: _UNO('.uno:FormatCellDialog', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
 			},
 			zIndex: 100
 		});
-	},
-
-	optimalHeight: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectRow(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:SetOptimalRowHeight?aExtraHeight=0');
-	},
-
-	insertRow: function(index) {
-		// First select the corresponding row because
-		// .uno:InsertRows doesn't accept any row number
-		// as argument and just inserts before the selected row
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectRow(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:InsertRows');
-	},
-
-	deleteRow: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectRow(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:DeleteRows');
-	},
-
-	hideRow: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectRow(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:HideRow');
-	},
-
-	showRow: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectRow(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:ShowRow');
 	},
 
 	setScrollPosition: function (e) {

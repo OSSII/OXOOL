@@ -69,113 +69,97 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 			selector: '.spreadsheet-header-columns',
 			className: 'loleaflet-font',
 			autoHide: true,
+			callback: function(key/*, opt*/) {
+				colHeaderObj._map.executeAllowedCommand(key);
+				colHeaderObj._updateColumnHeader();
+			},
 			items: {
-				'InsertColumnsBefore': {
-					name: _UNO('.uno:InsertColumnsBefore', 'spreadsheet', true),
-					callback: function() {
-						var index = colHeaderObj._lastMouseOverIndex;
-						if (index) {
-							colHeaderObj.insertColumn.call(colHeaderObj, index);
-						}
-					},
+				'.uno:Cut': {
+					name: _UNO('.uno:Cut', 'spreadsheet'),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
-				'DeleteColumns': {
-					name: _UNO('.uno:DeleteColumns', 'spreadsheet', true),
-					callback: function() {
-						var index = colHeaderObj._lastMouseOverIndex;
-						if (index) {
-							colHeaderObj.deleteColumn.call(colHeaderObj, index);
-						}
-					},
+				'.uno:Copy': {
+					name: _UNO('.uno:Copy', 'spreadsheet'),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
-				'SetOptimalColumnWidth': {
-					name: _UNO('.uno:SetOptimalColumnWidth', 'spreadsheet', true),
-					callback: function() {
-						var index = colHeaderObj._lastMouseOverIndex;
-						if (index) {
-							colHeaderObj.optimalWidth.call(colHeaderObj, index);
-						}
+				'.uno:Paste': {
+					name: _UNO('.uno:Paste', 'spreadsheet'),
+					visible: function(key/*, opt*/) {
+						var state = colHeaderObj._map['stateChangeHandler'].getItemProperty(key);
+						return (state.enabled === true);
 					},
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
 				'sep01': '----',
-				'HideColumn': {
-					name: _UNO('.uno:HideColumn', 'spreadsheet', true),
+				'.uno:InsertColumnsBefore': {
+					name: _UNO('.uno:InsertColumnsBefore', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'.uno:InsertColumnsAfter': {
+					name: _UNO('.uno:InsertColumnsAfter', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'.uno:DeleteColumns': {
+					name: _UNO('.uno:DeleteColumns', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'dialog:DeleteCell': {
+					name: _UNO('.uno:Delete', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'sep02': '----',
+				'dialog:ColumnWidth': {
+					name: _UNO('.uno:ColumnWidth', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'.uno:SetOptimalColumnWidth': {
+					name: _UNO('.uno:SetOptimalColumnWidth', 'spreadsheet'),
 					callback: function() {
-						var index = colHeaderObj._lastMouseOverIndex;
-						if (index) {
-							colHeaderObj.hideColumn.call(colHeaderObj, index);
-						}
+						colHeaderObj._map.sendUnoCommand('.uno:SetOptimalColumnWidth?aExtraWidth:long=200');
 					},
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
 				},
-				'ShowColumn': {
-					name: _UNO('.uno:ShowColumn', 'spreadsheet', true),
-					callback: function() {
-						var index = colHeaderObj._lastMouseOverIndex;
-						if (index) {
-							colHeaderObj.showColumn.call(colHeaderObj, index);
-						}
-					},
+				'sep03': '----',
+				'.uno:HideColumn': {
+					name: _UNO('.uno:HideColumn', 'spreadsheet'),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						return this._map.contextMenuIcon($itemElement, itemKey, item);
 					}).bind(this)
-				}
+				},
+				'.uno:ShowColumn': {
+					name: _UNO('.uno:ShowColumn', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
+				'sep04': '----',
+				'.uno:FormatCellDialog': {
+					name: _UNO('.uno:FormatCellDialog', 'spreadsheet'),
+					icon: (function(opt, $itemElement, itemKey, item) {
+						return this._map.contextMenuIcon($itemElement, itemKey, item);
+					}).bind(this)
+				},
 			},
 			zIndex: 100
 		});
-	},
-
-	optimalWidth: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectColumn(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:SetOptimalColumnWidth?aExtraWidth=200');
-	},
-
-	insertColumn: function(index) {
-		// First select the corresponding column because
-		// .uno:InsertColumn doesn't accept any column number
-		// as argument and just inserts before the selected column
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectColumn(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:InsertColumns');
-		this._updateColumnHeader();
-	},
-
-	deleteColumn: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectColumn(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:DeleteColumns');
-		this._updateColumnHeader();
-	},
-
-	hideColumn: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectColumn(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:HideColumn');
-		this._updateColumnHeader();
-	},
-
-	showColumn: function(index) {
-		if (this._map._docLayer._selections.getLayers().length === 0) {
-			this._selectColumn(index, 0);
-		}
-		this._map.sendUnoCommand('.uno:ShowColumn');
-		this._updateColumnHeader();
 	},
 
 	setScrollPosition: function (e) {
