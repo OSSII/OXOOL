@@ -32,6 +32,8 @@ L.Map.include({
 
 	// 右鍵選單會出現 _allowCommands 沒有的指令，暫時作法是列入未知名單中，且標記是否可用
 	_whiteCommandList: {
+		'dialog:ColumnWidth': true, // Calc 設定欄寬
+		'dialog:RowHeight': true, // Calc 設定列高
 		'.uno:Crop': false, // 裁剪
 		'.uno:ExternalEdit': false, // 開啟外部編輯器
 		'.uno:ChangePicture': false, // 變更圖片
@@ -154,6 +156,7 @@ L.Map.include({
 		'cellverttop': 'aligntop',
 		'cellvertcenter': 'alignverticalcenter',
 		'cellvertbottom': 'alignbottom',
+		'columnwidth': 'setminimalcolumnwidth',
 		'commonalignleft': 'alignleft',
 		'commonalignhorizontalcenter': 'alignhorizontalcenter',
 		'commonalignright': 'alignright',
@@ -257,6 +260,7 @@ L.Map.include({
 		'repaginate': 'insertpagenumberfield',
 		'recalcpivottable': 'calculate',
 		'rightpara': 'alignright',
+		'rowheight': 'setminimalrowheight',
 		'rotateflipmenu': 'rotateleft',
 		'savegraphic': 'save',
 		'setdefault': 'resetattributes',
@@ -468,6 +472,13 @@ L.Map.include({
 	// 把 uno 指令轉換成 icon 圖示 URL
 	getUnoCommandIcon: function(unoCommand) {
 		var command = (unoCommand.startsWith('.uno:') ? unoCommand.substr(5) : unoCommand).toLowerCase();
+		if (unoCommand.startsWith('.uno:')) {
+			command = unoCommand.substr(5).toLowerCase();
+		} else if (unoCommand.startsWith('dialog:')) {
+			command = unoCommand.substr(7).toLowerCase();
+		} else {
+			command = unoCommand.toLowerCase();
+		}
 		var icon = this._iconAlias[command] !== undefined ? this._iconAlias[command] : command;
 
 		return 'images/cmd/' + icon + '.svg';
