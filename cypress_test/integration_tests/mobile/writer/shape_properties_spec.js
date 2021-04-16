@@ -1,100 +1,74 @@
-/* global describe it cy beforeEach require afterEach Cypress*/
+/* global describe it cy beforeEach require afterEach Cypress */
 
 var helper = require('../../common/helper');
-var writerHelper = require('./writer_helper');
+var mobileHelper = require('../../common/mobile_helper');
 
 describe('Change shape properties via mobile wizard.', function() {
 	var defaultGeometry = 'M 1965,4863 L 7957,10855 1965,10855 1965,4863 1965,4863 Z';
+	var testFileName = 'shape_properties.odt';
 
 	beforeEach(function() {
-		helper.beforeAllMobile('shape_properties.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		writerHelper.selectAllMobile();
+		helper.moveCursor('end');
 
-		cy.get('#document-container')
-			.type('{home}');
+		helper.moveCursor('home');
 
-		cy.get('.blinking-cursor')
-			.should('be.visible');
+		if (Cypress.env('INTEGRATION') === 'php-proxy') {
+			cy.wait(1000);
+		}
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Shape')
+		cy.contains('.menu-entry-with-icon', 'Shape')
 			.click();
 
 		cy.get('.basicshapes_right-triangle').
 			click();
 
 		// Check that the shape is there
-		cy.get('.leaflet-pane.leaflet-overlay-pane svg g svg g', {timeout : 10000})
+		cy.get('.leaflet-pane.leaflet-overlay-pane svg g svg g', { timeout: Cypress.config('defaultCommandTimeout') * 2.0 })
 			.should('have.class', 'com.sun.star.drawing.CustomShape');
 	});
 
 	afterEach(function() {
-		helper.afterAll('shape_properties.odt');
+		helper.afterAll(testFileName);
 	});
 
 	function triggerNewSVG() {
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('not.be.visible');
-
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.closeMobileWizard();
 
 		// Change width
-		cy.get('#PosSizePropertyPanel')
-			.click();
+		openPosSizePanel();
 
 		cy.get('#selectwidth .plus')
-			.should('be.visible')
-			.click();
+			.should('be.visible');
 
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('not.be.visible');
+		helper.clickOnIdle('#selectwidth .plus');
+
+		mobileHelper.closeMobileWizard();
 	}
 
 	function openPosSizePanel() {
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.openMobileWizard();
 
-		cy.get('#PosSizePropertyPanel')
-			.click();
+		helper.clickOnIdle('#PosSizePropertyPanel');
 
-		cy.get('.ui-content.level-0.mobile-wizard')
-			.should('be.visible')
-			.wait(100);
+		cy.get('#selectwidth')
+			.should('be.visible');
 	}
 
 	function openLinePropertyPanel() {
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.openMobileWizard();
 
-		cy.get('#mobile-wizard')
+		helper.clickOnIdle('#LinePropertyPanel');
+
+		cy.get('#linestyle')
 			.should('be.visible');
-
-		cy.get('#LinePropertyPanel')
-			.click();
-
-		cy.get('.ui-content.level-0.mobile-wizard')
-			.should('be.visible')
-			.wait(100);
 	}
 
 	it('Check default shape geometry.', function() {
@@ -107,9 +81,6 @@ describe('Change shape properties via mobile wizard.', function() {
 	});
 
 	it('Change shape width.', function() {
-		// TODO: Entering a value inside the spinbutton has no effect on the shape.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
 
 		openPosSizePanel();
 
@@ -126,9 +97,6 @@ describe('Change shape properties via mobile wizard.', function() {
 	});
 
 	it('Change shape height.', function() {
-		// TODO: Entering a value inside the spinbutton has no effect on the shape.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
 
 		openPosSizePanel();
 
@@ -144,25 +112,17 @@ describe('Change shape properties via mobile wizard.', function() {
 			.should('have.attr', 'd', 'M 1965,4863 L 7957,18073 1965,18073 1965,4863 1965,4863 Z');
 	});
 
-	it('Change size with keep ratio enabled.', function() {
-		// TODO: Entering a value inside the spinbutton has no effect on the shape.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
+	it.skip('Change size with keep ratio enabled.', function() {
 		openPosSizePanel();
 
 		// Enable keep ratio
-		cy.get('#ratio #ratio')
-			.click();
+		helper.clickOnIdle('#ratio #ratio');
 
 		cy.get('#ratio #ratio')
-			.should('have.attr', 'checked', 'checked');
+			.should('have.prop', 'checked', true);
 
 		// Change height
-		cy.get('#selectheight .spinfield')
-			.clear()
-			.type('5.2')
-			.type('{enter}');
+		helper.inputOnIdle('#selectheight .spinfield', '5.2');
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane svg g svg g g g path')
 			.should('not.have.attr', 'd', defaultGeometry);
@@ -174,8 +134,7 @@ describe('Change shape properties via mobile wizard.', function() {
 	it('Vertical mirroring', function() {
 		openPosSizePanel();
 
-		cy.get('#FlipVertical')
-			.click();
+		helper.clickOnIdle('#FlipVertical');
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane svg g svg g g g path')
 			.should('not.have.attr', 'd', defaultGeometry);
@@ -187,8 +146,7 @@ describe('Change shape properties via mobile wizard.', function() {
 	it('Horizontal mirroring', function() {
 		openPosSizePanel();
 
-		cy.get('#FlipHorizontal')
-			.click();
+		helper.clickOnIdle('#FlipHorizontal');
 
 		triggerNewSVG();
 
@@ -204,34 +162,25 @@ describe('Change shape properties via mobile wizard.', function() {
 
 		// We can't test the result, so we just trigger
 		// the events to catch crashes, consoler errors.
-		cy.get('#BringToFront')
-			.click();
+		helper.clickOnIdle('#BringToFront');
 		cy.wait(300);
 
-		cy.get('#ObjectForwardOne')
-			.click();
+		helper.clickOnIdle('#ObjectForwardOne');
 		cy.wait(300);
 
-		cy.get('#ObjectBackOne')
-			.click();
+		helper.clickOnIdle('#ObjectBackOne');
 		cy.wait(300);
 
-		cy.get('#SendToBack')
-			.click();
+		helper.clickOnIdle('#SendToBack');
+		cy.wait(300);
 	});
 
 	it('Change line color', function() {
-		// TODO: Layout of the line properties panel is completely broken.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		openLinePropertyPanel();
 
-		cy.get('#XLineColor')
-			.click();
+		helper.clickOnIdle('#XLineColor');
 
-		cy.get('.ui-content[title="Line Color"] .color-sample-small[style="background-color: rgb(152, 0, 0);"]')
-			.click();
+		helper.clickOnIdle('.ui-content[title="Line Color"] .color-sample-small[style="background-color: rgb(152, 0, 0);"]');
 
 		triggerNewSVG();
 
@@ -239,19 +188,12 @@ describe('Change shape properties via mobile wizard.', function() {
 			.should('have.attr', 'stroke', 'rgb(152,0,0)');
 	});
 
-	it('Change line style', function() {
-		// TODO: Layout of the line properties panel is completely broken.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
+	it.skip('Change line style', function() {
 		openLinePropertyPanel();
 
-		cy.get('#linestyle')
-			.click();
+		helper.clickOnIdle('#linestyle');
 
-		cy.get('.ui-combobox-text')
-			.contains('Dashed')
-			.click();
+		helper.clickOnIdle('.ui-combobox-text', 'Ultrafine Dashed');
 
 		triggerNewSVG();
 
@@ -259,18 +201,13 @@ describe('Change shape properties via mobile wizard.', function() {
 			.should('have.length.greaterThan', 12);
 	});
 
-	it('Change line width', function() {
-		// TODO: Layout of the line properties panel is completely broken.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
+	it.skip('Change line width', function() {
 		openLinePropertyPanel();
 
 		cy.get('#linewidth .spinfield')
 			.should('have.attr', 'readonly', 'readonly');
 
-		cy.get('#linewidth .plus')
-			.click();
+		helper.clickOnIdle('#linewidth .plus');
 
 		triggerNewSVG();
 
@@ -279,8 +216,7 @@ describe('Change shape properties via mobile wizard.', function() {
 
 		openLinePropertyPanel();
 
-		cy.get('#linewidth .minus')
-			.click();
+		helper.clickOnIdle('#linewidth .minus');
 
 		triggerNewSVG();
 
@@ -289,16 +225,15 @@ describe('Change shape properties via mobile wizard.', function() {
 	});
 
 	it('Change line transparency', function() {
-		// TODO: Layout of the line properties panel is completely broken.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		openLinePropertyPanel();
 
 		cy.get('#linetransparency .spinfield')
 			.clear()
 			.type('20')
 			.type('{enter}');
+
+		cy.get('#linetransparency .spinfield')
+			.should('have.attr', 'value', '20');
 
 		triggerNewSVG();
 
@@ -307,10 +242,6 @@ describe('Change shape properties via mobile wizard.', function() {
 	});
 
 	it('Arrow style items are hidden.', function() {
-		// TODO: Layout of the line properties panel is completely broken.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		openLinePropertyPanel();
 
 		cy.get('#linestyle')

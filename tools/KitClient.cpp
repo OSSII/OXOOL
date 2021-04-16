@@ -21,7 +21,6 @@
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 
 #include <Poco/Buffer.h>
-#include <Poco/Process.h>
 #include <Poco/String.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/URI.h>
@@ -89,7 +88,7 @@ protected:
             std::string line;
             std::getline(std::cin, line);
 
-            StringVector tokens(LOOLProtocol::tokenize(line, ' '));
+            StringVector tokens(Util::tokenize(line, ' '));
 
             if (tokens.size() == 0)
                 continue;
@@ -113,7 +112,7 @@ protected:
                 std::cout << LOKitHelper::documentStatus(loKitDocument) << std::endl;
                 for (int i = 0; i < loKitDocument->pClass->getParts(loKitDocument); i++)
                 {
-                    std::cout << "  " << i << ": '" << loKitDocument->pClass->getPartName(loKitDocument, i) << "'" << std::endl;
+                    std::cout << "  " << i << ": '" << loKitDocument->pClass->getPartName(loKitDocument, i) << '\'' << std::endl;
                 }
             }
             else if (tokens.equals(0, "tile"))

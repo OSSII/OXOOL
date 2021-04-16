@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_TEST_HELPERS_HPP
-#define INCLUDED_TEST_HELPERS_HPP
+#pragma once
 
 #include <iterator>
 
@@ -230,7 +229,7 @@ inline
 Poco::Net::HTTPClientSession* createSession(const Poco::URI& uri)
 {
 #if ENABLE_SSL
-    if (uri.getScheme() == "https")
+    if (uri.getScheme() == "https" || uri.getScheme() == "wss")
         return new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort());
 #endif
     return new Poco::Net::HTTPClientSession(uri.getHost(), uri.getPort());
@@ -245,6 +244,60 @@ inline std::shared_ptr<Poco::Net::StreamSocket> createRawSocket()
         std::make_shared<Poco::Net::StreamSocket>
 #endif
         (Poco::Net::SocketAddress("127.0.0.1", ClientPortNumber));
+}
+
+// Sets read / write timeout for the given file descriptor.
+inline void setSocketTimeOut(int socketFD, int timeMS)
+{
+    struct timeval tv;
+    tv.tv_sec = (float)timeMS / (float)1000;
+    tv.tv_usec = timeMS;
+    setsockopt(socketFD, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+}
+
+// Sets socket's blocking mode. true for blocking, false for non blocking.
+inline void setSocketBlockingMode(int socketFD, bool blocking)
+{
+    ioctl(socketFD, FIONBIO, blocking == true ? 0: 1);
+}
+
+// Creates a socket and connects it to a local server. Returns the file descriptor.
+inline int connectToLocalServer(int portNumber, int socketTimeOutMS, bool blocking)
+{
+    int socketFD = 0;
+    struct sockaddr_in serv_addr;
+
+    if ((socketFD = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        LOG_ERR("helpers::connectToLocalServer: Server client could not be created.");
+        return -1;
+    }
+    else
+    {
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_port = htons(portNumber);
+        if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+        {
+            LOG_ERR("helpers::connectToLocalServer: Invalid address.");
+            close(socketFD);
+            return -1;
+        }
+        else
+        {
+            if (connect(socketFD, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+            {
+                LOG_ERR("helpers::connectToLocalServer: Connection failed.");
+                close(socketFD);
+                return -1;
+            }
+            else
+            {
+                setSocketTimeOut(socketFD, socketTimeOutMS);
+                setSocketBlockingMode(socketFD, blocking);
+                return socketFD;
+            }
+        }
+    }
 }
 
 inline
@@ -274,8 +327,8 @@ int getErrorCode(LOOLWebSocket& ws, std::string& message, const std::string& tes
     do
     {
         bytes = ws.receiveFrame(buffer.begin(), READ_BUFFER_SIZE, flags);
-        TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer.begin(), bytes, flags));
-        std::this_thread::sleep_for(std::chrono::milliseconds(POLL_TIMEOUT_MS));
+        TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer.begin(), bytes, flags));
+        std::this_thread::sleep_for(std::chrono::microseconds(POLL_TIMEOUT_MICRO_S));
     }
     while (bytes > 0 && (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) != Poco::Net::WebSocket::FRAME_OP_CLOSE);
 
@@ -325,8 +378,8 @@ std::vector<char> getResponseMessage(LOOLWebSocket& ws, const std::string& prefi
                 {
                     if (LOOLProtocol::matchPrefix(prefix, message))
                     {
-                        TST_LOG("[" << prefix <<  "] Matched " <<
-                                LOOLProtocol::getAbbreviatedFrameDump(response.data(), bytes, flags));
+                        TST_LOG('[' << prefix <<  "] Matched " <<
+                                LOOLWebSocket::getAbbreviatedFrameDump(response.data(), bytes, flags));
                         return response;
                     }
                 }
@@ -349,8 +402,8 @@ std::vector<char> getResponseMessage(LOOLWebSocket& ws, const std::string& prefi
                         throw std::runtime_error(message);
                     }
 
-                    TST_LOG("[" << prefix <<  "] Ignored " <<
-                            LOOLProtocol::getAbbreviatedFrameDump(response.data(), bytes, flags));
+                    TST_LOG('[' << prefix <<  "] Ignored " <<
+                            LOOLWebSocket::getAbbreviatedFrameDump(response.data(), bytes, flags));
                 }
             }
         }
@@ -463,7 +516,7 @@ connectLOKit(const Poco::URI& uri,
             TST_LOG("Connection problem: " << ex.what());
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(POLL_TIMEOUT_MS));
+        std::this_thread::sleep_for(std::chrono::microseconds(POLL_TIMEOUT_MICRO_S));
     }
     while (retries--);
 
@@ -540,7 +593,7 @@ void SocketProcessor(const std::string& testname,
         }
 
         n = socket->receiveFrame(buffer, sizeof(buffer), flags);
-        TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer, n, flags));
+        TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, n, flags));
         if (n > 0 && (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) != Poco::Net::WebSocket::FRAME_OP_CLOSE)
         {
             if (!handler(std::string(buffer, n)))
@@ -556,7 +609,7 @@ inline
 void parseDocSize(const std::string& message, const std::string& type,
                   int& part, int& parts, int& width, int& height, int& viewid)
 {
-    StringVector tokens(LOOLProtocol::tokenize(message, ' '));
+    StringVector tokens(Util::tokenize(message, ' '));
 
     // Expected format is something like 'type= parts= current= width= height='.
     const std::string text = tokens[0].substr(std::string("type=").size());
@@ -585,7 +638,7 @@ std::vector<char> assertTileMessage(LOOLWebSocket& ws, const std::string& testna
     const std::vector<char> response = getTileMessage(ws, testname);
 
     const std::string firstLine = LOOLProtocol::getFirstLine(response);
-    StringVector tileTokens(LOOLProtocol::tokenize(firstLine, ' '));
+    StringVector tileTokens(Util::tokenize(firstLine, ' '));
     LOK_ASSERT_EQUAL(std::string("tile:"), tileTokens[0]);
     LOK_ASSERT_EQUAL(std::string("part="), tileTokens[1].substr(0, std::string("part=").size()));
     LOK_ASSERT_EQUAL(std::string("width="), tileTokens[2].substr(0, std::string("width=").size()));
@@ -675,7 +728,7 @@ inline void saveTileAs(const std::vector<char> &tileResponse,
     std::fstream outStream(filename, std::ios::out);
     outStream.write(res.data(), res.size());
     outStream.close();
-    TST_LOG("Saved [" << firstLine << "] to [" << filename << "]");
+    TST_LOG("Saved [" << firstLine << "] to [" << filename << ']');
 }
 
 inline std::vector<char> getTileAndSave(std::shared_ptr<LOOLWebSocket>& socket,
@@ -742,7 +795,7 @@ inline bool svgMatch(const char *testname, const std::vector<char> &response, co
         TST_LOG_APPEND(std::string(expectedSVG.data(), expectedSVG.size()));
         std::string newName = templateFile;
         newName += ".new";
-        TST_LOG_APPEND("Updated template writing to: " << newName << "\n");
+        TST_LOG_APPEND("Updated template writing to: " << newName << '\n');
         TST_LOG_END;
 
         FILE *of = fopen(Poco::Path(TDOC, newName).toString().c_str(), "w");
@@ -780,7 +833,7 @@ inline void deleteAll(const std::shared_ptr<LOOLWebSocket>& socket, const std::s
 
 inline std::string getAllText(const std::shared_ptr<LOOLWebSocket>& socket,
                               const std::string& testname,
-                              const std::string expected = std::string(),
+                              const std::string& expected = std::string(),
                               int retry = COMMAND_RETRY_COUNT)
 {
     static const std::string prefix = "textselectioncontent: ";
@@ -802,6 +855,5 @@ inline std::string getAllText(const std::shared_ptr<LOOLWebSocket>& socket,
 }
 
 }
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

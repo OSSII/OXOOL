@@ -52,11 +52,14 @@ public class AboutDialogFragment extends DialogFragment {
         {
             String versionName = getActivity().getPackageManager()
                     .getPackageInfo(getActivity().getPackageName(), 0).versionName;
-            String[] tokens = versionName.split("/");
-            if (tokens.length >= 2)
+            String onlineVersionHash = getString(R.string.online_version_hash);
+            String coreVersionHash = getString(R.string.core_version_hash);
+
+            if (!onlineVersionHash.isEmpty() && !coreVersionHash.isEmpty() && !versionName.isEmpty())
             {
                 String version = String.format(versionView.getText().toString().replace("\n", "<br/>"),
-                        tokens[0], "<a href=\"https://hub.libreoffice.org/git-online/" + tokens[1] + "\">" + tokens[1] + "</a>");
+                        versionName, "<a href=\"https://hub.libreoffice.org/git-online/" + onlineVersionHash + "\">" + onlineVersionHash + "</a>",
+                        "<a href=\"https://hub.libreoffice.org/git-core/" + coreVersionHash + "\">" + coreVersionHash + "</a>");
                 @SuppressWarnings("deprecation") // since 24 with additional option parameter
                 Spanned versionString = Html.fromHtml(version);
                 versionView.setText(versionString);
@@ -82,7 +85,9 @@ public class AboutDialogFragment extends DialogFragment {
         vendorView.setText(vendor);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder .setIcon(BuildConfig.APP_HAS_BRANDING? R.drawable.ic_launcher_brand: R.drawable.lo_icon)
+        int brandIcon = this.getResources().getIdentifier("ic_launcher_brand", "drawable",
+                this.getActivity().getPackageName());
+        builder .setIcon(BuildConfig.APP_HAS_BRANDING? brandIcon: R.drawable.lo_icon)
                 .setTitle(R.string.app_name)
                 .setView(messageView)
                 .setNegativeButton(R.string.about_license, new DialogInterface.OnClickListener() {

@@ -295,9 +295,18 @@ L.Map.include({
 		}
 	},
 
-	renamePage: function (name, nPos) {
-		if (this.getDocType() === 'spreadsheet') {
-			var command = {
+	/**
+	 * 修改某張工作表或投影片名稱
+	 * @author Firefly <firefly@ossii.com.tw>
+	 *
+	 * @param {string} name - 工作表或投影片名稱
+	 * @param {number} nPos - 工作表位置(投影不須指定)
+	 */
+	renamePage: function(name, nPos) {
+		var command;
+		switch (this.getDocType()) {
+		case 'spreadsheet':
+			command = {
 				'Name': {
 					'type': 'string',
 					'value': name
@@ -307,29 +316,66 @@ L.Map.include({
 					'value': nPos + 1
 				}
 			};
-
-			this._socket.sendMessage('uno .uno:Name ' + JSON.stringify(command));
+			this.sendUnoCommand('.uno:Name', command);
 			this.setPart(this._docLayer);
-		}
-	},
-
-	showPage: function (sheetName) {
-		if (this.getDocType() === 'spreadsheet' && this.hasAnyHiddenPart()) {
-			this.forceCellCommit();
-			var args = {
-				'aTableName': {
-					type: 'string',
-					value: sheetName
+			break;
+		case 'presentation':
+		case 'draw':
+			command = {
+				'Name': {
+					'type': 'string',
+					'value': name
 				}
 			};
-			this._socket.sendMessage('uno .uno:Show ' + JSON.stringify(args));
+			this.sendUnoCommand('.uno:RenamePage', command);
+			break;
 		}
 	},
 
-	hidePage: function () {
-		if (this.getDocType() === 'spreadsheet' && this.getNumberOfVisibleParts() > 1) {
-			this.forceCellCommit();
-			this._socket.sendMessage('uno .uno:Hide');
+	/**
+	 * 顯示某張工作表或投影片
+	 *
+	 * @param {string} [sheetName] - 工作表名稱(投影不須指定)
+	 * @author Firefly <firefly@ossii.com.tw>
+	 */
+	showPage: function(sheetName) {
+		switch (this.getDocType()) {
+		case 'spreadsheet':
+			if (this.hasAnyHiddenPart()) {
+				this.forceCellCommit();
+				var args = {
+					'aTableName': {
+						type: 'string',
+						value: sheetName
+					}
+				};
+				this.sendUnoCommand('.uno:Show', args);
+			}
+			break;
+		case 'presentation':
+		case 'draw':
+			this._socket.sendMessage('showpage');
+			break;
+		}
+	},
+
+	/**
+	 * 隱藏某張工作表或投影片
+	 *
+	 * @author Firefly <firefly@ossii.com.tw>
+	 */
+	hidePage: function() {
+		switch (this.getDocType()) {
+		case 'spreadsheet':
+			if (this.getNumberOfVisibleParts() > 1) {
+				this.forceCellCommit();
+				this.sendUnoCommand('.uno:Hide');
+			}
+			break;
+		case 'presentation':
+		case 'draw':
+			this._socket.sendMessage('hidepage');
+			break;
 		}
 	},
 
@@ -393,6 +439,23 @@ L.Map.include({
 		idx = file.lastIndexOf('/');
 		file = file.substring(idx + 1);
 		return file;
+	},
+
+	/*
+	 * 取得某張工作表或某個投影片詳細資料
+	 */
+	getPartProperty: function(part) {
+		var partsInfo = this._docLayer._partsInfo;
+		var info = undefined;
+		// 未指定工作表或投影片編號，表示目前選取的工作表或投影片編號
+		if (part === undefined) {
+			part = this._docLayer._selectedPart;
+		}
+
+		if (typeof part === 'number' && partsInfo !== undefined) {
+			info = partsInfo[part];
+		}
+		return info;
 	},
 
 	//---------------------------------------

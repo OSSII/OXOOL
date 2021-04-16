@@ -16,7 +16,6 @@
 #endif
 #include <csignal>
 #include <sys/poll.h>
-#include <sys/stat.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
@@ -38,17 +37,15 @@
 #include "Common.hpp"
 #include "Log.hpp"
 
+#ifndef IOS
 static std::atomic<bool> TerminationFlag(false);
 static std::atomic<bool> DumpGlobalState(false);
-#if MOBILEAPP
-std::atomic<bool> MobileTerminationFlag(false);
-#else
-// Mobile defines its own, which is constexpr.
 static std::atomic<bool> ShutdownRequestFlag(false);
 #endif
 
 namespace SigUtil
 {
+#ifndef IOS
     bool getShutdownRequestFlag()
     {
         return ShutdownRequestFlag;
@@ -70,21 +67,20 @@ namespace SigUtil
         TerminationFlag = false;
     }
 #endif
+#endif // !IOS
 
-    bool getDumpGlobalState()
+    void checkDumpGlobalState(GlobalDumpStateFn dumpState)
     {
-        return DumpGlobalState;
+#if !MOBILEAPP
+        if (DumpGlobalState)
+        {
+            dumpState();
+            DumpGlobalState = false;
+        }
+#endif
     }
-
-    void resetDumpGlobalState()
-    {
-        DumpGlobalState = false;
-    }
-}
 
 #if !MOBILEAPP
-namespace SigUtil
-{
     /// This traps the signal-handler so we don't _Exit
     /// while dumping stack trace. It's re-entrant.
     /// Used to safely increment and decrement the signal-handler trap.
@@ -260,7 +256,7 @@ namespace SigUtil
             dumpBacktrace();
 
         // let default handler process the signal
-        kill(getpid(), signal);
+        ::raise(signal);
     }
 
     void dumpBacktrace()
@@ -308,7 +304,7 @@ namespace SigUtil
         stream << "\nERROR: Fatal signal! Attach debugger with:\n"
                << "sudo gdb --pid=" << getpid() << "\n or \n"
                << "sudo gdb --q --n --ex 'thread apply all backtrace full' --batch --pid="
-               << getpid() << "\n";
+               << getpid() << '\n';
         std::string streamStr = stream.str();
         assert (sizeof (FatalGdbString) > strlen(streamStr.c_str()) + 1);
         strncpy(FatalGdbString, streamStr.c_str(), sizeof(FatalGdbString)-1);
@@ -355,11 +351,13 @@ namespace SigUtil
         sigaction(SIGUSR1, &action, nullptr);
     }
 
-    /// Kill the given pid with SIGTERM.  Returns true when the pid does not exist any more.
-    bool killChild(const int pid)
+    /// Kill the given pid with SIGKILL as default.  Returns true when the pid does not exist any more.
+    bool killChild(const int pid, const int signal)
     {
         LOG_DBG("Killing PID: " << pid);
-        if (kill(pid, SIGKILL) == 0 || errno == ESRCH)
+        // Don't kill anything in the fuzzer case: pid == 0 would kill the fuzzer itself, and
+        // killing random other processes is not a great idea, either.
+        if (Util::isFuzzing() || kill(pid, signal) == 0 || errno == ESRCH)
         {
             // Killed or doesn't exist.
             return true;
@@ -382,8 +380,8 @@ namespace SigUtil
 
         return false;
     }
+#endif // !MOBILEAPP
 }
 
-#endif // !MOBILEAPP
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

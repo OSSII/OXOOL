@@ -52,10 +52,13 @@ void Authorization::authorizeRequest(Poco::Net::HTTPRequest& request) const
             // there might be more headers in here; like
             //   Authorization: Basic ....
             //   X-Something-Custom: Huh
-            // Regular expression evaluates and finds "\n\r" and tokenizes accordingly
-            std::vector<std::string> tokens(LOOLProtocol::tokenize(_data, std::regex(R"(\n\r)"), /*skipEmpty =*/ true));
-            for (const auto& token : tokens)
+            // Split based on \n's or \r's and trim, to avoid nonsense in the
+            // headers
+            StringVector tokens(Util::tokenizeAnyOf(_data, "\n\r"));
+            for (auto it = tokens.begin(); it != tokens.end(); ++it)
             {
+                std::string token = tokens.getParam(*it);
+
                 size_t separator = token.find_first_of(':');
                 if (separator != std::string::npos)
                 {
@@ -83,6 +86,28 @@ void Authorization::authorizeRequest(Poco::Net::HTTPRequest& request) const
             throw BadRequestException("Invalid HTTP request type");
             break;
     }
+}
+
+Authorization Authorization::create(const Poco::URI::QueryParameters& queryParams)
+{
+    // prefer the access_token
+    std::string decoded;
+    for (const auto& param : queryParams)
+    {
+        if (param.first == "access_token")
+        {
+            Poco::URI::decode(param.second, decoded);
+            return Authorization(Authorization::Type::Token, decoded);
+        }
+
+        if (param.first == "access_header")
+            Poco::URI::decode(param.second, decoded);
+    }
+
+    if (!decoded.empty())
+        return Authorization(Authorization::Type::Header, decoded);
+
+    return Authorization();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

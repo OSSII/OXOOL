@@ -14,9 +14,10 @@
 #include <csignal>
 #include <sys/poll.h>
 #ifdef __linux
-#include <sys/prctl.h>
-#include <sys/syscall.h>
-#include <sys/vfs.h>
+#  include <sys/prctl.h>
+#  include <sys/syscall.h>
+#  include <sys/vfs.h>
+#  include <sys/resource.h>
 #elif defined IOS
 #import <Foundation/Foundation.h>
 #endif
@@ -25,6 +26,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 #include <atomic>
 #include <cassert>
@@ -51,8 +53,6 @@
 #include <Poco/JSON/JSON.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
-#include <Poco/Net/WebSocket.h>
-#include <Poco/Process.h>
 #include <Poco/RandomStream.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/Timestamp.h>
@@ -60,6 +60,7 @@
 
 #include "Common.hpp"
 #include "Log.hpp"
+#include "Protocol.hpp"
 #include "Util.hpp"
 
 using std::size_t;
@@ -166,14 +167,15 @@ namespace Util
         return tmp;
     }
 
-    std::string createRandomTmpDir()
+    std::string createRandomTmpDir(std::string root)
     {
-        std::string defaultTmp = getDefaultTmpDir();
-        std::string newTmp =
-            defaultTmp + "/lool-" + rng::getFilename(16);
-        if (::mkdir(newTmp.c_str(), S_IRWXU) < 0) {
-            LOG_ERR("Failed to create random temp directory");
-            return defaultTmp;
+        if (root.empty())
+            root = getDefaultTmpDir();
+        const std::string newTmp = root + "/lool-" + rng::getFilename(16);
+        if (::mkdir(newTmp.c_str(), S_IRWXU) < 0)
+        {
+            LOG_SYS("Failed to create random temp directory [" << newTmp << "]");
+            return root;
         }
         return newTmp;
     }
@@ -384,7 +386,7 @@ namespace Util
         default: assert(false);
         }
 
-        unit += "B";
+        unit += 'B';
         std::stringstream ss;
         ss << std::fixed << std::setprecision(1) << val << ' ' << unit;
         return ss.str();
@@ -448,7 +450,7 @@ namespace Util
         return oss.str();
     }
 
-    size_t getMemoryUsagePSS(const Poco::Process::PID pid)
+    size_t getMemoryUsagePSS(const pid_t pid)
     {
         if (pid > 0)
         {
@@ -465,7 +467,7 @@ namespace Util
         return 0;
     }
 
-    size_t getMemoryUsageRSS(const Poco::Process::PID pid)
+    size_t getMemoryUsageRSS(const pid_t pid)
     {
         static const int pageSizeBytes = getpagesize();
         size_t rss = 0;
@@ -480,7 +482,7 @@ namespace Util
         return 0;
     }
 
-    size_t getCpuUsage(const Poco::Process::PID pid)
+    size_t getCpuUsage(const pid_t pid)
     {
         if (pid > 0)
         {
@@ -492,7 +494,7 @@ namespace Util
         return 0;
     }
 
-    size_t getStatFromPid(const Poco::Process::PID pid, int ind)
+    size_t getStatFromPid(const pid_t pid, int ind)
     {
         if (pid > 0)
         {
@@ -521,6 +523,18 @@ namespace Util
         }
         return 0;
     }
+
+    void setProcessAndThreadPriorities(const pid_t pid, int prio)
+    {
+        int res = setpriority(PRIO_PROCESS, pid, prio);
+        LOG_TRC("Lowered kit [" << (int)pid << "] priority: " << prio << " with result: " << res);
+
+        // rely on Linux thread-id priority setting to drop this thread' priority
+        pid_t tid = getThreadId();
+        res = setpriority(PRIO_PROCESS, tid, prio);
+        LOG_TRC("Lowered own thread [" << (int)tid << "] priority: " << prio << " with result: " << res);
+    }
+
 #endif
 
     std::string replace(std::string result, const std::string& a, const std::string& b)
@@ -560,7 +574,7 @@ namespace Util
     {
         // Copy the current name.
         const std::string knownAs
-            = ThreadName[0] ? "known as [" + std::string(ThreadName) + "]" : "unnamed";
+            = ThreadName[0] ? "known as [" + std::string(ThreadName) + ']' : "unnamed";
 
         // Set the new name.
         strncpy(ThreadName, s.c_str(), sizeof(ThreadName) - 1);
@@ -625,6 +639,24 @@ namespace Util
         version = std::string(LOOLWSD_VERSION);
         hash = std::string(LOOLWSD_VERSION_HASH);
         hash.resize(std::min(8, (int)hash.length()));
+    }
+
+    std::string getProcessIdentifier()
+    {
+        static std::string id = Util::rng::getHexString(8);
+
+        return id;
+    }
+
+    std::string getVersionJSON()
+    {
+        std::string version, hash;
+        Util::getVersionInfo(version, hash);
+        return
+            "{ \"Version\":  \"" + version + "\", "
+            "\"Hash\":     \"" + hash + "\", "
+            "\"Protocol\": \"" + LOOLProtocol::GetProtocolVersion() + "\", "
+            "\"Id\":  \"" + Util::getProcessIdentifier() + "\" }";
     }
 
     std::string UniqueId()
@@ -829,7 +861,7 @@ namespace Util
         return std::string::npos;
     }
 
-    std::chrono::system_clock::time_point getFileTimestamp(std::string str_path)
+    std::chrono::system_clock::time_point getFileTimestamp(const std::string& str_path)
     {
         struct stat file;
         stat(str_path.c_str(), &file);
@@ -852,7 +884,7 @@ namespace Util
             << time_modified
             << std::setw(6)
             << (time - lastModified_s).count() / 1000
-            << "Z";
+            << 'Z';
 
         return oss.str();
     }
@@ -928,6 +960,108 @@ namespace Util
 #else
         return false;
 #endif
+    }
+
+    std::map<std::string, std::string> stringVectorToMap(std::vector<std::string> sVector, const char delimiter)
+    {
+        std::map<std::string, std::string> result;
+
+        for (std::vector<std::string>::iterator it = sVector.begin(); it != sVector.end(); it++)
+        {
+            size_t delimiterPosition = 0;
+            delimiterPosition = (*it).find(delimiter, 0);
+            if (delimiterPosition != std::string::npos)
+            {
+                std::string key = (*it).substr(0, delimiterPosition);
+                delimiterPosition++;
+                std::string value = (*it).substr(delimiterPosition);
+                result[key] = value;
+            }
+            else
+            {
+                LOG_WRN("Util::stringVectorToMap => record is misformed: " << (*it));
+            }
+        }
+
+        return result;
+    }
+
+    static std::string ApplicationPath;
+    void setApplicationPath(const std::string& path)
+    {
+        ApplicationPath = Poco::Path(path).absolute().toString();
+    }
+
+    std::string getApplicationPath()
+    {
+        return ApplicationPath;
+    }
+
+    #if !MOBILEAPP
+        // If OS is not mobile, it must be Linux.
+        std::string getLinuxVersion(){
+            // Read operating system info. We can read "os-release" file, located in /etc.
+            std::ifstream ifs("/etc/os-release");
+            std::string str(std::istreambuf_iterator<char>{ifs}, {});
+            std::vector<std::string> infoList = Util::splitStringToVector(str, '\n');
+            std::map<std::string, std::string> releaseInfo = Util::stringVectorToMap(infoList, '=');
+
+            auto it = releaseInfo.find("PRETTY_NAME");
+            if (it != releaseInfo.end())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "unknown";
+            }
+        }
+    #endif
+
+    StringVector tokenizeAnyOf(const std::string& s, const char* delimiters)
+    {
+        // trim from the end so that we do not have to check this exact case
+        // later
+        std::size_t length = s.length();
+        while (length > 0 && s[length - 1] == ' ')
+            --length;
+
+        if (length == 0)
+            return StringVector();
+
+        std::size_t delimitersLength = std::strlen(delimiters);
+        std::size_t start = 0;
+
+        std::vector<StringToken> tokens;
+        tokens.reserve(16);
+
+        while (start < length)
+        {
+            // ignore the leading whitespace
+            while (start < length && s[start] == ' ')
+                ++start;
+
+            // anything left?
+            if (start == length)
+                break;
+
+            std::size_t end = s.find_first_of(delimiters, start, delimitersLength);
+            if (end == std::string::npos)
+                end = length;
+
+            // trim the trailing whitespace
+            std::size_t trimEnd = end;
+            while (start < trimEnd && s[trimEnd - 1] == ' ')
+                --trimEnd;
+
+            // add only non-empty tokens
+            if (start < trimEnd)
+                tokens.emplace_back(start, trimEnd - start);
+
+            start = end + 1;
+        }
+
+        return StringVector(s, std::move(tokens));
     }
 }
 

@@ -3,7 +3,7 @@
  * L.Control.LokDialog used for displaying LOK dialogs
  */
 
-/* global $ L Hammer w2ui */
+/* global $ Hammer w2ui */
 L.WinUtil = {
 
 };
@@ -156,7 +156,6 @@ L.Control.LokDialog = L.Control.extend({
 			return; // Don't request rendering an empty area.
 
 		var dpiscale = L.getDpiScaleFactor();
-		//console.log('_sendPaintWindow: rectangle: ' + rectangle + ', dpiscale: ' + dpiscale);
 		this._map._socket.sendMessage('paintwindow ' + id + ' rectangle=' + rectangle + ' dpiscale=' + dpiscale);
 	},
 
@@ -363,11 +362,14 @@ L.Control.LokDialog = L.Control.extend({
 			dialogClass += ' lokdialog_notitle';
 
 		var that = this;
-		var size = $(window).width();
+		var winWidth = $(window).width();
+		var winHeight = $(window).height();
 		$(dialogContainer).dialog({
-			minWidth: Math.min(width, size.x),
-			width: Math.min(width, size.x),
-			maxHeight: $(window).height(),
+			minWidth: Math.min(width, winWidth),
+			maxWidth: winWidth,
+			width: 'auto',
+			minHeight: Math.min(height, winHeight),
+			maxHeight: winHeight,
 			height: 'auto',
 			title: title ? title : '',
 			modal: false,
@@ -379,7 +381,13 @@ L.Control.LokDialog = L.Control.extend({
 			}
 		});
 
-		if (leftTwips != null && topTwips != null) {
+		if (title) {
+			$(dialogContainer).dialog('option', 'position', {
+				my: 'center',
+				at: 'center',
+				of: window
+			});
+		} else if (leftTwips != null && topTwips != null) {
 			// magic to re-calculate the position in twips to absolute pixel
 			// position inside the #document-container
 			var pixels = this._map._docLayer._twipsToPixels(new L.Point(leftTwips, topTwips));
@@ -390,15 +398,17 @@ L.Control.LokDialog = L.Control.extend({
 			var top = pixels.y + panePos.y - origin.y;
 
 			if (left >= 0 && top >= 0) {
-				$(dialogContainer).dialog('option', 'position', { my: 'left top', at: 'left+' + left + ' top+' + top, of: '#document-container' });
+				$(dialogContainer).dialog('option', 'position', {
+					my: 'left top',
+					at: 'left+' + left + ' top+' + top,
+					of: '#document-container',
+					collision: 'fit'
+				});
 			}
 		}
 
 		// don't show the dialog surround until we have the dialog content
 		$(dialogContainer).parent().hide();
-
-		// Override default minHeight, which can be too large for thin dialogs.
-		L.DomUtil.setStyle(dialogContainer, 'minHeight', height + 'px');
 
 		this._dialogs[id] = {
 			width: width,
@@ -419,6 +429,7 @@ L.Control.LokDialog = L.Control.extend({
 	},
 
 	_setupWindowEvents: function(id, canvas, dlgInput) {
+		var strId = this._toStrId(id);
 		L.DomEvent.on(canvas, 'contextmenu', L.DomEvent.preventDefault);
 		L.DomEvent.on(canvas, 'mousemove', function(e) {
 			this._map.lastActiveTime = Date.now();
@@ -426,6 +437,13 @@ L.Control.LokDialog = L.Control.extend({
 		}, this);
 		L.DomEvent.on(canvas, 'mousedown mouseup', function(e) {
 			L.DomEvent.stopPropagation(e);
+			// 因為 focus() 會讓畫面捲回輸入位置，造成點選按鍵點不到
+			// 所以有按鍵時，先把輸入位置移至滑鼠點擊位置，
+			// 如此永遠不會產生捲動動作
+			if (e.type === 'mousedown') {
+				var inputContainer = L.DomUtil.get(strId + '-clipboard-container');
+				L.DomUtil.setPosition(inputContainer, new L.Point(e.offsetX, e.offsetY));
+			}
 			var buttons = 0;
 			buttons |= e.button === this._map['mouse'].JSButtons.left ? this._map['mouse'].LOButtons.left : 0;
 			buttons |= e.button === this._map['mouse'].JSButtons.middle ? this._map['mouse'].LOButtons.middle : 0;
@@ -560,7 +578,11 @@ L.Control.LokDialog = L.Control.extend({
 		if (notifyBackend)
 			this._sendCloseWindow(dialogId);
 		$('#' + this._toStrId(dialogId)).remove();
+
+		// focus the main document
+		this._map.fire('editorgotfocus');
 		this._map.focus();
+
 		delete this._dialogs[dialogId];
 		this._currentId = null;
 

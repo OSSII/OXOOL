@@ -7,43 +7,42 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_TILEDESC_HPP
-#define INCLUDED_TILEDESC_HPP
+#pragma once
 
 #include <cassert>
-#include <map>
+#include <unordered_map>
 #include <sstream>
 #include <string>
 
-#include <Poco/StringTokenizer.h>
 
 #include "Exceptions.hpp"
-#include "Protocol.hpp"
+#include <Protocol.hpp>
 
 #define TILE_WIRE_ID
-typedef uint32_t TileWireId;
-typedef uint64_t TileBinaryHash;
+using TileWireId = uint32_t;
+using TileBinaryHash = uint64_t;
 
 /// Tile Descriptor
 /// Represents a tile's coordinates and dimensions.
-class TileDesc
+class TileDesc final
 {
 public:
-    TileDesc(int normalizedViewId, int part, int width, int height, int tilePosX, int tilePosY, int tileWidth, int tileHeight, int ver, int imgSize, int id, bool broadcast) :
-        _normalizedViewId(normalizedViewId),
-        _part(part),
-        _width(width),
-        _height(height),
-        _tilePosX(tilePosX),
-        _tilePosY(tilePosY),
-        _tileWidth(tileWidth),
-        _tileHeight(tileHeight),
-        _ver(ver),
-        _imgSize(imgSize),
-        _id(id),
-        _broadcast(broadcast),
-        _oldWireId(0),
-        _wireId(0)
+    TileDesc(int normalizedViewId, int part, int width, int height, int tilePosX, int tilePosY, int tileWidth,
+             int tileHeight, int ver, int imgSize, int id, bool broadcast)
+        : _normalizedViewId(normalizedViewId)
+        , _part(part)
+        , _width(width)
+        , _height(height)
+        , _tilePosX(tilePosX)
+        , _tilePosY(tilePosY)
+        , _tileWidth(tileWidth)
+        , _tileHeight(tileHeight)
+        , _ver(ver)
+        , _imgSize(imgSize)
+        , _id(id)
+        , _broadcast(broadcast)
+        , _oldWireId(0)
+        , _wireId(0)
     {
         if (_normalizedViewId < 0 ||
             _part < 0 ||
@@ -58,6 +57,7 @@ public:
             throw BadArgumentException("Invalid tile descriptor.");
         }
     }
+
     int getNormalizedViewId() const { return _normalizedViewId; }
     void setNormalizedViewId(const int normalizedViewId) { _normalizedViewId = normalizedViewId; }
     int getPart() const { return _part; }
@@ -88,7 +88,8 @@ public:
                _tileWidth == other._tileWidth &&
                _tileHeight == other._tileHeight &&
                _id == other._id &&
-               _broadcast == other._broadcast;
+               _broadcast == other._broadcast &&
+               _normalizedViewId == other._normalizedViewId;
     }
 
     static bool rectanglesIntersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
@@ -144,19 +145,18 @@ public:
     {
         if (!onSameRow(other))
             return false;
-        int gridX = getTilePosX() / getTileWidth();
-        int gridXOther = other.getTilePosX() / other.getTileWidth();
-        int delta = gridX - gridXOther;
+
+        const int gridX = getTilePosX() / getTileWidth();
+        const int gridXOther = other.getTilePosX() / other.getTileWidth();
+        const int delta = gridX - gridXOther;
         // a 4k screen - is sixteen 256 pixel wide tiles wide.
-        if (delta < -16 || delta > 16)
-            return false;
-        else
-            return true;
+        return (delta >= -16 && delta <= 16);
     }
 
     /// Serialize this instance into a string.
     /// Optionally prepend a prefix.
-    std::string serialize(const std::string& prefix = "") const
+    std::string serialize(const std::string& prefix = std::string(),
+                          const std::string& suffix = std::string()) const
     {
         std::ostringstream oss;
         oss << prefix
@@ -189,15 +189,24 @@ public:
             oss << " broadcast=yes";
         }
 
+        oss << suffix;
+        return oss.str();
+    }
+
+    /// short name for a tile for debugging.
+    std::string debugName() const
+    {
+        std::ostringstream oss;
+        oss << '(' << getNormalizedViewId() << ',' << getPart() << ',' << getTilePosX() << ',' << getTilePosY() << ')';
         return oss.str();
     }
 
     /// Deserialize a TileDesc from a tokenized string.
-    static TileDesc parse(const std::vector<std::string>& tokens)
+    static TileDesc parse(const StringVector& tokens)
     {
         // We don't expect undocumented fields and
         // assume all values to be int.
-        std::map<std::string, int> pairs;
+        std::unordered_map<std::string, int> pairs(16);
 
         // Optional.
         pairs["ver"] = -1;
@@ -241,7 +250,15 @@ public:
     /// Deserialize a TileDesc from a string format.
     static TileDesc parse(const std::string& message)
     {
-        return parse(LOOLProtocol::tokenize(message.data(), message.size()));
+        return parse(Util::tokenize(message.data(), message.size()));
+    }
+
+    std::string generateID() const
+    {
+        std::ostringstream tileID;
+        tileID << getPart() << ':' << getTilePosX() << ':' << getTilePosY() << ':'
+               << getTileWidth() << ':' << getTileHeight() << ':' << getNormalizedViewId();
+        return tileID.str();
     }
 
 private:
@@ -264,13 +281,13 @@ private:
 /// One or more tile header.
 /// Used to request the rendering of multiple
 /// tiles as well as the header of the response.
-class TileCombined
+class TileCombined final
 {
 private:
     TileCombined(int normalizedViewId, int part, int width, int height,
                  const std::string& tilePositionsX, const std::string& tilePositionsY,
                  int tileWidth, int tileHeight, const std::string& vers,
-                 const std::string& imgSizes, int id,
+                 const std::string& imgSizes,
                  const std::string& oldWireIds,
                  const std::string& wireIds) :
         _normalizedViewId(normalizedViewId),
@@ -278,11 +295,9 @@ private:
         _width(width),
         _height(height),
         _tileWidth(tileWidth),
-        _tileHeight(tileHeight),
-        _id(id)
+        _tileHeight(tileHeight)
     {
-        if (_normalizedViewId < 0 ||
-            _part < 0 ||
+        if (_part < 0 ||
             _width <= 0 ||
             _height <= 0 ||
             _tileWidth <= 0 ||
@@ -291,21 +306,21 @@ private:
             throw BadArgumentException("Invalid tilecombine descriptor.");
         }
 
-        Poco::StringTokenizer positionXtokens(tilePositionsX, ",", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-        Poco::StringTokenizer positionYtokens(tilePositionsY, ",", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-        Poco::StringTokenizer imgSizeTokens(imgSizes, ",", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-        Poco::StringTokenizer verTokens(vers, ",", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-        Poco::StringTokenizer oldWireIdTokens(oldWireIds, ",", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-        Poco::StringTokenizer wireIdTokens(wireIds, ",", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
+        StringVector positionXtokens(Util::tokenize(tilePositionsX, ','));
+        StringVector positionYtokens(Util::tokenize(tilePositionsY, ','));
+        StringVector imgSizeTokens(Util::tokenize(imgSizes, ','));
+        StringVector verTokens(Util::tokenize(vers, ','));
+        StringVector oldWireIdTokens(Util::tokenize(oldWireIds, ','));
+        StringVector wireIdTokens(Util::tokenize(wireIds, ','));
 
-        const size_t numberOfPositions = positionXtokens.count();
+        const size_t numberOfPositions = positionXtokens.size();
 
         // check that the comma-separated strings have the same number of elements
-        if (numberOfPositions != positionYtokens.count() ||
-            (!imgSizes.empty() && numberOfPositions != imgSizeTokens.count()) ||
-            (!vers.empty() && numberOfPositions != verTokens.count()) ||
-            (!oldWireIds.empty() && numberOfPositions != oldWireIdTokens.count()) ||
-            (!wireIds.empty() && numberOfPositions != wireIdTokens.count()))
+        if (numberOfPositions != positionYtokens.size() ||
+            (!imgSizes.empty() && numberOfPositions != imgSizeTokens.size()) ||
+            (!vers.empty() && numberOfPositions != verTokens.size()) ||
+            (!oldWireIds.empty() && numberOfPositions != oldWireIdTokens.size()) ||
+            (!wireIds.empty() && numberOfPositions != wireIdTokens.size()))
         {
             throw BadArgumentException("Invalid tilecombine descriptor. Unequal number of tiles in parameters.");
         }
@@ -325,30 +340,30 @@ private:
             }
 
             int imgSize = 0;
-            if (imgSizeTokens.count() && !LOOLProtocol::stringToInteger(imgSizeTokens[i], imgSize))
+            if (!imgSizeTokens.empty() && !LOOLProtocol::stringToInteger(imgSizeTokens[i], imgSize))
             {
                 throw BadArgumentException("Invalid 'imgsize' in tilecombine descriptor.");
             }
 
             int ver = -1;
-            if (verTokens.count() && !verTokens[i].empty() && !LOOLProtocol::stringToInteger(verTokens[i], ver))
+            if (!verTokens.empty() && !verTokens[i].empty() && !LOOLProtocol::stringToInteger(verTokens[i], ver))
             {
                 throw BadArgumentException("Invalid 'ver' in tilecombine descriptor.");
             }
 
             TileWireId oldWireId = 0;
-            if (oldWireIdTokens.count() && !LOOLProtocol::stringToUInt32(oldWireIdTokens[i], oldWireId))
+            if (!oldWireIdTokens.empty() && !LOOLProtocol::stringToUInt32(oldWireIdTokens[i], oldWireId))
             {
                 throw BadArgumentException("Invalid tilecombine descriptor.");
             }
 
             TileWireId wireId = 0;
-            if (wireIdTokens.count() && !LOOLProtocol::stringToUInt32(wireIdTokens[i], wireId))
+            if (!wireIdTokens.empty() && !LOOLProtocol::stringToUInt32(wireIdTokens[i], wireId))
             {
                 throw BadArgumentException("Invalid tilecombine descriptor.");
             }
 
-            _tiles.emplace_back(_normalizedViewId, _part, _width, _height, x, y, _tileWidth, _tileHeight, ver, imgSize, id, false);
+            _tiles.emplace_back(_normalizedViewId, _part, _width, _height, x, y, _tileWidth, _tileHeight, ver, imgSize, -1, false);
             _tiles.back().setOldWireId(oldWireId);
             _tiles.back().setWireId(wireId);
         }
@@ -362,6 +377,9 @@ public:
     int getTileWidth() const { return _tileWidth; }
     int getTileHeight() const { return _tileHeight; }
 
+    const std::vector<TileDesc>& getTiles() const { return _tiles; }
+    std::vector<TileDesc>& getTiles() { return _tiles; }
+
     void setNormalizedViewId(int nViewId)
     {
         for (auto& tile : getTiles())
@@ -371,12 +389,16 @@ public:
     }
 
 
-    const std::vector<TileDesc>& getTiles() const { return _tiles; }
-    std::vector<TileDesc>& getTiles() { return _tiles; }
-
     /// Serialize this instance into a string.
     /// Optionally prepend a prefix.
-    std::string serialize(const std::string& prefix = "") const
+    std::string serialize(const std::string& prefix = std::string(),
+                          const std::string& suffix = std::string()) const
+    {
+        return serialize(prefix, suffix, _tiles);
+    }
+
+    std::string serialize(const std::string& prefix, const std::string &suffix,
+                          const std::vector<TileDesc> &tiles) const
     {
         std::ostringstream oss;
         oss << prefix
@@ -385,21 +407,21 @@ public:
             << " width=" << _width
             << " height=" << _height
             << " tileposx=";
-        for (const auto& tile : _tiles)
+        for (const auto& tile : tiles)
         {
             oss << tile.getTilePosX() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Seek back over last comma, overwritten below.
 
         oss << " tileposy=";
-        for (const auto& tile : _tiles)
+        for (const auto& tile : tiles)
         {
             oss << tile.getTilePosY() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Ditto.
 
         oss << " imgsize=";
-        for (const auto& tile : _tiles)
+        for (const auto& tile : tiles)
         {
             oss << tile.getImgSize() << ','; // Ditto.
         }
@@ -409,45 +431,41 @@ public:
             << " tileheight=" << _tileHeight;
 
         oss << " ver=";
-        for (const auto& tile : _tiles)
+        for (const auto& tile : tiles)
         {
             oss << tile.getVersion() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Ditto.
 
         oss << " oldwid=";
-        for (const auto& tile : _tiles)
+        for (const auto& tile : tiles)
         {
             oss << tile.getOldWireId() << ',';
         }
         oss.seekp(-1, std::ios_base::cur); // Ditto
 
         oss << " wid=";
-        for (const auto& tile : _tiles)
-        {
-            oss << tile.getWireId() << ',';
-        }
-        oss.seekp(-1, std::ios_base::cur); // See beow.
 
-        if (_id >= 0)
+        bool comma = false;
+        for (const auto& tile : tiles)
         {
-            oss << " id=" << _id;
+            if (comma)
+                oss << ',';
+
+            oss << tile.getWireId();
+            comma = true;
         }
 
-        // Make sure we don't return a potential trailing comma that
-        // we have seeked back over but not overwritten after all.
-        return oss.str().substr(0, oss.tellp());
+        oss << suffix;
+        return oss.str();
     }
 
     /// Deserialize a TileDesc from a tokenized string.
-    static TileCombined parse(const std::vector<std::string>& tokens)
+    static TileCombined parse(const StringVector& tokens)
     {
         // We don't expect undocumented fields and
         // assume all values to be int.
-        std::map<std::string, int> pairs;
-
-        // Optional.
-        pairs["id"] = -1;
+        std::unordered_map<std::string, int> pairs(16);
 
         std::string tilePositionsX;
         std::string tilePositionsY;
@@ -460,7 +478,7 @@ public:
         {
             std::string name;
             std::string value;
-            if (LOOLProtocol::parseNameValuePair(token, name, value))
+            if (LOOLProtocol::parseNameValuePair(tokens.getParam(token), name, value))
             {
                 if (name == "tileposx")
                 {
@@ -500,14 +518,13 @@ public:
         return TileCombined(pairs["nviewid"], pairs["part"], pairs["width"], pairs["height"],
                             tilePositionsX, tilePositionsY,
                             pairs["tilewidth"], pairs["tileheight"],
-                            versions,
-                            imgSizes, pairs["id"], oldwireIds, wireIds);
+                            versions, imgSizes, oldwireIds, wireIds);
     }
 
     /// Deserialize a TileDesc from a string format.
     static TileCombined parse(const std::string& message)
     {
-        return parse(LOOLProtocol::tokenize(message.data(), message.size()));
+        return parse(Util::tokenize(message.data(), message.size()));
     }
 
     static TileCombined create(const std::vector<TileDesc>& tiles)
@@ -532,7 +549,19 @@ public:
         vers.seekp(-1, std::ios_base::cur); // Remove last comma.
         return TileCombined(tiles[0].getNormalizedViewId(), tiles[0].getPart(), tiles[0].getWidth(), tiles[0].getHeight(),
                             xs.str(), ys.str(), tiles[0].getTileWidth(), tiles[0].getTileHeight(),
-                            vers.str(), "", -1, oldhs.str(), hs.str());
+                            vers.str(), "", oldhs.str(), hs.str());
+    }
+
+    /// To support legacy / under-used renderTile
+    explicit TileCombined(const TileDesc &desc)
+    {
+        _part = desc.getPart();
+        _width = desc.getWidth();
+        _height = desc.getHeight();
+        _tileWidth = desc.getTileWidth();
+        _tileHeight = desc.getTileHeight();
+        _normalizedViewId = desc.getNormalizedViewId();
+        _tiles.push_back(desc);
     }
 
 private:
@@ -543,9 +572,6 @@ private:
     int _height;
     int _tileWidth;
     int _tileHeight;
-    int _id;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -19,6 +19,7 @@
 #include <Log.hpp>
 #include <LOOLWSD.hpp>
 #include <Protocol.hpp>
+#include <SetupKitEnvironment.hpp>
 #include <Util.hpp>
 
 #include <osl/detail/android-bootstrap.h>
@@ -35,6 +36,10 @@ static int closeNotificationPipeForForwardingThread[2] = {-1, -1};
 static JavaVM* javaVM = nullptr;
 static bool lokInitialized = false;
 
+// Remember the reference to the LOActivity
+jclass g_loActivityClz = nullptr;
+jobject g_loActivityObj = nullptr;
+
 extern "C" JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void*) {
     javaVM = vm;
@@ -45,7 +50,7 @@ JNI_OnLoad(JavaVM* vm, void*) {
         return JNI_ERR; // JNI version not supported.
     }
 
-    setupKitEnvironment();
+    setupKitEnvironment("");
 
     // Uncomment the following to see the logs from the core too
     //setenv("SAL_LOG", "+WARN+INFO", 0);
@@ -89,7 +94,7 @@ public:
     JNIEnv *getEnv() const { return _env; }
 };
 
-static void send2JS(const JNIThreadContext &jctx, jclass loActivityClz, jobject loActivityObj, const std::vector<char>& buffer)
+static void send2JS(const JNIThreadContext &jctx, const std::vector<char>& buffer)
 {
     LOG_DBG("Send to JS: " << LOOLProtocol::getAbbreviatedMessage(buffer.data(), buffer.size()));
 
@@ -149,8 +154,22 @@ static void send2JS(const JNIThreadContext &jctx, jclass loActivityClz, jobject 
 
     JNIEnv *env = jctx.getEnv();
     jstring jstr = env->NewStringUTF(js.c_str());
-    jmethodID callFakeWebsocket = env->GetMethodID(loActivityClz, "callFakeWebsocketOnMessage", "(Ljava/lang/String;)V");
-    env->CallVoidMethod(loActivityObj, callFakeWebsocket, jstr);
+    jmethodID callFakeWebsocket = env->GetMethodID(g_loActivityClz, "callFakeWebsocketOnMessage", "(Ljava/lang/String;)V");
+    env->CallVoidMethod(g_loActivityObj, callFakeWebsocket, jstr);
+    env->DeleteLocalRef(jstr);
+
+    if (env->ExceptionCheck())
+        env->ExceptionDescribe();
+}
+
+void postDirectMessage(std::string message)
+{
+    JNIThreadContext ctx;
+    JNIEnv *env = ctx.getEnv();
+
+    jstring jstr = env->NewStringUTF(message.c_str());
+    jmethodID callPostMobileMessage = env->GetMethodID(g_loActivityClz, "postMobileMessage", "(Ljava/lang/String;)V");
+    env->CallVoidMethod(g_loActivityObj, callPostMobileMessage, jstr);
     env->DeleteLocalRef(jstr);
 
     if (env->ExceptionCheck())
@@ -170,7 +189,7 @@ void closeDocument()
 
 /// Handle a message from JavaScript.
 extern "C" JNIEXPORT void JNICALL
-Java_org_libreoffice_androidlib_LOActivity_postMobileMessageNative(JNIEnv *env, jobject instance, jstring message)
+Java_org_libreoffice_androidlib_LOActivity_postMobileMessageNative(JNIEnv *env, jobject, jstring message)
 {
     const char *string_value = env->GetStringUTFChars(message, nullptr);
 
@@ -197,11 +216,7 @@ Java_org_libreoffice_androidlib_LOActivity_postMobileMessageNative(JNIEnv *env, 
             fakeSocketPipe2(closeNotificationPipeForForwardingThread);
 
             // Start another thread to read responses and forward them to the JavaScript
-            jclass clz = env->GetObjectClass(instance);
-            jclass loActivityClz = (jclass) env->NewGlobalRef(clz);
-            jobject loActivityObj = env->NewGlobalRef(instance);
-
-            std::thread([loActivityClz, loActivityObj, currentFakeClientFd]
+            std::thread([currentFakeClientFd]
                         {
                             Util::setThreadName("app2js");
                             JNIThreadContext ctx;
@@ -225,10 +240,6 @@ Java_org_libreoffice_androidlib_LOActivity_postMobileMessageNative(JNIEnv *env, 
                                        // is saved by closing it.
                                        fakeSocketClose(closeNotificationPipeForForwardingThread[1]);
 
-                                       // Flag to make the inter-thread plumbing in the Online
-                                       // bits go away quicker.
-                                       MobileTerminationFlag = true;
-
                                        // Close our end of the fake socket connection to the
                                        // ClientSession thread, so that it terminates
                                        fakeSocketClose(currentFakeClientFd);
@@ -242,7 +253,7 @@ Java_org_libreoffice_androidlib_LOActivity_postMobileMessageNative(JNIEnv *env, 
                                            return;
                                        std::vector<char> buf(n);
                                        n = fakeSocketRead(currentFakeClientFd, buf.data(), n);
-                                       send2JS(ctx, loActivityClz, loActivityObj, buf);
+                                       send2JS(ctx, buf);
                                    }
                                }
                                else
@@ -290,9 +301,17 @@ extern "C" jboolean libreofficekit_initialize(JNIEnv* env, jstring dataDir, jstr
 
 /// Create the LOOLWSD instance.
 extern "C" JNIEXPORT void JNICALL
-Java_org_libreoffice_androidlib_LOActivity_createLOOLWSD(JNIEnv *env, jobject, jstring dataDir, jstring cacheDir, jstring apkFile, jobject assetManager, jstring loadFileURL)
+Java_org_libreoffice_androidlib_LOActivity_createLOOLWSD(JNIEnv *env, jobject instance, jstring dataDir, jstring cacheDir, jstring apkFile, jobject assetManager, jstring loadFileURL)
 {
     fileURL = std::string(env->GetStringUTFChars(loadFileURL, nullptr));
+
+    // remember the LOActivity class and object to be able to call back
+    env->DeleteGlobalRef(g_loActivityClz);
+    env->DeleteGlobalRef(g_loActivityObj);
+
+    jclass clz = env->GetObjectClass(instance);
+    g_loActivityClz = (jclass) env->NewGlobalRef(clz);
+    g_loActivityObj = env->NewGlobalRef(instance);
 
     // already initialized?
     if (lokInitialized)
@@ -335,12 +354,12 @@ Java_org_libreoffice_androidlib_LOActivity_createLOOLWSD(JNIEnv *env, jobject, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_org_libreoffice_androidlib_LOActivity_saveAs(JNIEnv *env, jobject instance,
+Java_org_libreoffice_androidlib_LOActivity_saveAs(JNIEnv *env, jobject,
                                                   jstring fileUri_, jstring format_) {
     const char *fileUri = env->GetStringUTFChars(fileUri_, 0);
     const char *format = env->GetStringUTFChars(format_, 0);
 
-    getLOKDocument()->saveAs(fileUri, format, nullptr);
+    getLOKDocumentForAndroidOnly()->saveAs(fileUri, format, nullptr);
 
     env->ReleaseStringUTFChars(fileUri_, fileUri);
     env->ReleaseStringUTFChars(format_, format);
@@ -348,7 +367,7 @@ Java_org_libreoffice_androidlib_LOActivity_saveAs(JNIEnv *env, jobject instance,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_org_libreoffice_androidlib_LOActivity_postUnoCommand(JNIEnv* pEnv, jobject instance,
+Java_org_libreoffice_androidlib_LOActivity_postUnoCommand(JNIEnv* pEnv, jobject,
                                                           jstring command, jstring arguments, jboolean bNotifyWhenFinished)
 {
     const char* pCommand = pEnv->GetStringUTFChars(command, nullptr);
@@ -356,7 +375,7 @@ Java_org_libreoffice_androidlib_LOActivity_postUnoCommand(JNIEnv* pEnv, jobject 
     if (arguments != nullptr)
         pArguments = pEnv->GetStringUTFChars(arguments, nullptr);
 
-    getLOKDocument()->postUnoCommand(pCommand, pArguments, bNotifyWhenFinished);
+    getLOKDocumentForAndroidOnly()->postUnoCommand(pCommand, pArguments, bNotifyWhenFinished);
 
     pEnv->ReleaseStringUTFChars(command, pCommand);
     if (arguments != nullptr)
@@ -382,7 +401,7 @@ const char* copyJavaString(JNIEnv* pEnv, jstring aJavaString)
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_org_libreoffice_androidlib_LOActivity_getClipboardContent(JNIEnv *env, jobject instance, jobject lokClipboardData)
+Java_org_libreoffice_androidlib_LOActivity_getClipboardContent(JNIEnv *env, jobject, jobject lokClipboardData)
 {
     const char** mimeTypes = nullptr;
     size_t outCount = 0;
@@ -402,9 +421,9 @@ Java_org_libreoffice_androidlib_LOActivity_getClipboardContent(JNIEnv *env, jobj
     jclass class_LokClipboardData = env->GetObjectClass(lokClipboardData);
     jfieldID fieldId_LokClipboardData_clipboardEntries = env->GetFieldID(class_LokClipboardData , "clipboardEntries", "Ljava/util/ArrayList;");
 
-    if (getLOKDocument()->getClipboard(mimeTypes,
-                                       &outCount, &outMimeTypes,
-                                       &outSizes, &outStreams))
+    if (getLOKDocumentForAndroidOnly()->getClipboard(mimeTypes,
+                                                     &outCount, &outMimeTypes,
+                                                     &outSizes, &outStreams))
     {
         // return early
         if (outCount == 0)
@@ -440,9 +459,9 @@ Java_org_libreoffice_androidlib_LOActivity_getClipboardContent(JNIEnv *env, jobj
 
     const char* mimeTypesHTML[] = { "text/plain;charset=utf-8", "text/html", nullptr };
 
-    if (getLOKDocument()->getClipboard(mimeTypesHTML,
-                                       &outCount, &outMimeTypes,
-                                       &outSizes, &outStreams))
+    if (getLOKDocumentForAndroidOnly()->getClipboard(mimeTypesHTML,
+                                                     &outCount, &outMimeTypes,
+                                                     &outSizes, &outStreams))
     {
         // return early
         if (outCount == 0)
@@ -481,7 +500,7 @@ Java_org_libreoffice_androidlib_LOActivity_getClipboardContent(JNIEnv *env, jobj
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_org_libreoffice_androidlib_LOActivity_setClipboardContent(JNIEnv *env, jobject instance, jobject lokClipboardData) {
+Java_org_libreoffice_androidlib_LOActivity_setClipboardContent(JNIEnv *env, jobject, jobject lokClipboardData) {
     jclass class_ArrayList= env->FindClass("java/util/ArrayList");
     jmethodID methodId_ArrayList_ToArray = env->GetMethodID(class_ArrayList, "toArray", "()[Ljava/lang/Object;");
 
@@ -522,18 +541,18 @@ Java_org_libreoffice_androidlib_LOActivity_setClipboardContent(JNIEnv *env, jobj
         pStreams[nEntryIndex] = dataArray;
     }
 
-    getLOKDocument()->setClipboard(nEntrySize, pMimeTypes, pSizes, pStreams);
+    getLOKDocumentForAndroidOnly()->setClipboard(nEntrySize, pMimeTypes, pSizes, pStreams);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_org_libreoffice_androidlib_LOActivity_paste(JNIEnv *env, jobject instance, jstring inMimeType, jbyteArray inData) {
+Java_org_libreoffice_androidlib_LOActivity_paste(JNIEnv *env, jobject, jstring inMimeType, jbyteArray inData) {
     const char* mimeType = env->GetStringUTFChars(inMimeType, nullptr);
 
     size_t dataArrayLength = env->GetArrayLength(inData);
     char* dataArray = new char[dataArrayLength];
     env->GetByteArrayRegion(inData, 0, dataArrayLength, reinterpret_cast<jbyte*>(dataArray));
-    getLOKDocument()->paste(mimeType, dataArray, dataArrayLength);
+    getLOKDocumentForAndroidOnly()->paste(mimeType, dataArray, dataArrayLength);
     env->ReleaseStringUTFChars(inMimeType, mimeType);
 }
 

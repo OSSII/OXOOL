@@ -1,5 +1,5 @@
 
-.mCSB_scrollTools_vertical {
+/*.mCSB_scrollTools_vertical {
 	width: 38px !important;
 }
 .mCSB_scrollTools_vertical .mCSB_dragger_bar {
@@ -12,7 +12,7 @@
 	background: url('images/lc_scrollbar_mobile.svg') no-repeat center #fff !important;
 	background-size: 24px !important;
 	box-shadow: 0 1px 3px 1px #00000050;
-}
+}*/
 
 /*@media (max-width: 767px), (max-device-height: 767px) {
 	#mCSB_2_dragger_horizontal, #mCSB_1_dragger_horizontal {
@@ -20,7 +20,7 @@
 	}
 }*/
 
-#toolbar-viewer.w2ui-toolbar {
+#toolbar-viewer-wrapper.w2ui-toolbar {
     background-color: #d0d0d0 !important;
 }
 
@@ -69,6 +69,10 @@
 
 #spreadsheet-toolbar.mobile-view {
     bottom: 0px;
+}
+
+#spreadsheet-toolbar.readonly {
+    display: none;
 }
 
 #formulabar {
@@ -196,7 +200,7 @@
     border-color: #ccc;
     background-color: #eee;
 }
-.closebuttonimage{ background: url('images/cmd/quit.svg') no-repeat center !important; }
+.closebuttonimage{ background: url('images/cmd/closepreview.svg') no-repeat center !important; }
 
 #tb_actionbar_item_left {
     width: 45%;

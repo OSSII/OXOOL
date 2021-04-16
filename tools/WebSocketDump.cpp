@@ -63,15 +63,21 @@ private:
     void onConnect(const std::shared_ptr<StreamSocket>& socket) override
     {
         _socket = socket;
-        LOG_TRC("#" << socket->getFD() << " Connected to ClientRequestDispatcher.");
+        LOG_TRC('#' << socket->getFD() << " Connected to ClientRequestDispatcher.");
     }
 
     /// Called after successful socket reads.
     void handleIncomingMessage(SocketDisposition &disposition) override
     {
         std::shared_ptr<StreamSocket> socket = _socket.lock();
+        if (!socket)
+        {
+            LOG_ERR("Invalid socket while reading client message.");
+            return;
+        }
+
         std::vector<char>& in = socket->getInBuffer();
-        LOG_TRC("#" << socket->getFD() << " handling incoming " << in.size() << " bytes.");
+        LOG_TRC('#' << socket->getFD() << " handling incoming " << in.size() << " bytes.");
 
         // Find the end of the header, if any.
         static const std::string marker("\r\n\r\n");
@@ -79,7 +85,7 @@ private:
                                   marker.begin(), marker.end());
         if (itBody == in.end())
         {
-            LOG_DBG("#" << socket->getFD() << " doesn't have enough data yet.");
+            LOG_DBG('#' << socket->getFD() << " doesn't have enough data yet.");
             return;
         }
 
@@ -95,7 +101,7 @@ private:
             Log::StreamLogger logger = Log::info();
             if (logger.enabled())
             {
-                logger << "#" << socket->getFD() << ": Client HTTP Request: "
+                logger << '#' << socket->getFD() << ": Client HTTP Request: "
                        << request.getMethod() << ' '
                        << request.getURI() << ' '
                        << request.getVersion();
@@ -135,7 +141,7 @@ private:
             LOG_INF("Incoming websocket request: " << request.getURI());
 
             const std::string& requestURI = request.getURI();
-            StringVector pathTokens(LOOLProtocol::tokenize(requestURI, '/'));
+            StringVector pathTokens(Util::tokenize(requestURI, '/'));
             if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
             {
                 auto dumpHandler = std::make_shared<DumpSocketHandler>(_socket, request);
@@ -166,7 +172,7 @@ private:
             socket->shutdown();
 
             // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
-            LOG_INF("#" << socket->getFD() << " Exception while processing incoming request: [" <<
+            LOG_INF('#' << socket->getFD() << " Exception while processing incoming request: [" <<
                     LOOLProtocol::getAbbreviatedMessage(in) << "]: " << exc.what());
         }
 
@@ -176,7 +182,7 @@ private:
     }
 
     int getPollEvents(std::chrono::steady_clock::time_point /* now */,
-                      int & /* timeoutMaxMs */) override
+                      int64_t & /* timeoutMaxMicroS */) override
     {
         return POLLIN;
     }
@@ -238,7 +244,7 @@ int main (int argc, char **argv)
                     std::map<std::string, std::string>());
 
     LoolConfig config;
-    config.load("loolwsd.xml");
+    config.load("oxoolwsd.xml");
 
     // read the port & ssl support
     int port = 9042;
@@ -290,7 +296,7 @@ int main (int argc, char **argv)
 
     while (true)
     {
-        DumpSocketPoll.poll(100 * 1000);
+        DumpSocketPoll.poll(100 * 1000 * 1000);
     }
 }
 

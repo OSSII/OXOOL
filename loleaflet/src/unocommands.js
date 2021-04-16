@@ -9128,6 +9128,12 @@ var unoCommandsArray = {
             "menu": "[placeholder for message]"
         }
     },
+    "SecurePrint": {
+        "text": {
+            "menu": "SecurePrint...",
+            "properties": "1"
+        }
+    },
     "Select": {
         "global": {
             "menu": "Select ~All"

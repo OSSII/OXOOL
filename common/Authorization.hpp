@@ -9,15 +9,14 @@
 
 // WOPI Authorization
 
-#ifndef INCLUDED_AUTHORIZATION_HPP
-#define INCLUDED_AUTHORIZATION_HPP
+#pragma once
 
 #include <string>
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/URI.h>
 
-/// Class to keep the authorization data.
+/// Class to keep the authorization data, which can be either access_token or access_header.
 class Authorization
 {
 public:
@@ -29,8 +28,8 @@ public:
     };
 
 private:
-    Type _type;
-    std::string _data;
+    const Type _type;
+    const std::string _data;
 
 public:
     Authorization()
@@ -44,13 +43,17 @@ public:
     {
     }
 
+    /// Create an Authorization instance from the URI query parameters.
+    /// Expects access_token (preferred) or access_header.
+    static Authorization create(const Poco::URI::QueryParameters& queryParams);
+    static Authorization create(const Poco::URI& uri) { return create(uri.getQueryParameters()); }
+    static Authorization create(const std::string& uri) { return create(Poco::URI(uri)); }
+
     /// Set the access_token parametr to the given uri.
     void authorizeURI(Poco::URI& uri) const;
 
     /// Set the Authorization: header in request.
     void authorizeRequest(Poco::Net::HTTPRequest& request) const;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

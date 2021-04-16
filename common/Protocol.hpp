@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_LOOLPROTOCOL_HPP
-#define INCLUDED_LOOLPROTOCOL_HPP
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
@@ -19,8 +18,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <Poco/Net/WebSocket.h>
 
 #include <Util.hpp>
 
@@ -44,9 +41,26 @@ namespace LOOLProtocol
     // Negative numbers for error.
     std::tuple<int, int, std::string> ParseVersion(const std::string& version);
 
-    bool stringToInteger(const std::string& input, int& value);
-    bool stringToUInt32(const std::string& input, uint32_t& value);
-    bool stringToUInt64(const std::string& input, uint64_t& value);
+    inline bool stringToInteger(const std::string& input, int& value)
+    {
+        bool res;
+        std::tie(value, res) = Util::i32FromString(input);
+        return res;
+    }
+
+    inline bool stringToUInt32(const std::string& input, uint32_t& value)
+    {
+        bool res;
+        std::tie(value, res) = Util::i32FromString(input);
+        return res;
+    }
+
+    inline bool stringToUInt64(const std::string& input, uint64_t& value)
+    {
+        bool res;
+        std::tie(value, res) = Util::u64FromString(input);
+        return res;
+    }
 
     inline
     bool parseNameValuePair(const std::string& token, std::string& name, std::string& value, const char delim = '=')
@@ -79,6 +93,23 @@ namespace LOOLProtocol
 
     bool getTokenInteger(const StringVector& tokens, const std::string& name, int& value);
 
+    /// Literal-string token names.
+    template <std::size_t N>
+    inline bool getTokenInteger(const std::string& token, const char (&name)[N], int& value)
+    {
+        // N includes null termination.
+        static_assert(N > 1, "Token name must be at least one character long.");
+        if (token.size() > N && token[N - 1] == '=' && token.compare(0, N - 1, name) == 0)
+        {
+            const char* str = token.data() + N;
+            char* endptr = nullptr;
+            value = std::strtol(str, &endptr, 10);
+            return (endptr > str);
+        }
+
+        return false;
+    }
+
     inline bool getTokenString(const StringVector& tokens,
                                const std::string& name,
                                std::string& value)
@@ -96,62 +127,6 @@ namespace LOOLProtocol
 
     bool getTokenStringFromMessage(const std::string& message, const std::string& name, std::string& value);
     bool getTokenKeywordFromMessage(const std::string& message, const std::string& name, const std::map<std::string, int>& map, int& value);
-
-    /// Tokenize space-delimited values until we hit new-line or the end.
-    inline
-    StringVector tokenize(const char* data, const size_t size, const char delimiter = ' ')
-    {
-        std::vector<StringToken> tokens;
-        if (size == 0 || data == nullptr)
-        {
-            return StringVector(std::string(), {});
-        }
-        tokens.reserve(8);
-
-        const char* start = data;
-        const char* end = data;
-        for (size_t i = 0; i < size && data[i] != '\n'; ++i, ++end)
-        {
-            if (data[i] == delimiter)
-            {
-                if (start != end && *start != delimiter)
-                {
-                    tokens.emplace_back(start - data, end - start);
-                }
-
-                start = end;
-            }
-            else if (*start == delimiter)
-            {
-                ++start;
-            }
-        }
-
-        if (start != end && *start != delimiter && *start != '\n')
-        {
-            tokens.emplace_back(start - data, end - start);
-        }
-
-        return StringVector(std::string(data, size), tokens);
-    }
-
-    inline
-    StringVector tokenize(const std::string& s, const char delimiter = ' ')
-    {
-        return tokenize(s.data(), s.size(), delimiter);
-    }
-
-    /// Tokenize according to the regex, potentially skip empty tokens.
-    inline
-    std::vector<std::string> tokenize(const std::string& s, const std::regex& pattern, bool skipEmpty = false)
-    {
-        std::vector<std::string> tokens;
-        if (skipEmpty)
-            std::copy_if(std::sregex_token_iterator(s.begin(), s.end(), pattern, -1), std::sregex_token_iterator(), std::back_inserter(tokens), [](std::string in) { return !in.empty(); });
-        else
-            std::copy(std::sregex_token_iterator(s.begin(), s.end(), pattern, -1), std::sregex_token_iterator(), std::back_inserter(tokens));
-        return tokens;
-    }
 
     inline
     std::vector<int> tokenizeInts(const char* data, const size_t size, const char delimiter = ',')
@@ -189,7 +164,7 @@ namespace LOOLProtocol
 
     inline bool getTokenIntegerFromMessage(const std::string& message, const std::string& name, int& value)
     {
-        return getTokenInteger(tokenize(message), name, value);
+        return getTokenInteger(Util::tokenize(message), name, value);
     }
 
     /// Returns the first token of a message.
@@ -270,7 +245,7 @@ namespace LOOLProtocol
         return getFirstLine(message.data(), message.size());
     }
 
-    /// Returns an abbereviation of the message (the first line, indicating truncation). We assume
+    /// Returns an abbreviation of the message (the first line, indicating truncation). We assume
     /// that it adhers to the LOOL protocol, i.e. that there is always a first (or only) line that
     /// is in printable UTF-8. I.e. no encoding of binary bytes is done. The format of the result is
     /// not guaranteed to be stable. It is to be used for logging purposes only, not for decoding
@@ -312,40 +287,6 @@ namespace LOOLProtocol
     {
         return getAbbreviatedMessage(message.data(), message.size());
     }
-
-    // Return a string dump of a WebSocket frame: Its opcode, length, first line (if present),
-    // flags. For human-readable logging purposes. Format not guaranteed to be stable. Not to be
-    // inspected programmatically.
-    inline
-    std::string getAbbreviatedFrameDump(const char *message, const int length, const int flags)
-    {
-        std::ostringstream result;
-        switch (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
-        {
-#define CASE(x) case Poco::Net::WebSocket::FRAME_OP_##x: result << #x; break
-        CASE(CONT);
-        CASE(TEXT);
-        CASE(BINARY);
-        CASE(CLOSE);
-        CASE(PING);
-        CASE(PONG);
-#undef CASE
-        default:
-            result << Poco::format("%#x", flags);
-            break;
-        }
-        result << " " << std::setw(3) << length << " bytes";
-
-        if (length > 0 &&
-            ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_TEXT ||
-             (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_BINARY ||
-             (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING ||
-             (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG))
-            result << ": '" << getAbbreviatedMessage(message, length) << "'";
-        return result.str();
-    }
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

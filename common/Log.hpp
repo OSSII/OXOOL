@@ -7,12 +7,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_LOG_HPP
-#define INCLUDED_LOG_HPP
+#pragma once
 
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstddef>
 #include <functional>
 #include <iostream>
@@ -68,7 +68,15 @@ namespace Log
     constexpr bool isShutdownCalled() { return false; }
 #endif
 
-    char* prefix(char* buffer, std::size_t len, const char* level);
+    /// Generates log entry prefix. Example follows (without the pipes).
+    /// |wsd-07272-07298 2020-04-25 17:29:28.928697 [ websrv_poll ] TRC  |
+    /// This is fully signal-safe. Buffer must be at least 128 bytes.
+    char* prefix(const Poco::DateTime& time, char* buffer, const char* level);
+    template <int Size> inline char* prefix(char buffer[Size], const char* level)
+    {
+        static_assert(Size >= 128, "Buffer size must be at least 128 bytes.");
+        return prefix(Poco::DateTime(), buffer, level);
+    }
 
     inline bool traceEnabled() { return logger().trace(); }
     inline bool debugEnabled() { return logger().debug(); }
@@ -110,7 +118,7 @@ namespace Log
             _enabled(true)
         {
             char buffer[1024];
-            _stream << prefix(buffer, sizeof(buffer) - 1, level);
+            _stream << prefix<sizeof(buffer) - 1>(buffer, level);
         }
 
         StreamLogger(StreamLogger&& sl) noexcept
@@ -275,21 +283,19 @@ namespace Log
 
 #define LOG_BODY_(LOG, PRIO, LVL, X, FILEP)                                                        \
     char b_[1024];                                                                                 \
-    std::ostringstream oss_(Log::prefix(b_, sizeof(b_) - 1, LVL), std::ostringstream::ate);        \
+    std::ostringstream oss_(Log::prefix<sizeof(b_) - 1>(b_, LVL), std::ostringstream::ate);        \
     oss_ << std::boolalpha << X;                                                                   \
     LOG_END(oss_, FILEP);                                                                          \
-    ((void)__android_log_print(ANDROID_LOG_DEBUG, "loolwsd", "%s %s", LVL, oss_.str().c_str()))
+    ((void)__android_log_print(ANDROID_LOG_DEBUG, "oxoolwsd", "%s %s", LVL, oss_.str().c_str()))
 
 #else
 
 #define LOG_BODY_(LOG, PRIO, LVL, X, FILEP)                                                        \
-    Poco::Message m_(LOG.name(), "", Poco::Message::PRIO_##PRIO);                                  \
     char b_[1024];                                                                                 \
-    std::ostringstream oss_(Log::prefix(b_, sizeof(b_) - 1, LVL), std::ostringstream::ate);        \
+    std::ostringstream oss_(Log::prefix<sizeof(b_) - 1>(b_, LVL), std::ostringstream::ate);        \
     oss_ << std::boolalpha << X;                                                                   \
     LOG_END(oss_, FILEP);                                                                          \
-    m_.setText(oss_.str());                                                                        \
-    LOG.log(m_);
+    LOG.log(Poco::Message(LOG.name(), oss_.str(), Poco::Message::PRIO_##PRIO));
 
 #endif
 
@@ -330,6 +336,16 @@ namespace Log
         if (log_.information() && !Log::isShutdownCalled())                                        \
         {                                                                                          \
             LOG_BODY_(log_, INFORMATION, "INF", X, true);                                          \
+        }                                                                                          \
+    } while (false)
+
+#define LOG_INF_NOFILE(X)                                                                          \
+    do                                                                                             \
+    {                                                                                              \
+        auto& log_ = Log::logger();                                                                \
+        if (log_.information() && !Log::isShutdownCalled())                                        \
+        {                                                                                          \
+            LOG_BODY_(log_, INFORMATION, "INF", X, false);                                         \
         }                                                                                          \
     } while (false)
 
@@ -408,7 +424,5 @@ namespace Log
             return RET;                                                                            \
         }                                                                                          \
     } while (false)
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

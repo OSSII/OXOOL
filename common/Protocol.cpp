@@ -27,7 +27,7 @@ namespace LOOLProtocol
         int minor = -1;
         std::string patch;
 
-        StringVector firstTokens(tokenize(version, '.'));
+        StringVector firstTokens(Util::tokenize(version, '.'));
         if (firstTokens.size() > 0)
         {
             major = std::stoi(firstTokens[0]);
@@ -35,7 +35,7 @@ namespace LOOLProtocol
             StringVector secondTokens;
             if (firstTokens.size() > 1)
             {
-                secondTokens = tokenize(firstTokens[1], '-');
+                secondTokens = Util::tokenize(firstTokens[1], '-');
             }
             if (secondTokens.size() > 0)
             {
@@ -46,48 +46,6 @@ namespace LOOLProtocol
                 patch = secondTokens[1];
         }
         return std::make_tuple(major, minor, patch);
-    }
-
-    bool stringToInteger(const std::string& input, int& value)
-    {
-        try
-        {
-            value = std::stoi(input);
-        }
-        catch (std::invalid_argument&)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool stringToUInt32(const std::string& input, uint32_t& value)
-    {
-        try
-        {
-            value = std::stoul(input);
-        }
-        catch (std::invalid_argument&)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool stringToUInt64(const std::string& input, uint64_t& value)
-    {
-        try
-        {
-            value = std::stoull(input);
-        }
-        catch (std::invalid_argument&)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     bool getTokenInteger(const std::string& token, const std::string& name, int& value)
@@ -215,7 +173,7 @@ namespace LOOLProtocol
 
     bool getTokenKeywordFromMessage(const std::string& message, const std::string& name, const std::map<std::string, int>& map, int& value)
     {
-        return getTokenKeyword(tokenize(message), name, map, value);
+        return getTokenKeyword(Util::tokenize(message), name, map, value);
     }
 };
 

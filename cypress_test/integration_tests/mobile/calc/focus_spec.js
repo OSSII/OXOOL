@@ -1,20 +1,26 @@
 /* global describe it cy beforeEach require afterEach expect*/
 
 var helper = require('../../common/helper');
-var calcHelper = require('./calc_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var calcHelper = require('../../common/calc_helper');
 
 describe('Calc focus tests', function() {
+	var testFileName = 'focus.ods';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('focus.ods', 'calc');
+		helper.beforeAll(testFileName, 'calc');
+
+		// Wait until the Formula-Bar is loaded.
+		cy.get('.inputbar_container', {timeout : 10000});
 	});
 
 	afterEach(function() {
-		helper.afterAll('focus.ods');
+		helper.afterAll(testFileName);
 	});
 
 	it('Basic document focus.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
 		cy.document().its('activeElement.tagName')
@@ -45,9 +51,9 @@ describe('Calc focus tests', function() {
 			.should('be.eq', 'clipboard');
 	});
 
-	it.skip('Focus on second tap.', function() {
+	it('Focus on second tap.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
 		cy.document().its('activeElement.tagName')
@@ -64,16 +70,16 @@ describe('Calc focus tests', function() {
 			.should('be.eq', 'BODY');
 
 		// Second tap on the same cell
-		calcHelper.clickOnFirstCell();
+		calcHelper.clickOnFirstCell(false);
 
 		// Document has the focus
 		cy.document().its('activeElement.className')
 			.should('be.eq', 'clipboard');
 	});
 
-	it('Formula-bar focus', function() {
+	it.skip('Formula-bar focus', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
 		cy.document().its('activeElement.tagName')
@@ -81,24 +87,69 @@ describe('Calc focus tests', function() {
 
 		helper.assertNoKeyboardInput();
 
-		// One tap on a cell -> no document focus
+		// Select the first cell to edit the same one.
 		calcHelper.clickOnFirstCell();
-
-		cy.get('.leaflet-marker-icon')
-			.should('be.visible');
 
 		// No focus
 		cy.document().its('activeElement.tagName')
 			.should('be.eq', 'BODY');
 
 		// Click in the formula-bar.
-		cy.get('.inputbar_container')
-			.click();
-
+		calcHelper.clickFormulaBar();
 		helper.assertCursorAndFocus();
 
 		// Type some text.
-		cy.get('textarea.clipboard')
-			.type('blah');
+		var text1 = 'Hello from Calc';
+		helper.typeIntoDocument(text1);
+		helper.typeIntoDocument('{enter}');
+
+		helper.assertNoKeyboardInput();
+
+		// Select the first cell to edit the same one.
+		calcHelper.clickOnFirstCell();
+
+		// Check the text we typed.
+		calcHelper.clickFormulaBar();
+		helper.assertCursorAndFocus();
+		helper.typeIntoDocument('{ctrl}a');
+		helper.expectTextForClipboard(text1);
+
+		// Accept changes.
+		helper.typeIntoDocument('{enter}');
+		helper.assertNoKeyboardInput();
+
+		// Type some more text, at the end.
+		cy.log('Appending text at the end.');
+		calcHelper.clickOnFirstCell();
+		calcHelper.clickFormulaBar();
+		helper.assertCursorAndFocus();
+		var text2 = ', this is a test.';
+		helper.typeIntoDocument(text2);
+		// Validate.
+		helper.typeIntoDocument('{ctrl}a');
+		helper.expectTextForClipboard(text1 + text2);
+		// End editing.
+		helper.typeIntoDocument('{enter}');
+		helper.assertNoKeyboardInput();
+
+		// Type some more text, in the middle.
+		cy.log('Inserting text in the middle.');
+		calcHelper.clickOnFirstCell();
+		calcHelper.clickFormulaBar();
+		helper.assertCursorAndFocus();
+
+		// Move cursor before text2
+		helper.typeIntoDocument('{end}');
+		for (var i = 0; i < text2.length; i++)
+			helper.moveCursor('left');
+
+		var text3 = ', BAZINGA';
+		helper.typeText('textarea.clipboard', text3);
+		// Validate.
+		helper.typeIntoDocument('{ctrl}a');
+		helper.expectTextForClipboard(text1 + text3 + text2);
+		// End editing.
+		helper.typeIntoDocument('{enter}');
+		helper.assertNoKeyboardInput();
 	});
 });

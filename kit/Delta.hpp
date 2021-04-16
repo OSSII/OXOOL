@@ -6,8 +6,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#ifndef INCLUDED_DELTA_HPP
-#define INCLUDED_DELTA_HPP
+
+#pragma once
 
 #include <vector>
 #include <assert.h>
@@ -102,13 +102,13 @@ class DeltaGenerator {
         // TODO: should we split and compress alpha separately ?
         if (prev.getWidth() != cur.getWidth() || prev.getHeight() != cur.getHeight())
         {
-            LOG_ERR("mis-sized delta: " << prev.getWidth() << "x" << prev.getHeight() << " vs "
-                    << cur.getWidth() << "x" << cur.getHeight());
+            LOG_ERR("mis-sized delta: " << prev.getWidth() << 'x' << prev.getHeight() << " vs "
+                    << cur.getWidth() << 'x' << cur.getHeight());
             return false;
         }
 
         output.push_back('D');
-        LOG_TRC("building delta of a " << cur.getWidth() << "x" << cur.getHeight() << " bitmap");
+        LOG_TRC("building delta of a " << cur.getWidth() << 'x' << cur.getHeight() << " bitmap");
 
         // row move/copy src/dest is a byte.
         assert (prev.getHeight() <= 256);
@@ -268,7 +268,5 @@ class DeltaGenerator {
         return false;
     }
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

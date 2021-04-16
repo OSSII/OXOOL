@@ -5,7 +5,7 @@
  *
  * Author: Firefly <firefly@ossii.com.tw>
  */
-/* global L _ vex revHistoryEnabled */
+/* global L _ _UNO revHistoryEnabled */
 L.dialog.Action = {
 	// init 只會在載入的第一次執行
 	init: function(map) {
@@ -30,6 +30,9 @@ L.dialog.Action = {
 		case 'saveas': // 另存新檔
 			map.fire('postMessage', {msgId: 'UI_SaveAs'});
 			break;
+		case 'saveaspassword': // 另存新檔
+			map.fire('postMessage', {msgId: 'UI_SaveAsPassword'});
+			break;
 		case 'shareas': // 分享
 			map.fire('postMessage', {msgId: 'UI_Share'});
 			break;
@@ -37,7 +40,7 @@ L.dialog.Action = {
 			map.print();
 			break;
 		case 'insertgraphic': // 插入電腦圖片
-			L.DomUtil.get('insertgraphic').click();
+			L.dialog.run('InsertImage');
 			break;
 		case 'insertgraphicremote': // 插入雲端圖片
 			map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
@@ -46,7 +49,7 @@ L.dialog.Action = {
 			map.insertComment();
 			break;
 		case 'OXSaveAs': // online 自己的另存新檔 dialog
-			map.fire('executeDialog', {dialog: 'OXSaveAs'});
+			L.dialog.run('OXSaveAs');
 			break;
 		case 'signdocument': // 數位簽章
 			map.showSignDocument();
@@ -58,7 +61,7 @@ L.dialog.Action = {
 			break;
 		case 'zoomout': // 拉遠
 			// 試算表最小不能低於 100%
-			var minZoom = docType === 'spreadsheet' ? map.options.zoom : map.getMinZoom();
+			var minZoom = docType === 'spreadsheet' ? 7 : map.getMinZoom();
 			if (map.getZoom() > minZoom) {
 				map.zoomOut(1);
 			}
@@ -69,10 +72,21 @@ L.dialog.Action = {
 		case 'fullscreen': // 全螢幕
 			L.toggleFullScreen();
 			break;
-		case 'fullscreen-presentation': // 全螢幕播放
+		case 'fullscreen-presentation': // 從第一張投影片開始播放
 			if (docType === 'presentation') {
 				map.fire('fullscreen');
 			}
+			break;
+		case 'presentation-currentslide': // 從目前投影片開始播放
+			if (docType === 'presentation') {
+				map.fire('fullscreen', {startSlideNumber: map.getCurrentPartNumber()});
+			}
+			break;
+		case 'ShowSlide': // 顯示投影片
+			map.showPage();
+			break;
+		case 'HideSlide': // 隱藏投影片
+			map.hidePage();
 			break;
 		case 'insertpage': // 新增頁面
 			map.insertPage();
@@ -81,10 +95,13 @@ L.dialog.Action = {
 			map.duplicatePage();
 			break;
 		case 'deletepage': // 刪除頁面
-			vex.dialog.confirm({
-				message: _('Are you sure you want to delete this slide?'),
-				callback: function(e) {
-					if (e) {
+			L.dialog.confirm({
+				title: _UNO('.uno:DeleteSlide', 'presentation', true),
+				icon: 'warning',
+				message: _('Are you sure you want to delete this slide?')
+						+ '<br>(' + map.getPartProperty().name + ')',
+				callback: function(ans) {
+					if (ans) {
 						map.deletePage();
 					}
 				}
@@ -94,7 +111,7 @@ L.dialog.Action = {
 			map.showLOAboutDialog();
 			break;
 		case 'keyboard-shortcuts': // 顯示按鍵說明
-			map.fire('executeDialog', {dialog: 'ShowKeyboardHelp'});
+			L.dialog.run('ShowKeyboardHelp');
 			break;
 		case 'rev-history': // 檢視版本
 			if (revHistoryEnabled) {
@@ -105,13 +122,13 @@ L.dialog.Action = {
 			}
 			break;
 		case 'closedocument': // 關閉檔案
-			if (window.ThisIsAMobileApp) {
-				window.webkit.messageHandlers.lool.postMessage('BYE', '*');
-			} else {
-				map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
-				map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
-			}
-			map.remove();
+			map.closeDocument();
+			break;
+		case 'externaledit': // 編輯選中的圖片
+			map._socket.sendMessage('getgraphicgelection id=edit');
+			break;
+		case 'savegraphic': // 儲存選中的圖片
+			map._socket.sendMessage('getgraphicgelection id=export');
 			break;
 		case 'repair': // 修復
 			map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');
@@ -171,7 +188,7 @@ L.dialog.Action = {
 			map.sendUnoCommand('.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE');
 			break;
 		case 'gotopage':
-			map.fire('executeDialog', {dialog: 'GotoPage'});
+			L.dialog.run('GotoPage');
 			break;
 		case 'zoom30':
 			map.setZoom(4);
@@ -205,6 +222,21 @@ L.dialog.Action = {
 			break;
 		case 'zoom200':
 			map.setZoom(14);
+			break;
+		case 'sethyperlink':
+			var useHyperlinkDialog = true;
+			if (docType === 'spreadsheet') {
+				if (map.hyperlinkUnderCursor &&
+					map.hyperlinkUnderCursor.link.startsWith('#') &&
+					map._docLayer._selections.getLayers().length) {
+						L.dialog.run('SetHyperLinkTable');
+						return;
+				}
+			}
+
+			if (useHyperlinkDialog) {
+				map.sendUnoCommand('.uno:HyperlinkDialog');
+			}
 			break;
 		default:
 			console.debug('Found unknow action ID : ' + id);

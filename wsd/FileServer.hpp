@@ -7,29 +7,42 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_FILESERVER_HPP
-#define INCLUDED_FILESERVER_HPP
+#pragma once
 
 #include <string>
 #include "Socket.hpp"
 
 #include <Poco/MemoryStream.h>
 
+class RequestDetails;
 /// Handles file requests over HTTP(S).
 class FileServerRequestHandler
 {
+    friend class WhiteBoxTests; // for unit testing
+
     static std::string getRequestPathname(const Poco::Net::HTTPRequest& request);
 
-    static void preprocessFile(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& message, const std::shared_ptr<StreamSocket>& socket);
-    static void preprocessAdminFile(const Poco::Net::HTTPRequest& request, const std::shared_ptr<StreamSocket>& socket);
+    static void preprocessFile(const Poco::Net::HTTPRequest& request,
+                               const RequestDetails &requestDetails,
+                               Poco::MemoryInputStream& message,
+                               const std::shared_ptr<StreamSocket>& socket);
+    static void preprocessAdminFile(const Poco::Net::HTTPRequest& request,
+                                    const RequestDetails &requestDetails,
+                                    const std::shared_ptr<StreamSocket>& socket);
+
+    /// Construct a JSON to be accepted by the loleflet.html from a list like
+    /// UIMode=classic;TextRuler=true;PresentationStatusbar=false
+    /// that is passed as "ui_defaults" hidden input during the iframe setup.
+    static std::string uiDefaultsToJSON(const std::string& uiDefaults);
+
 public:
     /// Evaluate if the cookie exists, and if not, ask for the credentials.
     static bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, Poco::Net::HTTPResponse& response);
-    /// Add by Firefly <firefly@ossii.com.tw>
-    /// 將  isConfigAuthOk 改為公開 method
-    static bool isConfigAuthOk(const std::string &userProvidedUsr, const std::string &userProvidedPwd);
 
-    static void handleRequest(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& message, const std::shared_ptr<StreamSocket>& socket);
+    static void handleRequest(const Poco::Net::HTTPRequest& request,
+                              const RequestDetails &requestDetails,
+                              Poco::MemoryInputStream& message,
+                              const std::shared_ptr<StreamSocket>& socket);
 
     /// Read all files that we can serve into memory and compress them.
     static void initialize();
@@ -37,7 +50,7 @@ public:
     /// Clean cached files.
     static void uninitialize() { FileHash.clear(); }
 
-    static void readDirToHash(const std::string &basePath, const std::string &path);
+    static void readDirToHash(const std::string &basePath, const std::string &path, const std::string &prefix = std::string());
 
     static const std::string *getCompressedFile(const std::string &path);
 
@@ -49,7 +62,5 @@ private:
                           const std::shared_ptr<StreamSocket>& socket, const std::string& shortMessage,
                           const std::string& longMessage, const std::string& extraHeader = "");
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

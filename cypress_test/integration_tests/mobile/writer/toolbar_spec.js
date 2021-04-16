@@ -1,14 +1,17 @@
 /* global describe it cy beforeEach require afterEach*/
 
 var helper = require('../../common/helper');
+var mobileHelper = require('../../common/mobile_helper');
 
 describe('Toolbar tests', function() {
+	var testFileName = 'toolbar.odt';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('toolbar.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 	});
 
 	afterEach(function() {
-		helper.afterAll('toolbar.odt');
+		helper.afterAll(testFileName);
 	});
 
 	it('State of mobile wizard toolbar item.', function() {
@@ -17,7 +20,7 @@ describe('Toolbar tests', function() {
 			.should('have.class', 'disabled');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Button should be enabled now
 		cy.get('#tb_actionbar_item_mobile_wizard')
@@ -30,7 +33,7 @@ describe('Toolbar tests', function() {
 			.should('have.class', 'disabled');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Button should be enabled now
 		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
@@ -43,7 +46,7 @@ describe('Toolbar tests', function() {
 			.should('have.class', 'disabled');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Button should be enabled now
 		cy.get('#tb_actionbar_item_insertcomment')
@@ -56,14 +59,14 @@ describe('Toolbar tests', function() {
 			.should('have.class', 'disabled');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Button should be still disabled
 		cy.get('#tb_actionbar_item_undo')
 			.should('have.class', 'disabled');
 
-		// Type somthing in the document
-		cy.get('#document-container').type('x');
+		// Type something in the document
+		helper.typeIntoDocument('x');
 
 		// Button should become enabled
 		cy.get('#tb_actionbar_item_undo')
@@ -76,14 +79,14 @@ describe('Toolbar tests', function() {
 			.should('have.class', 'disabled');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Button should be still disabled
 		cy.get('#tb_actionbar_item_redo')
 			.should('have.class', 'disabled');
 
-		// Type somthing in the document
-		cy.get('#document-container').type('x');
+		// Type something in the document
+		helper.typeIntoDocument('x');
 
 		// Button should be still disabled
 		cy.get('#tb_actionbar_item_redo')
@@ -101,7 +104,7 @@ describe('Toolbar tests', function() {
 
 	it('Open and close mobile wizard by toolbar item.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Click on mobile wizard toolbar item
 		cy.get('#tb_actionbar_item_mobile_wizard')
@@ -128,43 +131,18 @@ describe('Toolbar tests', function() {
 
 	it('Open and close insertion mobile wizard by toolbar item.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		// Click on toolbar item
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.should('not.have.class', 'disabled')
-			.click();
+		mobileHelper.openInsertionWizard();
 
-		// Mobile wizard is opened and it has any content
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.closeInsertionWizard();
 
-		// Toolbar button is checked
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard table')
-			.should('have.class', 'checked');
-
-		// Click on toolbar item again
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-
-		// Mobile wizard is closed
-		cy.get('#mobile-wizard').should('not.be.visible');
-
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard table')
-			.should('not.have.class', 'checked');
-
-		// Open mobile wizard again
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-
-		// Mobile wizard is opened and it has any content
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openInsertionWizard();
 	});
 
 	it('Open insert comment dialog by toolbar item.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Click on toolbar item
 		cy.get('#tb_actionbar_item_insertcomment')
@@ -176,7 +154,7 @@ describe('Toolbar tests', function() {
 			.should('be.visible');
 
 		// Close the dialog
-		cy.contains('Cancel')
+		cy.get('.vex-dialog-button-secondary')
 			.click();
 
 		cy.get('.loleaflet-annotation-table')

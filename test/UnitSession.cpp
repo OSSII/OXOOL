@@ -110,18 +110,18 @@ UnitBase::TestResult UnitSession::testHandshake()
         int flags = 0;
         char buffer[1024] = { 0 };
         int bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-        TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer, bytes, flags));
+        TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
         LOK_ASSERT_EQUAL(std::string("statusindicator: find"), std::string(buffer, bytes));
 
         bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-        TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer, bytes, flags));
+        TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
         if (bytes > 0 && !std::strstr(buffer, "error:"))
         {
             LOK_ASSERT_EQUAL(std::string("statusindicator: connect"),
                                  std::string(buffer, bytes));
 
             bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-            TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer, bytes, flags));
+            TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
             if (!std::strstr(buffer, "error:"))
             {
                 LOK_ASSERT_EQUAL(std::string("statusindicator: ready"),
@@ -134,7 +134,7 @@ UnitBase::TestResult UnitSession::testHandshake()
 
                 // close frame message
                 bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-                TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer, bytes, flags));
+                TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
                 LOK_ASSERT((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
                                == Poco::Net::WebSocket::FRAME_OP_CLOSE);
             }
@@ -146,7 +146,7 @@ UnitBase::TestResult UnitSession::testHandshake()
 
             // close frame message
             bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-            TST_LOG("Got " << LOOLProtocol::getAbbreviatedFrameDump(buffer, bytes, flags));
+            TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
             LOK_ASSERT((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
                            == Poco::Net::WebSocket::FRAME_OP_CLOSE);
         }
@@ -184,23 +184,20 @@ UnitBase::TestResult UnitSession::testSlideShow()
         LOK_ASSERT_MESSAGE("did not receive a downloadas: message as expected",
                                !response.empty());
 
-        StringVector tokens(LOOLProtocol::tokenize(response.substr(11), ' '));
-        // "downloadas: jail= dir= name=slideshow.svg port= id=slideshow"
-        const std::string jail = tokens[0].substr(std::string("jail=").size());
-        const std::string dir = tokens[1].substr(std::string("dir=").size());
-        const std::string name = tokens[2].substr(std::string("name=").size());
-        const int port = std::stoi(tokens[3].substr(std::string("port=").size()));
-        const std::string id = tokens[4].substr(std::string("id=").size());
-        LOK_ASSERT(!jail.empty());
-        LOK_ASSERT(!dir.empty());
-        LOK_ASSERT_EQUAL(std::string("slideshow.svg"), name);
+        StringVector tokens(Util::tokenize(response.substr(11), ' '));
+        // "downloadas: downloadId= port= id=slideshow"
+        const std::string downloadId = tokens[0].substr(std::string("downloadId=").size());
+        const int port = std::stoi(tokens[1].substr(std::string("port=").size()));
+        const std::string id = tokens[2].substr(std::string("id=").size());
+        LOK_ASSERT(!downloadId.empty());
         LOK_ASSERT_EQUAL(static_cast<int>(Poco::URI(helpers::getTestServerURI()).getPort()),
                              port);
         LOK_ASSERT_EQUAL(std::string("slideshow"), id);
 
         std::string encodedDoc;
         Poco::URI::encode(documentPath, ":/?", encodedDoc);
-        const std::string path = "/lool/" + encodedDoc + "/" + jail + "/" + dir + "/" + name;
+        const std::string ignoredSuffix = "%3FWOPISRC=madness"; // cf. iPhone.
+        const std::string path = "/lool/" + encodedDoc + "/download/" + downloadId + '/' + ignoredSuffix;
         std::unique_ptr<Poco::Net::HTTPClientSession> session(
             helpers::createSession(Poco::URI(helpers::getTestServerURI())));
         Poco::Net::HTTPRequest requestSVG(Poco::Net::HTTPRequest::HTTP_GET, path);

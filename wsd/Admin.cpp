@@ -17,15 +17,12 @@
 #include <Poco/Net/HTTPCookie.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/StringTokenizer.h>
 
 #include "Admin.hpp"
 #include "AdminModel.hpp"
 #include "Auth.hpp"
 #include <Common.hpp>
 #include "FileServer.hpp"
-#include <IoUtil.hpp>
-#include "LOOLWSD.hpp"
 #include <Log.hpp>
 #include <Protocol.hpp>
 #include "Storage.hpp"
@@ -38,183 +35,25 @@
 #include <net/WebSocketHandler.hpp>
 
 #include <common/SigUtil.hpp>
-#include <common/Authorization.hpp>
 
-#include <src/include/oxoolmodule.h>
 using namespace LOOLProtocol;
 
 using Poco::Net::HTTPResponse;
-using Poco::StringTokenizer;
 using Poco::Util::Application;
 
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 1000;
-// Add by Firefly <firefly@ossii.com.tw>
-using Poco::Path;
 
-#define pwdSaltLength 128
-#define pwdIterations 10000
-#define pwdHashLength 128
-std::string ConfigFile =
-#if ENABLE_DEBUG
-    DEBUG_ABSSRCDIR
-#else
-    LOOLWSD_CONFIGDIR
-#endif
-    "/oxoolwsd.xml";
-
-std::string PermFile =
-#if ENABLE_DEBUG
-    DEBUG_ABSSRCDIR
-#else
-    LOOLWSD_CONFIGDIR
-#endif
-    "/perm.xml";
-
-std::string addSlashes(const std::string &source)
-{
-    std::string out;
-    for (const char c: source)
-    {
-        switch (c)
-        {
-            case '\\':  out += "\\\\";  break;
-            default:    out += c;       break;
-        }
-    }
-    return out;
-}
-
-void removeSpecialKeys(oxoolConfig& config, const std::string& keyName)
-{
-    for (size_t i = 0; ; i++)
-    {
-        const std::string item = keyName + "[0]";
-        if (!config.has(item)) break;
-
-        config.remove(item);
-    }
-}
-
-/// 軟體升級作業
-bool AdminSocketHandler::upgradeSoftware(const std::string& command)
-{
-    std::ifstream in;
-    std::string cmd = "";
-    std::string out = "";
-    FILE *fp;
-    char buf[128];
-    int retcode = -1;
-
-    // 進入暫存目錄
-    if (chdir(_temporaryFile->path().c_str()) != 0)
-    {
-        return false;
-    }
-
-    // 解壓縮檔案
-    if (command == "uncompressPackage")
-    {
-        Poco::Path file(_upgradeFileName);
-        std::string ext = file.getExtension();
-
-        if (ext == "rpm")
-            return true;
-        else if (ext == "zip")
-            cmd = "unzip \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
-        else
-            cmd = "tar zxvf \"" + _upgradeFileName + "\" 2>&1 ; echo $? > retcode";
-
-        fp = popen(cmd.c_str(), "r");
-        while (fgets(buf, sizeof(buf), fp))
-        {  
-            out.append(buf);
-        }
-        pclose(fp);
-        sendTextFrame("upgradeInfo:" + out);
-        // 讀取指令結束碼
-        in.open("./retcode", std::ifstream::in);
-        in.getline(buf, sizeof(buf));
-        in.close();
-        retcode = atoi(buf);
-        return (retcode == 0 ? true : false);
-    }
-    // 升級測試
-    else if (command == "upgradePackageTest")
-    {
-        cmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
-        fp = popen(cmd.c_str(), "r");
-        while (fgets(buf, sizeof(buf), fp))
-        {  
-            out.append(buf);
-        }
-        pclose(fp);
-        sendTextFrame("upgradeInfo:" + out);
-        // 讀取指令結束碼
-        in.open("./retcode", std::ifstream::in);
-        in.getline(buf, sizeof(buf));
-        in.close();
-        retcode = atoi(buf);
-        return (retcode == 0 ? true : false);
-    }
-    // 正式升級
-    else if (command == "upgradePackage")
-    {
-        cmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
-        fp = popen(cmd.c_str(), "r");
-        while (fgets(buf, sizeof(buf), fp))
-        {  
-            out.append(buf);
-        }
-        pclose(fp);
-        sendTextFrame("upgradeInfo:" + out);
-        // 讀取指令結束碼
-        in.open("./retcode", std::ifstream::in);
-        in.getline(buf, sizeof(buf));
-        in.close();
-        retcode = atoi(buf);
-        return (retcode == 0 ? true : false);
-    }
-    // 清除升級暫存檔案
-    else if (command == "clearUpgradeFiles")
-    {
-        delete _temporaryFile;
-        _temporaryFile = nullptr;
-        return true;
-    }
-
-    sendTextFrame("unknow upgrade command : " + command);
-    return false;
-}
-//------------ end of firefly
 
 /// Process incoming websocket messages
-void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
-                                       std::vector<char> &payload)
+void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
 {
-    // 接收軟體升級檔
-    if (_upgradeFile != nullptr)
-    {
-        LOG_DBG("Recv file data size = " + std::to_string(payload.size()));
-        _upgradeFile->write(payload.data(), payload.size());
-        _totalReceived += payload.size();
-        sendTextFrame("receivedSize:" + std::to_string(_totalReceived)); // 通知 client 已收到的 bytes
-        if (_totalReceived >= _upgradeFileSize)
-        {
-            _upgradeFile->close();   // 關閉檔案
-            delete _upgradeFile; // 刪除物件
-            _upgradeFile = nullptr; // 設成空值
-            sendTextFrame("upgradeFileReciveOK"); // 通知接收完畢
-        }
-        return;
-    }
     // FIXME: check fin, code etc.
     const std::string firstLine = getFirstLine(payload.data(), payload.size());
-    StringTokenizer tokens(firstLine, " ", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-    LOG_TRC("Recv: " << firstLine << " tokens " << tokens.count());
-    oxoolConfig config, permConfig;
+    StringVector tokens(Util::tokenize(firstLine, ' '));
+    LOG_TRC("Recv: " << firstLine << " tokens " << tokens.size());
 
-    if (tokens.count() < 1)
+    if (tokens.empty())
     {
         LOG_TRC("too few tokens");
         return;
@@ -222,9 +61,9 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
 
     AdminModel& model = _admin->getModel();
 
-    if (tokens[0] == "auth")
+    if (tokens.equals(0, "auth"))
     {
-        if (tokens.count() < 2)
+        if (tokens.size() < 2)
         {
             LOG_DBG("Auth command without any token");
             sendMessage("InvalidAuthToken");
@@ -254,83 +93,93 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
     if (!_isAuthenticated)
     {
         LOG_DBG("Not authenticated - message is '" << firstLine << "' " <<
-                tokens.count() << " first: '" << tokens[0] << "'");
+                tokens.size() << " first: '" << tokens[0] << '\'');
         sendMessage("NotAuthenticated");
         shutdown();
         return;
     }
-    else if (tokens[0] == "documents" ||
-             tokens[0] == "active_users_count" ||
-             tokens[0] == "active_docs_count" ||
-             tokens[0] == "mem_stats" ||
-             tokens[0] == "cpu_stats" ||
-             tokens[0] == "sent_activity" ||
-             tokens[0] == "recv_activity")
+    else if (tokens.equals(0, "documents") ||
+             tokens.equals(0, "active_users_count") ||
+             tokens.equals(0, "active_docs_count") ||
+             tokens.equals(0, "mem_stats") ||
+             tokens.equals(0, "cpu_stats") ||
+             tokens.equals(0, "sent_activity") ||
+             tokens.equals(0, "recv_activity"))
     {
         const std::string result = model.query(tokens[0]);
         if (!result.empty())
             sendTextFrame(tokens[0] + ' ' + result);
     }
-    else if (tokens[0] == "history")
+    else if (tokens.equals(0, "history"))
     {
-        sendTextFrame("{ \"History\": " + model.getAllHistory() + "}");
+        sendTextFrame("{ \"History\": " + model.getAllHistory() + '}');
     }
-    else if (tokens[0] == "version")
+    else if (tokens.equals(0, "version"))
     {
         // Send LOOL version information
-        std::string version, hash, branch;
-        Util::getVersionInfo(version, hash, branch);
-        std::string versionStr =
-            "{ \"Version\": \"" + version + "\", " +
-            "\"Hash\": \"" + hash + "\", " +
-            "\"Branch\": \"" + branch + "\" }";
-        sendTextFrame("loolserver " + versionStr);
+        sendTextFrame("loolserver " + Util::getVersionJSON());
         // Send LOKit version information
         sendTextFrame("lokitversion " + LOOLWSD::LOKitVersion);
     }
-    else if (tokens[0] == "subscribe" && tokens.count() > 1)
+    else if (tokens.equals(0, "subscribe") && tokens.size() > 1)
     {
-        for (std::size_t i = 0; i < tokens.count() - 1; i++)
+        for (std::size_t i = 0; i < tokens.size() - 1; i++)
         {
             model.subscribe(_sessionId, tokens[i + 1]);
         }
     }
-    else if (tokens[0] == "unsubscribe" && tokens.count() > 1)
+    else if (tokens.equals(0, "unsubscribe") && tokens.size() > 1)
     {
-        for (std::size_t i = 0; i < tokens.count() - 1; i++)
+        for (std::size_t i = 0; i < tokens.size() - 1; i++)
         {
             model.unsubscribe(_sessionId, tokens[i + 1]);
         }
     }
-    else if (tokens[0] == "mem_consumed")
+    else if (tokens.equals(0, "mem_consumed"))
         sendTextFrame("mem_consumed " + std::to_string(_admin->getTotalMemoryUsage()));
 
-    else if (tokens[0] == "total_avail_mem")
+    else if (tokens.equals(0, "total_avail_mem"))
         sendTextFrame("total_avail_mem " + std::to_string(_admin->getTotalAvailableMemory()));
 
-    else if (tokens[0] == "sent_bytes")
+    else if (tokens.equals(0, "sent_bytes"))
         sendTextFrame("sent_bytes " + std::to_string(model.getSentBytesTotal() / 1024));
 
-    else if (tokens[0] == "recv_bytes")
+    else if (tokens.equals(0, "recv_bytes"))
         sendTextFrame("recv_bytes " + std::to_string(model.getRecvBytesTotal() / 1024));
 
-    else if (tokens[0] == "uptime")
+    else if (tokens.equals(0, "uptime"))
         sendTextFrame("uptime " + std::to_string(model.getServerUptime()));
 
-    else if (tokens[0] == "kill" && tokens.count() == 2)
+    else if (tokens.equals(0, "log_lines"))
+        sendTextFrame("log_lines " + _admin->getLogLines());
+
+    else if (tokens.equals(0, "kill") && tokens.size() == 2)
     {
         try
         {
             const int pid = std::stoi(tokens[1]);
             LOG_INF("Admin request to kill PID: " << pid);
-            SigUtil::killChild(pid);
+
+            std::set<pid_t> pids = model.getDocumentPids();
+            if (pids.find(pid) != pids.end())
+            {
+                SigUtil::killChild(pid);
+            }
+            else
+            {
+                LOG_WRN("Invalid PID to kill (not a document pid)");
+            }
         }
         catch (std::invalid_argument& exc)
         {
-            LOG_WRN("Invalid PID to kill: " << tokens[1]);
+            LOG_WRN("Invalid PID to kill (invalid argument): " << tokens[1]);
+        }
+        catch (std::out_of_range& exc)
+        {
+            LOG_WRN("Invalid PID to kill (out of range): " << tokens[1]);
         }
     }
-    else if (tokens[0] == "settings")
+    else if (tokens.equals(0, "settings"))
     {
         // for now, we have only these settings
         std::ostringstream oss;
@@ -343,25 +192,28 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
             << "net_stats_interval=" << std::to_string(_admin->getNetStatsInterval()) << ' ';
 
         const DocProcSettings& docProcSettings = _admin->getDefDocProcSettings();
-        oss << "limit_virt_mem_mb=" << docProcSettings.LimitVirtMemMb << ' '
-            << "limit_stack_mem_kb=" << docProcSettings.LimitStackMemKb << ' '
-            << "limit_file_size_mb=" << docProcSettings.LimitFileSizeMb << ' '
-            << "limit_num_open_files=" << docProcSettings.LimitNumberOpenFiles << ' ';
+        oss << "limit_virt_mem_mb=" << docProcSettings.getLimitVirtMemMb() << ' '
+            << "limit_stack_mem_kb=" << docProcSettings.getLimitStackMemKb() << ' '
+            << "limit_file_size_mb=" << docProcSettings.getLimitFileSizeMb() << ' '
+            << "limit_num_open_files=" << docProcSettings.getLimitNumberOpenFiles() << ' ';
 
         sendTextFrame(oss.str());
     }
-    else if (tokens[0] == "shutdown")
+    else if (tokens.equals(0, "channel_list"))
+    {
+        sendTextFrame("channel_list " + _admin->getChannelLogLevels());
+    }
+    else if (tokens.equals(0, "shutdown"))
     {
         LOG_INF("Shutdown requested by admin.");
-        ShutdownRequestFlag = true;
-        SocketPoll::wakeupWorld();
+        SigUtil::requestShutdown();
         return;
     }
-    else if (tokens[0] == "set" && tokens.count() > 1)
+    else if (tokens.equals(0, "set") && tokens.size() > 1)
     {
-        for (size_t i = 1; i < tokens.count(); i++)
+        for (size_t i = 1; i < tokens.size(); i++)
         {
-            StringTokenizer setting(tokens[i], "=", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
+            StringVector setting(Util::tokenize(tokens[i], '='));
             int settingVal = 0;
             try
             {
@@ -377,7 +229,7 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
             const std::string settingName = setting[0];
             if (settingName == "mem_stats_size")
             {
-                if (settingVal != std::stoi(model.query(settingName)))
+                if (settingVal != std::stol(model.query(settingName)))
                 {
                     model.setMemStatsSize(settingVal);
                 }
@@ -393,7 +245,7 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
             }
             else if (settingName == "cpu_stats_size")
             {
-                if (settingVal != std::stoi(model.query(settingName)))
+                if (settingVal != std::stol(model.query(settingName)))
                 {
                     model.setCpuStatsSize(settingVal);
                 }
@@ -411,13 +263,13 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
             {
                 DocProcSettings docProcSettings = _admin->getDefDocProcSettings();
                 if (settingName == "limit_virt_mem_mb")
-                    docProcSettings.LimitVirtMemMb = settingVal;
+                    docProcSettings.setLimitVirtMemMb(settingVal);
                 else if (settingName == "limit_stack_mem_kb")
-                    docProcSettings.LimitStackMemKb = settingVal;
+                    docProcSettings.setLimitStackMemKb(settingVal);
                 else if (settingName == "limit_file_size_mb")
-                    docProcSettings.LimitFileSizeMb = settingVal;
+                    docProcSettings.setLimitFileSizeMb(settingVal);
                 else if (settingName == "limit_num_open_files")
-                    docProcSettings.LimitNumberOpenFiles = settingVal;
+                    docProcSettings.setLimitNumberOpenFiles(settingVal);
                 else
                     LOG_ERR("Unknown limit: " << settingName);
 
@@ -426,373 +278,18 @@ void AdminSocketHandler::handleMessage(bool /* fin */, WSOpCode /* code */,
             }
         }
     }
-    // Add by Firefly <firefly@ossii.com.tw>
-    // 檢查管理帳號密碼是否與 oxoolwsd.xml 中的一致
-    else if (tokens[0] == "isConfigAuthOk" && tokens.count() == 3)
-    {
-        if (FileServerRequestHandler::isConfigAuthOk(tokens[1], tokens[2]))
+    else if (tokens.equals(0, "update-log-levels") && tokens.size() > 1) {
+        for (size_t i = 1; i < tokens.size(); i++)
         {
-            sendTextFrame("ConfigAuthOk");
-        }
-        else
-        {
-            sendTextFrame("ConfigAuthWrong");
-        }
-    }
-    // 設定管理帳號及密碼
-    // 參考 tools/Config.cpp
-    else if (tokens[0] == "setAdminPassword" && tokens.count() == 3)
-    {
-        config.load(ConfigFile);
-
-        std::string adminUser = tokens[1];
-        std::string adminPwd  = tokens[2];
-        config.setString("admin_console.username", adminUser); // 帳號用明碼儲存
-#if HAVE_PKCS5_PBKDF2_HMAC
-        unsigned char pwdhash[pwdHashLength];
-        unsigned char salt[pwdSaltLength];
-        RAND_bytes(salt, pwdSaltLength);
-        // Do the magic !
-        PKCS5_PBKDF2_HMAC(adminPwd.c_str(), -1,
-                          salt, pwdSaltLength,
-                          pwdIterations,
-                          EVP_sha512(),
-                          pwdHashLength, pwdhash);
-
-        std::stringstream stream;
-        // Make salt randomness readable
-        for (unsigned j = 0; j < pwdSaltLength; ++j)
-            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(salt[j]);
-        const std::string saltHash = stream.str();
-
-        // Clear our used hex stream to make space for password hash
-        stream.str("");
-        stream.clear();
-        // Make the hashed password readable
-        for (unsigned j = 0; j < pwdHashLength; ++j)
-            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(pwdhash[j]);
-        const std::string passwordHash = stream.str();
-
-        std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
-        pwdConfigValue << std::to_string(pwdIterations) << ".";
-        pwdConfigValue << saltHash << "." << passwordHash;
-        config.remove("admin_console.password");
-        config.setString("admin_console.secure_password[@desc]",
-                              "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
-        config.setString("admin_console.secure_password", pwdConfigValue.str());
-#else
-        config.remove("admin_console.secure_password");
-        config.setString("admin_console.password[@desc]", "The password is stored in plain code.");
-        config.setString("admin_console.password", adminPwd);
-#endif
-        config.save(ConfigFile);
-        sendTextFrame("setAdminPasswordOk");
-    }
-    // 以 json 字串傳回 oxoolwsd.xml 項目
-    else if (tokens[0] == "getConfig" && tokens.count() > 1)
-    {
-        config.load(ConfigFile);
-        std::ostringstream oss;
-        oss << "settings {\n";
-        for (size_t i=1; i < tokens.count() ; i ++)
-        {
-            std::string key = tokens[i];
-
-            if (i > 1) oss << ",\n";
-
-            oss << "\"" << key << "\": ";
-            // 下列三種 key 是陣列形式
-            if (key == "net.post_allow.host" ||
-                key == "storage.wopi.host" ||
-                key == "storage.webdav.host")
+            StringVector _channel(Util::tokenize(tokens[i], '='));
+            if (_channel.size() == 2)
             {
-                oss << "[\n";
-                size_t j_cnt = 0;
-                for (size_t j=0 ; ; j++)
-                {
-                    std::string arrkey = key + "[" + std::to_string(j) + "]";
-                    if (config.has(arrkey))
-                    {
-                        j_cnt ++;
-                        if (j_cnt > 1) oss << ",\n";
-                        std::string allow = config.getString(arrkey + "[@allow]", "");
-                        std::string value = addSlashes(config.getString(arrkey, ""));
-                        oss << "\t {\"value\": \"" << value << "\"";
-                        if (!allow.empty())
-                        {
-                            oss << ", \"allow\": " << allow;
-                        }
-                        oss << "}";
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                oss << "\n\t]\n";
-                continue;
-            }
-            
-            if (config.has(key))
-            {
-                std::string p_value = addSlashes(config.getString(key, "")); // 讀取 value, 沒有的話預設為空字串
-                std::string p_type = config.getString(key + "[@type]", ""); // 讀取 type, 沒有的話預設為空字串
-                if (p_type == "int" || p_type == "uint" || p_type == "bool" ||
-                    p_value == "true" || p_value=="false")
-                    oss << p_value;
-                else
-                    oss << "\"" << p_value << "\"";
-            }
-            else
-            {
-                oss << "null";
+                _admin->setChannelLogLevel((_channel[0] != "?" ? _channel[0]: ""), _channel[1]);
             }
         }
-        oss << "\n}\n";
-        sendTextFrame(oss.str());
+        // Let's send back the current log levels in return. So the user can be sure of the values.
+        sendTextFrame("channel_list " + _admin->getChannelLogLevels());
     }
-    else if (tokens[0] == "setConfig" && tokens.count() > 1)
-    {
-        config.load(ConfigFile);
-        Poco::JSON::Object::Ptr object;
-        if (JsonUtil::parseJSON(firstLine, object))
-        {
-            // 清除三種陣列
-            removeSpecialKeys(config, "net.post_allow.host");
-            removeSpecialKeys(config,"storage.wopi.host");
-            removeSpecialKeys(config,"storage.webdav.host");
-            for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
-            {
-                // it->first : key, it->second.toString() : value
-                config.setString(it->first, it->second.toString());
-            }
-            config.save(ConfigFile);
-            sendTextFrame("setConfigOk");
-        }
-        else
-        {
-            sendTextFrame("setConfigNothing");
-        }
-    }
-    // 讀取選單、工具列以及右鍵選單權限
-    else if (tokens[0] == "getPermission" && tokens.count() > 1)
-    {
-        permConfig.load(PermFile);
-        std::ostringstream oss;
-        oss << "settings {\n";
-
-        for (size_t i=1; i < tokens.count() ; i ++)
-        {
-            std::string key = tokens[i];
-            if (i > 1) oss << ",\n";
-
-            oss << "\"" << key << "\": ";
-            if (key == "text.showfor" ||
-                key == "spreadsheet.showfor" ||
-                key == "presentation.showfor" ||
-                key == "toolbar.showfor")
-            {
-                oss << "[\n";
-                size_t j_cnt = 0;
-                for (size_t j=0 ; ; j++)
-                {
-                    std::string arrkey = key + "[" + std::to_string(j) + "]";
-                    if (!permConfig.has(arrkey)) break;
-
-                    j_cnt ++;
-                    if (j_cnt > 1) oss << ",\n";
-                    std::string value = permConfig.getString(arrkey, "");
-                    std::string edit = permConfig.getString(arrkey + "[@edit]", "true");
-                    std::string view = permConfig.getString(arrkey + "[@view]", "false");
-                    std::string readonly = permConfig.getString(arrkey + "[@readonly]", "false");
-                    std::string desc = permConfig.getString(arrkey + "[@desc]", "");
-                    oss << "\t {\"value\":\"" << value << "\"";
-                    oss << ",\"edit\":" << (edit == "true" ? "true" : "false");
-                    if (key != "toolbar.showfor")
-                    {
-                        oss << ",\"view\":" << (view == "true" ? "true" : "false");
-                        oss << ",\"readonly\":" << (readonly == "true" ? "true" : "false");
-                    }
-                    oss << ",\"desc\":\"" << desc << "\"";
-                    oss << "}";
-                }
-                oss << "\n\t]\n";
-                continue;   
-            }
-
-            if (permConfig.has(key))
-            {
-                std::string p_value = addSlashes(permConfig.getString(key, "")); // 讀取 value, 沒有的話預設為空字串
-                std::string p_type = permConfig.getString(key + "[@type]", ""); // 讀取 type, 沒有的話預設為空字串
-                if (p_type == "int" || p_type == "uint" || p_type == "bool" ||
-                    p_value == "true" || p_value=="false")
-                    oss << p_value;
-                else
-                    oss << "\"" << p_value << "\"";
-            }
-            else
-            {
-                oss << "null";
-            }
-        }
-        oss << "\n}\n";
-        sendTextFrame(oss.str());
-    }
-    // 設定選單、工具列以及右鍵選單權限
-    else if (tokens[0] == "setPermission" && tokens.count() > 1)
-    {
-        permConfig.load(PermFile);
-        Poco::JSON::Object::Ptr object;
-        if (JsonUtil::parseJSON(firstLine, object))
-        {
-            for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
-            {
-                // it->first : key, it->second.toString() : value
-                std::string key = it->first;
-                if (it->second.isArray())
-                {
-                    removeSpecialKeys(permConfig, key);
-                    Poco::JSON::Array::Ptr spArray = it->second.extract<Poco::JSON::Array::Ptr>();
-                    for(size_t i=0; i < spArray->size(); ++i)
-                    {
-                        std::string basicStr = key + "[" + std::to_string(i) + "]";
-                        Poco::JSON::Object::Ptr spObj = spArray->getObject(i);
-                        for (Poco::JSON::Object::ConstIterator spit = spObj->begin(); spit != spObj->end(); ++spit)
-                        {
-                            std::string writeStr;
-                            if (spit->first == "value")
-                            {
-                                writeStr = basicStr;
-                            }
-                            else
-                            {
-                                writeStr = basicStr + "[@" + spit->first + "]";
-                            }
-                            
-                            permConfig.setString(writeStr, spit->second.toString());
-                        }
-                    }
-                }
-                else
-                {
-                    permConfig.setString(key, it->second.toString());
-                }
-            }
-            permConfig.save(PermFile);
-            sendTextFrame("setPermissionOk");
-        }
-        else
-        {
-            sendTextFrame("setPermissionNothing");
-        }
-    }
-    //  讀取檔案內容
-    else if (tokens[0] == "getLog" && tokens.count() == 2)
-    {
-        auto& sysconfig = Application::instance().config();
-        std::string logfile = sysconfig.getString("logging.file.property[@name=path]");
-        size_t position = std::stoul(tokens[1], nullptr, 0);
-        //Poco::FileInputStream in(logfile);
-        std::ifstream file(logfile, std::ios::binary);
-        if (file.is_open())
-        {
-            file.seekg(position, std::ios::beg);
-            std::string retStr = "";
-            char c;
-            while (file.get(c))
-            {
-                position ++;
-                retStr.append(&c, 1);
-            }
-            sendTextFrame("[ReadTo=" + std::to_string(position) + "]" + retStr);
-            file.close();
-        }
-        else
-        {
-            sendTextFrame("FileNotFound");
-        }
-
-        
-    }
-    //  Client 準備上傳軟體升級包
-    else if (tokens[0] == "uploadUpgradeFile" && tokens.count() > 1)
-    {
-        _temporaryFile = new TemporaryFile(Path::temp());
-        LOG_DBG("Upgrade temporary dir is " + _temporaryFile->path());
-        //_temporaryFile->keep(); // 保持不要自動清除
-        _temporaryFile->createDirectories(); // 強制建立暫存目錄
-        _upgradeFileName = "";
-        _upgradeFileSize = 0;
-        _totalReceived = 0;
-
-        Poco::JSON::Object::Ptr object;
-        if (JsonUtil::parseJSON(firstLine, object))
-        {
-            for (Poco::JSON::Object::ConstIterator it = object->begin(); it != object->end(); ++it)
-            {
-                // it->first : key, it->second.toString() : value
-                std::string key = it->first;
-                if (key == "name")
-                {
-                    _upgradeFileName = it->second.toString(); // 上傳的檔名
-                    _upgradeFile = new std::ofstream;
-                    _upgradeFile->open(_temporaryFile->path() + "/" + _upgradeFileName); // 建立空檔案
-                }
-                else if (key == "size")
-                {
-                    _upgradeFileSize = std::stoul(it->second.toString(), nullptr, 0); // 檔案大小
-                 }
-            }
-        }
-        if (_upgradeFileName.length() > 0 && _upgradeFileSize > 0)
-            sendTextFrame("readyToReceiveFile"); // 告訴 Client 可以開始上傳了
-        else
-            sendTextFrame("upgradeFileInfoError"); // 告訴 Client 檔案資訊有誤
-    }
-    // Client 通知解壓縮
-    else if (tokens[0] == "uncompressPackage" && tokens.count() == 1)
-    {
-        // 通知解壓縮狀態
-        sendTextFrame(upgradeSoftware(tokens[0]) ? "uncompressPackageOK" : "uncompressPackageFail");
-    }
-    // Client 通知升級測試
-    else if (tokens[0] == "upgradePackageTest" && tokens.count() == 1)
-    {
-        // 通知升級測試狀態
-        sendTextFrame(upgradeSoftware(tokens[0]) ? "upgradePackageTestOK" : "upgradePackageTestFail");
-    }
-    // Client 通知正式升級
-    else if (tokens[0] == "upgradePackage" && tokens.count() == 1)
-    {
-        // 通知正式升級狀態
-        sendTextFrame(upgradeSoftware(tokens[0]) ? "upgradeSuccess" : "upgradeFail");
-    }
-    // Client 通知清除升級暫存檔
-    else if (tokens[0] == "clearUpgradeFiles" && tokens.count() == 1)
-    {
-        // 通知正式升級狀態
-        sendTextFrame(upgradeSoftware(tokens[0]) ? "clearUpgradeFilesOK" : "clearUpgradeFilesFail");
-    }
-    else if (tokens[0] == "module")
-    {
-        std::string moduleName = tokens[1];
-        if (apilist.find(moduleName) != apilist.end())
-        {
-            std::cout << moduleName << " found\n" ;
-            auto apiHandler = apilist.find(moduleName)->second();
-            std::string result = apiHandler->handleAdmin(firstLine);
-            sendTextFrame(result);
-        }
-        else
-        {
-            sendTextFrame("No such module");
-        }
-    }
-    else
-    {
-        sendTextFrame("!Unknow Command -> " + firstLine);
-    }
-    // End of Firefly
 }
 
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
@@ -800,9 +297,7 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
                                        const Poco::Net::HTTPRequest& request)
     : WebSocketHandler(socket, request),
       _admin(adminManager),
-      _isAuthenticated(false),
-      _temporaryFile(nullptr),
-      _upgradeFile(nullptr)
+      _isAuthenticated(false)
 {
     // Different session id pool for admin sessions (?)
     _sessionId = Util::decodeId(LOOLWSD::GetConnectionId());
@@ -811,27 +306,25 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager)
     : WebSocketHandler(true),
       _admin(adminManager),
-      _isAuthenticated(true),
-      _temporaryFile(nullptr),
-      _upgradeFile(nullptr)
+      _isAuthenticated(true)
 {
     _sessionId = Util::decodeId(LOOLWSD::GetConnectionId());
 }
 
 void AdminSocketHandler::sendTextFrame(const std::string& message)
 {
-    UnitWSD::get().onAdminQueryMessage(message);
+    if (!Util::isFuzzing())
+    {
+        UnitWSD::get().onAdminQueryMessage(message);
+    }
+
     if (_isAuthenticated)
     {
-        //  避免 Log 檔爆增
-        if (message.substr(0, 8) != "[ReadTo=")
-        {
-            LOG_TRC("send admin text frame '" << message << "'");
-        }
+        LOG_TRC("send admin text frame '" << message << '\'');
         sendMessage(message);
     }
     else
-        LOG_TRC("Skip sending message to non-authenticated client: '" << message << "'");
+        LOG_TRC("Skip sending message to non-authenticated client: '" << message << '\'');
 }
 
 void AdminSocketHandler::subscribeAsync(const std::shared_ptr<AdminSocketHandler>& handler)
@@ -856,9 +349,14 @@ bool AdminSocketHandler::handleInitialRequest(
     }
 
     std::shared_ptr<StreamSocket> socket = socketWeak.lock();
+    if (!socket)
+    {
+        LOG_ERR("Invalid socket while reading initial request.");
+        return false;
+    }
 
     const std::string& requestURI = request.getURI();
-    StringTokenizer pathTokens(requestURI, "/", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
+    StringVector pathTokens(Util::tokenize(requestURI, '/'));
 
     if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
     {
@@ -883,16 +381,15 @@ bool AdminSocketHandler::handleInitialRequest(
 /// An admin command processor.
 Admin::Admin() :
     SocketPoll("admin"),
-    _model(AdminModel()),
     _forKitPid(-1),
-    _forKitWritePipe(-1),
     _lastTotalMemory(0),
     _lastJiffies(0),
     _lastSentCount(0),
     _lastRecvCount(0),
     _cpuStatsTaskIntervalMs(DefStatsIntervalMs),
     _memStatsTaskIntervalMs(DefStatsIntervalMs * 2),
-    _netStatsTaskIntervalMs(DefStatsIntervalMs)
+    _netStatsTaskIntervalMs(DefStatsIntervalMs * 2),
+    _cleanupIntervalMs(DefStatsIntervalMs * 10)
 {
     LOG_INF("Admin ctor.");
 
@@ -918,15 +415,14 @@ Admin::~Admin()
 
 void Admin::pollingThread()
 {
-    std::chrono::steady_clock::time_point lastCPU, lastMem, lastNet;
-
     _model.setThreadOwner(std::this_thread::get_id());
 
-    lastCPU = std::chrono::steady_clock::now();
-    lastMem = lastCPU;
-    lastNet = lastCPU;
+    std::chrono::steady_clock::time_point lastCPU = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point lastMem = lastCPU;
+    std::chrono::steady_clock::time_point lastNet = lastCPU;
+    std::chrono::steady_clock::time_point lastCleanup = lastCPU;
 
-    while (!isStop() && !TerminationFlag && !ShutdownRequestFlag)
+    while (!isStop() && !SigUtil::getTerminationFlag() && !SigUtil::getShutdownRequestFlag())
     {
         const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 
@@ -946,6 +442,8 @@ void Admin::pollingThread()
             std::chrono::duration_cast<std::chrono::milliseconds>(now - lastMem).count();
         if (memWait <= MinStatsIntervalMs / 2) // Close enough
         {
+            _model.UpdateMemoryDirty();
+
             const size_t totalMem = getTotalMemoryUsage();
             _model.addMemStats(totalMem);
 
@@ -956,6 +454,8 @@ void Admin::pollingThread()
 
                 _lastTotalMemory = totalMem;
             }
+
+            notifyDocsMemDirtyChanged();
 
             memWait += _memStatsTaskIntervalMs;
             lastMem = now;
@@ -982,32 +482,48 @@ void Admin::pollingThread()
             lastNet = now;
         }
 
+        int cleanupWait = _cleanupIntervalMs;
+        if (_defDocProcSettings.getCleanupSettings().getEnable())
+        {
+            cleanupWait
+                -= std::chrono::duration_cast<std::chrono::milliseconds>(now - lastCleanup).count();
+            if (cleanupWait <= MinStatsIntervalMs / 2) // Close enough
+            {
+                cleanupResourceConsumingDocs();
+
+                cleanupWait += _cleanupIntervalMs;
+                lastCleanup = now;
+            }
+        }
+
         // (re)-connect (with sync. DNS - urk) to one monitor at a time
         if (_pendingConnects.size())
         {
             MonitorConnectRecord rec = _pendingConnects[0];
-            if (rec._when < now)
+            if (rec.getWhen() < now)
             {
                 _pendingConnects.erase(_pendingConnects.begin());
-                connectToMonitorSync(rec._uri);
+                connectToMonitorSync(rec.getUri());
             }
         }
 
         // Handle websockets & other work.
-        const int timeout = capAndRoundInterval(std::min(std::min(cpuWait, memWait), netWait));
+        const int timeout = capAndRoundInterval(
+            std::min(std::min(std::min(cpuWait, memWait), netWait), cleanupWait));
         LOG_TRC("Admin poll for " << timeout << "ms.");
-        poll(timeout);
+        poll(timeout * 1000); // continue with ms for admin, settings etc.
     }
 }
 
-void Admin::modificationAlert(const std::string& dockey, Poco::Process::PID pid, bool value){
+void Admin::modificationAlert(const std::string& dockey, pid_t pid, bool value){
     addCallback([=] { _model.modificationAlert(dockey, pid, value); });
 }
 
-void Admin::addDoc(const std::string& docKey, Poco::Process::PID pid, const std::string& filename,
-        const std::string& sessionId, const std::string& userName, const std::string& userId)
+void Admin::addDoc(const std::string& docKey, pid_t pid, const std::string& filename,
+                   const std::string& sessionId, const std::string& userName, const std::string& userId,
+                   const int smapsFD)
 {
-    addCallback([=] { _model.addDocument(docKey, pid, filename, sessionId, userName, userId); });
+    addCallback([=] { _model.addDocument(docKey, pid, filename, sessionId, userName, userId, smapsFD); });
 }
 
 void Admin::rmDoc(const std::string& docKey, const std::string& sessionId)
@@ -1044,7 +560,7 @@ size_t Admin::getTotalMemoryUsage()
     // memory to the forkit; and then count only dirty pages in the clients
     // since we know that they share everything else with the forkit.
     const size_t forkitRssKb = Util::getMemoryUsageRSS(_forKitPid);
-    const size_t wsdPssKb = Util::getMemoryUsagePSS(Poco::Process::id());
+    const size_t wsdPssKb = Util::getMemoryUsagePSS(getpid());
     const size_t kitsDirtyKb = _model.getKitsMemoryUsage();
     const size_t totalMem = wsdPssKb + forkitRssKb + kitsDirtyKb;
 
@@ -1054,7 +570,7 @@ size_t Admin::getTotalMemoryUsage()
 size_t Admin::getTotalCpuUsage()
 {
     const size_t forkitJ = Util::getCpuUsage(_forKitPid);
-    const size_t wsdJ = Util::getCpuUsage(Poco::Process::id());
+    const size_t wsdJ = Util::getCpuUsage(getpid());
     const size_t kitsJ = _model.getKitsJiffies();
 
     if (_lastJiffies == 0)
@@ -1071,17 +587,104 @@ size_t Admin::getTotalCpuUsage()
 
 unsigned Admin::getMemStatsInterval()
 {
+    assertCorrectThread();
     return _memStatsTaskIntervalMs;
 }
 
 unsigned Admin::getCpuStatsInterval()
 {
+    assertCorrectThread();
     return _cpuStatsTaskIntervalMs;
 }
 
 unsigned Admin::getNetStatsInterval()
 {
+    assertCorrectThread();
     return _netStatsTaskIntervalMs;
+}
+
+std::string Admin::getChannelLogLevels()
+{
+    std::string result;
+    // Get the list of channels..
+    std::vector<std::string> nameList;
+    Log::logger().names(nameList);
+
+    std::string levelList[9] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
+
+    for (size_t i = 0; i < nameList.size(); i++)
+    {
+        result += (nameList[i] != "" ? nameList[i]: "?") + '=' + levelList[Log::logger().get(nameList[i]).getLevel()] + (i != nameList.size() - 1 ? " ": "");
+    }
+
+    return result;
+}
+
+void Admin::setChannelLogLevel(const std::string& _channelName, std::string _level)
+{
+    assertCorrectThread();
+
+    std::string levelList[9] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
+    if (std::find(std::begin(levelList), std::end(levelList), _level) == std::end(levelList))
+    {
+        _level = "trace";
+    }
+
+    // Get the list of channels..
+    std::vector<std::string> nameList;
+    Log::logger().names(nameList);
+
+    for (size_t i = 0; i < nameList.size(); i++)
+    {
+        if (nameList[i] == _channelName)
+        {
+            Log::logger().get(nameList[i]).setLevel(_level);
+            break;
+        }
+    }
+}
+
+std::string Admin::getLogLines()
+{
+    assertCorrectThread();
+
+    try {
+        int lineCount = 500;
+        std::string fName = LOOLWSD::getPathFromConfig("logging.file.property[0]");
+        std::ifstream infile(fName);
+
+        std::string line;
+        std::deque<std::string> lines;
+
+        while (std::getline(infile, line))
+        {
+            std::istringstream iss(line);
+            lines.push_back(line);
+            if (lines.size() > (size_t)lineCount)
+            {
+                lines.pop_front();
+            }
+        }
+
+        infile.close();
+
+        if (lines.size() < (size_t)lineCount)
+        {
+            lineCount = (int)lines.size();
+        }
+
+        line = ""; // Use the same variable to include result.
+        // Newest will be on top.
+        for (int i = lineCount - 1; i >= 0; i--)
+        {
+            line += "\n" + lines[i];
+        }
+
+        return line;
+    }
+    catch (const std::exception& e) {
+        return "Could not read the log file.";
+    }
 }
 
 AdminModel& Admin::getModel()
@@ -1094,28 +697,41 @@ void Admin::updateLastActivityTime(const std::string& docKey)
     addCallback([=]{ _model.updateLastActivityTime(docKey); });
 }
 
-void Admin::updateMemoryDirty(const std::string& docKey, int dirty)
-{
-    addCallback([=] { _model.updateMemoryDirty(docKey, dirty); });
-}
 
 void Admin::addBytes(const std::string& docKey, uint64_t sent, uint64_t recv)
 {
     addCallback([=] { _model.addBytes(docKey, sent, recv); });
 }
 
+void Admin::setViewLoadDuration(const std::string& docKey, const std::string& sessionId, std::chrono::milliseconds viewLoadDuration)
+{
+    addCallback([=]{ _model.setViewLoadDuration(docKey, sessionId, viewLoadDuration); });
+}
+
+void Admin::setDocWopiDownloadDuration(const std::string& docKey, std::chrono::milliseconds wopiDownloadDuration)
+{
+    addCallback([=]{ _model.setDocWopiDownloadDuration(docKey, wopiDownloadDuration); });
+}
+
+void Admin::setDocWopiUploadDuration(const std::string& docKey, const std::chrono::milliseconds uploadDuration)
+{
+    addCallback([=]{ _model.setDocWopiUploadDuration(docKey, uploadDuration); });
+}
+
+void Admin::addSegFaultCount(unsigned segFaultCount)
+{
+    addCallback([=]{ _model.addSegFaultCount(segFaultCount); });
+}
+
 void Admin::notifyForkit()
 {
     std::ostringstream oss;
-    oss << "setconfig limit_virt_mem_mb " << _defDocProcSettings.LimitVirtMemMb << '\n'
-        << "setconfig limit_stack_mem_kb " << _defDocProcSettings.LimitStackMemKb << '\n'
-        << "setconfig limit_file_size_mb " << _defDocProcSettings.LimitFileSizeMb << '\n'
-        << "setconfig limit_num_open_files " << _defDocProcSettings.LimitNumberOpenFiles << '\n';
+    oss << "setconfig limit_virt_mem_mb " << _defDocProcSettings.getLimitVirtMemMb() << '\n'
+        << "setconfig limit_stack_mem_kb " << _defDocProcSettings.getLimitStackMemKb() << '\n'
+        << "setconfig limit_file_size_mb " << _defDocProcSettings.getLimitFileSizeMb() << '\n'
+        << "setconfig limit_num_open_files " << _defDocProcSettings.getLimitNumberOpenFiles() << '\n';
 
-    if (_forKitWritePipe != -1)
-        IoUtil::writeToPipe(_forKitWritePipe, oss.str());
-    else
-        LOG_INF("Forkit write pipe not set (yet).");
+    LOOLWSD::sendMessageToForKit(oss.str());
 }
 
 void Admin::triggerMemoryCleanup(const size_t totalMem)
@@ -1145,25 +761,35 @@ void Admin::triggerMemoryCleanup(const size_t totalMem)
 
         for (const auto& doc : docList)
         {
-            LOG_TRC("OOM Document: DocKey: [" << doc.DocKey << "], Idletime: [" << doc.IdleTime << "]," <<
-                    " Saved: [" << doc.Saved << "], Mem: [" << doc.Mem << "].");
-            if (doc.Saved)
+            LOG_TRC("OOM Document: DocKey: [" << doc.getDocKey() << "], Idletime: [" << doc.getIdleTime() << "]," <<
+                    " Saved: [" << doc.getSaved() << "], Mem: [" << doc.getMem() << "].");
+            if (doc.getSaved())
             {
                 // Kill the saved documents first.
-                LOG_DBG("OOM: Killing saved document with DocKey [" << doc.DocKey << "] with " << doc.Mem << " KB.");
-                LOOLWSD::closeDocument(doc.DocKey, "oom");
-                memToFreeKb -= doc.Mem;
+                LOG_DBG("OOM: Killing saved document with DocKey [" << doc.getDocKey() << "] with " << doc.getMem() << " KB.");
+                LOOLWSD::closeDocument(doc.getDocKey(), "oom");
+                memToFreeKb -= doc.getMem();
                 if (memToFreeKb <= 1024)
                     break;
             }
             else
             {
                 // Save unsaved documents.
-                LOG_TRC("Saving document: DocKey [" << doc.DocKey << "].");
-                LOOLWSD::autoSave(doc.DocKey);
+                LOG_TRC("Saving document: DocKey [" << doc.getDocKey() << "].");
+                LOOLWSD::autoSave(doc.getDocKey());
             }
         }
     }
+}
+
+void Admin::notifyDocsMemDirtyChanged()
+{
+    _model.notifyDocsMemDirtyChanged();
+}
+
+void Admin::cleanupResourceConsumingDocs()
+{
+    _model.cleanupResourceConsumingDocs();
 }
 
 void Admin::dumpState(std::ostream& os)
@@ -1185,7 +811,7 @@ public:
     {
     }
     int getPollEvents(std::chrono::steady_clock::time_point now,
-                      int &timeoutMaxMs) override
+                      int64_t &timeoutMaxMicroS) override
     {
         if (_connecting)
         {
@@ -1193,7 +819,7 @@ public:
             return POLLOUT;
         }
         else
-            return AdminSocketHandler::getPollEvents(now, timeoutMaxMs);
+            return AdminSocketHandler::getPollEvents(now, timeoutMaxMicroS);
     }
 
     void performWrites() override
@@ -1223,9 +849,37 @@ void Admin::scheduleMonitorConnect(const std::string &uri, std::chrono::steady_c
     assertCorrectThread();
 
     MonitorConnectRecord todo;
-    todo._when = when;
-    todo._uri = uri;
+    todo.setWhen(when);
+    todo.setUri(uri);
     _pendingConnects.push_back(todo);
+}
+
+void Admin::getMetrics(std::ostringstream &metrics)
+{
+    size_t memAvail =  getTotalAvailableMemory();
+    size_t memUsed = getTotalMemoryUsage();
+
+    metrics << "global_host_system_memory_bytes " << _totalSysMemKb * 1024 << std::endl;
+    metrics << "global_memory_available_bytes " << memAvail * 1024 << std::endl;
+    metrics << "global_memory_used_bytes " << memUsed * 1024 << std::endl;
+    metrics << "global_memory_free_bytes " << (memAvail - memUsed) * 1024 << std::endl;
+    metrics << std::endl;
+
+    _model.getMetrics(metrics);
+}
+
+void Admin::sendMetrics(const std::shared_ptr<StreamSocket>& socket, const std::shared_ptr<Poco::Net::HTTPResponse>& response)
+{
+    std::ostringstream oss;
+    response->write(oss);
+    getMetrics(oss);
+    socket->send(oss.str());
+    socket->shutdown();
+}
+
+void Admin::sendMetricsAsync(const std::shared_ptr<StreamSocket>& socket, const std::shared_ptr<Poco::Net::HTTPResponse>& response)
+{
+    addCallback([this, socket, response]{ sendMetrics(socket, response); });
 }
 
 void Admin::start()
@@ -1235,7 +889,7 @@ void Admin::start()
 
     for (size_t i = 0; ; ++i)
     {
-        const std::string path = "monitors.monitor[" + std::to_string(i) + "]";
+        const std::string path = "monitors.monitor[" + std::to_string(i) + ']';
         const std::string uri = config.getString(path, "");
         if (!config.has(path))
             break;

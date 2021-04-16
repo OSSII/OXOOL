@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_MESSAGE_HPP
-#define INCLUDED_MESSAGE_HPP
+#pragma once
 
 #include <atomic>
 #include <string>
@@ -32,7 +31,7 @@ public:
             const enum Dir dir) :
         _forwardToken(getForwardToken(message.data(), message.size())),
         _data(skipWhitespace(message.data() + _forwardToken.size()), message.data() + message.size()),
-        _tokens(LOOLProtocol::tokenize(_data.data(), _data.size())),
+        _tokens(Util::tokenize(_data.data(), _data.size())),
         _id(makeId(dir)),
         _firstLine(LOOLProtocol::getFirstLine(_data.data(), _data.size())),
         _abbr(_id + ' ' + LOOLProtocol::getAbbreviatedMessage(_data.data(), _data.size())),
@@ -49,7 +48,7 @@ public:
             const size_t reserve) :
         _forwardToken(getForwardToken(message.data(), message.size())),
         _data(std::max(reserve, message.size())),
-        _tokens(LOOLProtocol::tokenize(message.data() + _forwardToken.size(), message.size() - _forwardToken.size())),
+        _tokens(Util::tokenize(message.data() + _forwardToken.size(), message.size() - _forwardToken.size())),
         _id(makeId(dir)),
         _firstLine(LOOLProtocol::getFirstLine(message)),
         _abbr(_id + ' ' + LOOLProtocol::getAbbreviatedMessage(message)),
@@ -68,7 +67,7 @@ public:
             const enum Dir dir) :
         _forwardToken(getForwardToken(p, len)),
         _data(skipWhitespace(p + _forwardToken.size()), p + len),
-        _tokens(LOOLProtocol::tokenize(_data.data(), _data.size())),
+        _tokens(Util::tokenize(_data.data(), _data.size())),
         _id(makeId(dir)),
         _firstLine(LOOLProtocol::getFirstLine(_data.data(), _data.size())),
         _abbr(_id + ' ' + LOOLProtocol::getAbbreviatedMessage(_data.data(), _data.size())),
@@ -98,7 +97,7 @@ public:
     /// Returns the json part of the message, if any.
     std::string jsonString() const
     {
-        if (_tokens.size() > 1 && _tokens[1] == "{")
+        if (_tokens.size() > 1 && _tokens[1].size() && _tokens[1][0] == '{')
         {
             const size_t firstTokenSize = _tokens[0].size();
             return std::string(_data.data() + firstTokenSize, _data.size() - firstTokenSize);
@@ -119,7 +118,7 @@ public:
     bool isBinary() const { return _type == Type::Binary; }
 
     /// Allows some in-line re-writing of the message
-    void rewriteDataBody(std::function<bool (std::vector<char> &)> func)
+    void rewriteDataBody(const std::function<bool (std::vector<char> &)>& func)
     {
         if (func(_data))
         {
@@ -141,10 +140,10 @@ private:
 
     Type detectType() const
     {
-        if (_tokens[0] == "tile:" ||
-            _tokens[0] == "tilecombine:" ||
-            _tokens[0] == "renderfont:" ||
-            _tokens[0] == "windowpaint:")
+        if (_tokens.equals(0, "tile:") ||
+            _tokens.equals(0, "tilecombine:") ||
+            _tokens.equals(0, "renderfont:") ||
+            _tokens.equals(0, "windowpaint:"))
         {
             return Type::Binary;
         }
@@ -183,7 +182,5 @@ private:
     const std::string _abbr;
     const Type _type;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

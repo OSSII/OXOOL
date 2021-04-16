@@ -81,6 +81,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -99,7 +100,6 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
     private int filterMode = FileUtilities.ALL;
     private int sortMode;
     private boolean showHiddenFiles;
-
     // dynamic permissions IDs
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
 
@@ -121,6 +121,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
 
     public static final String NEW_FILE_PATH_KEY = "NEW_FILE_PATH_KEY";
     public static final String NEW_DOC_TYPE_KEY = "NEW_DOC_TYPE_KEY";
+    public static final String NIGHT_MODE_KEY = "NIGHT_MODE";
 
     public static final String GRID_VIEW = "0";
     public static final String LIST_VIEW = "1";
@@ -157,14 +158,15 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        PreferenceManager.setDefaultValues(this, R.xml.documentprovider_preferences, false);
+        readPreferences();
+        int mode = prefs.getInt(NIGHT_MODE_KEY, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        AppCompatDelegate.setDefaultNightMode(mode);
         super.onCreate(savedInstanceState);
 
         // initialize document provider factory
         //DocumentProviderFactory.initialize(this);
         //documentProviderFactory = DocumentProviderFactory.getInstance();
-
-        PreferenceManager.setDefaultValues(this, R.xml.documentprovider_preferences, false);
-        readPreferences();
 
         SettingsListenerModel.getInstance().setListener(this);
 
@@ -174,6 +176,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
 
         // init UI and populate with contents from the provider
         createUI();
+
         fabOpenAnimation = AnimationUtils.loadAnimation(this, R.anim.fab_open);
         fabCloseAnimation = AnimationUtils.loadAnimation(this, R.anim.fab_close);
     }
@@ -442,7 +445,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
         if (isFabMenuOpen)
             return;
 
-        ViewCompat.animate(editFAB).rotation(45f).withLayer().setDuration(300).setInterpolator(new OvershootInterpolator(0f)).start();
+        ViewCompat.animate(editFAB).rotation(-45f).withLayer().setDuration(300).setInterpolator(new OvershootInterpolator(0f)).start();
         impressLayout.startAnimation(fabOpenAnimation);
         writerLayout.startAnimation(fabOpenAnimation);
         calcLayout.startAnimation(fabOpenAnimation);
@@ -662,9 +665,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
             }
         }
 
-        if (!joined.isEmpty()) {
-            prefs.edit().putString(RECENT_DOCUMENTS_KEY, joined).apply();
-        }
+        prefs.edit().putString(RECENT_DOCUMENTS_KEY, joined).apply();
 
         recentRecyclerView.setAdapter(new RecentFilesAdapter(this, recentUris));
     }
@@ -689,57 +690,65 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
         // NOTE: If updating the list here, also check the AndroidManifest.xml,
         // I didn't find a way how to do it from one central place :-(
         i.setType("*/*");
-        final String[] mimeTypes = new String[] {
-            // ODF
-            "application/vnd.oasis.opendocument.text",
-            "application/vnd.oasis.opendocument.graphics",
-            "application/vnd.oasis.opendocument.presentation",
-            "application/vnd.oasis.opendocument.spreadsheet",
-            "application/vnd.oasis.opendocument.text-flat-xml",
-            "application/vnd.oasis.opendocument.graphics-flat-xml",
-            "application/vnd.oasis.opendocument.presentation-flat-xml",
-            "application/vnd.oasis.opendocument.spreadsheet-flat-xml",
 
-            // ODF templates
-            "application/vnd.oasis.opendocument.text-template",
-            "application/vnd.oasis.opendocument.spreadsheet-template",
-            "application/vnd.oasis.opendocument.graphics-template",
-            "application/vnd.oasis.opendocument.presentation-template",
+        // from some reason, the file picker on ChromeOS is confused when it
+        // gets the EXTRA_MIME_TYPES; to the user it looks like it is
+        // impossible to choose any files, unless they notice the dropdown in
+        // the bottom left and choose "All files".  Interestingly, SVG / SVGZ
+        // are shown there as an option, the other mime types are just blank
+        if (!LOActivity.isChromeOS(this)) {
+            final String[] mimeTypes = new String[] {
+                // ODF
+                "application/vnd.oasis.opendocument.text",
+                "application/vnd.oasis.opendocument.graphics",
+                "application/vnd.oasis.opendocument.presentation",
+                "application/vnd.oasis.opendocument.spreadsheet",
+                "application/vnd.oasis.opendocument.text-flat-xml",
+                "application/vnd.oasis.opendocument.graphics-flat-xml",
+                "application/vnd.oasis.opendocument.presentation-flat-xml",
+                "application/vnd.oasis.opendocument.spreadsheet-flat-xml",
 
-            // MS
-            "application/rtf",
-            "text/rtf",
-            "application/msword",
-            "application/vnd.ms-powerpoint",
-            "application/vnd.ms-excel",
-            "application/vnd.visio",
-            "application/vnd.visio.xml",
-            "application/x-mspublisher",
+                // ODF templates
+                "application/vnd.oasis.opendocument.text-template",
+                "application/vnd.oasis.opendocument.spreadsheet-template",
+                "application/vnd.oasis.opendocument.graphics-template",
+                "application/vnd.oasis.opendocument.presentation-template",
 
-            // OOXML
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                // MS
+                "application/rtf",
+                "text/rtf",
+                "application/msword",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.ms-excel",
+                "application/vnd.visio",
+                "application/vnd.visio.xml",
+                "application/x-mspublisher",
 
-            // OOXML templates
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
-            "application/vnd.openxmlformats-officedocument.presentationml.template",
+                // OOXML
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 
-            // other
-            "text/csv",
-            "text/comma-separated-values",
-            "application/vnd.ms-works",
-            "application/vnd.apple.keynote",
-            "application/x-abiword",
-            "application/x-pagemaker",
-            "image/x-emf",
-            "image/x-svm",
-            "image/x-wmf",
-            "image/svg+xml"
-        };
-        i.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+                // OOXML templates
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+                "application/vnd.openxmlformats-officedocument.presentationml.template",
+
+                // other
+                "text/csv",
+                "text/comma-separated-values",
+                "application/vnd.ms-works",
+                "application/vnd.apple.keynote",
+                "application/x-abiword",
+                "application/x-pagemaker",
+                "image/x-emf",
+                "image/x-svm",
+                "image/x-wmf",
+                "image/svg+xml"
+            };
+            i.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        }
 
         // TODO remember where the user picked the file the last time
         // TODO and that should default to Context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
@@ -861,6 +870,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
     /** Uploading back when we return from the LOActivity. */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case LO_ACTIVITY_REQUEST_CODE: {
                 // TODO probably kill this, we don't need to do anything here any more
@@ -890,7 +900,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
                 Uri uri = data.getData();
                 getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-                String extension = (requestCode == CREATE_DOCUMENT_REQUEST_CODE)? "odt": ((requestCode == CREATE_SPREADSHEET_REQUEST_CODE)? "ods": "odp");
+                String extension = (requestCode == CREATE_DOCUMENT_REQUEST_CODE) ? "odt" : ((requestCode == CREATE_SPREADSHEET_REQUEST_CODE) ? "ods" : "odp");
                 createNewFile(uri, extension);
 
                 open(uri);
@@ -921,8 +931,6 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     PERMISSION_WRITE_EXTERNAL_STORAGE);
-        } else {
-            setEditFABVisibility(View.VISIBLE);
         }
         Log.d(LOGTAG, "onStart");
     }
@@ -1030,65 +1038,54 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
         }
     }
 
-    private void setEditFABVisibility(final int visibility) {
-        LibreOfficeApplication.getMainHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                editFAB.setVisibility(visibility);
-            }
-        });
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_WRITE_EXTERNAL_STORAGE:
-                if (permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    setEditFABVisibility(View.VISIBLE);
-                } else {
-                    setEditFABVisibility(View.INVISIBLE);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        boolean showRationale = shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                        androidx.appcompat.app.AlertDialog.Builder rationaleDialogBuilder = new androidx.appcompat.app.AlertDialog.Builder(this)
-                                .setCancelable(false)
-                                .setTitle(getString(R.string.title_permission_required))
-                                .setMessage(getString(R.string.reason_required_to_read_documents));
-                        if (showRationale) {
-                            rationaleDialogBuilder.setPositiveButton(getString(R.string.positive_ok), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    ActivityCompat.requestPermissions(LibreOfficeUIActivity.this,
-                                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                            PERMISSION_WRITE_EXTERNAL_STORAGE);
-                                }
-                            })
-                                    .setNegativeButton(getString(R.string.negative_im_sure), new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            LibreOfficeUIActivity.this.finish();
-                                        }
-                                    })
-                                    .create()
-                                    .show();
-                        } else {
-                            rationaleDialogBuilder.setPositiveButton(getString(R.string.positive_ok), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                                    intent.setData(uri);
-                                    startActivity(intent);
-                                }
-                            })
-                                    .setNegativeButton(R.string.negative_cancel, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            LibreOfficeUIActivity.this.finish();
-                                        }
-                                    })
-                                    .create()
-                                    .show();
-                        }
+                if (permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    return;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    boolean showRationale = shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    androidx.appcompat.app.AlertDialog.Builder rationaleDialogBuilder = new androidx.appcompat.app.AlertDialog.Builder(this)
+                            .setCancelable(false)
+                            .setTitle(getString(R.string.title_permission_required))
+                            .setMessage(getString(R.string.reason_required_to_read_documents));
+                    if (showRationale) {
+                        rationaleDialogBuilder.setPositiveButton(getString(R.string.positive_ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ActivityCompat.requestPermissions(LibreOfficeUIActivity.this,
+                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                        PERMISSION_WRITE_EXTERNAL_STORAGE);
+                            }
+                        })
+                                .setNegativeButton(getString(R.string.negative_im_sure), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        LibreOfficeUIActivity.this.finish();
+                                    }
+                                })
+                                .create()
+                                .show();
+                    } else {
+                        rationaleDialogBuilder.setPositiveButton(getString(R.string.positive_ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            }
+                        })
+                                .setNegativeButton(R.string.negative_cancel, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        LibreOfficeUIActivity.this.finish();
+                                    }
+                                })
+                                .create()
+                                .show();
                     }
                 }
                 break;

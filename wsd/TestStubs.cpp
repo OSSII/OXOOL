@@ -19,15 +19,22 @@
 
 void DocumentBroker::assertCorrectThread() const {}
 
-
 void ClientSession::traceTileBySend(const TileDesc& /*tile*/, bool /*deduplicated = false*/) {}
 
-void ClientSession::traceSubscribeToTile(const std::string& /*tileCacheName*/) {};
-
-void ClientSession::traceUnSubscribeToTile(const std::string& /*tileCacheName*/) {};
-
-void ClientSession::clearTileSubscription() {};
-
 void ClientSession::enqueueSendMessage(const std::shared_ptr<Message>& /*data*/) {};
+
+ClientSession::~ClientSession() = default;
+
+void ClientSession::onDisconnect() {}
+
+bool ClientSession::hasQueuedMessages() const { return false; }
+
+void ClientSession::writeQueuedMessages() {}
+
+void ClientSession::dumpState(std::ostream& /*os*/) {}
+
+void ClientSession::setReadOnly(bool) {}
+
+bool ClientSession::_handleInput(const char* /*buffer*/, int /*length*/) { return false; }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

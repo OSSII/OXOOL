@@ -13,6 +13,10 @@
 				"id": "saveas"
 			},
 			{
+				"name": "Save As Password",
+				"id": "saveaspassword"
+			},
+			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share...",
 				"id": "shareas"
@@ -21,6 +25,11 @@
 				"name": ".uno:Print",
 				"id": "print",
 				"hotkey": "Ctrl+P"
+			},
+			{
+				"icon": ".uno:PrintDefault",
+				"name": "SecurePrint...",
+				"id": "dialog:dlgSecurePrint"
 			},
 			{
 				"name": "See revision history",
@@ -63,13 +72,6 @@
 						"id": "dialog:DownloadAs?ext=epub"
 					}
 				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"name": "Sign document",
-				"id": "signdocument"
 			},
 			{
 				"type": "--"
@@ -271,11 +273,13 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:ZoomPlus",
+				"icon": ".uno:ZoomPlus",
+				"name": "Zoom In",
 				"id": "zoomin"
 			},
 			{
-				"name": ".uno:ZoomMinus",
+				"icon": ".uno:ZoomMinus",
+				"name": "Zoom Out",
 				"id": "zoomout"
 			},
 			{
@@ -372,6 +376,11 @@
 			{
 				"name": ".uno:InsertGraphic",
 				"id": "insertgraphicremote"
+			},
+			{
+				"icon": ".uno:FlowChartShapes",
+				"name": "Hand-drawn diagram",
+				"id": "dialog:DiagramEditor"
 			},
 			{
 				"id": ".uno:InsertObjectChart"
@@ -842,6 +851,9 @@
 				"id": ".uno:DrawText"
 			},
 			{
+				"id": ".uno:VerticalText"
+			},
+			{
 				"name": ".uno:InsertAnnotation",
 				"id": "insertcomment",
 				"hotkey": "Ctrl+Alt+C"
@@ -859,7 +871,8 @@
 				]
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater"
+				"id": ".uno:FontworkGalleryFloater",
+				"hide": true
 			},
 			{
 				"id": ".uno:InsertCaptionDialog"
@@ -1019,10 +1032,12 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:InsertEnvelope"
+				"id": ".uno:InsertEnvelope",
+				"hide": true
 			},
 			{
-				"id": ".uno:InsertSignatureLine"
+				"id": ".uno:InsertSignatureLine",
+				"hide": true
 			}
 		]
 	},
@@ -1322,8 +1337,19 @@
 				"id": ".uno:FormatImageMenu",
 				"menu": [
 					{
+						"name": ".uno:ExternalEdit",
+						"id": "externaledit"
+					},
+					{
 						"id": ".uno:CompressGraphic",
 						"hide": true
+					},
+					{
+						"name": ".uno:SaveGraphic",
+						"id": "savegraphic"
+					},
+					{
+						"type": "--"
 					},
 					{
 						"name": ".uno:FormatImageFilterMenu",
@@ -1633,6 +1659,10 @@
 						"id": ".uno:InsertRowsAfter"
 					},
 					{
+						"id": ".uno:InsertRowDialog",
+						"hide": true
+					},
+					{
 						"type": "--"
 					},
 					{
@@ -1640,6 +1670,10 @@
 					},
 					{
 						"id": ".uno:InsertColumnsAfter"
+					},
+					{
+						"id": ".uno:InsertColumnDialog",
+						"hide": true
 					}
 				]
 			},
@@ -1681,6 +1715,10 @@
 				"id": ".uno:TableAutoFitMenu",
 				"menu": [
 					{
+						"id": ".uno:SetRowHeight",
+						"hide": true
+					},
+					{
 						"id": ".uno:SetMinimalRowHeight"
 					},
 					{
@@ -1691,6 +1729,10 @@
 					},
 					{
 						"type": "--"
+					},
+					{
+						"id": ".uno:SetColumnWidth",
+						"hide": true
 					},
 					{
 						"id": ".uno:SetMinimalColumnWidth"
@@ -1710,7 +1752,15 @@
 				"id": ".uno:MergeCells"
 			},
 			{
+				"name" : ".uno:SplitCell",
+				"id": "dialog:SplitCell"
+			},
+			{
 				"id": ".uno:MergeTable"
+			},
+			{
+				"id": ".uno:SplitTable",
+				"hide": true
 			},
 			{
 				"type": "--"
@@ -1756,6 +1806,10 @@
 						"id": ".uno:ConvertTableToText"
 					}
 				]
+			},
+			{
+				"id": ".uno:TableSort",
+				"hide": true
 			},
 			{
 				"type": "--"
@@ -1839,6 +1893,34 @@
 			},
 			{
 				"id": ".uno:FootnoteDialog"
+			},
+			{
+				"name": "Binding line",
+				"menu": [
+					{
+						"name": "Insert on the left side of page",
+						"id": "macro:///OxOOL.BindingLine.insertLeft()"
+					},
+					{
+						"name": "Insert on the right side of page",
+						"id": "macro:///OxOOL.BindingLine.insertRight()"
+					},
+					{
+						"name": "Insert on the top side of page",
+						"id": "macro:///OxOOL.BindingLine.insertTop()"
+					},
+					{
+						"name": "Insert on the bottom side of page",
+						"id": "macro:///OxOOL.BindingLine.insertBottom()"
+					},
+					{
+						"type": "--"
+					},
+					{
+						"name": "Customize",
+						"id": "dialog:BindingLineDialog"
+					}
+				]
 			},
 			{
 				"type": "--"

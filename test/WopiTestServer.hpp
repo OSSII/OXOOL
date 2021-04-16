@@ -6,14 +6,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
 #include "config.h"
 
 #include "helpers.hpp"
 #include "Log.hpp"
 #include "Unit.hpp"
 #include "UnitHTTP.hpp"
-
 
 #include <Poco/DateTimeFormat.h>
 #include <Poco/DateTimeFormatter.h>
@@ -22,6 +20,7 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/URI.h>
 #include <Poco/Timestamp.h>
+#include <Poco/Util/LayeredConfiguration.h>
 
 class WopiTestServer : public UnitWSD
 {
@@ -98,6 +97,13 @@ public:
     {
     }
 
+    void configure(Poco::Util::LayeredConfiguration& config) override
+    {
+        UnitWSD::configure(config);
+        // we're still internally confused as to https vs. http in places.
+        config.setBool("storage.ssl.as_scheme", false);
+    }
+
 protected:
     /// Here we act as a WOPI server, so that we have a server that responds to
     /// the wopi requests without additional expensive setup.
@@ -106,7 +112,18 @@ protected:
         Poco::URI uriReq(request.getURI());
         Poco::RegularExpression regInfo("/wopi/files/[0-9]");
         Poco::RegularExpression regContent("/wopi/files/[0-9]/contents");
-        LOG_INF("Fake wopi host request: " << uriReq.toString());
+
+        Log::StreamLogger logger = Log::info();
+        if (logger.enabled())
+        {
+            logger << "Fake wopi host request URI [" << uriReq.toString() << "]:\n";
+            for (const auto& pair : request)
+            {
+                logger << '\t' << pair.first << ": " << pair.second << " / ";
+            }
+
+            LOG_END(logger, true);
+        }
 
         // CheckFileInfo
         if (request.getMethod() == "GET" && regInfo.match(uriReq.getPath()))
@@ -221,7 +238,7 @@ protected:
                     oss << "HTTP/1.1 409 Conflict\r\n"
                         "User-Agent: " WOPI_AGENT_STRING "\r\n"
                         "\r\n"
-                        "{\"LOOLStatusCode\":" << static_cast<int>(LOOLStatusCode::DocChanged) << "}";
+                        "{\"LOOLStatusCode\":" << static_cast<int>(LOOLStatusCode::DocChanged) << '}';
 
                     socket->send(oss.str());
                     socket->shutdown();

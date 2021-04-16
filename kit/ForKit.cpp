@@ -14,124 +14,166 @@
 #include <config.h>
 
 #include <sys/capability.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sysexits.h>
 
 #include <atomic>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <thread>
+#include <chrono>
 
 #include <Poco/Path.h>
-#include <Poco/Process.h>
-#include <Poco/Thread.h>
-#include <Poco/Util/Application.h>
 
 #include <Common.hpp>
-#include <IoUtil.hpp>
 #include "Kit.hpp"
+#include "SetupKitEnvironment.hpp"
 #include <Log.hpp>
 #include <Unit.hpp>
 #include <Util.hpp>
+#include <WebSocketHandler.hpp>
+#if !MOBILEAPP
+#include <Admin.hpp>
+#endif
 
 #include <common/FileUtil.hpp>
+#include <common/JailUtil.hpp>
 #include <common/Seccomp.hpp>
 #include <common/SigUtil.hpp>
 #include <security.h>
 
-using Poco::Process;
-using Poco::Thread;
-#ifndef KIT_IN_PROCESS
-using Poco::Util::Application;
-#endif
-
 #ifndef KIT_IN_PROCESS
 static bool NoCapsForKit = false;
 static bool NoSeccomp = false;
+#if ENABLE_DEBUG
+static bool SingleKit = false;
 #endif
+#endif
+
+static std::string UserInterface;
+
 static bool DisplayVersion = false;
 static std::string UnitTestLibrary;
 static std::string LogLevel;
 static std::atomic<unsigned> ForkCounter(0);
 
-static std::map<Process::PID, std::string> childJails;
+static std::map<pid_t, std::string> childJails;
 
 #ifndef KIT_IN_PROCESS
 int ClientPortNumber = DEFAULT_CLIENT_PORT_NUMBER;
-int MasterPortNumber = DEFAULT_MASTER_PORT_NUMBER;
+std::string MasterLocation;
 #endif
 
-/// Dispatcher class to demultiplex requests from
-/// WSD and handles them.
-class CommandDispatcher : public IoUtil::PipeReader
+extern "C" { void dump_forkit_state(void); /* easy for gdb */ }
+
+void dump_forkit_state()
 {
+    std::ostringstream oss;
+
+    oss << "Forkit: " << ForkCounter << " forks\n"
+        << "  loglevel: " << LogLevel << "\n"
+        << "  unit test: " << UnitTestLibrary << "\n"
+#ifndef KIT_IN_PROCESS
+        << "  NoCapsForKit: " << NoCapsForKit << "\n"
+        << "  NoSeccomp: " << NoSeccomp << "\n"
+#  if ENABLE_DEBUG
+        << "  SingleKit: " << SingleKit << "\n"
+#  endif
+#endif
+        << "  ClientPortNumber: " << ClientPortNumber << "\n"
+        << "  MasterLocation: " << MasterLocation
+        << "\n";
+
+    const std::string msg = oss.str();
+    fprintf(stderr, "%s", msg.c_str());
+    LOG_TRC(msg);
+}
+
+class ServerWSHandler;
+
+// We have a single thread and a single connection so we won't bother with
+// access synchronization
+std::shared_ptr<ServerWSHandler> WSHandler;
+
+class ServerWSHandler final : public WebSocketHandler
+{
+    std::string _socketName;
+
 public:
-    CommandDispatcher(const int pipe) :
-        PipeReader("wsd_pipe_rd", pipe)
+    ServerWSHandler(const std::string& socketName) :
+        WebSocketHandler(/* isClient = */ true, /* isMasking */ false),
+        _socketName(socketName)
     {
     }
 
-    /// Polls WSD commands and handles them.
-    bool pollAndDispatch()
+protected:
+    void handleMessage(const std::vector<char>& data) override
     {
-        std::string message;
-        const int ready = readLine(message, [](){ return TerminationFlag.load(); });
-        if (ready <= 0)
-        {
-            // Termination is done via SIGTERM, which breaks the wait.
-            if (ready < 0)
-            {
-                if (TerminationFlag)
-                {
-                    LOG_INF("Poll interrupted in " << getName() << " and TerminationFlag is set.");
-                }
+        std::string message(data.data(), data.size());
 
-                // Break.
-                return false;
+#if !MOBILEAPP
+        if (UnitKit::get().filterKitMessage(this, message))
+            return;
+#endif
+        StringVector tokens = Util::tokenize(message);
+        Log::StreamLogger logger = Log::debug();
+        if (logger.enabled())
+        {
+            logger << _socketName << ": recv [";
+            for (const auto& token : tokens)
+            {
+                logger << tokens.getParam(token) << ' ';
             }
 
-            // Timeout.
-            return true;
+            LOG_END(logger, true);
         }
 
-        LOG_INF("ForKit command: [" << message << "].");
-        try
+        // Note: Syntax or parsing errors here are unexpected and fatal.
+        if (SigUtil::getTerminationFlag())
         {
-            std::vector<std::string> tokens = LOOLProtocol::tokenize(message);
-            if (tokens.size() == 2 && tokens[0] == "spawn")
+            LOG_DBG("Termination flag set: skip message processing");
+        }
+        else if (tokens.size() == 2 && tokens.equals(0, "spawn"))
+        {
+            const int count = std::stoi(tokens[1]);
+            if (count > 0)
             {
-                const int count = std::stoi(tokens[1]);
-                if (count > 0)
-                {
-                    LOG_INF("Setting to spawn " << tokens[1] << " child" << (count == 1 ? "" : "ren") << " per request.");
-                    ForkCounter = count;
-                }
-                else
-                {
-                    LOG_WRN("Cannot spawn " << tokens[1] << " children as requested.");
-                }
-            }
-            else if (tokens.size() == 3 && tokens[0] == "setconfig")
-            {
-                // Currently only rlimit entries are supported.
-                if (!Rlimit::handleSetrlimitCommand(tokens))
-                {
-                    LOG_ERR("Unknown setconfig command: " << message);
-                }
+                LOG_INF("Setting to spawn " << tokens[1] << " child" << (count == 1 ? "" : "ren") << " per request.");
+                ForkCounter = count;
             }
             else
             {
-                LOG_ERR("Unknown command: " << message);
+                LOG_WRN("Cannot spawn " << tokens[1] << " children as requested.");
             }
         }
-        catch (const std::exception& exc)
+        else if (tokens.size() == 3 && tokens.equals(0, "setconfig"))
         {
-            LOG_ERR("Error while processing forkit request [" << message << "]: " << exc.what());
+            // Currently only rlimit entries are supported.
+            if (!Rlimit::handleSetrlimitCommand(tokens))
+            {
+                LOG_ERR("Unknown setconfig command: " << message);
+            }
         }
+        else if (tokens.equals(0, "exit"))
+        {
+            LOG_INF("Setting TerminationFlag due to 'exit' command from parent.");
+            SigUtil::setTerminationFlag();
+        }
+        else
+        {
+            LOG_ERR("Bad or unknown token [" << tokens[0] << ']');
+        }
+    }
 
-        return true;
+    void onDisconnect() override
+    {
+#if !MOBILEAPP
+        LOG_WRN("ForKit connection lost without exit arriving from wsd. Setting TerminationFlag");
+        SigUtil::setTerminationFlag();
+#endif
     }
 };
 
@@ -153,12 +195,12 @@ static bool haveCapability(cap_value_t capability)
     {
         if (cap_name)
         {
-            LOG_SFL("cap_get_flag failed for " << cap_name << ".");
+            LOG_SFL("cap_get_flag failed for " << cap_name << '.');
             cap_free(cap_name);
         }
         else
         {
-            LOG_SFL("cap_get_flag failed for capability " << capability << ".");
+            LOG_SFL("cap_get_flag failed for capability " << capability << '.');
         }
         return false;
     }
@@ -210,8 +252,10 @@ static bool haveCorrectCapabilities()
 static void cleanupChildren()
 {
     std::vector<std::string> jails;
-    Process::PID exitedChildPid;
-    int status;
+    pid_t exitedChildPid;
+    int status = 0;
+    int segFaultCount = 0;
+
     // Reap quickly without doing slow cleanup so WSD can spawn more rapidly.
     while ((exitedChildPid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0)
     {
@@ -221,10 +265,15 @@ static void cleanupChildren()
             LOG_INF("Child " << exitedChildPid << " has exited, will remove its jail [" << it->second << "].");
             jails.emplace_back(it->second);
             childJails.erase(it);
-            if (childJails.empty() && !TerminationFlag)
+            if (childJails.empty() && !SigUtil::getTerminationFlag())
             {
                 // We ran out of kits and we aren't terminating.
                 LOG_WRN("No live Kits exist, and we are not terminating yet.");
+            }
+
+            if (WIFSIGNALED(status) && (WTERMSIG(status) == SIGSEGV || WTERMSIG(status) == SIGBUS))
+            {
+                ++segFaultCount;
             }
         }
         else
@@ -233,11 +282,34 @@ static void cleanupChildren()
         }
     }
 
-    // Now delete the jails.
-    for (const auto& path : jails)
+    if (segFaultCount)
     {
-        LOG_INF("Removing jail [" << path << "].");
-        FileUtil::removeFile(path, true);
+#ifdef KIT_IN_PROCESS
+#if !MOBILEAPP
+        Admin::instance().addSegFaultCount(segFaultCount);
+#endif
+#else
+        if (WSHandler)
+        {
+            std::stringstream stream;
+            stream << "segfaultcount " << segFaultCount << '\n';
+            int ret = WSHandler->sendMessage(stream.str());
+            if (ret == -1)
+            {
+                LOG_WRN("Could not send 'segfaultcount' message through websocket");
+            }
+            else
+            {
+                LOG_WRN("Successfully sent 'segfaultcount' message " << stream.str());
+            }
+        }
+#endif
+    }
+
+    // Now delete the jails.
+    for (const std::string& path : jails)
+    {
+        JailUtil::removeJail(path);
     }
 }
 
@@ -250,17 +322,20 @@ static int createLibreOfficeKit(const std::string& childRoot,
     // Generate a jail ID to be used for in the jail path.
     const std::string jailId = Util::rng::getFilename(16);
 
+    // Update the dynamic files as necessary.
+    JailUtil::SysTemplate::updateDynamicFiles(sysTemplate);
+
     // Used to label the spare kit instances
     static size_t spareKitId = 0;
     ++spareKitId;
-    LOG_DBG("Forking a loolkit process with jailId: " << jailId << " as spare loolkit #" << spareKitId << ".");
+    LOG_DBG("Forking a oxoolkit process with jailId: " << jailId << " as spare oxoolkit #" << spareKitId << '.');
 
-    const Process::PID pid = fork();
+    const pid_t pid = fork();
     if (!pid)
     {
         // Child
 
-        // Close the pipe from loolwsd
+        // Close the pipe from oxoolwsd
         close(0);
 
 #ifndef KIT_IN_PROCESS
@@ -274,8 +349,8 @@ static int createLibreOfficeKit(const std::string& childRoot,
             {
                 std::cerr << "Kit: Sleeping " << delaySecs
                           << " seconds to give you time to attach debugger to process "
-                          << Process::id() << std::endl;
-                Thread::sleep(delaySecs * 1000);
+                          << getpid() << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(delaySecs));
             }
         }
 
@@ -351,9 +426,22 @@ static void printArgumentHelp()
 
 int main(int argc, char** argv)
 {
-    if (!hasCorrectUID("oxoolforkit"))
+    // early check for avoiding the security check for username 'lool'
+    // (deliberately only this, not moving the entire parameter parsing here)
+    bool checkLoolUser = true;
+    for (int i = 0; i < argc; ++i)
     {
-        return Application::EXIT_SOFTWARE;
+        char *cmd = argv[i];
+        if (std::strstr(cmd, "--disable-lool-user-checking") == cmd)
+        {
+            std::cerr << "Security: Check for the 'lool' username overridden on the command line." << std::endl;
+            checkLoolUser = false;
+        }
+    }
+
+    if (checkLoolUser && !hasCorrectUID("oxoolforkit"))
+    {
+        return EX_SOFTWARE;
     }
 
     if (std::getenv("SLEEPFORDEBUGGER"))
@@ -363,8 +451,8 @@ int main(int argc, char** argv)
         {
             std::cerr << "Forkit: Sleeping " << delaySecs
                       << " seconds to give you time to attach debugger to process "
-                      << Process::id() << std::endl;
-            Thread::sleep(delaySecs * 1000);
+                      << getpid() << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(delaySecs));
         }
     }
 
@@ -374,6 +462,7 @@ int main(int argc, char** argv)
 #endif
 
     Util::setThreadName("forkit");
+    Util::setApplicationPath(Poco::Path(argv[0]).parent().toString());
 
     // Initialization
     const bool logToFile = std::getenv("LOOL_LOGFILE");
@@ -397,15 +486,6 @@ int main(int argc, char** argv)
     std::string loSubPath;
     std::string sysTemplate;
     std::string loTemplate;
-
-#if ENABLE_DEBUG
-    static const char* clientPort = std::getenv("LOOL_TEST_CLIENT_PORT");
-    if (clientPort)
-        ClientPortNumber = std::stoi(clientPort);
-    static const char* masterPort = std::getenv("LOOL_TEST_MASTER_PORT");
-    if (masterPort)
-        MasterPortNumber = std::stoi(masterPort);
-#endif
 
     for (int i = 0; i < argc; ++i)
     {
@@ -439,7 +519,7 @@ int main(int argc, char** argv)
         else if (std::strstr(cmd, "--masterport=") == cmd)
         {
             eq = std::strchr(cmd, '=');
-            MasterPortNumber = std::stoll(std::string(eq+1));
+            MasterLocation = std::string(eq+1);
         }
         else if (std::strstr(cmd, "--version") == cmd)
         {
@@ -452,14 +532,17 @@ int main(int argc, char** argv)
         {
             eq = std::strchr(cmd, '=');
             const std::string rlimits = std::string(eq+1);
-            std::vector<std::string> tokens = LOOLProtocol::tokenize(rlimits, ';');
-            for (const std::string& cmdLimit : tokens)
+            StringVector tokens = Util::tokenize(rlimits, ';');
+            for (const auto& cmdLimit : tokens)
             {
-                const std::pair<std::string, std::string> pair = Util::split(cmdLimit, ':');
-                std::vector<std::string> tokensLimit = { "setconfig", pair.first, pair.second };
+                const std::pair<std::string, std::string> pair = Util::split(tokens.getParam(cmdLimit), ':');
+                StringVector tokensLimit;
+                tokensLimit.push_back("setconfig");
+                tokensLimit.push_back(pair.first);
+                tokensLimit.push_back(pair.second);
                 if (!Rlimit::handleSetrlimitCommand(tokensLimit))
                 {
-                    LOG_ERR("Unknown rlimits command: " << cmdLimit);
+                    LOG_ERR("Unknown rlimits command: " << tokens.getParam(cmdLimit));
                 }
             }
         }
@@ -469,6 +552,10 @@ int main(int argc, char** argv)
         {
             eq = std::strchr(cmd, '=');
             UnitTestLibrary = std::string(eq+1);
+        }
+        else if (std::strstr(cmd, "--singlekit") == cmd)
+        {
+            SingleKit = true;
         }
 #endif
         // we are running in a lower-privilege mode - with no chroot
@@ -481,8 +568,14 @@ int main(int argc, char** argv)
         // we are running without seccomp protection
         else if (std::strstr(cmd, "--noseccomp") == cmd)
         {
-            LOG_ERR("Security :Running without the ability to filter system calls is ill advised.");
+            LOG_ERR("Security: Running without the ability to filter system calls is ill advised.");
             NoSeccomp = true;
+        }
+
+        else if (std::strstr(cmd, "--ui") == cmd)
+        {
+            eq = std::strchr(cmd, '=');
+            UserInterface = std::string(eq+1);
         }
     }
 
@@ -490,35 +583,17 @@ int main(int argc, char** argv)
         loTemplate.empty() || childRoot.empty())
     {
         printArgumentHelp();
-        return Application::EXIT_USAGE;
+        return EX_USAGE;
     }
 
     if (!UnitBase::init(UnitBase::UnitType::Kit,
                         UnitTestLibrary))
     {
         LOG_ERR("Failed to load kit unit test library");
-        return Application::EXIT_USAGE;
+        return EX_USAGE;
     }
 
-    // Setup & check environment
-    const std::string layers(
-        "xcsxcu:${BRAND_BASE_DIR}/share/registry "
-        "res:${BRAND_BASE_DIR}/share/registry "
-        "bundledext:${${BRAND_BASE_DIR}/program/lounorc:BUNDLED_EXTENSIONS_USER}/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini "
-        "sharedext:${${BRAND_BASE_DIR}/program/lounorc:SHARED_EXTENSIONS_USER}/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini "
-        "userext:${${BRAND_BASE_DIR}/program/lounorc:UNO_USER_PACKAGES_CACHE}/registry/com.sun.star.comp.deployment.configuration.PackageRegistryBackend/configmgr.ini "
-#if ENABLE_DEBUG // '*' denotes non-writable.
-        "user:*file://" DEBUG_ABSSRCDIR "/oxoolkitconfig.xcu "
-#else
-        "user:*file://" LOOLWSD_CONFIGDIR "/oxoolkitconfig.xcu "
-#endif
-        );
-
-    // No-caps tracing can spawn eg. glxinfo & other oddness.
-    unsetenv("DISPLAY");
-
-    ::setenv("CONFIGURATION_LAYERS", layers.c_str(),
-             1 /* override */);
+    setupKitEnvironment(UserInterface);
 
     if (!std::getenv("LD_BIND_NOW")) // must be set by parent.
         LOG_INF("Note: LD_BIND_NOW is not set.");
@@ -528,35 +603,37 @@ int main(int argc, char** argv)
         std::cerr << "FATAL: Capabilities are not set for the oxoolforkit program." << std::endl;
         std::cerr << "Please make sure that the current partition was *not* mounted with the 'nosuid' option." << std::endl;
         std::cerr << "If you are on SLES11, please set 'file_caps=1' as kernel boot option." << std::endl << std::endl;
-        return Application::EXIT_SOFTWARE;
+        return EX_SOFTWARE;
     }
-
-    // Enable built in profiling dumps
-    if (Log::logger().trace())
-        ::setenv("SAL_PROFILEZONE_EVENTS", "1", 0);
 
     // Initialize LoKit
     if (!globalPreinit(loTemplate))
     {
         LOG_FTL("Failed to preinit lokit.");
         Log::shutdown();
-        std::_Exit(Application::EXIT_SOFTWARE);
+        std::_Exit(EX_SOFTWARE);
     }
 
     if (Util::getProcessThreadCount() != 1)
         LOG_ERR("Error: forkit has more than a single thread after pre-init");
+
+    // Link the network and system files in sysTemplate, if possible.
+    JailUtil::SysTemplate::setupDynamicFiles(sysTemplate);
+
+    // Make dev/[u]random point to the writable devices in tmp/dev/.
+    JailUtil::SysTemplate::setupRandomDeviceLinks(sysTemplate);
 
     LOG_INF("Preinit stage OK.");
 
     // We must have at least one child, more are created dynamically.
     // Ask this first child to send version information to master process and trace startup.
     ::setenv("LOOL_TRACE_STARTUP", "1", 1);
-    Process::PID forKitPid = createLibreOfficeKit(childRoot, sysTemplate, loTemplate, loSubPath, true);
+    pid_t forKitPid = createLibreOfficeKit(childRoot, sysTemplate, loTemplate, loSubPath, true);
     if (forKitPid < 0)
     {
         LOG_FTL("Failed to create a kit process.");
         Log::shutdown();
-        std::_Exit(Application::EXIT_SOFTWARE);
+        std::_Exit(EX_SOFTWARE);
     }
 
     // No need to trace subsequent children.
@@ -567,23 +644,34 @@ int main(int argc, char** argv)
         Log::logger().setLevel(LogLevel);
     }
 
-    CommandDispatcher commandDispatcher(0);
+    SocketPoll mainPoll(Util::getThreadName());
+    mainPoll.runOnClientThread(); // We will do the polling on this thread.
+
+    WSHandler = std::make_shared<ServerWSHandler>("forkit_ws");
+
+#if !MOBILEAPP
+    mainPoll.insertNewUnixSocket(MasterLocation, FORKIT_URI, WSHandler);
+#endif
+
+    SigUtil::setUserSignals();
+
     LOG_INF("ForKit process is ready.");
 
-    while (!TerminationFlag)
+    while (!SigUtil::getTerminationFlag())
     {
         UnitKit::get().invokeForKitTest();
 
-        if (!commandDispatcher.pollAndDispatch())
-        {
-            LOG_INF("Child dispatcher flagged for termination.");
-            break;
-        }
+        mainPoll.poll(POLL_TIMEOUT_MICRO_S);
 
+        SigUtil::checkDumpGlobalState(dump_forkit_state);
+
+#if ENABLE_DEBUG
+        if (!SingleKit)
+#endif
         forkLibreOfficeKit(childRoot, sysTemplate, loTemplate, loSubPath);
     }
 
-    int returnValue = Application::EXIT_OK;
+    int returnValue = EX_OK;
     UnitKit::get().returnValue(returnValue);
 
 #if 0

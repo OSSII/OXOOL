@@ -1,5 +1,13 @@
-#ifndef INCLUDED_WATERMARK_HPP
-#define INCLUDED_WATERMARK_HPP
+/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+/*
+ * This file is part of the LibreOffice project.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
 
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
@@ -14,11 +22,11 @@
 class Watermark
 {
 public:
-    Watermark(const std::shared_ptr<lok::Document>& loKitDoc, const std::string& text,
-    const std::shared_ptr<ChildSession> & session)
+    Watermark(const std::shared_ptr<lok::Document>& loKitDoc,
+              const std::shared_ptr<ChildSession> & session)
         : _loKitDoc(loKitDoc)
-        , _text(text)
-        , _font("Liberation Sans")
+        , _text(session->getWatermarkText())
+        , _font("Carlito")
         , _width(0)
         , _height(0)
         , _alphaLevel(session->getWatermarkOpacity())
@@ -63,7 +71,7 @@ private:
             {
                 unsigned char* t = to + 4 * (to_y * to_width + to_x);
 
-                if (t[3] != 255.0)
+                if (t[3] != 255)
                     continue;
 
                 double dst_r = t[0];
@@ -110,7 +118,7 @@ private:
         // are always set to 0 (black) and the alpha level is 0 everywhere
         // except on the text area; the alpha level take into account of
         // performing anti-aliasing over the text edges.
-        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &_width, &_height);
+        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &_width, &_height, 450);
 
         if (!textPixels)
         {
@@ -179,4 +187,5 @@ private:
     double _alphaLevel;
     std::vector<unsigned char> _pixmap;
 };
-#endif
+
+/* vim:set shiftwidth=4 softtabstop=4 expandtab: */

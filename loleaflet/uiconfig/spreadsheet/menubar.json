@@ -13,6 +13,10 @@
 				"id": "saveas"
 			},
 			{
+				"name": "Save As Password",
+				"id": "saveaspassword"
+			},
+			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share...",
 				"id": "shareas"
@@ -272,6 +276,11 @@
 			},
 			{
 				"id": ".uno:InsertObjectChart"
+			},
+			{
+				"icon": ".uno:FlowChartShapes",
+				"name": "Hand-drawn diagram",
+				"id": "dialog:DiagramEditor"
 			},
 			{
 				"id": ".uno:DataDataPilotRun"
@@ -746,6 +755,9 @@
 				"id": ".uno:DrawText"
 			},
 			{
+				"id": ".uno:VerticalText"
+			},
+			{
 				"name": ".uno:InsertAnnotation",
 				"id": "insertcomment",
 				"hotkey": "Ctrl+Alt+C"
@@ -754,8 +766,13 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:HyperlinkDialog",
+				"name": ".uno:HyperlinkDialog",
+				"id": "sethyperlink",
 				"hotkey": "Ctrl+K"
+			},
+			{
+				"name": "Worksheet link",
+				"id": "dialog:SetHyperLinkTable"
 			},
 			{
 				"id": ".uno:InsertSymbol"
@@ -1045,6 +1062,14 @@
 				"id": ".uno:RowMenu",
 				"menu": [
 					{
+						"name": ".uno:RowHeight",
+						"id": "dialog:RowHeight"
+					},
+					{
+						"name": ".uno:SetOptimalRowHeight",
+						"id": ".uno:SetOptimalRowHeight?aExtraHeight:long=0"
+					},
+					{
 						"id": ".uno:HideRow"
 					},
 					{
@@ -1056,6 +1081,14 @@
 				"name": ".uno:ColumnMenu",
 				"id": ".uno:ColumnMenu",
 				"menu": [
+					{
+						"name": ".uno:ColumnWidth",
+						"id": "dialog:ColumnWidth"
+					},
+					{
+						"name": ".uno:SetOptimalColumnWidth",
+						"id": ".uno:SetOptimalColumnWidth?aExtraWidth:long=200"
+					},
 					{
 						"id": ".uno:HideColumn"
 					},
@@ -1154,6 +1187,14 @@
 					},
 					{
 						"type": "--"
+					},
+					{
+						"name": ".uno:ExternalEdit",
+						"id": "externaledit"
+					},
+					{
+						"name": ".uno:SaveGraphic",
+						"id": "savegraphic"
 					}
 				]
 			},
@@ -1398,8 +1439,7 @@
 			},
 			{
 				"name": ".uno:Delete",
-				"id": "dialog:DeleteCell",
-				"hotkey": "Backspace"
+				"id": "dialog:DeleteCell"
 			},
 			{
 				"name": ".uno:FillCellsMenu",
@@ -1473,6 +1513,11 @@
 				"type": "--"
 			},
 			{
+				"icon": ".uno:DuplicatePage",
+				"name": ".uno:Move",
+				"id": "dialog:MoveTable"
+			},
+			{
 				"icon": ".uno:DBTableRename",
 				"name": ".uno:RenameTable",
 				"id": "dialog:RenameTable"
@@ -1485,12 +1530,12 @@
 				"id": "dialog:ShowTable"
 			},
 			{
-				"type": "--"
+				"icon": ".uno:BackgroundColor",
+				"name": ".uno:SetTabBgColor",
+				"id": "dialog:SetTabBgColor"
 			},
 			{
-				"icon": ".uno:DuplicatePage",
-				"name": ".uno:Move",
-				"id": "dialog:MoveTable"
+				"type": "--"
 			},
 			{
 				"name": ".uno:NavigateMenu",
@@ -1622,7 +1667,8 @@
 				"id": ".uno:GroupOutlineMenu",
 				"menu": [
 					{
-						"id": ".uno:Group",
+						"name": ".uno:Group",
+						"id": "dialog:RowOrColGroup",
 						"hotkey": "F12"
 					},
 					{

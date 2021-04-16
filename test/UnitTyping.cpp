@@ -46,7 +46,7 @@ public:
 
     bool filterAlertAllusers(const std::string & msg) override
     {
-        std::cout << "Alert: " << msg << "\n";
+        std::cout << "Alert: " << msg << '\n';
         return false;
     }
 
@@ -229,14 +229,14 @@ public:
                         {
 // 1544818858022 INCOMING: tile: nviewid=0 part=0 width=256 height=256 tileposx=15360 tileposy=38400 tilewidth=3840 tileheight=3840 oldwid=0 wid=232 ver=913 imgsize=1002
 // Socket.js:123 1544818858027 OUTGOING: tileprocessed tile=0:15360:38400:3840:3840
-                            TileDesc desc = TileDesc::parse(LOOLProtocol::tokenize(tile.data(), tile.size()));
+                            TileDesc desc = TileDesc::parse(Util::tokenize(tile.data(), tile.size()));
                             sendTextFrame(sock, "tileprocessed tile=" + desc.generateID(), testname);
                         }
 
                         if (!(num & 0x300)) // occasionally sleep some more - why not.
                             std::this_thread::sleep_for(std::chrono::milliseconds(waitMS*25));
-                    LOG_TRC("Send to " << which << " message " << msg);
-//                    std::cout << "Send to " << which << " message " << msg << "\n";
+                        LOG_TRC("Send to " << which << " message " << msg);
+                        // std::cout << "Send to " << which << " message " << msg << '\n';
                         sendTextFrame(sock, msg, testname);
                     }
                     liveTyping--;
@@ -264,12 +264,12 @@ public:
             results[i] = result;
 
             char target = 'a'+i;
-            LOG_TRC("Result [" << i << "] target " << target << " is '" << result << "'");
+            LOG_TRC("Result [" << i << "] target " << target << " is '" << result << '\'');
             for (size_t j = sizeof("textselectioncontent:"); j < result.size(); ++j)
             {
                 if (result[j] != ' ' && result[j] != target)
                 {
-                    LOG_TRC("Text contains incorrect char[" << j << "] = '" << result[j] << "' not " << target << " '" << result << "'");
+                    LOG_TRC("Text contains incorrect char[" << j << "] = '" << result[j] << "' not " << target << " '" << result << '\'');
                     if (result[j] != target)
                         return TestResult::Failed;
                 }

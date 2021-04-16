@@ -231,9 +231,8 @@
       "dev": true
     },
     "bootstrap": {
-      "version": "3.3.6",
-      "resolved": "file:node_shrinkwrap/bootstrap-3.3.6.tgz",
-      "integrity": "sha1-jej3SdyKdD8qxbUQ2Yg3Hj2qZYk=",
+      "version": "3.4.1",
+      "resolved": "file:node_shrinkwrap/bootstrap-3.4.1.tgz",
       "dev": true
     },
     "brace-expansion": {
@@ -1820,15 +1819,14 @@
       }
     },
     "jquery": {
-      "version": "2.2.4",
-      "resolved": "file:node_shrinkwrap/jquery-2.2.4.tgz",
-      "integrity": "sha1-LInWiJterFIqfuoywUUhVZxsvwI=",
+      "version": "3.5.1",
+      "resolved": "file:archived-packages/jquery-3.5.1-5f02013ea.tar",
+      "integrity": "sha512-LXqrcuY/5t4rcVj9M8PQAfTjB5Lb/su/Nu+f/hlI8Te6JwEKW13tlz2ly7IPojcMkyxsmBoIRRLHUgGMS11Zqg== sha512-XwIBPqcMn57FxfT+Go5pzySnm4KWkT1Tv7gjrpT1srtf8Weynl6R273VJ5GjkRb51IzMp5nbaPjJXMWeju2MKg==",
       "dev": true
     },
     "jquery-contextmenu": {
-      "version": "2.2.3",
-      "resolved": "file:node_shrinkwrap/jquery-contextmenu-2.2.3.tgz",
-      "integrity": "sha1-qYAPfXL5ZDcetDw+LwucHzD4mmw=",
+      "version": "2.9.2",
+      "resolved": "file:node_shrinkwrap/jquery-contextmenu-2.9.2.tgz",
       "dev": true
     },
     "jquery-mousewheel": {
@@ -2740,6 +2738,14 @@
         "jquery": "2.2.4"
       }
     },
+    "spectrum-colorpicker2": {
+      "version": "2.0.0",
+      "resolved": "file:node_shrinkwrap/spectrum-colorpicker2-2.0.0.tgz",
+      "dev": true,
+      "requires": {
+        "jquery": "2.2.4"
+      }
+    },
     "source-map": {
       "version": "0.5.7",
       "resolved": "file:node_shrinkwrap/source-map-0.5.7.tgz",
@@ -2925,20 +2931,6 @@
         "readable-stream": "2.3.6",
         "xtend": "4.0.1"
       }
-    },
-    "timeago": {
-      "version": "1.5.3",
-      "resolved": "file:node_shrinkwrap/timeago-1.5.3.tgz",
-      "integrity": "sha1-YqpDG3As98Uy4mrjyOJIhV5N1IA=",
-      "dev": true,
-      "requires": {
-        "jquery": "2.2.4"
-      }
-    },
-    "timeago.js": {
-      "version": "4.0.0-beta.1",
-      "resolved": "file:node_shrinkwrap/timeago.js-4.0.0-beta.1.tgz",
-      "dev": true
     },
     "timers-browserify": {
       "version": "1.4.2",

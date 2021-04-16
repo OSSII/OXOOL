@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_DOCUMENTBROKER_HPP
-#define INCLUDED_DOCUMENTBROKER_HPP
+#pragma once
 
 #include <csignal>
 
@@ -24,7 +23,6 @@
 
 #include <Poco/URI.h>
 
-#include "IoUtil.hpp"
 #include "Log.hpp"
 #include "TileDesc.hpp"
 #include "Util.hpp"
@@ -34,9 +32,14 @@
 #include "common/SigUtil.hpp"
 #include "common/Session.hpp"
 
+#if !MOBILEAPP
+#include "Admin.hpp"
+#endif
+
 // Forwards.
 class PrisonerRequestDispatcher;
 class DocumentBroker;
+struct LockContext;
 class StorageBase;
 class TileCache;
 class Message;
@@ -49,168 +52,73 @@ public:
 
     bool continuePolling() override
     {
-        return SocketPoll::continuePolling() && !TerminationFlag;
+        return SocketPoll::continuePolling() && !SigUtil::getTerminationFlag();
     }
 };
 
-/// Represents a new LOK child that is read
-/// to host a document.
-class ChildProcess
+#include "LOOLWSD.hpp"
+
+/// A ChildProcess object represents a KIT process that hosts a document and manipulates the
+/// document using the LibreOfficeKit API. It isn't actually a child of the WSD process, but a
+/// grandchild. The comments loosely talk about "child" anyway.
+
+class ChildProcess : public WSProcess
 {
 public:
     /// @param pid is the process ID of the child.
     /// @param socket is the underlying Sockeet to the child.
-    ChildProcess(const Poco::Process::PID pid,
+    ChildProcess(const pid_t pid,
                  const std::string& jailId,
                  const std::shared_ptr<StreamSocket>& socket,
                  const Poco::Net::HTTPRequest &request) :
 
-        _pid(pid),
+        WSProcess("ChildProcess", pid, socket, std::make_shared<WebSocketHandler>(socket, request)),
         _jailId(jailId),
-        _ws(std::make_shared<WebSocketHandler>(socket, request)),
-        _socket(socket)
+        _smapsFD(-1)
     {
-        LOG_INF("ChildProcess ctor [" << _pid << "].");
     }
 
 
     ChildProcess(ChildProcess&& other) = delete;
 
+    virtual ~ChildProcess(){ ::close(_smapsFD); }
+
     const ChildProcess& operator=(ChildProcess&& other) = delete;
-
-    ~ChildProcess()
-    {
-        LOG_DBG("~ChildProcess dtor [" << _pid << "].");
-
-        if (_pid <= 0)
-            return;
-
-        terminate();
-
-        // No need for the socket anymore.
-        _ws.reset();
-        _socket.reset();
-    }
 
     void setDocumentBroker(const std::shared_ptr<DocumentBroker>& docBroker);
     std::shared_ptr<DocumentBroker> getDocumentBroker() const { return _docBroker.lock(); }
-
-    /// Let the child close a nice way.
-    void close()
-    {
-        if (_pid < 0)
-            return;
-
-        try
-        {
-            LOG_DBG("Closing ChildProcess [" << _pid << "].");
-
-            // Request the child to exit
-            if (isAlive())
-            {
-                LOG_DBG("Stopping ChildProcess [" << _pid << "]");
-                sendTextFrame("exit");
-            }
-
-            // Shutdown the socket.
-            if (_ws)
-                _ws->shutdown();
-        }
-        catch (const std::exception& ex)
-        {
-            LOG_ERR("Error while closing child process: " << ex.what());
-        }
-
-        _pid = -1;
-    }
-
-    /// Kill or abandon the child.
-    void terminate()
-    {
-        if (_pid < 0)
-            return;
-
-#ifndef MOBILEAPP
-        if (::kill(_pid, 0) == 0)
-        {
-            LOG_INF("Killing child [" << _pid << "].");
-            if (!SigUtil::killChild(_pid))
-            {
-                LOG_ERR("Cannot terminate lokit [" << _pid << "]. Abandoning.");
-            }
-        }
-#else
-        // What to do? Throw some unique exception that the outermost call in the thread catches and
-        // exits from the thread?
-#endif
-        _pid = -1;
-    }
-
-    Poco::Process::PID getPid() const { return _pid; }
     const std::string& getJailId() const { return _jailId; }
-
-    /// Send a text payload to the child-process WS.
-    bool sendTextFrame(const std::string& data)
-    {
-        try
-        {
-            if (_ws)
-            {
-                LOG_TRC("Send DocBroker to Child message: [" << LOOLProtocol::getAbbreviatedMessage(data) << "].");
-                _ws->sendMessage(data);
-                return true;
-            }
-        }
-        catch (const std::exception& exc)
-        {
-            LOG_ERR("Failed to send child [" << _pid << "] data [" <<
-                    LOOLProtocol::getAbbreviatedMessage(data) << "] due to: " << exc.what());
-            throw;
-        }
-
-        LOG_WRN("No socket between DocBroker and child to send [" << LOOLProtocol::getAbbreviatedMessage(data) << "]");
-        return false;
-    }
-
-    /// Check whether this child is alive and socket not in error.
-    /// Note: zombies will show as alive, and sockets have waiting
-    /// time after the other end-point closes. So this isn't accurate.
-    bool isAlive() const
-    {
-#ifndef MOBILEAPP
-        try
-        {
-            return _pid > 1 && _ws && ::kill(_pid, 0) == 0;
-        }
-        catch (const std::exception&)
-        {
-        }
-
-        return false;
-#else
-        return _pid > 1;
-#endif
-    }
+    void setSMapsFD(int smapsFD) { _smapsFD = smapsFD;}
+    int getSMapsFD(){ return _smapsFD; }
 
 private:
-    Poco::Process::PID _pid;
     const std::string _jailId;
-    std::shared_ptr<WebSocketHandler> _ws;
-    std::shared_ptr<Socket> _socket;
     std::weak_ptr<DocumentBroker> _docBroker;
+    int _smapsFD;
 };
 
+class RequestDetails;
 class ClientSession;
 
-/// DocumentBroker is responsible for setting up a document
-/// in jail and brokering loading it from Storage
-/// and saving it back.
+/// DocumentBroker is responsible for setting up a document in jail and brokering loading it from
+/// Storage and saving it back.
+
 /// Contains URI, physical path, etc.
+
+/// There is one DocumentBroker object in the WSD process for each document that is open (in 1..n sessions).
+
 class DocumentBroker : public std::enable_shared_from_this<DocumentBroker>
 {
-    friend class previewDocumentBroker;
     class DocumentBrokerPoll;
+
+    void setupPriorities();
+
 public:
+    /// How to prioritize this document.
+    enum class ChildType {
+        Interactive, Batch
+    };
+
     static Poco::URI sanitizeURI(const std::string& uri);
 
     /// Returns a document-specific key based
@@ -220,10 +128,11 @@ public:
     /// Dummy document broker that is marked to destroy.
     DocumentBroker();
 
-    /// Construct DocumentBroker with URI, docKey, and root path.
-    DocumentBroker(const std::string& uri,
+    DocumentBroker(ChildType type,
+                   const std::string& uri,
                    const Poco::URI& uriPublic,
-                   const std::string& docKey);
+                   const std::string& docKey,
+                   unsigned mobileAppDocId = 0);
 
     virtual ~DocumentBroker();
 
@@ -236,12 +145,37 @@ public:
     /// Flag for termination. Note that this doesn't save any unsaved changes in the document
     void stop(const std::string& reason);
 
+    /// Hard removes a session by ID, only for ClientSession.
+    void finalRemoveSession(const std::string& id);
+
+    /// Create new client session
+    std::shared_ptr<ClientSession> createNewClientSession(
+        const std::shared_ptr<ProtocolHandlerInterface> &ws,
+        const std::string& id,
+        const Poco::URI& uriPublic,
+        const bool isReadOnly,
+        const RequestDetails &requestDetails);
+
+    /// Find or create a new client session for the PHP proxy
+    void handleProxyRequest(
+        const std::string& id,
+        const Poco::URI& uriPublic,
+        const bool isReadOnly,
+        const RequestDetails &requestDetails,
+        const std::shared_ptr<StreamSocket> &socket);
+
     /// Thread safe termination of this broker if it has a lingering thread
     void joinThread();
 
-    void setLoaded();
+    /// Notify that the load has completed
+    virtual void setLoaded();
+
+    /// If not yet locked, try to lock
+    bool attemptLock(const ClientSession& session, std::string& failReason);
 
     bool isDocumentChangedInStorage() { return _documentChangedInStorage; }
+
+    bool isLastStorageSaveSuccessful() { return _lastStorageSaveSuccessful; }
 
     /// Save the document to Storage if it needs persisting.
     bool saveToStorage(const std::string& sesionId, bool success, const std::string& result = "", bool force = false);
@@ -266,6 +200,7 @@ public:
     const std::string& getDocKey() const { return _docKey; }
     const std::string& getFilename() const { return _filename; };
     TileCache& tileCache() { return *_tileCache; }
+    bool hasTileCache() { return _tileCache != nullptr; }
     bool isAlive() const;
 
     /// Are we running in either shutdown, or the polling thread.
@@ -305,13 +240,29 @@ public:
         _cursorHeight = h;
     }
 
-    void invalidateTiles(const std::string& tiles, int normalizedViewId);
+    void invalidateTiles(const std::string& tiles, int normalizedViewId)
+    {
+        // Remove from cache.
+        _tileCache->invalidateTiles(tiles, normalizedViewId);
+    }
+
     void handleTileRequest(TileDesc& tile,
                            const std::shared_ptr<ClientSession>& session);
     void handleTileCombinedRequest(TileCombined& tileCombined,
                                    const std::shared_ptr<ClientSession>& session);
     void sendRequestedTiles(const std::shared_ptr<ClientSession>& session);
     void cancelTileRequests(const std::shared_ptr<ClientSession>& session);
+
+    enum ClipboardRequest {
+        CLIP_REQUEST_SET,
+        CLIP_REQUEST_GET,
+        CLIP_REQUEST_GET_RICH_HTML_ONLY
+    };
+    void handleClipboardRequest(ClipboardRequest type,  const std::shared_ptr<StreamSocket> &socket,
+                                const std::string &viewId, const std::string &tag,
+                                const std::shared_ptr<std::string> &data);
+    static bool lookupSendClipboardTag(const std::shared_ptr<StreamSocket> &socket,
+                                       const std::string &tag, bool sendError = false);
 
     bool isMarkedToDestroy() const { return _markToDestroy || _stop; }
 
@@ -326,7 +277,7 @@ public:
     void closeDocument(const std::string& reason);
 
     /// Get the PID of the associated child process
-    Poco::Process::PID getPid() const { return _childProcess->getPid(); }
+    pid_t getPid() const { return _childProcess ? _childProcess->getPid() : 0; }
 
     std::unique_lock<std::mutex> getLock() { return std::unique_lock<std::mutex>(_mutex); }
 
@@ -346,7 +297,23 @@ public:
     /// Sets the initialization flag of a given initial setting.
     void setInitialSetting(const std::string& name);
 
+    /// For testing only [!]
+    std::vector<std::shared_ptr<ClientSession>> getSessionsTestOnlyUnsafe();
+
+    /// Estimate memory usage / bytes
+    size_t getMemorySize() const;
+
+    /// Get URL for corresponding download id if registered, or empty string otherwise
+    std::string getDownloadURL(const std::string& downloadId);
+
+    /// Remove download id mapping
+    void unregisterDownloadId(const std::string& downloadId);
+
 private:
+    /// get the session id of a session that can write the document for save / locking.
+    std::string getWriteableSessionId() const;
+
+    void refreshLock();
 
     /// Loads a document from the public URI into the jail.
     bool load(const std::shared_ptr<ClientSession>& session, const std::string& jailId);
@@ -384,13 +351,21 @@ private:
                                const std::string& saveAsFilename = std::string(),
                                const bool isRename = false, const bool force = false);
 
+    /**
+     * Report back the save result to PostMessage users (Action_Save_Resp)
+     * @param success: Whether saving was successful
+     * @param result: Short message why saving was (not) successful
+     * @param errorMsg: Long error msg (Error message from WOPI host if any)
+     */
+    void broadcastSaveResult(bool success, const std::string& result = "", const std::string& errorMsg = "");
+
     /// True iff a save is in progress (requested but not completed).
     bool isSaving() const { return _lastSaveResponseTime < _lastSaveRequestTime; }
 
     /// True if we know the doc is modified or
     /// if there has been activity from a client after we last *requested* saving,
     /// since there are race conditions vis-a-vis user activity while saving.
-    bool isPossiblyModified() const { return _isModified || (_lastSaveRequestTime < _lastActivityTime); }
+    bool isPossiblyModified() const { return isModified() || (_lastSaveRequestTime < _lastActivityTime); }
 
     /// True iff there is at least one non-readonly session other than the given.
     /// Since only editable sessions can save, we need to use the last to
@@ -401,8 +376,8 @@ private:
     /// Loads a new session and adds to the sessions container.
     size_t addSessionInternal(const std::shared_ptr<ClientSession>& session);
 
-    /// Removes a session by ID. Returns the new number of sessions.
-    size_t removeSessionInternal(const std::string& id);
+    /// Starts the Kit <-> DocumentBroker shutdown handshake
+    void disconnectSessionInternal(const std::string& id);
 
     /// Forward a message from child session to its respective client session.
     bool forwardToClient(const std::shared_ptr<Message>& payload);
@@ -415,7 +390,11 @@ private:
     void getIOStats(uint64_t &sent, uint64_t &recv);
 
 protected:
+    /// Seconds to live for, or 0 forever
+    int64_t _limitLifeSeconds;
     std::string _uriOrig;
+    /// What type are we: affects priority.
+    ChildType _type;
 private:
     const Poco::URI _uriPublic;
     /// URL-based key. May be repeated during the lifetime of WSD.
@@ -423,7 +402,6 @@ private:
     /// Short numerical ID. Unique during the lifetime of WSD.
     const std::string _docId;
     const std::string _childRoot;
-    const std::string _cacheRoot;
     std::shared_ptr<ChildProcess> _childProcess;
     std::string _uriJailed;
     std::string _uriJailedAnonym;
@@ -433,6 +411,9 @@ private:
     /// Set to true when document changed in storage and we are waiting
     /// for user's command to act.
     bool _documentChangedInStorage;
+
+    /// Indicates whether the last saveToStorage operation was successful.
+    bool _lastStorageSaveSuccessful;
 
     /// The last time we tried saving, regardless of whether the
     /// document was modified and saved or not.
@@ -445,15 +426,15 @@ private:
     std::chrono::steady_clock::time_point _lastSaveResponseTime;
 
     /// The document's last-modified time on storage.
-    Poco::Timestamp _documentLastModifiedTime;
+    std::chrono::system_clock::time_point _documentLastModifiedTime;
 
     /// The jailed file last-modified time.
-    Poco::Timestamp _lastFileModifiedTime;
+    std::chrono::system_clock::time_point _lastFileModifiedTime;
 
     /// All session of this DocBroker by ID.
     SessionMap<ClientSession> _sessions;
 
-    /// If we set the user-requested inital (on load) settings to be forced.
+    /// If we set the user-requested initial (on load) settings to be forced.
     std::set<std::string> _isInitialStateSet;
 
     std::unique_ptr<StorageBase> _storage;
@@ -470,6 +451,7 @@ private:
     std::unique_ptr<DocumentBrokerPoll> _poll;
     std::atomic<bool> _stop;
     std::string _closeReason;
+    std::unique_ptr<LockContext> _lockCtx;
 
     /// Versioning is used to prevent races between
     /// painting and invalidation.
@@ -480,22 +462,42 @@ private:
     std::chrono::steady_clock::time_point _lastActivityTime;
     std::chrono::steady_clock::time_point _threadStart;
     std::chrono::milliseconds _loadDuration;
+    std::chrono::milliseconds _wopiLoadDuration;
 
     /// Unique DocBroker ID for tracing and debugging.
     static std::atomic<unsigned> DocBrokerId;
+
+    // Relevant only in the mobile apps
+    const unsigned _mobileAppDocId;
+
+    // Maps download id -> URL
+    std::map<std::string, std::string> _registeredDownloadLinks;
 };
 
-class ConvertToBroker : public DocumentBroker
+#if !MOBILEAPP
+class ConvertToBroker final : public DocumentBroker
 {
+    const std::string _format;
+    const std::string _sOptions;
+    std::shared_ptr<ClientSession> _clientSession;
+
 public:
     /// Construct DocumentBroker with URI and docKey
     ConvertToBroker(const std::string& uri,
                     const Poco::URI& uriPublic,
-                    const std::string& docKey);
+                    const std::string& docKey,
+                    const std::string& format,
+                    const std::string& sOptions);
     virtual ~ConvertToBroker();
+
+    /// Move socket to this broker for response & do conversion
+    bool startConversion(SocketDisposition &disposition, const std::string &id);
 
     /// Called when removed from the DocBrokers list
     void dispose() override;
+
+    /// When the load completes - lets start saving
+    void setLoaded() override;
 
     /// How many live conversions are running.
     static size_t getInstanceCount();
@@ -503,7 +505,6 @@ public:
     /// Cleanup path and its parent
     static void removeFile(const std::string &uri);
 };
-
 #endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -2,7 +2,9 @@
 <resources>
     <!--string name="app_name" aquí falta la definición deliberadamente, se completa en build.gradle.-->
     <string name="app_name_settings">Configuración</string>
-    <string name="app_version">Versión: %1$s, id. de compilación: %2$s</string>
+    <string name="app_version">Versión: %1$s
+\nRevisión del repositorio Git «online»: %2$s
+\nRevisión del repositorio Git «core»: %3$s</string>
     <string name="app_description">$APP_NAME es un conjunto de productividad de código abierto moderno y fácil de usar, para procesamiento de textos, hojas de cálculo, presentaciones y más.</string>
     <string name="app_vendor">$VENDOR le suministra esta versión.</string>
     <string name="no_recent_items">Abra un archivo mediante el icono de la carpeta en la barra de herramientas.</string>
@@ -40,7 +42,7 @@
     <string name="sort_za">Z-A</string>
     <string name="sort_oldest">Los más antiguos primero</string>
     <string name="sort_newest">Los más recientes primero</string>
-    <string name="file_icon_desc">icono de archivo</string>
+    <string name="file_icon_desc">Icono de archivo</string>
     <string name="title_recents">Archivos recientes</string>
     <string name="title_browser">Todos los archivos</string>
     <!-- Pref keys as resources ; Not currently used -->
@@ -118,4 +120,14 @@
     <string name="pref_enable_chrome_debugger_info">Actívela para utilizar la herramienta de depuración de Chrome en el documento</string>
     <string name="pref_enable_chrome_debugger">Depuración de Chrome</string>
     <string name="pref_category_editor">Configuración del editor</string>
+    <string name="file_actions_icon_desc">Acciones de archivo</string>
+    <string name="remove_from_list">Quitar de la lista</string>
+    <string name="app_version_and_hash">Versión: %1$s
+\nRevisión del repositorio Git «online»: %2$s
+\nRevisión del repositorio Git «core»: %3$s</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_system_default">Predeterminado del sistema</string>
+    <string name="choose_theme">Elija el tema</string>
+    <string name="theme">Tema</string>
 </resources>

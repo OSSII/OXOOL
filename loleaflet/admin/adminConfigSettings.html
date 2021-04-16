@@ -1,14 +1,14 @@
 {% BLOCK content %}
 <style>
 .material-switch > input[type="checkbox"] {
-    display: none;   
+    display: none;
 }
 
 .material-switch > label {
     cursor: pointer;
     height: 0px;
-    position: relative; 
-    width: 32px;  
+    position: relative;
+    width: 32px;
 }
 
 .material-switch > label::before {
@@ -59,6 +59,7 @@
                     {
                         var id = form[i].id;
                         if (id == 'net.post_allow.host' ||
+                            id == 'net.cors_allow.host' ||
                             id == 'storage.wopi.host' ||
                             id == 'storage.webdav.host')
                         {
@@ -289,13 +290,22 @@
                         </select>
                     </div>
                 </div>
-                <div form-group>
+                <div class="form-group">
                     <label class="control-label col-md-3">接受 POST 客戶端來源</label>
                     <div class="col-md-9">
                         <input type="hidden" id="net.post_allow.host">
                         <ul class="list-group" id="post_allow_hostlist">
                         </ul>
                         <a class="btn btn-primary" id="post_allow_hostAdd">新增來源</a>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-3">接受 Origin 來源(CORS)</label>
+                    <div class="col-md-9">
+                        <input type="hidden" id="net.cors_allow.host">
+                        <ul class="list-group" id="cors_allow_hostlist">
+                        </ul>
+                        <a class="btn btn-primary" id="cors_allow_hostAdd">新增來源</a>
                     </div>
                 </div>
             </div>
@@ -309,6 +319,13 @@
                     <div class="col-md-9 material-switch">
                         <input type="checkbox" class="form-control" id="ssl.enable">
                         <label for="ssl.enable" class="label-success"></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="text-right col-md-3" for="ssl.termination">使用 https 代理 (如:ngnix)</label>
+                    <div class="col-md-9 material-switch">
+                        <input type="checkbox" class="form-control" id="ssl.termination">
+                        <label for="ssl.termination" class="label-success"></label>
                     </div>
                 </div>
                 <div class="form-group">
@@ -327,6 +344,12 @@
                     <label class="control-label col-md-3" for="ssl.ca_file_path">CA  檔案位置</label>
                     <div class="col-md-9">
                         <input type="text" class="form-control" id="ssl.ca_file_path">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="ssl.cipher_list">加密演算法規則</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="ssl.cipher_list">
                     </div>
                 </div>
             </div>
@@ -373,6 +396,49 @@
                         <ul class="list-group" id="webdav_hostlist">
                         </ul>
                         <a class="btn btn-primary" id="webdav_hostAdd">新增來源</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 浮水印設定 -->
+        <div class="panel panel-primary"  style="margin-top:30px;">
+            <div class="panel-heading"><strong>浮水印設定</strong></div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="text-right col-md-3" for="watermark.enable">啟用浮水印</label>
+                    <div class="col-md-9  material-switch">
+                        <input type="checkbox" class="form-control" id="watermark.enable">
+                        <label for="watermark.enable" class="label-success"></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="watermark.text">文字</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="watermark.text">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="watermark.opacity">透明度(0-1)</label>
+                    <div class="col-md-9">
+                        <input type="number" min="0.0" max="1.0" step="0.1" class="form-control" id="watermark.opacity">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="watermark.angle">角度</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="watermark.angle">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 安全列印API設定 -->
+        <div class="panel panel-primary" style="margin-top:30px;">
+            <div class="panel-heading"><strong>安全列印API設定</strong></div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="secureprint.api_url">API位址</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="secureprint.api_url">
                     </div>
                 </div>
             </div>

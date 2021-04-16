@@ -1,6 +1,6 @@
 All communication consists of messages that are one line of
 human-readable UTF-8 text (with no terminating newline), optionally
-followed by a single newline and arbitrary (potentialy even binary)
+followed by a single newline and arbitrary (potentially even binary)
 data.
 
 The WebSocket distinction between 'text' and 'binary' frames has no
@@ -21,6 +21,21 @@ spontaneously. For 'tile' messages, the client may send a bunch of
 tile requests without waiting for return messages. The server may send
 tiles proactively (guessing what the client might need). Etc.
 
+The original intent was that the parameters of the messages can be in
+any order, as they are in a name=value form anyway and the name
+indicates which parameter is which. Sadly, this was not explicitly
+mentioned in this document, or tested by unit tests. So now we have
+code here and there that assumes that parameters are in a specific
+order anyway, thus losing the benefits of the named parameters. Oh
+well.
+
+When the document is password protected, it already implies that the
+document didn't load, and that with the proper password we should try
+again. Similarly for when the password given is wrong. However, if
+loading fails and it isn't a password-related failure,
+faileddocloading error is returned and in this case the client handles
+it as a final error (that requires reloading to retry).
+
 client -> server
 ================
 
@@ -34,7 +49,7 @@ canceltiles
 tileprocessed tile=<tileid>
 
     Previously sent tile (server -> client) arrived and processed by the client.
-    Tileid has the next stucture : <selected part>:<tile x coord>:<tile y coord>:<tile width in twips>:<tile height in twips>
+    Tileid has the next structure : <selected part>:<tile x coord>:<tile y coord>:<tile width in twips>:<tile height in twips>
 
 downloadas name=<fileName> id=<id> format=<document format> options=<SkipImages, etc>
 
@@ -51,7 +66,9 @@ getchildid
 
 gettextselection mimetype=<mimeType>
 
-    Request selection's content
+    Request selection's content, which is returned via 'textselectioncontent', if the selection is text-only and relatively small.
+    However, for selections containing images and other embedded objects, or if the selection is a large text blob,
+    the response is 'complexselection'.
 
 paste mimetype=<mimeType>
 <binaryPasteData>
@@ -68,6 +85,10 @@ insertfile name=<name> type=<type>
         type = 'graphicurl': The file is supposed to be downloaded by the core
 	                     itself; it does so from the URL provided in 'name'
 
+selectbackground name=<name>
+
+    Inserts a graphic file with the name <name> into the document as background.
+
 key type=<type> char=<charcode> key=<keycode>
 
     <type> is 'input' or 'up', <charcode> and <keycode> are numbers.
@@ -76,7 +97,7 @@ load <pathname>
 
     Deprecated.
 
-load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [options=<options>]
+load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [deviceFormFactor=<device type>] [options=<options>]
 
     part is an optional parameter. <partNumber> is a number.
 
@@ -85,6 +106,9 @@ load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [options=<
 
     lang specifies the locale to which we should switch before loading the
     document
+
+    deviceFormFactor specifies the form factor of the device the client is running on
+    it can be one of the following: 'desktop', 'tablet', 'mobile'
 
     options are the whole rest of the line, not URL-encoded, and must be valid JSON.
 
@@ -137,6 +161,19 @@ selectgraphic type=<type> x=<x> y=<y>
 setclientpart part=<partNumber>
 
     Informs the server that the client changed to part <partNumber>.
+
+selectclientpart part=<partNumber>
+
+    Informs the server that the client changed the selection state of <partNumber>.
+
+moveselectedclientparts position=<positionNumber>
+
+    Moves the selected parts to a new position.
+
+setpage page=<pageNumber>
+
+    Valid only for text documents.
+    Informs the server that the client changed to page <pageNumber>.
 
 status
 
@@ -229,9 +266,15 @@ asksignaturestatus
 
 signdocument
 
-    Sign the current document with the input cetificate and private key.
+    Sign the current document with the input certificate and private key.
+
+rendershapeselection mimetype=<mimeType>
+
+    Request rendering of selected shapes into an SVG format.
+    By now only SVG mimetype is handled (image/svg+xml)
 
 removesession <viewid>
+
     Requests the removal of a given view from the document. Lower
     privilege views cannot remove higher ones, eg. a readonly view
     can't remove an editor.
@@ -254,10 +297,20 @@ lokitversion <JSON string>
     JSON string contains version information in format:
     {ProductName: <>, ProductVersion: <>, ProductExtension: <>, BuildId: <>}
 
-    Eg: {"ProductName": "LibreOffice",
-         "ProductVersion": "5.3",
+    Eg: {"ProductName": "OxOffice",
+         "ProductVersion": "R9S1",
          "ProductExtension": ".0.0.alpha0",
          "BuildId": "<full 40 char git hash>"}
+
+osinfo: <string>
+
+    string that contains OS name and version.
+
+clipboardkey: <token>
+
+    Send access token for web clipboard use, may arrive periodically
+    Current and previous hash remain valid for that period, always use
+    the latest.
 
 contextmenu: <json description of the context menu>
 
@@ -339,15 +392,6 @@ invalidatetiles: part=<partNumber> x=<x> y=<y> width=<width> height=<height>
 
 invalidatetiles: EMPTY
 
-nextmessage: size=<byteSize>
-
-    <byteSize> is the size, in bytes, of the next message, in case it
-    is "large". (In practice, nextmessage: messages precede each tile:
-    message). Can be ignored by clients using an API that can read
-    arbitrarily large buffers from a WebSocket (like JavaScript), but
-    must be handled by clients that cannot (like those using Poco
-    1.6.0.
-
 pong rendercount=<num>
 
     sent in reply to a 'ping' message, where <num> is the total number
@@ -359,10 +403,15 @@ saveas: url=<url> name=<name>
     <name> is the resulting name (without path) that was created on the wopi
     host. It can differ from what was requested in case the file already existed.
 
-status: type=<typeName> parts=<numberOfParts> current=<currentPartNumber> width=<width> height=<height> viewid=<viewId> [partNames]
+status: type=<typeName> parts=<numberOfParts> current=<currentPartNumber> width=<width> height=<height> viewid=<viewId> hiddenparts=<part1,part2,...> selectedparts=<part1,part2,...> [partNames]
 
     <typeName> is 'text, 'spreadsheet', 'presentation', 'drawing' or 'other. Others are numbers.
     if the document has multiple parts and those have names, part names follow separated by '\n'
+
+statusupdate: type=<typeName> parts=<numberOfParts> current=<currentPartNumber> width=<width> height=<height> viewid=<viewId> hiddenparts=<part1,part2,...> selectedparts=<part1,part2,...> [partNames]
+
+    Same as status: but issued whenever the document parts have updated significantly.
+    status: implies document loading. statusupdate: is just an update.
 
 styles: {"styleFamily": ["styles in family"], etc. }
 
@@ -371,9 +420,15 @@ statechanged: <key>=<value>
     Notifies client of state changed events of <key>.
     Eg: 'statechanged: .uno:Undo=enabled'
 
-textselectioncontent: <content>
+textselectioncontent:
 
-    Current selection's content
+    Current selection's content, only for text-only selections of a reasonably limited size.
+    For complex selection and large texts, selectioncontent message is returned.
+
+complexselection:
+
+    Complex selections with embedded objects and large text selections need special export handling.
+    This response signifies that the payload is large and/or complex and needs to be retrieved via the clipboard API.
 
 tile: part=<partNumber> width=<width> height=<height> tileposx=<xpos> tileposy=<ypos> tilewidth=<tileWidth> tileheight=<tileHeight> [timestamp=<time>] [renderid=<id>] [wid=<wireId>]
 <binaryPngImage>
@@ -507,6 +562,17 @@ signaturestatus: <sign status>
         4 - NOTVALIDATED (signature is OK, but certificate could not be validated)
         5 - PARTIAL_OK (signature and certificate are ok, but not all files are signed - old documents only)
 
+shapeselectioncontent: <content>
+
+    Current selection's content
+
+mobile: <event>
+
+    Available only in the mobile (Android and iOS) apps.  When you send
+    'mobile: eventname', the socket code will fire a 'eventname' event on the
+    map.
+
+
 child -> parent
 ===============
 
@@ -520,15 +586,6 @@ errortoall: cmd=<command> kind=<kind> [code=<error_code>]
 
     Causes the parent to send the corresponding error: message to all
     clients.
-
-nextmessage: size=<upperlimit>
-
-    each tile: message sent from the child to the parent is preceded
-    by a nextmessage: message that gives an upper limit on the size of
-    the tile: message that will follow. (We assume it is only tile:
-    messages that can be "large".) Once we depend on Poco 1.6.1, where
-    one doesn't need to use a pre-allocated buffer when receiving
-    WebSocket messages, this will go away.
 
 saveas: url=<url> filename=<filename>
 
@@ -546,6 +603,15 @@ procmemstats: pid=<pid> pss=<pss in kb> dirty=<private dirty in kb>
     Memory information sent periodically to parent process by each of
     the kit processes.
 
+clipboardcontent:
+
+     in reply to a getclipboard: message.
+
+     mime_type\n
+     length\n
+     <binary selection content>
+     ...
+
 parent -> child
 ===============
 
@@ -553,6 +619,20 @@ child-<sessionId> <Payload Message>
 
     Forwarding message between a parent and its child session.
     The payload message is forwarded to the ChildSession.
+
+child-<sessionId> getclipboard:
+
+     fetches the complete clipboard for this view and returns
+     a clipboardcontent message.
+
+child-<sessionId> setclipboard:
+
+     Sets the clipboard content for this view.
+
+     mime_type\n
+     length\n
+     <binary selection content>
+     ...
 
 disconnect
 
@@ -562,6 +642,7 @@ disconnect
 exit
 
     Signals to the child that the process must end and exit.
+
 
 Admin console
 ===============
@@ -590,7 +671,7 @@ auth jwt=<jwtToken>
     Authenticate the client with provided jwtToken. This is necessary before any
     other command.
 
-subscribe <space seperated list of commands>
+subscribe <space separated list of commands>
 
     Where list of commands are the ones that client wants to get notified
     about. For eg. 'subscribe adddoc rmdoc'
@@ -661,6 +742,15 @@ active_users_count
 settings
 
     Queries the server for configurable settings from admin console.
+
+log_lines
+    Gets last n lines from "loolwsd.log" file.
+
+channel_list
+    Gets the log channels list with their respective log levels.
+
+update-log-levels
+    Updates the log channels' log levels with the given log levels. Format is: "update-log-levels channel1name=loglevel channel2name=loglevel".
 
 set <setting1=value1> <setting2=value2> ...
 
@@ -778,7 +868,7 @@ lokitversion <JSON string>
     JSON string contains version information in format:
     {ProductName: <>, ProductVersion: <>, ProductExtension: <>, BuildId: <>}
 
-    Eg: {"ProductName": "LibreOffice",
-         "ProductVersion": "5.3",
+    Eg: {"ProductName": "OxOffice",
+         "ProductVersion": "R9S1",
          "ProductExtension": ".0.0.alpha0",
          "BuildId": "<full 40 char git hash>"}

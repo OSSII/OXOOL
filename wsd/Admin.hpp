@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_ADMIN_HPP
-#define INCLUDED_ADMIN_HPP
+#pragma once
 
 #include <mutex>
 
@@ -16,25 +15,7 @@
 #include "Log.hpp"
 
 #include "net/WebSocketHandler.hpp"
-
-// add by Firefly <firefly@ossii.com.tw>
-//#include <Poco/FileStream.h>
-#include <Poco/Util/XMLConfiguration.h>
-#include <Poco/Dynamic/Var.h>
-#include <Poco/JSON/JSON.h>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Parser.h>
-#include <Poco/TemporaryFile.h>
-#include <common/JsonUtil.hpp>
-using Poco::Util::XMLConfiguration;
-using Poco::TemporaryFile;
-class oxoolConfig final: public XMLConfiguration
-{
-public:
-    oxoolConfig()
-        {}
-};
-//-------- End of Firefly added
+#include "LOOLWSD.hpp"
 
 class Admin;
 
@@ -42,7 +23,7 @@ class Admin;
 class AdminSocketHandler : public WebSocketHandler
 {
 public:
-    /// Client connection to remote amdin socket
+    /// Client connection to remote admin socket
     AdminSocketHandler(Admin* adminManager);
 
     /// Connection from remote admin socket
@@ -57,26 +38,17 @@ public:
 
     static void subscribeAsync(const std::shared_ptr<AdminSocketHandler>& handler);
 
+    /// Process incoming websocket messages
+    void handleMessage(const std::vector<char> &data) override;
+
 private:
     /// Sends text frames simply to authenticated clients.
     void sendTextFrame(const std::string& message);
-
-    /// Process incoming websocket messages
-    void handleMessage(bool fin, WSOpCode code, std::vector<char> &data);
 
 private:
     Admin* _admin;
     int _sessionId;
     bool _isAuthenticated;
-    // Add by Firefly <firefly@ossii.com.tw>
-    // 軟體升級用
-    TemporaryFile* _temporaryFile;
-    std::ofstream* _upgradeFile;
-    std::string _upgradeFileName;
-    size_t _upgradeFileSize; // 檔案大小
-    size_t _totalReceived; // 已收到的檔案大小
-    bool upgradeSoftware(const std::string& command); // 軟體升級作業
-    //-------------------------------------------
 };
 
 class MemoryStatsTask;
@@ -84,6 +56,8 @@ class MemoryStatsTask;
 /// An admin command processor.
 class Admin : public SocketPoll
 {
+    Admin(const Admin &) = delete;
+    Admin& operator = (const Admin &) = delete;
     Admin();
 public:
     virtual ~Admin();
@@ -105,12 +79,14 @@ public:
     size_t getTotalAvailableMemory() { return _totalAvailMemKb; }
     size_t getTotalCpuUsage();
 
-    void modificationAlert(const std::string& dockey, Poco::Process::PID pid, bool value);
+    void modificationAlert(const std::string& dockey, pid_t pid, bool value);
     /// Update the Admin Model.
     void update(const std::string& message);
 
     /// Calls with same pid will increment view count, if pid already exists
-    void addDoc(const std::string& docKey, Poco::Process::PID pid, const std::string& filename, const std::string& sessionId, const std::string& userName, const std::string& userId);
+    void addDoc(const std::string& docKey, pid_t pid, const std::string& filename,
+                const std::string& sessionId, const std::string& userName, const std::string& userId,
+                const int smapsFD);
 
     /// Decrement view count till becomes zero after which doc is removed
     void rmDoc(const std::string& docKey, const std::string& sessionId);
@@ -118,8 +94,7 @@ public:
     /// Remove the document with all views. Used on termination or catastrophic failure.
     void rmDoc(const std::string& docKey);
 
-    void setForKitPid(const int forKitPid) { _forKitPid = forKitPid; }
-    void setForKitWritePipe(const int forKitWritePipe) { _forKitWritePipe = forKitWritePipe; }
+    void setForKitPid(const int forKitPid) { _forKitPid = forKitPid; _model.setForKitPid(forKitPid);}
 
     /// Callers must ensure that modelMutex is acquired
     AdminModel& getModel();
@@ -130,12 +105,17 @@ public:
 
     unsigned getNetStatsInterval();
 
+    std::string getChannelLogLevels();
+
+    void setChannelLogLevel(const std::string& _channelName, std::string _level);
+
+    std::string getLogLines();
+
     void rescheduleMemTimer(unsigned interval);
 
     void rescheduleCpuTimer(unsigned interval);
 
     void updateLastActivityTime(const std::string& docKey);
-    void updateMemoryDirty(const std::string& docKey, int dirty);
     void addBytes(const std::string& docKey, uint64_t sent, uint64_t recv);
 
     void dumpState(std::ostream& os) override;
@@ -144,12 +124,24 @@ public:
     void setDefDocProcSettings(const DocProcSettings& docProcSettings, bool notifyKit)
     {
         _defDocProcSettings = docProcSettings;
+        _model.setDefDocProcSettings(docProcSettings);
+        _cleanupIntervalMs = _defDocProcSettings.getCleanupSettings().getCleanupInterval();
         if (notifyKit)
             notifyForkit();
     }
 
     /// Attempt a synchronous connection to a monitor with @uri @when that future comes
     void scheduleMonitorConnect(const std::string &uri, std::chrono::steady_clock::time_point when);
+
+    void sendMetrics(const std::shared_ptr<StreamSocket>& socket, const std::shared_ptr<Poco::Net::HTTPResponse>& response);
+    void sendMetricsAsync(const std::shared_ptr<StreamSocket>& socket, const std::shared_ptr<Poco::Net::HTTPResponse>& response);
+
+    void setViewLoadDuration(const std::string& docKey, const std::string& sessionId, std::chrono::milliseconds viewLoadDuration);
+    void setDocWopiDownloadDuration(const std::string& docKey, std::chrono::milliseconds wopiDownloadDuration);
+    void setDocWopiUploadDuration(const std::string& docKey, const std::chrono::milliseconds uploadDuration);
+    void addSegFaultCount(unsigned segFaultCount);
+
+    void getMetrics(std::ostringstream &metrics);
 
 private:
     /// Notify Forkit of changed settings.
@@ -158,6 +150,8 @@ private:
     /// Memory consumption has increased, start killing kits etc. till memory consumption gets back
     /// under @hardModeLimit
     void triggerMemoryCleanup(size_t hardModeLimit);
+    void notifyDocsMemDirtyChanged();
+    void cleanupResourceConsumingDocs();
 
     /// Round the interval up to multiples of MinStatsIntervalMs.
     /// This is to avoid arbitrarily small intervals that hammer the server.
@@ -175,7 +169,6 @@ private:
     /// the Admin Poll thread.
     AdminModel _model;
     int _forKitPid;
-    int _forKitWritePipe;
     size_t _lastTotalMemory;
     size_t _lastJiffies;
     uint64_t _lastSentCount;
@@ -183,22 +176,29 @@ private:
     size_t _totalSysMemKb;
     size_t _totalAvailMemKb;
 
-    struct MonitorConnectRecord {
+    struct MonitorConnectRecord
+    {
+        void setWhen(std::chrono::steady_clock::time_point when) { _when = when; }
+        std::chrono::steady_clock::time_point getWhen() const { return _when; }
+
+        void setUri(const std::string& uri) { _uri = uri; }
+        std::string getUri() const { return _uri; }
+
+    private:
         std::chrono::steady_clock::time_point _when;
         std::string _uri;
     };
     std::vector<MonitorConnectRecord> _pendingConnects;
 
-    std::atomic<int> _cpuStatsTaskIntervalMs;
-    std::atomic<int> _memStatsTaskIntervalMs;
-    std::atomic<int> _netStatsTaskIntervalMs;
+    int _cpuStatsTaskIntervalMs;
+    int _memStatsTaskIntervalMs;
+    int _netStatsTaskIntervalMs;
+    size_t _cleanupIntervalMs;
     DocProcSettings _defDocProcSettings;
 
     // Don't update any more frequently than this since it's excessive.
     static const int MinStatsIntervalMs;
     static const int DefStatsIntervalMs;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

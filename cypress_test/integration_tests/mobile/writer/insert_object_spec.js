@@ -1,42 +1,55 @@
-/* global describe it cy beforeEach require expect afterEach Cypress*/
+/* global describe it cy beforeEach require expect afterEach */
+
+require('cypress-file-upload');
 
 var helper = require('../../common/helper');
-var writerHelper = require('./writer_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var writerMobileHelper = require('./writer_mobile_helper');
 
 describe('Insert objects via insertion wizard.', function() {
+	var testFileName = 'insert_object.odt';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('insert_object.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll('insert_object.odt');
+		helper.afterAll(testFileName);
 	});
 
+	function getCursorPos(offsetProperty, aliasName) {
+		helper.initAliasToNegative(aliasName);
+
+		cy.get('.blinking-cursor')
+			.invoke('offset')
+			.its(offsetProperty)
+			.as(aliasName);
+
+		cy.get('@' + aliasName)
+			.should('be.greaterThan', 0);
+	}
+
 	it('Insert local image.', function() {
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
+		mobileHelper.openInsertionWizard();
+
+		// We can't use the menu item directly, because it would open file picker.
+		cy.contains('.menu-entry-with-icon', 'Local Image...')
 			.should('be.visible');
 
-		// We check whether the entry is there
-		cy.get('.menu-entry-with-icon')
-			.contains('Local Image...');
-		// We not not test the insertion, it might depend on the system.
+		cy.get('#insertgraphic[type=file]')
+			.attachFile('/mobile/writer/image_to_insert.png');
+
+		cy.get('.leaflet-pane.leaflet-overlay-pane svg g.Graphic')
+			.should('exist');
 	});
 
 	it('Insert comment.', function() {
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
-		cy.get('.menu-entry-with-icon')
-			.contains('Comment')
+		cy.contains('.menu-entry-with-icon', 'Comment')
 			.click();
 
 		// Comment insertion dialog is opened
@@ -58,20 +71,12 @@ describe('Insert objects via insertion wizard.', function() {
 	});
 
 	it('Insert default table.', function() {
-		// TODO: Select all does not work with core/master
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Open Table submenu
-		cy.get('.ui-header.level-0.mobile-wizard.ui-widget')
-			.contains('Table')
+		cy.contains('.ui-header.level-0.mobile-wizard.ui-widget', 'Table')
 			.click();
+
 		cy.get('.mobile-wizard.ui-text')
 			.should('be.visible');
 
@@ -84,7 +89,7 @@ describe('Insert objects via insertion wizard.', function() {
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('exist');
 
-		writerHelper.copyTableToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		// Two rows
 		cy.get('#copy-paste-container tr')
@@ -95,27 +100,18 @@ describe('Insert objects via insertion wizard.', function() {
 	});
 
 	it('Insert custom table.', function() {
-		// TODO: Select all does not work with core/master
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Open Table submenu
-		cy.get('.ui-header.level-0.mobile-wizard.ui-widget')
-			.contains('Table')
+		cy.contains('.ui-header.level-0.mobile-wizard.ui-widget', 'Table')
 			.click();
 		cy.get('.mobile-wizard.ui-text')
 			.should('be.visible');
 
 		// Change rows and columns
-		cy.get('.inserttablecontrols #rows .sinfieldcontrols .plus')
+		cy.get('.inserttablecontrols #rows .spinfieldcontrols .plus')
 			.click();
-		cy.get('.inserttablecontrols #cols .sinfieldcontrols .plus')
+		cy.get('.inserttablecontrols #cols .spinfieldcontrols .plus')
 			.click();
 
 		// Push insert table button
@@ -127,7 +123,7 @@ describe('Insert objects via insertion wizard.', function() {
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('exist');
 
-		writerHelper.copyTableToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		// Three rows
 		cy.get('#copy-paste-container tr')
@@ -139,225 +135,162 @@ describe('Insert objects via insertion wizard.', function() {
 
 	it('Insert header.', function() {
 		// Get the blinking cursor pos
-		cy.get('#document-container').type('xxxx');
+		helper.typeIntoDocument('xx{enter}');
 
-		var cursorOrigLeft = 0;
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1) ;
-				cursorOrigLeft = cursor[0].getBoundingClientRect().left;
-			});
+		helper.typeText('body', 'xxxx', 500);
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		getCursorPos('left', 'cursorOrigLeft');
+
+		mobileHelper.openInsertionWizard();
 
 		// Open header/footer submenu
-		cy.get('.menu-entry-with-icon')
-			.contains('Header and Footer')
+		cy.contains('.menu-entry-with-icon', 'Header and Footer')
 			.click();
 		cy.get('.ui-header.level-1.mobile-wizard.ui-widget')
 			.should('be.visible');
 
 		// Open header submenu
-		cy.get('.ui-header.level-1.mobile-wizard.ui-widget')
-			.contains('Header')
+		cy.contains('.ui-header.level-1.mobile-wizard.ui-widget', 'Header')
 			.click();
 
 		// Insert header for All
-		cy.get('.menu-entry-no-icon')
-			.contains('All')
+		cy.contains('.menu-entry-no-icon', 'All')
 			.click();
 
-		cy.wait(100);
-
-		// Check that the cursor was moved
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				expect(cursor[0].getBoundingClientRect().left).to.be.lessThan(cursorOrigLeft);
+		cy.get('@cursorOrigLeft')
+			.then(function(cursorOrigLeft) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().left).to.be.lessThan(cursorOrigLeft);
+					});
 			});
 	});
 
 	it('Insert footer.', function() {
 		// Get the blinking cursor pos
-		cy.get('#document-container').type('xxxx');
-		var cursorOrigTop = 0;
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1) ;
-				cursorOrigTop = cursor[0].getBoundingClientRect().top;
-			});
+		helper.typeIntoDocument('xxxx');
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		getCursorPos('top', 'cursorOrigTop');
+
+		mobileHelper.openInsertionWizard();
 
 		// Open header/footer submenu
-		cy.get('.menu-entry-with-icon')
-			.contains('Header and Footer')
+		cy.contains('.menu-entry-with-icon', 'Header and Footer')
 			.click();
 		cy.get('.ui-header.level-1.mobile-wizard.ui-widget')
 			.should('be.visible');
 
 		// Open footer submenu
-		cy.get('.ui-header.level-1.mobile-wizard.ui-widget')
-			.contains('Footer')
+		cy.contains('.ui-header.level-1.mobile-wizard.ui-widget', 'Footer')
 			.click();
 
 		// Insert footer for All
-		cy.get('.ui-content.level-1.mobile-wizard[title~="Footer"] .ui-header.level-2.mobile-wizard.ui-widget .menu-entry-no-icon')
-			.contains('All')
+		cy.contains('.ui-content.level-1.mobile-wizard[title~="Footer"] .ui-header.level-2.mobile-wizard.ui-widget .menu-entry-no-icon', 'All')
 			.click();
 
-		cy.wait(100);
-
 		// Check that the cursor was moved
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				expect(cursor[0].getBoundingClientRect().top).to.be.greaterThan(cursorOrigTop);
+		cy.get('@cursorOrigTop')
+			.then(function(cursorOrigTop) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().top).to.be.greaterThan(cursorOrigTop);
+					});
 			});
 	});
 
 	it('Insert footnote.', function() {
 		// Get the blinking cursor pos
-		cy.get('#document-container').type('xxxx');
-		var cursorOrigTop = 0;
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				cursorOrigTop = cursor[0].getBoundingClientRect().top;
-			});
+		helper.typeIntoDocument('xxxx');
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		getCursorPos('top', 'cursorOrigTop');
+
+		mobileHelper.openInsertionWizard();
 
 		// Insert footnote
-		cy.get('.menu-entry-with-icon')
-			.contains('Footnote')
+		cy.contains('.menu-entry-with-icon', 'Footnote')
 			.click();
 
-		cy.wait(100);
-
-		// Check that the cursor was moved down
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				expect(cursor[0].getBoundingClientRect().top).to.be.greaterThan(cursorOrigTop);
+		// Check that the cursor was moved
+		cy.get('@cursorOrigTop')
+			.then(function(cursorOrigTop) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().top).to.be.greaterThan(cursorOrigTop);
+					});
 			});
 	});
 
 	it('Insert endnote.', function() {
 		// Get the blinking cursor pos
-		cy.get('#document-container').type('xxxx');
-		var cursorOrigTop = 0;
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				cursorOrigTop = cursor[0].getBoundingClientRect().top;
-			});
+		helper.typeIntoDocument('xxxx');
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		getCursorPos('top', 'cursorOrigTop');
+
+		mobileHelper.openInsertionWizard();
 
 		// Insert endnote
-		cy.get('.menu-entry-with-icon')
-			.contains('Endnote')
+		cy.contains('.menu-entry-with-icon', 'Endnote')
 			.click();
 
-		cy.wait(100);
-
-		// Check that the cursor was moved down
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				expect(cursor[0].getBoundingClientRect().top).to.be.greaterThan(cursorOrigTop);
+		// Check that the cursor was moved
+		cy.get('@cursorOrigTop')
+			.then(function(cursorOrigTop) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().top).to.be.greaterThan(cursorOrigTop);
+					});
 			});
 	});
 
 	it('Insert page break.', function() {
 		// Get the blinking cursor pos
-		cy.get('#document-container').type('xxxx');
-		var cursorOrigTop = 0;
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				cursorOrigTop = cursor[0].getBoundingClientRect().top;
-			});
+		helper.typeIntoDocument('xxxx');
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		getCursorPos('top', 'cursorOrigTop');
 
-		// Insert endnote
-		cy.get('.menu-entry-with-icon')
-			.contains('Page Break')
+		mobileHelper.openInsertionWizard();
+
+		// Insert page break
+		cy.contains('.menu-entry-with-icon', 'Page Break')
 			.click();
 
-		cy.wait(100);
-
-		// Check that the cursor was moved down
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				expect(cursor[0].getBoundingClientRect().top).to.be.greaterThan(cursorOrigTop);
+		// Check that the cursor was moved
+		cy.get('@cursorOrigTop')
+			.then(function(cursorOrigTop) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().top).to.be.greaterThan(cursorOrigTop);
+					});
 			});
 	});
 
 	it('Insert column break.', function() {
 		// Get the blinking cursor pos
-		cy.get('#document-container').type('xxxx');
-		var cursorOrigTop = 0;
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				cursorOrigTop = cursor[0].getBoundingClientRect().top;
-			});
+		helper.typeIntoDocument('xxxx');
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		getCursorPos('top', 'cursorOrigTop');
+
+		mobileHelper.openInsertionWizard();
 
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Column Break')
+		cy.contains('.menu-entry-with-icon', 'Column Break')
 			.click();
 
-		cy.wait(100);
-
-		// Check that the cursor was moved down
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1);
-				expect(cursor[0].getBoundingClientRect().top).to.be.greaterThan(cursorOrigTop);
+		// Check that the cursor was moved
+		cy.get('@cursorOrigTop')
+			.then(function(cursorOrigTop) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().top).to.be.greaterThan(cursorOrigTop);
+					});
 			});
 	});
 
 	it('Insert hyperlink.', function() {
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Open hyperlink dialog
-		cy.get('.menu-entry-with-icon')
-			.contains('Hyperlink...')
+		cy.contains('.menu-entry-with-icon', 'Hyperlink...')
 			.click();
 
 		// Dialog is opened
@@ -374,25 +307,20 @@ describe('Insert objects via insertion wizard.', function() {
 		cy.get('.vex-content.hyperlink-dialog .vex-dialog-button-primary')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.contains('some text');
+			.should('have.text', '\nsome text');
 
 		cy.get('#copy-paste-container p a')
 			.should('have.attr', 'href', 'http://www.something.com/');
 	});
 
 	it('Insert shape.', function() {
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Shape')
+		cy.contains('.menu-entry-with-icon', 'Shape')
 			.click();
 
 		cy.get('.col.w2ui-icon.basicshapes_rectangle').

@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_ASSERT_HPP
-#define INCLUDED_ASSERT_HPP
+#pragma once
 
 #include <assert.h>
 
@@ -29,7 +28,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<char>& v)
 #define LOK_ASSERT_IMPL(X) assert(X);
 #else
 #define LOK_ASSERT_IMPL(X)
-#endif //LOK_BREAK_ON_ASSERTION
+#endif //LOK_ABORT_ON_ASSERTION
 
 #define LOK_ASSERT(condition)                                                                      \
     do                                                                                             \
@@ -48,7 +47,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<char>& v)
         if (!((expected) == (actual)))                                                             \
         {                                                                                          \
             std::cerr << "Assertion failure: Expected [" << (expected) << "] but got ["            \
-                      << (actual) << "]" << std::endl;                                             \
+                      << (actual) << ']' << std::endl;                                             \
             LOK_ASSERT_IMPL((expected) == (actual));                                               \
             CPPUNIT_ASSERT_EQUAL((expected), (actual));                                            \
         }                                                                                          \
@@ -71,7 +70,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<char>& v)
     {                                                                                              \
         if (!(condition))                                                                          \
         {                                                                                          \
-            std::cerr << "Assertion failure: " << (#condition) << std::endl;                       \
+            std::cerr << "Assertion failure: " << (message) << ". Condition: " << (#condition)     \
+                      << std::endl;                                                                \
             LOK_ASSERT_IMPL(condition);                                                            \
             CPPUNIT_ASSERT_MESSAGE((message), (condition));                                        \
         }                                                                                          \
@@ -84,5 +84,3 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<char>& v)
         LOK_ASSERT_IMPL(!"Forced failure");                                                               \
         CPPUNIT_FAIL((message));                                                                   \
     } while (false)
-
-#endif //INCLUDED_ASSERT_HPP

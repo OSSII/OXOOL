@@ -5,6 +5,7 @@ apply from: 'libSettings.gradle'
 
 android {
     compileSdkVersion 28
+    buildDir = "${rootProject.getBuildDir()}/lib"
 
     defaultConfig {
         minSdkVersion 21
@@ -25,7 +26,7 @@ android {
     buildTypes {
         debug {
             resValue "string", "app_name", "${liboAppName} Debug"
-            buildConfigField "String", "GIT_COMMIT", "\"${liboGitFullCommit}\""
+            buildConfigField "String", "GIT_COMMIT", "\"${liboOVersionHash}\""
             buildConfigField "boolean", "GOOGLE_PLAY_ENABLED", "${liboGooglePlay}"
             ndk {
                 abiFilters = []
@@ -35,7 +36,7 @@ android {
         }
         release {
             resValue "string", "app_name", "${liboAppName}"
-            buildConfigField "String", "GIT_COMMIT", "\"${liboGitFullCommit}\""
+            buildConfigField "String", "GIT_COMMIT", "\"${liboOVersionHash}\""
             buildConfigField "boolean", "GOOGLE_PLAY_ENABLED", "${liboGooglePlay}"
             ndk {
                 abiFilters = []
@@ -58,6 +59,7 @@ android {
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
+            buildStagingDirectory "${rootProject.getBuildDir()}/cmake"
         }
     }
 }
@@ -111,21 +113,16 @@ task copyUnpackAssets(type: Copy) {
     into('etc/fonts') {
         from "${liboSrcRoot}/android/source/"
         includes = ['fonts.conf']
+        doFirst {
+            // we have changed the filter below; so to always re-generate this
+            // file, delete it first - no idea how to set a dependency on
+            // build.gradle changes :-(
+            file('fonts.conf').delete()
+        }
         filter {
             String line ->
                 line.replaceAll(
                     '@@APPLICATION_ID@@', new String("${liboApplicationId}")
-                ).replaceAll(
-                    // FIXME Avoid the Android system fonts for the moment,
-                    // the huge Noto Sans fonts have terrible impact on the 1st
-                    // start performance.
-                    // The real solution would be to either make fontconfig
-                    // faster, or at least find a way to avoid only the Noto
-                    // Sans, or present a progressbar or something.
-                    // For the moment, we just copy the Roboto font (needed
-                    // for the dialogs; see LOActivity.copyFonts()) and
-                    // remove the system fonts from the config.
-                    '<dir>/system/fonts</dir>', new String("")
                 )
         }
     }
@@ -177,6 +174,24 @@ task createFullConfig(type: Copy) {
     from("${liboInstdir}/share/config") {
         includes = ['soffice.cfg/**', 'images_colibre.zip']
     }
+}
+
+task copyBrandTheme(type: Copy) {
+	from "${liboBrandingDir}/online-theme"
+	into "src/main/assets/share/theme_definitions/online"
+}
+
+task copyDocTemplates(type: Copy) {
+        from "${rootProject.getRootDir()}/templates/untitled.odp",
+             "${rootProject.getRootDir()}/templates/untitled.ods",
+             "${rootProject.getRootDir()}/templates/untitled.odt"
+        into "src/main/assets/templates"
+}
+
+task copyKitConfig(type: Copy) {
+        from "${file(rootProject.getRootDir()).getParent()}/loolkitconfig-mobile.xcu"
+        into "src/main/assets/etc/loolwsd"
+        rename { "loolkitconfig.xcu" }
 }
 
 task createStrippedConfig {
@@ -263,12 +278,35 @@ UNO_USER_PACKAGES_CACHE=$UNO_USER_PACKAGES/cache
 [Version]
 AllLanguages=en-US
 BuildVersion=
-buildid=''' + "${liboGitFullCommit}" + '''
+buildid=''' + "${liboCoreVersionHash}" + '''
 ReferenceOOoMajorMinor=4.1
 '''.stripIndent()
     }
 }
 
+clean.doFirst {
+	delete "src/main/assets"
+	delete "src/debug/assets"
+	delete "src/release/assets"
+}
+
 // creating the UI stuff is cheap, don't bother only applying it for the flavor..
 preBuild.dependsOn 'createRCfiles',
-        'createFullConfig'
+        'createFullConfig',
+        'copyBrandTheme'
+
+task generateLoleafletDebugAssets(type: Exec) {
+	commandLine 'make', '-C', "${rootProject.getBuildDir()}/../../loleaflet", "DIST_FOLDER=${project.getProjectDir()}/src/debug/assets/dist", 'BUNDLE=DEBUG'
+}
+
+task generateLoleafletReleaseAssets(type: Exec) {
+	commandLine 'make', '-C', "${rootProject.getBuildDir()}/../../loleaflet", "DIST_FOLDER=${project.getProjectDir()}/src/release/assets/dist", 'BUNDLE=RELEASE'
+}
+
+afterEvaluate {
+	if (!file("${liboBrandingDir}").exists()) {
+		copyBrandTheme.enabled = false
+	}
+	generateDebugAssets.dependsOn copyDocTemplates, copyKitConfig, generateLoleafletDebugAssets
+	generateReleaseAssets.dependsOn copyDocTemplates, copyKitConfig, generateLoleafletReleaseAssets
+}

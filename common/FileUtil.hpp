@@ -7,12 +7,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_FILEUTIL_HPP
-#define INCLUDED_FILEUTIL_HPP
+#pragma once
 
+#include <cerrno>
 #include <string>
+#include <sys/stat.h>
 
-#include <Poco/File.h>
 #include <Poco/Path.h>
 
 namespace FileUtil
@@ -24,7 +24,7 @@ namespace FileUtil
     std::string anonymizeUrl(const std::string& url);
 
     /// Anonymize user names and IDs.
-    /// Will use the Obfuscated User ID if one is provied via WOPI.
+    /// Will use the Obfuscated User ID if one is provided via WOPI.
     std::string anonymizeUsername(const std::string& username);
 
     /// Create a secure, random directory path.
@@ -39,20 +39,6 @@ namespace FileUtil
 
     // We work around some of the mess of using the same sources both on the server side and in unit
     // tests with conditional compilation based on BUILDING_TESTS.
-
-#ifndef BUILDING_TESTS
-    // Send a 'error:' message with the specified cmd and kind parameters to all connected
-    // clients. This function can be called either in loolwsd or loolkit processes, even if only
-    // loolwsd obviously has contact with the actual clients; in loolkit it will be forwarded to
-    // loolwsd for redistribution. (This function must be implemented separately in each program
-    // that uses it, it is not in Util.cpp.)
-    void alertAllUsers(const std::string& cmd, const std::string& kind);
-#else
-    // No-op implementation in the test programs
-    inline void alertAllUsers(const std::string&, const std::string&)
-    {
-    }
-#endif
 
     // Add the file system that 'path' is located on to a list of file systems that are periodically
     // checked for available space. The list is initially empty.
@@ -70,7 +56,7 @@ namespace FileUtil
     bool checkDiskSpace(const std::string& path);
 
     /// Safely remove a file or directory.
-    /// Supresses exception when the file is already removed.
+    /// Suppresses exception when the file is already removed.
     /// This can happen when there is a race (unavoidable) or when
     /// we don't care to check before we remove (when no race exists).
     void removeFile(const std::string& path, const bool recursive = false);
@@ -80,8 +66,29 @@ namespace FileUtil
         removeFile(path.toString(), recursive);
     }
 
+    /// Returns true iff the directory is empty (or doesn't exist).
+    bool isEmptyDirectory(const char* path);
+    inline bool isEmptyDirectory(const std::string& path) { return isEmptyDirectory(path.c_str()); }
+
+    /// Update the access-time and modified-time metadata for the given file.
+    bool updateTimestamps(const std::string& filename, timespec tsAccess, timespec tsModified);
+
+    /// Copy the source file to the target.
+    bool copy(const std::string& fromPath, const std::string& toPath, bool log,
+              bool throw_on_error);
+
+    /// Atomically copy a file and optionally preserve its timestamps.
+    /// The file is copied with a temporary name, and then atomically renamed.
+    /// NOTE: toPath must be a valid filename, not a directory.
+    /// Does not log (except errors), does not throw. Returns true on success.
+    bool copyAtomic(const std::string& fromPath, const std::string& toPath,
+                    bool preserveTimestamps);
+
     /// Copy a file from @fromPath to @toPath, throws on failure.
-    void copyFileTo(const std::string &fromPath, const std::string &toPath);
+    inline void copyFileTo(const std::string& fromPath, const std::string& toPath)
+    {
+        copy(fromPath, toPath, /*log=*/true, /*throw_on_error=*/true);
+    }
 
     /// Make a temp copy of a file, and prepend it with a prefix.
     std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename,
@@ -96,8 +103,80 @@ namespace FileUtil
         return getTempFilePath(srcDir, srcFilename, std::string());
     }
 
-} // end namespace FileUtil
+    /// Link source to target, and copy if linking fails.
+    bool linkOrCopyFile(const char* source, const char* target);
 
+    /// Returns the realpath(3) of the provided path.
+    std::string realpath(const char* path);
+    inline std::string realpath(const std::string& path)
+    {
+        return realpath(path.c_str());
+    }
+
+    /// File/Directory stat helper.
+    class Stat
+    {
+    public:
+        /// Stat the given path. Symbolic links are stat'ed when @link is true.
+        Stat(const std::string& file, bool link = false)
+            : _path(file)
+            , _res(link ? lstat(file.c_str(), &_sb) : stat(file.c_str(), &_sb))
+            , _errno(errno)
+        {
+        }
+
+        bool good() const { return _res == 0; }
+        bool bad() const { return !good(); }
+        bool erno() const { return _errno; }
+        const struct ::stat& sb() const { return _sb; }
+
+        const std::string path() const { return _path; }
+
+        bool isDirectory() const { return S_ISDIR(_sb.st_mode); }
+        bool isFile() const { return S_ISREG(_sb.st_mode); }
+        bool isLink() const { return S_ISLNK(_sb.st_mode); }
+
+        /// Returns the filesize in bytes.
+        size_t size() const { return _sb.st_size; }
+
+        /// Returns the modified time.
+        timespec modifiedTime() const
+        {
+#ifdef IOS
+            return _sb.st_mtimespec;
+#else
+            return _sb.st_mtim;
 #endif
+        }
+
+        /// Returns true iff the path exists, regardless of access permission.
+        bool exists() const { return good() || (_errno != ENOENT && _errno != ENOTDIR); }
+
+        /// Returns true if both files exist and have
+        /// the same size and modified timestamp.
+        bool isUpToDate(const Stat& other) const
+        {
+            if (exists() && other.exists() && !isDirectory() && !other.isDirectory())
+            {
+                // No need to check whether they are linked or not,
+                // since if they are, the following check will match,
+                // and if they aren't, we still need to rely on the following.
+                return (size() == other.size()
+                        && modifiedTime().tv_sec == other.modifiedTime().tv_sec
+                        && (modifiedTime().tv_nsec / 1000000) // Millisecond precision.
+                               == (other.modifiedTime().tv_nsec / 1000000));
+            }
+
+            return false;
+        }
+
+    private:
+        const std::string _path;
+        struct ::stat _sb;
+        const int _res;
+        const int _errno;
+    };
+
+} // end namespace FileUtil
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

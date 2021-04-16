@@ -16,6 +16,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <thread>
 #include <sysexits.h>
 
 #include <Poco/Net/HTMLForm.h>
@@ -28,7 +29,6 @@
 #include <Poco/Net/KeyConsoleHandler.h>
 #include <Poco/Net/AcceptCertificateHandler.h>
 #include <Poco/StreamCopier.h>
-#include <Poco/Thread.h>
 #include <Poco/URI.h>
 #include <Poco/Util/Application.h>
 #include <Poco/Util/OptionSet.h>
@@ -69,7 +69,6 @@ using Poco::Net::HTTPClientSession;
 using Poco::Net::HTTPRequest;
 using Poco::Net::HTTPResponse;
 using Poco::Runnable;
-using Poco::Thread;
 using Poco::URI;
 using Poco::Util::Application;
 using Poco::Util::OptionSet;
@@ -110,13 +109,13 @@ public:
             form.addPart("data", new Poco::Net::FilePartSource(document));
             form.prepareSubmit(request);
 
-            // If this results in a Poco::Net::ConnectionRefusedException, loolwsd is not running.
+            // If this results in a Poco::Net::ConnectionRefusedException, oxoolwsd is not running.
             form.write(session->sendRequest(request));
         }
         catch (const Poco::Exception &e)
         {
             std::cerr << "Failed to write data: " << e.name() <<
-                  " " << e.message() << "\n";
+                  ' ' << e.message() << '\n';
             return;
         }
 
@@ -127,7 +126,7 @@ public:
             std::istream& responseStream = session->receiveResponse(response);
 
             Poco::Path path(document);
-            std::string outPath = _app.getDestinationDir() + "/" + path.getBaseName() + "." + _app.getDestinationFormat();
+            std::string outPath = _app.getDestinationDir() + '/' + path.getBaseName() + '.' + _app.getDestinationFormat();
             std::ofstream fileStream(outPath);
 
             Poco::StreamCopier::copyStream(responseStream, fileStream);
@@ -135,7 +134,7 @@ public:
         catch (const Poco::Exception &e)
         {
             std::cerr << "Exception converting: " << e.name() <<
-                  " " << e.message() << "\n";
+                  ' ' << e.message() << '\n';
             return;
         }
 
@@ -250,26 +249,26 @@ int Tool::main(const std::vector<std::string>& origArgs)
         return EX_NOINPUT;
     }
 
-    std::vector<std::unique_ptr<Thread>> clients(_numWorkers);
+    std::vector<std::thread> clients;
+    clients.reserve(_numWorkers);
 
     size_t chunk = (args.size() + _numWorkers - 1) / _numWorkers;
     size_t offset = 0;
     for (unsigned i = 0; i < _numWorkers; i++)
     {
-        clients[i].reset(new Thread());
         size_t toCopy = std::min(args.size() - offset, chunk);
         if (toCopy > 0)
         {
             std::vector< std::string > files( toCopy );
             std::copy( args.begin() + offset, args.begin() + offset + toCopy, files.begin() );
             offset += toCopy;
-            clients[i]->start(*(new Worker(*this, files)));
+            clients.emplace_back([this, &files]{Worker(*this, files).run();});
         }
     }
 
-    for (unsigned i = 0; i < _numWorkers; i++)
+    for (auto& client: clients)
     {
-        clients[i]->join();
+        client.join();
     }
 
     return EX_OK;

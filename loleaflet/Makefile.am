@@ -88,6 +88,7 @@ LOLEAFLET_CSS =\
 	$(builddir)/node_modules/select2/dist/css/select2.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-core-css.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-simple/sm-simple.css \
+	$(builddir)/node_modules/spectrum-colorpicker2/dist/spectrum.css \
 	$(srcdir)/css/menubar.css \
 	$(builddir)/fonts/font-awesome.min.css \
 	$(builddir)/node_modules/jquery-ui/jquery-ui.css
@@ -105,9 +106,7 @@ NODE_MODULES_JS =\
 	node_modules/jquery-ui/jquery-ui.js \
 	node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.js \
 	node_modules/smartmenus/dist/jquery.smartmenus.js \
-	node_modules/timeago/jquery.timeago.js \
-	node_modules/timeago.js/dist/timeago.min.js \
-	node_modules/timeago.js/dist/timeago.locales.min.js \
+	node_modules/spectrum-colorpicker2/dist/spectrum.js \
 	node_modules/autolinker/dist/Autolinker.js \
 	node_modules/json-js/json2.js \
 	node_modules/select2/dist/js/select2.js \
@@ -239,11 +238,11 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 		$(NODE_MODULES_JS) \
 		$(srcdir)/js/jquery.mCustomScrollbar.js \
 		$(srcdir)/js/w2ui-1.5.rc1.js \
-		$(builddir)/build/dist/loleaflet-src.js \
+		$(builddir)/dist/loleaflet-src.js \
 		$(srcdir)/js/toolbar.js \
 		$(srcdir)/js/screenwatermark.js \
 		$(srcdir)/js/main.js \
-		--source-map --output $@
+		--output $@
 endif
 
 $(builddir)/dist/loleaflet.html: $(srcdir)/html/loleaflet.html.m4 $(LOLEAFLET_HTML_DST) \
@@ -327,6 +326,7 @@ pot:
 		admin/src/AdminSocketOverview.js \
 		admin/src/AdminSocketSettings.js \
 		admin/src/AdminSocketGlobalFunction.js \
+		admin/src/AdminSocketLicense.js \
 		admin/src/Util.js \
 		js/toolbar.js \
 		js/screenwatermark.js \
@@ -336,6 +336,8 @@ pot:
 		src/control/Control.Menubar.js \
 		src/control/Control.Scroll.Annotation.js \
 		src/control/Control.Tabs.js \
+		src/control/Permission.js \
+		src/control/Preview.js \
 		src/control/Ruler.js \
 		src/control/Toolbar.js \
 		src/core/Socket.js \

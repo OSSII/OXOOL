@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_COUNTLOOLKITPROCESSES_HPP
-#define INCLUDED_COUNTLOOLKITPROCESSES_HPP
+#pragma once
 
 #include <iostream>
 #include <thread>
@@ -32,8 +31,8 @@ static int countLoolKitProcesses(const int expected)
     // The shorter the better (the quicker the test runs).
     const int sleepMs = 50;
 
-    // This has to cause waiting for at least COMMAND_TIMEOUT_MS. Add one second for safety.
-    const size_t repeat = ((COMMAND_TIMEOUT_MS + 1000) / sleepMs);
+    // This has to cause waiting for at least COMMAND_TIMEOUT_MS. Tolerate more for safety.
+    const size_t repeat = ((COMMAND_TIMEOUT_MS * 8) / sleepMs);
     int count = getLoolKitProcessCount();
     for (size_t i = 0; i < repeat; ++i)
     {
@@ -72,7 +71,7 @@ static int countLoolKitProcesses(const int expected)
     std::ostringstream oss;
     oss << "Test kit pids are ";
     for (auto i : pids)
-        oss << i << " ";
+        oss << i << ' ';
     TST_LOG(oss.str());
 
     return count;
@@ -110,7 +109,5 @@ static void testNoExtraLoolKitsLeft()
 
     TST_LOG(" (" << durationMs << " ms)");
 }
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -11,7 +11,6 @@
 
 #include "Session.hpp"
 
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <ftw.h>
 #include <utime.h>
@@ -32,7 +31,6 @@
 #include <Poco/URI.h>
 
 #include "Common.hpp"
-#include "IoUtil.hpp"
 #include "Protocol.hpp"
 #include "Log.hpp"
 #include <TileCache.hpp>
@@ -54,6 +52,7 @@ Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
     _lastActivityTime(std::chrono::steady_clock::now()),
     _isCloseFrame(false),
     _isReadOnly(readOnly),
+    _isAllowChangeComments(false),
     _docPassword(""),
     _haveDocPassword(false),
     _isDocPasswordProtected(false),
@@ -185,6 +184,11 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
             doctemplate = value;
             ++offset;
         }
+        else if (name == "deviceFormFactor")
+        {
+            _deviceFormFactor = value;
+            ++offset;
+        }
     }
 
     Util::mapAnonymized(_userId, _userIdAnonym);
@@ -196,7 +200,7 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         if (getTokenString(tokens[offset], "options", _docOptions))
         {
             if (tokens.size() > offset + 1)
-                _docOptions += tokens.cat(std::string(" "), offset + 1);
+                _docOptions += tokens.cat(' ', offset + 1);
         }
     }
 }
@@ -246,7 +250,7 @@ void Session::handleMessage(const std::vector<char> &data)
         LOG_ERR("Session::handleInput: Exception while handling [" <<
                 getAbbreviatedMessage(data) <<
                 "] in " << getName() << ": " << exc.displayText() <<
-                (exc.nested() ? " (" + exc.nested()->displayText() + ")" : ""));
+                (exc.nested() ? " (" + exc.nested()->displayText() + ')' : ""));
     }
     catch (const std::exception& exc)
     {
@@ -260,6 +264,7 @@ void Session::getIOStats(uint64_t &sent, uint64_t &recv)
     if (!_protocol)
     {
         LOG_TRC("ERR - missing protocol " << getName() << ": Get IO stats.");
+        sent = 0; recv = 0;
         return;
     }
 
@@ -283,7 +288,7 @@ void Session::dumpState(std::ostream& os)
        << "\n\t\tuserId: " << _userId
        << "\n\t\tuserName: " << _userName
        << "\n\t\tlang: " << _lang
-       << "\n";
+       << '\n';
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

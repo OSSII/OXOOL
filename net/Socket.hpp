@@ -7,12 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SOCKET_HPP
-#define INCLUDED_SOCKET_HPP
+#pragma once
 
 #include <poll.h>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -86,6 +84,10 @@ public:
     {
         _disposition = Type::CLOSED;
     }
+    std::shared_ptr<Socket> getSocket() const
+    {
+        return _socket;
+    }
     bool isMove() { return _disposition == Type::MOVE; }
     bool isClosed() { return _disposition == Type::CLOSED; }
 
@@ -113,7 +115,7 @@ public:
 
     virtual ~Socket()
     {
-        LOG_TRC("#" << getFD() << " Socket dtor.");
+        LOG_TRC('#' << getFD() << " Socket dtor.");
 
         // Doesn't block on sockets; no error handling needed.
 #if !MOBILEAPP
@@ -143,7 +145,7 @@ public:
     /// TODO: Support separate read/write shutdown.
     virtual void shutdown()
     {
-        LOG_TRC("#" << _fd << ": socket shutdown RDWR.");
+        LOG_TRC('#' << _fd << ": socket shutdown RDWR.");
 #if !MOBILEAPP
         ::shutdown(_fd, SHUT_RDWR);
 #else
@@ -155,15 +157,12 @@ public:
     /// for timeouts, based on current time @now.
     /// @returns POLLIN and POLLOUT if output is expected.
     virtual int getPollEvents(std::chrono::steady_clock::time_point now,
-                              int &timeoutMaxMs) = 0;
+                              int64_t &timeoutMaxMicroS) = 0;
 
     /// Handle results of events returned from poll
     virtual void handlePoll(SocketDisposition &disposition,
                             std::chrono::steady_clock::time_point now,
                             int events) = 0;
-
-    /// Is all data sent, so tha we can shutdown ?
-    virtual bool hasPendingWork() const { return false; }
 
     /// manage latency issues around packet aggregation
     void setNoDelay()
@@ -193,7 +192,7 @@ public:
         _sendBufferSize = getSocketBufferSize();
         if (rc != 0 || _sendBufferSize < 0 )
         {
-            LOG_ERR("#" << _fd << ": Error getting socket buffer size " << errno);
+            LOG_ERR('#' << _fd << ": Error getting socket buffer size " << errno);
             _sendBufferSize = DefaultSendBufferSize;
             return false;
         }
@@ -201,12 +200,12 @@ public:
         {
             if (_sendBufferSize > MaximumSendBufferSize * 2)
             {
-                LOG_TRC("#" << _fd << ": Clamped send buffer size to " <<
+                LOG_TRC('#' << _fd << ": Clamped send buffer size to " <<
                         MaximumSendBufferSize << " from " << _sendBufferSize);
                 _sendBufferSize = MaximumSendBufferSize;
             }
             else
-                LOG_TRC("#" << _fd << ": Set socket buffer size to " << _sendBufferSize);
+                LOG_TRC('#' << _fd << ": Set socket buffer size to " << _sendBufferSize);
             return true;
         }
     }
@@ -274,6 +273,9 @@ public:
     }
 #endif
 
+    // Does this socket come from the localhost ?
+    bool isLocal() const;
+
     virtual void dumpState(std::ostream&) {}
 
     /// Set the thread-id we're bound to
@@ -281,7 +283,7 @@ public:
     {
         if (id != _owner)
         {
-            LOG_DBG("#" << _fd << " Thread affinity set to " << Log::to_string(id) <<
+            LOG_DBG('#' << _fd << " Thread affinity set to " << Log::to_string(id) <<
                     " (was " << Log::to_string(_owner) << ").");
             _owner = id;
         }
@@ -293,14 +295,14 @@ public:
     }
 
     /// Asserts in the debug builds, otherwise just logs.
-    void assertCorrectThread() const
+    void assertCorrectThread()
     {
         if (InhibitThreadChecks)
             return;
         // uninitialized owner means detached and can be invoked by any thread.
         const bool sameThread = (_owner == std::thread::id() || std::this_thread::get_id() == _owner);
         if (!sameThread)
-            LOG_ERR("#" << _fd << " Invoked from foreign thread. Expected: " <<
+            LOG_ERR('#' << _fd << " Invoked from foreign thread. Expected: " <<
                     Log::to_string(_owner) << " but called from " <<
                     std::this_thread::get_id() << " (" << Util::getThreadId() << ").");
 
@@ -322,7 +324,7 @@ protected:
         setNoDelay();
         _sendBufferSize = DefaultSendBufferSize;
         _owner = std::this_thread::get_id();
-        LOG_DBG("#" << _fd << " Thread affinity set to " << Log::to_string(_owner) << ".");
+        LOG_DBG('#' << _fd << " Thread affinity set to " << Log::to_string(_owner) << '.');
 
 #if !MOBILEAPP
 #if ENABLE_DEBUG
@@ -330,8 +332,8 @@ protected:
         {
             const int oldSize = getSocketBufferSize();
             setSocketBufferSize(0);
-            LOG_TRC("#" << _fd << ": Buffer size: " << getSendBufferSize() <<
-                    " (was " << oldSize << ")");
+            LOG_TRC('#' << _fd << ": Buffer size: " << getSendBufferSize() <<
+                    " (was " << oldSize << ')');
         }
 #endif
 #endif
@@ -367,6 +369,10 @@ public:
     /// Will be called exactly once.
     virtual void onConnect(const std::shared_ptr<StreamSocket>& socket) = 0;
 
+    /// Enable/disable processing of incoming data at socket level.
+    virtual void enableProcessInput(bool /*enable*/){};
+    virtual bool processInputEnabled() const { return true; };
+
     /// Called after successful socket reads.
     virtual void handleIncomingMessage(SocketDisposition &disposition) = 0;
 
@@ -374,7 +380,7 @@ public:
     /// for timeouts, based on current time @now.
     /// @returns POLLIN and POLLOUT if output is expected.
     virtual int getPollEvents(std::chrono::steady_clock::time_point now,
-                              int &timeoutMaxMs) = 0;
+                              int64_t &timeoutMaxMicroS) = 0;
 
     /// Do we need to handle a timeout ?
     virtual void checkTimeout(std::chrono::steady_clock::time_point /* now */) {}
@@ -382,7 +388,7 @@ public:
     /// Do some of the queued writing.
     virtual void performWrites() = 0;
 
-    /// Called when the is disconnected and will be destroyed.
+    /// Called when the socket is disconnected and will be destroyed.
     /// Will be called exactly once.
     virtual void onDisconnect() {}
 
@@ -394,9 +400,6 @@ public:
     {
         _msgHandler = msgHandler;
     }
-
-    /// Do we have something to send ?
-    virtual bool hasPendingWork() const;
 
     /// Clear all external references
     virtual void dispose() { _msgHandler.reset(); }
@@ -452,6 +455,11 @@ public:
         }
     }
 
+    std::shared_ptr<ProtocolHandlerInterface> getProtocol() const
+    {
+        return _protocol;
+    }
+
     /// Do we have something to send ?
     virtual bool hasQueuedMessages() const = 0;
     /// Please send them to me then.
@@ -462,6 +470,32 @@ public:
     virtual void onDisconnect() = 0;
     /// Append pretty printed internal state to a line
     virtual void dumpState(std::ostream& os) = 0;
+};
+
+class InputProcessingManager
+{
+public:
+    InputProcessingManager(const std::shared_ptr<ProtocolHandlerInterface> &protocol, bool inputProcess)
+    : _protocol(protocol)
+    {
+        if (_protocol)
+        {
+            // Save previous state to be restored in destructor
+            _prevInputProcess = _protocol->processInputEnabled();
+            protocol->enableProcessInput(inputProcess);
+        }
+    }
+
+    ~InputProcessingManager()
+    {
+        // Restore previous state
+        if (_protocol)
+            _protocol->enableProcessInput(_prevInputProcess);
+    }
+
+private:
+    std::shared_ptr<ProtocolHandlerInterface> _protocol;
+    bool _prevInputProcess;
 };
 
 /// Handles non-blocking socket event polling.
@@ -479,16 +513,16 @@ class SocketPoll
 public:
     /// Create a socket poll, called rather infrequently.
     SocketPoll(const std::string& threadName);
-    ~SocketPoll();
+    virtual ~SocketPoll();
 
     /// Default poll time - useful to increase for debugging.
-    static int DefaultPollTimeoutMs;
+    static int DefaultPollTimeoutMicroS;
     static std::atomic<bool> InhibitThreadChecks;
 
     /// Stop the polling thread.
     void stop()
     {
-        LOG_DBG("Stopping " << _name << ".");
+        LOG_DBG("Stopping " << _name << '.');
         _stop = true;
 #if MOBILEAPP
         {
@@ -507,7 +541,7 @@ public:
 
     void removeSockets()
     {
-        LOG_DBG("Removing all sockets from " << _name << ".");
+        LOG_DBG("Removing all sockets from " << _name << '.');
         assertCorrectThread();
 
         while (!_pollSockets.empty())
@@ -539,8 +573,13 @@ public:
     {
         while (continuePolling())
         {
-            poll(DefaultPollTimeoutMs);
+            poll(DefaultPollTimeoutMicroS);
         }
+    }
+
+    const std::thread::id &getThreadOwner()
+    {
+        return _owner;
     }
 
     /// Are we running in either shutdown, or the polling thread.
@@ -564,10 +603,10 @@ public:
     {
         if (InhibitThreadChecks)
             return;
-        std::thread::id us = std::thread::id();
+        std::thread::id us = std::this_thread::get_id();
         if (_owner == us)
             return; // all well
-        LOG_DBG("Ununusual - SocketPoll used from a new thread");
+        LOG_DBG("Unusual - SocketPoll used from a new thread");
         _owner = us;
         for (const auto& it : _pollSockets)
             it->setThreadOwner(us);
@@ -577,123 +616,7 @@ public:
     /// Poll the sockets for available data to read or buffer to write.
     /// Returns the return-value of poll(2): 0 on timeout,
     /// -1 for error, and otherwise the number of events signalled.
-    int poll(int timeoutMaxMs)
-    {
-        if (_runOnClientThread)
-            checkAndReThread();
-        else
-            assertCorrectThread();
-
-        std::chrono::steady_clock::time_point now =
-            std::chrono::steady_clock::now();
-
-        // The events to poll on change each spin of the loop.
-        setupPollFds(now, timeoutMaxMs);
-        const size_t size = _pollSockets.size();
-
-        int rc;
-        do
-        {
-#if !MOBILEAPP
-            LOG_TRC("Poll start, timeoutMs: " << timeoutMaxMs);
-            rc = ::poll(&_pollFds[0], size + 1, std::max(timeoutMaxMs,0));
-#else
-            LOG_TRC("SocketPoll Poll");
-            rc = fakeSocketPoll(&_pollFds[0], size + 1, std::max(timeoutMaxMs,0));
-#endif
-        }
-        while (rc < 0 && errno == EINTR);
-        LOG_TRC("Poll completed with " << rc << " live polls max (" <<
-                timeoutMaxMs << "ms)" << ((rc==0) ? "(timedout)" : ""));
-
-        // First process the wakeup pipe (always the last entry).
-        if (_pollFds[size].revents)
-        {
-            std::vector<CallbackFn> invoke;
-            {
-                std::lock_guard<std::mutex> lock(_mutex);
-
-                // Clear the data.
-#if !MOBILEAPP
-                int dump = ::read(_wakeup[0], &dump, sizeof(dump));
-#else
-                LOG_TRC("Wakeup pipe read");
-                int dump = fakeSocketRead(_wakeup[0], &dump, sizeof(dump));
-#endif
-                // Copy the new sockets over and clear.
-                _pollSockets.insert(_pollSockets.end(),
-                                    _newSockets.begin(), _newSockets.end());
-
-                // Update thread ownership.
-                for (auto &i : _newSockets)
-                    i->setThreadOwner(std::this_thread::get_id());
-
-                _newSockets.clear();
-
-                // Extract list of callbacks to process
-                std::swap(_newCallbacks, invoke);
-            }
-
-            for (const auto& callback : invoke)
-            {
-                try
-                {
-                    callback();
-                }
-                catch (const std::exception& exc)
-                {
-                    LOG_ERR("Exception while invoking poll [" << _name <<
-                            "] callback: " << exc.what());
-                }
-            }
-
-            try
-            {
-                wakeupHook();
-            }
-            catch (const std::exception& exc)
-            {
-                LOG_ERR("Exception while invoking poll [" << _name <<
-                        "] wakeup hook: " << exc.what());
-            }
-        }
-
-        // This should only happen when we're stopping.
-        if (_pollSockets.size() != size)
-            return rc;
-
-        // Fire the poll callbacks and remove dead fds.
-        std::chrono::steady_clock::time_point newNow =
-            std::chrono::steady_clock::now();
-
-        for (int i = static_cast<int>(size) - 1; i >= 0; --i)
-        {
-            SocketDisposition disposition(_pollSockets[i]);
-            try
-            {
-                _pollSockets[i]->handlePoll(disposition, newNow,
-                                            _pollFds[i].revents);
-            }
-            catch (const std::exception& exc)
-            {
-                LOG_ERR("Error while handling poll for socket #" <<
-                        _pollFds[i].fd << " in " << _name << ": " << exc.what());
-                disposition.setClosed();
-                rc = -1;
-            }
-
-            if (disposition.isMove() || disposition.isClosed())
-            {
-                LOG_DBG("Removing socket #" << _pollFds[i].fd << " (of " <<
-                        _pollSockets.size() << ") from " << _name);
-                _pollSockets.erase(_pollSockets.begin() + i);
-            }
-
-            disposition.execute();
-        }
-
-        return rc;
-    }
+    int poll(int64_t timeoutMaxMicroS);
 
     /// Write to a wakeup descriptor
     static void wakeup (int fd)
@@ -749,7 +672,8 @@ public:
     void insertNewUnixSocket(
         const std::string &location,
         const std::string &pathAndQuery,
-        const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler);
+        const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler,
+        const int shareFD = -1);
 #else
     void insertNewFakeSocket(
         int peerSocket,
@@ -772,21 +696,6 @@ public:
     {
         assertCorrectThread();
         return _pollSockets.size();
-    }
-
-    bool hasPendingWork() const
-    {
-        assertCorrectThread();
-
-        if (_newCallbacks.size() > 0 ||
-            _newSockets.size() > 0)
-            return true;
-
-        for (auto &i : _pollSockets)
-            if (i->hasPendingWork())
-                return true;
-
-        return false;
     }
 
     const std::string& name() const { return _name; }
@@ -822,13 +731,14 @@ protected:
 
 private:
     /// Generate the request to connect & upgrade this socket to a given path
+    /// and sends a file descriptor along request if is != -1.
     void clientRequestWebsocketUpgrade(const std::shared_ptr<StreamSocket>& socket,
                                        const std::shared_ptr<ProtocolHandlerInterface>& websocketHandler,
-                                       const std::string &pathAndQuery);
+                                       const std::string &pathAndQuery, const int shareFD = -1);
 
     /// Initialize the poll fds array with the right events
     void setupPollFds(std::chrono::steady_clock::time_point now,
-                      int &timeoutMaxMs)
+                      int64_t &timeoutMaxMicroS)
     {
         const size_t size = _pollSockets.size();
 
@@ -836,7 +746,7 @@ private:
 
         for (size_t i = 0; i < size; ++i)
         {
-            int events = _pollSockets[i]->getPollEvents(now, timeoutMaxMs);
+            int events = _pollSockets[i]->getPollEvents(now, timeoutMaxMicroS);
             assert(events >= 0); // Or > 0 even?
             _pollFds[i].fd = _pollSockets[i]->getFD();
             _pollFds[i].events = events;
@@ -882,9 +792,16 @@ class StreamSocket : public Socket,
                      public std::enable_shared_from_this<StreamSocket>
 {
 public:
+    enum ReadType
+    {
+        NormalRead,
+        UseRecvmsgExpectFD
+    };
+
     /// Create a StreamSocket from native FD.
     StreamSocket(const int fd, bool /* isClient */,
-                 std::shared_ptr<ProtocolHandlerInterface> socketHandler) :
+                 std::shared_ptr<ProtocolHandlerInterface> socketHandler,
+                 ReadType readType = NormalRead) :
         Socket(fd),
         _socketHandler(std::move(socketHandler)),
         _bytesSent(0),
@@ -892,7 +809,10 @@ public:
         _wsState(WSState::HTTP),
         _closed(false),
         _sentHTTPContinue(false),
-        _shutdownSignalled(false)
+        _shutdownSignalled(false),
+        _incomingFD(-1),
+        _readType(readType),
+        _inputProcessingEnabled(true)
     {
         LOG_DBG("StreamSocket ctor #" << fd);
 
@@ -910,6 +830,7 @@ public:
         {
             assertCorrectThread();
             _socketHandler->onDisconnect();
+            _socketHandler.reset();
         }
 
         if (!_shutdownSignalled)
@@ -927,7 +848,7 @@ public:
     virtual void shutdown() override
     {
         _shutdownSignalled = true;
-        LOG_TRC("#" << getFD() << ": Async shutdown requested.");
+        LOG_TRC('#' << getFD() << ": Async shutdown requested.");
     }
 
     /// Perform the real shutdown.
@@ -937,22 +858,14 @@ public:
     }
 
     int getPollEvents(std::chrono::steady_clock::time_point now,
-                      int &timeoutMaxMs) override
+                      int64_t &timeoutMaxMicroS) override
     {
         // cf. SslSocket::getPollEvents
         assertCorrectThread();
-        int events = _socketHandler->getPollEvents(now, timeoutMaxMs);
+        int events = _socketHandler->getPollEvents(now, timeoutMaxMicroS);
         if (!_outBuffer.empty() || _shutdownSignalled)
             events |= POLLOUT;
         return events;
-    }
-
-    bool hasPendingWork() const override
-    {
-        assertCorrectThread();
-        if (!_outBuffer.empty() || !_inBuffer.empty())
-            return true;
-        return _socketHandler && _socketHandler->hasPendingWork();
     }
 
     /// Send data to the socket peer.
@@ -976,6 +889,45 @@ public:
     /// Sends HTTP response.
     /// Adds Date and User-Agent.
     void send(Poco::Net::HTTPResponse& response);
+
+    /// Sends data with file descriptor as control data.
+    /// Can be used only with Unix sockets.
+    void sendFD(const char* data, const uint64_t len, int fd)
+    {
+        assertCorrectThread();
+
+        // Flush existing non-ancillary data
+        // so that our non-ancillary data will
+        // match ancillary data.
+        if (getOutBuffer().size() > 0)
+        {
+            writeOutgoingData();
+        }
+
+        msghdr msg;
+        iovec iov[1];
+
+        iov[0].iov_base = const_cast<char*>(data);
+        iov[0].iov_len = len;
+
+        msg.msg_name = nullptr;
+        msg.msg_namelen = 0;
+        msg.msg_iov = &iov[0];
+        msg.msg_iovlen = 1;
+
+        char adata[CMSG_SPACE(sizeof(int))];
+        cmsghdr *cmsg = (cmsghdr*)adata;
+        cmsg->cmsg_type = SCM_RIGHTS;
+        cmsg->cmsg_level = SOL_SOCKET;
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+        *(int *)CMSG_DATA(cmsg) = fd;
+
+        msg.msg_control = const_cast<char*>(adata);
+        msg.msg_controllen = CMSG_LEN(sizeof(int));
+        msg.msg_flags = 0;
+
+        sendmsg(getFD(), &msg, 0);
+    }
 
     /// Reads data by invoking readData() and buffering.
     /// Return false iff the socket is closed.
@@ -1040,10 +992,12 @@ public:
     /// but we can't have a shared_ptr in the ctor.
     template <typename TSocket>
     static
-    std::shared_ptr<TSocket> create(const int fd, bool isClient, std::shared_ptr<ProtocolHandlerInterface> handler)
+    std::shared_ptr<TSocket> create(const int fd, bool isClient,
+                                    std::shared_ptr<ProtocolHandlerInterface> handler,
+                                    ReadType readType = NormalRead)
     {
         ProtocolHandlerInterface* pHandler = handler.get();
-        auto socket = std::make_shared<TSocket>(fd, isClient, std::move(handler));
+        auto socket = std::make_shared<TSocket>(fd, isClient, std::move(handler), readType);
         pHandler->onConnect(socket);
         return socket;
     }
@@ -1059,13 +1013,19 @@ public:
         std::vector<std::pair<size_t, size_t>> _spans;
     };
 
+    /// remove all queued input bytes
+    void clearInput()
+    {
+        _inBuffer.clear();
+    }
+
     /// Remove the first @count bytes from input buffer
     void eraseFirstInputBytes(const MessageMap &map)
     {
         size_t count = map._headerSize;
         size_t toErase = std::min(count, _inBuffer.size());
         if (toErase < count)
-            LOG_ERR("#" << getFD() << ": attempted to remove: " << count << " which is > size: " << _inBuffer.size() << " clamped to " << toErase);
+            LOG_ERR('#' << getFD() << ": attempted to remove: " << count << " which is > size: " << _inBuffer.size() << " clamped to " << toErase);
         if (toErase > 0)
             _inBuffer.erase(_inBuffer.begin(), _inBuffer.begin() + count);
     }
@@ -1098,6 +1058,14 @@ public:
         return _outBuffer;
     }
 
+    int getIncomingFD()
+    {
+        return _incomingFD;
+    }
+
+    bool processInputEnabled() const { return _inputProcessingEnabled; }
+    void enableProcessInput(bool enable = true){ _inputProcessingEnabled = enable; }
+
 protected:
 
     std::vector<std::pair<size_t, size_t>> findChunks(Poco::Net::HTTPRequest &request);
@@ -1112,7 +1080,7 @@ protected:
 
         _socketHandler->checkTimeout(now);
 
-        if (!events)
+        if (!events && _inBuffer.empty())
             return;
 
         // FIXME: need to close input, but not output (?)
@@ -1121,7 +1089,7 @@ protected:
         // Always try to read.
         closed = !readIncomingData() || closed;
 
-        LOG_TRC("#" << getFD() << ": Incoming data buffer " << _inBuffer.size() <<
+        LOG_TRC('#' << getFD() << ": Incoming data buffer " << _inBuffer.size() <<
                 " bytes, closeSocket? " << closed);
 
 #ifdef LOG_SOCKET_DATA
@@ -1132,7 +1100,7 @@ protected:
 
         // If we have data, allow the app to consume.
         size_t oldSize = 0;
-        while (!_inBuffer.empty() && oldSize != _inBuffer.size())
+        while (!_inBuffer.empty() && oldSize != _inBuffer.size() && processInputEnabled())
         {
             oldSize = _inBuffer.size();
             _socketHandler->handleIncomingMessage(disposition);
@@ -1167,7 +1135,7 @@ protected:
 
         if (closed)
         {
-            LOG_TRC("#" << getFD() << ": Closed. Firing onDisconnect.");
+            LOG_TRC('#' << getFD() << ": Closed. Firing onDisconnect.");
             _closed = true;
             _socketHandler->onDisconnect();
         }
@@ -1187,11 +1155,11 @@ public:
             ssize_t len;
             do
             {
-                // Writing more than we can absorb in the kernel causes SSL wasteage.
+                // Writing more than we can absorb in the kernel causes SSL wastage.
                 len = writeData(&_outBuffer[0], std::min((int)_outBuffer.size(),
                                                          getSendBufferSize()));
 
-                LOG_TRC("#" << getFD() << ": Wrote outgoing data " << len << " bytes of "
+                LOG_TRC('#' << getFD() << ": Wrote outgoing data " << len << " bytes of "
                             << _outBuffer.size() << " bytes buffered.");
 
 #ifdef LOG_SOCKET_DATA
@@ -1201,7 +1169,7 @@ public:
 #endif
 
                 if (len <= 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-                    LOG_SYS("#" << getFD() << ": Socket write returned " << len);
+                    LOG_SYS('#' << getFD() << ": Socket write returned " << len);
             }
             while (len < 0 && errno == EINTR);
 
@@ -1222,12 +1190,55 @@ public:
     /// Does it look like we have some TLS / SSL where we don't expect it ?
     bool sniffSSL() const;
 
+    void dumpState(std::ostream& os) override;
+
 protected:
+    /// Reads data with file descriptor as control data if received.
+    /// Can be used only with Unix sockets.
+    int readFD(char* buf, int len, int& fd)
+    {
+        msghdr msg;
+        iovec iov[1];
+        /// We don't expect more than one FD
+        char ctrl[CMSG_SPACE(sizeof(int))];
+        int ctrlLen = sizeof(ctrl);
+
+        iov[0].iov_base = buf;
+        iov[0].iov_len = len;
+
+        msg.msg_name = nullptr;
+        msg.msg_namelen = 0;
+        msg.msg_iov = &iov[0];
+        msg.msg_iovlen = 1;
+        msg.msg_control = ctrl;
+        msg.msg_controllen = ctrlLen;
+        msg.msg_flags = 0;
+
+        int ret = recvmsg(getFD(), &msg, 0);
+        if (ret > 0 && msg.msg_controllen)
+        {
+            cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+            if (cmsg && cmsg->cmsg_type == SCM_RIGHTS && cmsg->cmsg_len == CMSG_LEN(sizeof(int)))
+            {
+                fd = *(int*)CMSG_DATA(cmsg);
+                if (_readType == UseRecvmsgExpectFD)
+                {
+                    _readType = NormalRead;
+                }
+            }
+        }
+
+        return ret;
+    }
+
     /// Override to handle reading of socket data differently.
     virtual int readData(char* buf, int len)
     {
         assertCorrectThread();
 #if !MOBILEAPP
+        if (_readType == UseRecvmsgExpectFD)
+            return readFD(buf, len, _incomingFD);
+
         return ::read(getFD(), buf, len);
 #else
         return fakeSocketRead(getFD(), buf, len);
@@ -1245,11 +1256,9 @@ protected:
 #endif
     }
 
-    void dumpState(std::ostream& os) override;
-
-    void setShutdownSignalled(bool shutdownSignalled)
+    void setShutdownSignalled()
     {
-        _shutdownSignalled = shutdownSignalled;
+        _shutdownSignalled = true;
     }
 
     bool isShutdownSignalled() const
@@ -1282,6 +1291,9 @@ protected:
 
     /// True when shutdown was requested via shutdown().
     bool _shutdownSignalled;
+    int _incomingFD;
+    ReadType _readType;
+    std::atomic_bool _inputProcessingEnabled;
 };
 
 enum class WSOpCode : unsigned char {
@@ -1301,11 +1313,10 @@ enum class WSOpCode : unsigned char {
 
 namespace HttpHelper
 {
-    /// Sends file as HTTP response.
-    void sendFile(const std::shared_ptr<StreamSocket>& socket, const std::string& path, const std::string& mediaType,
-                  Poco::Net::HTTPResponse& response, bool noCache = false, bool deflate = false,
-                  const bool headerOnly = false);
+    /// Sends file as HTTP response and shutdown the socket.
+    void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std::string& path, const std::string& mediaType,
+                             Poco::Net::HTTPResponse *optResponse = nullptr, bool noCache = false, bool deflate = false,
+                             const bool headerOnly = false);
 }
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

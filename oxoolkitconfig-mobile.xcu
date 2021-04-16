@@ -7,14 +7,13 @@
 <!-- Disable two capitals at start autocorrect -->
 <item oor:path="/org.openoffice.Office.Common/AutoCorrect"><prop oor:name="TwoCapitalsAtStart" oor:op="fuse"><value>false</value></prop></item>
 
-<!-- Disable spell-checking by default -->
+<!-- Enable spell-checking by default -->
 <item oor:path="/org.openoffice.Office.Linguistic/SpellChecking"><prop oor:name="IsSpellAuto" oor:op="fuse"><value>true</value></prop></item>
 
 <!-- Save memory by avoiding collecting autocompletion words  -->
 <item oor:path="/org.openoffice.Office.Writer/AutoFunction/Completion"><prop oor:name="Enable" oor:op="fuse"><value>false</value></prop></item>
 
 <!-- Disable complex text options - unless your locale needs them -->
-<!--
 <item oor:path="/org.openoffice.Office.Common/I18N/CJK"><prop oor:name="AsianTypography" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/I18N/CJK"><prop oor:name="CJKFont" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/I18N/CJK"><prop oor:name="ChangeCaseMap" oor:op="fuse"><value>false</value></prop></item>
@@ -25,7 +24,6 @@
 <item oor:path="/org.openoffice.Office.Common/I18N/CJK"><prop oor:name="VerticalCallOut" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/I18N/CJK"><prop oor:name="VerticalText" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/I18N/CTL"><prop oor:name="CTLFont" oor:op="fuse"><value>false</value></prop></item>
--->
 
 <!-- The Help root URL, or empty for no help (hides the help buttons) -->
 <!-- On mobile UI there should be no tunnelled dialogs. But if there are some, by mistake, at least they should not have a non-working Help button -->

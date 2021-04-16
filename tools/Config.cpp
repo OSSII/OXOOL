@@ -14,6 +14,7 @@
 #include <sstream>
 #include <sysexits.h>
 #include <termios.h>
+#include <unistd.h>
 
 #include <openssl/rand.h>
 #include <openssl/evp.h>
@@ -61,13 +62,13 @@ public:
     unsigned getPwdHashLength() const { return _pwdHashLength; }
 };
 
-// Config tool to change loolwsd configuration (loolwsd.xml)
+// Config tool to change oxoolwsd configuration (oxoolwsd.xml)
 class Config: public Application
 {
     // Display help information on the console
     void displayHelp();
 
-    LoolConfig _loolConfig;
+    LoolConfig _oxoolConfig;
 
     AdminConfig _adminConfig;
 
@@ -90,7 +91,7 @@ std::string Config::ConfigFile =
 #else
     LOOLWSD_CONFIGDIR
 #endif
-    "/loolwsd.xml";
+    "/oxoolwsd.xml";
 
 std::string Config::SupportKeyString;
 bool Config::SupportKeyStringProvided = false;
@@ -102,7 +103,7 @@ void Config::displayHelp()
     HelpFormatter helpFormatter(options());
     helpFormatter.setCommand(commandName());
     helpFormatter.setUsage("COMMAND [OPTIONS]");
-    helpFormatter.setHeader("loolconfig - Configuration tool for LibreOffice Online.\n"
+    helpFormatter.setHeader("oxoolconfig - Configuration tool for LibreOffice Online.\n"
                             "\n"
                             "Some options make sense only with a specific command.\n\n"
                             "Options:");
@@ -225,7 +226,7 @@ int Config::main(const std::vector<std::string>& args)
 
     int retval = EX_OK;
     bool changed = false;
-    _loolConfig.load(ConfigFile);
+    _oxoolConfig.load(ConfigFile);
 
     if (args[0] == "set-admin-password")
     {
@@ -288,16 +289,16 @@ int Config::main(const std::vector<std::string>& args)
         const std::string passwordHash = stream.str();
 
         std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
-        pwdConfigValue << std::to_string(_adminConfig.getPwdIterations()) << ".";
-        pwdConfigValue << saltHash << "." << passwordHash;
-        _loolConfig.setString("admin_console.username", adminUser);
-        _loolConfig.setString("admin_console.secure_password[@desc]",
+        pwdConfigValue << std::to_string(_adminConfig.getPwdIterations()) << '.';
+        pwdConfigValue << saltHash << '.' << passwordHash;
+        _oxoolConfig.setString("admin_console.username", adminUser);
+        _oxoolConfig.setString("admin_console.secure_password[@desc]",
                               "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
-        _loolConfig.setString("admin_console.secure_password", pwdConfigValue.str());
+        _oxoolConfig.setString("admin_console.secure_password", pwdConfigValue.str());
 
         changed = true;
 #else
-        std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/loolwsd/loolwsd.xml." << std::endl;
+        std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/oxool/oxoolwsd.xml." << std::endl;
         return EX_UNAVAILABLE;
 #endif
     }
@@ -325,7 +326,7 @@ int Config::main(const std::vector<std::string>& args)
                 else
                 {
                     std::cerr << "Valid for " << validDays << " days - setting to config\n";
-                    _loolConfig.setString("support_key", supportKeyString);
+                    _oxoolConfig.setString("support_key", supportKeyString);
                     changed = true;
                 }
             }
@@ -333,7 +334,7 @@ int Config::main(const std::vector<std::string>& args)
         else
         {
             std::cerr << "Removing empty support key\n";
-            _loolConfig.remove("support_key");
+            _oxoolConfig.remove("support_key");
             changed = true;
         }
     }
@@ -344,12 +345,12 @@ int Config::main(const std::vector<std::string>& args)
         {
             // args[1] = key
             // args[2] = value
-            if (_loolConfig.has(args[1]))
+            if (_oxoolConfig.has(args[1]))
             {
-                const std::string val = _loolConfig.getString(args[1]);
-                std::cout << "Previous value found in config file: \""  << val << "\"" << std::endl;
-                std::cout << "Changing value to: \"" << args[2] << "\"" << std::endl;
-                _loolConfig.setString(args[1], args[2]);
+                const std::string val = _oxoolConfig.getString(args[1]);
+                std::cout << "Previous value found in config file: \""  << val << '"' << std::endl;
+                std::cout << "Changing value to: \"" << args[2] << '"' << std::endl;
+                _oxoolConfig.setString(args[1], args[2]);
                 changed = true;
             }
             else
@@ -363,7 +364,7 @@ int Config::main(const std::vector<std::string>& args)
     }
     else if (args[0] == "update-system-template")
     {
-        const char command[] = "su lool --shell=/bin/sh -c 'loolwsd-systemplate-setup /opt/lool/systemplate " LO_PATH " >/dev/null 2>&1'";
+        const char command[] = "oxoolwsd-systemplate-setup /opt/oxool/systemplate " LO_PATH " >/dev/null 2>&1";
         std::cout << "Running the following command:" << std::endl
                   << command << std::endl;
 
@@ -375,7 +376,7 @@ int Config::main(const std::vector<std::string>& args)
     {
         if (!AnonymizationSaltProvided)
         {
-            const std::string val = _loolConfig.getString("logging.anonymize.anonymization_salt");
+            const std::string val = _oxoolConfig.getString("logging.anonymize.anonymization_salt");
             AnonymizationSalt = std::stoull(val);
             std::cout << "Anonymization Salt: [" << AnonymizationSalt << "]." << std::endl;
         }
@@ -387,14 +388,14 @@ int Config::main(const std::vector<std::string>& args)
     }
     else
     {
-        std::cerr << "No such command, \"" << args[0]  << "\"" << std::endl;
+        std::cerr << "No such command, \"" << args[0]  << '"' << std::endl;
         displayHelp();
     }
 
     if (changed)
     {
         std::cout << "Saving configuration to : " << ConfigFile << " ..." << std::endl;
-        _loolConfig.save(ConfigFile);
+        _oxoolConfig.save(ConfigFile);
         std::cout << "Saved" << std::endl;
     }
 

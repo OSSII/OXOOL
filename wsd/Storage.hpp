@@ -8,20 +8,57 @@
  */
 
 // Storage abstraction.
-#ifndef INCLUDED_STORAGE_HPP
-#define INCLUDED_STORAGE_HPP
+
+#pragma once
 
 #include <set>
 #include <string>
+#include <chrono>
 
 #include <Poco/URI.h>
 #include <Poco/Util/Application.h>
+#include <Poco/JSON/Object.h>
 
 #include "Auth.hpp"
 #include "LOOLWSD.hpp"
 #include "Log.hpp"
 #include "Util.hpp"
 #include <common/Authorization.hpp>
+
+namespace Poco
+{
+namespace Net
+{
+class HTTPClientSession;
+}
+
+} // namespace Poco
+
+/// Represents whether the underlying file is locked
+/// and with what token.
+struct LockContext
+{
+    /// Do we have support for locking for a storage.
+    bool        _supportsLocks;
+    /// Do we own the (leased) lock currently
+    bool        _isLocked;
+    /// Name if we need it to use consistently for locking
+    std::string _lockToken;
+    /// Time of last successful lock (re-)acquisition
+    std::chrono::steady_clock::time_point _lastLockTime;
+    /// Reason for unsuccessful locking request
+    std::string _lockFailureReason;
+
+    LockContext() : _supportsLocks(false), _isLocked(false) { }
+
+    /// one-time setup for supporting locks & create token
+    void initSupportsLocks();
+
+    /// do we need to refresh our lock ?
+    bool needsRefresh(const std::chrono::steady_clock::time_point &now) const;
+
+    void dumpState(std::ostream& os) const;
+};
 
 /// Base class of all Storage abstractions.
 class StorageBase
@@ -34,7 +71,7 @@ public:
     public:
         FileInfo(const std::string& filename,
                  const std::string& ownerId,
-                 const Poco::Timestamp& modifiedTime,
+                 const std::chrono::system_clock::time_point& modifiedTime,
                  size_t /*size*/)
             : _filename(filename),
               _ownerId(ownerId),
@@ -52,14 +89,14 @@ public:
 
         const std::string& getOwnerId() const { return _ownerId; }
 
-        void setModifiedTime(const Poco::Timestamp& modifiedTime) { _modifiedTime = modifiedTime; }
+        void setModifiedTime(const std::chrono::system_clock::time_point& modifiedTime) { _modifiedTime = modifiedTime; }
 
-        const Poco::Timestamp& getModifiedTime() const { return _modifiedTime; }
+        const std::chrono::system_clock::time_point& getModifiedTime() const { return _modifiedTime; }
 
     private:
         std::string _filename;
         std::string _ownerId;
-        Poco::Timestamp _modifiedTime;
+        std::chrono::system_clock::time_point _modifiedTime;
     };
 
     class SaveResult
@@ -105,26 +142,21 @@ public:
             return _saveAsUrl;
         }
 
-        // Add by Firefly <firefly@ossii.com.tw>
-        // 紀錄回應訊息
-        void setResponseString(const std::string& message)
+        void setErrorMsg(const std::string &msg)
         {
-            _saveResponseString = message;
+            _errorMsg = msg;
         }
 
-
-        // 取得回應訊息
-        const std::string& getResponseString() const
-        {   
-            return _saveResponseString;
+        const std::string &getErrorMsg() const
+        {
+            return _errorMsg;
         }
 
     private:
         Result _result;
         std::string _saveAsName;
         std::string _saveAsUrl;
-        // Add by Firefly <firefly@ossii.com.tw>
-        std::string  _saveResponseString;
+        std::string _errorMsg;
     };
 
     enum class LOOLStatusCode
@@ -140,11 +172,12 @@ public:
         _uri(uri),
         _localStorePath(localStorePath),
         _jailPath(jailPath),
-        _fileInfo("", "lool", Poco::Timestamp::fromEpochTime(0), 0),
+        _fileInfo("", "lool", std::chrono::system_clock::time_point(), 0),
         _isLoaded(false),
         _forceSave(false),
         _isUserModified(false),
-        _isAutosave(false)
+        _isAutosave(false),
+        _isExitSave(false)
     {
         LOG_DBG("Storage ctor: " << LOOLWSD::anonymizeUrl(uri.toString()));
     }
@@ -191,8 +224,8 @@ public:
     bool isUserModified() const { return _isUserModified; }
 
     /// To be able to set the WOPI 'is autosave/is exitsave?' headers appropriately.
-    void setIsAutosave(bool isAutosave) { _isAutosave = isAutosave; }
-    bool getIsAutosave() const { return _isAutosave; }
+    void setIsAutosave(bool newIsAutosave) { _isAutosave = newIsAutosave; }
+    bool isAutosave() const { return _isAutosave; }
     void setIsExitSave(bool exitSave) { _isExitSave = exitSave; }
     bool isExitSave() const { return _isExitSave; }
     void setExtendedData(const std::string& extendedData) { _extendedData = extendedData; }
@@ -204,20 +237,25 @@ public:
 
     std::string getFileExtension() const { return Poco::Path(_fileInfo.getFilename()).getExtension(); }
 
+    /// Update the locking state (check-in/out) of the associated file
+    virtual bool updateLockState(const Authorization& auth, const std::string& cookies,
+                                 LockContext& lockCtx, bool lock)
+        = 0;
+
     /// Returns a local file path for the given URI.
     /// If necessary copies the file locally first.
     virtual std::string loadStorageFileToLocal(const Authorization& auth,
-                                               const std::string& cookies,
+                                               const std::string& /*cookies*/, LockContext& lockCtx,
                                                const std::string& templateUri)
         = 0;
 
     /// Writes the contents of the file back to the source.
     /// @param cookies A string representing key=value pairs that are set as cookies.
     /// @param savedFile When the operation was saveAs, this is the path to the file that was saved.
-    virtual SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& cookies,
-                                              const std::string& saveAsPath,
-                                              const std::string& saveAsFilename,
-                                              const bool isRename)
+    virtual SaveResult
+    saveLocalFileToStorage(const Authorization& auth, const std::string& /*cookies*/,
+                           LockContext& lockCtx, const std::string& saveAsPath,
+                           const std::string& saveAsFilename, const bool isRename)
         = 0;
 
     static size_t getFileSize(const std::string& filename);
@@ -231,6 +269,8 @@ public:
                                                const std::string& jailPath);
 
     static bool allowedWopiHost(const std::string& host);
+    static Poco::Net::HTTPClientSession* getHTTPClientSession(const Poco::URI& uri);
+
 protected:
 
     /// Returns the root path of the jail directory of docs.
@@ -241,8 +281,8 @@ protected:
 
 private:
     const Poco::URI _uri;
-    std::string _localStorePath;
-    std::string _jailPath;
+    const std::string _localStorePath;
+    const std::string _jailPath;
     std::string _jailedFilePath;
     std::string _jailedFilePathAnonym;
     FileInfo _fileInfo;
@@ -261,6 +301,10 @@ private:
 
     static bool FilesystemEnabled;
     static bool WopiEnabled;
+    /// If true, use only the WOPI URL for whether to use SSL to talk to storage server
+    static bool SSLAsScheme;
+    /// If true, force SSL communication with storage server
+    static bool SSLEnabled;
     /// Allowed/denied WOPI hosts, if any and if WOPI is enabled.
     static Util::RegexListMatcher WopiHosts;
 };
@@ -302,11 +346,17 @@ public:
     /// obtained using getFileInfo method
     std::unique_ptr<LocalFileInfo> getLocalFileInfo();
 
-    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& cookies,
+    bool updateLockState(const Authorization&, const std::string&, LockContext&, bool) override
+    {
+        return true;
+    }
+
+    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& /*cookies*/,
+                                       LockContext& lockCtx,
                                        const std::string& templateUri) override;
 
-    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& cookies,
-                                      const std::string& saveAsPath,
+    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& /*cookies*/,
+                                      LockContext& lockCtx, const std::string& saveAsPath,
                                       const std::string& saveAsFilename,
                                       const bool isRename) override;
 
@@ -325,6 +375,7 @@ public:
                 const std::string& jailPath) :
         StorageBase(uri, localStorePath, jailPath),
         _wopiLoadDuration(0),
+        _wopiSaveDuration(0),
         _reuseCookies(false)
     {
         const auto& app = Poco::Util::Application::instance();
@@ -337,6 +388,7 @@ public:
 
     class WOPIFileInfo
     {
+        void init();
     public:
         enum class TriState
         {
@@ -345,124 +397,43 @@ public:
             Unset
         };
 
-        WOPIFileInfo(const std::string& userid,
-                     const std::string& obfuscatedUserId,
-                     const std::string& username,
-                     const std::string& userExtraInfo,
-                     const std::string& watermarkText,
-                     const std::string& templateSaveAs,
-                     const std::string& templateSource,
-                     const bool userCanWrite,
-                     const std::string& postMessageOrigin,
-                     const bool hidePrintOption,
-                     const bool hideSaveOption,
-                     const bool hideExportOption,
-                     const bool enableOwnerTermination,
-                     const bool disablePrint,
-                     const bool disableExport,
-                     const bool disableCopy,
-                     const bool disableInactiveMessages,
-                     const bool downloadAsPostMessage,
-                     const bool userCanNotWriteRelative,
-                     const bool enableInsertRemoteImage,
-                     const bool enableShare,
-                     const std::string& hideUserList,
-                     const TriState disableChangeTrackingShow,
-                     const TriState disableChangeTrackingRecord,
-                     const TriState hideChangeTrackingControls,
-                     const bool supportsRename,
-                     const bool userCanRename,
-                     const std::chrono::duration<double> callDuration)
-            : _userId(userid),
-              _obfuscatedUserId(obfuscatedUserId),
-              _username(username),
-              _watermarkText(watermarkText),
-              _templateSaveAs(templateSaveAs),
-              _templateSource(templateSource),
-              _userCanWrite(userCanWrite),
-              _postMessageOrigin(postMessageOrigin),
-              _hidePrintOption(hidePrintOption),
-              _hideSaveOption(hideSaveOption),
-              _hideExportOption(hideExportOption),
-              _enableOwnerTermination(enableOwnerTermination),
-              _disablePrint(disablePrint),
-              _disableExport(disableExport),
-              _disableCopy(disableCopy),
-              _disableInactiveMessages(disableInactiveMessages),
-              _downloadAsPostMessage(downloadAsPostMessage),
-              _userCanNotWriteRelative(userCanNotWriteRelative),
-              _enableInsertRemoteImage(enableInsertRemoteImage),
-              _enableShare(enableShare),
-              _hideUserList(hideUserList),
-              _disableChangeTrackingShow(disableChangeTrackingShow),
-              _disableChangeTrackingRecord(disableChangeTrackingRecord),
-              _hideChangeTrackingControls(hideChangeTrackingControls),
-              _supportsRename(supportsRename),
-              _userCanRename(userCanRename),
-              _callDuration(callDuration)
-            {
-                _userExtraInfo = userExtraInfo;
-            }
+        /// warning - removes items from object.
+        WOPIFileInfo(const FileInfo &fileInfo, std::chrono::duration<double> callDuration,
+                     Poco::JSON::Object::Ptr &object);
 
         const std::string& getUserId() const { return _userId; }
-
         const std::string& getUsername() const { return _username; }
-
         const std::string& getUserExtraInfo() const { return _userExtraInfo; }
-
         const std::string& getWatermarkText() const { return _watermarkText; }
-
         const std::string& getTemplateSaveAs() const { return _templateSaveAs; }
-
         const std::string& getTemplateSource() const { return _templateSource; }
+        const std::string& getBreadcrumbDocName() const { return _breadcrumbDocName; }
 
         bool getUserCanWrite() const { return _userCanWrite; }
-
         std::string& getPostMessageOrigin() { return _postMessageOrigin; }
-
         void setHidePrintOption(bool hidePrintOption) { _hidePrintOption = hidePrintOption; }
-
         bool getHidePrintOption() const { return _hidePrintOption; }
-
         bool getHideSaveOption() const { return _hideSaveOption; }
-
         void setHideExportOption(bool hideExportOption) { _hideExportOption = hideExportOption; }
-
         bool getHideExportOption() const { return _hideExportOption; }
-
         bool getEnableOwnerTermination() const { return _enableOwnerTermination; }
-
         bool getDisablePrint() const { return _disablePrint; }
-
         bool getDisableExport() const { return _disableExport; }
-
         bool getDisableCopy() const { return _disableCopy; }
-
         bool getDisableInactiveMessages() const { return _disableInactiveMessages; }
-
         bool getDownloadAsPostMessage() const { return _downloadAsPostMessage; }
-
         bool getUserCanNotWriteRelative() const { return _userCanNotWriteRelative; }
-
         bool getEnableInsertRemoteImage() const { return _enableInsertRemoteImage; }
-
         bool getEnableShare() const { return _enableShare; }
-
         bool getSupportsRename() const { return _supportsRename; }
-
+        bool getSupportsLocks() const { return _supportsLocks; }
         bool getUserCanRename() const { return _userCanRename; }
-
         std::string& getHideUserList() { return _hideUserList; }
-
         TriState getDisableChangeTrackingShow() const { return _disableChangeTrackingShow; }
-
         TriState getDisableChangeTrackingRecord() const { return _disableChangeTrackingRecord; }
-
         TriState getHideChangeTrackingControls() const { return _hideChangeTrackingControls; }
-
         std::chrono::duration<double> getCallDuration() const { return _callDuration; }
-
-private:
+    private:
         /// User id of the user accessing the file
         std::string _userId;
         /// Obfuscated User id used for logging the UserId.
@@ -477,6 +448,8 @@ private:
         std::string _templateSaveAs;
         /// In case we want to use this file as a template.
         std::string _templateSource;
+        /// User readable string of document name to show in UI, if present.
+        std::string _breadcrumbDocName;
         /// If user accessing the file has write permission
         bool _userCanWrite;
         /// WOPI Post message property
@@ -515,6 +488,8 @@ private:
         TriState _disableChangeTrackingRecord;
         /// If we should hide change-tracking commands for this user.
         TriState _hideChangeTrackingControls;
+        /// If WOPI host supports locking
+        bool _supportsLocks;
         /// If WOPI host supports rename
         bool _supportsRename;
         /// If user is allowed to rename the document
@@ -528,24 +503,38 @@ private:
     /// provided during the initial creation of the WOPI storage.
     /// Also extracts the basic file information from the response
     /// which can then be obtained using getFileInfo()
+    /// Also sets up the locking context for future operations.
     std::unique_ptr<WOPIFileInfo> getWOPIFileInfo(const Authorization& auth,
-                                                  const std::string& cookies);
+                                                  const std::string& cookies, LockContext& lockCtx);
+
+    /// Update the locking state (check-in/out) of the associated file
+    bool updateLockState(const Authorization& auth, const std::string& cookies,
+                         LockContext& lockCtx, bool lock) override;
 
     /// uri format: http://server/<...>/wopi*/files/<id>/content
-    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& cookies,
+    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& /*cookies*/,
+                                       LockContext& lockCtx,
                                        const std::string& templateUri) override;
 
-    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& cookies,
-                                      const std::string& saveAsPath,
+    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& /*cookies*/,
+                                      LockContext& lockCtx, const std::string& saveAsPath,
                                       const std::string& saveAsFilename,
                                       const bool isRename) override;
 
     /// Total time taken for making WOPI calls during load
     std::chrono::duration<double> getWopiLoadDuration() const { return _wopiLoadDuration; }
+    std::chrono::duration<double> getWopiSaveDuration() const { return _wopiSaveDuration; }
+
+private:
+    /// Initialize an HTTPRequest instance with the common settings and headers.
+    /// Older Poco versions don't support copying HTTPRequest objects, so we can't generate them.
+    void initHttpRequest(Poco::Net::HTTPRequest& request, const Poco::URI& uri,
+                         const Authorization& auth, const std::string& cookies) const;
 
 private:
     // Time spend in loading the file from storage
     std::chrono::duration<double> _wopiLoadDuration;
+    std::chrono::duration<double> _wopiSaveDuration;
     /// Whether or not to re-use cookies from the browser for the WOPI requests.
     bool _reuseCookies;
 };
@@ -568,18 +557,22 @@ public:
     // Implement me
     // WebDAVFileInfo getWebDAVFileInfo(const Poco::URI& uriPublic);
 
-    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& cookies,
+    bool updateLockState(const Authorization&, const std::string&, LockContext&, bool) override
+    {
+        return true;
+    }
+
+    std::string loadStorageFileToLocal(const Authorization& auth, const std::string& /*cookies*/,
+                                       LockContext& lockCtx,
                                        const std::string& templateUri) override;
 
-    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& cookies,
-                                      const std::string& saveAsPath,
+    SaveResult saveLocalFileToStorage(const Authorization& auth, const std::string& /*cookies*/,
+                                      LockContext& lockCtx, const std::string& saveAsPath,
                                       const std::string& saveAsFilename,
                                       const bool isRename) override;
 
 private:
     std::unique_ptr<AuthBase> _authAgent;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

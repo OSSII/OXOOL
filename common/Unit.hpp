@@ -6,8 +6,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#ifndef INCLUDED_UNIT_HPP
-#define INCLUDED_UNIT_HPP
+
+#pragma once
 
 #include <atomic>
 #include <cassert>
@@ -69,6 +69,22 @@ protected:
         Ok,
         TimedOut
     };
+
+    static const std::string testResultAsString(TestResult res)
+    {
+        switch (res)
+        {
+            case TestResult::Failed:
+                return "Failed";
+            case TestResult::Ok:
+                return "Ok";
+            case TestResult::TimedOut:
+                return "TimedOut";
+        }
+
+        assert(!"Unknown TestResult entry.");
+        return std::to_string(static_cast<int>(res));
+    }
 
     /// Encourages the process to exit with this value (unless hooked)
     void exitTest(TestResult result);
@@ -299,7 +315,5 @@ public:
         return nullptr;
     }
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

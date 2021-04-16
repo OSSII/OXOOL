@@ -19,6 +19,7 @@ L.Map.WOPI = L.Handler.extend({
 	DisableExport: false,
 	DisableCopy: false,
 	DisableInactiveMessages: false,
+	DocumentOwner: false,
 	DownloadAsPostMessage: false,
 	UserCanNotWriteRelative: true,
 	EnableInsertRemoteImage: false,
@@ -27,6 +28,7 @@ L.Map.WOPI = L.Handler.extend({
 	CallPythonScriptSource: null,
 	SupportsRename: false,
 	UserCanRename: false,
+	UserExtraInfo: {},
 
 	_appLoadedConditions: {
 		docloaded: false,
@@ -86,6 +88,8 @@ L.Map.WOPI = L.Handler.extend({
 		this.SupportsRename = !!wopiInfo['SupportsRename'];
 		this.UserCanRename = !!wopiInfo['UserCanRename'];
 		this.EnableShare = !!wopiInfo['EnableShare'];
+		this.UserExtraInfo = (wopiInfo['UserExtraInfo'] !== undefined) ? wopiInfo['UserExtraInfo'] : {};
+		this.DocumentOwner = (wopiInfo['DocumentOwner'] === true);
 		if (wopiInfo['HideUserList'])
 			this.HideUserList = wopiInfo['HideUserList'].split(',');
 
@@ -320,6 +324,17 @@ L.Map.WOPI = L.Handler.extend({
 				}
 			}
 		}
+		else if (msg.MessageId === 'Action_SaveAsPassword') {
+			if (msg.Values) {
+				if (msg.Values.Filename !== null && msg.Values.Filename !== undefined &&
+					msg.Values.Password !== null && msg.Values.Password !== undefined
+					) {
+					console.debug('Action_SaveAsPassword');
+					this._map.showBusy(_('Creating copy...'), false);
+					this._map.saveAsPassword(msg.Values.Filename, msg.Values.Password);
+				}
+			}
+		}
 		else if (msg.MessageId === 'Action_FollowUser') {
 			if (msg.Values) {
 				this._map._setFollowing(msg.Values.Follow, msg.Values.ViewId);
@@ -348,17 +363,9 @@ L.Map.WOPI = L.Handler.extend({
 
 	_postMessage: function(e) {
 		if (!this.enabled) { return; }
-		var map = this._map;
 		var msgId = e.msgId;
 		var values = e.args || {};
 		if (!!this.PostMessageOrigin && window.parent !== window.self) {
-			switch (msgId) {
-			case 'close':
-			case 'UI_Close': // 關閉檔案
-				// 如果是試算表的話，要將儲存格尚未輸入的資料，寫進儲存格
-				map.forceCellCommit();
-				break;
-			}
 			// Filter out unwanted save request response
 			if (msgId === 'Action_Save_Resp') {
 				if (!this._notifySave)

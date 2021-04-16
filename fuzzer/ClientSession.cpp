@@ -16,14 +16,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     std::string uri;
     Poco::URI uriPublic;
     std::string docKey = "/fuzz/fuzz.odt";
-    auto docBroker = std::make_shared<DocumentBroker>(uri, uriPublic, docKey);
+    auto docBroker = std::make_shared<DocumentBroker>(DocumentBroker::ChildType::Interactive, uri,
+                                                      uriPublic, docKey);
 
     std::shared_ptr<ProtocolHandlerInterface> ws;
     std::string id;
     bool isReadOnly = false;
-    const std::string hostNoTrust;
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, uri,
+                                   Poco::Net::HTTPMessage::HTTP_1_1);
+    request.setHost("localhost:9980");
+    const RequestDetails requestDetails(request, "");
     auto session
-        = std::make_shared<ClientSession>(ws, id, docBroker, uriPublic, isReadOnly, hostNoTrust);
+        = std::make_shared<ClientSession>(ws, id, docBroker, uriPublic, isReadOnly, requestDetails);
 
     std::string input(reinterpret_cast<const char*>(data), size);
     std::stringstream ss(input);
@@ -35,7 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     }
 
     // Make sure SocketPoll::_newCallbacks does not grow forever, leading to OOM.
-    Admin::instance().poll(SocketPoll::DefaultPollTimeoutMs);
+    Admin::instance().poll(0);
     return 0;
 }
 

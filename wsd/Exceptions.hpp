@@ -9,8 +9,8 @@
 
 // Exception classes to differentiate between the
 // different error situations and handling.
-#ifndef INCLUDED_EXCEPTIONS_HPP
-#define INCLUDED_EXCEPTIONS_HPP
+
+#pragma once
 
 #include <exception>
 #include <stdexcept>
@@ -73,6 +73,12 @@ class ServiceUnavailableException : public LoolException
 public:
     using LoolException::LoolException;
 };
-#endif
+
+/// Badly formed data we are parsing
+class ParseError : public LoolException
+{
+public:
+    using LoolException::LoolException;
+};
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

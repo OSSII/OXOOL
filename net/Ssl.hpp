@@ -7,10 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SSL_HPP
-#define INCLUDED_SSL_HPP
+#pragma once
 
 #include <atomic>
+#include <cassert>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -72,7 +72,5 @@ private:
 
     SSL_CTX* _ctx;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

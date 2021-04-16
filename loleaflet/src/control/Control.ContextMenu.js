@@ -6,21 +6,29 @@
 /* global $ _UNO _ removeAccessKey loleafletLogging */
 L.Control.ContextMenu = L.Control.extend({
 	options: {
-		SEPARATOR: '---------'
+		SEPARATOR: '---------',
+		ASSIGNLAYOUT: '.uno:AssignLayout'
 	},
 
 	// 替代命令(有些指令無法直接執行，但有替代命令)
 	_alternativeCommand: {
 		'text': {
-
+			'.uno:SplitCell': 'dialog:SplitCell', // 分割儲存格
+			'.uno:ExternalEdit': 'externaledit', // 以外部程式編輯
+			'.uno:SaveGraphic': 'savegraphic', // 儲存圖片
 		},
 		'spreadsheet': {
-			'.uno:InsertCell': 'dialog:InsertCell',
-			'.uno:DeleteCell': 'dialog:RemoveCell',
-			'.uno:Delete': 'dialog:DeleteCell',
+			'.uno:InsertCell': 'dialog:InsertCell', // 插入儲存格
+			'.uno:DeleteCell': 'dialog:RemoveCell', // 刪除儲存格
+			'.uno:Delete': 'dialog:DeleteCell', // 清除儲存格
+			'.uno:ExternalEdit': 'externaledit', // 以外部程式編輯
+			'.uno:SaveGraphic': 'savegraphic', // 儲存圖片
+			'.uno:HyperlinkDialog': 'sethyperlink', // 插入/編輯超連結
+			'.uno:EditShapeHyperlink': 'sethyperlink', // 編輯圖案/圖片超連結
 		},
 		'presentation': {
-
+			'.uno:ExternalEdit': 'externaledit', // 以外部程式編輯
+			'.uno:SaveGraphic': 'savegraphic', // 儲存圖片
 		}
 	},
 
@@ -94,6 +102,18 @@ L.Control.ContextMenu = L.Control.extend({
 							if (docType === 'draw') {
 								docType = 'presentation';
 							}
+							var e = new ClipboardEvent('copy') ;
+							if (map._clipboardContainer.getValue() !== '') {
+								L.Compatibility.clipboardSet(e, map._clipboardContainer.getValue());
+								map._clipboardContainer.setValue('');
+							} else if (map._docLayer._selectionTextContent) {
+								// Modified by Firefly <firefly@ossii.com.tw>
+								// 防止從 Calc 複製的儲存格，貼上 excel 多出一列
+								var textContent = docType === 'spreadsheet' ? map._docLayer._selectionTextContent.trim() : map._docLayer._selectionTextContent;
+								L.Compatibility.clipboardSet(e, textContent);
+								// remember the copied text, for rich copy/paste inside a document
+								map._docLayer._selectionTextHash = map._docLayer._selectionTextContent;
+							}
 							// 是否有替代指令？
 							var altCmd = that._alternativeCommand[docType][key];
 							map.executeAllowedCommand(altCmd !== undefined ? altCmd : key);
@@ -114,10 +134,14 @@ L.Control.ContextMenu = L.Control.extend({
 		var ctxMenu = {};
 		var sepIdx = 1, itemName;
 		var isLastItemText = false;
-	
+
 		for (var idx in obj.menu) {
 			var item = obj.menu[idx];
-			
+
+			if (item.command === '.uno:Paste' && docType === 'spreadsheet') {
+				item.enabled = 'true';
+			}
+
 			if (item.enabled === 'false') { continue; }
 
 			if (item.type === 'separator') {
@@ -144,6 +168,16 @@ L.Control.ContextMenu = L.Control.extend({
 				itemName = removeAccessKey(_(item.text));
 			}
 
+			// Calc 超連結指令 .uno:HyperlinkDialog
+			if (item.command === '.uno:HyperlinkDialog' && docType === 'spreadsheet') {
+				var hyperlink = this._map.hyperlinkUnderCursor;
+				// 游標位置無超連結時，不顯示該選項
+				if (!hyperlink) {
+					continue;
+				}
+				itemName = _(hyperlink.link.startsWith('#') ? 'Edit worksheet hyperlink ' : 'Edit Hyperlink');
+			}
+
 			ctxMenu[item.command] = {
 				name: itemName	// 選項名稱
 			};
@@ -166,9 +200,17 @@ L.Control.ContextMenu = L.Control.extend({
 			} else {
 				console.debug('未知的 item.type', item);
 			}
+
+			// 指定 icon
 			ctxMenu[item.command].icon = (function(opt, $itemElement, itemKey, item) {
+				if (itemKey.startsWith(this.options.ASSIGNLAYOUT)) {
+					item.checktype = 'checkmark';
+					var layoutNo = itemKey.substring(34);
+					var assignLayout = this._map['stateChangeHandler'].getItemValue(this.options.ASSIGNLAYOUT);
+					item.checked = (assignLayout === layoutNo);
+				}
 				return this._map.contextMenuIcon($itemElement, itemKey, item);
-			}).bind(this)
+			}).bind(this);
 		}
 
 		// Remove separator, if present, at the end
@@ -213,7 +255,7 @@ L.installContextMenu = function(options) {
 				continue;
 			if (!items[key].isHtmlName) {
 				console.debug('re-write name ' + items[key].name);
-				items[key].name = '<a href="#" class="context-menu-link">' + items[key].name + '</a';
+				items[key].name = '<span>' + items[key].name + '</span>';
 				items[key].isHtmlName = true;
 			}
 			rewrite(items[key].items);

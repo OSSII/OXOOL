@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SSLSOCKET_HPP
-#define INCLUDED_SSLSOCKET_HPP
+#pragma once
 
 #include <cerrno>
 
@@ -20,8 +19,9 @@ class SslStreamSocket final : public StreamSocket
 {
 public:
     SslStreamSocket(const int fd, bool isClient,
-                    std::shared_ptr<ProtocolHandlerInterface> responseClient) :
-        StreamSocket(fd, isClient, std::move(responseClient)),
+                    std::shared_ptr<ProtocolHandlerInterface> responseClient,
+                    ReadType readType = NormalRead) :
+        StreamSocket(fd, isClient, std::move(responseClient), readType),
         _bio(nullptr),
         _ssl(nullptr),
         _sslWantsTo(SslWantsTo::Neither),
@@ -64,7 +64,7 @@ public:
 
         if (!isShutdownSignalled())
         {
-            setShutdownSignalled(true);
+            setShutdownSignalled();
             SslStreamSocket::closeConnection();
         }
 
@@ -127,10 +127,10 @@ public:
     }
 
     int getPollEvents(std::chrono::steady_clock::time_point now,
-                      int & timeoutMaxMs) override
+                      int64_t & timeoutMaxMicroS) override
     {
         assertCorrectThread();
-        int events = getSocketHandler()->getPollEvents(now, timeoutMaxMs);
+        int events = getSocketHandler()->getPollEvents(now, timeoutMaxMicroS);
 
         if (_sslWantsTo == SslWantsTo::Read)
         {
@@ -308,7 +308,5 @@ private:
     /// read or write in non-blocking.
     bool _doHandshake;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

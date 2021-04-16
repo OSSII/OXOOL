@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_CHILDSESSION_HPP
-#define INCLUDED_CHILDSESSION_HPP
+#pragma once
 
 #include <mutex>
 #include <unordered_map>
@@ -16,9 +15,6 @@
 
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKit.hxx>
-
-#include <Poco/Net/WebSocket.h>
-#include <Poco/Thread.h>
 
 #include "Common.hpp"
 #include "Kit.hpp"
@@ -37,28 +33,23 @@ enum class LokEventTargetEnum
 class DocumentManagerInterface
 {
 public:
-    /// Reqest loading a document, or a new view, if one exists.
+    virtual ~DocumentManagerInterface()  {}
+
+    /// Request loading a document, or a new view, if one exists.
     virtual bool onLoad(const std::string& sessionId,
-                        const std::string& jailedFilePath,
-                        const std::string& jailedFilePathAnonym,
-                        const std::string& userName,
-                        const std::string& userNameAnonym,
-                        const std::string& docPassword,
+                        const std::string& uriAnonym,
                         const std::string& renderOpts,
-                        const bool haveDocPassword,
-                        const std::string& lang,
-                        const std::string& watermarkText,
                         const std::string& docTemplate) = 0;
 
     /// Unload a client session, which unloads the document
     /// if it is the last and only.
     virtual void onUnload(const ChildSession& session) = 0;
 
+    /// Access to the Kit instance.
+    virtual std::shared_ptr<lok::Office> getLOKit() = 0;
+
     /// Access to the document instance.
     virtual std::shared_ptr<lok::Document> getLOKitDocument() = 0;
-
-    /// Access to the office instance.
-    virtual std::shared_ptr<lok::Office> getLOKit() = 0;
 
     /// Send msg to all active sessions.
     virtual bool notifyAll(const std::string& msg) = 0;
@@ -67,21 +58,21 @@ public:
     virtual void notifyViewInfo() = 0;
     virtual void updateEditorSpeeds(int id, int speed) = 0;
 
-    virtual int getEditorId() = 0;
+    virtual int getEditorId() const = 0;
 
     /// Get a view ID <-> UserInfo map.
     virtual std::map<int, UserInfo> getViewInfo() = 0;
     virtual std::mutex& getMutex() = 0;
-
-    /// Mutex guarding the document - so that we can lock operations like
-    /// setting a view followed by a tile render, etc.
-    virtual std::mutex& getDocumentMutex() = 0;
 
     virtual std::string getObfuscatedFileId() = 0;
 
     virtual std::shared_ptr<TileQueue>& getTileQueue() = 0;
 
     virtual bool sendFrame(const char* buffer, int length, WSOpCode opCode = WSOpCode::Text) = 0;
+
+    virtual void alertAllUsers(const std::string& cmd, const std::string& kind) = 0;
+
+    virtual unsigned getMobileAppDocId() const = 0;
 };
 
 struct RecordedEvent
@@ -181,7 +172,7 @@ public:
         _recordedStates[name] = value;
     }
 
-    /// In the case we need to rememeber all the events that come, not just
+    /// In the case we need to remember all the events that come, not just
     /// the final state.
     void recordEventSequence(const int type, const std::string& payload)
     {
@@ -202,16 +193,16 @@ public:
 class ChildSession final : public Session
 {
 public:
+    static bool NoCapsForKit;
+
     /// Create a new ChildSession
-    /// ws The socket between master and kit (jailed).
-    /// loKit The LOKit instance.
-    /// loKitDocument The instance to an existing document (when opening
-    ///                 a new view) or nullptr (when first view).
     /// jailId The JailID of the jail root directory,
     //         used by downloadas to construct jailed path.
-    ChildSession(const std::string& id,
-                 const std::string& jailId,
-                 DocumentManagerInterface& docManager);
+    ChildSession(
+        const std::shared_ptr<ProtocolHandlerInterface> &protocol,
+        const std::string& id,
+        const std::string& jailId,
+        DocumentManagerInterface& docManager);
     virtual ~ChildSession();
 
     bool getStatus(const char* buffer, int length);
@@ -225,77 +216,115 @@ public:
 
     void loKitCallback(const int type, const std::string& payload);
 
+    std::shared_ptr<Watermark> _docWatermark;
+
     bool sendTextFrame(const char* buffer, int length) override
     {
+        if (!_docManager)
+        {
+            LOG_TRC("ERR dropping - client-" + getId() + ' ' + std::string(buffer, length));
+            return false;
+        }
         const auto msg = "client-" + getId() + ' ' + std::string(buffer, length);
-        const std::unique_lock<std::mutex> lock = getLock();
-        return _docManager.sendFrame(msg.data(), msg.size(), WSOpCode::Text);
+        return _docManager->sendFrame(msg.data(), msg.size(), WSOpCode::Text);
     }
 
     bool sendBinaryFrame(const char* buffer, int length) override
     {
+        if (!_docManager)
+        {
+            LOG_TRC("ERR dropping binary - client-" + getId());
+            return false;
+        }
         const auto msg = "client-" + getId() + ' ' + std::string(buffer, length);
-        const std::unique_lock<std::mutex> lock = getLock();
-        return _docManager.sendFrame(msg.data(), msg.size(), WSOpCode::Binary);
+        return _docManager->sendFrame(msg.data(), msg.size(), WSOpCode::Binary);
     }
 
     using Session::sendTextFrame;
-    std::shared_ptr<Watermark> _docWatermark;
+
+    bool getClipboard(const char* buffer, int length, const StringVector& tokens);
+
+    void resetDocManager()
+    {
+        disconnect();
+        _docManager = nullptr;
+    }
 
 private:
-    bool loadDocument(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool loadDocument(const char* buffer, int length, const StringVector& tokens);
 
-    bool sendFontRendering(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool getCommandValues(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool sendFontRendering(const char* buffer, int length, const StringVector& tokens);
+    bool getCommandValues(const char* buffer, int length, const StringVector& tokens);
 
-    bool clientZoom(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool clientVisibleArea(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool outlineState(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool downloadAs(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool clientZoom(const char* buffer, int length, const StringVector& tokens);
+    bool clientVisibleArea(const char* buffer, int length, const StringVector& tokens);
+    bool outlineState(const char* buffer, int length, const StringVector& tokens);
+    bool downloadAs(const char* buffer, int length, const StringVector& tokens);
     bool getChildId();
-    bool getTextSelection(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool getTextSelection(const char* buffer, int length, const StringVector& tokens);
+    bool setClipboard(const char* buffer, int length, const StringVector& tokens);
     std::string getTextSelectionInternal(const std::string& mimeType);
-    bool paste(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool insertFile(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool keyEvent(const char* buffer, int length, const std::vector<std::string>& tokens, const LokEventTargetEnum target);
-    bool extTextInputEvent(const char* /*buffer*/, int /*length*/, const std::vector<std::string>& tokens);
+    bool paste(const char* buffer, int length, const StringVector& tokens);
+    bool insertFile(const char* buffer, int length, const StringVector& tokens);
+    bool keyEvent(const char* buffer, int length, const StringVector& tokens, const LokEventTargetEnum target);
+    bool extTextInputEvent(const char* /*buffer*/, int /*length*/, const StringVector& tokens);
     bool dialogKeyEvent(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool mouseEvent(const char* buffer, int length, const std::vector<std::string>& tokens, const LokEventTargetEnum target);
-    bool unoCommand(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool unoStates(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool runMacro(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool selectText(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool selectGraphic(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool renderWindow(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool resetSelection(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool saveAs(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool setClientPart(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool selectClientPart(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool moveSelectedClientParts(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool setPage(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool sendWindowCommand(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool signDocumentContent(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool askSignatureStatus(const char* buffer, int length, const std::vector<std::string>& tokens);
-    bool renderShapeSelection(const char* buffer, int length, const std::vector<std::string>& tokens);
+    bool mouseEvent(const char* buffer, int length, const StringVector& tokens, const LokEventTargetEnum target);
+    bool gestureEvent(const char* buffer, int length, const StringVector& tokens);
+    bool dialogEvent(const char* buffer, int length, const StringVector& tokens);
+    bool completeFunction(const char* buffer, int length, const StringVector& tokens);
+    bool unoCommand(const char* buffer, int length, const StringVector& tokens);
+    bool selectText(const char* buffer, int length, const StringVector& tokens, const LokEventTargetEnum target);
+    bool selectGraphic(const char* buffer, int length, const StringVector& tokens);
+    bool renderWindow(const char* buffer, int length, const StringVector& tokens);
+    bool resizeWindow(const char* buffer, int length, const StringVector& tokens);
+    bool resetSelection(const char* buffer, int length, const StringVector& tokens);
+    bool saveAs(const char* buffer, int length, const StringVector& tokens);
+    bool setClientPart(const char* buffer, int length, const StringVector& tokens);
+    bool selectClientPart(const char* buffer, int length, const StringVector& tokens);
+    bool moveSelectedClientParts(const char* buffer, int length, const StringVector& tokens);
+    bool setPage(const char* buffer, int length, const StringVector& tokens);
+    bool sendWindowCommand(const char* buffer, int length, const StringVector& tokens);
+    bool signDocumentContent(const char* buffer, int length, const StringVector& tokens);
+    bool askSignatureStatus(const char* buffer, int length, const StringVector& tokens);
+    bool uploadSignedDocument(const char* buffer, int length, const StringVector& tokens);
+    bool exportSignAndUploadDocument(const char* buffer, int length, const StringVector& tokens);
+    bool renderShapeSelection(const char* buffer, int length, const StringVector& tokens);
+    bool removeTextContext(const char* /*buffer*/, int /*length*/, const StringVector& tokens);
 
     void rememberEventsForInactiveUser(const int type, const std::string& payload);
+    bool formFieldEvent(const char* buffer, int length, const StringVector& tokens);
 
     virtual void disconnect() override;
     virtual bool _handleInput(const char* buffer, int length) override;
 
     std::shared_ptr<lok::Document> getLOKitDocument()
     {
-        return _docManager.getLOKitDocument();
+        return _docManager->getLOKitDocument();
     }
 
-    std::shared_ptr<lok::Office> getLOKit()
+    std::string getLOKitLastError()
     {
-        return _docManager.getLOKit();
+        char *lastErr = _docManager->getLOKit()->getError();
+        std::string ret;
+        if (lastErr)
+        {
+            ret = std::string(lastErr, strlen(lastErr));
+            free (lastErr);
+        }
+        return ret;
+    }
+
+public:
+    void dumpState(std::ostream& oss) override
+    {
+        Session::dumpState(oss);
+        // TODO: the rest ...
     }
 
 private:
     const std::string _jailId;
-    DocumentManagerInterface& _docManager;
+    DocumentManagerInterface* _docManager;
 
     std::queue<std::chrono::steady_clock::time_point> _cursorInvalidatedEvent;
     const unsigned _eventStorageIntervalMs = 15*1000;
@@ -303,7 +332,7 @@ private:
     /// View ID, returned by createView() or 0 by default.
     int _viewId;
 
-    /// Whether document has been opened succesfuly
+    /// Whether document has been opened successfully
     bool _isDocLoaded;
 
     std::string _docType;
@@ -312,12 +341,6 @@ private:
 
     /// If we are copying to clipboard.
     bool _copyToClipboard;
-
-    /// Synchronize _loKitDocument access.
-    /// This should be owned by Document.
-    static std::recursive_mutex Mutex;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

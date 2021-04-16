@@ -1,134 +1,92 @@
-/* global describe it cy beforeEach require afterEach Cypress*/
+/* global describe it cy beforeEach require afterEach */
 
 var helper = require('../../common/helper');
-var calcHelper = require('./calc_helper');
+var calcHelper = require('../../common/calc_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var calcMobileHelper = require('./calc_mobile_helper');
 
 describe('Apply font changes.', function() {
+	var testFileName = 'apply_font.ods';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('apply_font.ods', 'calc');
+		helper.beforeAll(testFileName, 'calc');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		calcHelper.clickOnFirstCell();
 
 		cy.get('.leaflet-marker-icon')
 			.should('be.visible');
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
-
 		// Open character properties
-		cy.get('#TextPropertyPanel')
-			.click();
-
-		cy.get('#Bold')
-			.should('be.visible')
-			.wait(100);
+		mobileHelper.openTextPropertiesPanel();
 	});
 
 	afterEach(function() {
-		helper.afterAll('apply_font.ods');
+		helper.afterAll(testFileName);
 	});
 
 	it('Apply bold.', function() {
-		cy.get('#Bold')
-			.click();
+		helper.clickOnIdle('#Bold');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td b')
 			.should('exist');
 	});
 
 	it('Apply italic.', function() {
-		cy.get('#Italic')
-			.click();
+		helper.clickOnIdle('#Italic');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td i')
 			.should('exist');
 	});
 
 	it('Apply underline.', function() {
-		cy.get('#Underline')
-			.click();
+		helper.clickOnIdle('#Underline');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td u')
 			.should('exist');
 	});
 
 	it('Apply strikeout.', function() {
-		// Apply bold
-		cy.get('#Strikeout')
-			.click();
+		helper.clickOnIdle('#Strikeout');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td s')
 			.should('exist');
 	});
 
 	it('Apply shadowed.', function() {
-		// Apply bold
-		cy.get('#Shadowed')
-			.click();
+		helper.clickOnIdle('#Shadowed');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		// TODO: Shadowed is not in the clipboard content.
 	});
 
 	it('Apply font name.', function() {
 		// Change font name
-		cy.get('#fontnamecombobox')
-			.click();
+		helper.clickOnIdle('#fontnamecombobox');
 
-		cy.get('.mobile-wizard.ui-combobox-text')
-			.contains('Linux Libertine G')
-			.click();
+		helper.clickOnIdle('.mobile-wizard.ui-combobox-text', 'Linux Libertine G');
 
 		cy.get('.level-1[title="Font Name"] .mobile-wizard.ui-combobox-text.selected')
 			.should('have.text', 'Linux Libertine G');
 
-		cy.get('#mobile-wizard-back')
-			.click();
+		helper.clickOnIdle('#mobile-wizard-back');
 
 		// Combobox entry contains the selected font name
-		cy.get('#fontnamecombobox .ui-header-right')
-			.contains('Linux Libertine G');
+		cy.get('#fontnamecombobox .ui-header-right .entry-value')
+			.should('have.text', 'Linux Libertine G');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td font')
 			.should('have.attr', 'face', 'Linux Libertine G');
@@ -136,92 +94,55 @@ describe('Apply font changes.', function() {
 
 	it('Apply font size.', function() {
 		// Change font size
-		cy.get('#fontsizecombobox')
-			.click();
+		helper.clickOnIdle('#fontsizecombobox');
 
-		cy.get('.mobile-wizard.ui-combobox-text')
-			.contains('14')
-			.click();
+		helper.clickOnIdle('.mobile-wizard.ui-combobox-text', '14');
 
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
+		if (helper.getLOVersion() === 'master')
 			cy.get('.level-1[title="Font Size"] .mobile-wizard.ui-combobox-text.selected')
 				.should('have.text', '14 pt');
 		else
 			cy.get('.level-1[title="Font Size"] .mobile-wizard.ui-combobox-text.selected')
 				.should('have.text', '14');
 
-		cy.get('#mobile-wizard-back')
-			.click();
+		helper.clickOnIdle('#mobile-wizard-back');
 
 		// Combobox entry contains the selected font name
-		cy.get('#fontsizecombobox .ui-header-right')
-			.contains('14');
+		cy.get('#fontsizecombobox .ui-header-right .entry-value')
+			.should('have.text', '14');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td font')
 			.should('have.attr', 'size', '4');
 	});
 
 	it('Apply grow.', function() {
-		// Push grow
-		cy.get('#Grow')
-			.click();
+		helper.clickOnIdle('#Grow');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard-content')
-			.should('not.be.visible');
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td font')
 			.should('have.attr', 'size', '3');
 	});
 
 	it('Apply shrink.', function() {
-		// Push shrink
-		cy.get('#Shrink')
-			.click();
+		helper.clickOnIdle('#Shrink');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard-content')
-			.should('not.be.visible');
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td font')
 			.should('have.attr', 'size', '1');
 	});
 
 	it('Apply font color.', function() {
-		// Change font color
-		cy.get('#Color')
-			.click();
+		helper.clickOnIdle('#Color');
 
-		cy.get('#color-picker-0-basic-color-5')
-			.click();
+		mobileHelper.selectFromColorPalette(0, 5);
 
-		cy.get('#mobile-wizard-back')
-			.click();
-
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard-content')
-			.should('not.be.visible');
-
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td font')
 			.should('have.attr', 'color', '#00FF00');
 	});
 });
-

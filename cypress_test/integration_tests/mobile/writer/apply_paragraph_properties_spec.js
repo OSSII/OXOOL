@@ -1,420 +1,287 @@
-/* global describe it cy beforeEach require expect afterEach Cypress*/
+/* global describe it cy beforeEach require afterEach */
 
 var helper = require('../../common/helper');
-var writerHelper = require('./writer_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var writerMobileHelper = require('./writer_mobile_helper');
 
 describe('Apply paragraph properties.', function() {
+	var testFileName = 'apply_paragraph_properties.odt';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('apply_paragraph_properties.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Do a selection
-		writerHelper.selectAllMobile();
+		writerMobileHelper.selectAllMobile();
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.should('not.have.class', 'disabled')
-			.click();
+		mobileHelper.openMobileWizard();
 
 		// Open paragraph properties
-		cy.get('#Paragraph')
-			.click();
+		helper.clickOnIdle('#Paragraph');
 
 		cy.get('#Paragraph')
-			.should('have.class', 'selected')
-			.wait(100);
+			.should('have.class', 'selected');
+
+		cy.get('#LeftPara')
+			.should('be.visible');
 	});
 
 	afterEach(function() {
-		helper.afterAll('apply_paragraph_properties.odt');
+		helper.afterAll(testFileName);
 	});
 
 	it('Apply left alignment.', function() {
-		// Change alignment
-		cy.get('#CenterPara')
-			.click();
+		helper.clickOnIdle('#CenterPara');
 
 		cy.get('#CenterParaimg')
 			.should('have.class', 'selected');
 
-		cy.get('#LeftPara')
-			.click();
+		helper.clickOnIdle('#LeftPara');
 
 		cy.get('#LeftParaimg')
 			.should('have.class', 'selected');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
 			.should('have.attr', 'align', 'left');
 	});
 
 	it('Apply center alignment.', function() {
-		// Change alignment
-		cy.get('#CenterPara')
-			.click();
+		helper.clickOnIdle('#CenterPara');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
 			.should('have.attr', 'align', 'center');
 	});
 
 	it('Apply right alignment.', function() {
-		// Change alignment
-		cy.get('#RightPara')
-			.click();
+		helper.clickOnIdle('#RightPara');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
 			.should('have.attr', 'align', 'right');
 	});
 
 	it('Apply justify alignment.', function() {
-		// Change alignment
-		cy.get('#JustifyPara')
-			.click();
+		helper.clickOnIdle('#JustifyPara');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
 			.should('have.attr', 'align', 'justify');
 	});
 
 	it('Change writing direction.', function() {
-		// Change writing mode
-		cy.get('#ParaRightToLeft')
-			.click();
+		helper.clickOnIdle('#ParaRightToLeft');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
 			.should('have.attr', 'dir', 'rtl');
 
 		// Select text
-		writerHelper.selectAllMobile();
+		writerMobileHelper.selectAllMobile();
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.openMobileWizard();
 
 		// Open paragraph properties
-		cy.get('#Paragraph')
-			.click();
+		helper.clickOnIdle('#Paragraph');
 
 		// Change writing mode
-		cy.get('#ParaLeftToRight')
-			.click();
+		helper.clickOnIdle('#ParaLeftToRight');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
 			.should('not.have.attr', 'dir');
 	});
 
 	it('Apply default bulleting.', function() {
-		// TODO: Why this item is missing with core/master
-		// In desktop LO, sidebar contains this item.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
+		helper.clickOnIdle('#DefaultBullet');
 
-		cy.get('#DefaultBullet')
-			.click();
-
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container ul li p')
 			.should('exist');
 	});
 
 	it('Apply default numbering.', function() {
-		// TODO: Why this item is missing with core/master
-		// In desktop LO, sidebar contains this item.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
+		helper.clickOnIdle('#DefaultNumbering');
 
-		cy.get('#DefaultNumbering')
-			.click();
-
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container ol li p')
 			.should('exist');
 	});
 
 	it('Apply background color.', function() {
-		// TODO: Why this item is missing with core/master
-		// In desktop LO, sidebar contains this item.
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
+		helper.clickOnIdle('#BackgroundColor');
 
-		// Change background color
-		cy.get('#BackgroundColor')
-			.click();
+		mobileHelper.selectFromColorPalette(2, 5, 2);
 
-		cy.get('#color-picker-2-basic-color-5')
-			.click();
-
-		cy.get('#color-picker-2-tint-2')
-			.click();
-
-		cy.get('#mobile-wizard-back')
-			.click();
-
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['background']).to.be.equal('rgb(106, 168, 79)');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'background: #6aa84f');
 	});
 
 	it('Increase / decrease para spacing.', function() {
 		// Increase para spacing
-		cy.get('#ParaspaceIncrease')
-			.click();
-		cy.get('#ParaspaceIncrease')
-			.click();
+		helper.clickOnIdle('#ParaspaceIncrease');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		helper.clickOnIdle('#ParaspaceIncrease');
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-top']).to.be.equal('0.08in');
-				expect(item[0].style['margin-bottom']).to.be.equal('0.08in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-top: 0.08in');
+
+		cy.get('#copy-paste-container p')
+			.should('have.attr', 'style')
+			.should('contain', 'margin-bottom: 0.08in');
 
 		// Select text
-		writerHelper.selectAllMobile();
+		writerMobileHelper.selectAllMobile();
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.openMobileWizard();
 
 		// Open paragraph properties
-		cy.get('#Paragraph')
-			.click();
+		helper.clickOnIdle('#Paragraph');
 
 		// Decrease para spacing
-		cy.get('#ParaspaceDecrease')
-			.click();
+		helper.clickOnIdle('#ParaspaceDecrease');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-top']).to.be.equal('0.04in');
-				expect(item[0].style['margin-bottom']).to.be.equal('0.04in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-top: 0.04in');
+
+		cy.get('#copy-paste-container p')
+			.should('have.attr', 'style')
+			.should('contain', 'margin-bottom: 0.04in');
 	});
 
 	it('Change para spacing via combobox.', function() {
 		// Check para spacing current value
 		cy.get('#aboveparaspacing .spinfield')
-			.should('have.attr', 'value', '0.0');
+			.should('have.attr', 'value', '0');
 		cy.get('#belowparaspacing .spinfield')
-			.should('have.attr', 'value', '0.0');
+			.should('have.attr', 'value', '0');
 
 		// Change spacing
-		cy.get('#aboveparaspacing .sinfieldcontrols .plus')
-			.click();
+		helper.clickOnIdle('#aboveparaspacing .plus');
 		cy.get('#aboveparaspacing .spinfield')
 			.should('have.attr', 'value', '0.02');
-		cy.get('#aboveparaspacing .sinfieldcontrols .plus')
-			.click();
+
+		helper.clickOnIdle('#aboveparaspacing .plus');
 		cy.get('#aboveparaspacing .spinfield')
 			.should('have.attr', 'value', '0.04');
-		cy.get('#aboveparaspacing .sinfieldcontrols .plus')
-			.click();
+
+		helper.clickOnIdle('#aboveparaspacing .plus');
 		cy.get('#aboveparaspacing .spinfield')
 			.should('have.attr', 'value', '0.06');
 
-		cy.get('#belowparaspacing .sinfieldcontrols .plus')
-			.click();
+		helper.clickOnIdle('#belowparaspacing .plus');
 		cy.get('#belowparaspacing .spinfield')
 			.should('have.attr', 'value', '0.02');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-top']).to.be.equal('0.06in');
-				expect(item[0].style['margin-bottom']).to.be.equal('0.02in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-top: 0.06in');
+
+		cy.get('#copy-paste-container p')
+			.should('have.attr', 'style')
+			.should('contain', 'margin-bottom: 0.02in');
 	});
 
 	it('Increase / decrease indent.', function() {
 		// Increase indent
-		cy.get('#IncrementIndent')
-			.click();
-		cy.get('#IncrementIndent')
-			.click();
+		helper.clickOnIdle('#IncrementIndent');
+		helper.clickOnIdle('#IncrementIndent');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-left']).to.be.equal('0.98in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-left: 0.98in');
 
 		// Select text
-		writerHelper.selectAllMobile();
+		writerMobileHelper.selectAllMobile();
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.openMobileWizard();
 
 		// Open paragraph properties
-		cy.get('#Paragraph')
-			.click();
+		helper.clickOnIdle('#Paragraph');
 
 		// Decrease indent
-		cy.get('#DecrementIndent')
-			.click();
+		helper.clickOnIdle('#DecrementIndent');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-left']).to.be.equal('0.49in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-left: 0.49in');
 	});
 
 	it('Apply before text indent.', function() {
 		// Change indent
-		cy.get('#beforetextindent .sinfieldcontrols .plus')
-			.click();
+		helper.clickOnIdle('#beforetextindent .plus');
 		cy.get('#beforetextindent .spinfield')
 			.should('have.attr', 'value', '0.02');
-		cy.get('#beforetextindent .sinfieldcontrols .plus')
-			.click();
+
+		helper.clickOnIdle('#beforetextindent .plus');
 		cy.get('#beforetextindent .spinfield')
 			.should('have.attr', 'value', '0.04');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-left']).to.be.equal('0.04in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-left: 0.04in');
 	});
 
 	it('Apply after text indent.', function() {
 		// Change indent
-		cy.get('#aftertextindent .sinfieldcontrols .plus')
-			.click();
+		helper.clickOnIdle('#aftertextindent .plus');
 		cy.get('#aftertextindent .spinfield')
 			.should('have.attr', 'value', '0.02');
-		cy.get('#aftertextindent .sinfieldcontrols .plus')
-			.click();
+
+		helper.clickOnIdle('#aftertextindent .plus');
 		cy.get('#aftertextindent .spinfield')
 			.should('have.attr', 'value', '0.04');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['margin-right']).to.be.equal('0.04in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'margin-right: 0.04in');
 	});
 
 	it('Apply first line indent.', function() {
 		// Increase firstline indent
-		cy.get('#firstlineindent .sinfieldcontrols .plus')
-			.click();
+		helper.clickOnIdle('#firstlineindent .plus');
 		cy.get('#firstlineindent .spinfield')
 			.should('have.attr', 'value', '0.02');
-		cy.get('#firstlineindent .sinfieldcontrols .plus')
-			.click();
+
+		helper.clickOnIdle('#firstlineindent .plus');
 		cy.get('#firstlineindent .spinfield')
 			.should('have.attr', 'value', '0.04');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].style['text-indent']).to.be.equal('0.04in');
-			});
+			.should('have.attr', 'style')
+			.should('contain', 'text-indent: 0.04in');
 	});
 
 	it('Linespacing item is hidden.', function() {

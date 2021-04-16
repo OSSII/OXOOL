@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_LOOLWEBSOCKET_HPP
-#define INCLUDED_LOOLWEBSOCKET_HPP
+#pragma once
 
 #include <cstdlib>
 #include <mutex>
@@ -53,7 +52,7 @@ public:
     int receiveFrame(char* buffer, const int length, int& flags)
     {
         // Timeout is in microseconds. We don't need this, except to yield the cpu.
-        static const Poco::Timespan waitTime(POLL_TIMEOUT_MS * 1000 / 10);
+        static const Poco::Timespan waitTime(POLL_TIMEOUT_MICRO_S / 10);
         static const Poco::Timespan waitZero(0);
 
         while (poll(waitTime, Poco::Net::Socket::SELECT_READ))
@@ -61,9 +60,9 @@ public:
             const int n = Poco::Net::WebSocket::receiveFrame(buffer, length, flags);
 
             if (n <= 0)
-                LOG_TRC("Got nothing (" << n << ")");
+                LOG_TRC("Got nothing (" << n << ')');
             else
-                LOG_TRC("Got frame: " << LOOLProtocol::getAbbreviatedFrameDump(buffer, n, flags));
+                LOG_TRC("Got frame: " << getAbbreviatedFrameDump(buffer, n, flags));
 
             if ((flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE)
             {
@@ -104,11 +103,11 @@ public:
         if (result != length)
         {
             LOG_ERR("Sent incomplete message, expected " << length << " bytes but sent " << result <<
-                    " for: " << LOOLProtocol::getAbbreviatedFrameDump(buffer, length, flags));
+                    " for: " << getAbbreviatedFrameDump(buffer, length, flags));
         }
         else
         {
-            LOG_TRC("Sent frame: " << LOOLProtocol::getAbbreviatedFrameDump(buffer, length, flags));
+            LOG_TRC("Sent frame: " << getAbbreviatedFrameDump(buffer, length, flags));
         }
 
         return result;
@@ -155,8 +154,38 @@ public:
             }
         }
     }
-};
 
-#endif
+    // Return a string dump of a WebSocket frame: Its opcode, length, first line (if present),
+    // flags. For human-readable logging purposes. Format not guaranteed to be stable. Not to be
+    // inspected programmatically.
+    static inline
+    std::string getAbbreviatedFrameDump(const char *message, const int length, const int flags)
+    {
+        std::ostringstream result;
+        switch (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
+        {
+#define CASE(x) case Poco::Net::WebSocket::FRAME_OP_##x: result << #x; break
+        CASE(CONT);
+        CASE(TEXT);
+        CASE(BINARY);
+        CASE(CLOSE);
+        CASE(PING);
+        CASE(PONG);
+#undef CASE
+        default:
+            result << Poco::format("%#x", flags);
+            break;
+        }
+        result << ' ' << std::setw(3) << length << " bytes";
+
+        if (length > 0 &&
+            ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_TEXT ||
+             (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_BINARY ||
+             (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING ||
+             (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG))
+            result << ": '" << LOOLProtocol::getAbbreviatedMessage(message, length) << '\'';
+        return result.str();
+    }
+};
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

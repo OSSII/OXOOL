@@ -8,4 +8,10 @@
     <string name="temp_file_saving_disabled">Toś ta dataja dajo se janož cytaś, składowanje jo znjemóžnjone.</string>
     <string name="saving">Składujo se...</string>
     <string name="preparing_for_the_first_start_after_an_update">Pśigótowanje na prědny start pó aktualizaciji.</string>
+    <string name="exiting">Kóńcy se...</string>
+    <string name="rate_our_app_text">Jolic se wam spódoba, dajśo nam pšosym 5 gwězdkow w Google Play. Waše dobre pśigódnośenja su naša nejlěpša motiwacija.</string>
+    <string name="rate_our_app_title">Źěkujomy se, až sćo wužywał %1$s!</string>
+    <string name="later">Pózdźej</string>
+    <string name="rate_now">Něnto pógódnośiś</string>
+    <string name="file_chromeos_read_only">Toś ta dataja njedajo se na toś tom městnje składowaś, wócynja se jano pśeśiwo pisanjeju šćitana. Pśesuńśo ju do wótgrawańskich datajow za połny cytański/pisański pśistup.</string>
 </resources>

@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_REPLAY_HPP
-#define INCLUDED_REPLAY_HPP
+#pragma once
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -193,7 +192,7 @@ protected:
                     }
                     else
                     {
-                        std::cout << "New Document: " << uri << "\n";
+                        std::cout << "New Document: " << uri << '\n';
                         _childToDoc.emplace(rec.getPid(), uri);
                         std::shared_ptr<Connection> connection = Connection::create(_serverUri, uri, rec.getSessionId());
                         if (connection)
@@ -210,7 +209,7 @@ protected:
                     auto it = _sessions.find(uri);
                     if (it != _sessions.end())
                     {
-                        std::cout << "EndSession [" << rec.getSessionId() << "]: " << uri << "\n";
+                        std::cout << "EndSession [" << rec.getSessionId() << "]: " << uri << '\n';
 
                         it->second.erase(rec.getSessionId());
                         if (it->second.empty())
@@ -285,7 +284,5 @@ private:
     /// Doc URI to _sessions map. _sessions are maps of SessionID to Connection.
     std::map<std::string, std::map<std::string, std::shared_ptr<Connection>>> _sessions;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

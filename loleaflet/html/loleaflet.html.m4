@@ -7,7 +7,7 @@ define([_foreachq],[ifelse([$#],[3],[],[define([$1],[$4])$2[]$0([$1],[$2],shift(
 <!DOCTYPE html>
 <!-- saved from url=(0054)http://leafletjs.com/examples/quick-start-example.html -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Online Editor</title>
+<title>OxOffice Online Editor</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -82,17 +82,13 @@ ifelse(MOBILEAPP,[true],
       <!-- Mobile menu toggle button (hamburger/x icon) -->
       <input id="main-menu-state" type="checkbox" style="display: none"/>
       <ul id="main-menu" class="sm sm-simple lo-menu"></ul>
-      <div id="menu-last-mod"><a></a></div>
+      <div id="menu-last-mod" style="display: none"><a></a></div>
       <div id="document-titlebar">
          <div class="document-title">
            <input id="document-name-input" type="text" spellcheck="false" disabled="true" style="display: none"/>
          </div>
        </div>
     </nav>
-
-    <div id="toolbar-viewer-wrapper" style="display:none">
-      <div id="toolbar-viewer"></div>
-    </div>
 
     <table id="toolbar-wrapper">
     <tr>
@@ -119,11 +115,10 @@ ifelse(MOBILEAPP,[true],
 
     <div id="spreadsheet-row-column-frame"></div>
 
-    ifelse(MOBILEAPP,[true],[<div id="document-container">],[<!--%DOCUMENT_CONTAINER%-->])
-
+    <div id="document-container">
       <div id="map"></div>
     </div>
-    <div id="spreadsheet-toolbar" style="display:none"></div>
+    <div id="spreadsheet-toolbar"></div>
 
     <div id="presentation-controls-wrapper">
       <div id="slide-sorter"></div>
@@ -136,6 +131,7 @@ ifelse(MOBILEAPP,[true],
 
     <div id="mobile-edit-button" style="display: none">
       <i id="mobile-edit-button-icon" class="fa fa-pencil"></i>
+      <span id="mobile-edit-button-text"></span>
     </div>
 
     <div id="toolbar-down" style="display:none"></div>

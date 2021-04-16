@@ -16,20 +16,23 @@
 #import <objc/runtime.h>
 
 #import <poll.h>
+#import <sys/stat.h>
 
 #import "ios.h"
+#import "CollaboraOnlineWebViewKeyboardManager.h"
 #import "FakeSocket.hpp"
 #import "LOOLWSD.hpp"
 #import "Log.hpp"
+#import "MobileApp.hpp"
 #import "SigUtil.hpp"
 #import "Util.hpp"
 
 #import "DocumentViewController.h"
 
-static DocumentViewController* theSingleton = nil;
-
-@interface DocumentViewController() <WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate> {
+@interface DocumentViewController() <WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIDocumentPickerDelegate> {
     int closeNotificationPipeForForwardingThread[2];
+    NSURL *downloadAsTmpURL;
+    CollaboraOnlineWebViewKeyboardManager *keyboardManager;
 }
 
 @end
@@ -77,8 +80,6 @@ static IMP standardImpOfInputAccessoryView = nil;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    theSingleton = self;
-
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     WKUserContentController *userContentController = [[WKUserContentController alloc] init];
 
@@ -100,6 +101,9 @@ static IMP standardImpOfInputAccessoryView = nil;
     // stopping any zoom attempt in scrollViewWillBeginZooming: below. (The zooming of the document
     // contents is handled fully in JavaScript, the WebView has no knowledge of that.)
     self.webView.scrollView.delegate = self;
+
+    keyboardManager =
+        [[CollaboraOnlineWebViewKeyboardManager alloc] initForWebView:self.webView];
 
     [self.view addSubview:self.webView];
 
@@ -315,10 +319,6 @@ static IMP standardImpOfInputAccessoryView = nil;
                                            // is saved by closing it.
                                            fakeSocketClose(self->closeNotificationPipeForForwardingThread[1]);
 
-                                           // Flag to make the inter-thread plumbing in the Online
-                                           // bits go away quicker.
-                                           MobileTerminationFlag = true;
-
                                            // Close our end of the fake socket connection to the
                                            // ClientSession thread, so that it terminates
                                            fakeSocketClose(self.document->fakeClientFd);
@@ -346,13 +346,14 @@ static IMP standardImpOfInputAccessoryView = nil;
                                assert(false);
                            });
 
-            // First we simply send it the URL. This corresponds to the GET request with Upgrade to
-            // WebSocket.
-            std::string url([[[self.document fileURL] absoluteString] UTF8String]);
+            // First we simply send the Online C++ parts the URL and the appDocId. This corresponds
+            // to the GET request with Upgrade to WebSocket.
+            std::string url([[self.document->copyFileURL absoluteString] UTF8String]);
             p.fd = self.document->fakeClientFd;
             p.events = POLLOUT;
             fakeSocketPoll(&p, 1, -1);
-            fakeSocketWrite(self.document->fakeClientFd, url.c_str(), url.size());
+            std::string message(url + " " + std::to_string(self.document->appDocId));
+            fakeSocketWrite(self.document->fakeClientFd, message.c_str(), message.size());
 
             return;
         } else if ([message.body isEqualToString:@"BYE"]) {
@@ -367,7 +368,7 @@ static IMP standardImpOfInputAccessoryView = nil;
             self.slideshowFile = Util::createRandomTmpDir() + "/slideshow.svg";
             self.slideshowURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:self.slideshowFile.c_str()] isDirectory:NO];
 
-            lok_document->saveAs([[self.slideshowURL absoluteString] UTF8String], "svg", nullptr);
+            getDocumentDataForMobileAppDocId(self.document->appDocId).loKitDocument->saveAs([[self.slideshowURL absoluteString] UTF8String], "svg", nullptr);
 
             // Add a new full-screen WebView displaying the slideshow.
 
@@ -421,7 +422,7 @@ static IMP standardImpOfInputAccessoryView = nil;
 
             std::string printFile = Util::createRandomTmpDir() + "/print.pdf";
             NSURL *printURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:printFile.c_str()] isDirectory:NO];
-            lok_document->saveAs([[printURL absoluteString] UTF8String], "pdf", nullptr);
+            getDocumentDataForMobileAppDocId(self.document->appDocId).loKitDocument->saveAs([[printURL absoluteString] UTF8String], "pdf", nullptr);
 
             UIPrintInteractionController *pic = [UIPrintInteractionController sharedPrintController];
             UIPrintInfo *printInfo = [UIPrintInfo printInfo];
@@ -441,6 +442,27 @@ static IMP standardImpOfInputAccessoryView = nil;
                 }];
 
             return;
+        } else if ([message.body isEqualToString:@"FOCUSIFHWKBD"]) {
+            if (isExternalKeyboardAttached()) {
+                NSString *hwKeyboardMagic = @"{"
+                    "    if (window.MagicToGetHWKeyboardWorking) {"
+                    "        window.MagicToGetHWKeyboardWorking();"
+                    "    }"
+                    "}";
+                [self.webView evaluateJavaScript:hwKeyboardMagic
+                               completionHandler:^(id _Nullable obj, NSError * _Nullable error)
+                     {
+                         if (error) {
+                             LOG_ERR("Error after " << [hwKeyboardMagic UTF8String] << ": " << [[error localizedDescription] UTF8String]);
+                             NSString *jsException = error.userInfo[@"WKJavaScriptExceptionMessage"];
+                             if (jsException != nil)
+                                 LOG_ERR("JavaScript exception: " << [jsException UTF8String]);
+                         }
+                     }
+                 ];
+            }
+
+            return;
         } else if ([message.body hasPrefix:@"HYPERLINK"]) {
             NSArray *messageBodyItems = [message.body componentsSeparatedByString:@" "];
             if ([messageBodyItems count] >= 2) {
@@ -449,6 +471,60 @@ static IMP standardImpOfInputAccessoryView = nil;
                 [application openURL:url options:@{} completionHandler:nil];
                 return;
             }
+        } else if ([message.body hasPrefix:@"downloadas "]) {
+            NSArray<NSString*> *messageBodyItems = [message.body componentsSeparatedByString:@" "];
+            NSString *format = nil;
+            if ([messageBodyItems count] >= 2) {
+                for (int i = 1; i < [messageBodyItems count]; i++) {
+                    if ([messageBodyItems[i] hasPrefix:@"format="])
+                        format = [messageBodyItems[i] substringFromIndex:[@"format=" length]];
+                }
+
+                if (format == nil)
+                    return;     // Warn?
+
+                // First save it in the requested format to a temporary location. First remove any
+                // leftover identically named temporary file.
+
+                NSURL *tmpFileDirectory = [[NSFileManager.defaultManager temporaryDirectory] URLByAppendingPathComponent:@"export"];
+                if (![NSFileManager.defaultManager createDirectoryAtURL:tmpFileDirectory withIntermediateDirectories:YES attributes:nil error:nil]) {
+                    LOG_ERR("Could not create directory " << [[tmpFileDirectory path] UTF8String]);
+                    return;
+                }
+                NSString *tmpFileName = [[[self.document->copyFileURL lastPathComponent] stringByDeletingPathExtension] stringByAppendingString:[@"." stringByAppendingString:format]];
+                downloadAsTmpURL = [tmpFileDirectory URLByAppendingPathComponent:tmpFileName];
+
+                std::remove([[downloadAsTmpURL path] UTF8String]);
+
+                getDocumentDataForMobileAppDocId(self.document->appDocId).loKitDocument->saveAs([[downloadAsTmpURL absoluteString] UTF8String], [format UTF8String], nullptr);
+
+                // Then verify that it indeed was saved, and then use an
+                // UIDocumentPickerViewController to ask the user where to store the exported
+                // document.
+
+                struct stat statBuf;
+                if (stat([[downloadAsTmpURL path] UTF8String], &statBuf) == -1) {
+                    LOG_ERR("Could apparently not save to '" <<  [[downloadAsTmpURL path] UTF8String] << "'");
+                    return;
+                }
+                UIDocumentPickerViewController *picker =
+                    [[UIDocumentPickerViewController alloc] initWithURL:downloadAsTmpURL
+                                                                 inMode:UIDocumentPickerModeExportToService];
+                picker.delegate = self;
+                [self presentViewController:picker
+                                   animated:YES
+                                 completion:nil];
+                return;
+            }
+        } else if ([message.body hasPrefix:@"REMOVE "]) {
+            // Sent from the img element's onload event handler. Remove tile file once it has been loaded.
+            NSArray<NSString*> *messageBodyItems = [message.body componentsSeparatedByString:@" "];
+            assert([messageBodyItems count] == 2);
+            NSURL *tile = [NSURL URLWithString:messageBodyItems[1]];
+            if (unlink([[tile path] UTF8String]) == -1) {
+                LOG_SYS("Could not unlink tile " << [[tile path] UTF8String]);
+            }
+            return;
         }
 
         const char *buf = [message.body UTF8String];
@@ -461,6 +537,16 @@ static IMP standardImpOfInputAccessoryView = nil;
     }
 }
 
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls {
+    std::remove([[downloadAsTmpURL path] UTF8String]);
+    std::remove([[[downloadAsTmpURL URLByDeletingLastPathComponent] path] UTF8String]);
+}
+
+- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
+    std::remove([[downloadAsTmpURL path] UTF8String]);
+    std::remove([[[downloadAsTmpURL URLByDeletingLastPathComponent] path] UTF8String]);
+}
+
 - (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view {
     scrollView.pinchGestureRecognizer.enabled = NO;
 }
@@ -469,23 +555,15 @@ static IMP standardImpOfInputAccessoryView = nil;
     // Close one end of the socket pair, that will wake up the forwarding thread above
     fakeSocketClose(closeNotificationPipeForForwardingThread[0]);
 
-    [self.document saveToURL:[self.document fileURL]
-            forSaveOperation:UIDocumentSaveForOverwriting
-           completionHandler:^(BOOL success) {
-              LOG_TRC("save completion handler gets " << (success?"YES":"NO"));
-           }];
+    // deallocateDocumentDataForMobileAppDocId(self.document->appDocId);
 
-    // Wait for lokit_main thread to exit
-    std::lock_guard<std::mutex> lock(LOOLWSD::lokit_main_mutex);
+    [[NSFileManager defaultManager] removeItemAtURL:self.document->copyFileURL error:nil];
 
-    theSingleton = nil;
-
-    // And only then let the document browsing view show up again
-    [self dismissDocumentViewController];
-}
-
-+ (DocumentViewController*)singleton {
-    return theSingleton;
+    // The dismissViewControllerAnimated must be done on the main queue.
+    dispatch_async(dispatch_get_main_queue(),
+                   ^{
+                       [self dismissDocumentViewController];
+                   });
 }
 
 @end

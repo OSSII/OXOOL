@@ -44,7 +44,7 @@ make POCO_TARGET_OSARCH=x86_64 install
 This will install the poco static libraries and headers to your $home
 directory into poco-ios-arm64 (and poco-ios-x64) directory. You can
 change the directory to your wishes, but by installing it this way into
-a directory in $HOME it doesn't polute your root directories, doesn't
+a directory in $HOME it doesn't pollute your root directories, doesn't
 need root permissions and can be removed easily.
 
 If compiler can't find <string.h> you need to install:
@@ -54,12 +54,7 @@ open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10
 autogen.sh, configure, or make, or open the Mobile Xcode project there
 yet. We call this the app folder.
 
-4) Here the instructions split. tml uses the first way, mmeeks tried
-to use the second way. The paths will join again at step 4.
-
-EITHER:
-
-4a) On a Linux machine: Do a separate clone of the online repo, run
+4) On a Linux machine: Do a separate clone of the online repo, run
 autogen.sh, and configure it with the --enable-iosapp option:
 
 ./configure --enable-iosapp --with-app-name="My Own Mobile LibreOffice"
@@ -77,7 +72,7 @@ Then back to the Mac:
 
 As you were able to build LibreOffice in step 1, you must already have
 GNU autoconf installed on the Mac. Install also GNU automake and
-libtool. Preferrably from sources, to make sure a potential
+libtool. Preferably from sources, to make sure a potential
 installation of brew or similar will not pollute your environment with
 unknown stuff.
 
@@ -88,27 +83,9 @@ safest to install it somewhere that is not in your $PATH. Let's say
 in $PATH, is less risky.)
 
 Run the autogen.sh script in the app folder, with GNU libtool
-available:
+available, for instance:
 
 PATH=/opt/libtool/bin:$PATH ./autogen.sh
-
-OR:
-
-4b) Install brew: https://brew.sh/
-
-   Then:
-
-brew install libtool npm
-./autogen.sh
-sudo python -m ensurepip --default-pip
-sudo pip install polib lxml
-make ; make
-
-Then run:
-
-./autogen.sh
-
-Now the instructions join again:
 
 5) In the app folder from step 2, edit the
 ios/Mobile.xcodeproj/project.pbxproj file in your favourite text

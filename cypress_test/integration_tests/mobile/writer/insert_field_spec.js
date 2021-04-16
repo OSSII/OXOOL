@@ -1,94 +1,94 @@
 /* global describe it cy beforeEach require afterEach*/
 
 var helper = require('../../common/helper');
-var writerHelper = require('./writer_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var writerMobileHelper = require('./writer_mobile_helper');
 
 describe('Insert fields via insertion wizard.', function() {
+	var testFileName = 'insert_field.odt';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('insert_field.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Open fields submenu
-		cy.get('.menu-entry-with-icon.flex-fullwidth')
-			.contains('More Fields...')
+		cy.contains('.menu-entry-with-icon.flex-fullwidth', 'More Fields...')
 			.click();
 
 		cy.get('.ui-content.level-0.mobile-wizard')
-			.should('be.visible')
-			.wait(100);
+			.should('be.visible');
 	});
 
 	afterEach(function() {
-		helper.afterAll('insert_field.odt');
+		helper.afterAll(testFileName);
 	});
 
 	it('Insert page number field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('Page Number')
+		cy.contains('.menu-entry-with-icon', 'Page Number')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
 			.should('have.attr', 'type', 'PAGE')
-			.contains('1');
+			.should('have.text', '1');
 	});
 
 	it('Insert page count field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('Page Count')
+		cy.contains('.menu-entry-with-icon', 'Page Count')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
 			.should('have.attr', 'type', 'DOCSTAT')
-			.contains('1');
+			.should('have.text', '1');
 	});
 
 	it('Insert date field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('Date')
+		cy.contains('.menu-entry-with-icon', 'Date')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
-			.should('have.attr', 'type', 'DATETIME')
-			.should('have.attr', 'sdnum', '1033;1033;MM/DD/YY');
+			.should('have.attr', 'type', 'DATETIME');
+
+		var regex = new RegExp(';MM/DD/YY$');
+		cy.get('#copy-paste-container p span sdfield')
+			.should('have.attr', 'sdnum')
+			.should('match', regex);
 	});
 
 	it('Insert time field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('Time')
+		cy.contains('.menu-entry-with-icon', 'Time')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
-			.should('have.attr', 'type', 'DATETIME')
-			.should('have.attr', 'sdnum', '1033;1033;HH:MM:SS AM/PM');
+			.should('have.attr', 'type', 'DATETIME');
+
+		var regex = new RegExp(';HH:MM:SS AM/PM$');
+		cy.get('#copy-paste-container p span sdfield')
+			.should('have.attr', 'sdnum')
+			.should('match', regex);
 	});
 
 	it('Insert title field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('Title')
+		cy.contains('.menu-entry-with-icon', 'Title')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
 			.should('have.attr', 'type', 'DOCINFO')
@@ -97,11 +97,10 @@ describe('Insert fields via insertion wizard.', function() {
 
 	it('Insert author field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('First Author')
+		cy.contains('.menu-entry-with-icon', 'First Author')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
 			.should('have.attr', 'type', 'DOCINFO')
@@ -111,11 +110,10 @@ describe('Insert fields via insertion wizard.', function() {
 
 	it('Insert subject field.', function() {
 		// Insert field
-		cy.get('.menu-entry-with-icon')
-			.contains('Subject')
+		cy.contains('.menu-entry-with-icon', 'Subject')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p span sdfield')
 			.should('have.attr', 'type', 'DOCINFO')

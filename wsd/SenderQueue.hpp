@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SENDERQUEUE_HPP
-#define INCLUDED_SENDERQUEUE_HPP
+#pragma once
 
 #include <condition_variable>
 #include <deque>
@@ -40,7 +39,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(_mutex);
 
-        if (!TerminationFlag && deduplicate(item))
+        if (!SigUtil::getTerminationFlag() && deduplicate(item))
             _queue.push_back(item);
 
         return _queue.size();
@@ -51,7 +50,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(_mutex);
 
-        if (!_queue.empty() && !TerminationFlag)
+        if (!_queue.empty() && !SigUtil::getTerminationFlag())
         {
             item = _queue.front();
             _queue.pop_front();
@@ -59,7 +58,7 @@ public:
         }
         else
         {
-            if (TerminationFlag)
+            if (SigUtil::getTerminationFlag())
                 LOG_DBG("SenderQueue: TerminationFlag is set");
             return false;
         }
@@ -73,12 +72,12 @@ public:
 
     void dumpState(std::ostream& os)
     {
-        os << "\n\t\tqueue size " << _queue.size() << "\n";
+        os << "\n\t\tqueue size " << _queue.size() << '\n';
         std::lock_guard<std::mutex> lock(_mutex);
         for (const Item &item : _queue)
         {
-            os << "\t\t\ttype: " << (item->isBinary() ? "binary" : "text") << "\n";
-            os << "\t\t\t" << item->abbr() << "\n";
+            os << "\t\t\ttype: " << (item->isBinary() ? "binary\n" : "text\n");
+            os << "\t\t\t" << item->abbr() << '\n';
         }
     }
 
@@ -108,7 +107,7 @@ private:
                  command == "invalidatecursor:" ||
                  command == "setpart:")
         {
-            // Remove previous identical enties of this command,
+            // Remove previous identical entries of this command,
             // if any, and use most recent (incoming).
             const auto& pos = std::find_if(_queue.begin(), _queue.end(),
                 [&command](const queue_item_t& cur)
@@ -155,7 +154,5 @@ private:
     std::deque<Item> _queue;
     typedef typename std::deque<Item>::value_type queue_item_t;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

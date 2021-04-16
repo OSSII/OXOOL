@@ -1,42 +1,62 @@
 /* global describe it cy beforeEach require afterEach expect*/
 
+require('cypress-file-upload');
+
 var helper = require('../../common/helper');
-var calcHelper = require('./calc_helper');
+var calcHelper = require('../../common/calc_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var calcMobileHelper = require('./calc_mobile_helper');
 
 describe('Calc insertion wizard.', function() {
+	var testFileName = 'insertion_wizard.ods';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('insertion_wizard.ods', 'calc');
+		helper.beforeAll(testFileName, 'calc');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		calcHelper.clickOnFirstCell();
 
 		cy.get('.leaflet-marker-icon')
 			.should('be.visible');
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openInsertionWizard();
 	});
 
 	afterEach(function() {
-		helper.afterAll('insertion_wizard.ods');
+		helper.afterAll(testFileName);
 	});
 
-	it('Check existance of image insertion items.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Local Image...');
+	it('Inset local image.', function() {
+		// We can't use the menu item directly, because it would open file picker.
+		cy.contains('.menu-entry-with-icon', 'Local Image...')
+			.should('be.visible');
 
-		cy.get('.menu-entry-with-icon')
-			.contains('Image...');
+		cy.get('#insertgraphic[type=file]')
+			.attachFile('/mobile/calc/image_to_insert.png');
+
+		// Could not find a good indicator here, because the inserted image
+		// is not selected after insertion.
+		cy.wait(1000);
+
+		// Select image
+		cy.get('.spreadsheet-cell-resize-marker:nth-of-type(2)')
+			.then(function(items) {
+				expect(items).to.have.lengthOf(1);
+				var XPos = items[0].getBoundingClientRect().right + 10;
+				var YPos = items[0].getBoundingClientRect().top;
+				cy.get('body')
+					.click(XPos, YPos);
+			});
+
+		cy.get('.leaflet-pane.leaflet-overlay-pane svg g.Graphic')
+			.should('exist');
 	});
 
-	it('Insert chart.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Chart...')
+	// FIXME temporarily disabled, does not work with CanvasTileLayer
+	it.skip('Insert chart.', function() {
+		cy.contains('.menu-entry-with-icon', 'Chart...')
 			.click();
 
 		cy.get('.leaflet-drag-transform-marker')
@@ -44,8 +64,7 @@ describe('Calc insertion wizard.', function() {
 	});
 
 	it('Insert hyperlink.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Hyperlink...')
+		cy.contains('.menu-entry-with-icon', 'Hyperlink...')
 			.click();
 
 		// Dialog is opened
@@ -66,10 +85,10 @@ describe('Calc insertion wizard.', function() {
 		cy.get('.blinking-cursor')
 			.should('be.visible');
 
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container table td a')
-			.contains('some text');
+			.should('have.text', 'some text');
 
 		cy.get('#copy-paste-container table td a')
 			.should('have.attr', 'href', 'http://www.something.com');
@@ -77,8 +96,7 @@ describe('Calc insertion wizard.', function() {
 
 	it('Insert shape.', function() {
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Shape')
+		cy.contains('.menu-entry-with-icon', 'Shape')
 			.click();
 
 		cy.get('.basicshapes_ellipse').
@@ -89,7 +107,7 @@ describe('Calc insertion wizard.', function() {
 			.should('exist');
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane svg')
-			.then(function(svg) {
+			.should(function(svg) {
 				expect(svg[0].getBBox().width).to.be.greaterThan(0);
 				expect(svg[0].getBBox().height).to.be.greaterThan(0);
 			});
@@ -97,25 +115,27 @@ describe('Calc insertion wizard.', function() {
 
 	it('Insert date.', function() {
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Date')
+		cy.contains('.menu-entry-with-icon', 'Date')
 			.click();
 
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
+		var regex = new RegExp(';MM/DD/YY$');
 		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'sdnum', '1033;0;MM/DD/YY');
+			.should('have.attr', 'sdnum')
+			.should('match', regex);
 	});
 
 	it('Insert time.', function() {
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Time')
+		cy.contains('.menu-entry-with-icon', 'Time')
 			.click();
 
-		calcHelper.copyContentToClipboard();
+		calcMobileHelper.selectAllMobile();
 
+		var regex = new RegExp(';HH:MM:SS AM/PM$');
 		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'sdnum', '1033;0;HH:MM:SS AM/PM');
+			.should('have.attr', 'sdnum')
+			.should('match', regex);
 	});
 });

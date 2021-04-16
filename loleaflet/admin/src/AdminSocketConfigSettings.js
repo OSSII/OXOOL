@@ -199,6 +199,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 				if (json[key] === null) continue; // null : 表示 xml 中找不到對應的 key
 
 				if (key == 'net.post_allow.host' ||
+					key == 'net.cors_allow.host' ||
 					key == 'storage.wopi.host' ||
 					key == 'storage.webdav.host')
 				{
@@ -210,6 +211,9 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 						{
 						case 'net.post_allow.host':
 							addHosts(key, hosts, 'post_allow_hostlist');
+							break;
+						case 'net.cors_allow.host':
+							addHosts(key, hosts, 'cors_allow_hostlist');
 							break;
 						case 'storage.wopi.host':
 							addHosts(key, hosts, 'wopi_hostlist');
@@ -256,6 +260,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 				}
 			}
 			$('#post_allow_hostAdd').click(function() {addItem('net.post_allow.host', 'post_allow_hostlist', false);});
+			$('#cors_allow_hostAdd').click(function() {addItem('net.cors_allow.host', 'cors_allow_hostlist', false);});
 			$('#wopi_hostAdd').click(function() {addItem('storage.wopi.host', 'wopi_hostlist', true);});
 			$('#webdav_hostAdd').click(function() {addItem('storage.webdav.host', 'webdav_hostlist', true);});
 		}

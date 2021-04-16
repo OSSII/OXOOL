@@ -11,8 +11,11 @@
 
 #include "FileUtil.hpp"
 
+#include <dirent.h>
+#include <exception>
 #include <ftw.h>
-#include <sys/stat.h>
+#include <stdexcept>
+#include <sys/time.h>
 #ifdef __linux
 #include <sys/vfs.h>
 #elif defined IOS
@@ -39,18 +42,15 @@ namespace filesystem = ::std::filesystem;
 # include <Poco/TemporaryFile.h>
 #endif
 
+#include <Poco/File.h>
+#include <Poco/Path.h>
+
 #include "Log.hpp"
 #include "Util.hpp"
 #include "Unit.hpp"
 
 namespace
 {
-    void alertAllUsersAndLog(const std::string& message, const std::string& cmd, const std::string& kind)
-    {
-        LOG_ERR(message);
-        Util::alertAllUsers(cmd, kind);
-    }
-
 #if HAVE_STD_FILESYSTEM
 /// Class to delete files when the process ends.
 class FileDeleter
@@ -88,45 +88,40 @@ namespace FileUtil
         return name;
     }
 
-    void copyFileTo(const std::string &fromPath, const std::string &toPath)
+    bool copy(const std::string& fromPath, const std::string& toPath, bool log, bool throw_on_error)
     {
         int from = -1, to = -1;
-        try {
+        try
+        {
             from = open(fromPath.c_str(), O_RDONLY);
             if (from < 0)
-            {
-                LOG_SYS("Failed to open src " << anonymizeUrl(fromPath));
-                throw;
-            }
+                throw std::runtime_error("Failed to open src " + anonymizeUrl(fromPath));
 
             struct stat st;
             if (fstat(from, &st) != 0)
-            {
-                LOG_SYS("Failed to fstat src " << anonymizeUrl(fromPath));
-                throw;
-            }
+                throw std::runtime_error("Failed to fstat src " + anonymizeUrl(fromPath));
 
             to = open(toPath.c_str(), O_CREAT | O_TRUNC | O_WRONLY, st.st_mode);
             if (to < 0)
-            {
-                LOG_SYS("Failed to fstat dest " << anonymizeUrl(toPath));
-                throw;
-            }
+                throw std::runtime_error("Failed to open dest " + anonymizeUrl(toPath));
 
-            LOG_INF("Copying " << st.st_size << " bytes from " << anonymizeUrl(fromPath) << " to " << anonymizeUrl(toPath));
+            // Logging may be redundant and/or noisy.
+            if (log)
+                LOG_INF("Copying " << st.st_size << " bytes from " << anonymizeUrl(fromPath)
+                                   << " to " << anonymizeUrl(toPath));
 
             char buffer[64 * 1024];
 
             int n;
             off_t bytesIn = 0;
-            do {
+            do
+            {
                 while ((n = ::read(from, buffer, sizeof(buffer))) < 0 && errno == EINTR)
                     LOG_TRC("EINTR reading from " << anonymizeUrl(fromPath));
                 if (n < 0)
-                {
-                    LOG_SYS("Failed to read from " << anonymizeUrl(fromPath) << " at " << bytesIn << " bytes in");
-                    throw;
-                }
+                    throw std::runtime_error("Failed to read from " + anonymizeUrl(fromPath)
+                                             + " at " + std::to_string(bytesIn) + " bytes in");
+
                 bytesIn += n;
                 if (n == 0) // EOF
                     break;
@@ -139,27 +134,38 @@ namespace FileUtil
                         LOG_TRC("EINTR writing to " << anonymizeUrl(toPath));
                     if (written < 0)
                     {
-                        LOG_SYS("Failed to write " << n << " bytes to " << anonymizeUrl(toPath) << " at " <<
-                                bytesIn << " bytes into " << anonymizeUrl(fromPath));
-                        throw;
+                        throw std::runtime_error("Failed to write " + std::to_string(n)
+                                                 + " bytes to " + anonymizeUrl(toPath) + " at "
+                                                 + std::to_string(bytesIn) + " bytes into "
+                                                 + anonymizeUrl(fromPath));
                     }
                     j += written;
                 }
-            } while(true);
+            } while (true);
             if (bytesIn != st.st_size)
             {
                 LOG_WRN("Unusual: file " << anonymizeUrl(fromPath) << " changed size "
                         "during copy from " << st.st_size << " to " << bytesIn);
             }
+            close(from);
+            close(to);
+            return true;
         }
-        catch (...)
+        catch (const std::exception& ex)
         {
-            LOG_SYS("Failed to copy from " << anonymizeUrl(fromPath) << " to " << anonymizeUrl(toPath));
+            std::ostringstream oss;
+            oss << "Error while copying from " << anonymizeUrl(fromPath) << " to "
+                << anonymizeUrl(toPath) << ": " << ex.what();
+            const std::string err = oss.str();
+            LOG_SYS(err);
             close(from);
             close(to);
             unlink(toPath.c_str());
-            throw Poco::Exception("failed to copy");
+            if (throw_on_error)
+                throw std::runtime_error(err);
         }
+
+        return false;
     }
 
     std::string getTempFilePath(const std::string& srcDir, const std::string& srcFilename, const std::string& dstFilenamePrefix)
@@ -181,61 +187,6 @@ namespace FileUtil
         return dstPath;
     }
 
-    bool saveDataToFileSafely(const std::string& fileName, const char *data, size_t size)
-    {
-        const auto tempFileName = fileName + ".temp";
-        std::fstream outStream(tempFileName, std::ios::out);
-
-        // If we can't create the file properly, just remove it
-        if (!outStream.good())
-        {
-            alertAllUsersAndLog("Creating " + tempFileName + " failed, disk full?", "internal", "diskfull");
-            // Try removing both just in case
-            std::remove(tempFileName.c_str());
-            std::remove(fileName.c_str());
-            return false;
-        }
-        else
-        {
-            outStream.write(data, size);
-            if (!outStream.good())
-            {
-                alertAllUsersAndLog("Writing to " + tempFileName + " failed, disk full?", "internal", "diskfull");
-                outStream.close();
-                std::remove(tempFileName.c_str());
-                std::remove(fileName.c_str());
-                return false;
-            }
-            else
-            {
-                outStream.close();
-                if (!outStream.good())
-                {
-                    alertAllUsersAndLog("Closing " + tempFileName + " failed, disk full?", "internal", "diskfull");
-                    std::remove(tempFileName.c_str());
-                    std::remove(fileName.c_str());
-                    return false;
-                }
-                else
-                {
-                    // Everything OK, rename the file to its proper name
-                    if (std::rename(tempFileName.c_str(), fileName.c_str()) == 0)
-                    {
-                        LOG_DBG("Renaming " << tempFileName << " to " << fileName << " OK.");
-                        return true;
-                    }
-                    else
-                    {
-                        alertAllUsersAndLog("Renaming " + tempFileName + " to " + fileName + " failed, disk full?", "internal", "diskfull");
-                        std::remove(tempFileName.c_str());
-                        std::remove(fileName.c_str());
-                        return false;
-                    }
-                }
-            }
-        }
-    }
-
 #if 1 // !HAVE_STD_FILESYSTEM
     static int nftw_cb(const char *fpath, const struct stat*, int type, struct FTW*)
     {
@@ -255,6 +206,8 @@ namespace FileUtil
 
     void removeFile(const std::string& path, const bool recursive)
     {
+        LOG_DBG("Removing [" << path << "] " << (recursive ? "recursively." : "only."));
+
 // Amazingly filesystem::remove_all silently fails to work on some
 // systems. No real need to be using experimental API here either.
 #if 0 // HAVE_STD_FILESYSTEM
@@ -270,10 +223,12 @@ namespace FileUtil
         try
         {
             struct stat sb;
+            errno = 0;
             if (!recursive || stat(path.c_str(), &sb) == -1 || S_ISREG(sb.st_mode))
             {
-                // Non-recursive directories, and files.
-                Poco::File(path).remove(recursive);
+                // Non-recursive directories and files that exist.
+                if (errno != ENOENT)
+                    Poco::File(path).remove(recursive);
             }
             else
             {
@@ -281,13 +236,112 @@ namespace FileUtil
                 nftw(path.c_str(), nftw_cb, 128, FTW_DEPTH | FTW_PHYS);
             }
         }
-        catch (const std::exception&)
+        catch (const std::exception&e)
         {
             // Already removed or we don't care about failures.
+            LOG_DBG("Failed to remove [" << path << "] " << (recursive ? "recursively: " : "only: ")
+                                         << e.what());
         }
 #endif
     }
 
+    std::string realpath(const char* path)
+    {
+        char* resolved = ::realpath(path, nullptr);
+        if (resolved)
+        {
+            std::string real = resolved;
+            free(resolved);
+            return real;
+        }
+
+        LOG_SYS("Failed to get the realpath of [" << path << "]");
+        return path;
+    }
+
+    bool isEmptyDirectory(const char* path)
+    {
+        DIR* dir = opendir(path);
+        if (dir == nullptr)
+            return errno != EACCES; // Assume it's not empty when EACCES.
+
+        int count = 0;
+        while (readdir(dir) && ++count < 3)
+            ;
+
+        closedir(dir);
+        return count <= 2; // Discounting . and ..
+    }
+
+    bool updateTimestamps(const std::string& filename, timespec tsAccess, timespec tsModified)
+    {
+        // The timestamp is in seconds and microseconds.
+        timeval timestamps[2]
+                          {
+                              {
+                                  tsAccess.tv_sec,
+#ifdef IOS
+                                  (__darwin_suseconds_t)
+#endif
+                                  (tsAccess.tv_nsec / 1000)
+                              },
+                              {
+                                  tsModified.tv_sec,
+#ifdef IOS
+                                  (__darwin_suseconds_t)
+#endif
+                                  (tsModified.tv_nsec / 1000)
+                              }
+                          };
+        if (utimes(filename.c_str(), timestamps) != 0)
+        {
+            LOG_SYS("Failed to update the timestamp of [" << filename << "]");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool copyAtomic(const std::string& fromPath, const std::string& toPath, bool preserveTimestamps)
+    {
+        const std::string randFilename = toPath + Util::rng::getFilename(12);
+        if (copy(fromPath, randFilename, /*log=*/false, /*throw_on_error=*/false))
+        {
+            if (preserveTimestamps)
+            {
+                const Stat st(fromPath);
+                updateTimestamps(randFilename,
+#ifdef IOS
+                                 st.sb().st_atimespec, st.sb().st_mtimespec
+#else
+                                 st.sb().st_atim, st.sb().st_mtim
+#endif
+                                 );
+            }
+
+            // Now rename atomically, replacing any existing files with the same name.
+            if (rename(randFilename.c_str(), toPath.c_str()) == 0)
+                return true;
+
+            LOG_SYS("Failed to copy [" << fromPath << "] -> [" << toPath
+                                       << "] while atomically renaming:");
+            removeFile(randFilename, false); // Cleanup.
+        }
+
+        return false;
+    }
+
+    bool linkOrCopyFile(const char* source, const char* target)
+    {
+        if (link(source, target) == -1)
+        {
+            LOG_INF("link(\"" << source << "\", \"" << target << "\") failed: " << strerror(errno)
+                              << ". Will copy.");
+            return copy(source, target, /*log=*/false, /*throw_on_error=*/false);
+        }
+
+        return true;
+    }
 
 } // namespace FileUtil
 
@@ -333,7 +387,7 @@ namespace FileUtil
         if (lastSlash != std::string::npos)
         {
             const std::string dirPath = path.substr(0, lastSlash + 1) + '.';
-            LOG_INF("Registering filesystem for space checks: [" << dirPath << "]");
+            LOG_INF("Registering filesystem for space checks: [" << dirPath << ']');
 
             std::lock_guard<std::mutex> lock(fsmutex);
 
@@ -437,7 +491,7 @@ namespace FileUtil
     }
 
     /// Anonymize user names and IDs.
-    /// Will use the Obfuscated User ID if one is provied via WOPI.
+    /// Will use the Obfuscated User ID if one is provided via WOPI.
     std::string anonymizeUsername(const std::string& username)
     {
         return AnonymizeUserData ? Util::anonymize(username, AnonymizationSalt) : username;

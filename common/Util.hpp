@@ -7,13 +7,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_UTIL_HPP
-#define INCLUDED_UTIL_HPP
+#pragma once
 
 #include <cassert>
 #include <cerrno>
 #include <cinttypes>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <atomic>
 #include <functional>
@@ -22,6 +22,8 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <map>
+#include <utility>
 #include <inttypes.h>
 
 #include <memory.h>
@@ -32,7 +34,6 @@
 
 #include <Poco/File.h>
 #include <Poco/Path.h>
-#include <Poco/Process.h>
 #include <Poco/RegularExpression.h>
 
 #define LOK_USE_UNSTABLE_API
@@ -61,8 +62,9 @@ namespace Util
         std::string getFilename(const size_t length);
     }
 
-    /// Create randomized temporary directory
-    std::string createRandomTmpDir();
+    /// Create randomized temporary directory in the root provided.
+    /// If root is empty, the current temp directory is used.
+    std::string createRandomTmpDir(std::string root = std::string());
 
 #if !MOBILEAPP
     /// Get number of threads in this process or -1 on error
@@ -72,7 +74,7 @@ namespace Util
     /// to send data to the child.
     int spawnProcess(const std::string &cmd, const StringVector &args,
                      const std::vector<int>* fdsToKeep = nullptr, int *stdInput = nullptr);
-    
+
 #endif
 
     /// Hex to unsigned char
@@ -90,9 +92,9 @@ namespace Util
     void alertAllUsers(const std::string& msg);
 
     /// Send a 'error:' message with the specified cmd and kind parameters to all connected
-    /// clients. This function can be called either in loolwsd or loolkit processes, even if only
-    /// loolwsd obviously has contact with the actual clients; in loolkit it will be forwarded to
-    /// loolwsd for redistribution. (This function must be implemented separately in each program
+    /// clients. This function can be called either in oxoolwsd or oxoolkit processes, even if only
+    /// oxoolwsd obviously has contact with the actual clients; in oxoolkit it will be forwarded to
+    /// oxoolwsd for redistribution. (This function must be implemented separately in each program
     /// that uses it, it is not in Util.cpp.)
     void alertAllUsers(const std::string& cmd, const std::string& kind);
 #else
@@ -136,18 +138,25 @@ namespace Util
     size_t getTotalSystemMemoryKb();
 
     /// Returns the process PSS in KB (works only when we have perms for /proc/pid/smaps).
-    size_t getMemoryUsagePSS(const Poco::Process::PID pid);
+    size_t getMemoryUsagePSS(const pid_t pid);
 
     /// Returns the process RSS in KB.
-    size_t getMemoryUsageRSS(const Poco::Process::PID pid);
+    size_t getMemoryUsageRSS(const pid_t pid);
 
     /// Returns the RSS and PSS of the current process in KB.
     /// Example: "procmemstats: pid=123 rss=12400 pss=566"
     std::string getMemoryStats(FILE* file);
 
-    size_t getCpuUsage(const Poco::Process::PID pid);
+    /// Reads from SMaps file Pss and Private_Dirty values and
+    /// returns them as a pair in the same order
+    std::pair<size_t, size_t> getPssAndDirtyFromSMaps(FILE* file);
 
-    size_t getStatFromPid(const Poco::Process::PID pid, int ind);
+    size_t getCpuUsage(const pid_t pid);
+
+    size_t getStatFromPid(const pid_t pid, int ind);
+
+    /// Sets priorities for a given pid & the current thread
+    void setProcessAndThreadPriorities(const pid_t pid, int prio);
 #endif
 
     std::string replace(std::string s, const std::string& a, const std::string& b);
@@ -166,6 +175,11 @@ namespace Util
 
     /// Get version information
     void getVersionInfo(std::string& version, std::string& hash);
+
+    ///< A random hex string that identifies the current process.
+    std::string getProcessIdentifier();
+
+    std::string getVersionJSON();
 
     /// Return a string that is unique across processes and calls.
     std::string UniqueId();
@@ -197,7 +211,7 @@ namespace Util
         for (unsigned int i = 0; i < width; i++)
         {
             if (i && (i % 8) == 0)
-                os << " ";
+                os << ' ';
             if ((offset + i) < buffer.size())
                 sprintf (scratch, "%.2x ", (unsigned char)buffer[offset+i]);
             else
@@ -216,6 +230,21 @@ namespace Util
         }
 
         return os.str();
+    }
+
+    /// Dump a string as hex by splitting on multiple lines per width.
+    /// Useful for debugging and logging data that contain non-printables.
+    inline std::string stringifyHexLine(const std::string& s, const std::size_t width = 16)
+    {
+        std::ostringstream oss;
+        for (std::size_t i = 0; i < s.size(); i += width)
+        {
+            const std::size_t rem = std::min(width, s.size() - i);
+            oss << stringifyHexLine(std::vector<char>(s.data(), s.data() + s.size()), i, rem);
+            oss << '\n';
+        }
+
+        return oss.str();
     }
 
     /// Dump data as hex and chars to stream
@@ -248,7 +277,7 @@ namespace Util
             }
             lastLine.swap(line);
 
-            os << "\n";
+            os << '\n';
         }
         os.flush();
     }
@@ -293,6 +322,21 @@ namespace Util
         if (pos != std::string::npos)
         {
             return s.substr(pos);
+        }
+
+        return s;
+    }
+
+    inline std::string& trim(std::string& s, const char ch)
+    {
+        const size_t last = s.find_last_not_of(ch);
+        if (last != std::string::npos)
+        {
+            s = s.substr(0, last + 1);
+        }
+        else
+        {
+            s.clear();
         }
 
         return s;
@@ -375,6 +419,97 @@ namespace Util
 
         return false;
     }
+
+    /// Tokenize delimited values until we hit new-line or the end.
+    inline void tokenize(const char* data, const std::size_t size, const char delimiter,
+                         std::vector<StringToken>& tokens)
+    {
+        if (size == 0 || data == nullptr || *data == '\0')
+            return;
+
+        tokens.reserve(16);
+
+        const char* start = data;
+        const char* end = data;
+        for (std::size_t i = 0; i < size && data[i] != '\n'; ++i, ++end)
+        {
+            if (data[i] == delimiter)
+            {
+                if (start != end && *start != delimiter)
+                    tokens.emplace_back(start - data, end - start);
+
+                start = end;
+            }
+            else if (*start == delimiter)
+                ++start;
+        }
+
+        if (start != end && *start != delimiter && *start != '\n')
+            tokens.emplace_back(start - data, end - start);
+    }
+
+    /// Tokenize single-char delimited values until we hit new-line or the end.
+    inline StringVector tokenize(const char* data, const std::size_t size,
+                                 const char delimiter = ' ')
+    {
+        if (size == 0 || data == nullptr || *data == '\0')
+            return StringVector();
+
+        std::vector<StringToken> tokens;
+        tokenize(data, size, delimiter, tokens);
+        return StringVector(std::string(data, size), std::move(tokens));
+    }
+
+    /// Tokenize single-char delimited values until we hit new-line or the end.
+    inline StringVector tokenize(const std::string& s, const char delimiter = ' ')
+    {
+        if (s.empty())
+            return StringVector();
+
+        std::vector<StringToken> tokens;
+        tokenize(s.data(), s.size(), delimiter, tokens);
+        return StringVector(s, std::move(tokens));
+    }
+
+    /// Tokenize by the delimiter string.
+    inline StringVector tokenize(const std::string& s, const char* delimiter, int len = -1)
+    {
+        if (s.empty() || len == 0 || delimiter == nullptr || *delimiter == '\0')
+            return StringVector();
+
+        if (len < 0)
+            len = std::strlen(delimiter);
+
+        std::size_t start = 0;
+        std::size_t end = s.find(delimiter, start);
+
+        std::vector<StringToken> tokens;
+        tokens.reserve(16);
+
+        tokens.emplace_back(start, end - start);
+        start = end + len;
+
+        while (end != std::string::npos)
+        {
+            end = s.find(delimiter, start);
+            tokens.emplace_back(start, end - start);
+            start = end + len;
+        }
+
+        return StringVector(s, std::move(tokens));
+    }
+
+    inline StringVector tokenize(const std::string& s, const std::string& delimiter)
+    {
+        return tokenize(s, delimiter.data(), delimiter.size());
+    }
+
+    /** Tokenize based on any of the characters in 'delimiters'.
+
+        Ie. when there is '\n\r' in there, any of them means a delimiter.
+        In addition, trim the values so there are no leadiding or trailing spaces.
+    */
+    StringVector tokenizeAnyOf(const std::string& s, const char* delimiters);
 
 #ifdef IOS
 
@@ -933,7 +1068,7 @@ int main(int argc, char**argv)
     std::string getHttpTime(std::chrono::system_clock::time_point time);
 
     //// Return timestamp of file
-    std::chrono::system_clock::time_point getFileTimestamp(std::string str_path);
+    std::chrono::system_clock::time_point getFileTimestamp(const std::string& str_path);
 
     //// Return time in ISO8061 fraction format
     std::string getIso8601FracformatTime(std::chrono::system_clock::time_point time);
@@ -972,8 +1107,122 @@ int main(int argc, char**argv)
      * test tool targets (typically fuzzing) where start-up speed is critical.
      */
     bool isFuzzing();
-} // end namespace Util
 
+    /**
+     * Splits string into vector<string>. Does not accept referenced variables for easy
+     * usage like (splitString("test", ..)) or (splitString(getStringOnTheFly(), ..))
+     */
+    inline std::vector<std::string> splitStringToVector(const std::string& str, const char delim)
+    {
+        size_t start;
+        size_t end = 0;
+
+        std::vector<std::string> result;
+
+        while ((start = str.find_first_not_of(delim, end)) != std::string::npos)
+        {
+            end = str.find(delim, start);
+            result.emplace_back(str.substr(start, end - start));
+        }
+        return result;
+    }
+
+    void setApplicationPath(const std::string& path);
+    std::string getApplicationPath();
+
+    /**
+     * Converts vector of strings to map. Strings should have formed like this: key + delimiter + value.
+     * In case of a misformed string or zero length vector, passes that item and warns the developer.
+     */
+    std::map<std::string, std::string> stringVectorToMap(std::vector<std::string> sVector, const char delimiter);
+
+#if !MOBILEAPP
+    // If OS is not mobile, it must be Linux.
+    std::string getLinuxVersion();
 #endif
+
+    /// Convert a string to 32-bit signed int.
+    /// Returs the parsed value and a boolean indiciating success or failure.
+    inline std::pair<std::int32_t, bool> i32FromString(const std::string& input)
+    {
+        const char* str = input.data();
+        char* endptr = nullptr;
+        const auto value = std::strtol(str, &endptr, 10);
+        return std::make_pair(value, endptr > str && errno != ERANGE);
+    }
+
+    /// Convert a string to 32-bit signed int. On failure, returns the default
+    /// value, and sets the bool to false (to signify that parsing had failed).
+    inline std::pair<std::int32_t, bool> i32FromString(const std::string& input,
+                                                       const std::int32_t def)
+    {
+        const auto pair = i32FromString(input);
+        return pair.second ? pair : std::make_pair(def, false);
+    }
+
+    /// Convert a string to 32-bit unsigned int.
+    /// Returs the parsed value and a boolean indiciating success or failure.
+    inline std::pair<std::uint32_t, bool> u32FromString(const std::string& input)
+    {
+        const char* str = input.data();
+        char* endptr = nullptr;
+        const auto value = std::strtoul(str, &endptr, 10);
+        return std::make_pair(value, endptr > str && errno != ERANGE);
+    }
+
+    /// Convert a string to 32-bit usigned int. On failure, returns the default
+    /// value, and sets the bool to false (to signify that parsing had failed).
+    inline std::pair<std::uint32_t, bool> u32FromString(const std::string& input,
+                                                        const std::uint32_t def)
+    {
+        const auto pair = u32FromString(input);
+        return pair.second ? pair : std::make_pair(def, false);
+    }
+
+    /// Convert a string to 64-bit signed int.
+    /// Returs the parsed value and a boolean indiciating success or failure.
+    inline std::pair<std::int64_t, bool> i64FromString(const std::string& input)
+    {
+        const char* str = input.data();
+        char* endptr = nullptr;
+        const auto value = std::strtol(str, &endptr, 10);
+        return std::make_pair(value, endptr > str && errno != ERANGE);
+    }
+
+    /// Convert a string to 64-bit signed int. On failure, returns the default
+    /// value, and sets the bool to false (to signify that parsing had failed).
+    inline std::pair<std::int64_t, bool> i64FromString(const std::string& input,
+                                                       const std::int64_t def)
+    {
+        const auto pair = i64FromString(input);
+        return pair.second ? pair : std::make_pair(def, false);
+    }
+
+    /// Convert a string to 64-bit unsigned int.
+    /// Returs the parsed value and a boolean indiciating success or failure.
+    inline std::pair<std::uint64_t, bool> u64FromString(const std::string& input)
+    {
+        const char* str = input.data();
+        char* endptr = nullptr;
+        const auto value = std::strtoul(str, &endptr, 10);
+        return std::make_pair(value, endptr > str && errno != ERANGE);
+    }
+
+    /// Convert a string to 64-bit usigned int. On failure, returns the default
+    /// value, and sets the bool to false (to signify that parsing had failed).
+    inline std::pair<std::uint64_t, bool> u64FromString(const std::string& input,
+                                                        const std::uint64_t def)
+    {
+        const auto pair = u64FromString(input);
+        return pair.second ? pair : std::make_pair(def, false);
+    }
+
+    /// Get system_clock now in miliseconds.
+    inline int64_t getNowInMS()
+    {
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    }
+
+} // end namespace Util
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

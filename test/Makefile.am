@@ -2,7 +2,7 @@
 export MAX_CONCURRENCY=4
 AUTOMAKE_OPTION = serial-tests
 
-# unittest: tests that run a captive loolwsd as part of themselves.
+# unittest: tests that run a captive oxoolwsd as part of themselves.
 check_PROGRAMS = fakesockettest
 
 noinst_PROGRAMS = fakesockettest unittest
@@ -37,11 +37,14 @@ noinst_LTLIBRARIES = \
 	unit-load.la \
 	unit-cursor.la \
 	unit-calc.la \
+	unit-php-proxy.la \
 	unit-insert-delete.la \
 	unit-close.la \
 	unit-bad-doc-load.la \
 	unit-hosting.la \
-	unit-wopi-loadencoded.la unit-wopi-temp.la
+	unit-wopi-loadencoded.la \
+	unit-wopi-temp.la \
+	unit-wopi-httpheaders.la
 
 MAGIC_TO_FORCE_SHLIB_CREATION = -rpath /dummy
 AM_LDFLAGS = -pthread -module $(MAGIC_TO_FORCE_SHLIB_CREATION) $(ZLIB_LIBS)
@@ -58,22 +61,25 @@ AM_CPPFLAGS = -pthread -I$(top_srcdir) -DBUILDING_TESTS -DLOK_ABORT_ON_ASSERTION
 
 wsd_sources = \
             ../common/FileUtil.cpp \
-            ../common/IoUtil.cpp \
             ../common/Protocol.cpp \
             ../common/SpookyV2.cpp \
             ../common/Util.cpp \
             ../common/Authorization.cpp \
             ../kit/Kit.cpp \
             ../kit/TestStubs.cpp \
-            ../wsd/TileCache.cpp
+            ../wsd/FileServerUtil.cpp \
+            ../wsd/RequestDetails.cpp \
+            ../wsd/TileCache.cpp \
+            ../wsd/ProofKey.cpp
 
 test_base_source = \
 	TileQueueTests.cpp \
 	WhiteBoxTests.cpp \
 	DeltaTests.cpp \
+	WopiProofTests.cpp \
 	$(wsd_sources)
 
-unittest_CPPFLAGS = -I$(top_srcdir) -DBUILDING_TESTS -DSTANDALONE_CPPUNIT
+unittest_CPPFLAGS = -I$(top_srcdir) -DBUILDING_TESTS -DSTANDALONE_CPPUNIT -g
 unittest_SOURCES = \
     $(test_base_source) \
     ../common/Log.cpp \
@@ -87,18 +93,20 @@ unittest_SOURCES = \
     ../wsd/TestStubs.cpp \
     test.cpp
 
+unittest_LDADD = $(CPPUNIT_LIBS)
+unit_base_la_LIBADD = $(CPPUNIT_LIBS)
 if ENABLE_SSL
 unittest_SOURCES += ../net/Ssl.cpp
+else
+unittest_LDADD += -lssl -lcrypto
+unit_base_la_LIBADD += -lssl -lcrypto
 endif
-
-unittest_LDADD = $(CPPUNIT_LIBS)
 
 fakesockettest_SOURCES = fakesockettest.cpp ../net/FakeSocket.cpp
 fakesockettest_LDADD = $(CPPUNIT_LIBS)
 
 # old-style unit tests - bootstrapped via UnitClient
 unit_base_la_SOURCES = UnitClient.cpp ${test_base_source}
-unit_base_la_LIBADD = $(CPPUNIT_LIBS)
 unit_tiletest_la_SOURCES = UnitClient.cpp TileCacheTests.cpp
 unit_tiletest_la_LIBADD = $(CPPUNIT_LIBS)
 unit_integration_la_SOURCES = UnitClient.cpp integration-http-server.cpp
@@ -144,6 +152,8 @@ unit_wopi_loadencoded_la_SOURCES = UnitWOPILoadEncoded.cpp
 unit_wopi_loadencoded_la_LIBADD = $(CPPUNIT_LIBS)
 unit_wopi_temp_la_SOURCES = UnitWOPITemplate.cpp
 unit_wopi_temp_la_LIBADD = $(CPPUNIT_LIBS)
+unit_wopi_httpheaders_la_SOURCES = UnitWOPIHttpHeaders.cpp
+unit_wopi_httpheaders_la_LIBADD = $(CPPUNIT_LIBS)
 unit_tiff_load_la_SOURCES = UnitTiffLoad.cpp
 unit_tiff_load_la_LIBADD = $(CPPUNIT_LIBS)
 unit_large_paste_la_SOURCES = UnitLargePaste.cpp
@@ -170,6 +180,8 @@ unit_cursor_la_SOURCES = UnitCursor.cpp
 unit_cursor_la_LIBADD = $(CPPUNIT_LIBS)
 unit_calc_la_SOURCES = UnitCalc.cpp
 unit_calc_la_LIBADD = $(CPPUNIT_LIBS)
+unit_php_proxy_la_SOURCES = UnitPHPProxy.cpp
+unit_php_proxy_la_LIBADD = $(CPPUNIT_LIBS)
 unit_insert_delete_la_SOURCES = UnitInsertDelete.cpp
 unit_insert_delete_la_LIBADD = $(CPPUNIT_LIBS)
 unit_close_la_SOURCES = UnitClose.cpp
@@ -185,8 +197,12 @@ else
 SYSTEM_STAMP =
 endif
 
+CLEANUP_COMMAND=true
+#CLEANUP_COMMAND=if test -s ../oxoolwsd; then echo "Cleaning up..." && ../oxoolwsd --disable-lool-user-checking --cleanup --o:logging.file[@enable]=false --o:logging.level=trace; fi
+
 if HAVE_LO_PATH
 check-local:
+	$(CLEANUP_COMMAND)
 	./fakesockettest
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 
@@ -218,76 +234,65 @@ TESTS = \
 	unit-close.la \
 	unit-bad-doc-load.la \
 	unit-hosting.la \
-	unit-wopi-loadencoded.la unit-wopi-temp.la
+	unit-wopi-loadencoded.la \
+	unit-wopi-temp.la \
+	unit-wopi-httpheaders
 # TESTS += unit-admin.test
 # TESTS += unit-storage.test
 
 # Start forced grouping of tests using stamp files
 
-# unit-base.log
-unit-tiletest.log : unit-base.log
-unit-integration.log : unit-base.log
-unit-httpws.log : unit-base.log
-unit-crash.log : unit-base.log
-
-group1.log: unit-httpws.log unit-crash.log unit-tiletest.log unit-integration.log
-	touch $@
-
-unit-typing.log     : group1.log
-unit-convert.log    : group1.log
-unit-tilecache.log  : group1.log
-unit-timeout.log    : group1.log
-
-group1a.log: unit-typing.log unit-convert.log unit-tilecache.log unit-timeout.log
-	touch $@
-
 # isolate this one - it's not a happy test.
-unit-copy-paste.log : group1a.log
-
-group2.log: unit-copy-paste.log
+group0.log: unit-copy-paste.log
 	touch $@
 
-unit-prefork.log : group2.log
-unit-oauth.log : group2.log
-unit-wopi.log : group2.log
-unit-wopi-saveas.log : group2.log
-unit-wopi-ownertermination.log : group2.log
-unit-wopi-versionrestore.log : group2.log
-unit-wopi-documentconflict.log : group2.log
-unit_wopi_renamefile.log : group2.log
-unit_wopi_watermark.log : group2.log
+# group1.log
+unit-crash.log : group0.log
+unit-tiletest.log : group0.log
+unit-insert-delete.log : group0.log
+unit-each-view.log : group0.log
+unit-httpws.log : group0.log
+unit-close.log : group0.log
+unit-wopi-documentconflict.log : group0.log
+unit-prefork.log : group0.log
+unit-wopi-versionrestore.log : group0.log
+unit-wopi-temp.log : group0.log
+unit_wopi_renamefile.log : group0.log
+unit_wopi_watermark.log : group0.log
+unit-wopi.log : group0.log
+unit-wopi-ownertermination.log : group0.log
+unit-load-torture.log : group0.log
 
-group3.log: unit-oauth.log unit-wopi.log unit-wopi-saveas.log unit-wopi-ownertermination.log unit-wopi-versionrestore.log unit-wopi-documentconflict.log unit_wopi_renamefile.log unit_wopi_watermark.log
+unit-wopi-saveas.log : group0.log
+unit-password-protected.log : group0.log
+unit-http.log : group0.log
+unit-tiff-load.log : group0.log
+unit-render-shape.log : group0.log
+unit-oauth.log : group0.log
+unit-large-paste.log : group0.log
+unit-paste.log : group0.log
+unit-rendering-options.log : group0.log
+
+unit-session.log : group0.log
+unit-uno-command.log : group0.log
+unit-load.log : group0.log
+unit-cursor.log : group0.log
+unit-calc.log : group0.log
+unit-bad-doc-load.log : group0.log
+unit-hosting.log : group0.log
+unit-wopi-loadencoded.log : group0.log
+
+unit-integration.log : group0.log
+unit-convert.log : group0.log
+unit-typing.log : group0.log
+unit-tilecache.log : group0.log
+unit-timeout.log : group0.log
+unit-wopi-httpheaders.log: group0.log
+unit-base.log: group0.log
+
+group1.log: unit-crash.log unit-tiletest.log unit-insert-delete.log unit-each-view.log unit-httpws.log unit-close.log unit-wopi-documentconflict.log unit-prefork.log unit-wopi-versionrestore.log unit-wopi-temp.log unit_wopi_renamefile.log unit_wopi_watermark.log unit-wopi.log unit-wopi-ownertermination.log unit-load-torture.log unit-wopi-saveas.log unit-password-protected.log unit-http.log unit-tiff-load.log unit-render-shape.log unit-oauth.log unit-large-paste.log unit-paste.log unit-rendering-options.log unit-session.log unit-uno-command.log unit-load.log unit-cursor.log unit-calc.log unit-bad-doc-load.log unit-hosting.log unit-wopi-loadencoded.log unit-integration.log unit-convert.log unit-typing.log unit-tilecache.log unit-timeout.log unit-base.log unit-wopi-httpheaders.log
+	$(CLEANUP_COMMAND)
 	touch $@
-
-unit-http.log : group3.log
-unit-tiff-load.log : group3.log
-unit-large-paste.log : group3.log
-unit-paste.log : group3.log
-unit-load-torture.log : group3.log
-unit-rendering-options.log : group3.log
-unit-password-protected.log : group3.log
-unit-render-shape.log : group3.log
-unit-each-view.log : group3.log
-
-group4.log: unit-http.log unit-tiff-load.log unit-large-paste.log unit-paste.log unit-load-torture.log unit-rendering-options.log unit-password-protected.log unit-render-shape.log unit-each-view.log
-	touch $@
-
-unit-session.log : group4.log
-unit-uno-command.log : group4.log
-unit-load.log : group4.log
-unit-cursor.log : group4.log
-unit-calc.log : group4.log
-unit-insert-delete.log : group4.log
-
-group5.log: unit-session.log unit-uno-command.log unit-load.log unit-cursor.log unit-calc.log unit-insert-delete.log
-	touch $@
-
-unit-close.log : group5.log
-unit-bad-doc-load.log : group5.log
-unit-hosting.log : group5.log
-unit-wopi-loadencoded.log : group5.log
-unit-wopi-temp.log : group5.log
 
 # end forced grouping
 
@@ -309,3 +314,5 @@ all-local: unittest
 	@echo
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@UNITTEST=1 ${top_builddir}/test/unittest
+	echo "Done test all-local"
+	$(CLEANUP_COMMAND)

@@ -76,6 +76,8 @@ class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.ViewHol
             cursor = activity.getContentResolver().query(uri, null, null, null, null);
             if (cursor != null && cursor.moveToFirst())
                 filename = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        } catch (Exception e) {
+            return null;
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -95,6 +97,8 @@ class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.ViewHol
             cursor = activity.getContentResolver().query(uri, null, null, null, null);
             if (cursor != null && cursor.moveToFirst())
                 length = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
+        } catch (Exception e) {
+            return 0;
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -111,12 +115,16 @@ class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.ViewHol
     public void onBindViewHolder(ViewHolder holder, int position) {
         final RecentFile file = recentFiles.get(position);
 
-        holder.imageView.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mActivity.open(file.uri);
+
             }
-        });
+        };
+
+        holder.filenameView.setOnClickListener(clickListener);
+        holder.imageView.setOnClickListener(clickListener);
 
         holder.fileActionsImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,7 +136,7 @@ class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.ViewHol
         String filename = file.filename;
         long length = file.fileLength;
 
-        // TODO Date not avaiable now
+        // TODO Date not available now
         //Date date = null;
 
         holder.filenameView.setText(filename);
@@ -169,7 +177,7 @@ class RecentFilesAdapter extends RecyclerView.Adapter<RecentFilesAdapter.ViewHol
             holder.fileSizeView.setText(size);
             holder.fileSizeUnitView.setText(unit);
 
-            /* TODO Date not avaiable now
+            /* TODO Date not available now
             if (date != null) {
                 SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy hh:ss");
                 //TODO format date

@@ -8,13 +8,14 @@
  */
 
 // Authentication and Authorization support.
-#ifndef INCLUDED_AUTH_HPP
-#define INCLUDED_AUTH_HPP
+
+#pragma once
 
 #include <cassert>
 #include <string>
+#include <memory>
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 #include <Poco/Crypto/RSADigestEngine.h>
 #include <Poco/Crypto/RSAKey.h>
 #endif
@@ -33,7 +34,7 @@ public:
     virtual bool verify(const std::string& token) = 0;
 };
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 /// JWT Authorization.
 class JWTAuth : public AuthBase
@@ -43,13 +44,15 @@ public:
         : _name(name),
           _sub(sub),
           _aud(aud),
-          _digestEngine(_key, "SHA256")
+          _digestEngine(*_key, "SHA256")
     {
     }
 
     const std::string getAccessToken() override;
 
     bool verify(const std::string& accessToken) override;
+
+    static void cleanup();
 
 private:
     const std::string createHeader();
@@ -65,7 +68,7 @@ private:
     const std::string _sub;
     const std::string _aud;
 
-    static const Poco::Crypto::RSAKey _key;
+    static std::unique_ptr<Poco::Crypto::RSAKey> _key;
     Poco::Crypto::RSADigestEngine _digestEngine;
 };
 
@@ -97,8 +100,6 @@ private:
     const std::string _authVerifyUrl;
     const std::string _authorizationCode;
 };
-
-#endif
 
 #endif
 

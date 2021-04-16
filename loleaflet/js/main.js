@@ -34,6 +34,7 @@ if (host === '' && !window.ThisIsAMobileApp) {
 }
 var brandProductName = 'OxOffice Online';
 global.brandProductName = brandProductName;
+global.brandProductFAQURL = 'https://www.ossii.com.tw/';
 // loleaflet.js accesses these globals
 // TODO: Get rid of these globals
 global.closebutton = closebutton;
@@ -87,7 +88,7 @@ map.addControl(L.control.rowHeader());
 map.addControl(L.control.contextMenu());
 map.addControl(L.control.infobar());
 map.loadDocument();
-
+window.__map = map;
 window.addEventListener('beforeunload', function () {
 	if (map && map._socket) {
 		map.forceCellCommit();

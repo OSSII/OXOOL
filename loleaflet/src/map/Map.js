@@ -16,7 +16,7 @@ function moveObjectVertically(obj, diff) {
 	}
 }
 
-/* global timeago closebutton vex revHistoryEnabled $ _ */
+/* global closebutton vex revHistoryEnabled $ _ */
 L.Map = L.Evented.extend({
 
 	options: {
@@ -62,6 +62,7 @@ L.Map = L.Evented.extend({
 		}
 
 		this._initEvents();
+		this._cacheSVG = {};
 
 		if (options.maxBounds) {
 			this.setMaxBounds(options.maxBounds);
@@ -98,6 +99,8 @@ L.Map = L.Evented.extend({
 		this._serverRecycling = false;
 		this._documentIdle = false;
 		this._helpTarget = null; // help page that fits best the current context
+		this._lastmodtime = '';
+		this._previewControl = null; // Preview toolbar control
 
 		vex.dialogID = -1;
 		// Add by Firefly <firefly@ossii.com.tw>
@@ -156,16 +159,25 @@ L.Map = L.Evented.extend({
 			if (e.perm !== 'edit') {
 				L.DomUtil.addClass(this._container.parentElement, 'readonly');
 				if (!L.Browser.mobile) {
+					if (this._previewControl === null) {
+						this._previewControl = L.control.preview({position:'topleft'});
+						this._previewControl.addTo(this);
+					}
 					L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
 					L.DomUtil.addClass(L.DomUtil.get('toolbar-down'), 'readonly');
 				}
 				L.DomUtil.addClass(L.DomUtil.get('main-menu'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('spreadsheet-row-column-frame'), 'readonly');
+				L.DomUtil.addClass(L.DomUtil.get('spreadsheet-toolbar'), 'readonly');
 			}
 			else {
 				L.DomUtil.removeClass(this._container.parentElement, 'readonly');
 				if (!L.Browser.mobile) {
+					if (this._previewControl !== null) {
+						this.removeControl(this._previewControl);
+						this._previewControl = null;
+					}
 					L.DomUtil.removeClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
 					L.DomUtil.removeClass(L.DomUtil.get('toolbar-down'), 'readonly');
 				}
@@ -176,6 +188,14 @@ L.Map = L.Evented.extend({
 			}
 		}, this);
 		this.on('doclayerinit', function() {
+			var docType = this._docLayer._docType;
+			if (docType === 'draw')
+				docType = 'presentation';
+
+			// 試算表文件縮放最小為 60%
+			if (docType === 'spreadsheet')
+				this.options.minZoom = 7;
+
 			if (window._invalidateSize) {
 				this._size = new L.Point(0,0);
 				this._onResize();
@@ -185,10 +205,6 @@ L.Map = L.Evented.extend({
 				this._fireInitComplete('doclayerinit');
 				// Add by Firefly <firefly@ossii.com.tw>
 				// 動態載入該文件類型的 style.css
-				var docType = this._docLayer._docType;
-				if (docType === 'draw')
-					docType = 'presentation';
-
 				var head  = document.getElementsByTagName('head')[0];
 				var link = document.createElement('link');
 				link.rel = 'stylesheet';
@@ -197,15 +213,9 @@ L.Map = L.Evented.extend({
 				link.href = 'uiconfig/' + docType + '/style.css';
 				head.appendChild(link);
 			}
-			if (!L.Browser.mobile && this._docLayer._docType == 'text') {
+			if (!L.Browser.mobile && docType === 'text') {
 				var interactiveRuler = this._permission === 'edit' ? true : false;
 				L.control.ruler({position:'topleft', interactive:interactiveRuler}).addTo(this);
-			}
-			// Add by Firefly <firefly@ossii.com.tw>
-			// 非手機裝置，且非編輯模式
-			if (!L.Browser.mobile && this._permission !== 'edit') {
-				// 啟用預覽模式
-				this.addControl(L.control.preview());
 			}
 		});
 		this.on('updatetoolbarcommandvalues', function(e) {
@@ -261,6 +271,18 @@ L.Map = L.Evented.extend({
 				this._docLayer.clearAnnotations();
 			}
 			this.initializeModificationIndicator();
+		}, this);
+
+		// 處理 commandresult
+		this._waitSaveResult = false;
+		this.on('commandresult', function(e) {
+			// 如果是 uno:Save 且 _waitSaveResult 為 true 的話
+			// 表示是按下關閉按鈕，等待存檔完畢
+			if (e.commandName === '.uno:Save' && this._waitSaveResult) {
+				console.debug('Save complete. Send UI_Close signal.');
+				this._waitSaveResult = false;
+				this.sendUICloseMessage();
+			}
 		}, this);
 	},
 
@@ -364,27 +386,32 @@ L.Map = L.Evented.extend({
 
 	// 紀錄最後更新時間
 	updateModificationIndicator: function(newModificationTime) {
-		this._lastmodtime = newModificationTime;
+		var timeout;
+
+		if (typeof newModificationTime === 'string') {
+			this._lastmodtime = newModificationTime;
+		}
+
+		clearTimeout(this._modTimeout);
+
 		if (this.lastModIndicator !== null && this.lastModIndicator !== undefined) {
-			// 非編輯模式，顯示最近存檔時間
-			if (this._permission !== 'edit') {
-				var dd = $.timeago.parse(this._lastmodtime);
-				this.lastModIndicator.innerHTML = dd.toLocaleString();
-				return;
+			var dateTime = new Date(this._lastmodtime.replace(/,.*/, 'Z'));
+			var dateValue = dateTime.toLocaleDateString(String.locale,
+				{ year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+			var elapsed = Date.now() - dateTime;
+			if (elapsed < 60000) {
+				dateValue = Math.round(elapsed / 1000) + ' ' + _('seconds ago');
+				timeout = 6000;
+			} else if (elapsed < 3600000) {
+				dateValue = Math.round(elapsed / 60000) + ' ' + _('minutes ago');
+				timeout = 60000;
 			}
 
-			// Get locale
-			var special = [ 'bn_IN', 'hi_IN', 'id_ID', 'nb_NO', 'nn_NO', 'pt_BR', 'zh_CN', 'zh_TW'];
-			var locale = String.locale;
-			locale = locale.replace('-', '_');
-			if ($.inArray(locale, special) < 0) {
-				if (locale.indexOf('_') > 0) {
-					locale = locale.substring(0, locale.indexOf('_'));
-				}
+			this.lastModIndicator.innerHTML = dateValue;
+
+			if (timeout) {
+				this._modTimeout = setTimeout(L.bind(this.updateModificationIndicator, this, -1), timeout);
 			}
-			// Real-time auto update
-			this.lastModIndicator.setAttribute('datetime', newModificationTime);
-			timeago().render(this.lastModIndicator, locale);
 		}
 	},
 
@@ -843,7 +870,7 @@ L.Map = L.Evented.extend({
 				this.sendUnoCommand(cmd);
 			}
 		}
-	},	
+	},
 
 	_fireInitComplete: function (condition) {
 		if (this.initComplete) {
@@ -1553,7 +1580,7 @@ L.Map = L.Evented.extend({
 		if (mainNav.css('display') === 'none') {
 			mainNav.css({'display': ''});
 			if (closebutton && !window.mode.isTablet()) {
-				$('#closebuttonwrapper').css({'display': ''});
+				$('#closebuttonwrapper').show();
 			}
 
 			obj = $('.unfold');
@@ -1563,7 +1590,7 @@ L.Map = L.Evented.extend({
 		else {
 			mainNav.css({'display': 'none'});
 			if (closebutton) {
-				$('#closebuttonwrapper').css({'display': 'none'});
+				$('#closebuttonwrapper').hide();
 			}
 
 			obj = $('.fold');

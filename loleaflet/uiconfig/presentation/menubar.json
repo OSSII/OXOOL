@@ -13,6 +13,10 @@
 				"id": "saveas"
 			},
 			{
+				"name": "Save As Password",
+				"id": "saveaspassword"
+			},
+			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share...",
 				"id": "shareas"
@@ -129,15 +133,6 @@
 			{
 				"id": ".uno:SearchDialog",
 				"hotkey": "Ctrl+H"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"type": "--"
 			}
 		]
 	},
@@ -168,7 +163,8 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:NormalMultiPaneGUI"
+				"id": ".uno:NormalMultiPaneGUI",
+				"hide": true
 			},
 			{
 				"id": ".uno:OutlineMode",
@@ -183,7 +179,8 @@
 				"hide": true
 			},
 			{
-				"id": ".uno:SlideMasterPage"
+				"id": ".uno:SlideMasterPage",
+				"hide": true
 			},
 			{
 				"id": ".uno:NotesMasterPage",
@@ -243,9 +240,6 @@
 						"id": ".uno:SnapBorder"
 					}
 				]
-			},
-			{
-				"type": "--"
 			}
 		]
 	},
@@ -261,6 +255,11 @@
 			{
 				"name": ".uno:InsertGraphic",
 				"id": "insertgraphicremote"
+			},
+			{
+				"icon": ".uno:FlowChartShapes",
+				"name": "Hand-drawn diagram",
+				"id": "dialog:DiagramEditor"
 			},
 			{
 				"id": ".uno:InsertObjectChart"
@@ -725,11 +724,11 @@
 				"type": "--"
 			},
 			{
-				"type": "--"
-			},
-			{
 				"id": ".uno:Text",
 				"hotkey": "F2"
+			},
+			{
+				"id": ".uno:VerticalText"
 			},
 			{
 				"name": ".uno:InsertAnnotation",
@@ -832,7 +831,8 @@
 						"hotkey": "Ctrl+U"
 					},
 					{
-						"id": ".uno:UnderlineDouble"
+						"name": ".uno:UnderlineDouble",
+						"id": ".uno:Underline?Underline.LineStyle:short=2"
 					},
 					{
 						"id": ".uno:Strikeout"
@@ -1042,61 +1042,10 @@
 				"id": ".uno:ParagraphDialog"
 			},
 			{
-				"type": "--"
+				"id": ".uno:OutlineBullet"
 			},
 			{
-				"name": ".uno:TableMenu",
-				"id": ".uno:TableMenu",
-				"menu": [
-					{
-						"id": ".uno:SetMinimalRowHeight"
-					},
-					{
-						"id": ".uno:SetOptimalRowHeight"
-					},
-					{
-						"id": ".uno:DistributeRows"
-					},
-					{
-						"id": ".uno:EntireRow"
-					},
-					{
-						"id": ".uno:DeleteRows"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:SetMinimalColumnWidth"
-					},
-					{
-						"id": ".uno:SetOptimalColumnWidth"
-					},
-					{
-						"id": ".uno:DistributeColumns"
-					},
-					{
-						"id": ".uno:EntireColumn"
-					},
-					{
-						"id": ".uno:DeleteColumns"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:MergeCells"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:SelectTable"
-					},
-					{
-						"id": ".uno:TableDialog"
-					}
-				]
+				"type": "--"
 			},
 			{
 				"name": ".uno:FormatImageMenu",
@@ -1107,6 +1056,14 @@
 					},
 					{
 						"type": "--"
+					},
+					{
+						"name": ".uno:ExternalEdit",
+						"id": "externaledit"
+					},
+					{
+						"name": ".uno:SaveGraphic",
+						"id": "savegraphic"
 					},
 					{
 						"type": "--"
@@ -1155,9 +1112,6 @@
 								"hide": true
 							}
 						]
-					},
-					{
-						"type": "--"
 					}
 				]
 			},
@@ -1314,6 +1268,72 @@
 		]
 	},
 	{
+		"name": ".uno:TableMenu",
+		"id": ".uno:TableMenu",
+		"menu": [
+			{
+				"id": ".uno:SetMinimalRowHeight"
+			},
+			{
+				"id": ".uno:SetOptimalRowHeight"
+			},
+			{
+				"id": ".uno:DistributeRows"
+			},
+			{
+				"id": ".uno:InsertRowsBefore"
+			},
+			{
+				"id": ".uno:InsertRowsAfter"
+			},
+			{
+				"id": ".uno:EntireRow"
+			},
+			{
+				"id": ".uno:DeleteRows"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:SetMinimalColumnWidth"
+			},
+			{
+				"id": ".uno:SetOptimalColumnWidth"
+			},
+			{
+				"id": ".uno:DistributeColumns"
+			},
+			{
+				"id": ".uno:InsertColumnsBefore"
+			},
+			{
+				"id": ".uno:InsertColumnsAfter"
+			},
+			{
+				"id": ".uno:EntireColumn"
+			},
+			{
+				"id": ".uno:DeleteColumns"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:MergeCells"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:SelectTable"
+			},
+			{
+				"id": ".uno:TableDialog"
+			}
+		]
+	},
+	{
 		"name": ".uno:SlideMenu",
 		"id": ".uno:SlideMenu",
 		"menu": [
@@ -1321,6 +1341,11 @@
 				"name": ".uno:Presentation",
 				"id": "fullscreen-presentation",
 				"hotkey": "F5"
+			},
+			{
+				"name": ".uno:PresentationCurrentSlide",
+				"id": "presentation-currentslide",
+				"hotkey": "Shift+F5"
 			},
 			{
 				"type": "--"
@@ -1408,22 +1433,16 @@
 				"type": "--"
 			},
 			{
-				"type": "--"
+				"name": ".uno:ShowSlide",
+				"id": "ShowSlide"
 			},
 			{
-				"type": "--"
+				"name": ".uno:HideSlide",
+				"id": "HideSlide"
 			},
 			{
-				"id": ".uno:ShowSlide",
-				"hide": true
-			},
-			{
-				"id": ".uno:HideSlide",
-				"hide": true
-			},
-			{
-				"id": ".uno:RenameSlide",
-				"hide": true
+				"name": ".uno:RenameSlide",
+				"id": "dialog:RenameSlide"
 			},
 			{
 				"type": "--"
@@ -1540,9 +1559,6 @@
 						"id": "nonelanguage"
 					}
 				]
-			},
-			{
-				"type": "--"
 			},
 			{
 				"type": "--"

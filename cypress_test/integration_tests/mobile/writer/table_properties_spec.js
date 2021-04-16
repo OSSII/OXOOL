@@ -1,77 +1,55 @@
-/* global describe it cy require afterEach expect Cypress beforeEach*/
+/* global describe it cy require expect afterEach */
 
 var helper = require('../../common/helper');
-var writerHelper = require('./writer_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var writerMobileHelper = require('./writer_mobile_helper');
 
 describe('Change table properties / layout via mobile wizard.', function() {
-	beforeEach(function() {
-		helper.beforeAllMobile('table_properties.odt', 'writer');
-	});
-
-	afterEach(function() {
-		helper.afterAll('table_properties.odt');
-	});
+	var testFileName = '';
 
 	function before(testFile) {
-		helper.loadTestDoc(testFile, 'writer', true);
+		testFileName = testFile;
+		helper.beforeAll(testFileName, 'writer');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 	}
+
+	afterEach(function() {
+		helper.afterAll(testFileName);
+	});
 
 	function openTablePanel() {
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.openMobileWizard();
 
-		// Open table panel
-		cy.get('#TableEditPanel')
-			.click();
+		helper.clickOnIdle('#TableEditPanel');
 
-		cy.get('.ui-content.level-0.mobile-wizard')
-			.should('be.visible')
-			.wait(100);
+		cy.get('#InsertRowsBefore')
+			.should('be.visible');
 	}
 
-	function moveCursorToFirstCell() {
-		writerHelper.selectAllMobile();
+	function selectFullTable() {
+		helper.typeIntoDocument('{downarrow}{downarrow}{downarrow}{downarrow}');
 
-		cy.get('.blinking-cursor')
-			.then(function(cursor) {
-				expect(cursor).to.have.lengthOf(1) ;
-				var posX = cursor[0].getBoundingClientRect().right + 10;
-				var posY = cursor[0].getBoundingClientRect().top + 10;
-				cy.get('body')
-					.click(posX, posY);
-			});
+		writerMobileHelper.selectAllMobile();
 	}
 
 	it('Insert row before.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
-		cy.get('#InsertRowsBefore')
-			.click();
+		helper.clickOnIdle('#InsertRowsBefore');
 
 		cy.get('.leaflet-marker-icon.table-row-resize-marker')
 			.should('have.length', 4);
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check rows / columns
 		cy.get('#copy-paste-container tr')
-			.should('have.length', 4)
-			.then(function(rows) {
+			.should(function(rows) {
+				expect(rows).to.have.lengthOf(4);
 				expect(rows[0].textContent).to.not.have.string('text');
 				expect(rows[1].textContent).to.have.string('text');
 			});
@@ -80,31 +58,21 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Insert row after.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
-		cy.get('#InsertRowsAfter')
-			.click();
+		helper.clickOnIdle('#InsertRowsAfter');
 
 		cy.get('.leaflet-marker-icon.table-row-resize-marker')
 			.should('have.length', 4);
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check rows / columns
 		cy.get('#copy-paste-container tr')
-			.should('have.length', 4)
-			.then(function(rows) {
+			.should(function(rows) {
+				expect(rows).to.have.lengthOf(4);
 				expect(rows[0].textContent).to.have.string('text');
 				expect(rows[1].textContent).to.not.have.string('text');
 			});
@@ -113,193 +81,128 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Insert column before.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
-		cy.get('#InsertColumnsBefore')
-			.click();
+		helper.clickOnIdle('#InsertColumnsBefore');
 
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('have.length', 4);
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check rows / columns
 		cy.get('#copy-paste-container tr')
 			.should('have.length', 3);
 		cy.get('#copy-paste-container td')
-			.should('have.length', 9)
-			.then(function(columns) {
+			.should(function(columns) {
+				expect(columns).to.have.lengthOf(9);
 				expect(columns[0].textContent).to.not.have.string('text');
 				expect(columns[1].textContent).to.have.string('text');
 			});
 	});
 
 	it('Insert column after.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
-		cy.get('#InsertColumnsAfter')
-			.click();
+		helper.clickOnIdle('#InsertColumnsAfter');
 
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('have.length', 4);
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check rows / columns
 		cy.get('#copy-paste-container tr')
 			.should('have.length', 3);
 		cy.get('#copy-paste-container td')
-			.should('have.length', 9)
-			.then(function(columns) {
+			.should(function(columns) {
+				expect(columns).to.have.lengthOf(9);
 				expect(columns[0].textContent).to.have.string('text');
 				expect(columns[1].textContent).to.not.have.string('text');
 			});
 	});
 
 	it('Delete row.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
-		cy.get('#DeleteRows')
-			.click();
+		helper.clickOnIdle('#DeleteRows');
 
 		cy.get('.leaflet-marker-icon.table-row-resize-marker')
 			.should('have.length', 2);
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check rows / columns
 		cy.get('#copy-paste-container tr')
-			.should('have.length', 2)
-			.then(function(columns) {
-				expect(columns[0].textContent).to.not.have.string('text');
-				expect(columns[1].textContent).to.not.have.string('text');
+			.should(function(rows) {
+				expect(rows).to.have.lengthOf(2);
+				expect(rows[0].textContent).to.not.have.string('text');
+				expect(rows[1].textContent).to.not.have.string('text');
 			});
 		cy.get('#copy-paste-container td')
 			.should('have.length', 4);
 	});
 
 	it('Delete column.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
+		before('table_properties.odt');
 
-		before('table_properties2.odt');
-
+		// Insert column first
 		openTablePanel();
 
-		cy.get('#DeleteColumns')
-			.click();
+		helper.clickOnIdle('#InsertColumnsBefore');
 
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
-			.should('not.exist');
+			.should('have.length', 4);
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		// Then delete it
+		mobileHelper.closeMobileWizard();
+		openTablePanel();
 
-		writerHelper.copyTableToClipboard();
+		helper.clickOnIdle('#DeleteColumns');
 
-		// Check rows / columns
-		cy.get('#copy-paste-container tr')
+		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('have.length', 3);
-		cy.get('#copy-paste-container td')
-			.should('have.length', 3)
-			.then(function(columns) {
-				expect(columns[0].textContent).to.not.have.string('text');
-				expect(columns[1].textContent).to.not.have.string('text');
-				expect(columns[2].textContent).to.not.have.string('text');
-			});
 	});
 
 	it('Delete table.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
-		cy.get('#DeleteTable')
-			.click();
+		helper.clickOnIdle('#DeleteTable');
 
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('not.exist');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.closeMobileWizard();
 
 		// Do a new selection
-		writerHelper.selectAllMobile();
+		writerMobileHelper.selectAllMobile();
 
 		// Check markers are in the same row (we have text selection only)
 		cy.get('.leaflet-marker-icon')
-			.then(function(markers) {
+			.should(function(markers) {
 				expect(markers).to.have.lengthOf(2);
 				expect(markers[0].getBoundingClientRect().top).to.equal(markers[1].getBoundingClientRect().top);
 			});
 	});
 
 	it('Merge cells.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
+		before('table_properties.odt');
 
-		before('table_properties2.odt');
-
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{shift}{downarrow}{rightarrow}');
+		helper.typeIntoDocument('{shift}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#MergeCells')
-			.scrollIntoView();
-		cy.get('#MergeCells')
-			.click();
+		helper.clickOnIdle('#MergeCells');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check rows / columns
 		cy.get('#copy-paste-container tr')
@@ -309,12 +212,7 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Change row height.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
 
@@ -329,11 +227,7 @@ describe('Change table properties / layout via mobile wizard.', function() {
 		cy.get('#rowheight .spinfield')
 			.should('have.attr', 'value', '1.4');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check row height
 		cy.get('#copy-paste-container td')
@@ -341,60 +235,35 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Change column width.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
-		before('table_properties2.odt');
+		before('table_properties.odt');
 
 		openTablePanel();
-
-		cy.get('#columnwidth .spinfield')
-			.should('have.attr', 'value', '3.462');
 
 		cy.get('#columnwidth .spinfield')
 			.clear()
-			.type('5.6')
+			.type('1.6')
 			.type('{enter}');
 
 		cy.get('#columnwidth .spinfield')
-			.should('have.attr', 'value', '5.6');
+			.should('have.attr', 'value', '1.6');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check row height
 		cy.get('#copy-paste-container td')
-			.should('have.attr', 'width', '81%');
+			.should('have.attr', 'width', '145');
 	});
 
 	it('Set minimal row height.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		before('table_with_text.odt');
 
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
-
+		helper.typeIntoDocument('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#SetMinimalRowHeight')
-			.click();
+		helper.clickOnIdle('#SetMinimalRowHeight');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check new row height
 		cy.get('#copy-paste-container td')
@@ -402,32 +271,20 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Set optimal row height.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		before('table_with_text.odt');
 
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
+		helper.typeIntoDocument('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#SetOptimalRowHeight')
-			.click();
+		helper.clickOnIdle('#SetOptimalRowHeight');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check new row height
 		cy.get('#copy-paste-container td')
-			.then(function(items) {
-				expect(items).have.lengthOf(6);
+			.should(function(items) {
+				expect(items).to.have.lengthOf(6);
 				for (var i = 0; i < items.length; i++) {
 					if (i == 0 || i == 4)
 						expect(items[i]).have.attr('height', '33');
@@ -440,31 +297,19 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Distribute rows.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		before('table_with_text.odt');
 
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
+		helper.typeIntoDocument('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#DistributeRows')
-			.click();
+		helper.clickOnIdle('#DistributeRows');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		writerHelper.copyTableToClipboard();
+		selectFullTable();
 
 		// Check new row height
 		cy.get('#copy-paste-container td')
-			.then(function(items) {
+			.should(function(items) {
 				expect(items).have.lengthOf(6);
 				for (var i = 0; i < items.length; i++) {
 					if (i == 0 || i == 4)
@@ -478,104 +323,49 @@ describe('Change table properties / layout via mobile wizard.', function() {
 	});
 
 	it('Set minimal column width.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		before('table_with_text.odt');
 
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
+		helper.typeIntoDocument('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#SetMinimalColumnWidth')
-			.click();
+		helper.clickOnIdle('#SetMinimalColumnWidth');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		selectFullTable();
 
-		writerHelper.copyTableToClipboard();
-
-		// Check new row height
 		cy.get('#copy-paste-container td')
-			.then(function(items) {
-				expect(items).have.lengthOf(6);
-				for (var i = 0; i < items.length; i++) {
-					expect(items[i]).have.attr('width', '24');
-				}
-			});
+			.should('have.attr', 'width', '24');
 	});
 
 	it('Set optimal column width.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		before('table_with_text.odt');
 
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
+		helper.typeIntoDocument('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#SetOptimalColumnWidth')
-			.click();
+		helper.clickOnIdle('#SetOptimalColumnWidth');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		selectFullTable();
 
-		writerHelper.copyTableToClipboard();
-
-		// Check new row height
-		cy.get('#copy-paste-container td')
-			.then(function(items) {
-				expect(items).have.lengthOf(6);
-				for (var i = 0; i < items.length; i++) {
-					if (i == 1 || i == 3 || i == 5)
-						expect(items[i]).have.attr('width', '323');
-					else
-						expect(items[i]).have.attr('width', '324');
-				}
-			});
+		cy.get('#copy-paste-container td:nth-of-type(1n)')
+			.should('have.attr', 'width', '324');
+		cy.get('#copy-paste-container td:nth-of-type(2n)')
+			.should('have.attr', 'width', '323');
 	});
 
 	it('Distribute columns.', function() {
-		// TODO: Select all does not work with core/master
-		// Table panel layout is also broken
-		if (Cypress.env('LO_CORE_VERSION') === 'master')
-			return;
-
 		before('table_with_text.odt');
 
-		moveCursorToFirstCell();
-
-		cy.get('body').type('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
+		helper.typeIntoDocument('{leftarrow}{shift}{downarrow}{downarrow}{downarrow}{rightarrow}');
 
 		openTablePanel();
 
-		cy.get('#DistributeColumns')
-			.click();
+		helper.clickOnIdle('#DistributeColumns');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		selectFullTable();
 
-		writerHelper.copyTableToClipboard();
-
-		// Check new row height
 		cy.get('#copy-paste-container td')
-			.then(function(items) {
-				expect(items).have.lengthOf(6);
-				for (var i = 0; i < items.length; i++) {
-					expect(items[i]).have.attr('width', '323');
-				}
-			});
+			.should('have.attr', 'width', '323');
 	});
 });

@@ -64,101 +64,129 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		L.DomEvent.on(this._cornerCanvas, 'contextmenu', L.DomEvent.preventDefault);
 		L.DomEvent.addListener(this._cornerCanvas, 'click', this._onCornerHeaderClick, this);
 
-		var colHeaderObj = this;
+		//var colHeaderObj = this;
+		var map = this._map;
+		var stateHandler = map['stateChangeHandler'];
 		L.installContextMenu({
 			selector: '.spreadsheet-header-columns',
 			className: 'loleaflet-font',
-			autoHide: true,
+			//autoHide: true,
+			zIndex: 1100,
 			callback: function(key/*, opt*/) {
-				colHeaderObj._map.executeAllowedCommand(key);
-				colHeaderObj._updateColumnHeader();
-			},
+				map.executeAllowedCommand(key);
+				this._updateColumnHeader();
+			}.bind(this),
 			items: {
 				'.uno:Cut': {
 					name: _UNO('.uno:Cut', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					}
 				},
 				'.uno:Copy': {
 					name: _UNO('.uno:Copy', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					}
 				},
 				'.uno:Paste': {
 					name: _UNO('.uno:Paste', 'spreadsheet'),
-					visible: function(key/*, opt*/) {
-						var state = colHeaderObj._map['stateChangeHandler'].getItemProperty(key);
-						return (state.enabled === true);
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
 					},
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					visible: function(key/*, opt*/) {
+						return stateHandler.getItemProperty(key).enabled;
+					},
 				},
 				'sep01': '----',
 				'.uno:InsertColumnsBefore': {
 					name: _UNO('.uno:InsertColumnsBefore', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
 				'.uno:InsertColumnsAfter': {
 					name: _UNO('.uno:InsertColumnsAfter', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
 				'.uno:DeleteColumns': {
 					name: _UNO('.uno:DeleteColumns', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
 				'dialog:DeleteCell': {
 					name: _UNO('.uno:Delete', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(/*key, opt, e*/) {
+						return !stateHandler.getItemProperty('.uno:Delete').enabled;
+					}
 				},
 				'sep02': '----',
 				'dialog:ColumnWidth': {
 					name: _UNO('.uno:ColumnWidth', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(/*key, opt, e*/) {
+						return !stateHandler.getItemProperty('.uno:SetOptimalColumnWidth').enabled;
+					}
 				},
 				'.uno:SetOptimalColumnWidth': {
 					name: _UNO('.uno:SetOptimalColumnWidth', 'spreadsheet'),
 					callback: function() {
-						colHeaderObj._map.sendUnoCommand('.uno:SetOptimalColumnWidth?aExtraWidth:long=200');
+						map.sendUnoCommand('.uno:SetOptimalColumnWidth?aExtraWidth:long=200');
 					},
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
 				'sep03': '----',
 				'.uno:HideColumn': {
 					name: _UNO('.uno:HideColumn', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
 				'.uno:ShowColumn': {
 					name: _UNO('.uno:ShowColumn', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
 				'sep04': '----',
 				'.uno:FormatCellDialog': {
 					name: _UNO('.uno:FormatCellDialog', 'spreadsheet'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
+					icon: function(opt, $itemElement, itemKey, item) {
+						return map.contextMenuIcon($itemElement, itemKey, item);
+					},
+					disabled: function(key/*, opt, e*/) {
+						return !stateHandler.getItemProperty(key).enabled;
+					}
 				},
-			},
-			zIndex: 100
+			}
 		});
 	},
 

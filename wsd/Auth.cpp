@@ -26,18 +26,25 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/NetException.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/Timestamp.h>
 #include <Poco/URI.h>
 
 #include <Log.hpp>
 #include <Util.hpp>
+#include <Protocol.hpp>
 
 using Poco::Base64Decoder;
 using Poco::Base64Encoder;
 using Poco::OutputLineEndingConverter;
 
-const Poco::Crypto::RSAKey JWTAuth::_key(Poco::Crypto::RSAKey(Poco::Crypto::RSAKey::KL_2048, Poco::Crypto::RSAKey::EXP_LARGE));
+std::unique_ptr<Poco::Crypto::RSAKey> JWTAuth::_key(
+    new Poco::Crypto::RSAKey(Poco::Crypto::RSAKey(Poco::Crypto::RSAKey::KL_2048, Poco::Crypto::RSAKey::EXP_LARGE)));
+
+// avoid obscure double frees on exit.
+void JWTAuth::cleanup()
+{
+    _key.reset();
+}
 
 const std::string JWTAuth::getAccessToken()
 {
@@ -94,10 +101,16 @@ const std::string JWTAuth::getAccessToken()
 
 bool JWTAuth::verify(const std::string& accessToken)
 {
-    Poco::StringTokenizer tokens(accessToken, ".", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
+    StringVector tokens(Util::tokenize(accessToken, '.'));
 
     try
     {
+        if (tokens.size() < 3)
+        {
+            LOG_INF("JWTAuth: verification failed; Not enough tokens");
+            return false;
+        }
+
         const std::string encodedBody = tokens[0] + '.' + tokens[1];
         _digestEngine.update(encodedBody.c_str(), static_cast<unsigned>(encodedBody.length()));
         Poco::Crypto::DigestEngine::Digest digest = _digestEngine.signature();
@@ -121,7 +134,10 @@ bool JWTAuth::verify(const std::string& accessToken)
         if (encodedSig != tokens[2])
         {
             LOG_INF("JWTAuth: verification failed; Expected: " << encodedSig << ", Received: " << tokens[2]);
-            return false;
+            if (!Util::isFuzzing())
+            {
+                return false;
+            }
         }
 
         std::istringstream istr(tokens[1]);
@@ -135,13 +151,18 @@ bool JWTAuth::verify(const std::string& accessToken)
         Poco::JSON::Parser parser;
         Poco::Dynamic::Var result = parser.parse(decodedPayload);
         Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
-        std::time_t decodedExptime = object->get("exp").convert<std::time_t>();
+        std::time_t decodedExptime = 0;
+        object->get("exp").convert(decodedExptime);
 
-        std::time_t curtime = Poco::Timestamp().epochTime();
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t curtime = std::chrono::system_clock::to_time_t(now);
         if (curtime > decodedExptime)
         {
             LOG_INF("JWTAuth:verify: JWT expired; curtime:" << curtime << ", exp:" << decodedExptime);
-            return false;
+            if (!Util::isFuzzing())
+            {
+                return false;
+            }
         }
     }
     catch(Poco::Exception& exc)
@@ -170,7 +191,8 @@ const std::string JWTAuth::createHeader()
 
 const std::string JWTAuth::createPayload()
 {
-    const std::time_t curtime = Poco::Timestamp().epochTime();
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t curtime = std::chrono::system_clock::to_time_t(now);
     const std::string exptime = std::to_string(curtime + 1800);
 
     // TODO: Some sane code to represent JSON objects

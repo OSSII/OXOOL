@@ -36,7 +36,7 @@ Update the translations of unocommands.js before releasing:
     {program} --translate /path/to/online /path/to/translations
 
 """
-    print(message.format(program = os.path.basename(sys.argv[0])))
+    print(message.format(program = sys.argv[0]))
     exit(1)
 
 # Extract uno commands name from lines like "  'Command1', 'Command2',"
@@ -123,8 +123,63 @@ def extractContextCommands(path):
 def extractToolbarCommands(path):
     commands = []
 
-    # extract from the menu specifications
+    # extract from the toolbars
     f = open(path + '/loleaflet/src/control/Control.Toolbar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.MobileBottomBar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.MobileTopBar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.NotebookbarBuilder.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.Notebookbar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.NotebookbarWriter.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.NotebookbarCalc.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.NotebookbarImpress.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.PresentationBar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.SearchBar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.StatusBar.js', 'r')
+    for line in f:
+        if line.find("_UNO(") >= 0:
+            commands += commandFromMenuLine(line)
+
+    f = open(path + '/loleaflet/src/control/Control.TopToolbar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)

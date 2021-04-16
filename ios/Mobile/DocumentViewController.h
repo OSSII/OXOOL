@@ -9,18 +9,17 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#import "Document.h"
+#import "CODocument.h"
 
 @interface DocumentViewController : UIViewController
 
-@property (strong) Document *document;
+@property (strong) CODocument *document;
 @property (strong) WKWebView *webView;
 @property (strong) WKWebView *slideshowWebView;
 @property std::string slideshowFile;
 @property (strong) NSURL *slideshowURL;
 
 - (void)bye;
-+ (DocumentViewController*)singleton;
 
 @end
 

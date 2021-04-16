@@ -7,19 +7,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SIGNALUTIL_HPP
-#define INCLUDED_SIGNALUTIL_HPP
+#pragma once
 
 #include <atomic>
 #include <mutex>
-
-#if MOBILEAPP
-static constexpr bool ShutdownRequestFlag(false);
-extern std::atomic<bool> MobileTerminationFlag;
-#endif
+#include <signal.h>
 
 namespace SigUtil
 {
+#ifndef IOS
     /// Get the flag used to commence clean shutdown.
     /// requestShutdown() is used to set the flag.
     bool getShutdownRequestFlag();
@@ -33,14 +29,28 @@ namespace SigUtil
     /// Only necessary in Mobile.
     void resetTerminationFlag();
 #endif
+#else
+    // In the mobile apps we have no need to shut down the app.
+    inline constexpr bool getShutdownRequestFlag()
+    {
+        return false;
+    }
 
-    /// Get the flag to dump internal state.
-    bool getDumpGlobalState();
-    /// Reset the flag to dump internal state.
-    void resetDumpGlobalState();
+    inline constexpr bool getTerminationFlag()
+    {
+        return false;
+    }
+
+    inline void setTerminationFlag()
+    {
+    }
+#endif
+
+    extern "C" { typedef void (*GlobalDumpStateFn)(void); }
+
+    void checkDumpGlobalState(GlobalDumpStateFn dumpState);
 
 #if !MOBILEAPP
-
     /// Wait for the signal handler, if any,
     /// and prevent _Exit while collecting backtrace.
     void waitSigHandlerTrap();
@@ -74,7 +84,7 @@ namespace SigUtil
     /// Kills a child process and returns true when
     /// child pid is removed from the process table
     /// after a certain (short) timeout.
-    bool killChild(const int pid);
+    bool killChild(const int pid, const int signal = SIGKILL);
 
     /// Dump a signal-safe back-trace
     void dumpBacktrace();
@@ -82,7 +92,5 @@ namespace SigUtil
 #endif // !MOBILEAPP
 
 } // end namespace SigUtil
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -21,11 +21,11 @@ build the native parts on Windows.
   git clone https://github.com/pocoproject/poco poco-android
   cd poco-android
 
-  # use the 1.9.1 branch
-  git checkout -b poco-1.9.1 origin/poco-1.9.1
+  # use the 1.10.1 branch
+  git checkout -b poco-1.10.1 origin/poco-1.10.1
 
   # configure
-  ./configure --config=Android --no-samples --no-tests --minimal
+  ./configure --config=Android --no-samples --no-tests --omit=Crypto,NetSSL_OpenSSL,Zip,Data,Data/SQLite,Data/ODBC,Data/MySQL,MongoDB,PDF,CppParser,PageCompiler,JWT
 
   # make it
   PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=armeabi-v7a CC=armv7a-linux-androideabi21-clang CXX=armv7a-linux-androideabi21-clang++ SYSLIBS=-static-libstdc++
@@ -35,7 +35,7 @@ build the native parts on Windows.
 
 * 64bit POCO for Android
 
-  # checkout the 1.9.1 in a different location and apply the following patch:
+  # checkout the 1.10.1 in a different location and apply the following patch:
   --- a/build/config/Android
   +++ b/build/config/Android
   @@ -21,6 +21,11 @@ TOOL      = arm-linux-androideabi
@@ -55,15 +55,71 @@ build the native parts on Windows.
    endif
    endif
   +endif
-   
+
    #
    # Define Tools
 
-  # configure as above and make it:
+  # configure as above:
+  ./configure --config=Android --no-samples --no-tests --omit=Crypto,NetSSL_OpenSSL,Zip,Data,Data/SQLite,Data/ODBC,Data/MySQL,MongoDB,PDF,CppParser,PageCompiler,JWT
+
+  # and make it:
   PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=arm64-v8a CC=aarch64-linux-android21-clang CXX=aarch64-linux-android21-clang++ SYSLIBS=-static-libstdc++
 
   # install
   PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=arm64-v8a CC=aarch64-linux-android21-clang CXX=aarch64-linux-android21-clang++ SYSLIBS=-static-libstdc++ install INSTALLDIR=/opt/poco-android-64bit
+
+* Poco for x86 (if you want to add the support for that into the APK too):
+
+  # checkout the 1.10.1 in yet another location
+  git clone https://github.com/pocoproject/poco poco-android-x86
+  cd poco-android-x86
+  git checkout -b poco-1.10.1 origin/poco-1.10.1
+
+  # configure
+  ./configure --config=Android --no-samples --no-tests --omit=Crypto,NetSSL_OpenSSL,Zip,Data,Data/SQLite,Data/ODBC,Data/MySQL,MongoDB,PDF,CppParser,PageCompiler,JWT
+
+  # build
+  PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=x86 CC=i686-linux-android21-clang CXX=i686-linux-android21-clang++ SYSLIBS=-static-libstdc++
+
+  # install
+  PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=x86 CC=i686-linux-android21-clang CXX=i686-linux-android21-clang++ SYSLIBS=-static-libstdc++ install INSTALLDIR=/opt/poco-android-x86
+
+* Poco for x86_64 (if you want to add the support for that into the APK too):
+
+  # checkout the 1.10.1 in yet another location
+  git clone https://github.com/pocoproject/poco poco-android-x86-64
+  cd poco-android-x86-64
+  git checkout -b poco-1.10.1 origin/poco-1.10.1
+
+  # and apply the following patch:
+  diff --git a/build/config/Android b/build/config/Android
+  index 9227a3352..1abf6df7c 100644
+  --- a/build/config/Android
+  +++ b/build/config/Android
+  @@ -25,10 +25,14 @@ ifeq ($(ANDROID_ABI),x86)
+   TOOL      = i686-linux-android
+   ARCHFLAGS = -march=i686 -msse3 -mstackrealign -mfpmath=sse
+   else
+  +ifeq ($(ANDROID_ABI),x86_64)
+  +TOOL      = x86_64-linux-android
+  +else
+   $(error Invalid ABI specified in ANDROID_ABI)
+   endif
+   endif
+   endif
+  +endif
+   
+   #
+   # Define Tools
+
+  # configure
+  ./configure --config=Android --no-samples --no-tests --omit=Crypto,NetSSL_OpenSSL,Zip,Data,Data/SQLite,Data/ODBC,Data/MySQL,MongoDB,PDF,CppParser,PageCompiler,JWT
+
+  # build
+  PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=x86_64 CC=x86_64-linux-android21-clang CXX=x86_64-linux-android21-clang++ SYSLIBS=-static-libstdc++
+
+  # install
+  PATH="$PATH":~/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin make -j8 ANDROID_ABI=x86_64 CC=x86_64-linux-android21-clang CXX=x86_64-linux-android21-clang++ SYSLIBS=-static-libstdc++ install INSTALLDIR=/opt/poco-android-x86-64
 
 * Configure the online.git (eg. in online-android folder)
 
@@ -81,6 +137,10 @@ build the native parts on Windows.
   + Start Android Studio
   + Open this 'android' subdir as a project
   + Build from Android Studio (Build -> Make Project)
+
+Or
+
+  + command line:  ./gradlew build
 
 == Building 32bit + 64bit combined .apk ==
 
@@ -110,7 +170,7 @@ to setup lldb to actually read & use them.
 
   and rebuild using 'make'.
 
-* Add android/source/obj/local/armeabi-v7a from core.git as a Symbol Directory
+* Add android/obj/local/armeabi-v7a from core.git as a Symbol Directory
 
   In Android Studio, choose Run -> Debug... -> Edit Configurations...
 
@@ -120,7 +180,7 @@ to setup lldb to actually read & use them.
 
   Symbol Directories: here add the full path, like
 
-    /local/libreoffice/master-android/android/source/obj/local/armeabi-v7a
+    /local/libreoffice/master-android/android/obj/local/armeabi-v7a
 
   This path contains the non-stripped version of the liblo-native-code.so, and
   the debugger will read the symbols from that one (even if the APK contains
@@ -130,7 +190,7 @@ to setup lldb to actually read & use them.
   [Alternatively you can add the following to your ~/.lldbinit instead:
 
     settings set target.inline-breakpoint-strategy always
-    settings append target.exec-search-paths /local/libreoffice/master-android/android/source/obj/local/armeabi-v7a
+    settings append target.exec-search-paths /local/libreoffice/master-android/android/obj/local/armeabi-v7a
   ]
 
 * To use pretty printers for types like OUString, add the following to your
@@ -141,7 +201,7 @@ to setup lldb to actually read & use them.
 From now on, you will be able to debug directly in the Android Studio
 debugger.  Happy debugging!
 
-Note: to re-buld your app with a newly compiled libnative-lo code - it is 
+Note: to re-build your app with a newly compiled libnative-lo code - it is
 
 == Tip: How to speed up your core.git build ==
 

@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_JSONUTIL_HPP
-#define INCLUDED_JSONUTIL_HPP
+#pragma once
 
 #include <cstddef>
 #include <set>
@@ -27,7 +26,6 @@ namespace JsonUtil
 // Returns true if parsing successful otherwise false
 inline bool parseJSON(const std::string& json, Poco::JSON::Object::Ptr& object)
 {
-    bool success = false;
     const size_t index = json.find_first_of('{');
     if (index != std::string::npos)
     {
@@ -35,10 +33,10 @@ inline bool parseJSON(const std::string& json, Poco::JSON::Object::Ptr& object)
         Poco::JSON::Parser parser;
         const Poco::Dynamic::Var result = parser.parse(stringJSON);
         object = result.extract<Poco::JSON::Object::Ptr>();
-        success = true;
+        return true;
     }
 
-    return success;
+    return false;
 }
 
 inline
@@ -93,7 +91,7 @@ T getJSONValue(const Poco::JSON::Object::Ptr &object, const std::string& key)
 }
 
 /// Function that searches `object` for `key` and warns if there are minor mis-spellings involved.
-/// Upon successfull search, fills `value` with value found in object.
+/// Upon successful search, fills `value` with value found in object.
 /// Removes the entry from the JSON object if @bRemove == true.
 template <typename T>
 bool findJSONValue(Poco::JSON::Object::Ptr &object, const std::string& key, T& value, bool bRemove = true)
@@ -120,7 +118,7 @@ bool findJSONValue(Poco::JSON::Object::Ptr &object, const std::string& key, T& v
 
             // We found something with some differences--warn and return.
             LOG_WRN("Incorrect JSON property [" << userInput << "]. Did you mean [" << key <<
-                    "] ? (Levenshtein distance: " << levDist << ")");
+                    "] ? (Levenshtein distance: " << levDist << ')');
 
             // Fail without exact match.
             return false;
@@ -130,7 +128,7 @@ bool findJSONValue(Poco::JSON::Object::Ptr &object, const std::string& key, T& v
         if (bRemove)
             object->remove(userInput);
 
-        LOG_TRC("Found JSON property [" << userInput << "] => [" << value << "]");
+        LOG_TRC("Found JSON property [" << userInput << "] => [" << value << ']');
         return true;
     }
 
@@ -139,8 +137,6 @@ bool findJSONValue(Poco::JSON::Object::Ptr &object, const std::string& key, T& v
 }
 
 } // end namespace JsonUtil
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
 

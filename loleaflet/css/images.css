@@ -122,7 +122,7 @@
 .alignleft{ background: url('images/cmd/alignleft.svg') no-repeat center/contain !important;}
 .alignright{ background: url('images/cmd/alignright.svg') no-repeat center/contain !important;}
 .aligntop{ background: url('images/cmd/aligntop.svg') no-repeat center/contain !important;}
-.alignmiddle{ background: url('images/cmd/alignmiddle.svg') no-repeat center/contain !important;}
+.alignmiddle{ background: url('images/cmd/alignverticalcenter.svg') no-repeat center/contain !important;}
 .alignbottom{ background: url('images/cmd/alignbottom.svg') no-repeat center/contain !important;}
 .functionwizard{ background: url('images/cmd/dbviewfunctions.svg') no-repeat center/contain !important;}
 .autosum{ background: url('images/cmd/autosum.svg') no-repeat center/contain !important;}
@@ -140,6 +140,8 @@
 .edit{ background: url('images/cmd/editdoc.svg') no-repeat center/contain !important;}
 .equal{ background: url('images/lc26049.svg') no-repeat center/contain !important;}
 .incrementindent{ background: url('images/cmd/decrementlevel.svg') no-repeat center/contain !important;}
+.outlineleft{ background: url('images/cmd/outlineleft.svg') no-repeat center/contain !important;}
+.outlineright{ background: url('images/cmd/outlineright.svg') no-repeat center/contain !important;}
 .insertpage{ background: url('images/cmd/insertpage.svg') no-repeat center/contain !important;}
 .insertsheet{ background: url('images/cmd/insertspreadsheet.svg') no-repeat center/contain !important;}
 .italic{ background: url('images/cmd/italic.svg') no-repeat center/contain !important;}
@@ -181,6 +183,7 @@
 .togglemergecells{ background: url('images/cmd/togglemergecells.svg') no-repeat center/contain !important;}
 .numberformatcurrency{ background: url('images/cmd/currencyfield.svg') no-repeat center/contain !important;}
 .numberformatpercent{ background: url('images/cmd/numberformatpercent.svg') no-repeat center/contain !important;}
+.numberformatdecimal{ background: url('images/cmd/numberformatdecimal.svg') no-repeat center/contain !important;}
 .numberformatdate{ background: url('images/cmd/numberformatdate.svg') no-repeat center/contain !important;}
 .numberformatincdecimals{ background: url('images/cmd/numberformatincdecimals.svg') no-repeat center/contain !important;}
 .numberformatdecdecimals{ background: url('images/cmd/numberformatdecdecimals.svg') no-repeat center/contain !important;}
@@ -201,4 +204,7 @@
 .movepagelast{ background: url('images/cmd/movepagelast.svg') no-repeat center/contain !important;}
 .movepage{ background: url('images/cmd/movepage.svg') no-repeat center/contain !important;}
 .gotopage{ background: url('images/cmd/gotopage.svg') no-repeat center/contain !important;}
-
+.textdirectionlefttoright{ background: url('images/cmd/textdirectionlefttoright.svg') no-repeat center/contain !important;}
+.textdirectiontoptobottom{ background: url('images/cmd/textdirectiontoptobottom.svg') no-repeat center/contain !important;}
+.horizontaltext{ background: url('images/cmd/text.svg') no-repeat center/contain !important;}
+.verticaltext{ background: url('images/cmd/verticaltext.svg') no-repeat center/contain !important;}

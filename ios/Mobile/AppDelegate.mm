@@ -21,19 +21,17 @@
 #import "ios.h"
 #import "AppDelegate.h"
 #import "DocumentBrowserViewController.h"
+#import "CODocument.h"
 #import "DocumentViewController.h"
-#import "Document.h"
 
 #import "FakeSocket.hpp"
 #import "Kit.hpp"
 #import "Log.hpp"
 #import "LOOLWSD.hpp"
+#import "SetupKitEnvironment.hpp"
 #import "Util.hpp"
 
-static LOOLWSD *loolwsd = nullptr;
-
 NSString *app_locale;
-BOOL empty_tile_cache;
 
 static void download(NSURL *source, NSURL *destination) {
     [[[NSURLSession sharedSession] downloadTaskWithURL:source
@@ -188,10 +186,41 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
     if (!trace)
         trace = strdup("warning");
 
-    setupKitEnvironment();
+    setupKitEnvironment("");
 
     Log::initialize("Mobile", trace, false, false, {});
     Util::setThreadName("main");
+
+    // Clear the cache directory if it is for another build of the app
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *userDirectory = [paths objectAtIndex:0];
+    NSString *cacheDirectory = [userDirectory stringByAppendingPathComponent:@"cache"];
+
+    NSString *coreVersionHashFile = [cacheDirectory stringByAppendingPathComponent:@"core_version_hash"];
+    NSString *loolwsdVersionHashFile = [cacheDirectory stringByAppendingPathComponent:@"loolwsd_version_hash"];
+
+    NSData *oldCoreVersionHash = [NSData dataWithContentsOfFile:coreVersionHashFile];
+    NSData *oldLoolwsdVersionHash = [NSData dataWithContentsOfFile:loolwsdVersionHashFile];
+
+    NSData *coreVersionHash = [NSData dataWithBytes:CORE_VERSION_HASH length:strlen(CORE_VERSION_HASH)];
+    NSData *loolwsdVersionHash = [NSData dataWithBytes:LOOLWSD_VERSION_HASH length:strlen(LOOLWSD_VERSION_HASH)];
+
+    if (oldCoreVersionHash == nil
+        || ![oldCoreVersionHash isEqualToData:coreVersionHash]
+        || oldLoolwsdVersionHash == nil
+        || ![oldLoolwsdVersionHash isEqualToData:loolwsdVersionHash]) {
+
+        [[NSFileManager defaultManager] removeItemAtPath:cacheDirectory error:nil];
+
+        if (![[NSFileManager defaultManager] createDirectoryAtPath:cacheDirectory withIntermediateDirectories:NO attributes:nil error:nil])
+            NSLog(@"Could not create %@", cacheDirectory);
+
+        if (![[NSFileManager defaultManager] createFileAtPath:coreVersionHashFile contents:coreVersionHash attributes:nil])
+            NSLog(@"Could not create %@", coreVersionHashFile);
+
+        if (![[NSFileManager defaultManager] createFileAtPath:loolwsdVersionHashFile contents:loolwsdVersionHash attributes:nil])
+            NSLog(@"Could not create %@", loolwsdVersionHashFile);
+    }
 
     // Having LANG in the environment is expected to happen only when debugging from Xcode. When
     // testing some language one doesn't know it might be risky to simply set one's iPad to that
@@ -206,6 +235,9 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
     lo_kit = lok_init_2(nullptr, nullptr);
 
     comphelper::LibreOfficeKit::setLanguageTag(LanguageTag(OUString::fromUtf8(OString([app_locale UTF8String])), true));
+
+    // This fires off a thread running the LOKit runLoop()
+    runKitLoopInAThread();
 
     // Look for the setting indicating the URL for a file containing a list of URLs for template
     // documents to download. If set, start a task to download it, and then to download the listed
@@ -248,24 +280,28 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
 
     fakeSocketSetLoggingCallback([](const std::string& line)
                                  {
-                                     LOG_TRC_NOFILE(line);
+                                     LOG_INF_NOFILE(line);
                                  });
 
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
                    ^{
-                       assert(loolwsd == nullptr);
                        char *argv[2];
                        argv[0] = strdup([[NSBundle mainBundle].executablePath UTF8String]);
                        argv[1] = nullptr;
                        Util::setThreadName("app");
-                       while (true) {
-                           loolwsd = new LOOLWSD();
-                           loolwsd->run(1, argv);
-                           delete loolwsd;
-                           LOG_TRC("One run of LOOLWSD completed");
-                       }
+                       auto loolwsd = new LOOLWSD();
+                       loolwsd->run(1, argv);
+
+                       // Should never return
+                       assert(false);
+                       NSLog(@"lolwsd->run() unexpectedly returned");
+                       std::abort();
                    });
     return YES;
+}
+
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0)) {
+    return [UISceneConfiguration configurationWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -286,15 +322,12 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
     std::_Exit(1);
 }
 
+// This method is called when you use the "Share > Open in Collabora Office" functionality in the
+// Files app. Possibly also in other use cases.
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)inputURL options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
     // Ensure the URL is a file URL
     if (!inputURL.isFileURL) {
         return NO;
-    }
-
-    // If we already have a document open, close it
-    if (lok_document != nullptr && [DocumentViewController singleton] != nil) {
-        [[DocumentViewController singleton] bye];
     }
 
     // Reveal / import the document at the URL

@@ -1,12 +1,12 @@
-# spec file for package loolwsd
+# spec file for package oxool
 #
-# Copyright (c) 2015 Collabora
+# Copyright (c) 2015 OSSII
 #
 # This file is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-%define config_options --disable-debug --enable-ssl -with-max-documents=8192 --with-max-connections=8192
+%define config_options --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
 %define loroot /opt/oxoffice
 
 Name:           @PACKAGE_NAME@
@@ -18,24 +18,24 @@ License:        MPL
 Obsoletes:	oxoolwsd
 Source0:        @PACKAGE_NAME@-%{version}-@LOOLWSD_BRANCH@.tar.gz
 BuildRequires:  libcap-devel libpng-devel poco-devel >= 1.7.5
+BuildRequires:  freetype-devel >= 2.8 fontconfig-devel >= 2.12.6 gd-devel >= 2.0.30
 %if 0%{?fedora} || 0%{?rhel} >= 7
 BuildRequires:  libpcap kernel-headers
 %endif
-Requires:       systemd
-Requires(post): coreutils grep sed
+Requires(post): coreutils grep sed cpio
 %if 0%{?fedora} || 0%{?rhel} >= 7
-# loolwsd dependencies
-Requires:       expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng openssl-libs pcre zlib
+# oxoolwsd dependencies
+Requires:       systemd expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssh-clients openssl-libs pcre xz-libs zlib unzip sudo expat fontconfig freetype libuuid bzip2-libs
 Requires:       poco-crypto >= 1.7.5 poco-foundation >= 1.7.5 poco-json >= 1.7.5 poco-net >= 1.7.5 poco-netssl >= 1.7.5 poco-util >= 1.7.5 poco-xml >= 1.7.5
 %endif
 
 %description
 
 %package	devel
-Summary:	Files for build OxOffice Online.
+Summary:	Files for build OxOffice Online Editor.
 Requires:	%{name} = %{version}
 %description	devel
-Files for build OxOffice Online. 
+Files for build OxOffice Online Editor. 
 
 %prep
 %setup -q -n %{name}-%{version}-@LOOLWSD_BRANCH@
@@ -50,47 +50,41 @@ Files for build OxOffice Online.
 	%{config_options}
 %endif
 
-make %{?_smp_mflags}
+env BUILDING_FROM_RPMBUILD=yes make %{?_smp_mflags}
 
 %check
-#make check
+#env BUILDING_FROM_RPMBUILD=yes make check
 
 %install
-%make_install
-rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
-
-%__install -D -m 444 oxoolwsd.service %{buildroot}%{_unitdir}/oxoolwsd.service
-
+env BUILDING_FROM_RPMBUILD=yes make install DESTDIR=%{buildroot}
+rm -f %{buildroot}/%{_libdir}/*.la
 install -d -m 755 %{buildroot}/var/adm/fillup-templates
-mkdir -p %{buildroot}/etc/cron.d
-echo "#Remove old tiles once every 10 days at midnight" > %{buildroot}/etc/cron.d/%{name}.cron
-echo "0 0 */1 * * root find /var/cache/%{name} -type f -a -atime +10 -exec rm {} \;" >> %{buildroot}/etc/cron.d/%{name}.cron
+%if 0%{?rhel}
+install -D -m 444 oxoolwsd.service %{buildroot}%{_unitdir}/oxoolwsd.service
+# systemd in RHEL 7 does not understand these options
+%if 0%{?rhel} <= 7
+sed -i "/^ReadWritePaths/d;/^ProtectControlGroups/d;/^ProtectSystem/d;/^CapabilityBoundingSet/d" %{buildroot}%{_unitdir}/oxoolwsd.service
+%endif
+%endif
 mkdir -p %{buildroot}/etc/pam.d
 echo "auth       required     pam_unix.so" > %{buildroot}/etc/pam.d/%{name}
 echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
 %files
-/usr/bin/oxoolwsd
-/usr/bin/oxoolwsd-systemplate-setup
-/usr/bin/oxoolforkit
-/usr/bin/oxoolconvert
-/usr/bin/oxoolconfig
+%defattr(-,root,root,-)
+%{_bindir}/*
 %{_libdir}/*.so.*
-/usr/share/fonts/SourceHan/*.ttc
 %dir /usr/share/%{name}
 /usr/share/%{name}/loleaflet
 /usr/share/%{name}/discovery.xml
 /usr/share/%{name}/favicon.ico
 /usr/share/%{name}/extensions
-/usr/share/doc/%{name}/README
-/usr/share/doc/%{name}/README.vars
-/usr/share/doc/%{name}/protocol.txt
-/usr/share/doc/%{name}/reference.md
-/usr/share/man/man1/oxoolwsd.1.gz
-/usr/share/man/man1/oxoolforkit.1.gz
-/usr/share/man/man1/oxoolconvert.1.gz
-/usr/share/man/man1/oxoolconfig.1.gz
-/usr/share/man/man1/oxoolwsd-systemplate-setup.1.gz
+/usr/share/doc/%{name}/*
+/usr/share/man/man1/*
+/etc/fonts/conf.d/*.conf
+%dir %attr(755, lool, root) /usr/share/fonts/%{name}
+%dir %attr(750, lool, root) /usr/share/%{name}/support
+/usr/share/%{name}/support/*
 %{_unitdir}/oxoolwsd.service
 %config(noreplace) /etc/sysconfig/oxoolwsd
 
@@ -98,10 +92,8 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %dir /etc/%{name}/conf.d
 %dir %attr(750, lool, root) /var/lib/%{name}
 %dir %{_libdir}/%{name}
-%config(noreplace) /etc/cron.d/%{name}.cron
 %config(noreplace) /etc/pam.d/%{name}
 %config(noreplace) %attr(640, lool, root) /etc/%{name}/oxoolwsd.xml
-%config /etc/fonts/conf.d/50-oxool.conf
 %config /etc/%{name}/oxoolkitconfig.xcu
 %config(noreplace) /etc/%{name}/*.pem
 %config %attr(440, root, root) /etc/sudoers.d/lool
@@ -115,17 +107,25 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
 %pre
 getent group lool >/dev/null || groupadd -r lool
-getent passwd lool >/dev/null || useradd -g lool -r lool
+getent passwd lool >/dev/null || useradd -g lool -r lool -d /opt/oxool -s /bin/bash
 
 %post
-setcap cap_net_bind_service=+ep /usr/bin/oxoolwsd
+setcap cap_dac_override,cap_net_bind_service=ep /usr/bin/oxoolwsd
 setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit
-fc-cache -f
+setcap cap_sys_admin=ep /usr/bin/oxoolmount
 
-mkdir -p /var/cache/%{name} && chown lool:lool /var/cache/%{name}
-rm -rf /var/cache/%{name}/*
+%if 0%{?fedora} || 0%{?rhel} >= 7
+%systemd_post oxoolwsd.service
+%endif
 
-touch /var/log/oxoolwsd.log && chown lool:lool /var/log/oxoolwsd.log
+%triggerin -- expat fontconfig freetype freetype2 glibc glibc-locale kernel keyutils-libs krb5 krb5-libs libbz2-1 libcap libcap-ng libcap2 libexpat1 libfreetype6 libgcc libgcc_s1 libgcrypt libiscsi libpng libpng12 libpng12-0 libpng15-15 libpng16-16 libstdc++ libstdc++6 libuuid libuuid1 libz1 lsb nss-mdns nss-softokn-freebl pcre sssd sssd-client systemd-libs timezone tzdata zlib
+
+echo -ne "Triggered update of loolwsd systemplate..."
+
+%if 0%{?rhel} >= 7 || 0%{?suse_version} >= 1300
+systemctl is-active -q loolwsd && OXOOLWSD_IS_ACTIVE=1 || OXOOLWSD_IS_ACTIVE=0
+if [ $OXOOLWSD_IS_ACTIVE == "1" ]; then systemctl stop oxoolwsd; fi
+%endif
 
 # Figure out where LO is installed, let's hope it is not a mount point
 # Create a directory for oxloolwsd on the same file system
@@ -138,12 +138,14 @@ chown lool:lool ${loolparent}/%{name}
 chown lool:lool ${loolparent}/%{name}/child-roots
 
 fc-cache ${loroot}/share/fonts/truetype
-su lool -c "oxoolwsd-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} "%{_datadir}/%{name}/extensions" >/dev/null 2>&1"
+su lool -c "oxoolwsd-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} >/dev/null 2>&1"
+oxoolwsd-generate-proof-key >/dev/null 2>&1
 
-%if 0%{?fedora} || 0%{?rhel} >= 7
-%systemd_post oxoolwsd.service
+%if 0%{?rhel} || 0%{?suse_version}
+if [ $OXOOLWSD_IS_ACTIVE == "1" ]; then systemctl start oxoolwsd; fi
 %endif
 
+echo "   Done."
 
 %preun
 %if 0%{?fedora} || 0%{?rhel} >= 7
@@ -161,13 +163,11 @@ fc-cache -f
 # 如果是1，表示是 upgrade，不需要刪除檔案
 if [ $arg = 0 ] ; then
     # log file
-    rm -f /var/log/oxoolwsd.log
-    # cache dir
-    rm -fr /var/cache/%{name}
+    rm -f /var/log/oxoolwsd.log*
     # systemplate & child root
     loroot=%{loroot}
     loolparent=`cd ${loroot} && cd .. && /bin/pwd`
-    rm -rf ${loolparent}/%{name}
+    rm -rf ${loolparent}/%{name}/*
 fi
  
 

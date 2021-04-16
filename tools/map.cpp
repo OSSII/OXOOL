@@ -301,7 +301,7 @@ static void dumpDiff(const AddrSpace &space,
                 haveAnnots = true;
             }
             str.resize(24, ' ');
-            annots << str << " ";
+            annots << str << ' ';
         }
         if (haveAnnots)
             printf ("annot:  %s\n", annots.str().c_str());
@@ -666,7 +666,7 @@ int main(int argc, char **argv)
 
     if (help)
     {
-        fprintf(stderr, "Usage: loolmap --hex <name of process|pid>\n");
+        fprintf(stderr, "Usage: oxoolmap --hex <name of process|pid>\n");
         fprintf(stderr, "Dump memory map information for a given process\n");
         fprintf(stderr, "    --hex           Hex dump relevant page contents and diff to parent process\n");
         fprintf(stderr, "    --strings       Print all detected strings\n");

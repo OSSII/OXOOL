@@ -16,6 +16,7 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -101,7 +102,7 @@ public class LOActivity extends AppCompatActivity {
     private URI documentUri;
 
     private String urlToLoad;
-    private WebView mWebView;
+    private WebView mWebView = null;
     private SharedPreferences sPrefs;
     private Handler mMainHandler = null;
     private RateAppController rateAppController;
@@ -121,6 +122,7 @@ public class LOActivity extends AppCompatActivity {
 
     /** In case the mobile-wizard is visible, we have to intercept the Android's Back button. */
     private boolean mMobileWizardVisible = false;
+    private boolean mIsEditModeActive = false;
 
     private ValueCallback<Uri[]> valueCallback;
 
@@ -203,59 +205,16 @@ public class LOActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Copies fonts except the NotoSans from the system to our location.
-     * This is necessary because the NotoSans is huge and fontconfig needs
-     * ages to parse them.
-     */
-    private static boolean copyFonts(String fromPath, String targetDir) {
-        try {
-            File target = new File(targetDir);
-            if (!target.exists())
-                target.mkdirs();
-
-            File from = new File(fromPath);
-            File[] files = from.listFiles();
-            for (File fontFile : files) {
-                String fontFileName = fontFile.getName();
-                if (!fontFileName.equals("Roboto-Regular.ttf")) {
-                    Log.i(TAG, "Ignored font file: " + fontFile);
-                    continue;
-                } else {
-                    Log.i(TAG, "Copying font file: " + fontFile);
-                }
-
-                // copy the font file over
-                InputStream in = new FileInputStream(fontFile);
-                try {
-                    OutputStream out = new FileOutputStream(targetDir + "/" + fontFile.getName());
-                    try {
-                        byte[] buffer = new byte[4096];
-                        int len;
-                        while ((len = in.read(buffer)) > 0) {
-                            out.write(buffer, 0, len);
-                        }
-                    } finally {
-                        out.close();
-                    }
-                } finally {
-                    in.close();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "copyFonts failed: " + e.getMessage());
-            return false;
-        }
-
-        return true;
-    }
-
     private Handler getMainHandler() {
         if (mMainHandler == null) {
             mMainHandler = new Handler(getMainLooper());
         }
         return mMainHandler;
+    }
+
+    /** True if the App is running under ChromeOS. */
+    public static boolean isChromeOS(Context context) {
+        return context.getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
     }
 
     @Override
@@ -289,7 +248,7 @@ public class LOActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... voids) {
                 // copy the new assets
-                if (copyFromAssets(getAssets(), "unpack", getApplicationInfo().dataDir) && copyFonts("/system/fonts", getApplicationInfo().dataDir + "/user/fonts")) {
+                if (copyFromAssets(getAssets(), "unpack", getApplicationInfo().dataDir)) {
                     sPrefs.edit().putString(ASSETS_EXTRACTED_GIT_COMMIT, BuildConfig.GIT_COMMIT).apply();
                 }
                 return null;
@@ -309,9 +268,25 @@ public class LOActivity extends AppCompatActivity {
         if (getIntent().getData() != null) {
 
             if (getIntent().getData().getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-                isDocEditable = (getIntent().getFlags() & Intent.FLAG_GRANT_WRITE_URI_PERMISSION) != 0;
-                if (!isDocEditable)
+                isDocEditable = true;
+
+                // is it read-only?
+                if ((getIntent().getFlags() & Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0) {
+                    isDocEditable = false;
+                    Log.d(TAG, "Disabled editing: Read-only");
                     Toast.makeText(this, getResources().getString(R.string.temp_file_saving_disabled), Toast.LENGTH_SHORT).show();
+                }
+
+                // turns out that on ChromeOS, it is not possible to save back
+                // to Google Drive; detect it already here to avoid disappointment
+                // also the volumeprovider does not work for saving back,
+                // which is much more serious :-(
+                if (isDocEditable && (getIntent().getData().toString().startsWith("content://org.chromium.arc.chromecontentprovider/externalfile") ||
+                                      getIntent().getData().toString().startsWith("content://org.chromium.arc.volumeprovider/"))) {
+                    isDocEditable = false;
+                    Log.d(TAG, "Disabled editing: Chrome OS unsupported content providers");
+                    Toast.makeText(this, getResources().getString(R.string.file_chromeos_read_only), Toast.LENGTH_LONG).show();
+                }
 
                 if (copyFileToTemp() && mTempFile != null) {
                     documentUri = mTempFile.toURI();
@@ -531,7 +506,13 @@ public class LOActivity extends AppCompatActivity {
                 inputStream = new FileInputStream(mTempFile);
 
                 Uri uri = getIntent().getData();
-                outputStream = contentResolver.openOutputStream(uri, "wt");
+                try {
+                    outputStream = contentResolver.openOutputStream(uri, "wt");
+                }
+                catch (FileNotFoundException e) {
+                    Log.i(TAG, "failed with the 'wt' mode, trying without: " + e.getMessage());
+                    outputStream = contentResolver.openOutputStream(uri);
+                }
 
                 byte[] buffer = new byte[1024];
                 int length;
@@ -580,6 +561,7 @@ public class LOActivity extends AppCompatActivity {
         if (viewGroup != null)
             viewGroup.removeView(mWebView);
         mWebView.destroy();
+        mWebView = null;
 
         // Most probably the native part has already got a 'BYE' from
         // finishWithProgress(), but it is actually better to send it twice
@@ -596,6 +578,10 @@ public class LOActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode != RESULT_OK) {
+            if (requestCode == REQUEST_SELECT_IMAGE_FILE) {
+                valueCallback.onReceiveValue(null);
+                valueCallback = null;
+            }
             return;
         }
 
@@ -630,7 +616,13 @@ public class LOActivity extends AppCompatActivity {
                         LOActivity.this.saveAs(tempFile.toURI().toString(), format);
 
                         inputStream = new FileInputStream(tempFile);
-                        outputStream = getContentResolver().openOutputStream(intent.getData(), "wt");
+                        try {
+                            outputStream = getContentResolver().openOutputStream(intent.getData(), "wt");
+                        }
+                        catch (FileNotFoundException e) {
+                            Log.i(TAG, "failed with the 'wt' mode, trying without: " + e.getMessage());
+                            outputStream = getContentResolver().openOutputStream(intent.getData());
+                        }
 
                         byte[] buffer = new byte[4096];
                         int len;
@@ -705,6 +697,9 @@ public class LOActivity extends AppCompatActivity {
         {
             // just return one level up in the mobile-wizard (or close it)
             callFakeWebsocketOnMessage("'mobile: mobilewizardback'");
+            return;
+        } else if (mIsEditModeActive) {
+            callFakeWebsocketOnMessage("'mobile: readonlymode'");
             return;
         }
 
@@ -806,16 +801,39 @@ public class LOActivity extends AppCompatActivity {
     }
 
     /**
+     * Provide the info that this app is actually running under ChromeOS - so
+     * has to mostly look like on desktop.
+     */
+    @JavascriptInterface
+    public boolean isChromeOS() {
+        return isChromeOS(this);
+    }
+
+    /**
      * Passing message the other way around - from Java to the FakeWebSocket in JS.
      */
     void callFakeWebsocketOnMessage(final String message) {
         // call from the UI thread
-        mWebView.post(new Runnable() {
-            public void run() {
-                Log.i(TAG, "Forwarding to the WebView: " + message);
-                mWebView.loadUrl("javascript:window.TheFakeWebSocket.onmessage({'data':" + message + "});");
-            }
-        });
+        if (mWebView != null)
+            mWebView.post(new Runnable() {
+                public void run() {
+                    if (mWebView == null) {
+                        Log.i(TAG, "Skipped forwarding to the WebView: " + message);
+                        return;
+                    }
+
+                    Log.i(TAG, "Forwarding to the WebView: " + message);
+
+                    /* Debug only: in case the message is too long, truncated in the logcat, and you need to see it.
+                    final int size = 80;
+                    for (int start = 0; start < message.length(); start += size) {
+                        Log.i(TAG, "split: " + message.substring(start, Math.min(message.length(), start + size)));
+                    }
+                    */
+
+                    mWebView.loadUrl("javascript:window.TheFakeWebSocket.onmessage({'data':" + message + "});");
+                }
+            });
 
         // update progress bar when loading
         if (message.startsWith("'statusindicator") || message.startsWith("'error:")) {
@@ -913,6 +931,21 @@ public class LOActivity extends AppCompatActivity {
                 intent.setData(Uri.parse(messageAndParam[1]));
                 startActivity(intent);
                 return false;
+            }
+            case "EDITMODE": {
+                switch (messageAndParam[1]) {
+                    case "on":
+                        mIsEditModeActive = true;
+                        break;
+                    case "off":
+                        mIsEditModeActive = false;
+                        break;
+                }
+                return false;
+            }
+            case "loadwithpassword": {
+                mProgressDialog.determinate(R.string.loading);
+                return true;
             }
         }
         return true;

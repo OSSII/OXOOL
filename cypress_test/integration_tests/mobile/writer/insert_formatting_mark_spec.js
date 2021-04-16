@@ -1,130 +1,99 @@
-/* global describe it cy beforeEach require expect afterEach*/
+/* global describe it cy beforeEach require afterEach*/
 
 var helper = require('../../common/helper');
-var writerHelper = require('./writer_helper');
+var mobileHelper = require('../../common/mobile_helper');
+var writerMobileHelper = require('./writer_mobile_helper');
 
 describe('Insert formatting mark via insertion wizard.', function() {
+	var testFileName = 'insert_formatting_mark.odt';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('insert_formatting_mark.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		// Open insertion wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-		cy.get('#mobile-wizard')
-			.should('be.visible');
+		mobileHelper.openInsertionWizard();
 
 		// Open formatting marks
-		cy.get('.menu-entry-with-icon.flex-fullwidth')
-			.contains('Formatting Mark')
+		cy.contains('.menu-entry-with-icon.flex-fullwidth', 'Formatting Mark')
 			.click();
 
 		cy.get('.ui-content.level-0.mobile-wizard')
-			.should('be.visible')
-			.wait(100);
+			.should('be.visible');
 	});
 
 	afterEach(function() {
-		helper.afterAll('insert_formatting_mark.odt');
+		helper.afterAll(testFileName);
 	});
 
 	it('Insert non-breaking space.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Non-breaking space')
+		cy.contains('.menu-entry-with-icon', 'Non-breaking space')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u00a0');
-			});
+			.should('contain.text', '\u00a0');
 	});
 
 	it('Insert non-breaking hyphen.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Non-breaking hyphen')
+		cy.contains('.menu-entry-with-icon', 'Non-breaking hyphen')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u2011');
-			});
+			.should('contain.text', '\u2011');
 	});
 
 	it('Insert soft hyphen.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Soft hyphen')
+		cy.contains('.menu-entry-with-icon', 'Soft hyphen')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u00ad');
-			});
+			.should('contain.text', '\u00ad');
 	});
 
 	it('Insert no-width optional break.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('No-width optional break')
+		cy.contains('.menu-entry-with-icon', 'No-width optional break')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u200b');
-			});
+			.should('contain.text', '\u200b');
 	});
 
 	it('Insert no-width no break.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('No-width no break')
+		cy.contains('.menu-entry-with-icon', 'No-width no break')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u2060');
-			});
+			.should('contain.text', '\u2060');
 	});
 
 	it('Insert left-to-right mark.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Left-to-right mark')
+		cy.contains('.menu-entry-with-icon', 'Left-to-right mark')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u200e');
-			});
+			.should('contain.text', '\u200e');
 	});
 
 	it('Insert right-to-left mark.', function() {
-		cy.get('.menu-entry-with-icon')
-			.contains('Right-to-left mark')
+		cy.contains('.menu-entry-with-icon', 'Right-to-left mark')
 			.click();
 
-		writerHelper.copyTextToClipboard();
+		writerMobileHelper.selectAllMobile();
 
 		cy.get('#copy-paste-container p')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('\u200f');
-			});
+			.should('contain.text', '\u200f');
 	});
 });

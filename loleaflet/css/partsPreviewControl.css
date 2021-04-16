@@ -12,38 +12,64 @@
 }
 
 .preview-frame {
-	width: 250px;
-	white-space: nowrap;
-	text-align: center;
-	margin: 1em 0;
+	float: left;
+	border: 2px solid rgba(0,0,0,0);
+	margin: 0.5em 0 0.5em 4px;
+	padding: 2px;
+	height: 140px;
+}
+
+.preview-frame-selected {
+	border-color: rgb(108, 135, 157);
+	background-color: rgb(148, 196, 233);
+}
+
+.preview-info-wrapper {
+	position: relative;
+	float: left;
+	width: 30px;
+	margin-right: 2px;
 }
 
 .preview-helper {
-	display: inline-block;
-	height: 100%;
-	vertical-align: top;
+	position: absolute;
+	width:100%;
+	top: 1px;
 	font-size: 14px;
+	text-align: right;
 	color: #d86344;
-	margin-right: 4px;
 }
 
-.preview-slide-no {
-	display: inline-block;
-	height: 100%;
-	vertical-align: top;
+.preview-animation {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	right: 0px;
+	bottom: 18px;
+	background: url('images/res/click_16.svg') no-repeat center/contain;
 }
+
+.preview-transition {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	right: 0px;
+	bottom: 1px;
+	background: url('images/res/fade_effect_indicator.svg') no-repeat center/contain;
+}
+
 
 .preview-img {
 	/* In draw docs, the width of previews are small, but we want a min of 180px to align it with document's left edge */
-        min-width: 180px;
-	vertical-align: middle;
-	max-width: 184px;
+	float: left;
+    width: 180px;
 	cursor: pointer;
 	border: 2px solid #f0f0f0;
 }
 
-.preview-img-selected {
-	border-color: #d86344;
+.preview-img-blur {
+	-webkit-filter: grayscale(100%) blur(1px);
+	filter: grayscale(100%) blur(1px);
 }
 
 .mCSB_container {

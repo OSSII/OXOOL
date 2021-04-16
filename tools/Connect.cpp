@@ -28,7 +28,6 @@
 #include <Poco/Net/SSLManager.h>
 #include <Poco/SharedPtr.h>
 #include <Poco/TemporaryFile.h>
-#include <Poco/Thread.h>
 #include <Poco/URI.h>
 #include <Poco/Util/Application.h>
 
@@ -56,7 +55,6 @@ using Poco::Net::WebSocketException;
 using Poco::Runnable;
 using Poco::SharedPtr;
 using Poco::TemporaryFile;
-using Poco::Thread;
 using Poco::URI;
 using Poco::Util::Application;
 
@@ -86,11 +84,11 @@ public:
                 {
                     {
                         std::unique_lock<std::mutex> lock(coutMutex);
-                        std::cout << "Got " << getAbbreviatedFrameDump(buffer, n, flags) << std::endl;
+                        std::cout << "Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, n, flags) << std::endl;
                     }
 
                     std::string firstLine = getFirstLine(buffer, n);
-                    StringVector tokens(LOOLProtocol::tokenize(firstLine, ' '));
+                    StringVector tokens(Util::tokenize(firstLine, ' '));
 
                     if (std::getenv("DISPLAY") != nullptr && tokens.equals(0, "tile:"))
                     {
@@ -126,7 +124,7 @@ private:
     LOOLWebSocket& _ws;
 };
 
-/// Program for interactive or scripted testing of a lool server.
+/// Program for interactive or scripted testing of a oxool server.
 class Connect: public Poco::Util::Application
 {
 public:
@@ -171,9 +169,7 @@ protected:
 
         ws.setReceiveTimeout(0);
 
-        Thread thread;
-        Output output(ws);
-        thread.start(output);
+        std::thread thread([&ws]{Output(ws).run();});
 
         while (true)
         {
@@ -213,7 +209,7 @@ protected:
             {
                 {
                     std::unique_lock<std::mutex> lock(coutMutex);
-                    std::cout << "Sending: '" << line << "'" << std::endl;
+                    std::cout << "Sending: '" << line << '\'' << std::endl;
                 }
                 ws.sendFrame(line.c_str(), line.size());
             }

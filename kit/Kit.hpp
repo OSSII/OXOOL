@@ -6,15 +6,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#ifndef INCLUDED_LOOLKIT_HPP
-#define INCLUDED_LOOLKIT_HPP
+
+#pragma once
 
 #include <map>
 #include <string>
 
 #include <common/Util.hpp>
 
-#ifdef MOBILEAPP
+#define LOK_USE_UNSTABLE_API
+#include <LibreOfficeKit/LibreOfficeKit.hxx>
+
+#if MOBILEAPP
 
 #include "ClientSession.hpp"
 #include "DocumentBroker.hpp"
@@ -23,7 +26,7 @@
 #endif
 
 void lokit_main(
-#ifndef MOBILEAPP
+#if !MOBILEAPP
                 const std::string& childRoot,
                 const std::string& jailId,
                 const std::string& sysTemplate,
@@ -34,11 +37,15 @@ void lokit_main(
                 bool queryVersionInfo,
                 bool displayVersion,
 #else
-                const std::string& documentUri,
                 int docBrokerSocket,
+                const std::string& userInterface,
 #endif
-                size_t spareKitId
+                size_t numericIdentifier
                 );
+
+#ifdef IOS
+void runKitLoopInAThread();
+#endif
 
 bool globalPreinit(const std::string& loTemplate);
 /// Wrapper around private Document::ViewCallback().
@@ -133,6 +140,9 @@ std::string anonymizeUrl(const std::string& url);
 /// Anonymize usernames.
 std::string anonymizeUsername(const std::string& username);
 
+#ifdef __ANDROID__
+/// For the Android app, for now, we need access to the one and only document open to perform eg. saveAs() for printing.
+std::shared_ptr<lok::Document> getLOKDocumentForAndroidOnly();
 #endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

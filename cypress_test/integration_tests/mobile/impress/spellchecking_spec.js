@@ -1,18 +1,20 @@
 /* global describe it cy beforeEach require afterEach expect*/
 
 var helper = require('../../common/helper');
-var impress = require('../../common/impress');
+var mobileHelper = require('../../common/mobile_helper');
 
 describe('Spell checking menu.', function() {
+	var testFileName = 'spellchecking.odp';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('spellchecking.odp', 'impress');
+		helper.beforeAll(testFileName, 'impress');
 
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll('spellchecking.odp');
+		helper.afterAll(testFileName);
 	});
 
 	function openContextMenu() {
@@ -26,30 +28,19 @@ describe('Spell checking menu.', function() {
 					.dblclick(XPos, YPos);
 			});
 
-		cy.get('.leaflet-cursor.blinking-cursor')
-			.should('exist');
+		helper.typeIntoDocument('{leftArrow}');
 
-		helper.selectAllText(false);
+		cy.get('.leaflet-marker-icon')
+			.should('not.exist');
 
 		// Open context menu
-		cy.get('.leaflet-marker-icon')
-			.then(function(markers) {
-				expect(markers.length).to.have.greaterThan(1);
-				for (var i = 0; i < markers.length; i++) {
-					if (markers[i].classList.contains('leaflet-selection-marker-start')) {
-						var XPos = markers[i].getBoundingClientRect().right + 10;
-					} else if (markers[i].classList.contains('leaflet-selection-marker-end')) {
-						var YPos = markers[i].getBoundingClientRect().top - 10;
-					}
-				}
+		cy.get('g path.leaflet-interactive')
+			.then(function(shape) {
+				expect(shape.length).to.be.equal(1);
+				var XPos = (shape[0].getBoundingClientRect().left + shape[0].getBoundingClientRect().right) / 2;
+				var YPos = (shape[0].getBoundingClientRect().top + shape[0].getBoundingClientRect().bottom) / 2;
 
-				// Remove selection
-				cy.get('body')
-					.type('{leftarrow}');
-				cy.get('.leaflet-marker-icon')
-					.should('not.exist');
-
-				helper.longPressOnDocument(XPos, YPos);
+				mobileHelper.longPressOnDocument(XPos, YPos);
 			});
 
 		cy.get('#mobile-wizard-content')
@@ -59,58 +50,50 @@ describe('Spell checking menu.', function() {
 	it('Apply suggestion.', function() {
 		openContextMenu();
 
-		cy.get('.context-menu-link')
-			.contains('hello')
+		cy.contains('.context-menu-link', 'hello')
 			.click();
 
-		impress.copyShapeContentToClipboard();
+		helper.selectAllText(false);
 
-		cy.get('#copy-paste-container pre')
-			.then(function(item) {
-				expect(item).to.have.lengthOf(1);
-				expect(item[0].innerText).to.have.string('hello');
-			});
+		helper.expectTextForClipboard('hello');
 	});
 
 	it('Ignore all.', function() {
 		openContextMenu();
 
-		cy.get('.context-menu-link')
-			.contains('Ignore All')
+		cy.contains('.context-menu-link', 'Ignore All')
 			.click();
 
 		openContextMenu();
 
 		// We don't get the spell check context menu any more
-		cy.get('.context-menu-link')
-			.contains('Paste');
+		cy.contains('.context-menu-link', 'Paste')
+			.should('be.visible');
 	});
 
 	it('Apply language for word.', function() {
 		openContextMenu();
 
-		cy.get('.context-menu-link')
-			.contains('Word is Finnish')
+		cy.contains('.context-menu-link', 'Word is Finnish')
 			.click();
 
 		openContextMenu();
 
 		// We don't get the spell check context menu any more
-		cy.get('.context-menu-link')
-			.contains('Paste');
+		cy.contains('.context-menu-link', 'Paste')
+			.should('be.visible');
 	});
 
 	it('Apply language for paragraph.', function() {
 		openContextMenu();
 
-		cy.get('.context-menu-link')
-			.contains('Paragraph is Finnish')
+		cy.contains('.context-menu-link', 'Paragraph is Finnish')
 			.click();
 
 		openContextMenu();
 
 		// We don't get the spell check context menu any more
-		cy.get('.context-menu-link')
-			.contains('Paste');
+		cy.contains('.context-menu-link', 'Paste')
+			.should('be.visible');
 	});
 });

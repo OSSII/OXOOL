@@ -8,17 +8,11 @@ L.Control.Preview = L.Control.extend({
 	options: {
 	},
 
-	_wrapper: null,
-	_viewerbar: null,
-	_writePages: 0,
-	_filename: '',
+	_toolbar: null,
 
 	_items: [
-		{type: 'button',  id: 'closedocument',  img: 'closemobile', hint: _UNO('.uno:CloseDoc', 'text')},
-		{type: 'break'},
 		{type: 'html', id: 'filename'},
 		{type: 'break'},
-
 		{
 			type: 'html', id: 'changepagenumber',
 			html: '<div><select id="ChangePageNumber" style="border-radius: 2px; border: 1px solid silver;height:26px;max-width:200px;line-height:26px;font-size:16px;cursor:pointer;"></select></div>'
@@ -67,35 +61,45 @@ L.Control.Preview = L.Control.extend({
 		},
 		{type: 'button',  id: 'print', img: 'print', hint: _UNO('.uno:Print', 'text'), hidden: true},
 		{type: 'break', id:'outputbreak', hidden: true},
-		{type: 'button',  id: 'about', img: 'ossiilogo', hint: _('About')},
+		{type: 'button',  id: 'closedocument',  img: 'closebuttonimage', hint: _UNO('.uno:CloseDoc', 'text')},
 	],
 
 	onAdd: function(map) {
 		this._map = map;
-		this._wrapper = $('#toolbar-viewer-wrapper');
-		// 非編輯模式才作用
-		if (map._permission !== 'edit') {
-			this._initLayout();
-		} else {
-			this._hide();
-		}
+
+		this._initLayout(); // 初始化工具列
 
 		map.on('pagenumberchanged', this._onPageNumberChanged, this); // writer 選取頁面變更
 		map.on('updateparts', this._onPageNumberChanged, this); // calc 變更工作表
 		map.on('zoomend', this._onZoomend, this); // 頁面縮放完成事件
 		map.on('search', this._onMapSearch, this); // 執行搜尋
+
+		return L.DomUtil.create('div', ''); // 傳回空的 div element
 	},
 
-	_hide: function() {
-		this._wrapper.hide();
+	onRemove: function(map) {
+		this._hide(); // 隱藏工具列
+
+		w2ui['viewerbar'].destroy(); // 移除工具列
+
+		map.off('pagenumberchanged', this._onPageNumberChanged, this); // writer 選取頁面變更
+		map.off('updateparts', this._onPageNumberChanged, this); // calc 變更工作表
+		map.off('zoomend', this._onZoomend, this); // 頁面縮放完成事件
+		map.off('search', this._onMapSearch, this); // 執行搜尋
+
+		L.DomUtil.remove(this._toolbar); // 移除工具列的 dom element
 	},
 
 	_initLayout: function() {
 		var that = this;
 		var map = this._map;
-		var docType = map.getDocType();
-		var toolbar = $('#toolbar-viewer');
-		this._filename = map.getFileName();
+		var filename = map.getFileName(); // 檔案名稱
+		var docType = map.getDocType(); // 文件型態
+
+		// 建立工具列的 dom element
+		this._toolbar = L.DomUtil.createWithId('div', 'toolbar-viewer-wrapper', document.body);
+		var toolbar = $(this._toolbar);
+
 		toolbar.w2toolbar({
 			name: 'viewerbar',
 			tooltip: 'bottom',
@@ -113,10 +117,13 @@ L.Control.Preview = L.Control.extend({
 		});
 
 		var viewerbar = w2ui['viewerbar'];
-		// 試算表的縮放比例不能低於 100%
+		// 試算表的縮放比例不能低於 60%
 		if (docType === 'spreadsheet') {
 			viewerbar.set('zoom', {
 				items: [
+					{ id: 'zoom60', text: '60%', scale: 7},
+					{ id: 'zoom70', text: '70%', scale: 8},
+					{ id: 'zoom85', text: '85%', scale: 9},
 					{ id: 'zoom100', text: '100%', scale: 10},
 					{ id: 'zoom120', text: '120%', scale: 11},
 					{ id: 'zoom150', text: '150%', scale: 12},
@@ -139,10 +146,12 @@ L.Control.Preview = L.Control.extend({
 		}
 		viewerbar.set('filename', {
 			html : '<div style="border-bottom:2px dashed #bbbbbb;overflow:hidden;max-width:400px;text-align:left;font-size:16px" title="' +
-				_('File name:') + this._filename + '">' +
-				'<div class="' + iconClass + '" style="display:inline-block;vertical-align:middle;">' +
-				'</div>&nbsp;' + this._filename + '</div>'
+				_('File name:') + filename + '">' +
+				'<div id="document-logo" class="' + iconClass + '" style="display:inline-block;vertical-align:middle;cursor:pointer">' +
+				'</div>&nbsp;' + filename + '</div>'
 		});
+
+		$('#document-logo').on('click', function(/*e*/) {map.showLOAboutDialog();});
 
 		// 顯示跳頁選項
 		if (!canChangePage) {
@@ -159,18 +168,27 @@ L.Control.Preview = L.Control.extend({
 
 		// 設定另存檔案型態列表
 		viewerbar.set('downloadas', this._getSaveAsList(docType));
-		if (map._permission === 'view') {
+		// view 模式且未被禁止輸出，才能顯示下載為XXX以及列印按鈕
+		if (map._permission === 'view' && !map['wopi'].HideExportOption) {
 			viewerbar.show('downloadas', 'print', 'outputbreak');
 		}
 
-		this._wrapper.show();
+		this._show();
 		w2ui['viewerbar'].resize();
+	},
 
-		$(window).resize(function() {
-			if ($(window).width() !== map.getSize().x) {
-				w2ui['viewerbar'].resize();
-			}
-		});
+	/*
+	 * 顯示工具列
+	 */
+	_show: function() {
+		$(this._toolbar).show();
+	},
+
+	/*
+	 * 隱藏工具列
+	 */
+	_hide: function() {
+		$(this._toolbar).hide();
 	},
 
 	/*
@@ -206,7 +224,7 @@ L.Control.Preview = L.Control.extend({
 					{id: 'downloadas-html', text: _('HTML Document (.html)')},
 					{id: 'downloadas-odp', text: _('ODF presentation (.odp)')},
 					{id: 'downloadas-ppt', text: _('PowerPoint 2003 Presentation (.ppt)')},
-					{id: 'downloadas-xlsx', text: _('PowerPoint Presentation (.pptx)')},
+					{id: 'downloadas-pptx', text: _('PowerPoint Presentation (.pptx)')},
 				]
 			}
 		};
@@ -399,35 +417,15 @@ L.Control.Preview = L.Control.extend({
 		var $changeNumber = $('#ChangePageNumber');
 		var $pageInfo = $('#DocumentPageNumberStatus');
 
-		// Writer 和 Calc 不只一頁，有跳頁選單
-		if (docType !== 'text' && docType !== 'spreadsheet') {
-			return;
-		}
-
 		if (docType === 'text') {
 			numPages = e.pages; // 總頁數
 			currPage = e.currentPage; // 目前頁次
-			// 總頁數和原先不同
-			if (numPages !== this._writePages) {
-				this._writePages = numPages;
-				// 製作下拉選項
-				for (i = 0 ; i < numPages; i ++) {
-					selected = (i === currPage ? ' selected' : '');
-					options += '<option value="' + i + '"' + selected + '>' + (i + 1) + '</option>';
-				}
-				$pageInfo.html('&nbsp;/&nbsp;' + numPages);
+			// 製作下拉選項
+			for (i = 0 ; i < numPages; i ++) {
+				selected = (i === currPage ? ' selected' : '');
+				options += '<option value="' + i + '"' + selected + '>' + (i + 1) + '</option>';
 			}
-			// 下拉選項是空的，表示原先有選項
-			if (options === '') {
-				// 讀取目前頁次
-				var oldPage = parseInt($changeNumber.val());
-				// 不同就更新
-				if (oldPage !== currPage) {
-					$changeNumber.val(currPage.toString());
-				}
-			}
-		}
-		else if (docType === 'spreadsheet') {
+		} else if (docType === 'spreadsheet') {
 			numPages = e.parts; // 總工作表數
 			currPage = e.selectedPart; // 目前所在工作表
 			if (e.partNames !== undefined) {
@@ -440,6 +438,8 @@ L.Control.Preview = L.Control.extend({
 				}
 				$pageInfo.html('&nbsp;(' + (currPage + 1) + ' / ' + numPages + ')');
 			}
+		} else {
+			return;
 		}
 
 		if (options !== '') {

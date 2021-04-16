@@ -1,19 +1,22 @@
 /* global describe it cy beforeEach require afterEach expect*/
 
 var helper = require('../../common/helper');
+var mobileHelper = require('../../common/mobile_helper');
 
 describe('Focus tests', function() {
+	var testFileName = 'focus.odt';
+
 	beforeEach(function() {
-		helper.beforeAllMobile('focus.odt', 'writer');
+		helper.beforeAll(testFileName, 'writer');
 	});
 
 	afterEach(function() {
-		helper.afterAll('focus.odt');
+		helper.afterAll(testFileName);
 	});
 
 	it('Basic document focus.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
 		cy.document().its('activeElement.tagName')
@@ -30,7 +33,7 @@ describe('Focus tests', function() {
 
 	it('Focus with a vex dialog.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Open comment insertion dialog
 		cy.get('#tb_actionbar_item_insertcomment')
@@ -44,7 +47,8 @@ describe('Focus tests', function() {
 			.should('be.eq', 'loleaflet-annotation-textarea');
 
 		// Close the dialog
-		cy.contains('Cancel').click();
+		cy.get('.vex-dialog-button-secondary')
+			.click();
 		cy.get('.loleaflet-annotation-table').should('be.not.visible');
 
 		// Body should have the focus again (no focus on document)
@@ -54,7 +58,7 @@ describe('Focus tests', function() {
 
 	it('Focus with opened mobile wizard.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Click in the document
 		cy.get('#document-container')
@@ -64,21 +68,13 @@ describe('Focus tests', function() {
 		cy.document().its('activeElement.className')
 			.should('be.eq', 'clipboard');
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.should('not.have.class', 'disabled')
-			.click();
-
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openMobileWizard();
 
 		// Body should have the focus (no focus on document)
 		cy.document().its('activeElement.tagName')
 			.should('be.eq', 'BODY');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.closeMobileWizard();
 
 		// No focus
 		cy.document().its('activeElement.tagName')
@@ -87,30 +83,23 @@ describe('Focus tests', function() {
 
 	it('Focus inside mobile wizard.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openMobileWizard();
 
 		// Open paragraph properties
-		cy.get('#Paragraph')
-			.click();
+		helper.clickOnIdle('#Paragraph');
 
 		cy.get('#aboveparaspacing .spinfield')
-			.should('have.attr', 'value', '0.0')
-			.click();
+			.should('have.attr', 'value', '0');
+
+		helper.clickOnIdle('#aboveparaspacing .spinfield');
 
 		// The spinfield should have the focus now.
 		cy.document().its('activeElement.className')
 			.should('be.eq', 'spinfield');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
+		mobileHelper.closeMobileWizard();
 
 		// No focus
 		cy.document().its('activeElement.tagName')
@@ -119,23 +108,17 @@ describe('Focus tests', function() {
 
 	it('Focus after insertion.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		// Open insertion mobile wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openInsertionWizard();
 
 		// Select More Fields
-		cy.get('.ui-header.level-0.mobile-wizard.ui-widget')
-			.contains('More Fields...')
-			.parent().click();
+		cy.contains('.ui-header.level-0.mobile-wizard.ui-widget', 'More Fields...')
+			.click();
 
 		// Insert a field
-		cy.get('.ui-header.level-1.mobile-wizard.ui-widget .menu-entry-with-icon')
-			.contains('Page Number').click();
+		cy.contains('.menu-entry-with-icon', 'Page Number')
+			.click();
 
 		cy.get('#mobile-wizard')
 			.should('not.be.visible');
@@ -147,18 +130,12 @@ describe('Focus tests', function() {
 
 	it('Shape related focus.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
-		// Open insertion mobile wizard
-		cy.get('#tb_actionbar_item_insertion_mobile_wizard')
-			.click();
-
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openInsertionWizard();
 
 		// Do insertion
-		cy.get('.menu-entry-with-icon')
-			.contains('Shape')
+		cy.contains('.menu-entry-with-icon', 'Shape')
 			.click();
 
 		cy.get('.col.w2ui-icon.basicshapes_rectangle').
@@ -199,14 +176,13 @@ describe('Focus tests', function() {
 		//cy.document().its('activeElement.className')
 		//	.should('be.eq', 'clipboard');
 
-		cy.window().then(win => {
-			expect(win.canAcceptKeyboardInput(), 'Should accept input').to.equal(true);
-		});
+		// This is unstable too
+		// helper.assertHaveKeyboardInput()
 	});
 
 	it('Focus with hamburger menu.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Click in the document
 		cy.get('#document-container')
@@ -217,14 +193,14 @@ describe('Focus tests', function() {
 			.should('be.eq', 'clipboard');
 
 		// Open hamburger menu
-		helper.pushHamburgerMenuIconMobile();
+		mobileHelper.openHamburgerMenu();
 
 		// No focus
 		cy.document().its('activeElement.tagName')
 			.should('be.eq', 'BODY');
 
 		// Close hamburger menu
-		helper.pushHamburgerMenuIconMobile();
+		mobileHelper.closeHamburgerMenu();
 
 		// No focus
 		cy.document().its('activeElement.tagName')
@@ -233,7 +209,7 @@ describe('Focus tests', function() {
 
 	it('Focus after applying font change.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Click in the document
 		cy.get('#document-container')
@@ -243,20 +219,14 @@ describe('Focus tests', function() {
 		cy.document().its('activeElement.className')
 			.should('be.eq', 'clipboard');
 
-		// Open mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		cy.get('#mobile-wizard-content')
-			.should('not.be.empty');
+		mobileHelper.openMobileWizard();
 
 		// No focus
 		cy.document().its('activeElement.tagName')
 			.should('be.eq', 'BODY');
 
 		// Apply bold
-		cy.get('#Bold')
-			.click();
+		helper.clickOnIdle('#Bold');
 
 		cy.get('#Boldimg')
 			.should('have.class', 'selected');
@@ -265,12 +235,7 @@ describe('Focus tests', function() {
 		cy.document().its('activeElement.tagName')
 			.should('be.eq', 'BODY');
 
-		// Close mobile wizard
-		cy.get('#tb_actionbar_item_mobile_wizard')
-			.click();
-
-		cy.get('#tb_actionbar_item_mobile_wizard table')
-			.should('not.have.class', 'checked');
+		mobileHelper.closeMobileWizard();
 
 		// No focus
 		cy.document().its('activeElement.tagName')
@@ -279,20 +244,17 @@ describe('Focus tests', function() {
 
 	it('Apply bold, check keyboard.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Grab focus to the document
-		cy.get('#document-container')
-			.type('x');
+		helper.typeIntoDocument('x');
 
 		helper.selectAllText();
 
 		cy.get('#tb_editbar_item_bold div table')
 			.should('not.have.class', 'checked');
 
-		cy.window().then(win => {
-			win.lastInputState = win.canAcceptKeyboardInput();
-		});
+		helper.assertHaveKeyboardInput();
 
 		cy.get('#tb_editbar_item_bold')
 			.click();
@@ -300,28 +262,22 @@ describe('Focus tests', function() {
 		cy.get('#tb_editbar_item_bold div table')
 			.should('have.class', 'checked');
 
-		cy.window().then(win => {
-			var acceptInput = win.canAcceptKeyboardInput();
-			expect(acceptInput, 'Should accept input').to.equal(win.lastInputState);
-		});
+		helper.assertHaveKeyboardInput();
 	});
 
 	it('Apply italic, check keyboard.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Grab focus to the document
-		cy.get('#document-container')
-			.type('x');
+		helper.typeIntoDocument('x');
 
 		helper.selectAllText();
 
 		cy.get('#tb_editbar_item_italic div table')
 			.should('not.have.class', 'checked');
 
-		cy.window().then(win => {
-			win.lastInputState = win.canAcceptKeyboardInput();
-		});
+		helper.assertHaveKeyboardInput();
 
 		cy.get('#tb_editbar_item_italic')
 			.click();
@@ -329,28 +285,22 @@ describe('Focus tests', function() {
 		cy.get('#tb_editbar_item_italic div table')
 			.should('have.class', 'checked');
 
-		cy.window().then(win => {
-			var acceptInput = win.canAcceptKeyboardInput();
-			expect(acceptInput, 'Should accept input').to.equal(win.lastInputState);
-		});
+		helper.assertHaveKeyboardInput();
 	});
 
 	it('Apply underline, check keyboard.', function() {
 		// Click on edit button
-		helper.enableEditingMobile();
+		mobileHelper.enableEditingMobile();
 
 		// Grab focus to the document
-		cy.get('#document-container')
-			.type('x');
+		helper.typeIntoDocument('x');
 
 		helper.selectAllText();
 
 		cy.get('#tb_editbar_item_underline div table')
 			.should('not.have.class', 'checked');
 
-		cy.window().then(win => {
-			win.lastInputState = win.canAcceptKeyboardInput();
-		});
+		helper.assertHaveKeyboardInput();
 
 		cy.get('#tb_editbar_item_underline')
 			.click();
@@ -358,9 +308,6 @@ describe('Focus tests', function() {
 		cy.get('#tb_editbar_item_underline div table')
 			.should('have.class', 'checked');
 
-		cy.window().then(win => {
-			var acceptInput = win.canAcceptKeyboardInput();
-			expect(acceptInput, 'Should accept input').to.equal(win.lastInputState);
-		});
+		helper.assertHaveKeyboardInput();
 	});
 });

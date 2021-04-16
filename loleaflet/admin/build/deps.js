@@ -61,6 +61,18 @@ var deps = {
 		src: ['src/AdminSocketSoftwareUpgrade.js'],
 		desc: 'Socket to upgrade software.',
 		deps: ['AdminCore']
+	},
+
+	AdminSocketFontManager: {
+		src: ['src/AdminSocketFontManager.js'],
+		desc: 'Socket to font manager.',
+		deps: ['AdminCore']
+	},
+
+	AdminSocketLicense: {
+		src: ['src/AdminSocketLicense.js'],
+		desc: 'Socket to license Info.',
+		deps: ['AdminCore']
 	}
 };
 

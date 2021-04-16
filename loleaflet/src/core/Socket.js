@@ -113,7 +113,9 @@ L.Socket = L.Class.extend({
 		if (parseInt(this._map.options.docParams.access_token_ttl) - Date.now() <= 0) {
 			expirymsg = errorMessages.sessionexpired;
 		}
-		var timerepr = $.timeago(parseInt(this._map.options.docParams.access_token_ttl)).replace(' ago', '');
+		var dateTime = new Date(parseInt(this._map.options.docParams.access_token_ttl));
+		var dateOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+		var timerepr = dateTime.toLocaleDateString(String.locale, dateOptions);
 		this._map.fire('warn', {msg: expirymsg.replace('%time', timerepr)});
 
 		// If user still doesn't refresh the session, warn again periodically
@@ -210,7 +212,7 @@ L.Socket = L.Class.extend({
 			msg += ' timestamp=' + this._map.options.timestamp;
 		}
 		if (this._map._docPassword) {
-			msg += ' password=' + this._map._docPassword;
+			msg += ' password=' + encodeURIComponent(this._map._docPassword);
 		}
 		if (String.locale) {
 			msg += ' lang=' + String.locale;
@@ -285,6 +287,9 @@ L.Socket = L.Class.extend({
 				lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension + ')');
 			}
 		}
+		else if (textMsg.startsWith('watermark:')) {
+			this._map.options.watermark = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
+		}
 		else if (textMsg.startsWith('perm:')) {
 			var perm = textMsg.substring('perm:'.length);
 
@@ -305,7 +310,7 @@ L.Socket = L.Class.extend({
 			return;
 		}
 		else if (textMsg.startsWith('lastmodtime: ')) {
-			var time = textMsg.substring(textMsg.indexOf(' '));
+			var time = textMsg.substring(textMsg.indexOf(' ') + 1);
 			this._map.updateModificationIndicator(time);
 			return;
 		}
@@ -548,6 +553,10 @@ L.Socket = L.Class.extend({
 
 				return;
 			}
+			// Add by Firefly <firefly@ossii.com.tw>
+			else if (errorMessages.storage[command.errorKind] !== undefined) {
+				storageError = errorMessages.storage[command.errorKind];
+			}
 
 			// Skip empty errors (and allow for suppressing errors by making them blank).
 			if (storageError != '') {
@@ -609,6 +618,9 @@ L.Socket = L.Class.extend({
 			} else if (errorKind.startsWith('docloadtimeout')) {
 				this._map._fatal = true;
 				this._map.fire('error', {msg: errorMessages.docloadtimeout});
+			} else if (errorKind.startsWith('unauthorized')) {
+				this._map._fatal = true;
+				this._map.fire('error', {msg: errorMessages.unauthorized});
 			} else if (errorKind.startsWith('docunloading')) {
 				// The document is unloading. Have to wait a bit.
 				this._map._active = false;
@@ -951,6 +963,9 @@ L.Socket = L.Class.extend({
 			else if (tokens[i].substring(0, 4) === 'dir=') {
 				command.dir = tokens[i].substring(4);
 			}
+			else if (tokens[i].substring(0, 11) === 'downloadid=') {
+				command.downloadid = tokens[i].substring(11);
+			}
 			else if (tokens[i].substring(0, 5) === 'name=') {
 				command.name = tokens[i].substring(5);
 			}
@@ -1009,6 +1024,9 @@ L.Socket = L.Class.extend({
 				selectedParts.forEach(function (item) {
 					command.selectedParts.push(parseInt(item));
 				});
+			}
+			else if (tokens[i].substring(0, 11) === 'partdetail=') {
+				command.partdetail = tokens[i].substring(11);
 			}
 		}
 		if (command.tileWidth && command.tileHeight && this._map._docLayer) {

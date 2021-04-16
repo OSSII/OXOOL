@@ -1,5 +1,5 @@
 
-LibreOffice Online API
+OxOffice Online API
 ======================
 
 Document conversion
@@ -48,7 +48,7 @@ CheckFileInfo response properties
 A string containing the basename of the file, omitting its path.
 
 ### DisablePrint
-Disables print functionality in libreoffice online backend. Ift rue, HidePrintOption is assumed to be true
+Disables print functionality in libreoffice online backend. If true, HidePrintOption is assumed to be true.
 
 ### OwnerID
 A programmatic string identifier for the owner of the file.
@@ -60,7 +60,7 @@ A string for the domain the host page sends/receives PostMessages from, we only 
 Size of the file in bytes (64bit)
 
 ### TemplateSource
-The ID of file (like the wopi/files/ID) can be a non-existing file.  In that case, the file will be created from a template when the template (eg. an OTT file) is specifiend as "TemplateSource" in the CheckFileInfo response.
+The ID of file (like the wopi/files/ID) can be a non-existing file.  In that case, the file will be created from a template when the template (eg. an OTT file) is specified as "TemplateSource" in the CheckFileInfo response.
 
 The TemplateSource is supposed to be an URL like https://somewhere/accessible/file.ott that is accessible by the Online.
 
@@ -70,7 +70,7 @@ For the actual saving of the content, normal PutFile mechanism will be used.
 A boolean flag, indicating whether the user has permission to edit and/or over-write the file. If not set PutFile will fail.
 
 ### UserCanNotWriteRelative
-A boolean flag indiciating that the user cannot Save-As on this server, so PutFileRelative will fail.
+A boolean flag indicating that the user cannot Save-As on this server, so PutFileRelative will fail.
 
 ### UserId
 A programmatic string identifier of the user.
@@ -127,6 +127,27 @@ PostMessage extensions
 
 ### App_LoadingStatus
 Was extended with field 'Status' with 'Document_Loaded' value when document was loaded successfully and 'Failed' in other case.
+
+User Interface modifications
+----------------------------
+
+Some parts of the user interface can be hidden or shown based or what the
+integration needs.  This is controlled by:
+
+    <input name="ui_defaults" value="VALUES" type="hidden"/>'
+
+during sending the form when the iframe is being set up (similarly as the
+access_token).  The VALUES can have a form like:
+
+    UIMode=notebookbar;TextRuler=false;PresentationStatusbar=false;SpreadsheetSidebar=false
+
+where the:
+
+* UIMode specifies the general mode of operatior (classic or notebookbar)
+
+* Text, Presentation or Spreadsheet - are prefixes to identify the component
+
+* Ruler, Statusbar, Sidebar - are the UI parts that can be affected by this.
 
 Alternative authentication possibility
 --------------------------------------

@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_TRACEFILE_HPP
-#define INCLUDED_TRACEFILE_HPP
+#pragma once
 
 #include <fstream>
 #include <mutex>
@@ -25,6 +24,7 @@
 #include "Protocol.hpp"
 #include "Log.hpp"
 #include "Util.hpp"
+#include "FileUtil.hpp"
 
 /// Dumps commands and notification trace.
 class TraceFileRecord
@@ -39,25 +39,46 @@ public:
     };
 
     TraceFileRecord() :
-        Dir(Direction::Invalid),
-        TimestampNs(0),
-        Pid(0)
+        _dir(Direction::Invalid),
+        _timestampNs(0),
+        _pid(0)
     {
     }
 
     std::string toString() const
     {
         std::ostringstream oss;
-        oss << static_cast<char>(Dir) << Pid << static_cast<char>(Dir)
-            << SessionId << static_cast<char>(Dir) << Payload;
+        oss << static_cast<char>(_dir) << _pid << static_cast<char>(_dir)
+            << _sessionId << static_cast<char>(_dir) << _payload;
         return oss.str();
     }
 
-    Direction Dir;
-    unsigned TimestampNs;
-    unsigned Pid;
-    std::string SessionId;
-    std::string Payload;
+    void setDir(Direction dir) { _dir = dir; }
+
+    Direction getDir() const { return _dir; }
+
+    void setTimestampNs(unsigned timestampNs) { _timestampNs = timestampNs; }
+
+    unsigned getTimestampNs() const { return _timestampNs; }
+
+    void setPid(unsigned pid) { _pid = pid; }
+
+    unsigned getPid() const { return _pid; }
+
+    void setSessionId(const std::string& sessionId) { _sessionId = sessionId; }
+
+    const std::string& getSessionId() const { return _sessionId; }
+
+    void setPayload(const std::string& payload) { _payload = payload; }
+
+    const std::string& getPayload() const { return _payload; }
+
+private:
+    Direction _dir;
+    unsigned _timestampNs;
+    unsigned _pid;
+    std::string _sessionId;
+    std::string _payload;
 };
 
 /// Trace-file generator class.
@@ -70,7 +91,8 @@ public:
                     const bool compress,
                     const bool takeSnapshot,
                     const std::vector<std::string>& filters) :
-        _epochStart(Poco::Timestamp().epochMicroseconds()),
+        _epochStart(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now()
+                                                            .time_since_epoch()).count()),
         _recordOutgoing(recordOugoing),
         _compress(compress),
         _takeSnapshot(takeSnapshot),
@@ -107,8 +129,8 @@ public:
             const auto it = _urlToSnapshot.find(url);
             if (it != _urlToSnapshot.end())
             {
-                snapshot = it->second.Snapshot;
-                it->second.SessionCount++;
+                snapshot = it->second.getSnapshot();
+                it->second.getSessionCount()++;
             }
             else
             {
@@ -119,8 +141,7 @@ public:
                 filename += '.' + origPath.getExtension();
                 snapshot = Poco::Path(_path, filename).toString();
 
-                LOG_TRC("TraceFile: Copying local file [" << localPath << "] to snapshot [" << snapshot << "].");
-                Poco::File(localPath).copyTo(snapshot);
+                FileUtil::copyFileTo(localPath, snapshot);
                 snapshot = Poco::URI(Poco::URI("file://"), snapshot).toString();
 
                 LOG_TRC("TraceFile: Mapped URL " << url << " to " << snapshot);
@@ -143,15 +164,15 @@ public:
         const auto it = _urlToSnapshot.find(url);
         if (it != _urlToSnapshot.end())
         {
-            snapshot = it->second.Snapshot;
-            if (it->second.SessionCount == 1)
+            snapshot = it->second.getSnapshot();
+            if (it->second.getSessionCount() == 1)
             {
                 // Last session, remove the mapping.
                 _urlToSnapshot.erase(it);
             }
             else
             {
-                it->second.SessionCount--;
+                it->second.getSessionCount()--;
             }
         }
 
@@ -177,7 +198,7 @@ public:
             // Remap the URL to the snapshot.
             if (LOOLProtocol::matchPrefix("load", data))
             {
-                std::vector<std::string> tokens = LOOLProtocol::tokenize(data);
+                StringVector tokens = Util::tokenize(data);
                 if (tokens.size() >= 2)
                 {
                     std::string url;
@@ -195,12 +216,12 @@ public:
                         const auto it = _urlToSnapshot.find(url);
                         if (it != _urlToSnapshot.end())
                         {
-                            LOG_TRC("TraceFile: Mapped URL: " << url << " to " << it->second.Snapshot);
-                            tokens[1] = "url=" + it->second.Snapshot;
+                            LOG_TRC("TraceFile: Mapped URL: " << url << " to " << it->second.getSnapshot());
+                            tokens[1] = "url=" + it->second.getSnapshot();
                             std::string newData;
                             for (const auto& token : tokens)
                             {
-                                newData += token + ' ';
+                                newData += tokens.getParam(token) + ' ';
                             }
 
                             writeLocked(id, sessionId, newData, static_cast<char>(TraceFileRecord::Direction::Incoming));
@@ -237,7 +258,8 @@ private:
     {
         Util::assertIsLocked(_mutex);
 
-        const Poco::Int64 usec = Poco::Timestamp().epochMicroseconds() - _epochStart;
+        const Poco::Int64 usec = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono
+                                        ::system_clock::now().time_since_epoch()).count() - _epochStart;
         if (_compress)
         {
             _deflater.write(&delim, 1);
@@ -283,19 +305,26 @@ private:
     struct SnapshotData
     {
         SnapshotData(const std::string& snapshot) :
-            Snapshot(snapshot)
+            _snapshot(snapshot)
         {
-            SessionCount = 1;
+            _sessionCount = 1;
         }
 
         SnapshotData(const SnapshotData& other) :
-            Snapshot(other.Snapshot)
+            _snapshot(other.getSnapshot())
         {
-            SessionCount = other.SessionCount.load();
+            _sessionCount = other.getSessionCount().load();
         }
 
-        std::string Snapshot;
-        std::atomic<size_t> SessionCount;
+        const std::string& getSnapshot() const { return _snapshot; }
+
+        std::atomic<size_t>& getSessionCount() { return _sessionCount; }
+
+        const std::atomic<size_t>& getSessionCount() const { return _sessionCount; }
+
+    private:
+        std::string _snapshot;
+        std::atomic<size_t> _sessionCount;
     };
 
 private:
@@ -403,19 +432,19 @@ private:
         }
 
         if (_records.empty() ||
-            _records[0].Dir != TraceFileRecord::Direction::Event ||
-            _records[0].Payload.find("NewSession") != 0)
+            _records[0].getDir() != TraceFileRecord::Direction::Event ||
+            _records[0].getPayload().find("NewSession") != 0)
         {
-            fprintf(stderr, "Invalid trace file with %ld records. First record: %s\n", _records.size(),
-                    _records.empty() ? "<empty>" : _records[0].Payload.c_str());
+            fprintf(stderr, "Invalid trace file with %ld records. First record: %s\n", static_cast<long>(_records.size()),
+                    _records.empty() ? "<empty>" : _records[0].getPayload().c_str());
             throw std::runtime_error("Invalid trace file.");
         }
 
         _indexIn = advance(-1, TraceFileRecord::Direction::Incoming);
         _indexOut = advance(-1, TraceFileRecord::Direction::Outgoing);
 
-        _epochStart = _records[0].TimestampNs;
-        _epochEnd = _records[_records.size() - 1].TimestampNs;
+        _epochStart = _records[0].getTimestampNs();
+        _epochEnd = _records[_records.size() - 1].getTimestampNs();
     }
 
     static bool extractRecord(const std::string& s, TraceFileRecord& rec)
@@ -424,7 +453,7 @@ private:
             return false;
 
         char delimiter = s[0];
-        rec.Dir = static_cast<TraceFileRecord::Direction>(delimiter);
+        rec.setDir(static_cast<TraceFileRecord::Direction>(delimiter));
 
         size_t pos = 1;
         int record = 0;
@@ -435,16 +464,16 @@ private:
             switch (record)
             {
                 case 0:
-                    rec.TimestampNs = std::atoi(s.substr(pos, next - pos).c_str());
+                    rec.setTimestampNs(std::atoi(s.substr(pos, next - pos).c_str()));
                     break;
                 case 1:
-                    rec.Pid = std::atoi(s.substr(pos, next - pos).c_str());
+                    rec.setPid(std::atoi(s.substr(pos, next - pos).c_str()));
                     break;
                 case 2:
-                    rec.SessionId = s.substr(pos, next - pos);
+                    rec.setSessionId(s.substr(pos, next - pos));
                     break;
                 case 3:
-                    rec.Payload = s.substr(pos);
+                    rec.setPayload(s.substr(pos));
                     return true;
             }
 
@@ -461,7 +490,7 @@ private:
     {
         while (++index < _records.size())
         {
-            if (_records[index].Dir == dir)
+            if (_records[index].getDir() == dir)
             {
                 break;
             }
@@ -481,7 +510,5 @@ private:
     unsigned _indexIn;
     unsigned _indexOut;
 };
-
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

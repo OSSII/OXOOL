@@ -3,6 +3,7 @@
  * L.Map.Keyboard is handling keyboard interaction with the map, enabled by default.
  */
 
+/* global w2ui */
 L.Map.mergeOptions({
 	keyboard: true,
 	keyboardPanOffset: 20,
@@ -354,6 +355,11 @@ L.Map.Keyboard = L.Handler.extend({
 		if (this._map._permission === 'edit') {
 			docLayer._resetPreFetching();
 
+			//初始化特定的 UI 元件
+			if (unoKeyCode === 1281) {
+				this._resetUIState();
+			}
+
 			if (this._ignoreKeyEvent(e)) {
 				// key ignored
 			}
@@ -591,6 +597,12 @@ L.Map.Keyboard = L.Handler.extend({
 			return true;
 		}
 		return false;
+	},
+
+	_resetUIState: function() {
+		var toolbar = w2ui['editbar'];
+		toolbar.uncheck('verticaltext');
+		toolbar.uncheck('horizontaltext');
 	}
 });
 

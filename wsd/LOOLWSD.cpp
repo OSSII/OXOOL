@@ -8,14 +8,17 @@
  */
 
 #include <config.h>
-
 #include "LOOLWSD.hpp"
+#include "ProofKey.hpp"
 
 /* Default host used in the start test URI */
 #define LOOLWSD_TEST_HOST "localhost"
 
 /* Default loleaflet UI used in the admin console URI */
 #define LOOLWSD_TEST_ADMIN_CONSOLE "/loleaflet/dist/admin/admin.html"
+
+/* Default loleaflet UI used in for monitoring URI */
+#define LOOLWSD_TEST_METRICS "/lool/getMetrics"
 
 /* Default loleaflet UI used in the start test URI */
 #define LOOLWSD_TEST_LOLEAFLET_UI "/loleaflet/" LOOLWSD_VERSION_HASH "/loleaflet.html"
@@ -25,15 +28,20 @@
 #define LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_CALC    "test/data/hello-world.ods"
 #define LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_IMPRESS "test/data/hello-world.odp"
 
-// This is the main source for the loolwsd program. LOOL uses several loolwsd processes: one main
+/* Default ciphers used, when not specified otherwise */
+#define DEFAULT_CIPHER_SET "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
+
+// This is the main source for the oxoolwsd program. LOOL uses several oxoolwsd processes: one main
 // parent process that listens on the TCP port and accepts connections from LOOL clients, and a
 // number of child processes, each which handles a viewing (editing) session for one document.
 
 #include <unistd.h>
+#include <stdlib.h>
+#include <sysexits.h>
 
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 
 #include <cassert>
 #include <cerrno>
@@ -49,8 +57,9 @@
 #include <mutex>
 #include <sstream>
 #include <thread>
+#include <unordered_map>
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 #include <Poco/Net/Context.h>
 #include <Poco/Net/HTMLForm.h>
@@ -76,7 +85,6 @@ using Poco::Net::PartHandler;
 #include <Poco/DOM/NodeList.h>
 #include <Poco/DateTimeFormatter.h>
 #include <Poco/DirectoryIterator.h>
-#include <Poco/Environment.h>
 #include <Poco/Exception.h>
 #include <Poco/File.h>
 #include <Poco/FileStream.h>
@@ -84,13 +92,9 @@ using Poco::Net::PartHandler;
 #include <Poco/Net/DNS.h>
 #include <Poco/Net/HostEntry.h>
 #include <Poco/Path.h>
-#include <Poco/Pipe.h>
-#include <Poco/Process.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/StreamCopier.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
-#include <Poco/ThreadPool.h>
 #include <Poco/URI.h>
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
@@ -105,17 +109,19 @@ using Poco::Net::PartHandler;
 #include "Auth.hpp"
 #include "ClientSession.hpp"
 #include <Common.hpp>
+#include <Clipboard.hpp>
 #include <Crypto.hpp>
 #include <DelaySocket.hpp>
 #include "DocumentBroker.hpp"
 #include "Exceptions.hpp"
 #include "FileServer.hpp"
-#include <FileUtil.hpp>
-#include <IoUtil.hpp>
-#if defined KIT_IN_PROCESS || defined MOBILEAPP
+#include <common/FileUtil.hpp>
+#include <common/JailUtil.hpp>
+#if defined KIT_IN_PROCESS || MOBILEAPP
 #  include <Kit.hpp>
 #endif
 #include <Log.hpp>
+#include <MobileApp.hpp>
 #include <Protocol.hpp>
 #include <Session.hpp>
 #if ENABLE_SSL
@@ -136,21 +142,19 @@ using Poco::Net::PartHandler;
 
 #include <ServerSocket.hpp>
 
-#ifdef MOBILEAPP
+#if MOBILEAPP
 #ifdef IOS
 #include "ios.h"
-#else
+#elif GTKAPP
 #include "gtk.hpp"
+#elif defined(__ANDROID__)
+#include "androidapp.hpp"
 #endif
 #endif
-
-#include <src/include/oxoolmodule.h>
-std::map<std::string, maker_t *, std::less<std::string> > apilist;
 
 using namespace LOOLProtocol;
 
 using Poco::DirectoryIterator;
-using Poco::Environment;
 using Poco::Exception;
 using Poco::File;
 using Poco::Net::HTTPRequest;
@@ -158,17 +162,11 @@ using Poco::Net::HTTPResponse;
 using Poco::Net::MessageHeader;
 using Poco::Net::NameValueCollection;
 using Poco::Path;
-using Poco::Process;
 using Poco::StreamCopier;
-using Poco::StringTokenizer;
 using Poco::TemporaryFile;
-#if FUZZER
-using Poco::Thread;
-#endif
 using Poco::URI;
 using Poco::Util::Application;
 using Poco::Util::HelpFormatter;
-using Poco::Util::IncompatibleOptionsException;
 using Poco::Util::MissingOptionException;
 using Poco::Util::Option;
 using Poco::Util::OptionSet;
@@ -190,8 +188,10 @@ Socket::Type ClientPortProto = Socket::Type::All;
 /// INET address to listen on
 ServerSocket::Type ClientListenAddr = ServerSocket::Type::Public;
 
-/// Port for prisoners to connect to
-int MasterPortNumber = DEFAULT_MASTER_PORT_NUMBER;
+#if !MOBILEAPP
+/// UDS address for kits to connect to.
+std::string MasterLocation;
+#endif
 
 // Tracks the set of prisoners / children waiting to be used.
 static std::mutex NewChildrenMutex;
@@ -211,22 +211,16 @@ static int careerSpanMs = 0;
 
 /// The timeout for a child to spawn, initially high, then reset to the default.
 int ChildSpawnTimeoutMs = CHILD_TIMEOUT_MS * 4;
-bool LOOLWSD::NoCapsForKit = false;
-bool LOOLWSD::TileCachePersistent = true;
 std::atomic<unsigned> LOOLWSD::NumConnections;
-std::string LOOLWSD::Cache = LOOLWSD_CACHEDIR;
-std::set<std::string> LOOLWSD::EditFileExtensions;
+std::unordered_set<std::string> LOOLWSD::EditFileExtensions;
+std::unordered_set<std::string> LOOLWSD::ViewWithCommentsFileExtensions;
 
-#ifdef MOBILEAPP
+#if MOBILEAPP
 
 // Or can this be retrieved in some other way?
 int LOOLWSD::prisonerServerSocketFD;
 
 #else
-
-/// New LOK child processes ready to host documents.
-//TODO: Move to a more sensible namespace.
-static bool DisplayVersion = false;
 
 /// Funky latency simulation basic delay (ms)
 static int SimulatedLatencyMs = 0;
@@ -237,57 +231,37 @@ namespace
 {
 
 #if ENABLE_SUPPORT_KEY
-inline void shutdownLimitReached(WebSocketHandler& ws)
+inline void shutdownLimitReached(const std::shared_ptr<ProtocolHandlerInterface>& proto)
 {
+    if (!proto)
+        return;
+
     const std::string error = Poco::format(PAYLOAD_UNAVAILABLE_LIMIT_REACHED, LOOLWSD::MaxDocuments, LOOLWSD::MaxConnections);
     LOG_INF("Sending client 'hardlimitreached' message: " << error);
 
     try
     {
         // Let the client know we are shutting down.
-        ws.sendMessage(error);
+        proto->sendTextMessage(error.data(), error.size());
 
         // Shutdown.
-        ws.shutdown(WebSocketHandler::StatusCodes::POLICY_VIOLATION);
+        proto->shutdown(true, error);
     }
     catch (const std::exception& ex)
     {
-        LOG_ERR("Error while shuting down socket on reaching limit: " << ex.what());
+        LOG_ERR("Error while shutting down socket on reaching limit: " << ex.what());
     }
 }
 #endif
 
-inline void checkSessionLimitsAndWarnClients()
-{
-#ifndef MOBILEAPP
-
-    ssize_t docBrokerCount = DocBrokers.size() - ConvertToBroker::getInstanceCount();
-    if (LOOLWSD::MaxDocuments < 10000 &&
-        (docBrokerCount > LOOLWSD::MaxDocuments || LOOLWSD::NumConnections >= LOOLWSD::MaxConnections))
-    {
-        const std::string info = Poco::format(PAYLOAD_INFO_LIMIT_REACHED, LOOLWSD::MaxDocuments, LOOLWSD::MaxConnections);
-        LOG_INF("Sending client 'limitreached' message: " << info);
-
-        try
-        {
-            Util::alertAllUsers(info);
-        }
-        catch (const std::exception& ex)
-        {
-            LOG_ERR("Error while shuting down socket on reaching limit: " << ex.what());
-        }
-    }
-#endif
-}
-
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 /// Internal implementation to alert all clients
 /// connected to any document.
 void alertAllUsersInternal(const std::string& msg)
 {
     std::lock_guard<std::mutex> docBrokersLock(DocBrokersMutex);
 
-    LOG_INF("Alerting all users: [" << msg << "]");
+    LOG_INF("Alerting all users: [" << msg << ']');
 
     if (UnitWSD::get().filterAlertAllusers(msg))
         return;
@@ -300,9 +274,35 @@ void alertAllUsersInternal(const std::string& msg)
 }
 #endif
 
-static void checkDiskSpaceAndWarnClients(const bool cacheLastCheck)
+} // end anonymous namespace
+
+void LOOLWSD::checkSessionLimitsAndWarnClients()
 {
-#ifndef MOBILEAPP
+#if !ENABLE_SUPPORT_KEY
+#if !MOBILEAPP
+    ssize_t docBrokerCount = DocBrokers.size() - ConvertToBroker::getInstanceCount();
+    if (LOOLWSD::MaxDocuments < 10000 &&
+        (docBrokerCount > static_cast<ssize_t>(LOOLWSD::MaxDocuments) || LOOLWSD::NumConnections >= LOOLWSD::MaxConnections))
+    {
+        const std::string info = Poco::format(PAYLOAD_INFO_LIMIT_REACHED, LOOLWSD::MaxDocuments, LOOLWSD::MaxConnections);
+        LOG_INF("Sending client 'limitreached' message: " << info);
+
+        try
+        {
+            Util::alertAllUsers(info);
+        }
+        catch (const std::exception& ex)
+        {
+            LOG_ERR("Error while shutting down socket on reaching limit: " << ex.what());
+        }
+    }
+#endif
+#endif
+}
+
+void LOOLWSD::checkDiskSpaceAndWarnClients(const bool cacheLastCheck)
+{
+#if !MOBILEAPP
     try
     {
         const std::string fs = FileUtil::checkDiskSpaceOnRegisteredFileSystems(cacheLastCheck);
@@ -317,8 +317,6 @@ static void checkDiskSpaceAndWarnClients(const bool cacheLastCheck)
         LOG_WRN("Exception while checking disk-space and warning clients: " << exc.what());
     }
 #endif
-}
-
 }
 
 /// Remove dead and idle DocBrokers.
@@ -358,10 +356,17 @@ void cleanupDocBrokers()
 
             LOG_END(logger, true);
         }
+
+#if !MOBILEAPP && ENABLE_DEBUG
+        if (LOOLWSD::SingleKit && DocBrokers.size() == 0)
+        {
+            SigUtil::requestShutdown();
+        }
+#endif
     }
 }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 /// Forks as many children as requested.
 /// Returns the number of children requested to spawn,
@@ -373,23 +378,18 @@ static int forkChildren(const int number)
 
     if (number > 0)
     {
-        checkDiskSpaceAndWarnClients(false);
+        LOOLWSD::checkDiskSpaceAndWarnClients(false);
 
 #ifdef KIT_IN_PROCESS
         forkLibreOfficeKit(LOOLWSD::ChildRoot, LOOLWSD::SysTemplate, LOOLWSD::LoTemplate, LO_JAIL_SUBPATH, number);
 #else
-        const std::string aMessage = "spawn " + std::to_string(number) + "\n";
+        const std::string aMessage = "spawn " + std::to_string(number) + '\n';
         LOG_DBG("MasterToForKit: " << aMessage.substr(0, aMessage.length() - 1));
-        if (IoUtil::writeToPipe(LOOLWSD::ForKitWritePipe, aMessage) > 0)
+        LOOLWSD::sendMessageToForKit(aMessage);
 #endif
-        {
-            OutstandingForks += number;
-            LastForkRequestTime = std::chrono::steady_clock::now();
-            return number;
-        }
-
-        LOG_ERR("No forkit pipe while rebalancing children.");
-        return -1; // Fail.
+        OutstandingForks += number;
+        LastForkRequestTime = std::chrono::steady_clock::now();
+        return number;
     }
 
     return 0;
@@ -485,17 +485,21 @@ static size_t addNewChild(const std::shared_ptr<ChildProcess>& child)
     return count;
 }
 
-std::shared_ptr<ChildProcess> getNewChild_Blocks(
-#ifdef MOBILEAPP
-                                                 const std::string& uri
+#if MOBILEAPP
+#ifndef IOS
+std::mutex LOOLWSD::lokit_main_mutex;
 #endif
-                                                 )
+#endif
+
+std::shared_ptr<ChildProcess> getNewChild_Blocks(unsigned mobileAppDocId)
 {
     std::unique_lock<std::mutex> lock(NewChildrenMutex);
 
     const auto startTime = std::chrono::steady_clock::now();
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
+    (void) mobileAppDocId;
+
     LOG_DBG("getNewChild: Rebalancing children.");
     int numPreSpawn = LOOLWSD::NumPreSpawnedChildren;
     ++numPreSpawn; // Replace the one we'll dispatch just now.
@@ -518,11 +522,15 @@ std::shared_ptr<ChildProcess> getNewChild_Blocks(
 
     std::thread([&]
                 {
+#ifndef IOS
+                    std::lock_guard<std::mutex> lock(LOOLWSD::lokit_main_mutex);
                     Util::setThreadName("lokit_main");
-
-                    // Ugly to have that static global, otoh we know there is just one LOOLWSD
-                    // object. (Even in real Online.)
-                    lokit_main(uri, LOOLWSD::prisonerServerSocketFD, 1);
+#else
+                    Util::setThreadName("lokit_main_" + Util::encodeId(mobileAppDocId, 3));
+#endif
+                    // Ugly to have that static global LOOLWSD::prisonerServerSocketFD, Otoh we know
+                    // there is just one LOOLWSD object. (Even in real Online.)
+                    lokit_main(LOOLWSD::prisonerServerSocketFD, LOOLWSD::UserInterface, mobileAppDocId);
                 }).detach();
 #endif
 
@@ -565,7 +573,7 @@ std::shared_ptr<ChildProcess> getNewChild_Blocks(
     return nullptr;
 }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 /// Handles the filename part of the convert-to POST request payload,
 /// Also owns the file - cleaning it up when destroyed.
@@ -591,7 +599,7 @@ public:
     {
         if (!_filename.empty())
         {
-            LOG_TRC("Remove un-handled temporary file '" << _filename << "'");
+            LOG_TRC("Remove un-handled temporary file '" << _filename << '\'');
             ConvertToBroker::removeFile(_filename);
         }
     }
@@ -611,8 +619,9 @@ public:
             return;
 
         // FIXME: needs wrapping - until then - keep in sync with ~ConvertToBroker
-        Path tempPath = _convertTo? Path::forDirectory(Poco::TemporaryFile::tempName("/tmp/convert-to") + "/") :
-                                    Path::forDirectory(Poco::TemporaryFile::tempName() + "/");
+        Path tempPath = Path::forDirectory(
+            Poco::TemporaryFile::tempName(_convertTo ? "/tmp/convert-to" : "") + '/');
+        LOG_TRC("Creating temporary convert-to path: " << tempPath.toString());
         File(tempPath).createDirectories();
         chmod(tempPath.toString().c_str(), S_IXUSR | S_IWUSR | S_IRUSR);
 
@@ -634,12 +643,23 @@ namespace
 {
 
 #if ENABLE_DEBUG
-inline std::string getLaunchBase(const std::string &credentials)
+inline std::string getLaunchBase(bool asAdmin = false)
 {
     std::ostringstream oss;
     oss << "    ";
     oss << ((LOOLWSD::isSSLEnabled() || LOOLWSD::isSSLTermination()) ? "https://" : "http://");
-    oss << credentials;
+
+    if (asAdmin)
+    {
+        auto user = LOOLWSD::getConfigValue<std::string>("admin_console.username", "");
+        auto passwd = LOOLWSD::getConfigValue<std::string>("admin_console.password", "");
+
+        if (user.empty() || passwd.empty())
+            return "";
+
+        oss << user << ':' << passwd << '@';
+    }
+
     oss << LOOLWSD_TEST_HOST ":";
     oss << ClientPortNumber;
 
@@ -650,7 +670,7 @@ inline std::string getLaunchURI(const std::string &document)
 {
     std::ostringstream oss;
 
-    oss << getLaunchBase("");
+    oss << getLaunchBase();
     oss << LOOLWSD::ServiceRoot;
     oss << LOOLWSD_TEST_LOLEAFLET_UI;
     oss << "?file_path=file://";
@@ -660,76 +680,95 @@ inline std::string getLaunchURI(const std::string &document)
     return oss.str();
 }
 
-inline std::string getServiceURI(const std::string &sub)
+inline std::string getServiceURI(const std::string &sub, bool asAdmin = false)
 {
     std::ostringstream oss;
 
-    oss << getLaunchBase("");
+    oss << getLaunchBase(asAdmin);
     oss << LOOLWSD::ServiceRoot;
     oss << sub;
 
     return oss.str();
 }
 
-inline std::string getAdminURI(const Poco::Util::LayeredConfiguration &config)
-{
-    std::string user = config.getString("admin_console.username", "");
-    std::string passwd = config.getString("admin_console.password", "");
-
-    if (user.empty() || passwd.empty())
-        return "";
-
-    std::ostringstream oss;
-
-    oss << getLaunchBase(user + ":" + passwd + "@");
-    oss << LOOLWSD::ServiceRoot;
-    oss << LOOLWSD_TEST_ADMIN_CONSOLE;
-
-    return oss.str();
-}
 #endif
 
 } // anonymous namespace
 
 #endif // MOBILEAPP
 
-std::atomic<unsigned> LOOLWSD::NextConnectionId(1);
+namespace
+{
+
+void sendLoadResult(std::shared_ptr<ClientSession> clientSession, bool success,
+                    const std::string &errorMsg)
+{
+    const std::string result = success ? "" : "Error while loading document";
+    const std::string resultstr = success ? "true" : "false";
+    // Some sane limit, otherwise we get problems transfering this
+    // to the client with large strings (can be a whole webpage)
+    // Replace reserved characters
+    std::string errorMsgFormatted = LOOLProtocol::getAbbreviatedMessage(errorMsg);
+    errorMsgFormatted = Poco::translate(errorMsg, "\"", "'");
+    clientSession->sendMessage("commandresult: { \"command\": \"load\", \"success\": " + resultstr +
+                    ", \"result\": \"" + result + "\", \"errorMsg\": \"" + errorMsgFormatted  + "\"}");
+}
+
+} // anonymous namespace
+
+std::atomic<uint64_t> LOOLWSD::NextConnectionId(1);
+
+#if !MOBILEAPP
 #ifndef KIT_IN_PROCESS
-std::atomic<int> LOOLWSD::ForKitWritePipe(-1);
 std::atomic<int> LOOLWSD::ForKitProcId(-1);
+std::shared_ptr<ForKitProcess> LOOLWSD::ForKitProc;
 #endif
+bool LOOLWSD::NoCapsForKit = false;
 bool LOOLWSD::NoSeccomp = false;
 bool LOOLWSD::AdminEnabled = true;
+#if ENABLE_DEBUG
+bool LOOLWSD::SingleKit = false;
+#endif
+#endif
 #ifdef FUZZER
 bool LOOLWSD::DummyLOK = false;
 std::string LOOLWSD::FuzzFileName;
 #endif
 std::string LOOLWSD::SysTemplate;
-std::string LOOLWSD::LoTemplate;
+std::string LOOLWSD::LoTemplate = LO_PATH;
 std::string LOOLWSD::ChildRoot;
 std::string LOOLWSD::ServerName;
 std::string LOOLWSD::FileServerRoot;
+std::string LOOLWSD::WelcomeFilesRoot;
 std::string LOOLWSD::ServiceRoot;
 std::string LOOLWSD::LOKitVersion;
 std::string LOOLWSD::ConfigFile = LOOLWSD_CONFIGDIR "/oxoolwsd.xml";
 std::string LOOLWSD::ConfigDir = LOOLWSD_CONFIGDIR "/conf.d";
 std::string LOOLWSD::LogLevel = "trace";
-bool LOOLWSD::AnonymizeFilenames = false;
-bool LOOLWSD::AnonymizeUsernames = false;
+std::string LOOLWSD::UserInterface = "classic";
+bool LOOLWSD::AnonymizeUserData = false;
+bool LOOLWSD::CheckLoolUser = true;
+bool LOOLWSD::CleanupOnly = false; //< If we should cleanup and exit.
+bool LOOLWSD::IsProxyPrefixEnabled = false;
+#if ENABLE_SSL
 Util::RuntimeConstant<bool> LOOLWSD::SSLEnabled;
 Util::RuntimeConstant<bool> LOOLWSD::SSLTermination;
+#endif
 unsigned LOOLWSD::MaxConnections;
 unsigned LOOLWSD::MaxDocuments;
 std::string LOOLWSD::OverrideWatermark;
 std::set<const Poco::Util::AbstractConfiguration*> LOOLWSD::PluginConfigurations;
 std::chrono::time_point<std::chrono::system_clock> LOOLWSD::StartTime;
 
+// If you add global state please update dumpState below too
+
 static std::string UnitTestLibrary;
-// Add by Firefly <firefly@ossii.com.tw>
-static bool ConvertToEnabled = false;
 
 unsigned int LOOLWSD::NumPreSpawnedChildren = 0;
 std::unique_ptr<TraceFileWriter> LOOLWSD::TraceDumper;
+#if !MOBILEAPP
+std::unique_ptr<ClipboardCache> LOOLWSD::SavedClipboards;
+#endif
 
 /// This thread polls basic web serving, and handling of
 /// websockets before upgrade: when upgraded they go to the
@@ -742,6 +781,44 @@ public:
 
     /// Check prisoners are still alive and balanced.
     void wakeupHook() override;
+
+#if !MOBILEAPP
+    // Resets the forkit process object
+    void setForKitProcess(const std::weak_ptr<ForKitProcess>& forKitProc)
+    {
+        assertCorrectThread();
+        _forKitProc = forKitProc;
+    }
+
+    void sendMessageToForKit(const std::string& msg)
+    {
+        if (std::this_thread::get_id() == getThreadOwner())
+        {
+            // Speed up sending the message if the request comes from owner thread
+            std::shared_ptr<ForKitProcess> forKitProc = _forKitProc.lock();
+            if (forKitProc)
+            {
+                forKitProc->sendTextFrame(msg);
+            }
+        }
+        else
+        {
+            // Put the message in the owner's thread queue to be send later
+            // because WebSocketHandler is not thread safe and otherwise we
+            // should synchronize inside WebSocketHandler.
+            addCallback([=]{
+                std::shared_ptr<ForKitProcess> forKitProc = _forKitProc.lock();
+                if (forKitProc)
+                {
+                    forKitProc->sendTextFrame(msg);
+                }
+            });
+        }
+    }
+
+private:
+    std::weak_ptr<ForKitProcess> _forKitProc;
+#endif
 };
 
 /// This thread listens for and accepts prisoner kit processes.
@@ -761,6 +838,35 @@ public:
     }
 };
 
+#if !MOBILEAPP
+
+void ForKitProcWSHandler::handleMessage(const std::vector<char> &data)
+{
+    LOG_TRC("ForKitProcWSHandler: handling incoming [" << LOOLProtocol::getAbbreviatedMessage(&data[0], data.size()) << "].");
+    const std::string firstLine = LOOLProtocol::getFirstLine(&data[0], data.size());
+    const StringVector tokens = Util::tokenize(firstLine.data(), firstLine.size());
+
+    if (tokens.equals(0, "segfaultcount"))
+    {
+        int count = std::stoi(tokens[1]);
+        if (count >= 0)
+        {
+            Admin::instance().addSegFaultCount(count);
+            LOG_INF(count << " oxoolkit processes crashed with segmentation fault.");
+        }
+        else
+        {
+            LOG_WRN("Invalid 'segfaultcount' message received.");
+        }
+    }
+    else
+    {
+        LOG_ERR("ForKitProcWSHandler: unknown command: " << tokens[0]);
+    }
+}
+
+#endif
+
 LOOLWSD::LOOLWSD()
 {
 }
@@ -771,12 +877,14 @@ LOOLWSD::~LOOLWSD()
 
 void LOOLWSD::initialize(Application& self)
 {
-#ifndef MOBILEAPP
-    if (geteuid() == 0)
+#if !MOBILEAPP
+    if (geteuid() == 0 && CheckLoolUser)
     {
         throw std::runtime_error("Do not run as root. Please run as lool user.");
     }
 #endif
+
+    Util::setApplicationPath(Poco::Path(Application::instance().commandPath()).parent().toString());
 
     if (!UnitWSD::init(UnitWSD::UnitType::Wsd, UnitTestLibrary))
     {
@@ -793,11 +901,11 @@ void LOOLWSD::initialize(Application& self)
             { "admin_console.enable_pam", "false" },
             { "child_root_path", "jails" },
             { "file_server_root_path", "loleaflet/.." },
-            { "convert_to", "false" },
             { "lo_jail_subpath", "lo" },
-            { "lo_template_path", LO_PATH },
-            { "logging.anonymize.filenames", "false" },
-            { "logging.anonymize.usernames", "false" },
+            { "logging.protocol", "false" },
+            { "logging.anonymize.filenames", "false" }, // Deprecated.
+            { "logging.anonymize.usernames", "false" }, // Deprecated.
+            // { "logging.anonymize.anonymize_user_data", "false" }, // Do not set to fallback on filename/username.
             { "logging.color", "true" },
             { "logging.file.property[0]", "oxoolwsd.log" },
             { "logging.file.property[0][@name]", "path" },
@@ -817,29 +925,41 @@ void LOOLWSD::initialize(Application& self)
             { "logging.file.property[7][@name]", "archive" },
             { "logging.file[@enable]", "false" },
             { "logging.level", "trace" },
+            { "logging.lokit_sal_log", "-INFO-WARN" },
             { "loleaflet_html", "loleaflet.html" },
             { "loleaflet_logging", "false" },
+            { "mount_jail_tree", "true" },
+            { "net.connection_timeout_secs", "30" },
             { "net.listen", "any" },
             { "net.proto", "all" },
             { "net.service_root", "" },
+            { "net.proxy_prefix", "false" },
             { "num_prespawn_children", "1" },
             { "per_document.always_save_on_exit", "false" },
             { "per_document.autosave_duration_secs", "300" },
+            { "per_document.cleanup.cleanup_interval_ms", "10000" },
+            { "per_document.cleanup.bad_behavior_period_secs", "60" },
+            { "per_document.cleanup.idle_time_secs", "300" },
+            { "per_document.cleanup.limit_dirty_mem_mb", "3072" },
+            { "per_document.cleanup.limit_cpu_per", "85" },
+            { "per_document.cleanup[@enable]", "false" },
+            { "per_document.document_signing_url", VEREIGN_URL },
             { "per_document.idle_timeout_secs", "3600" },
             { "per_document.idlesave_duration_secs", "30" },
             { "per_document.limit_file_size_mb", "0" },
             { "per_document.limit_num_open_files", "0" },
             { "per_document.limit_load_secs", "100" },
+            { "per_document.limit_convert_secs", "100" },
             { "per_document.limit_stack_mem_kb", "8000" },
             { "per_document.limit_virt_mem_mb", "0" },
             { "per_document.max_concurrency", "4" },
-            { "per_document.redlining_as_comments", "true" },
+            { "per_document.batch_priority", "5" },
+            { "per_document.redlining_as_comments", "false" },
             { "per_view.idle_timeout_secs", "900" },
-            { "per_view.out_of_focus_timeout_secs", "60" },
+            { "per_view.out_of_focus_timeout_secs", "120" },
             { "security.capabilities", "true" },
             { "security.seccomp", "true" },
             { "server_name", "" },
-            { "client_port_number", "9980" },
             { "ssl.ca_file_path", LOOLWSD_CONFIGDIR "/ca-chain.cert.pem" },
             { "ssl.cert_file_path", LOOLWSD_CONFIGDIR "/cert.pem" },
             { "ssl.enable", "true" },
@@ -850,24 +970,28 @@ void LOOLWSD::initialize(Application& self)
             { "ssl.key_file_path", LOOLWSD_CONFIGDIR "/key.pem" },
             { "ssl.termination", "true" },
             { "storage.filesystem[@allow]", "false" },
+//            "storage.ssl.enable" - deliberately not set; for back-compat
             { "storage.webdav[@allow]", "false" },
             { "storage.wopi.host[0]", "localhost" },
             { "storage.wopi.host[0][@allow]", "true" },
             { "storage.wopi.max_file_size", "0" },
             { "storage.wopi[@allow]", "true" },
+            { "storage.wopi.locking.refresh", "900" },
             { "sys_template_path", "systemplate" },
-            { "tile_cache_path", LOOLWSD_CACHEDIR },
-            { "tile_cache_persistent", "true" },
             { "trace.path[@compress]", "true" },
             { "trace.path[@snapshot]", "false" },
-            { "trace[@enable]", "false" }
+            { "trace[@enable]", "false" },
+            { "welcome.enable", ENABLE_WELCOME_MESSAGE },
+            { "welcome.enable_button", ENABLE_WELCOME_MESSAGE_BUTTON },
+            { "welcome.path", "loleaflet/welcome" },
+            { "user_interface.mode", USER_INTERFACE_MODE }
           };
 
     // Set default values, in case they are missing from the config file.
     AutoPtr<AppConfigMap> defConfig(new AppConfigMap(DefAppConfig));
     conf.addWriteable(defConfig, PRIO_SYSTEM); // Lowest priority
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
     // Load default configuration files, if present.
     if (loadConfiguration(PRIO_DEFAULT) == 0)
@@ -899,12 +1023,14 @@ void LOOLWSD::initialize(Application& self)
     // Allow UT to manipulate before using configuration values.
     UnitWSD::get().configure(config());
 
-    // Add by Firefly <firefly@ossii.com.tw>
-    ConvertToEnabled = getConfigValue<bool>(conf, "convert_to", false);
+    // Setup user interface mode
+    UserInterface = getConfigValue<std::string>(conf, "user_interface.mode", "classic");
 
     // Set the log-level after complete initialization to force maximum details at startup.
     LogLevel = getConfigValue<std::string>(conf, "logging.level", "trace");
     setenv("LOOL_LOGLEVEL", LogLevel.c_str(), true);
+    std::string SalLog = getConfigValue<std::string>(conf, "logging.lokit_sal_log", "-INFO-WARN");
+    setenv("SAL_LOG", SalLog.c_str(), 0);
     const bool withColor = getConfigValue<bool>(conf, "logging.color", true) && isatty(fileno(stderr));
     if (withColor)
     {
@@ -915,7 +1041,7 @@ void LOOLWSD::initialize(Application& self)
     std::map<std::string, std::string> logProperties;
     for (std::size_t i = 0; ; ++i)
     {
-        const std::string confPath = "logging.file.property[" + std::to_string(i) + "]";
+        const std::string confPath = "logging.file.property[" + std::to_string(i) + ']';
         const std::string confName = config().getString(confPath + "[@name]", "");
         if (!confName.empty())
         {
@@ -949,50 +1075,71 @@ void LOOLWSD::initialize(Application& self)
         LOG_INF("Setting log-level to [trace] and delaying setting to configured [" << LogLevel << "] until after WSD initialization.");
     }
 
+    ServerName = config().getString("server_name");
+    LOG_INF("Initializing oxoolwsd server [" << ServerName << "].");
+
     // Get anonymization settings.
-#if LOOLWSD_ANONYMIZE_USERNAMES
-    AnonymizeUsernames = true;
+#if LOOLWSD_ANONYMIZE_USER_DATA
+    AnonymizeUserData = true;
+    LOG_INF("Anonymization of user-data is permanently enabled.");
 #else
-    AnonymizeUsernames = getConfigValue<bool>(conf, "logging.anonymize.usernames", false);
-#endif
+    LOG_INF("Anonymization of user-data is configurable.");
+    bool haveAnonymizeUserDataConfig = false;
+    if (getSafeConfig(conf, "logging.anonymize.anonymize_user_data", AnonymizeUserData))
+        haveAnonymizeUserDataConfig = true;
 
-#if LOOLWSD_ANONYMIZE_FILENAMES
-    AnonymizeFilenames = true;
-#else
-    AnonymizeFilenames = getConfigValue<bool>(conf, "logging.anonymize.filenames", false);
-#endif
-
-    if ((AnonymizeFilenames || AnonymizeUsernames) && LogLevel == "trace")
+    bool anonymizeFilenames = false;
+    bool anonymizeUsernames = false;
+    if (getSafeConfig(conf, "logging.anonymize.usernames", anonymizeFilenames) ||
+        getSafeConfig(conf, "logging.anonymize.filenames", anonymizeUsernames))
     {
-        if (getConfigValue<bool>(conf, "logging.anonymize.allow_logging_pii", false))
+        LOG_WRN("NOTE: both logging.anonymize.usernames and logging.anonymize.filenames are deprecated and superseded by "
+                "logging.anonymize.anonymize_user_data. Please remove username and filename entries from the config and use only anonymize_user_data.");
+
+        if (haveAnonymizeUserDataConfig)
+            LOG_WRN("Since logging.anonymize.anonymize_user_data is provided (" << AnonymizeUserData << ") in the config, it will be used.");
+        else
         {
-            LOG_WRN("Enabling trace logging while anonymization is enabled due to logging.anonymize.allow_logging_pii setting. "
-                    "This will leak personally identifiable information!");
+            AnonymizeUserData = (anonymizeFilenames || anonymizeUsernames);
+        }
+    }
+#endif
+
+    if (AnonymizeUserData && LogLevel == "trace")
+    {
+        if (getConfigValue<bool>(conf, "logging.anonymize.allow_logging_user_data", false))
+        {
+            LOG_WRN("Enabling trace logging while anonymization is enabled due to logging.anonymize.allow_logging_user_data setting. "
+                    "This will leak user-data!");
 
             // Disable anonymization as it's useless now.
-            AnonymizeFilenames = false;
-            AnonymizeUsernames = false;
+            AnonymizeUserData = false;
         }
         else
         {
             static const char failure[] = "Anonymization and trace-level logging are incompatible. "
-                "Please reduce logging level to debug or lower in loolwsd.xml to prevent leaking sensitive user data.";
+                "Please reduce logging level to debug or lower in oxoolwsd.xml to prevent leaking sensitive user data.";
             LOG_FTL(failure);
             std::cerr << '\n' << failure << std::endl;
 #if ENABLE_DEBUG
-            std::cerr << "\nIf you have used 'make run', edit loolwsd.xml and make sure you have removed "
+            std::cerr << "\nIf you have used 'make run', edit oxoolwsd.xml and make sure you have removed "
                          "'--o:logging.level=trace' from the command line in Makefile.am.\n" << std::endl;
 #endif
             Log::shutdown();
-            _exit(Application::EXIT_SOFTWARE);
+            _exit(EX_SOFTWARE);
         }
     }
 
-    if (AnonymizeFilenames)
-        setenv("LOOL_ANONYMIZE_FILENAMES", "1", true);
-
-    if (AnonymizeUsernames)
-        setenv("LOOL_ANONYMIZE_USERNAMES", "1", true);
+    std::uint64_t anonymizationSalt = 82589933;
+    LOG_INF("Anonymization of user-data is " << (AnonymizeUserData ? "enabled." : "disabled."));
+    if (AnonymizeUserData)
+    {
+        // Get the salt, if set, otherwise default, and set as envar, so the kits inherit it.
+        anonymizationSalt = getConfigValue<std::uint64_t>(conf, "logging.anonymize.anonymization_salt", 82589933);
+        const std::string anonymizationSaltStr = std::to_string(anonymizationSalt);
+        setenv("LOOL_ANONYMIZATION_SALT", anonymizationSaltStr.c_str(), true);
+    }
+    FileUtil::setUrlAnonymization(AnonymizeUserData, anonymizationSalt);
 
     {
         std::string proto = getConfigValue<std::string>(conf, "net.proto", "");
@@ -1016,15 +1163,15 @@ void LOOLWSD::initialize(Application& self)
             LOG_WRN("Invalid listen address: " << listen << ". Falling back to default: 'any'" );
     }
 
-    // Prefix for the loolwsd pages; should not end with a '/'
+    // Prefix for the oxoolwsd pages; should not end with a '/'
     ServiceRoot = getPathFromConfig("net.service_root");
     while (ServiceRoot.length() > 0 && ServiceRoot[ServiceRoot.length() - 1] == '/')
         ServiceRoot.pop_back();
 
+    IsProxyPrefixEnabled = getConfigValue<bool>(conf, "net.proxy_prefix", false);
+
 #if ENABLE_SSL
     LOOLWSD::SSLEnabled.set(getConfigValue<bool>(conf, "ssl.enable", true));
-#else
-    LOOLWSD::SSLEnabled.set(false);
 #endif
 
     if (LOOLWSD::isSSLEnabled())
@@ -1038,8 +1185,6 @@ void LOOLWSD::initialize(Application& self)
 
 #if ENABLE_SSL
     LOOLWSD::SSLTermination.set(getConfigValue<bool>(conf, "ssl.termination", true));
-#else
-    LOOLWSD::SSLTermination.set(false);
 #endif
 
     std::string allowedLanguages(config().getString("allowed_languages"));
@@ -1047,32 +1192,74 @@ void LOOLWSD::initialize(Application& self)
 
 #endif
 
-    Cache = getPathFromConfig("tile_cache_path");
     SysTemplate = getPathFromConfig("sys_template_path");
-    LoTemplate = getPathFromConfig("lo_template_path");
-    ChildRoot = getPathFromConfig("child_root_path");
-    ServerName = config().getString("server_name");
-    ClientPortNumber = config().getUInt("client_port_number", DEFAULT_CLIENT_PORT_NUMBER);
+    if (SysTemplate.empty())
+    {
+        LOG_FTL("Missing sys_template_path config entry.");
+        throw MissingOptionException("systemplate");
+    }
 
+    ChildRoot = getPathFromConfig("child_root_path");
+    if (ChildRoot.empty())
+    {
+        LOG_FTL("Missing child_root_path config entry.");
+        throw MissingOptionException("childroot");
+    }
+    else
+    {
+#if !MOBILEAPP
+        if (CleanupOnly)
+        {
+            // Cleanup and exit.
+            JailUtil::cleanupJails(ChildRoot);
+            std::exit(EX_OK);
+        }
+#endif
+        if (ChildRoot[ChildRoot.size() - 1] != '/')
+            ChildRoot += '/';
+
+        // Create a custom sub-path for parallelized unit tests.
+        if (UnitBase::isUnitTesting())
+        {
+            ChildRoot += Util::rng::getHardRandomHexString(8) + '/';
+            LOG_INF("Creating sub-childroot: " + ChildRoot);
+        }
+        else
+            LOG_INF("Creating childroot: " + ChildRoot);
+    }
+
+#if !MOBILEAPP
+    // Setup the jails.
+    JailUtil::setupJails(getConfigValue<bool>(conf, "mount_jail_tree", true), ChildRoot,
+                         SysTemplate);
+
+    LOG_DBG("FileServerRoot before config: " << FileServerRoot);
     FileServerRoot = getPathFromConfig("file_server_root_path");
+    LOG_DBG("FileServerRoot after config: " << FileServerRoot);
+
+    WelcomeFilesRoot = getPathFromConfig("welcome.path");
+    if (!getConfigValue<bool>(conf, "welcome.enable", true))
+        WelcomeFilesRoot = "";
+
     NumPreSpawnedChildren = getConfigValue<int>(conf, "num_prespawn_children", 1);
     if (NumPreSpawnedChildren < 1)
     {
         LOG_WRN("Invalid num_prespawn_children in config (" << NumPreSpawnedChildren << "). Resetting to 1.");
         NumPreSpawnedChildren = 1;
     }
-    LOG_INF("NumPreSpawnedChildren set to " << NumPreSpawnedChildren << ".");
+    LOG_INF("NumPreSpawnedChildren set to " << NumPreSpawnedChildren << '.');
 
-#ifndef MOBILEAPP
+    FileUtil::registerFileSystemForDiskSpaceChecks(ChildRoot);
+
     const auto maxConcurrency = getConfigValue<int>(conf, "per_document.max_concurrency", 4);
     if (maxConcurrency > 0)
     {
         setenv("MAX_CONCURRENCY", std::to_string(maxConcurrency).c_str(), 1);
     }
-    LOG_INF("MAX_CONCURRENCY set to " << maxConcurrency << ".");
+    LOG_INF("MAX_CONCURRENCY set to " << maxConcurrency << '.');
 #endif
 
-    const auto redlining = getConfigValue<bool>(conf, "per_document.redlining_as_comments", true);
+    const auto redlining = getConfigValue<bool>(conf, "per_document.redlining_as_comments", false);
     if (!redlining)
     {
         setenv("DISABLE_REDLINE", "1", 1);
@@ -1086,9 +1273,11 @@ void LOOLWSD::initialize(Application& self)
     LOOLWSD::MaxConnections = MAX_CONNECTIONS;
     LOOLWSD::MaxDocuments = MAX_DOCUMENTS;
 
+#if !MOBILEAPP
     NoSeccomp = !getConfigValue<bool>(conf, "security.seccomp", true);
     NoCapsForKit = !getConfigValue<bool>(conf, "security.capabilities", true);
     AdminEnabled = getConfigValue<bool>(conf, "admin_console.enable", true);
+#endif
 
 #if ENABLE_SUPPORT_KEY
     const std::string supportKeyString = getConfigValue<std::string>(conf, "support_key", "");
@@ -1141,12 +1330,17 @@ void LOOLWSD::initialize(Application& self)
         LOOLWSD::MaxDocuments = LOOLWSD::MaxConnections;
     }
 
+    struct rlimit rlim;
+    ::getrlimit(RLIMIT_NOFILE, &rlim);
+    LOG_INF("Maximum file descriptor supported by the system: " << rlim.rlim_cur - 1);
+    // 4 fds per document are used for client connection, Kit process communication, and
+    // a wakeup pipe with 2 fds. 32 fds (i.e. 8 documents) are reserved.
+    LOG_INF("Maximum number of open documents supported by the system: " << rlim.rlim_cur / 4 - 8);
+
     LOG_INF("Maximum concurrent open Documents limit: " << LOOLWSD::MaxDocuments);
     LOG_INF("Maximum concurrent client Connections limit: " << LOOLWSD::MaxConnections);
 
     LOOLWSD::NumConnections = 0;
-
-    TileCachePersistent = getConfigValue<bool>(conf, "tile_cache_persistent", true);
 
     // Command Tracing.
     if (getConfigValue<bool>(conf, "trace[@enable]", false))
@@ -1156,7 +1350,7 @@ void LOOLWSD::initialize(Application& self)
         std::vector<std::string> filters;
         for (size_t i = 0; ; ++i)
         {
-            const std::string confPath = "trace.filter.message[" + std::to_string(i) + "]";
+            const std::string confPath = "trace.filter.message[" + std::to_string(i) + ']';
             const std::string regex = config().getString(confPath, "");
             if (!regex.empty())
             {
@@ -1173,35 +1367,50 @@ void LOOLWSD::initialize(Application& self)
         TraceDumper.reset(new TraceFileWriter(path, recordOutgoing, compress, takeSnapshot, filters));
     }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
+    SavedClipboards.reset(new ClipboardCache());
+
     FileServerRequestHandler::initialize();
 #endif
 
     StorageBase::initialize();
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     ServerApplication::initialize(self);
 
     DocProcSettings docProcSettings;
-    docProcSettings.LimitVirtMemMb = getConfigValue<int>("per_document.limit_virt_mem_mb", 0);
-    docProcSettings.LimitStackMemKb = getConfigValue<int>("per_document.limit_stack_mem_kb", 0);
-    docProcSettings.LimitFileSizeMb = getConfigValue<int>("per_document.limit_file_size_mb", 0);
-    docProcSettings.LimitNumberOpenFiles = getConfigValue<int>("per_document.limit_num_open_files", 0);
+    docProcSettings.setLimitVirtMemMb(getConfigValue<int>("per_document.limit_virt_mem_mb", 0));
+    docProcSettings.setLimitStackMemKb(getConfigValue<int>("per_document.limit_stack_mem_kb", 0));
+    docProcSettings.setLimitFileSizeMb(getConfigValue<int>("per_document.limit_file_size_mb", 0));
+    docProcSettings.setLimitNumberOpenFiles(getConfigValue<int>("per_document.limit_num_open_files", 0));
+
+    DocCleanupSettings &docCleanupSettings = docProcSettings.getCleanupSettings();
+    docCleanupSettings.setEnable(getConfigValue<bool>("per_document.cleanup[@enable]", false));
+    docCleanupSettings.setCleanupInterval(getConfigValue<int>("per_document.cleanup.cleanup_interval_ms", 10000));
+    docCleanupSettings.setBadBehaviorPeriod(getConfigValue<int>("per_document.cleanup.bad_behavior_period_secs", 60));
+    docCleanupSettings.setIdleTime(getConfigValue<int>("per_document.cleanup.idle_time_secs", 300));
+    docCleanupSettings.setLimitDirtyMem(getConfigValue<int>("per_document.cleanup.limit_dirty_mem_mb", 3072));
+    docCleanupSettings.setLimitCpu(getConfigValue<int>("per_document.cleanup.limit_cpu_per", 85));
+
     Admin::instance().setDefDocProcSettings(docProcSettings, false);
 
 #if ENABLE_DEBUG
+    std::string postMessageURI =
+        getServiceURI("/loleaflet/dist/framed.doc.html?file_path="
+                      DEBUG_ABSSRCDIR "/" LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_CALC);
     std::cerr << "\nLaunch one of these in your browser:\n\n"
-              << "    Writer:  " << getLaunchURI(LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_WRITER) << '\n'
-              << "    Calc:    " << getLaunchURI(LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_CALC) << '\n'
-              << "    Impress: " << getLaunchURI(LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_IMPRESS) << '\n'
-              << std::endl;
+              << "    Writer:      " << getLaunchURI(LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_WRITER) << '\n'
+              << "    Calc:        " << getLaunchURI(LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_CALC) << '\n'
+              << "    Impress:     " << getLaunchURI(LOOLWSD_TEST_DOCUMENT_RELATIVE_PATH_IMPRESS) << '\n'
+              << "    postMessage: " << postMessageURI << std::endl;
 
-    const std::string adminURI = getAdminURI(config());
+    const std::string adminURI = getServiceURI(LOOLWSD_TEST_ADMIN_CONSOLE, true);
     if (!adminURI.empty())
-        std::cerr << "\nOr for the admin, capabilities & discovery:\n\n"
-                  << adminURI << "\n"
-                  << getServiceURI("/hosting/capabilities") << "\n"
-                  << getServiceURI("/hosting/discovery") << "\n";
+        std::cerr << "\nOr for the admin, monitoring, capabilities & discovery:\n\n"
+                  << adminURI << '\n'
+                  << getServiceURI(LOOLWSD_TEST_METRICS, true) << '\n'
+                  << getServiceURI("/hosting/capabilities") << '\n'
+                  << getServiceURI("/hosting/discovery") << '\n';
 
     std::cerr << std::endl;
 #endif
@@ -1224,7 +1433,9 @@ void LOOLWSD::initializeSSL()
     const std::string ssl_ca_file_path = getPathFromConfig("ssl.ca_file_path");
     LOG_INF("SSL CA file: " << ssl_ca_file_path);
 
-    const std::string ssl_cipher_list = config().getString("ssl.cipher_list", "");
+    std::string ssl_cipher_list = config().getString("ssl.cipher_list", "");
+    if (ssl_cipher_list.empty())
+            ssl_cipher_list = DEFAULT_CIPHER_SET;
     LOG_INF("SSL Cipher list: " << ssl_cipher_list);
 
     // Initialize the non-blocking socket SSL.
@@ -1291,25 +1502,36 @@ void LOOLWSD::dumpOutgoingTrace(const std::string& id, const std::string& sessio
 
 void LOOLWSD::defineOptions(OptionSet& optionSet)
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     ServerApplication::defineOptions(optionSet);
 
     optionSet.addOption(Option("help", "", "Display help information on command line arguments.")
                         .required(false)
                         .repeatable(false));
 
-    optionSet.addOption(Option("version", "", "Display version information.")
+    optionSet.addOption(Option("version-hash", "", "Display product version-hash information and exit.")
+                        .required(false)
+                        .repeatable(false));
+
+    optionSet.addOption(Option("version", "", "Display version and hash information.")
+                        .required(false)
+                        .repeatable(false));
+
+    optionSet.addOption(Option("cleanup", "", "Cleanup jails and other temporary data and exit.")
                         .required(false)
                         .repeatable(false));
 
     optionSet.addOption(Option("port", "", "Port number to listen to (default: " +
-                               std::to_string(DEFAULT_CLIENT_PORT_NUMBER) + "),"
-                               " must not be " + std::to_string(MasterPortNumber) + ".")
+                               std::to_string(DEFAULT_CLIENT_PORT_NUMBER) + "),")
                         .required(false)
                         .repeatable(false)
                         .argument("port_number"));
 
     optionSet.addOption(Option("disable-ssl", "", "Disable SSL security layer.")
+                        .required(false)
+                        .repeatable(false));
+
+    optionSet.addOption(Option("disable-lool-user-checking", "", "Don't check whether oxoolwsd is running under the user 'lool'.  NOTE: This is insecure, use only when you know what you are doing!")
                         .required(false)
                         .repeatable(false));
 
@@ -1328,6 +1550,11 @@ void LOOLWSD::defineOptions(OptionSet& optionSet)
                         .repeatable(false)
                         .argument("path"));
 
+    optionSet.addOption(Option("lo-template-path", "", "Override the LOK core installation directory path.")
+                        .required(false)
+                        .repeatable(false)
+                        .argument("path"));
+
 #if ENABLE_DEBUG
     optionSet.addOption(Option("unitlib", "", "Unit testing library path.")
                         .required(false)
@@ -1338,6 +1565,10 @@ void LOOLWSD::defineOptions(OptionSet& optionSet)
                         .required(false)
                         .repeatable(false)
                         .argument("seconds"));
+
+    optionSet.addOption(Option("singlekit", "", "Spawn one libreoffice kit.")
+                        .required(false)
+                        .repeatable(false));
 #endif
 
 #ifdef FUZZER
@@ -1355,20 +1586,31 @@ void LOOLWSD::defineOptions(OptionSet& optionSet)
 void LOOLWSD::handleOption(const std::string& optionName,
                            const std::string& value)
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     ServerApplication::handleOption(optionName, value);
 
     if (optionName == "help")
     {
         displayHelp();
-        std::exit(Application::EXIT_OK);
+        std::exit(EX_OK);
+    }
+    else if (optionName == "version-hash")
+    {
+        std::string version, hash;
+        Util::getVersionInfo(version, hash);
+        std::cout << hash << std::endl;
+        std::exit(EX_OK);
     }
     else if (optionName == "version")
-        DisplayVersion = true;
+        ; // ignore for compatibility
+    else if (optionName == "cleanup")
+        CleanupOnly = true; // Flag for later as we need the config.
     else if (optionName == "port")
         ClientPortNumber = std::stoi(value);
     else if (optionName == "disable-ssl")
         _overrideSettings["ssl.enable"] = "false";
+    else if (optionName == "disable-lool-user-checking")
+        CheckLoolUser = false;
     else if (optionName == "override")
     {
         std::string optName;
@@ -1380,19 +1622,18 @@ void LOOLWSD::handleOption(const std::string& optionName,
         ConfigFile = value;
     else if (optionName == "config-dir")
         ConfigDir = value;
+    else if (optionName == "lo-template-path")
+        LoTemplate = value;
 #if ENABLE_DEBUG
     else if (optionName == "unitlib")
         UnitTestLibrary = value;
     else if (optionName == "careerspan")
         careerSpanMs = std::stoi(value) * 1000; // Convert second to ms
-
-    static const char* clientPort = std::getenv("LOOL_TEST_CLIENT_PORT");
-    if (clientPort)
-        ClientPortNumber = std::stoi(clientPort);
-
-    static const char* masterPort = std::getenv("LOOL_TEST_MASTER_PORT");
-    if (masterPort)
-        MasterPortNumber = std::stoi(masterPort);
+    else if (optionName == "singlekit")
+    {
+        SingleKit = true;
+        NumPreSpawnedChildren = 1;
+    }
 
     static const char* latencyMs = std::getenv("LOOL_DELAY_SOCKET_MS");
     if (latencyMs)
@@ -1408,7 +1649,7 @@ void LOOLWSD::handleOption(const std::string& optionName,
 #endif
 }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 void LOOLWSD::displayHelp()
 {
@@ -1425,10 +1666,19 @@ bool LOOLWSD::checkAndRestoreForKit()
     return false;
 #else
 
+// clang issues warning for WIF*() macro usages below:
+// "equality comparison with extraneous parentheses [-Werror,-Wparentheses-equality]"
+// https://bugs.llvm.org/show_bug.cgi?id=22949
+
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wparentheses-equality"
+#endif
+
     if (ForKitProcId == -1)
     {
         // Fire the ForKit process for the first time.
-        if (!ShutdownRequestFlag && !TerminationFlag && !createForKit())
+        if (!SigUtil::getShutdownRequestFlag() && !SigUtil::getTerminationFlag() && !createForKit())
         {
             // Should never fail.
             LOG_FTL("Failed to spawn oxoolforkit.");
@@ -1447,7 +1697,7 @@ bool LOOLWSD::checkAndRestoreForKit()
                 if (WIFEXITED(status))
                 {
                     LOG_INF("Forkit process [" << pid << "] exited with code: " <<
-                            WEXITSTATUS(status) << ".");
+                            WEXITSTATUS(status) << '.');
                 }
                 else
                 {
@@ -1457,7 +1707,7 @@ bool LOOLWSD::checkAndRestoreForKit()
                 }
 
                 // Spawn a new forkit and try to dust it off and resume.
-                if (!ShutdownRequestFlag && !TerminationFlag && !createForKit())
+                if (!SigUtil::getShutdownRequestFlag() && !SigUtil::getTerminationFlag() && !createForKit())
                 {
                     LOG_FTL("Failed to spawn forkit instance. Shutting down.");
                     SigUtil::requestShutdown();
@@ -1474,7 +1724,7 @@ bool LOOLWSD::checkAndRestoreForKit()
             }
             else
             {
-                LOG_WRN("Unknown status returned by waitpid: " << std::hex << status << ".");
+                LOG_WRN("Unknown status returned by waitpid: " << std::hex << status << '.');
             }
 
             return true;
@@ -1491,7 +1741,7 @@ bool LOOLWSD::checkAndRestoreForKit()
         {
             // No child processes.
             // Spawn a new forkit and try to dust it off and resume.
-            if (!ShutdownRequestFlag && !TerminationFlag && !createForKit())
+            if (!SigUtil::getShutdownRequestFlag() && !SigUtil::getTerminationFlag() && !createForKit())
             {
                 LOG_FTL("Failed to spawn forkit instance. Shutting down.");
                 SigUtil::requestShutdown();
@@ -1502,6 +1752,11 @@ bool LOOLWSD::checkAndRestoreForKit()
     }
 
     return false;
+
+#if defined __clang__
+#pragma clang diagnostic pop
+#endif
+
 #endif
 }
 
@@ -1541,10 +1796,11 @@ void LOOLWSD::autoSave(const std::string& docKey)
 /// Really do the house-keeping
 void PrisonerPoll::wakeupHook()
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     LOG_TRC("PrisonerPoll - wakes up with " << NewChildren.size() <<
             " new children and " << DocBrokers.size() << " brokers and " <<
             OutstandingForks << " kits forking");
+
     if (!LOOLWSD::checkAndRestoreForKit())
     {
         // No children have died.
@@ -1563,14 +1819,13 @@ void PrisonerPoll::wakeupHook()
 #endif
                         LOOLWSD::FuzzFileName));
 
-                std::unique_ptr<Thread> replayThread(new Thread());
-                replayThread->start(*replay);
+                std::thread replayThread([&replay]{ replay->run(); });
 
                 // block until the replay finishes
-                replayThread->join();
+                replayThread.join();
 
-                LOG_WRN("Setting TerminationFlag");
-                TerminationFlag = true;
+                LOG_INF("Setting TerminationFlag");
+                SigUtil::setTerminationFlag();
             }
 #endif
         }
@@ -1581,7 +1836,7 @@ void PrisonerPoll::wakeupHook()
         cleanupDocBrokers();
 }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 bool LOOLWSD::createForKit()
 {
@@ -1592,7 +1847,7 @@ bool LOOLWSD::createForKit()
 
     std::unique_lock<std::mutex> newChildrenLock(NewChildrenMutex);
 
-    std::vector<std::string> args;
+    StringVector args;
 #ifdef STRACE_LOOLFORKIT
     // if you want to use this, you need to setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/strace
     args.push_back("-o");
@@ -1608,27 +1863,36 @@ bool LOOLWSD::createForKit()
     args.push_back("--lotemplate=" + LoTemplate);
     args.push_back("--childroot=" + ChildRoot);
     args.push_back("--clientport=" + std::to_string(ClientPortNumber));
-    args.push_back("--masterport=" + std::to_string(MasterPortNumber));
+    args.push_back("--masterport=" + MasterLocation);
 
     const DocProcSettings& docProcSettings = Admin::instance().getDefDocProcSettings();
     std::ostringstream ossRLimits;
-    ossRLimits << "limit_virt_mem_mb:" << docProcSettings.LimitVirtMemMb;
-    ossRLimits << ";limit_stack_mem_kb:" << docProcSettings.LimitStackMemKb;
-    ossRLimits << ";limit_file_size_mb:" << docProcSettings.LimitFileSizeMb;
-    ossRLimits << ";limit_num_open_files:" << docProcSettings.LimitNumberOpenFiles;
+    ossRLimits << "limit_virt_mem_mb:" << docProcSettings.getLimitVirtMemMb();
+    ossRLimits << ";limit_stack_mem_kb:" << docProcSettings.getLimitStackMemKb();
+    ossRLimits << ";limit_file_size_mb:" << docProcSettings.getLimitFileSizeMb();
+    ossRLimits << ";limit_num_open_files:" << docProcSettings.getLimitNumberOpenFiles();
     args.push_back("--rlimits=" + ossRLimits.str());
 
     if (UnitWSD::get().hasKitHooks())
         args.push_back("--unitlib=" + UnitTestLibrary);
 
-    if (DisplayVersion)
-        args.push_back("--version");
+    args.push_back("--version");
 
     if (NoCapsForKit)
         args.push_back("--nocaps");
 
     if (NoSeccomp)
         args.push_back("--noseccomp");
+
+    args.push_back("--ui=" + UserInterface);
+
+    if (!CheckLoolUser)
+        args.push_back("--disable-lool-user-checking");
+
+#if ENABLE_DEBUG
+    if (SingleKit)
+        args.push_back("--singlekit");
+#endif
 
 #ifdef STRACE_LOOLFORKIT
     std::string forKitPath = "strace";
@@ -1645,31 +1909,23 @@ bool LOOLWSD::createForKit()
         Admin::instance().setForKitPid(ForKitProcId);
     }
 
-    if (ForKitWritePipe != -1)
-    {
-        close(ForKitWritePipe);
-        ForKitWritePipe = -1;
-        Admin::instance().setForKitWritePipe(ForKitWritePipe);
-    }
+    // Below line will be executed by PrisonerPoll thread.
+    ForKitProc = nullptr;
+    PrisonerPoll.setForKitProcess(ForKitProc);
 
     // ForKit always spawns one.
     ++OutstandingForks;
 
-    LOG_INF("Launching forkit process: " << forKitPath << ' ' <<
-            Poco::cat(std::string(" "), args.begin(), args.end()));
+    LOG_INF("Launching forkit process: " << forKitPath << ' ' << args.cat(' ', 0));
 
     LastForkRequestTime = std::chrono::steady_clock::now();
-    int childStdin = -1;
-    int child = Util::spawnProcess(forKitPath, args, &childStdin);
-
-    ForKitWritePipe = childStdin;
+    int child = Util::spawnProcess(forKitPath, args);
     ForKitProcId = child;
 
     LOG_INF("Forkit process launched: " << ForKitProcId);
 
     // Init the Admin manager
     Admin::instance().setForKitPid(ForKitProcId);
-    Admin::instance().setForKitWritePipe(ForKitWritePipe);
 
     const int balance = LOOLWSD::NumPreSpawnedChildren - OutstandingForks;
     if (balance > 0)
@@ -1677,6 +1933,11 @@ bool LOOLWSD::createForKit()
 
     return ForKitProcId != -1;
 #endif
+}
+
+void LOOLWSD::sendMessageToForKit(const std::string& message)
+{
+    PrisonerPoll.sendMessageToForKit(message);
 }
 
 #endif // !MOBILEAPP
@@ -1689,11 +1950,14 @@ std::mutex Connection::Mutex;
 /// Otherwise, creates and adds a new one to DocBrokers.
 /// May return null if terminating or MaxDocuments limit is reached.
 /// After returning a valid instance DocBrokers must be cleaned up after exceptions.
-static std::shared_ptr<DocumentBroker> findOrCreateDocBroker(WebSocketHandler& ws,
-                                                             const std::string& uri,
-                                                             const std::string& docKey,
-                                                             const std::string& id,
-                                                             const Poco::URI& uriPublic)
+static std::shared_ptr<DocumentBroker>
+    findOrCreateDocBroker(const std::shared_ptr<ProtocolHandlerInterface>& proto,
+                          DocumentBroker::ChildType type,
+                          const std::string& uri,
+                          const std::string& docKey,
+                          const std::string& id,
+                          const Poco::URI& uriPublic,
+                          unsigned mobileAppDocId = 0)
 {
     LOG_INF("Find or create DocBroker for docKey [" << docKey <<
             "] for session [" << id << "] on url [" << LOOLWSD::anonymizeUrl(uriPublic.toString()) << "].");
@@ -1702,9 +1966,9 @@ static std::shared_ptr<DocumentBroker> findOrCreateDocBroker(WebSocketHandler& w
 
     cleanupDocBrokers();
 
-    if (TerminationFlag)
+    if (SigUtil::getTerminationFlag())
     {
-        LOG_ERR("TerminationFlag set. Not loading new session [" << id << "]");
+        LOG_ERR("TerminationFlag set. Not loading new session [" << id << ']');
         return nullptr;
     }
 
@@ -1722,8 +1986,12 @@ static std::shared_ptr<DocumentBroker> findOrCreateDocBroker(WebSocketHandler& w
         if (docBroker->isMarkedToDestroy())
         {
             LOG_WRN("DocBroker with docKey [" << docKey << "] that is marked to be destroyed. Rejecting client request.");
-            ws.sendMessage("error: cmd=load kind=docunloading");
-            ws.shutdown(WebSocketHandler::StatusCodes::ENDPOINT_GOING_AWAY, "error: cmd=load kind=docunloading");
+            if (proto)
+            {
+                std::string msg("error: cmd=load kind=docunloading");
+                proto->sendTextMessage(msg.data(), msg.size());
+                proto->shutdown(true, "error: cmd=load kind=docunloading");
+            }
             return nullptr;
         }
     }
@@ -1732,16 +2000,19 @@ static std::shared_ptr<DocumentBroker> findOrCreateDocBroker(WebSocketHandler& w
         LOG_DBG("No DocumentBroker with docKey [" << docKey << "] found. New Child and Document.");
     }
 
-    if (TerminationFlag)
+    if (SigUtil::getTerminationFlag())
     {
-        LOG_ERR("TerminationFlag is set. Not loading new session [" << id << "]");
+        LOG_ERR("TerminationFlag is set. Not loading new session [" << id << ']');
         return nullptr;
     }
 
     // Indicate to the client that we're connecting to the docbroker.
-    const std::string statusConnect = "statusindicator: connect";
-    LOG_TRC("Sending to Client [" << statusConnect << "].");
-    ws.sendMessage(statusConnect);
+    if (proto)
+    {
+        const std::string statusConnect = "statusindicator: connect";
+        LOG_TRC("Sending to Client [" << statusConnect << "].");
+        proto->sendTextMessage(statusConnect.data(), statusConnect.size());
+    }
 
     if (!docBroker)
     {
@@ -1751,51 +2022,19 @@ static std::shared_ptr<DocumentBroker> findOrCreateDocBroker(WebSocketHandler& w
         {
             LOG_INF("Maximum number of open documents of " << LOOLWSD::MaxDocuments << " reached.");
 #if ENABLE_SUPPORT_KEY
-            shutdownLimitReached(ws);
+            shutdownLimitReached(proto);
             return nullptr;
 #endif
         }
 
         // Set the one we just created.
         LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
-        docBroker = std::make_shared<DocumentBroker>(uri, uriPublic, docKey);
+        docBroker = std::make_shared<DocumentBroker>(type, uri, uriPublic, docKey, mobileAppDocId);
         DocBrokers.emplace(docKey, docBroker);
         LOG_TRC("Have " << DocBrokers.size() << " DocBrokers after inserting [" << docKey << "].");
     }
 
     return docBroker;
-}
-
-static std::shared_ptr<ClientSession> createNewClientSession(const WebSocketHandler* ws,
-                                                             const std::string& id,
-                                                             const Poco::URI& uriPublic,
-                                                             const std::shared_ptr<DocumentBroker>& docBroker,
-                                                             const bool isReadOnly)
-{
-    LOG_CHECK_RET(docBroker && "Null docBroker instance", nullptr);
-    try
-    {
-        // Now we have a DocumentBroker and we're ready to process client commands.
-        if (ws)
-        {
-            const std::string statusReady = "statusindicator: ready";
-            LOG_TRC("Sending to Client [" << statusReady << "].");
-            ws->sendMessage(statusReady);
-        }
-
-        // In case of WOPI, if this session is not set as readonly, it might be set so
-        // later after making a call to WOPI host which tells us the permission on files
-        // (UserCanWrite param).
-        auto session = std::make_shared<ClientSession>(id, docBroker, uriPublic, isReadOnly);
-        session->construct();
-        return session;
-    }
-    catch (const std::exception& exc)
-    {
-        LOG_WRN("Exception while preparing session [" << id << "]: " << exc.what());
-    }
-
-    return nullptr;
 }
 
 /// Handles the socket that the prisoner kit connected to WSD on.
@@ -1823,14 +2062,14 @@ private:
     void onConnect(const std::shared_ptr<StreamSocket>& socket) override
     {
         setSocket(socket);
-        LOG_TRC("#" << socket->getFD() << " Prisoner connected.");
+        LOG_TRC('#' << socket->getFD() << " Prisoner connected.");
     }
 
     void onDisconnect() override
     {
         std::shared_ptr<StreamSocket> socket = getSocket().lock();
         if (socket)
-            LOG_TRC("#" << socket->getFD() << " Prisoner connection disconnected.");
+            LOG_TRC('#' << socket->getFD() << " Prisoner connection disconnected.");
         else
             LOG_WRN("Prisoner connection disconnected but without valid socket.");
 
@@ -1848,12 +2087,6 @@ private:
     /// Called after successful socket reads.
     void handleIncomingMessage(SocketDisposition &disposition) override
     {
-        // LOG_TRC("***** PrisonerRequestDispatcher::handleIncomingMessage()");
-
-        if (UnitWSD::get().filterHandleRequest(
-                UnitWSD::TestRequest::Prisoner, disposition, *this))
-            return;
-
         if (_childProcess.lock())
         {
             // FIXME: inelegant etc. - derogate to websocket code
@@ -1862,6 +2095,11 @@ private:
         }
 
         std::shared_ptr<StreamSocket> socket = getSocket().lock();
+        if (!socket)
+        {
+            LOG_ERR("Invalid socket while reading incoming message.");
+            return;
+        }
 
         Poco::MemoryInputStream message(&socket->getInBuffer()[0],
                                         socket->getInBuffer().size());;
@@ -1869,12 +2107,26 @@ private:
 
         try
         {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
             if (!socket->parseHeader("Prisoner", message, request))
                 return;
 
             LOG_TRC("Child connection with URI [" << LOOLWSD::anonymizeUrl(request.getURI()) << "].");
             Poco::URI requestURI(request.getURI());
+#ifndef KIT_IN_PROCESS
+            if (requestURI.getPath() == FORKIT_URI)
+            {
+                if (socket->getPid() != LOOLWSD::ForKitProcId)
+                {
+                    LOG_WRN("Connection request received on " << FORKIT_URI << " endpoint from unexpected ForKit process. Skipped.");
+                    return;
+                }
+                LOOLWSD::ForKitProc = std::make_shared<ForKitProcess>(LOOLWSD::ForKitProcId, socket, request);
+                socket->getInBuffer().clear();
+                PrisonerPoll.setForKitProcess(LOOLWSD::ForKitProc);
+                return;
+            }
+#endif
             if (requestURI.getPath() != NEW_CHILD_URI)
             {
                 LOG_ERR("Invalid incoming URI.");
@@ -1883,22 +2135,15 @@ private:
 
             // New Child is spawned.
             const Poco::URI::QueryParameters params = requestURI.getQueryParameters();
-            Poco::Process::PID pid = -1;
+            int pid = socket->getPid();
             std::string jailId;
             for (const auto& param : params)
             {
-                if (param.first == "pid")
-                {
-                    pid = std::stoi(param.second);
-                }
-                else if (param.first == "jailid")
-                {
+                if (param.first == "jailid")
                     jailId = param.second;
-                }
+
                 else if (param.first == "version")
-                {
                     LOOLWSD::LOKitVersion = param.second;
-                }
             }
 
             if (pid <= 0)
@@ -1915,11 +2160,11 @@ private:
 
             socket->getInBuffer().clear();
 
-            LOG_INF("New child [" << pid << "], jailId: " << jailId << ".");
+            LOG_INF("New child [" << pid << "], jailId: " << jailId << '.');
 
             UnitWSD::get().newChild(*this);
 #else
-            Poco::Process::PID pid = 100;
+            pid_t pid = 100;
             std::string jailId = "jail";
             socket->getInBuffer().clear();
 #endif
@@ -1927,6 +2172,7 @@ private:
 
             auto child = std::make_shared<ChildProcess>(pid, jailId, socket, request);
 
+            child->setSMapsFD(socket->getIncomingFD());
             _childProcess = child; // weak
 
             // Remove from prisoner poll since there is no activity
@@ -1937,6 +2183,11 @@ private:
                     addNewChild(child);
                 });
         }
+        catch (const std::bad_weak_ptr&)
+        {
+            // Using shared_from_this() from a constructor is not good.
+            assert(false);
+        }
         catch (const std::exception& exc)
         {
             // Probably don't have enough data just yet.
@@ -1945,7 +2196,7 @@ private:
     }
 
     /// Prisoner websocket fun ... (for now)
-    virtual void handleMessage(bool /*fin*/, WSOpCode /* code */, std::vector<char> &data) override
+    virtual void handleMessage(const std::vector<char> &data) override
     {
         if (UnitWSD::get().filterChildMessage(data))
             return;
@@ -1953,7 +2204,7 @@ private:
         const std::string abbr = getAbbreviatedMessage(data);
         std::shared_ptr<StreamSocket> socket = getSocket().lock();
         if (socket)
-            LOG_TRC("#" << socket->getFD() << " Prisoner message [" << abbr << "].");
+            LOG_TRC('#' << socket->getFD() << " Prisoner message [" << abbr << "].");
         else
             LOG_WRN("Message handler called but without valid socket.");
 
@@ -1967,7 +2218,7 @@ private:
     }
 
     int getPollEvents(std::chrono::steady_clock::time_point /* now */,
-                      int & /* timeoutMaxMs */) override
+                      int64_t & /* timeoutMaxMs */) override
     {
         return POLLIN;
     }
@@ -1977,8 +2228,30 @@ private:
     }
 };
 
+#if !MOBILEAPP
+
+/// For clipboard setting
+class ClipboardPartHandler : public PartHandler
+{
+    std::shared_ptr<std::string> _data; // large.
+
+public:
+    std::shared_ptr<std::string> getData() const { return _data; }
+
+    ClipboardPartHandler() { }
+
+    virtual void handlePart(const MessageHeader& /* header */, std::istream& stream) override
+    {
+        std::istreambuf_iterator<char> eos;
+        _data = std::make_shared<std::string>(std::istreambuf_iterator<char>(stream), eos);
+        LOG_TRC("Clipboard stream from part header stored of size " << _data->length());
+    }
+};
+
+#endif
+
 /// Handles incoming connections and dispatches to the appropriate handler.
-class ClientRequestDispatcher : public SocketHandlerInterface
+class ClientRequestDispatcher : public SimpleSocketHandler
 {
 public:
     ClientRequestDispatcher()
@@ -1991,7 +2264,7 @@ public:
     }
 
     /// Does this address feature in the allowed hosts list.
-    bool allowPostFrom(const std::string &address)
+    static bool allowPostFrom(const std::string &address)
     {
         static bool init = false;
         static Util::RegexListMatcher hosts;
@@ -2001,7 +2274,7 @@ public:
             // Parse the host allow settings.
             for (size_t i = 0; ; ++i)
             {
-                const std::string path = "net.post_allow.host[" + std::to_string(i) + "]";
+                const std::string path = "net.post_allow.host[" + std::to_string(i) + ']';
                 const auto host = app.config().getString(path, "");
                 if (!host.empty())
                 {
@@ -2035,20 +2308,24 @@ public:
         if(request.has("X-Forwarded-For"))
         {
             const std::string fowardedData = request.get("X-Forwarded-For");
-            std::vector<std::string> tokens = LOOLProtocol::tokenize(fowardedData, ',');
-            for(std::string& token : tokens)
+            StringVector tokens = Util::tokenize(fowardedData, ',');
+            for (const auto& token : tokens)
             {
-                addressToCheck = Util::trim(token);
+                std::string param = tokens.getParam(token);
+                addressToCheck = Util::trim(param);
                 try
                 {
-                    hostToCheck = Poco::Net::DNS::resolve(addressToCheck).name();
-                    allow &= allowPostFrom(addressToCheck) || StorageBase::allowedWopiHost(hostToCheck);
+                    if (!allowPostFrom(addressToCheck))
+                    {
+                        hostToCheck = Poco::Net::DNS::resolve(addressToCheck).name();
+                        allow &= StorageBase::allowedWopiHost(hostToCheck);
+                    }
                 }
                 catch (const Poco::Exception& exc)
                 {
                     LOG_WRN("Poco::Net::DNS::resolve(\"" << addressToCheck << "\") failed: " << exc.displayText());
-                    // We can't find out the hostname, check the IP only
-                    allow &= allowPostFrom(addressToCheck);
+                    // We can't find out the hostname, and it already failed the IP check
+                    allow = false;
                 }
                 if(!allow)
                 {
@@ -2068,25 +2345,29 @@ private:
     {
         _id = LOOLWSD::GetConnectionId();
         _socket = socket;
-        LOG_TRC("#" << socket->getFD() << " Connected to ClientRequestDispatcher.");
+        LOG_TRC('#' << socket->getFD() << " Connected to ClientRequestDispatcher.");
     }
 
     /// Called after successful socket reads.
     void handleIncomingMessage(SocketDisposition &disposition) override
     {
-        // LOG_TRC("***** ClientRequestDispatcher::handleIncomingMessage()");
         std::shared_ptr<StreamSocket> socket = _socket.lock();
+        if (!socket)
+        {
+            LOG_ERR("Invalid socket while handling incoming client request");
+            return;
+        }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         if (!LOOLWSD::isSSLEnabled() && socket->sniffSSL())
         {
             LOG_ERR("Looks like SSL/TLS traffic on plain http port");
             std::ostringstream oss;
             oss << "HTTP/1.1 400\r\n"
-                << "Date: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-                << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-                << "Content-Length: 0\r\n"
-                << "\r\n";
+                "Date: " << Util::getHttpTimeNow() << "\r\n"
+                "User-Agent: " WOPI_AGENT_STRING "\r\n"
+                "Content-Length: 0\r\n"
+                "\r\n";
             socket->send(oss.str());
             socket->shutdown();
             return;
@@ -2094,12 +2375,24 @@ private:
 
         Poco::MemoryInputStream startmessage(&socket->getInBuffer()[0],
                                              socket->getInBuffer().size());;
+
+#if 0 // debug a specific command's payload
+        if (Util::findInVector(socket->getInBuffer(), "insertfile") != std::string::npos)
+        {
+            std::ostringstream oss;
+            oss << "Debug - specific command:\n";
+            socket->dumpState(oss);
+            LOG_INF(oss.str());
+        }
+#endif
+
         Poco::Net::HTTPRequest request;
 
         StreamSocket::MessageMap map;
         if (!socket->parseHeader("Client", startmessage, request, &map))
             return;
 
+        LOG_INF("Handling request: " << request.getURI());
         try
         {
             // We may need to re-write the chunks moving the inBuffer.
@@ -2109,28 +2402,33 @@ private:
             // update the read cursor - headers are not altered by chunks.
             message.seekg(startmessage.tellg(), std::ios::beg);
 
-            // Check and remove the ServiceRoot from the request.getURI()
-            if (!Util::startsWith(request.getURI(), LOOLWSD::ServiceRoot))
-                throw BadRequestException("The request does not start with prefix: " + LOOLWSD::ServiceRoot);
+            // re-write ServiceRoot and cache.
+            RequestDetails requestDetails(request, LOOLWSD::ServiceRoot);
+            // LOG_TRC("Request details " << requestDetails.toString());
 
-            std::string requestURIString(request.getURI().substr(LOOLWSD::ServiceRoot.length()));
-            request.setURI(requestURIString);
+            // Config & security ...
+            if (requestDetails.isProxy())
+            {
+                if (!LOOLWSD::IsProxyPrefixEnabled)
+                    throw BadRequestException("ProxyPrefix present but net.proxy_prefix is not enabled");
+                else if (!socket->isLocal())
+                    throw BadRequestException("ProxyPrefix request from non-local socket");
+            }
 
             // Routing
-            Poco::URI requestUri(request.getURI());
-            std::vector<std::string> reqPathSegs;
-            requestUri.getPathSegments(reqPathSegs);
-
             if (UnitWSD::get().handleHttpRequest(request, message, socket))
             {
                 // Unit testing, nothing to do here
             }
-            else if (reqPathSegs.size() >= 1 && reqPathSegs[0] == "loleaflet")
+            else if (requestDetails.equals(RequestDetails::Field::Type, "loleaflet"))
             {
                 // File server
-                handleFileServerRequest(request, message);
+                assert(socket && "Must have a valid socket");
+                FileServerRequestHandler::handleRequest(request, requestDetails, message, socket);
+                socket->shutdown();
             }
-            else if (reqPathSegs.size() >= 2 && reqPathSegs[0] == "lool" && reqPathSegs[1] == "adminws")
+            else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
+                     requestDetails.equals(1, "adminws"))
             {
                 // Admin connections
                 LOG_INF("Admin request: " << request.getURI());
@@ -2143,94 +2441,115 @@ private:
                 }
 
             }
-            // Client post and websocket connections
-            else if ((request.getMethod() == HTTPRequest::HTTP_GET ||
-                      request.getMethod() == HTTPRequest::HTTP_HEAD) &&
-                     request.getURI() == "/")
+            else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
+                     requestDetails.equals(1, "getMetrics"))
             {
-                handleRootRequest(request);
-            }
-            else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == "/favicon.ico")
-            {
-                handleFaviconRequest(request);
-            }
-            else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == "/hosting/discovery")
-            {
-                handleWopiDiscoveryRequest(request);
-            }
-            else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == "/hosting/version")
-            {
-                handleVersionRequest(request);
-            }
-            else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == CAPABILITIES_END_POINT)
-            {
-                handleCapabilitiesRequest(request);
-            }
-            else if (request.getMethod() == HTTPRequest::HTTP_GET && request.getURI() == "/robots.txt")
-            {
-                handleRobotsTxtRequest(request);
-            }
-            else if (reqPathSegs[0] == "lool" && apilist.find(reqPathSegs[1]) != apilist.end())
-            {
-                std::cout << "API : " << reqPathSegs[1] << "\n";
-                std::cout << "[LOOLWSD] DocBrokers map address : " << &DocBrokers << "\n";
-                std::cout << "[LOOLWSD] DocBrokersMutex address : " << &DocBrokersMutex << "\n";
-                auto dso = apilist.find(reqPathSegs[1]);
-                if(dso != apilist.end())
-                {
-                    oxoolmodule *apiHandler = dso->second();
-                    apiHandler->setMutex(&DocBrokersMutex, DocBrokers, _id);
-                    apiHandler->handleRequest(_socket, message, request, disposition);
-                    _module_exit_application = apiHandler->exit_application;
-                }
-            }
-            else
-            {
-                StringTokenizer reqPathTokens(request.getURI(), "/?", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-                if (!(request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0) &&
-                    reqPathTokens.count() > 0 && reqPathTokens[0] == "lool")
-                {
-                    // All post requests have url prefix 'lool'.
-                    handlePostRequest(request, message, disposition);
-                }
-                else if (reqPathTokens.count() > 2 && reqPathTokens[0] == "lool" && reqPathTokens[2] == "ws" &&
-                         request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
-                {
-                    std::string decodedUri;
-                    Poco::URI::decode(reqPathTokens[1], decodedUri);
-                    handleClientWsUpgrade(request, decodedUri, disposition);
-                }
-                else
-                {
-                    LOG_ERR("Unknown resource: " << request.getURI());
+                // See metrics.txt
+                std::shared_ptr<Poco::Net::HTTPResponse> response(new Poco::Net::HTTPResponse());
 
-                    // Bad request.
+                if (!LOOLWSD::AdminEnabled)
+                    throw Poco::FileAccessDeniedException("Admin console disabled");
+
+                try{
+                    if (!FileServerRequestHandler::isAdminLoggedIn(request, *response))
+                        throw Poco::Net::NotAuthenticatedException("Invalid admin login");
+                }
+                catch (const Poco::Net::NotAuthenticatedException& exc)
+                {
+                    //LOG_ERR("FileServerRequestHandler::NotAuthenticated: " << exc.displayText());
                     std::ostringstream oss;
-                    oss << "HTTP/1.1 400\r\n"
+                    oss << "HTTP/1.1 401 \r\n"
+                        << "Content-Type: text/html charset=UTF-8\r\n"
                         << "Date: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
                         << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-                        << "Content-Length: 0\r\n"
+                        << "WWW-authenticate: Basic realm=\"online\"\r\n"
                         << "\r\n";
                     socket->send(oss.str());
                     socket->shutdown();
+                    return;
                 }
+
+                response->add("Last-Modified", Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT));
+                // Ask UAs to block if they detect any XSS attempt
+                response->add("X-XSS-Protection", "1; mode=block");
+                // No referrer-policy
+                response->add("Referrer-Policy", "no-referrer");
+                response->add("User-Agent", HTTP_AGENT_STRING);
+                response->add("Content-Type", "text/plain");
+                response->add("X-Content-Type-Options", "nosniff");
+
+                disposition.setMove([response](const std::shared_ptr<Socket> &moveSocket){
+                            const std::shared_ptr<StreamSocket> streamSocket = std::static_pointer_cast<StreamSocket>(moveSocket);
+                            Admin::instance().sendMetricsAsync(streamSocket, response);
+                        });
+            }
+            else if (requestDetails.isGetOrHead("/"))
+                handleRootRequest(requestDetails, socket);
+
+            else if (requestDetails.isGet("/favicon.ico"))
+                handleFaviconRequest(requestDetails, socket);
+
+            else if (requestDetails.isGet("/hosting/discovery") ||
+                     requestDetails.isGet("/hosting/discovery/"))
+                handleWopiDiscoveryRequest(requestDetails, socket);
+
+            else if (requestDetails.isGet(CAPABILITIES_END_POINT))
+                handleCapabilitiesRequest(request, socket);
+
+            else if (requestDetails.isGet("/robots.txt"))
+                handleRobotsTxtRequest(request, socket);
+
+            else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
+                     requestDetails.equals(1, "clipboard"))
+            {
+//              Util::dumpHex(std::cerr, "clipboard:\n", "", socket->getInBuffer()); // lots of data ...
+                handleClipboardRequest(request, message, disposition, socket);
+            }
+
+            else if (requestDetails.isProxy() && requestDetails.equals(2, "ws"))
+                handleClientProxyRequest(request, requestDetails, message, disposition);
+
+            else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
+                     requestDetails.equals(2, "ws") && requestDetails.isWebSocket())
+                handleClientWsUpgrade(request, requestDetails, disposition, socket);
+
+            else if (!requestDetails.isWebSocket() && requestDetails.equals(RequestDetails::Field::Type, "lool"))
+            {
+                // All post requests have url prefix 'lool'.
+                handlePostRequest(requestDetails, request, message, disposition, socket);
+            }
+            else
+            {
+                LOG_ERR("Unknown resource: " << requestDetails.toString());
+
+                // Bad request.
+                std::ostringstream oss;
+                oss << "HTTP/1.1 400\r\n"
+                    "Date: " << Util::getHttpTimeNow() << "\r\n"
+                    "User-Agent: " WOPI_AGENT_STRING "\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n";
+                socket->send(oss.str());
+                socket->shutdown();
+                return;
             }
         }
         catch (const std::exception& exc)
         {
+            LOG_INF('#' << socket->getFD() << " Exception while processing incoming request: [" <<
+                    LOOLProtocol::getAbbreviatedMessage(socket->getInBuffer()) << "]: " << exc.what());
+
             // Bad request.
+            // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
             std::ostringstream oss;
             oss << "HTTP/1.1 400\r\n"
-                << "Date: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
+                << "Date: " << Util::getHttpTimeNow() << "\r\n"
                 << "User-Agent: LOOLWSD WOPI Agent\r\n"
                 << "Content-Length: 0\r\n"
                 << "\r\n";
             socket->send(oss.str());
             socket->shutdown();
-
-            // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
-            LOG_INF("#" << socket->getFD() << " Exception while processing incoming request: [" <<
-                    LOOLProtocol::getAbbreviatedMessage(socket->getInBuffer()) << "]: " << exc.what());
+            return;
         }
 
         // if we succeeded - remove the request from our input buffer
@@ -2238,13 +2557,42 @@ private:
         socket->eraseFirstInputBytes(map);
 #else
         Poco::Net::HTTPRequest request;
-        handleClientWsUpgrade(request, std::string(socket->getInBuffer().data(), socket->getInBuffer().size()), disposition);
+
+#ifdef IOS
+        // The URL of the document is sent over the FakeSocket by the code in
+        // -[DocumentViewController userContentController:didReceiveScriptMessage:] when it gets the
+        // HULLO message from the JavaScript in global.js.
+
+        // The "app document id", the numeric id of the document, from the appDocIdCounter in CODocument.mm.
+        char *space = strchr(socket->getInBuffer().data(), ' ');
+        assert(space != nullptr);
+
+        // The socket buffer is not nul-terminated so we can't just call strtoull() on the number at
+        // its end, it might be followed in memory by more digits. Is there really no better way to
+        // parse the number at the end of the buffer than to copy the bytes into a nul-terminated
+        // buffer?
+        const size_t appDocIdLen = (socket->getInBuffer().data() + socket->getInBuffer().size()) - (space + 1);
+        char *appDocIdBuffer = (char *)malloc(appDocIdLen + 1);
+        memcpy(appDocIdBuffer, space + 1, appDocIdLen);
+        appDocIdBuffer[appDocIdLen] = '\0';
+        unsigned appDocId = std::strtoul(appDocIdBuffer, nullptr, 10);
+        free(appDocIdBuffer);
+
+        handleClientWsUpgrade(
+            request, std::string(socket->getInBuffer().data(), space - socket->getInBuffer().data()),
+            disposition, socket, appDocId);
+#else
+        handleClientWsUpgrade(
+            request, RequestDetails(std::string(socket->getInBuffer().data(),
+                                                socket->getInBuffer().size())),
+            disposition, socket);
+#endif
         socket->getInBuffer().clear();
 #endif
     }
 
     int getPollEvents(std::chrono::steady_clock::time_point /* now */,
-                      int & /* timeoutMaxMs */) override
+                      int64_t & /* timeoutMaxMs */) override
     {
         return POLLIN;
     }
@@ -2253,165 +2601,227 @@ private:
     {
     }
 
-    void onDisconnect() override
+#if !MOBILEAPP
+    void handleRootRequest(const RequestDetails& requestDetails,
+                           const std::shared_ptr<StreamSocket>& socket)
     {
-        if (_module_exit_application)
-        {
-            std::cout << "close fork process" << std::endl;
-            auto socket = _socket.lock();
-            socket->closeConnection();
-            _exit(Application::EXIT_SOFTWARE);
-        }
-    }
+        assert(socket && "Must have a valid socket");
 
-#ifndef MOBILEAPP
-    void handleFileServerRequest(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& message)
-    {
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
-        FileServerRequestHandler::handleRequest(request, message, socket);
-        socket->shutdown();
-    }
-
-    void handleRootRequest(const Poco::Net::HTTPRequest& request)
-    {
-        LOG_DBG("HTTP request: " << request.getURI());
+        LOG_DBG("HTTP request: " << requestDetails.getURI());
         const std::string mimeType = "text/plain";
         const std::string responseString = "OK";
 
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
-            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-            << "Content-Length: " << responseString.size() << "\r\n"
-            << "Content-Type: " << mimeType << "\r\n"
-            << "\r\n";
+            "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
+            "User-Agent: " WOPI_AGENT_STRING "\r\n"
+            "Content-Length: " << responseString.size() << "\r\n"
+            "Content-Type: " << mimeType << "\r\n"
+            "\r\n";
 
-        if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET)
-        {
+        if (requestDetails.isGet())
             oss << responseString;
-        }
 
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
         socket->send(oss.str());
         socket->shutdown();
         LOG_INF("Sent / response successfully.");
     }
 
-    void handleFaviconRequest(const Poco::Net::HTTPRequest& request)
+    static void handleFaviconRequest(const RequestDetails &requestDetails,
+                              const std::shared_ptr<StreamSocket>& socket)
     {
-        LOG_DBG("Favicon request: " << request.getURI());
+        assert(socket && "Must have a valid socket");
+
+        LOG_DBG("Favicon request: " << requestDetails.getURI());
         std::string mimeType = "image/vnd.microsoft.icon";
         std::string faviconPath = Path(Application::instance().commandPath()).parent().toString() + "favicon.ico";
         if (!File(faviconPath).exists())
-        {
             faviconPath = LOOLWSD::FileServerRoot + "/favicon.ico";
-        }
 
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
-        Poco::Net::HTTPResponse response;
-        HttpHelper::sendFile(socket, faviconPath, mimeType, response);
-        socket->shutdown();
+        HttpHelper::sendFileAndShutdown(socket, faviconPath, mimeType);
     }
 
-    void handleWopiDiscoveryRequest(const Poco::Net::HTTPRequest& request)
+    void handleWopiDiscoveryRequest(const RequestDetails &requestDetails,
+                                    const std::shared_ptr<StreamSocket>& socket)
     {
-        LOG_DBG("Wopi discovery request: " << request.getURI());
+        assert(socket && "Must have a valid socket");
+
+        LOG_DBG("Wopi discovery request: " << requestDetails.getURI());
 
         std::string xml = getFileContent("discovery.xml");
-        const std::string hostname = (LOOLWSD::ServerName.empty() ? request.getHost() : LOOLWSD::ServerName);
-        Poco::replaceInPlace(xml, std::string("%SERVER_HOST%"), hostname);
+        std::string srvUrl =
+#if ENABLE_SSL
+            ((LOOLWSD::isSSLEnabled() || LOOLWSD::isSSLTermination()) ? "https://" : "http://")
+#else
+            "http://"
+#endif
+            + (LOOLWSD::ServerName.empty() ? requestDetails.getHostUntrusted() : LOOLWSD::ServerName)
+            + LOOLWSD::ServiceRoot;
+        if (requestDetails.isProxy())
+            srvUrl = requestDetails.getProxyPrefix();
+        Poco::replaceInPlace(xml, std::string("%SRV_URI%"), srvUrl);
 
         // TODO: Refactor this to some common handler.
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
-            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-            << "Content-Length: " << xml.size() << "\r\n"
-            << "Content-Type: text/xml\r\n"
-            << "X-Content-Type-Options: nosniff\r\n"
-            << "\r\n"
+            "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
+            "User-Agent: " WOPI_AGENT_STRING "\r\n"
+            "Content-Length: " << xml.size() << "\r\n"
+            "Content-Type: text/xml\r\n"
+            "X-Content-Type-Options: nosniff\r\n"
+            "\r\n"
             << xml;
 
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
         socket->send(oss.str());
         socket->shutdown();
         LOG_INF("Sent discovery.xml successfully.");
     }
 
-    void handleVersionRequest(const Poco::Net::HTTPRequest& request)
+    void handleCapabilitiesRequest(const Poco::Net::HTTPRequest& request,
+                                   const std::shared_ptr<StreamSocket>& socket)
     {
-        std::string branding_name, branding_version;
+        assert(socket && "Must have a valid socket");
 
-        LOG_DBG("Get version request: " << request.getURI());
-        std::string version = "{\"OxOOL\":\""  LOOLWSD_VERSION  "\"";
-        if ((std::string)BRAND_NAME != "")
-        {
-            version += ",\"" BRAND_NAME "\":\"" BRAND_VERSION "\"";
-        }
-        else
-        {
-            version += ",\"OSSII\":\"" LOOLWSD_VERSION "\"";
-        }
-        version += "}";
-
-        std::ostringstream oss;
-        oss << "HTTP/1.1 200 OK\r\n"
-            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-            << "Content-Length: " << version.size() << "\r\n"
-            << "Content-Type: application/json\r\n"
-            << "X-Content-Type-Options: nosniff\r\n"
-            << "\r\n"
-            << version;
-
-        auto socket = _socket.lock();
-        socket->send(oss.str());
-        socket->shutdown();
-        LOG_INF("Sent version.json successfully.");
-    }
-
-    void handleCapabilitiesRequest(const Poco::Net::HTTPRequest& request)
-    {
         LOG_DBG("Wopi capabilities request: " << request.getURI());
 
-        std::string capabilities = getCapabilitiesJson(request);
+        const std::string capabilities = getCapabilitiesJson(request, socket);
 
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
-            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-            << "Content-Length: " << capabilities.size() << "\r\n"
-            << "Content-Type: application/json\r\n"
-            << "X-Content-Type-Options: nosniff\r\n"
-            << "\r\n"
+            "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
+            "User-Agent: " WOPI_AGENT_STRING "\r\n"
+            "Content-Length: " << capabilities.size() << "\r\n"
+            "Content-Type: application/json\r\n"
+            "X-Content-Type-Options: nosniff\r\n"
+            "\r\n"
             << capabilities;
 
-        auto socket = _socket.lock();
         socket->send(oss.str());
         socket->shutdown();
-        LOG_INF("Sent cpabilities.json successfully.");
+        LOG_INF("Sent capabilities.json successfully.");
     }
 
-    void handleRobotsTxtRequest(const Poco::Net::HTTPRequest& request)
+    static void handleClipboardRequest(const Poco::Net::HTTPRequest& request,
+                                Poco::MemoryInputStream& message,
+                                SocketDisposition &disposition,
+                                const std::shared_ptr<StreamSocket>& socket)
     {
+        assert(socket && "Must have a valid socket");
+
+        LOG_DBG("Clipboard " << ((request.getMethod() == HTTPRequest::HTTP_GET) ? "GET" : "POST") <<
+                " request: " << request.getURI());
+
+        Poco::URI requestUri(request.getURI());
+        Poco::URI::QueryParameters params = requestUri.getQueryParameters();
+        std::string WOPISrc, serverId, viewId, tag, mime;
+        for (const auto& it : params)
+        {
+            if (it.first == "WOPISrc")
+                WOPISrc = it.second;
+            else if (it.first == "ServerId")
+                serverId = it.second;
+            else if (it.first == "ViewId")
+                viewId = it.second;
+            else if (it.first == "Tag")
+                tag = it.second;
+            else if (it.first == "MimeType")
+                mime = it.second;
+        }
+        LOG_TRC("Clipboard request for us: " << serverId << " with tag " << tag);
+
+        const auto docKey = DocumentBroker::getDocKey(DocumentBroker::sanitizeURI(WOPISrc));
+
+        std::shared_ptr<DocumentBroker> docBroker;
+        {
+            std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
+            auto it = DocBrokers.find(docKey);
+            if (it != DocBrokers.end())
+                docBroker = it->second;
+        }
+        if (docBroker && serverId == Util::getProcessIdentifier())
+        {
+            std::shared_ptr<std::string> data;
+            DocumentBroker::ClipboardRequest type;
+            if (request.getMethod() == HTTPRequest::HTTP_GET)
+            {
+                if (mime == "text/html")
+                    type = DocumentBroker::CLIP_REQUEST_GET_RICH_HTML_ONLY;
+                else
+                    type = DocumentBroker::CLIP_REQUEST_GET;
+            }
+            else
+            {
+                type = DocumentBroker::CLIP_REQUEST_SET;
+                ClipboardPartHandler handler;
+                HTMLForm form(request, message, handler);
+                data = handler.getData();
+                if (!data || data->length() == 0)
+                    LOG_ERR("Invalid zero size set clipboard content");
+            }
+            // Do things in the right thread.
+            disposition.setMove([=] (const std::shared_ptr<Socket> &moveSocket)
+                {
+                    LOG_TRC("Move clipboard request " << tag << " to docbroker thread with data: " <<
+                            (data ? data->length() : 0) << " bytes");
+                    // We no longer own this socket.
+                    moveSocket->setThreadOwner(std::thread::id(0));
+
+                    // Perform all of this after removing the socket
+                    docBroker->addCallback([=]()
+                        {
+                            auto streamSocket = std::static_pointer_cast<StreamSocket>(moveSocket);
+                            docBroker->handleClipboardRequest(type, streamSocket, viewId, tag, data);
+                        });
+                });
+            LOG_TRC("queued clipboard command " << type << " on docBroker fetch");
+        }
+        // fallback to persistent clipboards if we can
+        else if (!DocumentBroker::lookupSendClipboardTag(socket, tag, false))
+        {
+            LOG_ERR("Invalid clipboard request: " << serverId << " with tag " << tag <<
+                    " and broker: " << (docBroker ? "" : "not ") << "found");
+
+            std::string errMsg;
+            if (serverId != Util::getProcessIdentifier())
+                errMsg = "Cluster configuration error: mis-matching serverid " + serverId + " vs. " + Util::getProcessIdentifier();
+            else
+                errMsg = "Empty clipboard item / session tag " + tag;
+
+            // Bad request.
+            std::ostringstream oss;
+            oss << "HTTP/1.1 400\r\n"
+                << "Date: " << Util::getHttpTimeNow() << "\r\n"
+                << "User-Agent: LOOLWSD WOPI Agent\r\n"
+                << "Content-Length: 0\r\n"
+                << "\r\n"
+                << errMsg;
+            socket->send(oss.str());
+            socket->shutdown();
+        }
+    }
+
+    static void handleRobotsTxtRequest(const Poco::Net::HTTPRequest& request,
+                                const std::shared_ptr<StreamSocket>& socket)
+    {
+        assert(socket && "Must have a valid socket");
+
         LOG_DBG("HTTP request: " << request.getURI());
         const std::string mimeType = "text/plain";
         const std::string responseString = "User-agent: *\nDisallow: /\n";
 
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
-            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-            << "Content-Length: " << responseString.size() << "\r\n"
-            << "Content-Type: " << mimeType << "\r\n"
-            << "\r\n";
+            "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
+            "User-Agent: " WOPI_AGENT_STRING "\r\n"
+            "Content-Length: " << responseString.size() << "\r\n"
+            "Content-Type: " << mimeType << "\r\n"
+            "\r\n";
 
         if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET)
         {
             oss << responseString;
         }
 
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
         socket->send(oss.str());
         socket->shutdown();
         LOG_INF("Sent robots.txt response successfully.");
@@ -2419,79 +2829,217 @@ private:
 
     static std::string getContentType(const std::string& fileName)
     {
-        const std::string nodePath = Poco::format("//[@ext='%s']", Poco::Path(fileName).getExtension());
-        std::string discPath = Path(Application::instance().commandPath()).parent().toString() + "discovery.xml";
-        if (!File(discPath).exists())
-        {
-            discPath = LOOLWSD::FileServerRoot + "/discovery.xml";
-        }
+        static std::unordered_map<std::string, std::string> aContentTypes{
+            { "svg", "image/svg+xml" },
+            { "pot", "application/vnd.ms-powerpoint" },
+            { "xla", "application/vnd.ms-excel" },
 
-        InputSource input(discPath);
-        DOMParser domParser;
-        AutoPtr<Poco::XML::Document> doc = domParser.parse(&input);
-        if (doc)
-        {
-            Node* node = doc->getNodeByPath(nodePath);
-            if (node && node->parentNode())
-            {
-                Element* elem = dynamic_cast<Element*>(node->parentNode());
-                if (elem && elem->hasAttributes())
-                    return elem->getAttribute("name");
-            }
-        }
+            // Writer documents
+            { "sxw", "application/vnd.sun.xml.writer" },
+            { "odt", "application/vnd.oasis.opendocument.text" },
+            { "fodt", "application/vnd.oasis.opendocument.text-flat-xml" },
+
+            // Calc documents
+            { "sxc", "application/vnd.sun.xml.calc" },
+            { "ods", "application/vnd.oasis.opendocument.spreadsheet" },
+            { "fods", "application/vnd.oasis.opendocument.spreadsheet-flat-xml" },
+
+            // Impress documents
+            { "sxi", "application/vnd.sun.xml.impress" },
+            { "odp", "application/vnd.oasis.opendocument.presentation" },
+            { "fodp", "application/vnd.oasis.opendocument.presentation-flat-xml" },
+
+            // Draw documents
+            { "sxd", "application/vnd.sun.xml.draw" },
+            { "odg", "application/vnd.oasis.opendocument.graphics" },
+            { "fodg", "application/vnd.oasis.opendocument.graphics-flat-xml" },
+
+            // Chart documents
+            { "odc", "application/vnd.oasis.opendocument.chart" },
+
+            // Text master documents
+            { "sxg", "application/vnd.sun.xml.writer.global" },
+            { "odm", "application/vnd.oasis.opendocument.text-master" },
+
+            // Math documents
+            // In fact Math documents are not supported at all.
+            // See: https://bugs.documentfoundation.org/show_bug.cgi?id=97006
+            { "sxm", "application/vnd.sun.xml.math" },
+            { "odf", "application/vnd.oasis.opendocument.formula" },
+
+            // Text template documents
+            { "stw", "application/vnd.sun.xml.writer.template" },
+            { "ott", "application/vnd.oasis.opendocument.text-template" },
+
+            // Writer master document templates
+            { "otm", "application/vnd.oasis.opendocument.text-master-template" },
+
+            // Spreadsheet template documents
+            { "stc", "application/vnd.sun.xml.calc.template" },
+            { "ots", "application/vnd.oasis.opendocument.spreadsheet-template" },
+
+            // Presentation template documents
+            { "sti", "application/vnd.sun.xml.impress.template" },
+            { "otp", "application/vnd.oasis.opendocument.presentation-template" },
+
+            // Drawing template documents
+            { "std", "application/vnd.sun.xml.draw.template" },
+            { "otg", "application/vnd.oasis.opendocument.graphics-template" },
+
+            // MS Word
+            { "doc", "application/msword" },
+            { "dot", "application/msword" },
+
+            // MS Excel
+            { "xls", "application/vnd.ms-excel" },
+
+            // MS PowerPoint
+            { "ppt", "application/vnd.ms-powerpoint" },
+
+            // OOXML wordprocessing
+            { "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+            { "docm", "application/vnd.ms-word.document.macroEnabled.12" },
+            { "dotx", "application/vnd.openxmlformats-officedocument.wordprocessingml.template" },
+            { "dotm", "application/vnd.ms-word.template.macroEnabled.12" },
+
+            // OOXML spreadsheet
+            { "xltx", "application/vnd.openxmlformats-officedocument.spreadsheetml.template" },
+            { "xltm", "application/vnd.ms-excel.template.macroEnabled.12" },
+            { "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+            { "xlsb", "application/vnd.ms-excel.sheet.binary.macroEnabled.12" },
+            { "xlsm", "application/vnd.ms-excel.sheet.macroEnabled.12" },
+
+            // OOXML presentation
+            { "pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
+            { "pptm", "application/vnd.ms-powerpoint.presentation.macroEnabled.12" },
+            { "potx", "application/vnd.openxmlformats-officedocument.presentationml.template" },
+            { "potm", "application/vnd.ms-powerpoint.template.macroEnabled.12" },
+
+            // Others
+            { "wpd", "application/vnd.wordperfect" },
+            { "pdb", "application/x-aportisdoc" },
+            { "hwp", "application/x-hwp" },
+            { "wps", "application/vnd.ms-works" },
+            { "wri", "application/x-mswrite" },
+            { "dif", "application/x-dif-document" },
+            { "slk", "text/spreadsheet" },
+            { "csv", "text/csv" },
+            { "dbf", "application/x-dbase" },
+            { "wk1", "application/vnd.lotus-1-2-3" },
+            { "cgm", "image/cgm" },
+            { "dxf", "image/vnd.dxf" },
+            { "emf", "image/x-emf" },
+            { "wmf", "image/x-wmf" },
+            { "cdr", "application/coreldraw" },
+            { "vsd", "application/vnd.visio2013" },
+            { "vss", "application/vnd.visio" },
+            { "pub", "application/x-mspublisher" },
+            { "lrf", "application/x-sony-bbeb" },
+            { "gnumeric", "application/x-gnumeric" },
+            { "mw", "application/macwriteii" },
+            { "numbers", "application/x-iwork-numbers-sffnumbers" },
+            { "oth", "application/vnd.oasis.opendocument.text-web" },
+            { "p65", "application/x-pagemaker" },
+            { "rtf", "text/rtf" },
+            { "txt", "text/plain" },
+            { "fb2", "application/x-fictionbook+xml" },
+            { "cwk", "application/clarisworks" },
+            { "wpg", "image/x-wpg" },
+            { "pages", "application/x-iwork-pages-sffpages" },
+            { "ppsx", "application/vnd.openxmlformats-officedocument.presentationml.slideshow" },
+            { "key", "application/x-iwork-keynote-sffkey" },
+            { "abw", "application/x-abiword" },
+            { "fh", "image/x-freehand" },
+            { "sxs", "application/vnd.sun.xml.chart" },
+            { "602", "application/x-t602" },
+            { "bmp", "image/bmp" },
+            { "png", "image/png" },
+            { "gif", "image/gif" },
+            { "tiff", "image/tiff" },
+            { "jpg", "image/jpg" },
+            { "jpeg", "image/jpeg" },
+            { "pdf", "application/pdf" },
+        };
+
+        const std::string sExt = Poco::Path(fileName).getExtension();
+
+        const auto it = aContentTypes.find(sExt);
+        if (it != aContentTypes.end())
+            return it->second;
 
         return "application/octet-stream";
     }
 
-    void handlePostRequest(const Poco::Net::HTTPRequest& request,
-                           Poco::MemoryInputStream& message,
-                           SocketDisposition &disposition)
+    static bool isSpreadsheet(const std::string& fileName)
     {
-        LOG_INF("Post request: [" << LOOLWSD::anonymizeUrl(request.getURI()) << "]");
+        const std::string sContentType = getContentType(fileName);
+
+        return sContentType == "application/vnd.oasis.opendocument.spreadsheet"
+               || sContentType
+                      == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+               || sContentType == "application/vnd.ms-excel";
+    }
+
+    void handlePostRequest(const RequestDetails &requestDetails,
+                           const Poco::Net::HTTPRequest& request,
+                           Poco::MemoryInputStream& message,
+                           SocketDisposition& disposition,
+                           const std::shared_ptr<StreamSocket>& socket)
+    {
+        assert(socket && "Must have a valid socket");
+
+        LOG_INF("Post request: [" << LOOLWSD::anonymizeUrl(requestDetails.getURI()) << ']');
 
         Poco::Net::HTTPResponse response;
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
 
-        StringTokenizer tokens(request.getURI(), "/?");
-        if (tokens.count() > 2 && tokens[2] == "convert-to" && ConvertToEnabled)
+        if (requestDetails.equals(1, "convert-to"))
         {
-            ConvertToPartHandler handler(/*convertTo =*/ true);
-            HTMLForm form(request, message, handler);
-
-            std::string format = (form.has("format") ? form.get("format") : "");
-
+            // Validate sender - FIXME: should do this even earlier.
             if (!allowConvertTo(socket->clientAddress(), request, true))
             {
                 LOG_WRN("Conversion requests not allowed from this address: " << socket->clientAddress());
                 std::ostringstream oss;
                 oss << "HTTP/1.1 403\r\n"
-                    << "Date: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
-                    << "User-Agent: " << HTTP_AGENT_STRING << "\r\n"
-                    << "Content-Length: 0\r\n"
-                    << "\r\n";
+                    "Date: " << Util::getHttpTimeNow() << "\r\n"
+                    "User-Agent: " HTTP_AGENT_STRING "\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n";
                 socket->send(oss.str());
                 socket->shutdown();
                 return;
             }
 
-            // prefer what is in the URI
-            if (tokens.count() > 3)
-                format = tokens[3];
+            ConvertToPartHandler handler(/*convertTo =*/ true);
+            HTMLForm form(request, message, handler);
 
-            bool sent = false;
-            std::string fromPath = handler.getFilename();
+            std::string format = (form.has("format") ? form.get("format") : "");
+            // prefer what is in the URI
+            if (requestDetails.size() > 2)
+                format = requestDetails[2];
+
+            const std::string fromPath = handler.getFilename();
             LOG_INF("Conversion request for URI [" << fromPath << "] format [" << format << "].");
             if (!fromPath.empty() && !format.empty())
             {
                 Poco::URI uriPublic = DocumentBroker::sanitizeURI(fromPath);
                 const std::string docKey = DocumentBroker::getDocKey(uriPublic);
 
+                std::string options;
+                const bool fullSheetPreview
+                    = (form.has("FullSheetPreview") && form.get("FullSheetPreview") == "true");
+                if (fullSheetPreview && format == "pdf" && isSpreadsheet(fromPath))
+                {
+                    //FIXME: We shouldn't have "true" as having the option already implies that
+                    // we want it enabled (i.e. we shouldn't set the option if we don't want it).
+                    options = ",FullSheetPreview=trueFULLSHEETPREVEND";
+                }
+
                 // This lock could become a bottleneck.
                 // In that case, we can use a pool and index by publicPath.
                 std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
 
                 LOG_DBG("New DocumentBroker for docKey [" << docKey << "].");
-                auto docBroker = std::make_shared<ConvertToBroker>(fromPath, uriPublic, docKey);
+                auto docBroker = std::make_shared<ConvertToBroker>(fromPath, uriPublic, docKey, format, options);
                 handler.takeFile();
 
                 cleanupDocBrokers();
@@ -2500,69 +3048,15 @@ private:
                 DocBrokers.emplace(docKey, docBroker);
                 LOG_TRC("Have " << DocBrokers.size() << " DocBrokers after inserting [" << docKey << "].");
 
-                // Load the document.
-                // TODO: Move to DocumentBroker.
-                const bool isReadOnly = true;
-                std::shared_ptr<ClientSession> clientSession = createNewClientSession(nullptr, _id, uriPublic, docBroker, isReadOnly);
-                if (clientSession)
+                if (!docBroker->startConversion(disposition, _id))
                 {
-                    disposition.setMove([docBroker, clientSession, format]
-                                        (const std::shared_ptr<Socket> &moveSocket)
-                    {
-                        // Perform all of this after removing the socket
-
-                        // Make sure the thread is running before adding callback.
-                        docBroker->startThread();
-
-                        // We no longer own this socket.
-                        moveSocket->setThreadOwner(std::thread::id(0));
-
-                        docBroker->addCallback([docBroker, moveSocket, clientSession, format]()
-                        {
-                            auto streamSocket = std::static_pointer_cast<StreamSocket>(moveSocket);
-                            clientSession->setSaveAsSocket(streamSocket);
-
-                            // Move the socket into DocBroker.
-                            docBroker->addSocketToPoll(moveSocket);
-
-                            // First add and load the session.
-                            docBroker->addSession(clientSession);
-
-                            // Load the document manually and request saving in the target format.
-                            std::string encodedFrom;
-                            URI::encode(docBroker->getPublicUri().getPath(), "", encodedFrom);
-                            const std::string load = "load url=" + encodedFrom;
-                            std::vector<char> loadRequest(load.begin(), load.end());
-                            clientSession->handleMessage(true, WSOpCode::Text, loadRequest);
-
-                            // FIXME: Check for security violations.
-                            Path toPath(docBroker->getPublicUri().getPath());
-                            toPath.setExtension(format);
-                            const std::string toJailURL = "file://" + std::string(JAILED_DOCUMENT_ROOT) + toPath.getFileName();
-                            std::string encodedTo;
-                            URI::encode(toJailURL, "", encodedTo);
-
-                            // Convert it to the requested format.
-                            const auto saveas = "saveas url=" + encodedTo + " format=" + format + " options=";
-                            std::vector<char> saveasRequest(saveas.begin(), saveas.end());
-                            clientSession->handleMessage(true, WSOpCode::Text, saveasRequest);
-                        });
-                    });
-
-                    sent = true;
-                }
-                else
                     LOG_WRN("Failed to create Client Session with id [" << _id << "] on docKey [" << docKey << "].");
-            }
-
-            if (!sent)
-            {
-                // TODO: We should differentiate between bad request and failed conversion.
-                throw BadRequestException("Failed to convert and send file.");
+                    cleanupDocBrokers();
+                }
             }
             return;
         }
-        else if (tokens.count() >= 4 && tokens[3] == "insertfile")
+        else if (requestDetails.equals(2, "insertfile"))
         {
             LOG_INF("Insert file request.");
 
@@ -2575,10 +3069,10 @@ private:
                 const std::string formName(form.get("name"));
 
                 // Validate the docKey
-                std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
-                std::string decodedUri;
-                URI::decode(tokens[2], decodedUri);
+                const std::string decodedUri = requestDetails.getDocumentURI();
                 const std::string docKey = DocumentBroker::getDocKey(DocumentBroker::sanitizeURI(decodedUri));
+
+                std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
                 auto docBrokerIt = DocBrokers.find(docKey);
 
                 // Maybe just free the client from sending childid in form ?
@@ -2591,27 +3085,29 @@ private:
                 // protect against attempts to inject something funny here
                 if (formChildid.find('/') == std::string::npos && formName.find('/') == std::string::npos)
                 {
-                    LOG_INF("Perform insertfile: " << formChildid << ", " << formName);
                     const std::string dirPath = LOOLWSD::ChildRoot + formChildid
                                               + JAILED_DOCUMENT_ROOT + "insertfile";
+                    const std::string fileName = dirPath + '/' + form.get("name");
+                    LOG_INF("Perform insertfile: " << formChildid << ", " << formName << ", filename: " << fileName);
                     File(dirPath).createDirectories();
-                    std::string fileName = dirPath + "/" + form.get("name");
                     File(handler.getFilename()).moveTo(fileName);
+                    handler.takeFile();
                     response.setContentLength(0);
                     socket->send(response);
+                    socket->shutdown();
                     return;
                 }
             }
         }
-        else if (tokens.count() >= 6)
+        else if (requestDetails.equals(2, "download"))
         {
             LOG_INF("File download request.");
             // TODO: Check that the user in question has access to this file!
 
             // 1. Validate the dockey
-            std::string decodedUri;
-            URI::decode(tokens[2], decodedUri);
+            const std::string decodedUri = requestDetails.getDocumentURI();
             const std::string docKey = DocumentBroker::getDocKey(DocumentBroker::sanitizeURI(decodedUri));
+
             std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
             auto docBrokerIt = DocBrokers.find(docKey);
             if (docBrokerIt == DocBrokers.end())
@@ -2619,30 +3115,26 @@ private:
                 throw BadRequestException("DocKey [" + docKey + "] is invalid.");
             }
 
-            // 2. Cross-check if received child id is correct
-            if (docBrokerIt->second->getJailId() != tokens[3])
-            {
-                throw BadRequestException("ChildId does not correspond to docKey");
-            }
+            std::string downloadId = requestDetails[3];
+            std::string url = docBrokerIt->second->getDownloadURL(downloadId);
+            docBrokerIt->second->unregisterDownloadId(downloadId);
+            std::string jailId = docBrokerIt->second->getJailId();
 
-            // 3. Don't let user download the file in main doc directory containing
-            // the document being edited otherwise we will end up deleting main directory
-            // after download finishes
-            if (docBrokerIt->second->getJailId() == tokens[4])
-            {
-                throw BadRequestException("RandomDir cannot be equal to ChildId");
-            }
             docBrokersLock.unlock();
 
-            std::string fileName;
-            URI::decode(tokens[5], fileName);
-            const Path filePath(LOOLWSD::ChildRoot + tokens[3]
-                                + JAILED_DOCUMENT_ROOT + tokens[4] + "/" + fileName);
+            bool foundDownloadId = !url.empty();
+
+            std::string decoded;
+            Poco::URI::decode(url, decoded);
+
+            const Path filePath(LOOLWSD::ChildRoot + jailId + JAILED_DOCUMENT_ROOT + decoded);
             const std::string filePathAnonym = LOOLWSD::anonymizeUrl(filePath.toString());
-            LOG_INF("HTTP request for: " << filePathAnonym);
-            bool responded = false;
-            if (filePath.isAbsolute() && File(filePath).exists())
+
+            if (foundDownloadId && filePath.isAbsolute() && File(filePath).exists())
             {
+                LOG_INF("HTTP request for: " << filePathAnonym);
+
+                std::string fileName = filePath.getFileName();
                 const Poco::URI postRequestUri(request.getURI());
                 const Poco::URI::QueryParameters postRequestQueryParams = postRequestUri.getQueryParameters();
 
@@ -2660,21 +3152,11 @@ private:
                 // actually show it.
                 std::string contentType = getContentType(fileName);
                 if (serveAsAttachment && contentType != "image/svg+xml")
-                    response.set("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+                    response.set("Content-Disposition", "attachment; filename=\"" + fileName + '"');
 
-                if (Poco::Path(fileName).getExtension() == "pdf")
-                {
-                    contentType = "application/pdf";
-                }
-                if (Poco::Path(fileName).getExtension() == "txt" ||
-                    Poco::Path(fileName).getExtension() == "htm")
-                {
-                    contentType = "text/html";
-                }
                 try
                 {
-                    HttpHelper::sendFile(socket, filePath.toString(), contentType, response);
-                    responded = true;
+                    HttpHelper::sendFileAndShutdown(socket, filePath.toString(), contentType, &response);
                 }
                 catch (const Exception& exc)
                 {
@@ -2686,31 +3168,147 @@ private:
             }
             else
             {
-                LOG_ERR("Download file [" << filePathAnonym << "] not found.");
+                if (foundDownloadId)
+                    LOG_ERR("Download file [" << filePathAnonym << "] not found.");
+                else
+                    LOG_ERR("Download with id [" << downloadId << "] not found.");
+
+                std::ostringstream oss;
+                oss << "HTTP/1.1 404 Not Found\r\n"
+                    << "Date: " << Util::getHttpTimeNow() << "\r\n"
+                    << "User-Agent: " << HTTP_AGENT_STRING << "\r\n"
+                    << "Content-Length: 0\r\n"
+                    << "\r\n";
+                socket->send(oss.str());
+                socket->shutdown();
             }
-            (void)responded;
             return;
         }
 
         throw BadRequestException("Invalid or unknown request.");
     }
-#endif
 
-    void handleClientWsUpgrade(const Poco::Net::HTTPRequest& request, const std::string& url,
-                               SocketDisposition &disposition)
+    void handleClientProxyRequest(const Poco::Net::HTTPRequest& request,
+                                  const RequestDetails &requestDetails,
+                                  Poco::MemoryInputStream& message,
+                                  SocketDisposition &disposition)
     {
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
-        if (!socket)
+        //FIXME: The DocumentURI includes the WOPISrc, which makes it potentially invalid URI.
+        const std::string url = requestDetails.getLegacyDocumentURI();
+
+        LOG_INF("URL [" << url << "].");
+        const auto uriPublic = DocumentBroker::sanitizeURI(url);
+        LOG_INF("URI [" << uriPublic.getPath() << "].");
+        const auto docKey = DocumentBroker::getDocKey(uriPublic);
+        LOG_INF("DocKey [" << docKey << "].");
+        const std::string fileId = Util::getFilenameFromURL(docKey);
+        Util::mapAnonymized(fileId, fileId); // Identity mapping, since fileId is already obfuscated
+
+        LOG_INF("Starting Proxy request handler for session [" << _id << "] on url [" << LOOLWSD::anonymizeUrl(url) << "].");
+
+        // Check if readonly session is required
+        bool isReadOnly = false;
+        for (const auto& param : uriPublic.getQueryParameters())
         {
-            LOG_WRN("No socket to handle client WS upgrade for request: " << LOOLWSD::anonymizeUrl(request.getURI()) << ", url: " << url);
-            return;
+            LOG_DBG("Query param: " << param.first << ", value: " << param.second);
+            if (param.first == "permission" && param.second == "readonly")
+            {
+                isReadOnly = true;
+            }
         }
 
+        LOG_INF("URL [" << LOOLWSD::anonymizeUrl(url) << "] is " << (isReadOnly ? "readonly" : "writable") << '.');
+        (void)request; (void)message; (void)disposition;
+
+        std::shared_ptr<ProtocolHandlerInterface> none;
+        // Request a kit process for this doc.
+        std::shared_ptr<DocumentBroker> docBroker = findOrCreateDocBroker(
+            none, DocumentBroker::ChildType::Interactive, url, docKey, _id, uriPublic);
+        if (docBroker)
+        {
+            // need to move into the DocumentBroker context before doing session lookup / creation etc.
+            std::string id = _id;
+            disposition.setMove([docBroker, id, uriPublic,
+                                 isReadOnly, requestDetails]
+                                (const std::shared_ptr<Socket> &moveSocket)
+                {
+                    LOG_TRC("Setting up docbroker thread for " << docBroker->getDocKey());
+                    // Make sure the thread is running before adding callback.
+                    docBroker->startThread();
+
+                    // We no longer own this socket.
+                    moveSocket->setThreadOwner(std::thread::id());
+
+                    docBroker->addCallback([docBroker, id, uriPublic, isReadOnly,
+                                            requestDetails, moveSocket]()
+                        {
+                            // Now inside the document broker thread ...
+                            LOG_TRC("In the docbroker thread for " << docBroker->getDocKey());
+
+                            auto streamSocket = std::static_pointer_cast<StreamSocket>(moveSocket);
+                            try
+                            {
+                                docBroker->handleProxyRequest(
+                                    id, uriPublic, isReadOnly,
+                                    requestDetails, streamSocket);
+                                return;
+                            }
+                            catch (const UnauthorizedRequestException& exc)
+                            {
+                                LOG_ERR("Unauthorized Request while loading session for " << docBroker->getDocKey() << ": " << exc.what());
+                            }
+                            catch (const StorageConnectionException& exc)
+                            {
+                                LOG_ERR("Error while loading : " << exc.what());
+                            }
+                            catch (const std::exception& exc)
+                            {
+                                LOG_ERR("Error while loading : " << exc.what());
+                            }
+                            // badness occurred:
+                            std::ostringstream oss;
+                            oss << "HTTP/1.1 400\r\n"
+                                << "Date: " << Util::getHttpTimeNow() << "\r\n"
+                                << "User-Agent: LOOLWSD WOPI Agent\r\n"
+                                << "Content-Length: 0\r\n"
+                                << "\r\n";
+                            streamSocket->send(oss.str());
+                            streamSocket->shutdown();
+                        });
+                });
+        }
+        else
+        {
+            auto streamSocket = std::static_pointer_cast<StreamSocket>(disposition.getSocket());
+            LOG_ERR("Failed to find document");
+            // badness occurred:
+            std::ostringstream oss;
+            oss << "HTTP/1.1 400\r\n"
+                << "Date: " << Util::getHttpTimeNow() << "\r\n"
+                << "User-Agent: LOOLWSD WOPI Agent\r\n"
+                << "Content-Length: \r\n"
+                << "\r\n";
+            // FIXME: send docunloading & re-try on client ?
+            streamSocket->send(oss.str());
+            streamSocket->shutdown();
+        }
+    }
+#endif
+
+    void handleClientWsUpgrade(const Poco::Net::HTTPRequest& request,
+                               const RequestDetails &requestDetails,
+                               SocketDisposition& disposition,
+                               const std::shared_ptr<StreamSocket>& socket,
+                               unsigned mobileAppDocId = 0)
+    {
+        const std::string url = requestDetails.getDocumentURI();
+        assert(socket && "Must have a valid socket");
+
         // must be trace for anonymization
-        LOG_TRC("Client WS request: " << request.getURI() << ", url: " << url << ", socket #" << socket->getFD());
+        LOG_TRC("Client WS request: " << requestDetails.getURI() << ", url: " << url << ", socket #" << socket->getFD());
 
         // First Upgrade.
-        WebSocketHandler ws(_socket, request);
+        auto ws = std::make_shared<WebSocketHandler>(_socket, request);
 
         // Response to clients beyond this point is done via WebSocket.
         try
@@ -2735,9 +3333,9 @@ private:
             LOG_INF("Starting GET request handler for session [" << _id << "] on url [" << LOOLWSD::anonymizeUrl(url) << "].");
 
             // Indicate to the client that document broker is searching.
-            const std::string status("statusindicator: find");
+            static const std::string status("statusindicator: find");
             LOG_TRC("Sending to Client [" << status << "].");
-            ws.sendMessage(status);
+            ws->sendMessage(status);
 
             LOG_INF("Sanitized URI [" << LOOLWSD::anonymizeUrl(url) << "] to [" << LOOLWSD::anonymizeUrl(uriPublic.toString()) <<
                     "] and mapped to docKey [" << docKey << "] for session [" << _id << "].");
@@ -2753,17 +3351,20 @@ private:
                 }
             }
 
-            LOG_INF("URL [" << LOOLWSD::anonymizeUrl(url) << "] is " << (isReadOnly ? "readonly" : "writable") << ".");
+            LOG_INF("URL [" << LOOLWSD::anonymizeUrl(url) << "] is " << (isReadOnly ? "readonly" : "writable") << '.');
 
             // Request a kit process for this doc.
-            std::shared_ptr<DocumentBroker> docBroker = findOrCreateDocBroker(ws, url, docKey, _id, uriPublic);
+            std::shared_ptr<DocumentBroker> docBroker = findOrCreateDocBroker(
+                std::static_pointer_cast<ProtocolHandlerInterface>(ws),
+                DocumentBroker::ChildType::Interactive, url, docKey, _id, uriPublic, mobileAppDocId);
             if (docBroker)
             {
-                std::shared_ptr<ClientSession> clientSession = createNewClientSession(&ws, _id, uriPublic, docBroker, isReadOnly);
+                std::shared_ptr<ClientSession> clientSession =
+                    docBroker->createNewClientSession(ws, _id, uriPublic, isReadOnly, requestDetails);
                 if (clientSession)
                 {
                     // Transfer the client socket to the DocumentBroker when we get back to the poll:
-                    disposition.setMove([docBroker, clientSession]
+                    disposition.setMove([docBroker, clientSession, ws]
                                         (const std::shared_ptr<Socket> &moveSocket)
                     {
                         // Make sure the thread is running before adding callback.
@@ -2772,36 +3373,39 @@ private:
                         // We no longer own this socket.
                         moveSocket->setThreadOwner(std::thread::id());
 
-                        docBroker->addCallback([docBroker, moveSocket, clientSession]()
+                        docBroker->addCallback([docBroker, moveSocket, clientSession, ws]()
                         {
                             try
                             {
                                 auto streamSocket = std::static_pointer_cast<StreamSocket>(moveSocket);
 
-                                // Set the ClientSession to handle Socket events.
-                                streamSocket->setHandler(clientSession);
-                                LOG_DBG("Socket #" << moveSocket->getFD() << " handler is " << clientSession->getName());
+                                // Set WebSocketHandler's socket after its construction for shared_ptr goodness.
+                                streamSocket->setHandler(ws);
 
+                                LOG_DBG("Socket #" << moveSocket->getFD() << " handler is " << clientSession->getName());
                                 // Move the socket into DocBroker.
                                 docBroker->addSocketToPoll(moveSocket);
 
                                 // Add and load the session.
                                 docBroker->addSession(clientSession);
 
-                                checkDiskSpaceAndWarnClients(true);
-#if !ENABLE_SUPPORT_KEY
-                                // Users of development versions get just an info when reaching max documents or connections
-                                checkSessionLimitsAndWarnClients();
-#endif
+                                LOOLWSD::checkDiskSpaceAndWarnClients(true);
+                                // Users of development versions get just an info
+                                // when reaching max documents or connections
+                                LOOLWSD::checkSessionLimitsAndWarnClients();
+
+                                sendLoadResult(clientSession, true, "");
                             }
                             catch (const UnauthorizedRequestException& exc)
                             {
                                 LOG_ERR("Unauthorized Request while loading session for " << docBroker->getDocKey() << ": " << exc.what());
+                                sendLoadResult(clientSession, false, "Unauthorized Request");
                                 const std::string msg = "error: cmd=internal kind=unauthorized";
                                 clientSession->sendMessage(msg);
                             }
                             catch (const StorageConnectionException& exc)
                             {
+                                sendLoadResult(clientSession, false, exc.what());
                                 // Alert user about failed load
                                 const std::string msg = "error: cmd=storage kind=loadfailed";
                                 clientSession->sendMessage(msg);
@@ -2809,6 +3413,11 @@ private:
                             catch (const std::exception& exc)
                             {
                                 LOG_ERR("Error while loading : " << exc.what());
+
+                                // Alert user about failed load
+                                const std::string msg = "error: cmd=storage kind=loadfailed";
+                                clientSession->sendMessage(msg);
+                                sendLoadResult(clientSession, false, exc.what());
                             }
                         });
                     });
@@ -2816,7 +3425,6 @@ private:
                 else
                 {
                     LOG_WRN("Failed to create Client Session with id [" << _id << "] on docKey [" << docKey << "].");
-                    cleanupDocBrokers();
                 }
             }
             else
@@ -2828,13 +3436,13 @@ private:
         {
             LOG_ERR("Error while handling Client WS Request: " << exc.what());
             const std::string msg = "error: cmd=internal kind=load";
-            ws.sendMessage(msg);
-            ws.shutdown(WebSocketHandler::StatusCodes::ENDPOINT_GOING_AWAY, msg);
+            ws->sendMessage(msg);
+            ws->shutdown(WebSocketHandler::StatusCodes::ENDPOINT_GOING_AWAY, msg);
         }
     }
 
     /// Lookup cached file content.
-    const std::string& getFileContent(const std::string& filename)
+    static const std::string& getFileContent(const std::string& filename)
     {
         const auto it = StaticFileContentCache.find(filename);
         if (it == StaticFileContentCache.end())
@@ -2848,32 +3456,27 @@ private:
     /// Process the discovery.xml file and return as string.
     static std::string getDiscoveryXML()
     {
-#if defined __linux && defined MOBILEAPP
-        // discovery.xml is in the top directory
-        std::string discoveryPath = Path(Application::instance().commandPath()).parent().parent().toString() + "discovery.xml";
+#if MOBILEAPP
+        // not needed for mobile
+        return std::string();
 #else
         std::string discoveryPath = Path(Application::instance().commandPath()).parent().toString() + "discovery.xml";
-#endif
         if (!File(discoveryPath).exists())
         {
             // http://server/hosting/discovery.xml
             discoveryPath = LOOLWSD::FileServerRoot + "/discovery.xml";
         }
 
-        const std::string action = "action";
-        const std::string urlsrc = "urlsrc";
         const auto& config = Application::instance().config();
         const std::string loleafletHtml = config.getString("loleaflet_html", "loleaflet.html");
-        const std::string rootUriValue =
-#if ENABLE_SSL
-            ((LOOLWSD::isSSLEnabled() || LOOLWSD::isSSLTermination()) ? "https://" : "http://")
-#else
-            "http://"
-#endif
-            + std::string("%SERVER_HOST%")
-            + LOOLWSD::ServiceRoot;
-        const std::string uriValue = rootUriValue
-                                   + "/loleaflet/" LOOLWSD_VERSION_HASH "/" + loleafletHtml + '?';
+
+        const std::string action = "action";
+        const std::string favIconUrl = "favIconUrl";
+        const std::string urlsrc = "urlsrc";
+
+        const std::string rootUriValue = "%SRV_URI%";
+        const std::string uriBaseValue = rootUriValue + "/loleaflet/" LOOLWSD_VERSION_HASH "/";
+        const std::string uriValue = uriBaseValue + loleafletHtml + '?';
 
         InputSource inputSrc(discoveryPath);
         DOMParser parser;
@@ -2896,29 +3499,59 @@ private:
             // Set the View extensions cache as well.
             if (elem->getAttribute("name") == "edit")
                 LOOLWSD::EditFileExtensions.insert(elem->getAttribute("ext"));
+            else if (elem->getAttribute("name") == "view_comment")
+            {
+                LOOLWSD::ViewWithCommentsFileExtensions.insert(elem->getAttribute("ext"));
+            }
+        }
+
+        // turn "images/img.svg" into "http://server.tld/loleaflet/12345abcd/images/img.svg"
+        listNodes = docXML->getElementsByTagName("app");
+        for (unsigned long it = 0; it < listNodes->length(); ++it)
+        {
+            Element* elem = static_cast<Element*>(listNodes->item(it));
+
+            if (elem->hasAttribute(favIconUrl))
+            {
+                elem->setAttribute(favIconUrl, uriBaseValue + elem->getAttribute(favIconUrl));
+            }
+        }
+
+        const auto& proofAttribs = GetProofKeyAttributes();
+        if (!proofAttribs.empty())
+        {
+            // Add proof-key element to wopi-discovery root
+            AutoPtr<Element> keyElem = docXML->createElement("proof-key");
+            for (const auto& attrib : proofAttribs)
+                keyElem->setAttribute(attrib.first, attrib.second);
+            docXML->documentElement()->appendChild(keyElem);
         }
 
         std::ostringstream ostrXML;
         DOMWriter writer;
         writer.writeNode(ostrXML, docXML);
         return ostrXML.str();
+#endif
     }
 
     /// Create the /hosting/capabilities JSON and return as string.
-    std::string getCapabilitiesJson(const Poco::Net::HTTPRequest& request)
+    std::string getCapabilitiesJson(const Poco::Net::HTTPRequest& request,
+                                    const std::shared_ptr<StreamSocket>& socket)
     {
-        std::shared_ptr<StreamSocket> socket = _socket.lock();
+        assert(socket && "Must have a valid socket");
 
         // Can the convert-to be used?
         Poco::JSON::Object::Ptr convert_to = new Poco::JSON::Object;
-        Poco::Dynamic::Var available = ConvertToEnabled && allowConvertTo(socket->clientAddress(), request);
+        Poco::Dynamic::Var available = allowConvertTo(socket->clientAddress(), request);
         convert_to->set("available", available);
 
         Poco::JSON::Object::Ptr capabilities = new Poco::JSON::Object;
         capabilities->set("convert-to", convert_to);
 
         // Supports the TemplateSaveAs in CheckFileInfo?
-        capabilities->set("hasTemplateSaveAs", true);
+        // TemplateSaveAs is broken by design, disable it everywhere (and
+        // remove at some stage too)
+        capabilities->set("hasTemplateSaveAs", false);
 
         // Supports the TemplateSource in CheckFileInfo?
         capabilities->set("hasTemplateSource", true);
@@ -2928,6 +3561,15 @@ private:
 
         // Set the product name
         capabilities->set("productName", APP_NAME);
+
+        // Set the product version
+        capabilities->set("productVersion", LOOLWSD_VERSION);
+
+        // Set the product version hash
+        capabilities->set("productVersionHash", LOOLWSD_VERSION_HASH);
+
+        // Set that this is a proxy.php-enabled instance
+        capabilities->set("hasProxyPrefix", LOOLWSD::IsProxyPrefixEnabled);
 
         std::ostringstream ostrJSON;
         capabilities->stringify(ostrJSON);
@@ -2941,9 +3583,6 @@ private:
 
     /// Cache for static files, to avoid reading and processing from disk.
     static std::map<std::string, std::string> StaticFileContentCache;
-
-    /// This is for module application exit the fork process
-    bool _module_exit_application = false;
 };
 
 std::map<std::string, std::string> ClientRequestDispatcher::StaticFileContentCache;
@@ -2953,7 +3592,7 @@ class PlainSocketFactory final : public SocketFactory
     std::shared_ptr<Socket> create(const int physicalFd) override
     {
         int fd = physicalFd;
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         if (SimulatedLatencyMs > 0)
             fd = Delay::create(SimulatedLatencyMs, physicalFd);
 #endif
@@ -2972,7 +3611,7 @@ class SslSocketFactory final : public SocketFactory
     {
         int fd = physicalFd;
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         if (SimulatedLatencyMs > 0)
             fd = Delay::create(SimulatedLatencyMs, physicalFd);
 #endif
@@ -2988,7 +3627,8 @@ class PrisonerSocketFactory final : public SocketFactory
     std::shared_ptr<Socket> create(const int fd) override
     {
         // No local delay.
-        return StreamSocket::create<StreamSocket>(fd, false, std::make_shared<PrisonerRequestDispatcher>());
+        return StreamSocket::create<StreamSocket>(fd, false, std::make_shared<PrisonerRequestDispatcher>(),
+                                                  StreamSocket::ReadType::UseRecvmsgExpectFD);
     }
 };
 
@@ -3011,30 +3651,37 @@ public:
         stop();
     }
 
-    void startPrisoners(int& port)
+    // allocate port & hold temporarily.
+    std::shared_ptr<ServerSocket> _serverSocket;
+    void findClientPort()
     {
-        PrisonerPoll.startThread();
-        PrisonerPoll.insertNewSocket(findPrisonerServerPort(port));
+        _serverSocket = findServerPort(ClientPortNumber);
     }
 
-    void stopPrisoners()
+    void startPrisoners()
+    {
+        PrisonerPoll.startThread();
+        PrisonerPoll.insertNewSocket(findPrisonerServerPort());
+    }
+
+    static void stopPrisoners()
     {
         PrisonerPoll.joinThread();
     }
 
-    void start(const int port)
+    void start()
     {
         _acceptPoll.startThread();
-        std::shared_ptr<ServerSocket> serverSocket(findServerPort(port));
-        _acceptPoll.insertNewSocket(serverSocket);
+        _acceptPoll.insertNewSocket(_serverSocket);
 
-#ifdef MOBILEAPP
-        loolwsd_server_socket_fd = serverSocket->getFD();
+#if MOBILEAPP
+        loolwsd_server_socket_fd = _serverSocket->getFD();
 #endif
 
+        _serverSocket.reset();
         WebServerPoll.startThread();
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         Admin::instance().start();
 #endif
     }
@@ -3051,20 +3698,51 @@ public:
         Socket::InhibitThreadChecks = true;
         SocketPoll::InhibitThreadChecks = true;
 
-        os << "LOOLWSDServer:\n"
-           << "  Ports: server " << ClientPortNumber
-           <<          " prisoner " << MasterPortNumber << "\n"
-           << "  SSL: " << (LOOLWSD::isSSLEnabled() ? "https" : "http") << "\n"
-           << "  SSL-Termination: " << (LOOLWSD::isSSLTermination() ? "yes" : "no") << "\n"
-           << "  Security " << (LOOLWSD::NoCapsForKit ? "no" : "") << " chroot, "
-                            << (LOOLWSD::NoSeccomp ? "no" : "") << " api lockdown\n"
-           << "  TerminationFlag: " << TerminationFlag << "\n"
-           << "  isShuttingDown: " << ShutdownRequestFlag << "\n"
-           << "  NewChildren: " << NewChildren.size() << "\n"
-           << "  OutstandingForks: " << OutstandingForks << "\n"
-           << "  NumPreSpawnedChildren: " << LOOLWSD::NumPreSpawnedChildren << "\n";
+        std::string version, hash;
+        Util::getVersionInfo(version, hash);
 
-        os << "Server poll:\n";
+        os << "LOOLWSDServer: " << version << " - " << hash
+#if !MOBILEAPP
+           << "\n  Kit version: " << LOOLWSD::LOKitVersion
+           << "\n  Ports: server " << ClientPortNumber << " prisoner " << MasterLocation
+           << "\n  SSL: " << (LOOLWSD::isSSLEnabled() ? "https" : "http")
+           << "\n  SSL-Termination: " << (LOOLWSD::isSSLTermination() ? "yes" : "no")
+           << "\n  Security " << (LOOLWSD::NoCapsForKit ? "no" : "") << " chroot, "
+           << (LOOLWSD::NoSeccomp ? "no" : "") << " api lockdown"
+           << "\n  Admin: " << (LOOLWSD::AdminEnabled ? "enabled" : "disabled")
+#endif
+           << "\n  TerminationFlag: " << SigUtil::getTerminationFlag()
+           << "\n  isShuttingDown: " << SigUtil::getShutdownRequestFlag()
+           << "\n  NewChildren: " << NewChildren.size()
+           << "\n  OutstandingForks: " << OutstandingForks
+           << "\n  NumPreSpawnedChildren: " << LOOLWSD::NumPreSpawnedChildren
+           << "\n  ChildSpawnTimeoutMs: " << ChildSpawnTimeoutMs
+           << "\n  Document Brokers: " << DocBrokers.size()
+#if !MOBILEAPP
+           << "\n  of which ConvertTo: " << ConvertToBroker::getInstanceCount()
+#endif
+           << "\n  vs. MaxDocuments: " << LOOLWSD::MaxDocuments
+           << "\n  NumConnections: " << LOOLWSD::NumConnections
+           << "\n  vs. MaxConnections: " << LOOLWSD::MaxConnections
+           << "\n  SysTemplate: " << LOOLWSD::SysTemplate
+           << "\n  LoTemplate: " << LOOLWSD::LoTemplate
+           << "\n  ChildRoot: " << LOOLWSD::ChildRoot
+           << "\n  FileServerRoot: " << LOOLWSD::FileServerRoot
+           << "\n  WelcomeFilesRoot: " << LOOLWSD::WelcomeFilesRoot
+           << "\n  ServiceRoot: " << LOOLWSD::ServiceRoot
+           << "\n  LOKitVersion: " << LOOLWSD::LOKitVersion
+           << "\n  HostIdentifier: " << Util::getProcessIdentifier()
+           << "\n  ConfigFile: " << LOOLWSD::ConfigFile
+           << "\n  ConfigDir: " << LOOLWSD::ConfigDir
+           << "\n  LogLevel: " << LOOLWSD::LogLevel
+           << "\n  AnonymizeUserData: " << (LOOLWSD::AnonymizeUserData ? "yes" : "no")
+           << "\n  CheckLoolUser: " << (LOOLWSD::CheckLoolUser ? "yes" : "no")
+           << "\n  IsProxyPrefixEnabled: " << (LOOLWSD::IsProxyPrefixEnabled ? "yes" : "no")
+           << "\n  OverrideWatermark: " << LOOLWSD::OverrideWatermark
+           << "\n  UserInterface: " << LOOLWSD::UserInterface
+            ;
+
+        os << "\nServer poll:\n";
         _acceptPoll.dumpState(os);
 
         os << "Web Server poll:\n";
@@ -3073,7 +3751,7 @@ public:
         os << "Prisoner poll:\n";
         PrisonerPoll.dumpState(os);
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         os << "Admin poll:\n";
         Admin::instance().dumpState(os);
 
@@ -3085,7 +3763,10 @@ public:
                   << "[ " << DocBrokers.size() << " ]:\n";
         for (auto &i : DocBrokers)
             i.second->dumpState(os);
-        os << "Converter count: " << ConvertToBroker::getInstanceCount() << "\n";
+
+#if !MOBILEAPP
+        os << "Converter count: " << ConvertToBroker::getInstanceCount() << '\n';
+#endif
 
         Socket::InhibitThreadChecks = false;
         SocketPoll::InhibitThreadChecks = false;
@@ -3099,11 +3780,7 @@ private:
 
         void wakeupHook() override
         {
-            if (DumpGlobalState)
-            {
-                dump_state();
-                DumpGlobalState = false;
-            }
+            SigUtil::checkDumpGlobalState(dump_state);
         }
     };
     /// This thread & poll accepts incoming connections.
@@ -3111,13 +3788,12 @@ private:
 
     /// Create a new server socket - accepted sockets will be added
     /// to the @clientSockets' poll when created with @factory.
-    std::shared_ptr<ServerSocket> getServerSocket(ServerSocket::Type type, int port,
+    static std::shared_ptr<ServerSocket> getServerSocket(ServerSocket::Type type, int port,
                                                   SocketPoll &clientSocket,
                                                   const std::shared_ptr<SocketFactory>& factory)
     {
         auto serverSocket = std::make_shared<ServerSocket>(
-            type == ServerSocket::Type::Local ? Socket::Type::IPv4 : ClientPortProto,
-            clientSocket, factory);
+            ClientPortProto, clientSocket, factory);
 
         if (!serverSocket->bind(type, port))
             return nullptr;
@@ -3129,35 +3805,36 @@ private:
     }
 
     /// Create the internal only, local socket for forkit / kits prisoners to talk to.
-    std::shared_ptr<ServerSocket> findPrisonerServerPort(int& port)
+    std::shared_ptr<ServerSocket> findPrisonerServerPort()
     {
         std::shared_ptr<SocketFactory> factory = std::make_shared<PrisonerSocketFactory>();
-        std::shared_ptr<ServerSocket> socket = getServerSocket(
-            ServerSocket::Type::Local, port, PrisonerPoll, factory);
+#if !MOBILEAPP
+        std::string location;
+        auto socket = std::make_shared<LocalServerSocket>(PrisonerPoll, factory);;
 
-//#ifdef BUILDING_TESTS
-        // If we fail, try the next 100 ports.
-        for (int i = 0; i < 100 && !socket; ++i)
+        location = socket->bind();
+        if (!location.length())
         {
-            ++port;
-            LOG_INF("Prisoner port " << (port - 1) << " is busy, trying " << port << ".");
-            socket = getServerSocket(
-            ServerSocket::Type::Local, port, PrisonerPoll, factory);
-        }
-//#endif
-
-        if (!socket)
-        {
-            LOG_FTL("Failed to listen on Prisoner port(s) (" <<
-                    MasterPortNumber << '-' << port << "). Exiting.");
+            LOG_FTL("Failed to create local unix domain socket. Exiting.");
             Log::shutdown();
-            _exit(Application::EXIT_SOFTWARE);
+            _exit(EX_SOFTWARE);
+            return nullptr;
         }
 
-        MasterPortNumber = port;
-#ifndef MOBILEAPP
-        LOG_INF("Listening to prisoner connections on port " << port);
+        if (!socket->listen())
+        {
+            LOG_FTL("Failed to listen on local unix domain socket at " << location << ". Exiting.");
+            Log::shutdown();
+            _exit(EX_SOFTWARE);
+        }
+
+        LOG_INF("Listening to prisoner connections on " << location);
+        MasterLocation = location;
 #else
+        constexpr int DEFAULT_MASTER_PORT_NUMBER = 9981;
+        std::shared_ptr<ServerSocket> socket = getServerSocket(
+            ServerSocket::Type::Public, DEFAULT_MASTER_PORT_NUMBER, PrisonerPoll, factory);
+
         LOOLWSD::prisonerServerSocketFD = socket->getFD();
         LOG_INF("Listening to prisoner connections on #" << LOOLWSD::prisonerServerSocketFD);
 #endif
@@ -3178,26 +3855,30 @@ private:
 
         std::shared_ptr<ServerSocket> socket = getServerSocket(
             ClientListenAddr, port, WebServerPoll, factory);
+
+        while (!socket &&
 #ifdef BUILDING_TESTS
-        while (!socket)
+               true
+#else
+               UnitWSD::isUnitTesting()
+#endif
+            )
         {
             ++port;
-            LOG_INF("Client port " << (port - 1) << " is busy, trying " << port << ".");
-            socket = getServerSocket(
-                ServerSocket::Type::Public, port, WebServerPoll, factory);
+            LOG_INF("Client port " << (port - 1) << " is busy, trying " << port << '.');
+            socket = getServerSocket(ClientListenAddr, port, WebServerPoll, factory);
         }
-#endif
 
         if (!socket)
         {
             LOG_FTL("Failed to listen on Server port(s) (" <<
                     ClientPortNumber << '-' << port << "). Exiting.");
-            _exit(Application::EXIT_SOFTWARE);
+            _exit(EX_SOFTWARE);
         }
 
         ClientPortNumber = port;
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
         LOG_INF("Listening to client connections on port " << port);
 #else
         LOG_INF("Listening to client connections on #" << socket->getFD());
@@ -3208,90 +3889,85 @@ private:
 
 static LOOLWSDServer srv;
 
+#if !MOBILEAPP
+#if ENABLE_DEBUG
+std::string LOOLWSD::getServerURL()
+{
+    return getServiceURI(LOOLWSD_TEST_LOLEAFLET_UI);
+}
+#endif
+#endif
+
 int LOOLWSD::innerMain()
 {
-#if !defined FUZZER && !defined MOBILEAPP
+#if !defined FUZZER && !MOBILEAPP
     SigUtil::setUserSignals();
     SigUtil::setFatalSignals();
     SigUtil::setTerminationSignals();
 #endif
 
-#ifdef __linux
+#if !MOBILEAPP
+#  ifdef __linux
     // down-pay all the forkit linking cost once & early.
-    Environment::set("LD_BIND_NOW", "1");
+    setenv("LD_BIND_NOW", "1", 1);
+#  endif
 
-#ifndef MOBILEAPP
-    if (DisplayVersion)
-    {
-        std::string version, hash;
-        Util::getVersionInfo(version, hash);
-        LOG_INF("Loolwsd version details: " << version << " - " << hash);
-    }
-#endif
+    std::string version, hash;
+    Util::getVersionInfo(version, hash);
+    LOG_INF("Oxoolwsd version details: " << version << " - " << hash << " - id " << Util::getProcessIdentifier() << " - on " << Util::getLinuxVersion());
 #endif
 
     initializeSSL();
 
+#ifndef IOS
+    // We can open files with non-ASCII names just fine on iOS without this, and this code is
+    // heavily Linux-specific anyway.
+
     // Force a uniform UTF-8 locale for ourselves & our children.
-    ::setenv("LC_ALL", "zh_TW.UTF-8", 1);
-    setlocale(LC_ALL, "zh_TW.UTF-8");
-    // Also set to be in online mode.
-    ::setenv("ONLINE_MODE", "true", 1);
-
-#ifndef MOBILEAPP
-    if (access(Cache.c_str(), R_OK | W_OK | X_OK) != 0)
+    char* locale = std::setlocale(LC_ALL, "C.UTF-8");
+    if (!locale)
     {
-        const auto err = "Unable to access cache [" + Cache +
-                "] please make sure it exists, and has write permission for this user.";
-        LOG_SFL( err );
-        std::cerr << "FATAL: " << err << std::endl;
-        return Application::EXIT_SOFTWARE;
+        // rhbz#1590680 - C.UTF-8 is unsupported on RH7
+        LOG_WRN("Could not set locale to C.UTF-8, will try zh_TW.UTF-8");
+        locale = std::setlocale(LC_ALL, "zh_TW.UTF-8");
+        if (!locale)
+            LOG_WRN("Could not set locale to zh_TW.UTF-8. Without UTF-8 support documents with non-ASCII file names cannot be opened.");
     }
+    if (locale)
+    {
+        LOG_INF("Locale is set to " + std::string(locale));
+        ::setenv("LC_ALL", locale, 1);
+    }
+#endif
 
-    // We use the same option set for both parent and child loolwsd,
+#if !MOBILEAPP
+    // We use the same option set for both parent and child oxoolwsd,
     // so must check options required in the parent (but not in the
     // child) separately now. Also check for options that are
     // meaningless for the parent.
-    if (SysTemplate.empty())
-    {
-        LOG_FTL("Missing --systemplate option");
-        throw MissingOptionException("systemplate");
-    }
-
     if (LoTemplate.empty())
     {
-        LOG_FTL("Missing --lotemplate option");
+        LOG_FTL("Missing --lo-template-path option");
         throw MissingOptionException("lotemplate");
     }
 
-    if (ChildRoot.empty())
-    {
-        LOG_FTL("Missing --childroot option");
-        throw MissingOptionException("childroot");
-    }
-    else if (ChildRoot[ChildRoot.size() - 1] != '/')
-        ChildRoot += '/';
-
-    FileUtil::registerFileSystemForDiskSpaceChecks(ChildRoot);
-    FileUtil::registerFileSystemForDiskSpaceChecks(Cache + "/.");
-
     if (FileServerRoot.empty())
-        FileServerRoot = Poco::Path(Application::instance().commandPath()).parent().toString();
+        FileServerRoot = Util::getApplicationPath();
     FileServerRoot = Poco::Path(FileServerRoot).absolute().toString();
     LOG_DBG("FileServerRoot: " << FileServerRoot);
-
-    if (ClientPortNumber == MasterPortNumber)
-        throw IncompatibleOptionsException("port");
 #endif
 
     ClientRequestDispatcher::InitStaticFileContentCache();
 
+    // Allocate our port - passed to prisoners.
+    srv.findClientPort();
+
     // Start the internal prisoner server and spawn forkit,
     // which in turn forks first child.
-    srv.startPrisoners(MasterPortNumber);
+    srv.startPrisoners();
 
 // No need to "have at least one child" beforehand on mobile
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 #ifndef KIT_IN_PROCESS
     {
@@ -3337,11 +4013,12 @@ int LOOLWSD::innerMain()
     Util::mapAnonymized("contents", "contents");
 
     // Start the server.
-    srv.start(ClientPortNumber);
+    srv.start();
 
     /// The main-poll does next to nothing:
     SocketPoll mainWait("main");
-#if ENABLE_DEBUG
+
+#if !MOBILEAPP
     std::cerr << "Ready to accept connections on port " << ClientPortNumber <<  ".\n" << std::endl;
 #endif
 
@@ -3350,15 +4027,15 @@ int LOOLWSD::innerMain()
 
     const auto startStamp = std::chrono::steady_clock::now();
 
-    while (!TerminationFlag && !ShutdownRequestFlag)
+    while (!SigUtil::getTerminationFlag() && !SigUtil::getShutdownRequestFlag())
     {
         UnitWSD::get().invokeTest();
 
         // This timeout affects the recovery time of prespawned children.
-        const int msWait = UnitWSD::isUnitTesting() ?
-                           UnitWSD::get().getTimeoutMilliSeconds() / 4 :
-                           SocketPoll::DefaultPollTimeoutMs * 4;
-        mainWait.poll(msWait);
+        const long waitMicroS = UnitWSD::isUnitTesting() ?
+            static_cast<long>(UnitWSD::get().getTimeoutMilliSeconds()) * 1000 / 4 :
+            SocketPoll::DefaultPollTimeoutMicroS * 4;
+        mainWait.poll(waitMicroS);
 
         // Wake the prisoner poll to spawn some children, if necessary.
         PrisonerPoll.wakeup();
@@ -3370,11 +4047,11 @@ int LOOLWSD::innerMain()
         if (timeSinceStartMs > UnitWSD::get().getTimeoutMilliSeconds())
             UnitWSD::get().timeout();
 
-#if ENABLE_DEBUG
+#if ENABLE_DEBUG && !MOBILEAPP
         if (careerSpanMs > 0 && timeSinceStartMs > careerSpanMs)
         {
             LOG_INF(timeSinceStartMs << " milliseconds gone, finishing as requested. Setting ShutdownRequestFlag.");
-            ShutdownRequestFlag = true;
+            SigUtil::requestShutdown();
         }
 #endif
     }
@@ -3382,34 +4059,43 @@ int LOOLWSD::innerMain()
     // Stop the listening to new connections
     // and wait until sockets close.
     LOG_INF("Stopping server socket listening. ShutdownRequestFlag: " <<
-            ShutdownRequestFlag << ", TerminationFlag: " << TerminationFlag);
+            SigUtil::getShutdownRequestFlag() << ", TerminationFlag: " << SigUtil::getTerminationFlag());
 
     // Wait until documents are saved and sessions closed.
     srv.stop();
 
     // atexit handlers tend to free Admin before Documents
     LOG_INF("Exiting. Cleaning up lingering documents.");
-    if (!ShutdownRequestFlag)
+#if !MOBILEAPP
+    if (!SigUtil::getShutdownRequestFlag())
     {
         // This shouldn't happen, but it's fail safe to always cleanup properly.
         LOG_WRN("Exiting WSD without ShutdownRequestFlag. Setting it now.");
-        ShutdownRequestFlag = true;
+        SigUtil::requestShutdown();
     }
+#endif
 
     // Don't stop the DocBroker, they will exit.
     constexpr size_t sleepMs = 500;
-    constexpr size_t count = (COMMAND_TIMEOUT_MS * 4) / sleepMs;
+    constexpr size_t count = (COMMAND_TIMEOUT_MS * 6) / sleepMs;
     for (size_t i = 0; i < count; ++i)
     {
         std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
-        LOG_DBG("Waiting for " << DocBrokers.size() << " documents to stop.");
-        cleanupDocBrokers();
         if (DocBrokers.empty())
             break;
+
+        LOG_DBG("Waiting for " << DocBrokers.size() << " documents to stop.");
+        cleanupDocBrokers();
         docBrokersLock.unlock();
 
         // Give them time to save and cleanup.
         std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
+    }
+
+    if (UnitWSD::isUnitTesting() && !SigUtil::getTerminationFlag())
+    {
+        LOG_INF("Setting TerminationFlag to avoid deadlocking unittest.");
+        SigUtil::setTerminationFlag();
     }
 
     // Disable thread checking - we'll now cleanup lots of things if we can
@@ -3436,7 +4122,7 @@ int LOOLWSD::innerMain()
         DocBrokers.clear();
     }
 
-#if !defined(KIT_IN_PROCESS) && !defined(MOBILEAPP)
+#if !defined(KIT_IN_PROCESS) && !MOBILEAPP
     // Terminate child processes
     LOG_INF("Requesting forkit process " << ForKitProcId << " to terminate.");
     SigUtil::killChild(ForKitProcId);
@@ -3453,34 +4139,27 @@ int LOOLWSD::innerMain()
 
     NewChildren.clear();
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 #ifndef KIT_IN_PROCESS
     // Wait for forkit process finish.
     LOG_INF("Waiting for forkit process to exit");
     int status = 0;
     waitpid(ForKitProcId, &status, WUNTRACED);
-    close(ForKitWritePipe);
+    ForKitProcId = -1;
+    ForKitProc.reset();
 #endif
 
-    // In case forkit didn't cleanup properly, don't leave jails behind.
-    LOG_INF("Cleaning up childroot directory [" << ChildRoot << "].");
-    std::vector<std::string> jails;
-    File(ChildRoot).list(jails);
-    for (auto& jail : jails)
-    {
-        const auto path = ChildRoot + jail;
-        LOG_INF("Removing jail [" << path << "].");
-        FileUtil::removeFile(path, true);
-    }
+    JailUtil::cleanupJails(ChildRoot);
 #endif // !MOBILEAPP
 
-    return Application::EXIT_OK;
+    return EX_OK;
 }
 
 void LOOLWSD::cleanup()
 {
-#ifndef MOBILEAPP
+#if !MOBILEAPP
     FileServerRequestHandler::uninitialize();
+    JWTAuth::cleanup();
 
 #if ENABLE_SSL
     // Finally, we no longer need SSL.
@@ -3492,58 +4171,27 @@ void LOOLWSD::cleanup()
     }
 #endif
 #endif
+    Socket::InhibitThreadChecks = true;
+    SocketPoll::InhibitThreadChecks = true;
 
     // Delete these while the static Admin instance is still alive.
     std::lock_guard<std::mutex> docBrokersLock(DocBrokersMutex);
     DocBrokers.clear();
 }
 
-// OXOOLMODULE Init
-#include <Poco/Glob.h>
-#include <dlfcn.h>
-#include <string>
-#include <set>
-void initModule(){
-#if ENABLE_DEBUG
-    std::string modDir = "./*.so";
-#else
-    std::string modDir = "/usr/lib64/oxool/*.so";
-#endif
-
-    std::set<std::string> files;
-    Poco::Glob::glob(modDir, files);
-
-    std::cout << "[Module list] -- " << modDir << std::endl;
-    for (auto it = files.begin() ; it != files.end(); ++ it)
-    {
-        auto afile = *it;
-        auto libpath = std::string(Poco::Path(afile).toString());
-#if ENABLE_DEBUG
-        libpath = "./" + libpath;
-#endif
-        std::cout << libpath <<"\n";
-        void *handle;
-        handle = dlopen(libpath.c_str(), RTLD_NOW);
-        if(!handle)
-        {
-            std::cout << "Error Loading : " << dlerror() << std::endl;
-        }
-    }
-    std::cout << std::endl;
-}
 int LOOLWSD::main(const std::vector<std::string>& /*args*/)
 {
-#ifdef MOBILEAPP
-    TerminationFlag = false;
+#if MOBILEAPP && !defined IOS
+    SigUtil::resetTerminationFlag();
 #endif
 
-    initModule();
     int returnValue;
 
     try {
         returnValue = innerMain();
     } catch (const std::runtime_error& e) {
         LOG_FTL(e.what());
+        cleanup();
         throw;
     } catch (...) {
         cleanup();
@@ -3555,15 +4203,10 @@ int LOOLWSD::main(const std::vector<std::string>& /*args*/)
     UnitWSD::get().returnValue(returnValue);
 
     LOG_INF("Process [oxoolwsd] finished.");
-
-#ifdef MOBILEAPP
-    fakeSocketDumpState();
-#endif
-
     return returnValue;
 }
 
-#ifndef MOBILEAPP
+#if !MOBILEAPP
 
 void UnitWSD::testHandleRequest(TestRequest type, UnitHTTPServerRequest& /* request */, UnitHTTPServerResponse& /* response */)
 {
@@ -3577,6 +4220,22 @@ void UnitWSD::testHandleRequest(TestRequest type, UnitHTTPServerRequest& /* requ
     }
 }
 
+std::vector<std::shared_ptr<DocumentBroker>> LOOLWSD::getBrokersTestOnly()
+{
+    std::lock_guard<std::mutex> docBrokersLock(DocBrokersMutex);
+    std::vector<std::shared_ptr<DocumentBroker>> result;
+
+    result.reserve(DocBrokers.size());
+    for (auto& brokerIt : DocBrokers)
+        result.push_back(brokerIt.second);
+    return result;
+}
+
+int LOOLWSD::getClientPortNumber()
+{
+    return ClientPortNumber;
+}
+
 std::vector<int> LOOLWSD::getKitPids()
 {
     std::vector<int> pids;
@@ -3588,7 +4247,11 @@ std::vector<int> LOOLWSD::getKitPids()
     {
         std::unique_lock<std::mutex> lock(DocBrokersMutex);
         for (const auto &it : DocBrokers)
-            pids.push_back(it.second->getPid());
+        {
+            int pid = it.second->getPid();
+            if (pid > 0)
+                pids.push_back(pid);
+        }
     }
     return pids;
 }
@@ -3622,7 +4285,8 @@ void dump_state()
     LOG_TRC(msg);
 }
 
-#ifndef MOBILEAPP
+// Avoid this in the Util::isFuzzing() case because libfuzzer defines its own main().
+#if !MOBILEAPP && !LIBFUZZER
 
 POCO_SERVER_MAIN(LOOLWSD)
 

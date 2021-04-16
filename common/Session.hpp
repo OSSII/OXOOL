@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SESSION_HPP
-#define INCLUDED_SESSION_HPP
+#pragma once
 
 #include <atomic>
 #include <cassert>
@@ -20,7 +19,6 @@
 
 #include <Poco/Buffer.h>
 #include <Poco/Path.h>
-#include <Poco/Process.h>
 #include <Poco/Types.h>
 
 #include "Protocol.hpp"
@@ -55,11 +53,18 @@ public:
     }
     std::shared_ptr<T> findByCanonicalId(int id)
     {
-        for (auto &it : *this) {
+        for (const auto &it : *this) {
             if (it.second->getCanonicalViewId() == id)
                 return it.second;
         }
         return std::shared_ptr<T>();
+    }
+    void dumpState(std::ostream& oss)
+    {
+        for (const auto &it : *this) {
+            oss << "\tsession '" << it.first << "'\n";
+            it.second->dumpState(oss);
+        }
     }
 };
 
@@ -71,8 +76,14 @@ public:
     const std::string& getName() const { return _name; }
     bool isDisconnected() const { return _disconnected; }
 
-    virtual void setReadOnly() { _isReadOnly = true; }
+    virtual void setReadOnly(bool bValue = true) { _isReadOnly = bValue; }
     bool isReadOnly() const { return _isReadOnly; }
+
+    void setAllowChangeComments(bool bValue = true)
+    {
+        _isAllowChangeComments = bValue;
+    }
+    bool isAllowChangeComments() const { return _isAllowChangeComments; }
 
     /// overridden to prepend client ids on messages by the Kit
     virtual bool sendBinaryFrame(const char* buffer, int length);
@@ -113,6 +124,18 @@ public:
 
     bool sendTextFrame(const char* buffer)
     {
+        return (buffer != nullptr ? sendTextFrame(buffer, std::strlen(buffer)) : false);
+    }
+
+    bool sendTextFrameAndLogError(const std::string& text)
+    {
+        LOG_ERR(text);
+        return sendTextFrame(text.data(), text.size());
+    }
+
+    bool sendTextFrameAndLogError(const char* buffer)
+    {
+        LOG_ERR(buffer);
         return (buffer != nullptr ? sendTextFrame(buffer, std::strlen(buffer)) : false);
     }
 
@@ -170,6 +193,10 @@ public:
 
     bool getHaveDocPassword() const { return _haveDocPassword; }
 
+    void setHaveDocPassword(const bool val) { _haveDocPassword = val; }
+
+    void setDocPassword(const std::string& password) { _docPassword = password; }
+
     const std::string& getDocPassword() const { return _docPassword; }
 
     const std::string& getUserExtraInfo() const { return _userExtraInfo; }
@@ -185,6 +212,8 @@ public:
     {
         _canonicalViewId = map.getCanonicalId(_watermarkText);
     }
+
+    const std::string& getDeviceFormFactor() const { return _deviceFormFactor; }
 
 protected:
     Session(const std::shared_ptr<ProtocolHandlerInterface> &handler,
@@ -229,6 +258,9 @@ private:
 
     /// Whether the session is opened as readonly
     bool _isReadOnly;
+
+    /// If the session is read-only, are comments allowed
+    bool _isAllowChangeComments;
 
     /// The actual URL, also in the child, even if the child never accesses that.
     std::string _docURL;
@@ -277,8 +309,9 @@ private:
 
     /// the canonical id unique to the set of rendering properties of this session
     int _canonicalViewId;
-};
 
-#endif
+    /// The form factor of the device where the client is running: desktop, tablet, mobile.
+    std::string _deviceFormFactor;
+};
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

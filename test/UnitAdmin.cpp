@@ -11,6 +11,8 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <thread>
+#include <chrono>
 
 #include <Poco/Net/HTTPBasicCredentials.h>
 #include <Poco/Net/HTTPCookie.h>
@@ -140,7 +142,7 @@ private:
         }
         lock.unlock();
 
-        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        StringVector tokens(Util::tokenize(_messageReceived, ' '));
         if (tokens.size() != 1 ||
             tokens[0] != "NotAuthenticated")
         {
@@ -171,7 +173,7 @@ private:
         }
         lock.unlock();
 
-        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        StringVector tokens(Util::tokenize(_messageReceived, ' '));
         if (tokens.size() != 1 ||
             tokens[0] != "InvalidAuthToken")
         {
@@ -200,7 +202,7 @@ private:
 
         // FIXME: we really should wait for the subscription to be
         // registered and have a reply to avoid a race here.
-        Poco::Thread::sleep(250);
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
 
         std::string documentPath1, documentURL1;
         helpers::getDocumentPathAndURL("hello.odt", documentPath1, documentURL1, "unitAdmin-hello.odt ");
@@ -223,7 +225,7 @@ private:
         lock.unlock();
 
         {
-            StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+            StringVector tokens(Util::tokenize(_messageReceived, ' '));
             if (tokens.size() != 5 ||
                 tokens[0] != "adddoc" ||
                 tokens[2] != documentPath1.substr(documentPath1.find_last_of('/') + 1) )
@@ -251,7 +253,7 @@ private:
         lock.unlock();
 
         {
-            StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+            StringVector tokens(Util::tokenize(_messageReceived, ' '));
             if (tokens.size() != 5 ||
                 tokens[0] != "adddoc" ||
                 tokens[2] != documentPath1.substr(documentPath1.find_last_of('/') + 1) )
@@ -286,7 +288,7 @@ private:
         lock.unlock();
 
         {
-            StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+            StringVector tokens(Util::tokenize(_messageReceived, ' '));
             if (tokens.size() != 5 ||
                 tokens[0] != "adddoc" ||
                 tokens[2] != documentPath2.substr(documentPath2.find_last_of('/') + 1) )
@@ -319,7 +321,7 @@ private:
         }
         lock.unlock();
 
-        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        StringVector tokens(Util::tokenize(_messageReceived, ' '));
         if (tokens.size() != 2 ||
             tokens[0] != "active_users_count")
         {
@@ -352,7 +354,7 @@ private:
         }
         lock.unlock();
 
-        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        StringVector tokens(Util::tokenize(_messageReceived, ' '));
         if (tokens.size() != 2 ||
             tokens[0] != "active_docs_count" ||
             std::stoi(tokens[1]) != _docsCount)
@@ -388,7 +390,7 @@ private:
         }
         lock.unlock();
 
-        StringVector tokens(LOOLProtocol::tokenize(_messageReceived, ' '));
+        StringVector tokens(Util::tokenize(_messageReceived, ' '));
         if (tokens.size() != 3 ||
             tokens[0] != "rmdoc" ||
             stoi(tokens[1]) != _docPid1)
@@ -442,7 +444,7 @@ public:
                               ? "FAIL"
                               : (res == TestResult::TimedOut)
                                       ? "TIMEOUT"
-                                      : "??? (" + std::to_string((int)res) + ")"));
+                                      : "??? (" + std::to_string((int)res) + ')'));
                 exitTest(res);
                 assert(false);
                 return;

@@ -20,8 +20,25 @@ L.Control.MobileInput = L.Control.extend({
 		this._cursorHandler.on('dragend', this.onDragEnd, this);
 	},
 
-	onAdd: function () {
+	onAdd: function(map) {
 		this._initLayout();
+
+		map.on('doclayerinit', function() {
+			this.hideCursor(); // 隱藏鍵盤
+			this.lockVirtualKeyboard((map.getDocType() === 'text')); // 文字文件的話，要鎖住鍵盤
+		}, this);
+
+		// Dirty hacked by Firefly <firefly@ossii.com.tw>
+		// 觸控設備視窗 size 改變，是因為螢幕鍵盤升起或落下
+		// e.newSize.y < e.oldSize.y 表示高度縮小→鍵盤升起，否則就是落下
+		map.on('resize', function(e) {
+			if (this._readOnly !== true &&
+				this._map._permission === 'edit' &&
+				e.newSize.y < e.oldSize.y) {
+				this._map._docLayer._isCursorVisible = true;
+				this._map._docLayer._onUpdateCursor();
+			}
+		}, this);
 		return this._container;
 	},
 
@@ -34,19 +51,11 @@ L.Control.MobileInput = L.Control.extend({
 	onGotFocus: function () {
 		var map = this._map;
 		var docLayer = map._docLayer;
-		if (!this._readOnly) {
-			this._textArea.focus();
-		}
-		if (docLayer && map.getDocType() === 'spreadsheet') {
-			return;
-		}
 		if (docLayer && docLayer._cursorMarker) {
 			this._cursorHandler.setLatLng(docLayer._visibleCursor.getSouthWest());
 			map.addLayer(docLayer._cursorMarker);
 			if (docLayer._selections.getLayers().length === 0) {
-				if (!this._readOnly) {
-					map.addLayer(this._cursorHandler);
-				}
+				map.addLayer(this._cursorHandler);
 			} else {
 				map.removeLayer(this._cursorHandler);
 			}
@@ -54,24 +63,19 @@ L.Control.MobileInput = L.Control.extend({
 	},
 
 	onLostFocus: function () {
-		var map = this._map;
-		var docLayer = map._docLayer;
-		if (docLayer && docLayer._cursorMarker) {
+		if (this._map._docLayer && this._map._docLayer._cursorMarker) {
 			this._textArea.value = '';
-			map.removeLayer(docLayer._cursorMarker);
-			map.removeLayer(this._cursorHandler);
+			this._map.removeLayer(this._map._docLayer._cursorMarker);
+			this._map.removeLayer(this._cursorHandler);
 		}
 	},
 
-	focus: function(focus) {
-		if (this._map._permission !== 'edit') {
-			return;
-		}
-
-		this._textArea.blur();
-		if (focus !== false) {
-			this.onGotFocus();
-			//this._textArea.focus();
+	focus: function(/*focus*/) {
+		if (this._map._permission !== 'edit' || this._lockKeyboard ||
+			!this._map._docLayer._isCursorVisible || this._readOnly) {
+			this._textArea.blur();
+		} else {
+			this._textArea.focus();
 		}
 	},
 
@@ -87,6 +91,18 @@ L.Control.MobileInput = L.Control.extend({
 		this._textArea.value = val;
 	},
 
+	setLatLng: function(latlng) {
+		this._latlng = L.latLng(latlng);
+		this.update();
+	},
+
+	update: function() {
+		if (this._container && this._map && this._latlng) {
+			var position = this._map.latLngToLayerPoint(this._latlng).round();
+			this._setPos(position);
+		}
+	},
+
 	activeElement: function () {
 		return this._textArea;
 	},
@@ -95,22 +111,31 @@ L.Control.MobileInput = L.Control.extend({
 		if (this._textArea === document.activeElement) {
 			this.onGotFocus();
 		}
+		this._enableVirtualKeyboard();
 	},
 
 	hideCursor: function () {
 		this.onLostFocus();
+		this._disableVirtualKeyboard();
+	},
+
+	_setPos: function(pos) {
+		L.DomUtil.setPosition(this._container, pos);
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
-	disableVirtualKeyboard: function () {
-		this._readOnly = true;
-		//this._textArea.setAttribute('readonly', true);
+	lockVirtualKeyboard: function (onOff) {
+		this._lockKeyboard = (onOff === true);
 		this.focus();
 	},
 
-	enableVirtualKeyboard: function () {
+	_disableVirtualKeyboard: function () {
+		this._readOnly = true;
+		this.focus();
+	},
+
+	_enableVirtualKeyboard: function () {
 		this._readOnly = false;
-		//this._textArea.removeAttribute('readonly');
 		this.focus();
 	},
 
@@ -125,15 +150,10 @@ L.Control.MobileInput = L.Control.extend({
 		this._textArea.setAttribute('autocapitalize', constOff);
 		this._textArea.setAttribute('autocomplete', constOff);
 		this._textArea.setAttribute('spellcheck', 'false');
-		if (window.mode.isTablet()) {
-			this.enableVirtualKeyboard();
-		} else {
-			this.disableVirtualKeyboard();
-		}
 		L.DomEvent.on(this._textArea, stopEvents, L.DomEvent.stopPropagation)
 			.on(this._textArea, 'keydown keypress keyup', this.onKeyEvents, this)
 			.on(this._textArea, 'compositionstart compositionupdate compositionend textInput', this.onCompEvents, this)
-			/*.on(this._textArea, 'focus', this.onGotFocus, this)*/
+			.on(this._textArea, 'focus', this.onGotFocus, this)
 			.on(this._textArea, 'blur', this.onLostFocus, this);
 	},
 

@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef INCLUDED_SERVERSOCKET_HPP
-#define INCLUDED_SERVERSOCKET_HPP
+#pragma once
 
 #include "memory"
 
@@ -66,7 +65,7 @@ public:
     virtual std::shared_ptr<Socket> accept();
 
     int getPollEvents(std::chrono::steady_clock::time_point /* now */,
-                      int & /* timeoutMaxMs */) override
+                      int64_t & /* timeoutMaxMicroS */) override
     {
         return POLLIN;
     }
@@ -83,7 +82,7 @@ public:
             if (!clientSocket)
             {
                 const std::string msg = "Failed to accept. (errno: ";
-                throw std::runtime_error(msg + std::strerror(errno) + ")");
+                throw std::runtime_error(msg + std::strerror(errno) + ')');
             }
 
             LOG_DBG("Accepted client #" << clientSocket->getFD());
@@ -117,8 +116,6 @@ public:
 private:
     std::string _name;
 };
-
-#endif
 
 #endif
 

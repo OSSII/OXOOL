@@ -118,6 +118,35 @@ function onClick(e, id, item, subItem) {
 	else {
 		throw new Error('unknown id: ' + id);
 	}
+	// Add by Tommy: Make the status of insert text
+	if (map.getDocType() === 'presentation' && (item.id === 'horizontaltext' || item.id === 'verticaltext')) {
+		if (item.checked === true) {
+			return;
+		} else {
+			var command = '';
+			var uno = '';
+			switch (item.id) {
+			case 'horizontaltext':
+				if (toolbar.get('verticaltext').checked) {
+					toolbar.uncheck('verticaltext');
+					command = 'key type=input char=0 key=1281';
+					map._socket.sendMessage(command);
+					uno = '.uno:VerticalText';
+					map.stateChangeHandler._stateProperties[uno].checked = false;
+				}
+				break;
+			case 'verticaltext':
+				if (toolbar.get('horizontaltext').checked) {
+					toolbar.uncheck('horizontaltext');
+					command = 'key type=input char=0 key=1281';
+					map._socket.sendMessage(command);
+					uno = '.uno:Text';
+					map.stateChangeHandler._stateProperties[uno].checked = false;
+				}
+				break;
+			}
+		}
+	}
 	var docLayer = map._docLayer;
 	if (id !== 'zoomin' && id !== 'zoomout') {
 		map.focus();
@@ -192,8 +221,8 @@ function onClick(e, id, item, subItem) {
 	}
 	else if (id === 'insertsheet') {
 		var nPos = $('#spreadsheet-tab-scroll')[0].childElementCount;
-		map.insertPage(nPos + 1);
-		$('#spreadsheet-tab-scroll').scrollLeft($('#spreadsheet-tab-scroll').prop('scrollWidth'));
+		map.insertPage(nPos);
+		map.insertPage.scrollToEnd = true;
 	}
 	else if (id === 'firstrecord') {
 		$('#spreadsheet-tab-scroll').scrollLeft(0);
@@ -206,7 +235,8 @@ function onClick(e, id, item, subItem) {
 		$('#spreadsheet-tab-scroll').scrollLeft($('#spreadsheet-tab-scroll').scrollLeft() - 30);
 	}
 	else if (id === 'lastrecord') {
-		$('#spreadsheet-tab-scroll').scrollLeft($('#spreadsheet-tab-scroll').scrollLeft() + 120);
+		console.debug('haha scroll : ', $('#spreadsheet-tab-scroll').scrollLeft());
+		$('#spreadsheet-tab-scroll').scrollLeft(10000000);
 	}
 	else if (id === 'insertgraphic' || item.id === 'localgraphic') {
 		map.executeAllowedCommand('insertgraphic');
@@ -222,10 +252,6 @@ function onClick(e, id, item, subItem) {
 	}
 	else if (id === 'functionwizard') {
 		map.sendUnoCommand('.uno:FunctionDialog');
-	}
-	else if (id === 'sum') {
-		map.sendUnoCommand('.uno:AutoSum');
-		onFormulaBarFocus();
 	}
 	else if (id === 'function') {
 		L.DomUtil.get('formulaInput').value = '=';
@@ -285,21 +311,15 @@ function onClick(e, id, item, subItem) {
 		L.toggleFullScreen();
 	}
 	else if (id === 'close' || id === 'closemobile') {
-		if (window.ThisIsAMobileApp) {
-			window.webkit.messageHandlers.lool.postMessage('BYE', '*');
-		} else {
-			map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
-			map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
-		}
-		map.remove();
+		map.closeDocument();
 	}
 	else if (id === 'keyboardBtn') {
-		map._clipboardContainer.enableVirtualKeyboard();
+		map._clipboardContainer.lockVirtualKeyboard(false);
 		statusbar.hide('keyboardBtn');
 		statusbar.show('keyboard_hideBtn');
 	}
 	else if (id === 'keyboard_hideBtn') {
-		map._clipboardContainer.disableVirtualKeyboard();
+		map._clipboardContainer.lockVirtualKeyboard(true);
 		statusbar.hide('keyboard_hideBtn');
 		statusbar.show('keyboardBtn');
 	}
@@ -317,6 +337,15 @@ function onClick(e, id, item, subItem) {
 		if (symbolDialog !== undefined) {
 			$(symbolDialog).dialog('open');
 		}
+	}
+	else if (id === 'documentLogo') {
+		map.showLOAboutDialog();
+	}
+	else if (item.id === 'sethyperlink') {
+		map.executeAllowedCommand('sethyperlink');
+	}
+	else if (item.id === 'sethyperlinktable') {
+		map.executeAllowedCommand('dialog:SetHyperLinkTable');
 	}
 	else {
 		console.log('有 id 未處理 : ' + id)
@@ -348,6 +377,7 @@ function toggleMobileSearchBar() {
 	if (mobileSearchBar.css('display') === 'none') {
 		mobileSearchBar.css('display', '');
 		$('#search-input').focus();
+		$('#search-input').prop('disabled', false);
 	} else {
 		mobileSearchBar.css('display', 'none');
 	}
@@ -641,7 +671,7 @@ function insertShapes() {
 	var width = 10;
 	var $grid = $('.insertshape-grid');
 
-	if ($grid.children().size() > 0)
+	if ($grid.children().length > 0)
 		return;
 
 	for (var s in shapes) {
@@ -690,33 +720,33 @@ var transition = [
 	{img: 'transition-shape', label: _('Shape'), action: {type:3, subtype: 12}}, // 形狀
 	{img: 'transition-box', label: _('Box'), action: {type:12, subtype: 25}}, // 方塊
 	{img: 'transition-wedge', label: _('Wedge'), action: {type:25, subtype: 48}}, // 楔入
-	{img: 'transition-venetian-blinds', label: _('Venetian Blinds'), action: {type:41, subtype: 13}}, // 百葉窗
+	//{img: 'transition-venetian-blinds', label: _('Venetian Blinds'), action: {type:41, subtype: 13}}, // 百葉窗
 	{img: 'transition-fade', label: _('Fade'), action: {type:37, subtype: 104}}, // 淡化
-	{img: 'transition-cut', label: _('Cut'), action: {type:1, subtype: 104}}, // 剪下
+	//{img: 'transition-cut', label: _('Cut'), action: {type:1, subtype: 104}}, // 剪下
 	{img: 'transition-cover', label: _('Cover'), action: {type:36, subtype: 98}}, // 覆蓋
 	{img: 'transition-dissolve', label: _('Dissolve'), action: {type:40, subtype: 0}}, // 溶解
-	{img: 'transition-random', label: _('Random'), action: {type:42, subtype: 0}}, // 隨機
-	{img: 'transition-comb', label: _('Comb'), action: {type:35, subtype: 110}}, // 梳紋
+	//{img: 'transition-random', label: _('Random'), action: {type:42, subtype: 0}}, // 隨機
+	//{img: 'transition-comb', label: _('Comb'), action: {type:35, subtype: 110}}, // 梳紋
 	{img: 'transition-push', label: _('Push'), action: {type:35, subtype: 98}}, // 推展
 	{img: 'transition-split', label: _('Split'), action: {type:4, subtype: 14}}, // 分割
 	{img: 'transition-diagonal-squares', label: _('Diagonal'), action: {type:34, subtype: 96}}, // 對角
-	{img: 'transition-tile-flip', label: _('Tiles'), action: {type:21, subtype: 108}}, // 拼貼
-	{img: 'transition-cube-turning', label: _('Cube'), action: {type:21, subtype:12}}, // 立方體
-	{img: 'transition-revolving-circles', label: _('Circles'), action: {type:21, subtype: 27}}, // 圓形
-	{img: 'transition-turning-helix', label: _('Helix'), action: {type:21, subtype: 55}}, // 螺旋
-	{img: 'transition-fall', label: _('Fall'), action: {type:21, subtype: 1}}, // 向下落
-	{img: 'transition-turn-around', label: _('Turn Around'), action: {type:21, subtype: 2}}, // 左右翻轉
-	{img: 'transition-iris', label: _('Iris'), action: {type:21, subtype: 3}}, // 光圈
-	{img: 'transition-turn-down', label: _('Turn Down'), action: {type:21, subtype: 4}}, // 向下轉
-	{img: 'transition-rochade', label: _('Rochade'), action: {type:21, subtype: 5}}, // 左右置換
-	{img: 'transition-venetian-blinds-3d', label: _('3D Denetian'), action: {type:21, subtype: 6}}, // 3D 百葉窗
-	{img: 'transition-static', label: _('Static'), action: {type:21, subtype: 8}}, // 靜態
-	{img: 'transition-finedissolve', label: _('Fine Dissolve'), action: {type:21, subtype: 9}}, // 細緻溶解
-	{img: 'transition-vortex', label: _('Vortex'), action: {type:21, subtype: 13}}, // 漩渦
-	{img: 'transition-ripple', label: _('Ripple'), action: {type:21, subtype: 14}}, // 漣漪
-	{img: 'transition-glitter', label: _('Glitter'), action: {type:21, subtype: 26}}, // 閃耀
-	{img: 'transition-honeycomb', label: _('Honeycomb'), action: {type:21, subtype: 31}}, // 蜂巢
-	{img: 'transition-newsflash', label: _('Newsflash'), action: {type:43, subtype: 114}} // 新聞快報
+	//{img: 'transition-tile-flip', label: _('Tiles'), action: {type:21, subtype: 108}}, // 拼貼
+	// {img: 'transition-cube-turning', label: _('Cube'), action: {type:21, subtype:12}}, // 立方體
+	// {img: 'transition-revolving-circles', label: _('Circles'), action: {type:21, subtype: 27}}, // 圓形
+	// {img: 'transition-turning-helix', label: _('Helix'), action: {type:21, subtype: 55}}, // 螺旋
+	// {img: 'transition-fall', label: _('Fall'), action: {type:21, subtype: 1}}, // 向下落
+	// {img: 'transition-turn-around', label: _('Turn Around'), action: {type:21, subtype: 2}}, // 左右翻轉
+	// {img: 'transition-iris', label: _('Iris'), action: {type:21, subtype: 3}}, // 光圈
+	// {img: 'transition-turn-down', label: _('Turn Down'), action: {type:21, subtype: 4}}, // 向下轉
+	// {img: 'transition-rochade', label: _('Rochade'), action: {type:21, subtype: 5}}, // 左右置換
+	// {img: 'transition-venetian-blinds-3d', label: _('3D Denetian'), action: {type:21, subtype: 6}}, // 3D 百葉窗
+	// {img: 'transition-static', label: _('Static'), action: {type:21, subtype: 8}}, // 靜態
+	// {img: 'transition-finedissolve', label: _('Fine Dissolve'), action: {type:21, subtype: 9}}, // 細緻溶解
+	// {img: 'transition-vortex', label: _('Vortex'), action: {type:21, subtype: 13}}, // 漩渦
+	// {img: 'transition-ripple', label: _('Ripple'), action: {type:21, subtype: 14}}, // 漣漪
+	// {img: 'transition-glitter', label: _('Glitter'), action: {type:21, subtype: 26}}, // 閃耀
+	// {img: 'transition-honeycomb', label: _('Honeycomb'), action: {type:21, subtype: 31}}, // 蜂巢
+	// {img: 'transition-newsflash', label: _('Newsflash'), action: {type:43, subtype: 114}} // 新聞快報
 ];
 
 // 投影片轉場
@@ -724,7 +754,7 @@ function animationEffects() {
 	var width = 5;
 	var $grid = $('.animationeffects-grid');
 
-	if ($grid.children().size() > 0)
+	if ($grid.children().length > 0)
 		return;
 
 	var rows = Math.ceil(transition.length / width);
@@ -754,6 +784,7 @@ function animationEffects() {
 			var action = $(e.target).data().action;
 			var macro = 'macro:///OxOOL.Impress.SetTransition(' + action.type + ',' + action.subtype + ')';
 			map.sendUnoCommand(macro);
+			map.getDocumentStatus();
 			closePopup();
 		}
 	});
@@ -820,7 +851,8 @@ function createToolbar() {
 		{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true, mobile: false},
 		{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true, mobile: false},
 		{type: 'button',  id: 'formatpaintbrush',  img: 'copyformat', hint: _UNO('.uno:FormatPaintbrush'), uno: 'FormatPaintbrush', mobile: false},
-		{type: 'button',  id: 'reset',  img: 'deleteformat', hint: _UNO('.uno:ResetAttributes', 'text'), uno: 'ResetAttributes', mobile: false},
+		{type: 'button',  id: 'resetattributes',  img: 'deleteformat', hint: _UNO('.uno:ResetAttributes', 'text'), uno: 'ResetAttributes', mobile: false, hidden: true},
+		{type: 'button',  id: 'setdefault',  img: 'deleteformat', hint: _UNO('.uno:SetDefault', 'presentation'), uno: 'SetDefault', mobile: false, hidden: true},
 		{type: 'break', mobile: false},
 		{type: 'html', id: 'styles',
 			html: '<select class="styles-select"' + (L.Browser.mobile ? ' data-minimum-results-for-search="Infinity"' : '')  + '><option>Default Style</option></select>',
@@ -886,14 +918,14 @@ function createToolbar() {
 		{type: 'break', id: 'breakmergecells', hidden: true},
 		{type: 'menu', id: 'textalign', img: 'alignblock', hint: _UNO('.uno:TextAlign'), hidden: true,
 			items: [
-				{id: 'alignleft', text: _UNO('.uno:AlignLeft', 'spreadsheet', true), icon: 'alignleft', uno: 'AlignLeft'},
-				{id: 'alignhorizontalcenter', text: _UNO('.uno:AlignHorizontalCenter', 'spreadsheet'), icon: 'alignhorizontal', uno: 'AlignHorizontalCenter'},
-				{id: 'alignright', text: _UNO('.uno:AlignRight', 'spreadsheet'), icon: 'alignright', uno: 'AlignRight'},
-				{id: 'alignblock', text: _UNO('.uno:AlignBlock', 'spreadsheet'), icon: 'alignblock', uno: 'AlignBlock'},
+				{id: 'alignleft', text: _UNO('.uno:AlignLeft', 'spreadsheet', true), icon: 'alignleft', uno:'LeftPara', unosheet:'AlignLeft'},
+				{id: 'alignhorizontalcenter', text: _UNO('.uno:AlignHorizontalCenter', 'spreadsheet', true), icon: 'alignhorizontal', uno:'CenterPara', unosheet:'AlignHorizontalCenter'},
+				{id: 'alignright', text: _UNO('.uno:AlignRight', 'spreadsheet', true), icon: 'alignright', uno:'RightPara', unosheet:'AlignRight'},
+				{id: 'alignblock', text: _UNO('.uno:AlignBlock', 'spreadsheet', true), icon: 'alignblock', uno:'JustifyPara', unosheet:'AlignBlock'},
 				{type: 'break'},
-				{id: 'aligntop', text: _UNO('.uno:CommonAlignTop'), icon: 'aligntop', uno: 'CommonAlignTop'},
-				{id: 'alignmiddle', text: _UNO('.uno:CommonAlignVerticalCenter'), icon: 'alignmiddle', uno: 'CommonAlignVerticalCenter'},
-				{id: 'alignbottom', text: _UNO('.uno:CommonAlignBottom'), icon: 'alignbottom', uno: 'CommonAlignBottom'},
+				{id: 'aligntop', text: _UNO('.uno:CellVertTop'), icon: 'aligntop', uno:'CellVertTop', unosheet:'CommonAlignTop'},
+				{id: 'alignmiddle', text: _UNO('.uno:CellVertCenter'), icon: 'alignmiddle', uno:'CellVertCenter', unosheet:'CommonAlignVerticalCenter'},
+				{id: 'alignbottom', text: _UNO('.uno:CellVertBottom'), icon: 'alignbottom', uno:'CellVertBottom', unosheet:'CommonAlignBottom'},
 			]},
 		{type: 'menu',  id: 'linespacing',  img: 'linespacing', hint: _UNO('.uno:FormatSpacingMenu'), hidden: true,
 			items: [
@@ -901,17 +933,17 @@ function createToolbar() {
 				{id: 'spacepara15', text: _UNO('.uno:SpacePara15'), uno: 'SpacePara15'},
 				{id: 'spacepara2', text: _UNO('.uno:SpacePara2'), uno: 'SpacePara2'},
 				{type: 'break'},
-				{id: 'paraspaceincrease', text: _UNO('.uno:ParaspaceIncrease'), uno: 'ParaspaceIncrease'},
-				{id: 'paraspacedecrease', text: _UNO('.uno:ParaspaceDecrease'), uno: 'ParaspaceDecrease'}
+				{id: 'paraspaceincrease', text: _UNO('.uno:ParaspaceIncrease', 'global', true), uno: 'ParaspaceIncrease'},
+				{id: 'paraspacedecrease', text: _UNO('.uno:ParaspaceDecrease', 'global', true), uno: 'ParaspaceDecrease'}
 			]},
 		{type: 'button',  id: 'wraptext',  img: 'wraptext', hint: _UNO('.uno:WrapText', 'spreadsheet'), hidden: true, uno: 'WrapText', disabled: true},
 		{type: 'break', id: 'breakspacing', hidden: true},
 		{type: 'button',  id: 'defaultnumbering',  img: 'numbering', hint: _UNO('.uno:DefaultNumbering'), hidden: true, uno: 'DefaultNumbering', disabled: true},
 		{type: 'button',  id: 'defaultbullet',  img: 'bullet', hint: _UNO('.uno:DefaultBullet'), hidden: true, uno: 'DefaultBullet', disabled: true},
 		{type: 'break', id: 'breakbullet', hidden: true},
-		{type: 'button',  id: 'incrementindent',  img: 'incrementindent', hint: _UNO('.uno:IncrementIndent'), uno: 'IncrementIndent', hidden: true, disabled: true},
-		{type: 'button',  id: 'decrementindent',  img: 'decrementindent', hint: _UNO('.uno:DecrementIndent'), uno: 'DecrementIndent', hidden: true, disabled: true},
-		{type: 'break', id: 'breakindent', hidden: true},
+		{type: 'button',  id: 'incrementindent',  img: 'incrementindent', hint: _UNO('.uno:IncrementIndent', 'global', true), uno: 'IncrementIndent', disabled: true},
+		{type: 'button',  id: 'decrementindent',  img: 'decrementindent', hint: _UNO('.uno:DecrementIndent', 'global', true), uno: 'DecrementIndent', disabled: true},
+		{type: 'break', id: 'breakindent', hidden: false},
 		{type: 'button',  id: 'sortascending',  img: 'sortascending', hint: _UNO('.uno:SortAscending', 'spreadsheet'), uno: 'SortAscending', disabled: true, hidden: true},
 		{type: 'button',  id: 'sortdescending',  img: 'sortdescending', hint: _UNO('.uno:SortDescending', 'spreadsheet'), uno: 'SortDescending', disabled: true, hidden: true},
 		{type: 'break', id: 'breaksorting', hidden: true},
@@ -927,6 +959,7 @@ function createToolbar() {
 		},
 		{type: 'button',  id: 'numberformatcurrency',  img: 'numberformatcurrency', hint: _UNO('.uno:NumberFormatCurrency', 'spreadsheet'), hidden: true, uno: 'NumberFormatCurrency', disabled: true},
 		{type: 'button',  id: 'numberformatpercent',  img: 'numberformatpercent', hint: _UNO('.uno:NumberFormatPercent', 'spreadsheet'), hidden: true, uno: 'NumberFormatPercent', disabled: true},
+		{type: 'button',  id: 'numberformatdecimal',  img: 'numberformatdecimal', hint: _UNO('.uno:NumberFormatDecimal', 'spreadsheet'), uno: 'NumberFormatDecimal', hidden: true, disabled: true},
 		{type: 'button',  id: 'numberformatdate',  img: 'numberformatdate', hint: _UNO('.uno:NumberFormatDate', 'spreadsheet'), uno: 'NumberFormatDate', hidden: true, disabled: true},
 		{type: 'button',  id: 'numberformatdecdecimals',  img: 'numberformatdecdecimals', hint: _UNO('.uno:NumberFormatDecDecimals', 'spreadsheet'), hidden: true, uno: 'NumberFormatDecDecimals', disabled: true},
 		{type: 'button',  id: 'numberformatincdecimals',  img: 'numberformatincdecimals', hint: _UNO('.uno:NumberFormatIncDecimals', 'spreadsheet'), hidden: true, uno: 'NumberFormatIncDecimals', disabled: true},
@@ -946,12 +979,21 @@ function createToolbar() {
 		{type: 'drop',  id: 'animationeffects',  img: 'animationeffects', hint: _UNO('.uno:SlideChangeWindow', 'presentation'), overlay: {onShow: animationEffects},
 			html: '<div id="animationeffects-wrapper"><div id="animationeffects-popup" class="ui-widget ui-widget-content ui-corner-all"><div class="animationeffects-grid"></div></div></div>', hidden: true, mobile: false},
 		{type: 'button',  id: 'link',  img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), uno: 'HyperlinkDialog', disabled: true, mobile: false},
+		{type: 'menu', id: 'insertlinkmenu', img: 'inserthyperlink', hint: _UNO('.uno:HyperlinkDialog'), disabled: true, hidden: true, mobile: false,
+			items: [
+				{id: 'sethyperlink', text: _UNO('.uno:HyperlinkDialog')},
+				{id: 'sethyperlinktable', text: _('Worksheet link')},
+			]},
 		{type: 'button',  id: 'insertsymbol', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol'), uno: 'InsertSymbol', mobile: false},
 		{type: 'menu', id: 'insertsymbolmenu', img: 'insertsymbol', hint: _UNO('.uno:InsertSymbol'), hidden: false, mobile: false,
 			items: [
 				{id: 'commonsymboltable', text: _('Common symbols')},
 				{id: 'moresymbol', text: _('More symbols'), uno: 'InsertSymbol'},
 			]},
+		{type: 'button',  id: 'textdirectionlefttoright', img: 'textdirectionlefttoright', hint: _UNO('.uno:TextdirectionLeftToRight'), uno: 'TextdirectionLeftToRight', hidden:true, disabled:true},
+		{type: 'button',  id: 'textdirectiontoptobottom', img: 'textdirectiontoptobottom', hint: _UNO('.uno:TextdirectionTopToBottom'), uno: 'TextdirectionTopToBottom', hidden:true, disabled:true},
+		{type: 'button',  id: 'horizontaltext', img: 'horizontaltext', hint: _UNO('.uno:Text'), uno: 'Text', hidden:true, disabled:true, mobile: false},
+		{type: 'button',  id: 'verticaltext', img: 'verticaltext', hint: _UNO('.uno:VerticalText'), uno: 'VerticalText', hidden:true, disabled:true, mobile: false},
 		{type: 'spacer'},
 		{type: 'button',  id: 'edit',  img: 'edit'},
 		{type: 'button',  id: 'fold',  img: 'fold', desktop: true, mobile: false, hidden: true},
@@ -972,7 +1014,7 @@ function initMobileToolbar(toolItems) {
 		name: 'actionbar',
 		tooltip: null,
 		items: [
-			{type: 'button',  id: 'closemobile',  img: 'closemobile'},
+			{type: 'button', id: 'documentLogo', img: 'document-logo'},
 			{type: 'spacer'},
 			{type: 'button', id: 'keyboardBtn', img: 'keyboard', hidden:true},
 			{type: 'button', id: 'keyboard_hideBtn', img: 'keyboard_hide', hidden:true},
@@ -996,6 +1038,7 @@ function initMobileToolbar(toolItems) {
 				'<p id="currently-msg">' + _('Current') + ' - <b><span id="current-editor"></span></b></p>' +
 				'</div>'
 			},
+			{type: 'button',  id: 'closemobile',  img: 'closebuttonimage'},
 		],
 		onClick: function (e) {
 			onClick(e, e.target);
@@ -1015,6 +1058,17 @@ function initMobileToolbar(toolItems) {
 				map.on('addview', onAddView);
 				map.on('removeview', onRemoveView);
 			}
+			// 修改文件左上角的 logo
+			var docType = map.getDocType();
+			var documentLogo = '' ;
+			if (docType === 'text') {
+				documentLogo = 'writer-icon-img';
+			} else if (docType === 'spreadsheet') {
+				documentLogo = 'calc-icon-img';
+			} else if (docType === 'presentation' || docType === 'drawing') {
+				documentLogo = 'impress-icon-img';
+			}
+			$('.document-logo').addClass(documentLogo);
 		}
 	});
 	toolbar.bind('touchstart', function(e) {
@@ -1034,8 +1088,15 @@ function initMobileToolbar(toolItems) {
 			{type: 'html',  id: 'left', hidden: true},
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">', hidden: true},
 			{type: 'break', hidden: true},
-			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _UNO('.uno:FunctionDialog', 'spreadsheet')},
-			{type: 'button',  id: 'sum',  img: 'autosum', hint: _UNO('AutoSum')},
+			/*{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _UNO('.uno:FunctionDialog', 'spreadsheet')},*/
+			{type: 'menu', id: 'sum', img: 'autosum', hint: _('Select function'),
+			items: [
+				{id: 'autosum', text: _('Sum'), uno:'AutoSum'},
+				{id: 'autoaverage', text: _('Average'), uno:'AutoAverage'},
+				{id: 'automin', text: _('Minimum'), uno:'AutoMin'},
+				{id: 'automax', text: _('Maximum'),  uno:'AutoMax'},
+				{id: 'autocount', text: _('Count'),  uno:'AutoCount'},
+			]},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _UNO('InsertMath')},
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
 			{type: 'button', hidden: true, id: 'acceptformula',  img: 'accepttrackedchanges', hint: _('Accept')},
@@ -1047,7 +1108,7 @@ function initMobileToolbar(toolItems) {
 		},
 		onRefresh: function() {
 			$('#addressInput').off('keyup', onAddressInput).on('keyup', onAddressInput);
-			$('#formulaInput').off('keyup', onFormulaInput).on('keyup', onFormulaInput);
+			$('#formulaInput').off('keyup compositionstart compositionupdate compositionend textInput', onFormulaInput).on('keyup compositionstart compositionupdate compositionend textInput', onFormulaInput);
 			$('#formulaInput').off('blur', onFormulaBarBlur).on('blur', onFormulaBarBlur);
 			$('#formulaInput').off('focus', onFormulaBarFocus).on('focus', onFormulaBarFocus);
 		}
@@ -1233,6 +1294,19 @@ function initNormalToolbar(toolItems) {
 			hideTooltip(this, e.target);
 		},
 		onRefresh: function(event) {
+			// 客製化 editbar
+			if (map.getDocType() === 'presentation') {
+				var that = this;
+				this.items.forEach(function (data, index) {
+					var insertCheck = that.items.findIndex(function(ele)  {return ele.id === 'outlineright';});
+					if (data['id'] === 'defaultbullet' && insertCheck === -1) {
+						that.items.splice(index+1, 0,
+							{ type: 'button', id: 'outlineright', img: 'outlineright', hint: _UNO('.uno:OutlineRight', 'global', true), uno: 'OutlineRight', disabled: true },
+							{ type: 'button', id: 'outlineleft', img: 'outlineleft', hint: _UNO('.uno:OutlineLeft', 'global', true), uno: 'OutlineLeft', disabled: true }
+						);
+					}
+				});
+			}
 			if (event.target === 'editbar' && map.getDocType() === 'presentation') {
 				// Fill the style select box if not yet filled
 				if ($('.styles-select')[0] && $('.styles-select')[0].length === 1) {
@@ -1286,7 +1360,14 @@ function initNormalToolbar(toolItems) {
 			{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
 			{type: 'break'},
 			{type: 'button',  id: 'functionwizard',  img: 'functionwizard', hint: _UNO('.uno:FunctionDialog', 'spreadsheet')},
-			{type: 'button',  id: 'sum',  img: 'autosum', hint: _UNO('AutoSum')},
+			{type: 'menu', id: 'sum', img: 'autosum', hint: _('Select function'),
+			items: [
+				{id: 'autosum', text: _('Sum'), uno:'AutoSum'},
+				{id: 'autoaverage', text: _('Average'), uno:'AutoAverage'},
+				{id: 'automin', text: _('Minimum'), uno:'AutoMin'},
+				{id: 'automax', text: _('Maximum'),  uno:'AutoMax'},
+				{id: 'autocount', text: _('Count'),  uno:'AutoCount'},
+			]},
 			{type: 'button',  id: 'function',  img: 'equal', hint: _UNO('InsertMath')},
 			{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
 			{type: 'button', hidden: true, id: 'acceptformula',  img: 'accepttrackedchanges', hint: _('Accept')},
@@ -1298,7 +1379,7 @@ function initNormalToolbar(toolItems) {
 		},
 		onRefresh: function() {
 			$('#addressInput').off('keyup', onAddressInput).on('keyup', onAddressInput);
-			$('#formulaInput').off('keyup', onFormulaInput).on('keyup', onFormulaInput);
+			$('#formulaInput').off('keyup compositionstart compositionupdate compositionend textInput', onFormulaInput).on('keyup keyupcompositionstart compositionupdate compositionend textInput', onFormulaInput)
 			$('#formulaInput').off('blur', onFormulaBarBlur).on('blur', onFormulaBarBlur);
 			$('#formulaInput').off('focus', onFormulaBarFocus).on('focus', onFormulaBarFocus);
 		}
@@ -1538,6 +1619,12 @@ function unoCmdToToolbarId(commandname)
 			id = 'rightpara';
 			break;
 		}
+	} else if (map.getDocType() === 'presentation') {
+		switch (id) {
+		case 'text':
+			id = 'horizontaltext';
+			break;
+		}
 	}
 	return id;
 }
@@ -1686,7 +1773,19 @@ function onAddressInput(e) {
 	}
 }
 
+var _isComposing = false;
 function onFormulaInput(e) {
+
+	switch (e.type) {
+	case 'compositionstart':
+	case 'compositionupdate':
+		_isComposing = true;
+		break;
+	case 'compositionend':
+		_isComposing = false;
+		break;
+	}
+
 	// keycode = 13 is 'enter'
 	if (e.keyCode === 13) {
 		// formula bar should not have focus anymore
@@ -1700,7 +1799,7 @@ function onFormulaInput(e) {
 	} else if (e.keyCode === 27) { // 27 = esc key
 		map.sendUnoCommand('.uno:Cancel');
 		map.focus();
-	} else {
+	} else if (!_isComposing) {
 		map.cellEnterString(L.DomUtil.get('formulaInput').value);
 	}
 }
@@ -1774,30 +1873,21 @@ function onDocLayerInit() {
 	var statusbar = w2ui['actionbar'];
 	var docType = map.getDocType();
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 唯讀模式搜尋無效，所以移除
-	if (map._permission === 'readonly') {
-		statusbar.remove('search', 'searchprev', 'searchnext', 'cancelsearch');
-		// 文字文件與試算表的上下頁無效
-		if (docType === 'text' || docType === 'spreadsheet')
-			statusbar.remove('prev', 'next', 'prevnextbreak');
-	}
-	// 檢視模式時文字文件與試算表的上下頁也不能用，一併藏起來
-	if (map._permission === 'view') {
-		if (docType === 'text' || docType === 'spreadsheet')
-			statusbar.remove('prev', 'next', 'prevnextbreak');
-	}
-
 	switch (docType) {
 	case 'spreadsheet':
-		toolbarUp.show('textalign', 'wraptext', 'breakspacing', 'insertannotation', 'conditionalformaticonset',
-			'numberformatcurrency', 'numberformatpercent', 'numberformatdate',
+		toolbarUp.show('resetattributes', 'textalign', 'wraptext', 'breakspacing', 'insertannotation', 'conditionalformaticonset',
+			'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate',
 			'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'togglemergecells', 'breakmergecells',
-			'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting');
-		toolbarUp.remove('styles');
+			'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting', 'textdirectionlefttoright', 'textdirectiontoptobottom',
+			'insertlinkmenu');
+
+		toolbarUp.remove('styles', 'link');
 
 		statusbar.set('zoom', {
 			items: [
+				{ id: 'zoom60', text: '60%', scale: 7},
+				{ id: 'zoom70', text: '70%', scale: 8},
+				{ id: 'zoom85', text: '85%', scale: 9},
 				{ id: 'zoom100', text: '100%', scale: 10},
 				{ id: 'zoom120', text: '120%', scale: 11},
 				{ id: 'zoom150', text: '150%', scale: 12},
@@ -1852,10 +1942,6 @@ function onDocLayerInit() {
 				},
 				{type: 'break', id: 'break8', mobile: false}
 			]);
-
-			if (map._permission === 'edit') {
-				$('#spreadsheet-toolbar').show();
-			}
 			statusbar.show('goToPage');
 		}
 		$('#formulabar').show();
@@ -1863,9 +1949,9 @@ function onDocLayerInit() {
 		$('#presentation-toolbar').hide();
 		break;
 	case 'text':
-		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
-			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'incrementindent', 'decrementindent',
-			'breakindent', 'inserttable', 'insertannotation');
+		toolbarUp.show('resetattributes','leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
+			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet',
+			'inserttable', 'insertannotation');
 
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
@@ -1905,7 +1991,8 @@ function onDocLayerInit() {
 		if (!map['wopi'].HideExportOption) {
 			presentationToolbar.show('presentation', 'presentationbreak');
 		}
-		toolbarUp.show('insertannotation', 'animationeffects');
+		toolbarUp.show('setdefault', 'insertannotation', 'animationeffects',
+			'horizontaltext', 'verticaltext');
 
 		if (!_inMobileMode()) {
 			statusbar.insert('left', [
@@ -1924,7 +2011,7 @@ function onDocLayerInit() {
 		}
 		// FALLTHROUGH intended
 	case 'drawing':
-		toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
+		toolbarUp.show('textalign', 'linespacing',
 			'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable');
 		statusbar.show('prev', 'next', 'prevnextbreak');
 		// Remove irrelevant toolbars
@@ -1947,12 +2034,10 @@ function onDocLayerInit() {
 		$('.styles-select').prop('data-minimum-results-for-search', 'Infinity');
 		$('.fonts-select').prop('data-minimum-results-for-search', 'Infinity');
 		$('.fontsizes-select').prop('data-minimum-results-for-search', 'Infinity');
-		$('#document-name-input').hide();
 	} else {
 		nUsers = _('%n users');
 		oneUser = _('1 user');
 		noUser = _('0 users');
-		$('#document-name-input').show();
 	}
 
 	updateUserListCount();
@@ -1963,7 +2048,7 @@ function onDocLayerInit() {
 		// Fold menubar by default
 		// FIXME: reuse toogleMenubar / use css
 		$('.main-nav').css({'display': 'none'});
-		$('#closebuttonwrapper').css({'display': 'none'});
+		$('#closebuttonwrapper').hide();
 		var obj = $('.fold');
 		obj.removeClass('w2ui-icon fold');
 		obj.addClass('w2ui-icon unfold');
@@ -2211,6 +2296,10 @@ function onCommandStateChanged(e) {
 		} else {
 			toolbar.disable('insertsymbolmenu');
 		}
+	}
+	else if (commandName === '.uno:Text' || commandName === '.uno:VerticalText')
+	{
+		commandName = String(commandName);
 	}
 
 	var id = unoCmdToToolbarId(commandName);
@@ -2471,7 +2560,10 @@ function onUpdatePermission(e) {
 		}
 		//
 		if (e.perm === 'edit') {
-			statusbar.show('keyboardBtn', 'break-keyboardBtn');
+			// 文字文件需要鍵盤鎖功能
+			if (map.getDocType() === 'text') {
+				statusbar.show('keyboardBtn', 'break-keyboardBtn');
+			}
 			statusbar.show('undo', 'redo');
 			mobileEditBar.css('top', toolbarUp.outerHeight() - 1).show();
 			var height = mobileEditBar.outerHeight();
@@ -2868,10 +2960,11 @@ function onAddView(e) {
 }
 
 function onRemoveView(e) {
+	var username = escapeHtml(e.username);
 	$('#tb_actionbar_item_userlist')
 		.w2overlay({
 			class: 'loleaflet-font',
-			html: userLeftPopupMessage.replace('%user', e.username),
+			html: userLeftPopupMessage.replace('%user', username),
 			style: 'padding: 5px'
 		});
 	clearTimeout(userPopupTimeout);
@@ -2906,10 +2999,10 @@ function _showOrHideCloseButton() {
 	if (closebutton && !L.Browser.mobile && map._permission === 'edit') {
 		$('#closebuttonwrapper').show();
 		$('#closebutton').click(function() {
-			map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
-			map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
-			map.remove();
+			map.closeDocument();
 		});
+	} else {
+		$('#closebuttonwrapper').hide();
 	}
 }
 
