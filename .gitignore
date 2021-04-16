@@ -4,7 +4,6 @@
 
 # Autofoo
 .deps
-.libs
 .dirstamp
 .clang_complete
 .cxx_tags
@@ -14,7 +13,6 @@
 Makefile
 Makefile.in
 oxoolwsd.spec
-loolwsd.spec
 oxoolwsd.xml
 oxool.pc
 aclocal.m4
@@ -37,16 +35,18 @@ stamp-h1
 m4
 debian/loolwsd.postinst
 common/support-public-key.hpp
+compile_commands.json
 
 # Test stuff
 systemplate
 test-driver
 jails
 cache
-test/fakesockettest
 test/data/hello-world.odt
 test/data/hello-world.ods
 test/data/hello-world.odp
+test/fakesockettest
+coolstress
 
 *.o
 *.exe
@@ -55,12 +55,17 @@ cscope*
 loolwsd.log
 *.log.*.gz
 *.lo
-*.la
+*.mo
 
 # loleaflet
-loleaflet/dist
-loleaflet/node_modules
+loleaflet/debug
+loleaflet/release
 loleaflet/npm-shrinkwrap.json
+loleaflet/jsconfig.json
+loleaflet/admin/jsconfig.json
+loleaflet/dist
+loleaflet/compilets
+loleaflet/typescript_js
 
 connect
 lokitclient
@@ -87,12 +92,52 @@ test/TAGS
 docker/instdir
 docker/builddir
 
-Mobile/Mobile/Info.plist
+ios/Mobile/Info.plist
+ios/Mobile/Fonts
+ios/Mobile/Branding
+ios/Mobile/Resources/Settings.bundle/Root.plist
 
 # symlinks created by configure for the iOS app Xcode project
 lobuilddir-symlink
 pocoinclude-symlink
 pocolib-symlink
 ICU.dat
-Mobile/Mobile/Assets.xcassets/AppIcon.appiconset
-debian/oxool.postinst
+ios/Mobile/Assets.xcassets/AppIcon.appiconset
+
+# iOS app build number
+BUNDLE-VERSION
+
+# android stuff
+/android/lib/src/main/assets/dist
+/android/lib/src/main/assets/hello-world.od*
+/android/lib/src/main/cpp/CMakeLists.txt
+
+# gtk fake mobile app
+gtk/mobile
+
+# backup and temporary editor files: the only convenience rules allowed here.
+*~
+.*sw?
+\#*
+.\#*
+*.kdev4
+.kdev_include_paths
+.buckd
+.directory
+.cproject
+.project
+.settings
+.eclipsesettingfile
+eclipsesettingfile.xml
+.clang_complete
+.cxx_tags
+.yavide_proj
+.yavide_session
+.vscode
+*.code-workspace
+Makecache
+
+# autoconf stuff
+autogen.input
+loleaflet/src/layer/tile/TilesSection.js
+loleaflet/src/layer/tile/ScrollSection.js
