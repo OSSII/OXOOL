@@ -18,7 +18,7 @@ L.dialog.OXSaveAs = {
 
 		this._dialog = L.DomUtil.createWithId('div', '', document.body);
 		this._dialog.innerHTML = '<p>' +
-		'<b>' + _('File name:') + '<b><br><input type="text" id="OxSaveAsFileName" style="width:100%">' +
+		'<b>' + _('File name:') + '<b><br><input type="text" id="OxSaveAsFileName" style="width:100%" spellcheck="false" value="' + this._map.getFileName() + '">' +
 		'</p>';
 
 		$(this._dialog).dialog({
