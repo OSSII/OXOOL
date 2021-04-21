@@ -455,6 +455,12 @@ struct _LibreOfficeKitDocumentClass
     void (*sendFormFieldEvent) (LibreOfficeKitDocument* pThis,
                                 const char* pArguments);
 
+    /// Added by Firefly<firefly@ossii.com.tw>
+    /// @see lok::Document::initUnoStatus
+    void (*initUnoStatus) (LibreOfficeKitDocument* pThis,
+                           const char* pCommands);
+    ///---------------------------------------
+
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
