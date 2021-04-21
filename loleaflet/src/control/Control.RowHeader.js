@@ -372,6 +372,9 @@ L.Control.RowHeader = L.Control.Header.extend({
 
 	viewRowColumnHeaders: function (e) {
 		if (e.data.rows && e.data.rows.length) {
+			for (var i=0 ; i < e.data.rows.length ; i++) {
+				e.data.rows[i].size = parseInt((e.data.rows[i].size * 15) / 2);
+			}
 			this.fillRows(e.data.rows, e.data.rowGroups, e.converter, e.context);
 		}
 	},
