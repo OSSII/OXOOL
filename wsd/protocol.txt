@@ -279,6 +279,12 @@ removesession <viewid>
     privilege views cannot remove higher ones, eg. a readonly view
     can't remove an editor.
 
+initunostatus <.uno:commandA[,.uno:commandB]>
+
+    Request to report the status of the specified uno command.
+    If there is more than one command, separate them with a comma,
+    Please use URIEncode() to encode the command.
+
 server -> client
 ================
 

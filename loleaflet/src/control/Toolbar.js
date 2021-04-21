@@ -690,8 +690,10 @@ L.Map.include({
 			}
 			this._allowCommands[name] = obj;
 			// 第一次加入 且是 uno 指令的話，設定狀態自動回報
-			//if (!isExists && name.startsWith('.uno:'))
-			//	this._socket.sendMessage('getunostates ' + encodeURI(name));
+			if (!isExists && name.startsWith('.uno:'))
+			{
+				this._socket.sendMessage('initunostatus ' + encodeURI(name));
+			}
 		}
 	},
 

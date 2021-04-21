@@ -301,6 +301,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                tokens.equals(0, "removetextcontext") ||
                tokens.equals(0, "dialogevent") ||
                tokens.equals(0, "completefunction")||
+               tokens.equals(0, "initunostatus")||
                tokens.equals(0, "formfieldevent"));
 
         if (tokens.equals(0, "clientzoom"))
@@ -456,6 +457,10 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         else if (tokens.equals(0, "formfieldevent"))
         {
             return formFieldEvent(buffer, length, tokens);
+        }
+        else if (tokens.equals(0, "initunostatus"))
+        {
+            return initUnoStatus(buffer, length, tokens);
         }
         else
         {
@@ -1484,6 +1489,21 @@ bool ChildSession::formFieldEvent(const char* buffer, int length, const StringVe
     getLOKitDocument()->setView(_viewId);
     getLOKitDocument()->sendFormFieldEvent(sArguments.c_str());
 
+    return true;
+}
+
+bool ChildSession::initUnoStatus(const char* /*buffer*/, int /*length*/, const StringVector& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        sendTextFrame("error: cmd=initunostatus kind=.uno:Acommand,.uno:Bcommand[,.uno:Ccommand]");
+        return false;
+    }
+
+    LOG_DBG("Init UNO command status lists: " + tokens[1]);
+
+    getLOKitDocument()->setView(_viewId);
+    getLOKitDocument()->initUnoStatus(tokens[1].c_str());
     return true;
 }
 

@@ -725,6 +725,9 @@ bool ClientSession::_handleInput(const char *buffer, int length)
              tokens[0] == "exportsignanduploaddocument" ||
              tokens[0] == "rendershapeselection" ||
              tokens[0] == "resizewindow" ||
+             // Added by Firefly<firefly@ossii.com.tw>
+             tokens[0] == "initunostatus" ||
+             //---------------------------------------
              tokens[0] == "removetextcontext")
     {
         if (tokens.equals(0, "key"))
