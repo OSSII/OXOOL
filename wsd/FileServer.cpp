@@ -344,7 +344,22 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
 
         // Is this a file we read at startup - if not; its not for serving.
         if (FileHash.find(relPath) == FileHash.end())
-            throw Poco::FileNotFoundException("Invalid URI request: [" + requestUri.toString() + "].");
+        {
+            // Modified by Firefly <firefly@ossii.com.tw>
+            // 如果要求的是 images/cmd/ 之下不存在的檔案，則傳回 empty.png
+            // 避免 404 not found.
+            bool isImages = requestSegments[requestSegments.size() - 3] == "images" ? true : false;
+            bool isCmd = requestSegments[requestSegments.size() - 2] == "cmd" ? true : false;
+            if (isImages && isCmd)
+            {
+                LOG_DBG("\"" + requestSegments[requestSegments.size() - 1] + "\" does not exists, use empty.png instead.");
+                relPath = "/loleaflet/dist/images/empty.png";
+            }
+            else
+            {
+                throw Poco::FileNotFoundException("Invalid URI request: [" + requestUri.toString() + "].");
+            }
+        }
 
         const std::string loleafletHtml = config.getString("loleaflet_html", "loleaflet.html");
         if (endPoint == loleafletHtml ||
@@ -404,6 +419,8 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
                 mimeType = "image/png";
             else if (fileType == "svg")
                 mimeType = "image/svg+xml";
+            else if (fileType == "xml")
+                mimeType = "text/xml";
             else
                 mimeType = "text/plain";
 
