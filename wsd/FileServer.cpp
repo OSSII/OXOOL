@@ -375,16 +375,6 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
 
         if (request.getMethod() == HTTPRequest::HTTP_GET)
         {
-            if (endPoint == "admin.html" ||
-                endPoint == "adminSettings.html" ||
-                endPoint == "adminHistory.html" ||
-                endPoint == "adminAnalytics.html" ||
-                endPoint == "adminLog.html")
-            {
-                preprocessAdminFile(request, requestDetails, socket);
-                return;
-            }
-
             if (endPoint == "admin-bundle.js" ||
                 endPoint == "admin-localizations.js")
             {
@@ -408,6 +398,15 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
                 throw Poco::FileNotFoundException("Invalid file.");
 
             const std::string fileType = endPoint.substr(extPoint + 1);
+            // Added by Firefly <firefly@ossii.com.tw>
+            // 只要是符合 admin*.html 的頁面，一律當成後台管理界面
+            const bool isAdmin = (endPoint.substr(0, 5) == "admin" && fileType == "html");
+            if (isAdmin)
+            {
+                preprocessAdminFile(request, requestDetails, socket);
+                return;
+            }
+            //-------------------- End of Firefly
             std::string mimeType;
             if (fileType == "js")
                 mimeType = "application/javascript";
