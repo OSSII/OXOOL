@@ -45,18 +45,6 @@ var deps = {
 		deps: ['AdminCore']
 	},
 
-	AdminSocketPermissionSettings: {
-		src: ['src/AdminSocketPermissionSettings.js'],
-		desc: 'Socket to handle permission settings from server',
-		deps: ['AdminCore']
-	},
-
- 	AdminSocketHistory: {
-		src: ['src/AdminSocketHistory.js'],
-		desc: 'Socket to query document history.',
-		deps: ['AdminCore']
-	},
-
 	AdminSocketSoftwareUpgrade: {
 		src: ['src/AdminSocketSoftwareUpgrade.js'],
 		desc: 'Socket to upgrade software.',

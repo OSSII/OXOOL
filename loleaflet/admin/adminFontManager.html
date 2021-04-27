@@ -1,20 +1,9 @@
-{% BLOCK content %}
 <style>
 td {
     vertical-align: middle;
 }
 </style>
-<script>
-    if (window.location.protocol == "https:") {
-        host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
-    }
-    else {
-        host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
-    }
-
-    Admin.FontManager(host);
-</script>
-
+<script>Admin.FontManager(host);</script>
 <h2 class="page-header">字型管理</h2>
 
 <div class="row"><!-- row begin -->
@@ -53,4 +42,3 @@ td {
       <tbody id="font_list"></tbody>
     </table>
 </div>
-{% END BLOCK %}

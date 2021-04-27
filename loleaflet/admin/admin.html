@@ -1,14 +1,4 @@
-{% BLOCK content %}
-<script>
-    if (window.location.protocol == "https:") {
-        var host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
-    }
-    else {
-        host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
-    }
-
-    Admin.Overview(host);
-</script>
+<script>Admin.Overview(host);</script>
 <h1 class="page-header">
     <script>document.write(l10nstrings.strDashboard)</script>
 </h1>
@@ -86,4 +76,3 @@
         </div>
     </div>
 </div>
-{% END BLOCK %}

@@ -1,14 +1,4 @@
-{% BLOCK content %}
-<script>
-    if (window.location.protocol == "https:") {
-        host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
-    }
-    else {
-        host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/'
-    }
-
-    Admin.Settings(host);
-</script>
+<script>Admin.Settings(host);</script>
 <h1 class="page-header">
     <script>document.write(l10nstrings.strSettings)</script>
 </h1>
@@ -43,4 +33,3 @@
 </form>
 <br />
 <input id="btnShutdown" type="submit" value="Shutdown"/>
-{% END BLOCK %}

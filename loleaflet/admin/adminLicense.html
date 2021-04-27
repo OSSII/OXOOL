@@ -1,14 +1,4 @@
-{% BLOCK content %}
-<script>
-	if (window.location.protocol == "https:") {
-		host = 'wss://' + window.location.host + '/lool/adminws/'
-	}
-	else {
-		host = 'ws://' + window.location.host + '/lool/adminws/'
-	}
-
-	var licenseSocket = Admin.License(host);
-</script>
+<script>Admin.License(host);</script>
 <!--******************************啟動產品******************************-->
 <div class="tab-pane" style="width: 50%;">
 	<div class="fluid-container">
@@ -51,4 +41,3 @@
 		</div>
 	</div>
 </div>
-{% END BLOCK %}

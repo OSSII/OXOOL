@@ -1,4 +1,3 @@
-{% BLOCK content %}
 <style>
 .material-switch > input[type="checkbox"] {
     display: none;
@@ -98,13 +97,7 @@
                     config.setConfig(JSON.stringify(json));
                 })
     });
-    if (window.location.protocol == "https:") {
-        host = 'wss://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
-    }
-    else {
-        host = 'ws://' + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
-    }
-    var config = Admin.ConfigSettings(host);
+    Admin.ConfigSettings(host);
 </script>
 
 <h2 class="page-header">系統設定</h2>
@@ -446,4 +439,3 @@
     </div>
 </form>
 <div><button class="btn btn-info pull-right" id="saveConfig" disabled><strong>更新設定</strong></button></div>
-{% END BLOCK %}
