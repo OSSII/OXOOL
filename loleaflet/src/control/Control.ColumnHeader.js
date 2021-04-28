@@ -407,8 +407,9 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 
 	viewRowColumnHeaders: function (e) {
 		if (e.data.columns && e.data.columns.length > 0) {
+			var dpiScale = L.getDpiScaleFactor();
 			for (var i=0 ; i < e.data.columns.length ; i++) {
-				e.data.columns[i].size = parseInt((e.data.columns[i].size * 15) / 2);
+				e.data.columns[i].size = parseInt((e.data.columns[i].size * 15) / dpiScale);
 			}
 			this.fillColumns(e.data.columns, e.data.columnGroups, e.converter, e.context);
 		}
