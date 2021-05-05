@@ -494,6 +494,16 @@ L.TileLayer = L.GridLayer.extend({
 		else if (textMsg.startsWith('invalidatecursor:')) {
 			this._onInvalidateCursorMsg(textMsg);
 		}
+		else if (textMsg.startsWith('msgbox:')) {
+			var msgdata = textMsg.substring('msgbox:'.length + 1);
+			msgdata = JSON.parse(msgdata);
+			var icon = msgdata.type !== 'info' ? msgdata.type : 'information';
+			L.dialog.alert({
+				message: _(msgdata.text),
+				icon: icon
+			});
+
+		}
 		else if (textMsg.startsWith('invalidatetiles:')) {
 			var payload = textMsg.substring('invalidatetiles:'.length + 1);
 			if (!payload.startsWith('EMPTY')) {
