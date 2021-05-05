@@ -7,46 +7,6 @@
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help)
 	options: {
-		itemsL10N: [
-			_('Share...'),
-			_('See revision history'),
-			_('Download as'),
-			_('SecurePrint...'),
-			_('Save As Password'),
-			_('PDF Document (.pdf)'),
-			_('TEXT Document (.txt)'),
-			_('HTML Document (.html)'),
-			_('ODF text document (.odt)'),
-			_('ODF spreadsheet (.ods)'),
-			_('ODF presentation (.odp)'),
-			_('Word 2003 Document (.doc)'),
-			_('Excel 2003 Spreadsheet (.xls)'),
-			_('PowerPoint 2003 Presentation (.ppt)'),
-			_('Word Document (.docx)'),
-			_('Excel Spreadsheet (.xlsx)'),
-			_('PowerPoint Presentation (.pptx)'),
-			_('Rich Text (.rtf)'),
-			_('CSV (.csv)'),
-			_('EPUB Document (.epub)'),
-			_('Sign document'),
-			_('Repair'),
-			_('Local Image...'),
-			_('Fullscreen presentation'),
-			_('Move'),
-			_('All'),
-			_('Horizontal Line'),
-			_('None (Do not check spelling)'),
-			_('Keyboard shortcuts'),
-			_('About'),
-			_('Binding line'),
-			_('Insert on the left side of page'),
-			_('Insert on the right side of page'),
-			_('Insert on the top side of page'),
-			_('Insert on the bottom side of page'),
-			_('Customize'),
-			_('Hand-drawn diagram'), // 手繪圖表
-		],
-
 		commandStates: {},
 
 		// WOPI HideExportOption 為 true 時，下列選項禁止使用
