@@ -772,6 +772,17 @@ typedef enum
      * The payload format is JSON: { "title": "title text", "content": "content text" }
      */
     LOK_CALLBACK_VALIDITY_INPUT_HELP = 51,
+
+    /**
+     * Show a message on the editor's screen.
+     *
+     * The payload example:
+     * {
+     *     "type": "warning" or "error" or "info" or "question" or "success",
+     *     "text": "message text"
+     * }
+     */
+    LOK_CALLBACK_MSGBOX = 1000,
 }
 LibreOfficeKitCallbackType;
 
@@ -904,6 +915,8 @@ static inline const char* lokCallbackTypeToString(int nType)
         return "LOK_CALLBACK_FORM_FIELD_BUTTON";
     case LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY:
         return "LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY";
+    case LOK_CALLBACK_MSGBOX:
+        return "LOK_CALLBACK_MSGBOX";
     }
 
     assert(!"Unknown LibreOfficeKitCallbackType type.");
