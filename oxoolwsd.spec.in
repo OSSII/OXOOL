@@ -25,7 +25,7 @@ BuildRequires:  libpcap kernel-headers
 Requires(post): coreutils grep sed cpio
 %if 0%{?fedora} || 0%{?rhel} >= 7
 # oxoolwsd dependencies
-Requires:       systemd expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssh-clients openssl-libs pcre xz-libs zlib unzip sudo expat fontconfig freetype libuuid bzip2-libs
+Requires:       systemd expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssh-clients openssl-libs pcre xz-libs zlib unzip sudo expat fontconfig freetype libuuid bzip2-libs sudo
 Requires:       poco-crypto >= 1.7.5 poco-foundation >= 1.7.5 poco-json >= 1.7.5 poco-net >= 1.7.5 poco-netssl >= 1.7.5 poco-util >= 1.7.5 poco-xml >= 1.7.5
 %endif
 
