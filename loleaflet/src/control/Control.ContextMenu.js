@@ -99,7 +99,7 @@ L.Control.ContextMenu = L.Control.extend({
 							map.insertComment();
 						else {
 							var docType = map.getDocType();
-							if (docType === 'draw') {
+							if (docType === 'drawing') {
 								docType = 'presentation';
 							}
 							var e = new ClipboardEvent('copy') ;
