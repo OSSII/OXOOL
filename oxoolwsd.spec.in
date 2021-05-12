@@ -120,10 +120,10 @@ setcap cap_sys_admin=ep /usr/bin/oxoolmount
 
 %triggerin -- expat fontconfig freetype freetype2 glibc glibc-locale kernel keyutils-libs krb5 krb5-libs libbz2-1 libcap libcap-ng libcap2 libexpat1 libfreetype6 libgcc libgcc_s1 libgcrypt libiscsi libpng libpng12 libpng12-0 libpng15-15 libpng16-16 libstdc++ libstdc++6 libuuid libuuid1 libz1 lsb nss-mdns nss-softokn-freebl pcre sssd sssd-client systemd-libs timezone tzdata zlib
 
-echo -ne "Triggered update of loolwsd systemplate..."
+echo -ne "Triggered update of oxoolwsd systemplate..."
 
 %if 0%{?rhel} >= 7 || 0%{?suse_version} >= 1300
-systemctl is-active -q loolwsd && OXOOLWSD_IS_ACTIVE=1 || OXOOLWSD_IS_ACTIVE=0
+systemctl is-active -q oxoolwsd && OXOOLWSD_IS_ACTIVE=1 || OXOOLWSD_IS_ACTIVE=0
 if [ $OXOOLWSD_IS_ACTIVE == "1" ]; then systemctl stop oxoolwsd; fi
 %endif
 
