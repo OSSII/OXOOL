@@ -51,7 +51,9 @@ inline void setupKitEnvironment(const std::string& userInterface)
 
 //    options += ":sc_no_grid_bg"; // leave this disabled for now, merged-cells needs more work.
 
-    options += ":sc_print_twips_msgs";
+    // Modifyed by Firefly <firefly@ossii.com.tw)
+    // TODO: 將來使用新的 UI 界面時，需開啟下面 ":sc_print_twips_msgs" 參數
+    //options += ":sc_print_twips_msgs";
 
     ::setenv("SAL_LOK_OPTIONS", options.c_str(), 0);
 }
