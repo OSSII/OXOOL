@@ -12,7 +12,7 @@ endif
 
 else
 
-SUBDIRS = . test loleaflet cypress_test bundled/include/LibreOfficeKit src/include src/lib extensions fonts support
+SUBDIRS = . loleaflet test bundled/include/LibreOfficeKit src/include src/lib extensions fonts support
 
 export ENABLE_DEBUG
 
