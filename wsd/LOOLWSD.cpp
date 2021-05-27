@@ -1188,7 +1188,7 @@ void LOOLWSD::initialize(Application& self)
 #endif
 
     std::string allowedLanguages(config().getString("allowed_languages"));
-    setenv("LOK_WHITELIST_LANGUAGES", allowedLanguages.c_str(), 1);
+    setenv("LOK_ALLOWLIST_LANGUAGES", allowedLanguages.c_str(), 1);
 
 #endif
 
