@@ -65,6 +65,7 @@ namespace LOKitHelper
         {
             std::ostringstream hposs;
             std::ostringstream sposs;
+            std::ostringstream detail;
             for (int i = 0; i < parts; ++i)
             {
                 ptrValue = loKitDocument->pClass->getPartInfo(loKitDocument, i);
@@ -83,6 +84,10 @@ namespace LOKitHelper
                         if (prop.second == "1")
                             sposs << i << ',';
                     }
+                    else if (name == "name")
+                    {
+                        detail << partinfo << "\n";
+                    }
                 }
             }
 
@@ -100,24 +105,36 @@ namespace LOKitHelper
                 oss << " selectedparts=" << selectedparts;
             }
 
-            for (int i = 0; i < parts; ++i)
+            std::string detailList = detail.str();
+            if (!detailList.empty())
             {
-                oss << '\n';
-                ptrValue = loKitDocument->pClass->getPartName(loKitDocument, i);
-                oss << ptrValue;
-                std::free(ptrValue);
+                detailList.pop_back(); // Remove last '\n'
+                oss << " partdetail=1\n";
+                oss << detailList;
             }
-
-            if (type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING)
+            else
             {
                 for (int i = 0; i < parts; ++i)
                 {
                     oss << '\n';
-                    ptrValue = loKitDocument->pClass->getPartHash(loKitDocument, i);
+                    ptrValue = loKitDocument->pClass->getPartName(loKitDocument, i);
                     oss << ptrValue;
                     std::free(ptrValue);
                 }
+
+                if (type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING)
+                {
+                    for (int i = 0; i < parts; ++i)
+                    {
+                        oss << "\n";
+                        ptrValue = loKitDocument->pClass->getPartHash(loKitDocument, i);
+                        oss << ptrValue;
+                        std::free(ptrValue);
+                    }
+                }
             }
+
+
         }
 
         return oss.str();
