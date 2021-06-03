@@ -50,7 +50,7 @@ LOLEAFLET_DRAW_CSS_SRC = $(shell find $(srcdir)/plugins/draw-$(DRAW_VERSION)/dis
 LOLEAFLET_HTML_SRC = $(shell find $(srcdir)/html -name '*.html')
 LOLEAFLET_HTML_DST = $(patsubst $(srcdir)/html/%.html,$(builddir)/dist/%.html,$(LOLEAFLET_HTML_SRC))
 
-LOLEAFLET_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html')
+LOLEAFLET_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name 'OFL.txt' -or -name '*.svg')
 LOLEAFLET_ADMIN_ALL = $(shell find $(srcdir)/admin -name '*')
 LOLEAFLET_ADMIN_DST = $(patsubst $(srcdir)/admin/%,$(builddir)/dist/admin/%,$(LOLEAFLET_ADMIN_SRC))
 
@@ -321,13 +321,7 @@ install-data-hook:
 pot:
 	xgettext --from-code=UTF-8 --keyword=_ --output=po/templates/loleaflet-ui.pot \
 		admin/admin.strings.js \
-		admin/src/AdminSocketAnalytics.js \
-		admin/src/AdminSocketBase.js \
-		admin/src/AdminSocketOverview.js \
-		admin/src/AdminSocketSettings.js \
-		admin/src/AdminSocketGlobalFunction.js \
-		admin/src/AdminSocketLicense.js \
-		admin/src/Util.js \
+		admin/src/*.js \
 		js/toolbar.js \
 		js/screenwatermark.js \
 		src/control/Control.AlertDialog.js \
