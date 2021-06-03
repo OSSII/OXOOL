@@ -33,8 +33,8 @@ var deps = {
 		deps: ['AdminCore']
 	},
 
-	AdminSocketViewLog: {
-		src: ['src/AdminSocketViewLog.js'],
+	AdminSocketLog: {
+		src: ['src/AdminSocketLog.js'],
 		desc: 'View logs in the admin console.',
 		deps: ['AdminCore']
 	},

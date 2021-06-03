@@ -13,9 +13,7 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 	_memStatsData: [],
 	_cpuStatsData: [],
 	_sentStatsData: [],
-	_sentAvgStats: [],
 	_recvStatsData: [],
-	_recvAvgStats: [],
 
 	_memStatsSize: 0,
 	_memStatsInterval: 0,
@@ -23,7 +21,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 	_cpuStatsSize: 0,
 	_cpuStatsInterval: 0,
 
-	_netAvgSize: 1,
 	_netStatsSize: 0,
 	_netStatsInterval: 0,
 
@@ -48,10 +45,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 			this._sentStatsData = actualData;
 		else if (option === 'recv')
 			this._recvStatsData = actualData;
-		else if (option === 'sent_avg')
-			this._sentAvgStats = actualData;
-		else if (option === 'recv_avg')
-			this._recvAvgStats = actualData;
 	},
 
 	onSocketOpen: function() {
@@ -88,7 +81,7 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 	_graphWidth: 1000,
 	_graphHeight: 500,
 	_graphMargins: {
-		top: 50,
+		top: 20,
 		right: 20,
 		bottom: 20,
 		left: 100
@@ -102,23 +95,22 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 		else if (option === 'cpu')
 			data = this._cpuStatsData;
 		else if (option === 'net')
-			data = this._sentAvgStats.concat(this._recvAvgStats);
+			data = this._sentStatsData.concat(this._recvStatsData);
 
-		xScale = d3.scale.linear().range([this._graphMargins.left, this._graphWidth - this._graphMargins.right]).domain([d3.min(data, function(d) {
+		xScale = d3.scaleLinear().range([this._graphMargins.left, this._graphWidth - this._graphMargins.right]).domain([d3.min(data, function(d) {
 			return d.time;
 		}), d3.max(data, function(d) {
 			return d.time;
 		})]);
 
 
-		yScale = d3.scale.linear().range([this._graphHeight - this._graphMargins.bottom, this._graphMargins.top]).domain([d3.min(data, function(d) {
+		yScale = d3.scaleLinear().range([this._graphHeight - this._graphMargins.bottom, this._graphMargins.top]).domain([d3.min(data, function(d) {
 			return d.value;
 		}), d3.max(data, function(d) {
 			return d.value;
 		})]);
 
-		d3XAxis = d3.svg.axis()
-			.scale(xScale)
+		d3XAxis = d3.axisBottom(xScale)
 			.tickFormat(function(d) {
 				d = Math.abs(d / 1000);
 				var sUnit = 0;
@@ -135,49 +127,43 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 					return d + units[i];
 			});
 
-		d3Line = d3.svg.line()
+		d3Line = d3.line()
 			.x(function(d) {
 				return xScale(d.time);
 			})
 			.y(function(d) {
 				return yScale(d.value);
 			})
-			.interpolate('monotone');
+			.curve(d3.curveMonotoneX);
 
 		if (option === 'mem') {
 			this._xMemScale = xScale;
 			this._yMemScale = yScale;
 			this._d3MemXAxis = d3XAxis;
-			this._d3MemYAxis = d3.svg.axis()
-				.scale(this._yMemScale)
+			this._d3MemYAxis = d3.axisLeft(this._yMemScale)
 				.tickFormat(function (d) {
 					return Util.humanizeMem(d);
-				})
-				.orient('left');
+				});
 			this._d3MemLine = d3Line;
 		}
 		else if (option === 'cpu') {
 			this._xCpuScale = xScale;
 			this._yCpuScale = yScale;
 			this._d3CpuXAxis = d3XAxis;
-			this._d3CpuYAxis = d3.svg.axis()
-				.scale(this._yCpuScale)
+			this._d3CpuYAxis = d3.axisLeft(this._yCpuScale)
 				.tickFormat(function (d) {
 					return d + '%';
-				})
-				.orient('left');
+				});
 			this._d3CpuLine = d3Line;
 		}
 		else if (option === 'net') {
 			this._xNetScale = xScale;
 			this._yNetScale = yScale;
 			this._d3NetXAxis = d3XAxis;
-			this._d3NetYAxis = d3.svg.axis()
-				.scale(this._yNetScale)
+			this._d3NetYAxis = d3.axisLeft(this._yNetScale)
 				.tickFormat(function (d) {
 					return Util.humanizeMem(d/1000) + '/sec';
-				})
-				.orient('left');
+				});
 			this._d3NetSentLine = d3Line;
 			this._d3NetRecvLine = d3Line;
 
@@ -240,29 +226,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 					.style('fill', legendData[i].color)
 					.style('stroke', 'black');
 			}
-			vis
-				.append('g')
-				.attr('id', 'focus')
-				.style('display', 'none')
-				.append('circle')
-				.style('fill', 'none')
-				.attr('stroke', 'black')
-				.attr('r', 5)
-				.style('opacity', 1);
-			vis
-				.append('g')
-				.attr('id', 'focusText')
-				.style('display', 'none')
-				.append('text')
-				.attr('text-anchor', 'middle')
-				.attr('alignment-baseline', 'middle')
-				.attr('transform', 'translate(0,-15)');
-			vis
-				.on('mouseover', this.mouseover)
-				.on('mousemove', this.mousemove)
-				.on('mouseout', this.mouseout);
-
-
 		}
 
 		vis.append('svg:g')
@@ -287,14 +250,14 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 		else if (option === 'net') {
 
 			vis.append('svg:path')
-				.attr('d', this._d3NetSentLine(this._sentAvgStats))
+				.attr('d', this._d3NetSentLine(this._sentStatsData))
 				.attr('class', 'lineSent')
 				.attr('stroke', 'red')
 				.attr('stroke-width', 1)
 				.attr('fill', 'none');
 
 			vis.append('svg:path')
-				.attr('d', this._d3NetRecvLine(this._recvAvgStats))
+				.attr('d', this._d3NetRecvLine(this._recvStatsData))
 				.attr('class', 'lineRecv')
 				.attr('stroke', 'green')
 				.attr('stroke-width', 1)
@@ -316,16 +279,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 			size = this._cpuStatsSize;
 			graphName = '#CpuVisualisation';
 			line = 'line';
-		}
-		else if (option === 'sent_avg') {
-			size = this._netStatsSize - this._netAvgSize + 1;
-			graphName = '#NetVisualisation';
-			line = 'lineSent';
-		}
-		else if (option === 'recv_avg') {
-			size = this._netStatsSize - this._netAvgSize + 1;
-			graphName = '#NetVisualisation';
-			line = 'lineRecv';
 		}
 		else if (option === 'sent' || option === 'recv')
 			size = this._netStatsSize;
@@ -392,6 +345,10 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 
 		this._setUpAxis('net');
 
+		svg.select('.lineSent')
+		.attr('d', this._d3NetSentLine(this._sentStatsData));
+		svg.select('.lineRecv')
+		.attr('d', this._d3NetRecvLine(this._recvStatsData));
 
 		svg.select('.x-axis')
 		.call(this._d3NetXAxis);
@@ -400,52 +357,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 		.select('.y-axis')
 		.duration(500)
 		.call(this._d3NetYAxis);
-		svg.select('.lineSent')
-		.attr('d', this._d3NetSentLine(this._sentAvgStats));
-		svg.select('.lineRecv')
-		.attr('d', this._d3NetRecvLine(this._recvAvgStats));
-	},
-
-	_updateAverage: function(option, reset) {
-		var data, res, tempSum;
-		if (option === 'sent') {
-			data = this._sentStatsData;
-			res = this._sentAvgStats;
-		}
-		else if (option === 'recv') {
-			data = this._recvStatsData;
-			res = this._recvAvgStats;
-		}
-
-		if (reset) {
-			for (var i = 0; i <= this._netStatsSize - this._netAvgSize; i++) {
-				tempSum = 0;
-				for (var j = 0; j < this._netAvgSize; j++) {
-					tempSum += data[i + j].value;
-				}
-				tempSum /= this._netAvgSize;
-				res[i].value = tempSum;
-			}
-		}
-		else {
-			//var current = res[res.length - 1].value;
-			tempSum=0;
-			for (var index = data.length-1; index >= data.length - this._netAvgSize; index--) {
-				tempSum += data[index].value;
-			}
-			tempSum /= this._netAvgSize;
-			/*
-			var star1  = data[data.length - 1].value;
-			var star10 = data[data.length - 1 - this._netAvgSize].value;
-			tempSum = current + (star1 - star10) / this._netAvgSize;
-			*/
-			if (tempSum < 0)
-				console.log('tempSum: ' + tempSum);
-			if (option === 'sent')
-				this._addNewData(res, tempSum, 'sent_avg');
-			if (option === 'recv')
-				this._addNewData(res, tempSum, 'recv_avg');
-		}
 	},
 
 	onSocketMessage: function(e) {
@@ -525,8 +436,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 
 			this._initStatsData('sent', this._netStatsSize, this._netStatsInterval, true);
 			this._initStatsData('recv', this._netStatsSize, this._netStatsInterval, true);
-			this._initStatsData('sent_avg', this._netStatsSize - this._netAvgSize + 1, this._netStatsInterval, true);
-			this._initStatsData('recv_avg', this._netStatsSize - this._netAvgSize + 1, this._netStatsInterval, true);
 
 		}
 		else if (textMsg.startsWith('mem_stats')) {
@@ -575,7 +484,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 				for (i = this._sentStatsData.length - 1, j = data.length - 1; i >= 0 && j >= 0; i--, j--) {
 					this._sentStatsData[i].value = parseInt(data[j]);
 				}
-				this._updateAverage('sent', true);
 
 				if ($('#NetVisualisation').html() === '')
 					this._createGraph('net');
@@ -584,7 +492,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 				// this is a notification data; append to _sentStatsData
 				data = textMsg.trim();
 				this._addNewData(this._sentStatsData, parseInt(data), 'sent');
-				this._updateAverage('sent', false);
 				this._updateNetGraph();
 			}
 		}
@@ -597,7 +504,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 				for (i = this._recvStatsData.length - 1, j = data.length - 1; i >= 0 && j >= 0; i--, j--) {
 					this._recvStatsData[i].value = parseInt(data[j]);
 				}
-				this._updateAverage('recv', true);
 
 				if ($('#NetVisualisation').html() === '')
 					this._createGraph('net');
@@ -606,7 +512,6 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 				// this is a notification data; append to _recvStatsData
 				data = textMsg.trim();
 				this._addNewData(this._recvStatsData, parseInt(data), 'recv');
-				this._updateAverage('recv', false);
 				this._updateNetGraph();
 			}
 		}
@@ -614,44 +519,7 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 
 	onSocketClose: function() {
 		clearInterval(this._basicStatsIntervalId);
-	},
-	mouseover: function() {
-		d3.select('#focus').style('display', '');
-		d3.select('#focusText').style('display', '');
-	},
-	mousemove: function() {
-		// recover coordinate we need
-
-		var x = window.socketAnalytics._xNetScale;
-		var y = window.socketAnalytics._yNetScale;
-		var x0 = window.socketAnalytics._xNetScale.invert(d3.mouse(this)[0]);
-		var bisect = d3.bisector(function(d) { return d.time;  }).left;
-		var i = bisect(window.socketAnalytics._sentAvgStats, x0, 1);
-		var selectedData = window.socketAnalytics._sentAvgStats[i-1];
-		var d = Math.abs(selectedData.time / 1000);
-		var sUnit = 0;
-		i = 0;
-		var formatTime;
-		var units = ['s', 'min', 'hr'];
-		for (i  = 0; i < units.length && Math.abs(d) >= 60; i++) {
-			sUnit = parseInt(d % 60);
-			d = parseInt(d / 60);
-		}
-		if (i !== 0 && sUnit !== 0) {
-			formatTime = d + units[i][0] + ' ' + sUnit + units[i-1][0];
-		}
-		else
-			formatTime = d + units[i];
-		d3.select('#focus').attr('transform', 'translate(' + x(selectedData.time) +','+ y(selectedData.value) + ')');
-		d3.select('#focusText')
-			.attr('transform', 'translate(' + x(selectedData.time) +','+ y(selectedData.value) + ')')
-			.select('text').text('時間:' + formatTime + '  ,  ' + '流量:' + Util.humanizeMem(selectedData.value/1000) + '/sec');
-
-	},
-	mouseout: function() {
-		d3.select('#focus').style('display', 'none');
-		d3.select('#focusText').style('display', 'none');
-
+		this.base.call(this);
 	}
 });
 

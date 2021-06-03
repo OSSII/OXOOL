@@ -1,60 +1,58 @@
 <script>Admin.Overview(host);</script>
-<h1 class="page-header">
-    <script>document.write(l10nstrings.strDashboard)</script>
-</h1>
 
 <div class="row placeholders">
     <div class="col-xs-6 col-sm-2 placeholder">
+        <h5><script>document.write(l10nstrings.strUsersOnline)</script></h5>
         <div class="main-data" id="active_users_count">0</div>
-        <h4><script>document.write(l10nstrings.strUsersOnline)</script></h4>
     </div>
     <div class="col-xs-6 col-sm-2 placeholder">
+        <h5><script>document.write(l10nstrings.strDocumentsOpened)</script></h5>
         <div class="main-data" id="active_docs_count">0</div>
-        <h4><script>document.write(l10nstrings.strDocumentsOpened)</script></h4>
     </div>
     <div class="col-xs-6 col-sm-2 placeholder">
+        <h5><script>document.write(l10nstrings.strMemoryConsumed)</script></h5>
         <div class="main-data" id="mem_consumed">0</div>
-        <h4><script>document.write(l10nstrings.strMemoryConsumed)</script></h4>
     </div>
     <div class="col-xs-6 col-sm-2 placeholder">
+        <h5><script>document.write(l10nstrings.strSentBytes)</script></h5>
         <div class="main-data" id="sent_bytes">0</div>
-        <h4><script>document.write(l10nstrings.strSentBytes)</script></h4>
     </div>
     <div class="col-xs-6 col-sm-2 placeholder">
+        <h5><script>document.write(l10nstrings.strRecvBytes)</script></h5>
         <div class="main-data" id="recv_bytes">0</div>
-        <h4><script>document.write(l10nstrings.strRecvBytes)</script></h4>
     </div>
     <div class="col-xs-6 col-sm-2 placeholder">
+        <h5><script>document.write(l10nstrings.strServerUptime)</script></h5>
         <div class="main-data" id="uptime">0</div>
-        <h4><script>document.write(l10nstrings.strServerUptime)</script></h4>
     </div>
 </div>
 <div class="container-fluid">
     <ul class="nav nav-tabs">
         <li class="active">
             <a href="#view1" data-toggle="tab">
-                <h4><script>document.write(l10nstrings.strDocumentsOpened)</script></h4>
+                <span><script>document.write(l10nstrings.strDocumentsOpened)</script></span>
             </a>
         </li>
         <li>
             <a href="#view2" data-toggle="tab">
-                <h4><script>document.write(l10nstrings.strUsersOnline)</script></h4>
+                <span><script>document.write(l10nstrings.strUsersOnline)</script></span>
             </a>
         </li>
     </ul>
 
     <div class="tab-content">
         <div id="view1" class="active tab-pane table-responsive">
-            <table id="docview" class="table table-striped">
+            <table id="docview" class="table table-bordered table-striped">
                 <thead>
-                    <tr>
+                    <tr class="text-center">
+                        <th></th><!--This header doesn't need text, this column will hold session closer buttons.-->
+                        <th><script>document.write(l10nstrings.strViewers)</script></th>
                         <th><script>document.write(l10nstrings.strPid)</script></th>
-                            <th><script>document.write(l10nstrings.strDocument)</script></th>
-                                <th><script>document.write(l10nstrings.strNumberOfViews)</script></th>
-                                    <th><script>document.write(l10nstrings.strMemoryConsumed)</script></th>
-                                        <th><script>document.write(l10nstrings.strElapsedTime)</script></th>
-                                            <th><script>document.write(l10nstrings.strIdleTime)</script></th>
-                                                <th><script>document.write(l10nstrings.strModified)</script></th>
+                        <th><script>document.write(l10nstrings.strDocument)</script></th>
+                        <th><script>document.write(l10nstrings.strMemoryConsumed)</script></th>
+                        <th><script>document.write(l10nstrings.strElapsedTime)</script></th>
+                        <th><script>document.write(l10nstrings.strIdleTime)</script></th>
+                        <th><script>document.write(l10nstrings.strModified)</script></th>
                     </tr>
                 </thead>
                 <tbody id="doclist">
@@ -63,11 +61,11 @@
         </div>
 
         <div id="view2" class="tab-pane table-responsive">
-            <table id="userview" class="tab-pane table table-striped">
+            <table id="userview" class="tab-pane table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th><script>document.write(l10nstrings.strUserName)</script></th>
-                            <th><script>document.write(l10nstrings.strDocumentNumber)</script></th>
+                        <th><script>document.write(l10nstrings.strDocumentNumber)</script></th>
                     </tr>
                 </thead>
                 <tbody id="userlist">

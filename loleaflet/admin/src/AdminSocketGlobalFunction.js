@@ -6,20 +6,18 @@
 var GlobalSocketClass;
 function GlobalFunctionRestartService()
 {
-	/*
 	vex.dialog.confirm({
 		message: _('Are you sure you want to restart the online service?'),
+		buttons: [
+			$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
+			$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
+		],
 		callback: function(value) {
 			if (value) {
 				GlobalSocketClass.socket.send('shutdown maintenance');
 			}
 		}
 	});
-	*/
-	if (confirm(_('Are you sure you want to restart the online service?')))
-	{
-		GlobalSocketClass.socket.send('shutdown maintenance');
-	}
 }
 
 function GlobalFunctionCheckAccountPassword()
@@ -27,7 +25,7 @@ function GlobalFunctionCheckAccountPassword()
 	vex.dialog.open({
 		message: _('For security reasons, please enter your original management account and password.'),
 		input: [
-			'<input class="form-control" name="username" type="text" placeholder="' + _('Username') + '" required />',
+			'<input class="form-control" name="username" type="text" placeholder="' + _('User Name') + '" required />',
 			'<input name="password" type="password" placeholder="' + _('Password') + '" required />'
 		].join(''),
 		buttons: [
@@ -50,7 +48,7 @@ function GlobalFunctionChangeAccountPassword()
 	vex.dialog.open({
 		message: _('Please enter a new account and password.'),
 		input: [
-			'<input class="form-control" name="username" type="text" placeholder="' + _('Username') + '" required />',
+			'<input class="form-control" name="username" type="text" placeholder="' + _('User Name') + '" required />',
 			'<input class="form-control" name="password" type="password" placeholder="' + _('Password') + '" required />',
 			'<input class="form-control" name="confirmpassword" type="password" placeholder="' + _('Confirm password') + '" required />'
 		].join(''),
