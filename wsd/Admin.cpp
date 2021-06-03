@@ -17,7 +17,9 @@
 #include <Poco/Net/HTTPCookie.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/Util/XMLConfiguration.h>
 
+#include "LOOLWSD.hpp"
 #include "Admin.hpp"
 #include "AdminModel.hpp"
 #include "Auth.hpp"
@@ -40,10 +42,22 @@ using namespace LOOLProtocol;
 
 using Poco::Net::HTTPResponse;
 using Poco::Util::Application;
+using Poco::Util::XMLConfiguration;
+
+#define pwdSaltLength 128
+#define pwdIterations 10000
+#define pwdHashLength 128
 
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 1000;
+const std::string levelList[] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
 
+class OxoolConfig final: public XMLConfiguration
+{
+public:
+    OxoolConfig()
+        {}
+};
 
 /// Process incoming websocket messages
 void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
@@ -59,6 +73,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         return;
     }
 
+    OxoolConfig config;
     AdminModel& model = _admin->getModel();
 
     if (tokens.equals(0, "auth"))
@@ -278,7 +293,8 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             }
         }
     }
-    else if (tokens.equals(0, "update-log-levels") && tokens.size() > 1) {
+    else if (tokens.equals(0, "update-log-levels") && tokens.size() > 1)
+    {
         for (size_t i = 1; i < tokens.size(); i++)
         {
             StringVector _channel(Util::tokenize(tokens[i], '='));
@@ -289,6 +305,67 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         }
         // Let's send back the current log levels in return. So the user can be sure of the values.
         sendTextFrame("channel_list " + _admin->getChannelLogLevels());
+    }
+    // Added by Firefly <firefly@ossii.com.tw>
+    // 檢查管理帳號密碼是否與 oxoolwsd.xml 中的一致
+    // 格式: isConfigAuthOk <帳號> <密碼>
+    else if (tokens.equals(0, "isConfigAuthOk") && tokens.size() == 3)
+    {
+        if (FileServerRequestHandler::isConfigAuthMatch(tokens[1], tokens[2]))
+        {
+            sendTextFrame("ConfigAuthOk");
+        }
+        else
+        {
+            sendTextFrame("ConfigAuthWrong");
+        }
+    }
+    // 變更管理帳號及密碼
+    else if (tokens.equals(0, "setAdminPassword") && tokens.size() == 3)
+    {
+        config.load(LOOLWSD::ConfigFile);
+        std::string adminUser = tokens[1];
+        std::string adminPwd  = tokens[2];
+        config.setString("admin_console.username", adminUser); // 帳號用明碼儲存
+#if HAVE_PKCS5_PBKDF2_HMAC
+        unsigned char pwdhash[pwdHashLength];
+        unsigned char salt[pwdSaltLength];
+        RAND_bytes(salt, pwdSaltLength);
+        // Do the magic !
+        PKCS5_PBKDF2_HMAC(adminPwd.c_str(), -1,
+                          salt, pwdSaltLength,
+                          pwdIterations,
+                          EVP_sha512(),
+                          pwdHashLength, pwdhash);
+
+        std::stringstream stream;
+        // Make salt randomness readable
+        for (unsigned j = 0; j < pwdSaltLength; ++j)
+            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(salt[j]);
+        const std::string saltHash = stream.str();
+
+        // Clear our used hex stream to make space for password hash
+        stream.str("");
+        stream.clear();
+        // Make the hashed password readable
+        for (unsigned j = 0; j < pwdHashLength; ++j)
+            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(pwdhash[j]);
+        const std::string passwordHash = stream.str();
+
+        std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
+        pwdConfigValue << std::to_string(pwdIterations) << ".";
+        pwdConfigValue << saltHash << "." << passwordHash;
+        config.remove("admin_console.password");
+        config.setString("admin_console.secure_password[@desc]",
+                              "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
+        config.setString("admin_console.secure_password", pwdConfigValue.str());
+#else
+        config.remove("admin_console.secure_password");
+        config.setString("admin_console.password[@desc]", "The password is stored in plain code.");
+        config.setString("admin_console.password", adminPwd);
+#endif
+        config.save(LOOLWSD::ConfigFile);
+        sendTextFrame("setAdminPasswordOk");
     }
 }
 
@@ -605,29 +682,21 @@ unsigned Admin::getNetStatsInterval()
 
 std::string Admin::getChannelLogLevels()
 {
-    std::string result;
-    // Get the list of channels..
-    std::vector<std::string> nameList;
-    Log::logger().names(nameList);
+    unsigned int wsdLogLevel = Log::logger().get("wsd").getLevel();
 
-    std::string levelList[9] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
-
-    for (size_t i = 0; i < nameList.size(); i++)
-    {
-        result += (nameList[i] != "" ? nameList[i]: "?") + '=' + levelList[Log::logger().get(nameList[i]).getLevel()] + (i != nameList.size() - 1 ? " ": "");
-    }
+    std::string result = "wsd=" + levelList[wsdLogLevel];
+    result += " kit=" + levelList[Log::logger().get("kit").getLevel()];
 
     return result;
 }
 
-void Admin::setChannelLogLevel(const std::string& _channelName, std::string _level)
+void Admin::setChannelLogLevel(const std::string& channelName, std::string level)
 {
     assertCorrectThread();
 
-    std::string levelList[9] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
-    if (std::find(std::begin(levelList), std::end(levelList), _level) == std::end(levelList))
+    if (std::find(std::begin(levelList), std::end(levelList), level) == std::end(levelList))
     {
-        _level = "trace";
+        level = "trace";
     }
 
     // Get the list of channels..
@@ -636,9 +705,9 @@ void Admin::setChannelLogLevel(const std::string& _channelName, std::string _lev
 
     for (size_t i = 0; i < nameList.size(); i++)
     {
-        if (nameList[i] == _channelName)
+        if (nameList[i] == channelName)
         {
-            Log::logger().get(nameList[i]).setLevel(_level);
+            Log::logger().get(nameList[i]).setLevel(level);
             break;
         }
     }
