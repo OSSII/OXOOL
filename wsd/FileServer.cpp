@@ -265,6 +265,14 @@ bool FileServerRequestHandler::isAdminLoggedIn(const HTTPRequest& request,
     return true;
 }
 
+/// Added by Firefly <firefly@ossii.com.tw>
+/// 檢查管理帳號及密碼是否與 oxoolwsd.xml 中的相符
+bool FileServerRequestHandler::isConfigAuthMatch(const std::string& userProvidedUsr,
+                                                 const std::string& userProvidedPwd)
+{
+    return isConfigAuthOk(userProvidedUsr, userProvidedPwd);
+}
+
 void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
                                              const RequestDetails &requestDetails,
                                              Poco::MemoryInputStream& message,
