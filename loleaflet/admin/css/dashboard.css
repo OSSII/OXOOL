@@ -62,15 +62,15 @@ body {
   margin-left: -20px;
 } */
 
-.nav-sidebar > li > a {
-  padding-left: 20px;
+.nav-sidebar > a {
+  padding-left: 24px;
 }
 
-.nav-sidebar > .active > a,
+/* .nav-sidebar > .active > a,
 .nav-sidebar > .active > a:hover,
 .nav-sidebar > .active > a:focus {
   color: #fff;
-}
+} */
 
 
 .modal {
