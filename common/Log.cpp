@@ -183,7 +183,7 @@ namespace Log
         return buf + i;
     }
 
-    char* prefix(const Poco::DateTime& time, char* buffer, const char* level)
+    char* prefix(const Poco::LocalDateTime& time, char* buffer, const char* level)
     {
 #ifdef IOS
         // Don't bother with the "Source" which would be just "Mobile" always and non-informative as
