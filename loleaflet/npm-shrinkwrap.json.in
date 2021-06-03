@@ -793,10 +793,300 @@
       }
     },
     "d3": {
-      "version": "3.5.17",
-      "resolved": "file:node_shrinkwrap/d3-3.5.17.tgz",
-      "integrity": "sha1-vEZ0gAQ3iyGjYMn8fPUjF5B2L7g=",
+      "version": "5.16.0",
+      "resolved": "file:archived-packages/d3-5.16.0-e0f2f9847.tar",
+      "integrity": "sha512-yo7oUfyNL9U846Tm7KvKU0ZlMlmFn9YnUOEDPgi/4+W7mm+CvzXS9mTqNODgS4PXUhmRhbF3ze2r+lIKTc1CDg== sha512-4PL5hHaHwX4m7Zr1UapXW23apo6pexCgdetdJ5kTmADpG/7T9Gkxw0M0tf/pjoB63ezCCm0u5UaFYy2aMt0Mcw==",
+      "dev": true,
+      "requires": {
+        "d3-array": "1",
+        "d3-axis": "1",
+        "d3-brush": "1",
+        "d3-chord": "1",
+        "d3-collection": "1",
+        "d3-color": "1",
+        "d3-contour": "1",
+        "d3-dispatch": "1",
+        "d3-drag": "1",
+        "d3-dsv": "1",
+        "d3-ease": "1",
+        "d3-fetch": "1",
+        "d3-force": "1",
+        "d3-format": "1",
+        "d3-geo": "1",
+        "d3-hierarchy": "1",
+        "d3-interpolate": "1",
+        "d3-path": "1",
+        "d3-polygon": "1",
+        "d3-quadtree": "1",
+        "d3-random": "1",
+        "d3-scale": "2",
+        "d3-scale-chromatic": "1",
+        "d3-selection": "1",
+        "d3-shape": "1",
+        "d3-time": "1",
+        "d3-time-format": "2",
+        "d3-timer": "1",
+        "d3-transition": "1",
+        "d3-voronoi": "1",
+        "d3-zoom": "1"
+      }
+    },
+    "d3-array": {
+      "version": "1.2.4",
+      "resolved": "file:archived-packages/d3-array-1.2.4-2875ba33c.tar",
+      "integrity": "sha512-FQruSzC2z99OuuDL4/SC+c7uflR85vltwLSzEBfEmptGYaBL/Ibhc6WA1rXgaOnnDyxCLNG3x3gfjbGxRbD8/A== sha512-KHW6M86R+FUPYGb3R5XiYjXPq7VzwxZ22buHhAEVG5ztoEcZZMLov530mmccaqA1GghZArjQV46fuc8kUqhhHw==",
       "dev": true
+    },
+    "d3-axis": {
+      "version": "1.0.12",
+      "resolved": "file:archived-packages/d3-axis-1.0.12-7a320d3df.tar",
+      "integrity": "sha512-R/CNEgngkvbeKSNE67IUmqyMSVtIJq/ICcecAuIemZ4FcQXyG3NNrSq5dYUaCjbniKXPvCYDkKLHmmw+5y5HYA== sha512-ejINPfPSNdGFKEOAtnBtdkpr24c4d4jsei6Lg98mxf424ivoDP2956/5HDpIAtmHo85lqT4pruy+zEgvRUBqaQ==",
+      "dev": true
+    },
+    "d3-brush": {
+      "version": "1.1.5",
+      "resolved": "file:archived-packages/d3-brush-1.1.5-ac4689e60.tar",
+      "integrity": "sha512-VpXztuEB8kPMVNTr6c3MJ8fEztfD3Q82Vx1Fvx9DazdhXHgbf78NIyKILww6oSz+XXPQv02U6RCiwgNTehhlOw== sha512-rEaJ5gHlgLxXugWjIkolTA0OyMvw8UWU1imYXy1v642XyyswmI1ybKOv05Ft+ewq+TFmdliD3VuK0pRp1VT/5A==",
+      "dev": true,
+      "requires": {
+        "d3-dispatch": "1",
+        "d3-drag": "1",
+        "d3-interpolate": "1",
+        "d3-selection": "1",
+        "d3-transition": "1"
+      }
+    },
+    "d3-chord": {
+      "version": "1.0.6",
+      "resolved": "file:archived-packages/d3-chord-1.0.6-2570360eb.tar",
+      "integrity": "sha512-ehlYNzSa7v7xRHMyca1UOtbDxCQw67/IRXRRskLdYSHj1QkSGHY2bw4valBnJy9E87nmSs68OLjQhv9HVAGCdQ== sha512-JXA2Dro1Fxw9rJe33Uv+Ckr5IrAa74TlfDEhE/jfLOaXegMQFQTAgAw9WnZL8+HxVBRXaRGCkrNU7pJeylRIuA==",
+      "dev": true,
+      "requires": {
+        "d3-array": "1",
+        "d3-path": "1"
+      }
+    },
+    "d3-collection": {
+      "version": "1.0.7",
+      "resolved": "file:archived-packages/d3-collection-1.0.7-8a2d3faf9.tar",
+      "integrity": "sha512-BJuBCZ12TyGg+ewe9oTA5p3f4ORLhrGuT/LuaUgy/mDMqWDB0gIqA1MwWWgLY8k8ubMEDe23HQBtl8atjTqzPw== sha512-ii0/r5f4sjKNTfh84Di+DpztYwqKhEyUlKoPrzUFfeSkWxjW49xU2QzO9qrPrNkpdI0XJkfzvmTu8V2Zylln6A==",
+      "dev": true
+    },
+    "d3-color": {
+      "version": "1.4.1",
+      "resolved": "file:archived-packages/d3-color-1.4.1-a76b131d2.tar",
+      "integrity": "sha512-7kIQuQ+1Ep/tHyah74UE3dORLEyN7vMOyxwbpqkDkkNmmWz/0q3tpRD5C+1H3Kh1O/pWaU3wWX3KZGhU9xxfCw== sha512-p2sTHSLCJI2QKunbGb7ocOh7DgTAn8IrLx21QRc/BSnodXM4sv6aLQlnfpvehFMLZEfBc6g9pH9SWQccFYfJ9Q==",
+      "dev": true
+    },
+    "d3-contour": {
+      "version": "1.3.2",
+      "resolved": "file:archived-packages/d3-contour-1.3.2-8683e9e0a.tar",
+      "integrity": "sha512-iorOkukzwvdxU3922Q5O0zfSsTPfNADW9v52wG2Nes4lX1/U9aOVIZDl+yQiexan3OS+IHZ0GjWslO2cNCnFIw== sha512-hoPp4K/rJCu0ladiH6zmJUEz6+u3lgR+GSm/QdM2BBvDraU39Vr7YdDCicJcxP1z8i9B/2dJLgDC1NcvlF8WCg==",
+      "dev": true,
+      "requires": {
+        "d3-array": "^1.1.1"
+      }
+    },
+    "d3-dispatch": {
+      "version": "1.0.6",
+      "resolved": "file:archived-packages/d3-dispatch-1.0.6-7d58e8125.tar",
+      "integrity": "sha512-hhwN18d6iOcQhGE7IKbJiAgKtc6bNtslUbHsLPGlAUJTMdGJoiLcNK37aElY7rxYxAsYiMeZCz5DpaAixfyC+A== sha512-fVjoElzjhCEy+Hbn8KygnmMS7Or0a9sI2UzGwoB7cCtvI1XpVN9GpoYlnb3xt2YV66oXYb1fLJ8GMvP4hdU1RA==",
+      "dev": true
+    },
+    "d3-drag": {
+      "version": "1.2.5",
+      "resolved": "file:archived-packages/d3-drag-1.2.5-ac3d68865.tar",
+      "integrity": "sha512-FgSF0oPYn12f1aVpfs1a2IIpBul+mgrs0jjk1f9VimkA3HHJn5osS+7EZskRVvmITyTwFo+EM/wspiL4/Ec6xw== sha512-rD1ohlkKQwMZYkQlYVCrSFxsWPzI97+W+PaEIBNTMxRuxz9RF0Hi5nJWHGVJ3Om9d2fRTe1yOBINJyy/ahV95w==",
+      "dev": true,
+      "requires": {
+        "d3-dispatch": "1",
+        "d3-selection": "1"
+      }
+    },
+    "d3-dsv": {
+      "version": "1.2.0",
+      "resolved": "file:archived-packages/d3-dsv-1.2.0-f72565aaf.tar",
+      "integrity": "sha512-8GcxzjuFEjc4Df/PJnPC0v1VF1W/5fWaH04BntPLg3P4QNuU0b09U90Py47mz8lI6fBJYcKFVZkp/odxIn9sPQ== sha512-9yVlqvZcSOMhCYzniHE7EVUws7Fa1zgw+/EAV2BxJoG3ME19V6BQFBwI855XQDsxyOuG7NibqRMTtiF/Qup46g==",
+      "dev": true,
+      "requires": {
+        "commander": "2",
+        "iconv-lite": "0.4",
+        "rw": "1"
+      }
+    },
+    "d3-ease": {
+      "version": "1.0.6",
+      "resolved": "file:archived-packages/d3-ease-1.0.6-499fe5554.tar",
+      "integrity": "sha512-BSkmGh3yNBbe10UwiSabx6DmJGVyl2hOP0ZoAqHKFwexHh79ueuyb7Xs1HQaiWxVX4qd16KG16ZNNaxNWT+TFw== sha512-SZ/lVU7LRXafqp7XtIcBdxnWl8yyLpgOmzAk0mWBI9gXNzLDx5ybZgnRbH9dN/yY5tzVBqCQ9avltSnqVwessQ==",
+      "dev": true
+    },
+    "d3-fetch": {
+      "version": "1.2.0",
+      "resolved": "file:archived-packages/d3-fetch-1.2.0-c82efc341.tar",
+      "integrity": "sha512-GFMWIT/c2QtcoihqnRgCo5DUWqfYbdPyBnwFl/gNM6IkLnlAFMeS3nb+146eabbpghTh7SL5bVFPDl4JxHUwaA== sha512-yC78NBVcd2zFAyR/HnUiBS7Lf6inSCoWcSxFfw8FYL7ydiqe80SazNwoffcqOfs95XaLo7yebsmQqDKSsXUtvA==",
+      "dev": true,
+      "requires": {
+        "d3-dsv": "1"
+      }
+    },
+    "d3-force": {
+      "version": "1.2.1",
+      "resolved": "file:archived-packages/d3-force-1.2.1-1c7bde872.tar",
+      "integrity": "sha512-jfW/YAYsYVrboFNyqbZ0hE/pdQVGmL1mNkQ0S6nnfjvGAe+dvUeFeYYtoGBT8Iwb4CeTrIvus6VD4hDVLK5Jqg== sha512-HHvehyaiUlVo5CxBJ0yF/xny4xoaxFxDnBXNvNcfW9adORGZfyNF1dj6DGLKyk4Yh3brP/1h3rnDzdIAwL08zg==",
+      "dev": true,
+      "requires": {
+        "d3-collection": "1",
+        "d3-dispatch": "1",
+        "d3-quadtree": "1",
+        "d3-timer": "1"
+      }
+    },
+    "d3-format": {
+      "version": "1.4.4",
+      "resolved": "file:archived-packages/d3-format-1.4.4-4d692cdb9.tar",
+      "integrity": "sha512-zpUHdEwXA7++Ge8f5jDFFfNhgeExVZTFBFkIyZeA3FFEgMGnEtFKP+BvWxTuWkkom8DoERFfxYTc63uaug6vEA== sha512-TWks25e7t8/cqctxCmxpUuzZN11QxIA7YrMbram94zMQ0PXjE4LVIMe/f6a4+xxL8HQ3OsAFULOINQi1pE62Aw==",
+      "dev": true
+    },
+    "d3-geo": {
+      "version": "1.12.1",
+      "resolved": "file:archived-packages/d3-geo-1.12.1-5c6e1dd5c.tar",
+      "integrity": "sha512-q2RSluUbVwAuTAekU2/UdfehnaAscpcE9xJ9yZTF1Slcap6bVLHuC6vKQXtig54ZSK9rR5D9VYUaFGoRUJBffQ== sha512-XG4d1c/UJSEX9NfU02KwBL6BYPj8YKHxgBEw5om2ZnTRSbIcego6dhHwcxuSR3clxh0EpE38os1DVPOmnYtTPg==",
+      "dev": true,
+      "requires": {
+        "d3-array": "1"
+      }
+    },
+    "d3-hierarchy": {
+      "version": "1.1.9",
+      "resolved": "file:archived-packages/d3-hierarchy-1.1.9-8fcb4fc65.tar",
+      "integrity": "sha512-AuVgP/qpmvSHTxXWH1xI6JflC7eaqZbKA/Oi2WfEcQz/2SSuHKFM9syXKbJoSM8V1UkxHsWHVB27Wh3+hgEiUw== sha512-j8tPxlqh1srJHAtxfvOUwKNYJkQuBFdM1+JAUfq6xqH5eAqf93L7oG1NVqDa4CpFZNvnNKtCYEUC8KY9yEn9lQ==",
+      "dev": true
+    },
+    "d3-interpolate": {
+      "version": "1.4.0",
+      "resolved": "file:archived-packages/d3-interpolate-1.4.0-57dce72b4.tar",
+      "integrity": "sha512-wbVyZ4I5DrFDc1uvdYEm56DuR6JiaUad8jRFcUTbMIPBOsI1sdq2EVWMJeuQjtdK1419Xjv53A70URNhZddtEg== sha512-V9znK0zc3jOPV4VD2zZn0sDhZU3WAE2bmlxdIwwQPPzPjvyLkd8B3JUVdS1IDUFDkWZ72c9qnv1GK2ZagTZ8EA==",
+      "dev": true,
+      "requires": {
+        "d3-color": "1"
+      }
+    },
+    "d3-path": {
+      "version": "1.0.9",
+      "resolved": "file:archived-packages/d3-path-1.0.9-54b698727.tar",
+      "integrity": "sha512-HIT6ICdrBPMnLiV31ryE30otdrx7jaG4PPaPRbJANYWrL0drTKovorzAHWPJffgTENb5XTryvSFhstFcjLTbAQ== sha512-VLaYcn81dtHVTjEHd8B+pbe9yHWpXKZUC87PzoFmsFrJqgFwDe/qxfp5MlfsfM1V5E/iVt0MmEbWQ7FVIXh/bg==",
+      "dev": true
+    },
+    "d3-polygon": {
+      "version": "1.0.6",
+      "resolved": "file:archived-packages/d3-polygon-1.0.6-93e445ed6.tar",
+      "integrity": "sha512-hASPsQVXLsZ48IlvRtn/k0JLR5oYLBwtxadA2XUnMC6IgC/kfCIpnxbjSqlpzCDEdlvIIaxBY6AiTd76JFn2/g== sha512-k+RF7WvI08PC8reEoXa/w2nSg5AUMTi+peBD9cmFc+0ixHfbs4QmxxkarVal1IkVkgxVuk9JSHhJURHiyHKAuQ==",
+      "dev": true
+    },
+    "d3-quadtree": {
+      "version": "1.0.7",
+      "resolved": "file:archived-packages/d3-quadtree-1.0.7-44a3c0797.tar",
+      "integrity": "sha512-Dlf5n/UfS6/ynDwLfdFqACQ3WUWrNer2OzZcn9tmcGNui+iNMJ/Bac6A+FoBRiuqyLcbkOwQJQfApBeHpWvSqw== sha512-RKPAeXnkC59IDGD0Wu5mANy0Q2V28L+fNe65pOCXVdVuTJS3WPKaJlFHer32Rbh9gIo9qMuJXio8ra4+YmIymA==",
+      "dev": true
+    },
+    "d3-random": {
+      "version": "1.1.2",
+      "resolved": "file:archived-packages/d3-random-1.1.2-e802b904d.tar",
+      "integrity": "sha512-inVuA7HL2nhlKB1XnsJ05DpKbGrOoiLX7AApXQRf9gg2Z8fKwHpg+tJbzwpBVaqvy5B4+aLYyOSH7U8se9rmQA== sha512-6AK5BNpIFqP+cx/sreKzNjWbwZQCSUatxq+pPRmFIQaWuoD+NrbVWw7YWpHiXpCQ/NanKdtGDuB+VQcZDaEmYQ==",
+      "dev": true
+    },
+    "d3-scale": {
+      "version": "2.2.2",
+      "resolved": "file:archived-packages/d3-scale-2.2.2-2db784bc6.tar",
+      "integrity": "sha512-oRyGq/ijhXwIqxTL7uziCqbi3laIE7TLn+jrCWfwAWaOUrP8X+aAKMAl9He27Ihx336OUxJWNqjaB5n6bmVc7A== sha512-LbeEvGgIb8UMcAa0EATLNX0lelKWGYDQiPdHj+gLblGVhGLyNbaCn3EvrJf0A3Y/uOOU5aD6MTh5ZFCdEwGiCw==",
+      "dev": true,
+      "requires": {
+        "d3-array": "^1.2.0",
+        "d3-collection": "1",
+        "d3-format": "1",
+        "d3-interpolate": "1",
+        "d3-time": "1",
+        "d3-time-format": "2"
+      }
+    },
+    "d3-scale-chromatic": {
+      "version": "1.5.0",
+      "resolved": "file:archived-packages/d3-scale-chromatic-1.5.0-00270be3a.tar",
+      "integrity": "sha512-rrUg2hl2iFsiHNRtOkBU+/y93070BcIyFIcY03HzJr9tQi+qIGsHGv4fdRmbM7m5pChZixEtOlbeWHNisP64wg== sha512-ACcL46DYImpRFMBcpk9HhtIyC7bTBR4fNOPxwVSl0LfulDAwyiHyPOTqcDG1+t5d4P9W7t/2NAuWu59aKko/cg==",
+      "dev": true,
+      "requires": {
+        "d3-color": "1",
+        "d3-interpolate": "1"
+      }
+    },
+    "d3-selection": {
+      "version": "1.4.1",
+      "resolved": "file:archived-packages/d3-selection-1.4.1-05321b463.tar",
+      "integrity": "sha512-QEh4uiRbFoAQJNnQ44Piu7jvS1/5kFGIX0ltRQ9e2mplusclER6AGXPNkelrd7+h0CBpdN7eodQJTgEqWzlrNQ== sha512-BTIbRjv/m5rcVTfBs4AMBLKs4x8XaaLkwm28KWu9S2vKNqXkXt2AH2Qf0sdPZHjFxcWg/YL53zcqAz+3g4/7PA==",
+      "dev": true
+    },
+    "d3-shape": {
+      "version": "1.3.7",
+      "resolved": "file:archived-packages/d3-shape-1.3.7-11492f2a3.tar",
+      "integrity": "sha512-kt/t0x8cRIYO8bCu/7vysTSmWTFTfeEjjsTuuug1KZ1x5SlXbn8irXjp1n24ylhdHFlhxTQo0kvuBLEFG4aXPw== sha512-EUkvKjqPFUAZyOlhY5gzCxCeI0Aep04LwIRpsZ/mLFelJiUfnK56jo5JMDSE7yyP2kLSb6LtF+S5chMk7uqPqw==",
+      "dev": true,
+      "requires": {
+        "d3-path": "1"
+      }
+    },
+    "d3-time": {
+      "version": "1.1.0",
+      "resolved": "file:archived-packages/d3-time-1.1.0-5e1d22b2b.tar",
+      "integrity": "sha512-W71N6R1wR8+JGeqnM+lvb4XUxhnrTkTlb7xE/Ynt788o3GRyKnKkkPsxvdKGRfUndE24skQBVlI67SiZi/HHug== sha512-Xh0isrZ5rPYYdqhAVk8VLnMEidhz5aP7htAADH6MfzgmmicPkTo8LhkLxci61/lCB7n7UmE3bN0leRt+qvkLxA==",
+      "dev": true
+    },
+    "d3-time-format": {
+      "version": "2.2.3",
+      "resolved": "file:archived-packages/d3-time-format-2.2.3-4401cd9c3.tar",
+      "integrity": "sha512-W0Fspo0TfvAWU0C+8oQgnGahHD6f1AXU8JCoWpH8l4QYFMvbvpH96SHWgdviX/FteGMOOJPTIEbCQKvcKo/vGw== sha512-RAHNnD8+XvC4Zc4d2A56Uw0yJoM7bsvOlJR33bclxq399Rak/b9bhvu/InjxdWhPtkgU53JJcleJTGkNRnN6IA==",
+      "dev": true,
+      "requires": {
+        "d3-time": "1"
+      }
+    },
+    "d3-timer": {
+      "version": "1.0.10",
+      "resolved": "file:archived-packages/d3-timer-1.0.10-0752439b4.tar",
+      "integrity": "sha512-HW3SlKfxwD3VA4jl/gNztGsJoYMuObKM7dofp/hHjT7gqWmdEN/FAHIVGg46zZdpYXCY1GUFttACAdrUh6+HLQ== sha512-B1JDm0XDaQC+uvo4DT79H0XmBskgS3l6Ve+1SBCfxgmtIb1AVrPIoqd+nPSv+loMX8szQ0sVUhGngL7D5QPiXw==",
+      "dev": true
+    },
+    "d3-transition": {
+      "version": "1.3.2",
+      "resolved": "file:archived-packages/d3-transition-1.3.2-b1cd20454.tar",
+      "integrity": "sha512-NmrtsmWhFWILQIs/JkCTlRoRngqRI0/l2ZmpT+ny8D6KkaK2L3RJaWkEBFXqJ5NQ2QpS9jz2BUXBLOFVyXgOYw== sha512-sc0gRU4PFqZ47lPVHloMn9tlPcv8jxgOQg+0zjhfZXMQuvppjG6YuwdMBE0TuqCZjeJkLecku/l9R0JPcRhaDA==",
+      "dev": true,
+      "requires": {
+        "d3-color": "1",
+        "d3-dispatch": "1",
+        "d3-ease": "1",
+        "d3-interpolate": "1",
+        "d3-selection": "^1.1.0",
+        "d3-timer": "1"
+      }
+    },
+    "d3-voronoi": {
+      "version": "1.1.4",
+      "resolved": "file:archived-packages/d3-voronoi-1.1.4-740ac9df6.tar",
+      "integrity": "sha512-YYSxxpx7HcWFSMdDklRMT/oH3QaZHdl/1o17okoTpDFVyTS5Kepjle8RvIlWt2kF/UZjc3koyJQxFyZ0e3gmrA== sha512-dArJ32hchFsrQ8uMiTBLq256MpnZjeuBtdHpaDlYuQyjU0CVzCJl/BVW+SkszaAeH95D/8gxqAhgx0ouAWAfRg==",
+      "dev": true
+    },
+    "d3-zoom": {
+      "version": "1.8.3",
+      "resolved": "file:archived-packages/d3-zoom-1.8.3-5682d74ca.tar",
+      "integrity": "sha512-3eVYg8UQjqpQSWNVIeaVH6prhve5BF1FbuRmUGs26N5VEnPrwdQH7QeeK3WTinRGx2C0HlNH7W1zC6ofyI7frw== sha512-VoLXTK4wvy1a0JpH2Il+F2CiOhVu7VRXWF5M/LroMIh3/zBAC3WAt7QoIvPibOavVo20hN6/37vwAsdBejLyKQ==",
+      "dev": true,
+      "requires": {
+        "d3-dispatch": "1",
+        "d3-drag": "1",
+        "d3-interpolate": "1",
+        "d3-selection": "1",
+        "d3-transition": "1"
+      }
     },
     "date-now": {
       "version": "0.1.4",
