@@ -2,11 +2,24 @@
 /*
 	Software upgrade in the admin console.
 */
-/* global AdminSocketBase Admin $ vex */
+/* global AdminSocketBase Admin $ _ vex */
 var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 	constructor: function(host) {
 		this.base(host);
 	},
+
+	_l10nMsg: [
+		_('Upload upgrade file'), // 上傳升級檔案
+		_('Select file'), // 選擇檔案
+		_('Upload progress'), // 上傳進度
+		_('Unsupported package installation system!'), // 不支援的套件安裝系統
+		_('Unable to enter the temporary directory!'), // 無法進入暫存目錄
+		_('Unknown file type!'), // 未知的檔案型態
+		_('File uncompressing...'), // 檔案解壓縮
+		_('Test whether it can be upgraded.'), // 測試是否能升級
+		_('Start the upgrade.'), // 開始升級
+		_('Start the real upgrade.'), // 開始正式升級
+	],
 
 	_fileInfo : null, // 欲傳送的檔案資訊
 	_fileReader : new FileReader(), // 檔案存取物件
@@ -25,8 +38,11 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		});
 		$('#upload').click(function () {
 			that._fileInfo = $('#filename')[0].files[0];
-			var fileObj = {name: that._fileInfo.name.toLowerCase(), size:that._fileInfo.size};
-			that.socket.send('uploadUpgradeFile ' + JSON.stringify(fileObj));
+			that.socket.send(
+				'uploadFile ' +
+				encodeURI(that._fileInfo.name) + ' ' +
+				that._fileInfo.size
+			);
 		});
 	},
 
@@ -49,7 +65,7 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 
 	_addMessage: function(msg) {
 		var view = $('#message-area');
-		var text = view.html() + msg + '\n';
+		var text = view.html() + msg;
 		view.html(text);
 		view.scrollTop(view[0].scrollHeight);
 	},
@@ -73,58 +89,40 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 			$('#progress').show();
 			this._uploadFile(0);
 			break;
-		case 'upgradeFileInfoError': // 上傳檔案資訊有誤
-			vex.dialog.alert('上傳檔案資訊有誤，請檢查');
+		case 'uploadFileInfoError': // 上傳檔案資訊有誤
+			vex.dialog.alert(_('The upload file command is wrong, the syntax is as follows:') + '<br>uploadFile <file name> <file size>');
 			break;
-		case 'upgradeFileReciveOK': // 檔案接收完畢
+		case 'uploadFileReciveOK': // 檔案接收完畢
 			$('#work-area').show();
-			this._addMessage('解壓縮升級檔案...');
-			this.socket.send('uncompressPackage'); // 通知解壓檔案
-			break;
-		case 'uncompressPackageOK': // 檔案解壓完畢
-			this._addMessage('<b style="color:green">檔案解壓成功</b>');
-			this._addMessage('測試是否能升級...');
-			this.socket.send('upgradePackageTest'); // 通知升級測試
-			break;
-		case 'uncompressPackageFail': // 檔案解壓失敗
-			this._addMessage('<b style="color:red">檔案解壓失敗</b>');
-			vex.dialog.alert('檔案解壓失敗，請檢查檔案是否正確');
-			this.socket.send('clearUpgradeFiles'); // 清除升級暫存檔案
-			break;
-		case 'upgradePackageTestOK': // 升級測試成功
-			this._addMessage('<b style="color:green">升級測試成功</b>');
-			this._addMessage('<b style="color:yellow">開始升級作業，請稍候...</b>');
+			this._addMessage('<p class="text-info h4"><b>' + _('Start the software upgrade...') + '</b></p>');
 			this.socket.send('upgradePackage'); // 通知正式升級
 			break;
-		case 'upgradePackageTestFail': // 升級測試失敗
-			this._addMessage('<b style="color:red">升級測試失敗</b>');
-			vex.dialog.alert('升級測試失敗，請檢查檔案是否正確');
-			this.socket.send('clearUpgradeFiles'); // 清除升級暫存檔案
+		case 'uncompressPackageFail': // 解壓縮失敗
+			this._addMessage('<p class="text-danger h5">' + _('File decompression failed!') + '</p>');
+			break;
+		case 'upgradePackageTestFail': // 測試升級失敗
+			this._addMessage('<p class="text-danger h5">' + _('Test upgrade failed!') + '</p>');
 			break;
 		case 'upgradeSuccess': // 軟體升級成功
-			this._addMessage('<b style="color:green; font-size:24px">軟體升級成功</b>');
-			this.socket.send('clearUpgradeFiles'); // 清除升級暫存檔案
-			vex.dialog.alert('<p style="font-size:24px;color:green;">軟體升級成功！<br>您可能需要重啟服務</p>');
+			var successMsg = _('Software upgrade is successful.');
+			this._addMessage('<p class="text-success h4"><b>' + successMsg + '</b></p>');
+			vex.dialog.alert('<p class="text-success">' + successMsg +
+				'<br>' + _('You may need to restart the service.') + '</p>');
 			break;
 		case 'upgradeFail': // 軟體升級失敗
-			this._addMessage('<b style="color:red">軟體升級失敗</b>');
-			this.socket.send('clearUpgradeFiles'); // 清除升級暫存檔案
-			break;
-		case 'clearUpgradeFilesOK': // 清除升級暫存檔案成功
-			// 無關緊要
-			break;
-		case 'clearUpgradeFilesFail': // 清除升級暫存檔案失敗
-			// 無關緊要
+			this._addMessage('<p class="text-danger">' + _('Software upgrade failed!') + '</p>');
 			break;
 		default:
 			if (textMsg.startsWith('upgradeInfo:')) {
 				this._addMessage(textMsg.substr(12));
+			} else if (textMsg.startsWith('upgradeMsg:')) {
+				this._addMessage('<p class="text-info h4"><b>' + _(textMsg.substr(11)) + '<b><p>');
 			} else if (textMsg.startsWith('receivedSize:')) {
 				var totalBytes = textMsg.substr(13);
 				var percent = Math.floor((totalBytes / this._fileInfo.size) * 100); // 計算傳送比例
 				$('#progressbar').css('width', percent +'%')
 								.attr('aria-valuenow', percent)
-								.text('已完成 ' + percent + ' %');
+								.text(_('Transmission') + ' ' + percent + ' %');
 			} else {
 				console.log('未知訊息 : ' + textMsg);
 			}
