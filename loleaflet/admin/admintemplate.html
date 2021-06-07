@@ -18,33 +18,7 @@
             if (typeof brandProductName !== 'undefined') {l10nstrings.strProductName = brandProductName}
             document.title = l10nstrings.strProductName + ' - ' + l10nstrings.strAdminConsole;
             var host = (window.location.protocol === 'https:' ? 'wss://': 'ws://') + window.location.host + '%SERVICE_ROOT%/lool/adminws/';
-        </script>
-        <script>
-            $(document).ready(function(){
-                // Generate module list
-                var module_list = []; //{{MODULE_LIST}};
-                if (module_list)
-                {
-                    for (module in module_list)
-                    {
-                        var a_template = `<li id="${module_list[module]}"><a class="text-primary" href="${module_list[module]}">${module_list[module]}</a></li>`;
-                        $("#module_list").after(a_template);
-                    }
-
-                }
-
-                // set the current activate navbar-item
-                var href = window.location.href;
-                var url = new URL(href);
-                var module = url.searchParams.get("module");
-                if (module === null)
-                {
-                    var token = href.split("/");
-                    var endpoint = token[token.length-1].split(".")[0];
-                    $("#" + endpoint).addClass("active");
-                }
-                Admin.GlobalFunction(host);
-            });
+            Admin.GlobalFunction(host);
         </script>
 
         <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -67,44 +41,23 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-3 col-md-2 sidebar">
-                    <ul class="nav nav-sidebar">
-                        <li id="admin">
-                            <a href="admin.html"><script>document.write(l10nstrings.strOverview);</script> <span class="sr-only"><script>document.write(l10nstrings.strCurrent)</script></span></a>
-                        </li>
-                        <li id="adminAnalytics">
-                            <a href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a>
-                        </li>
-                        <li id="adminViewLog">
-                            <a href="adminViewLog.html">檢視日誌</a>
-                        </li>
-                        <li id="adminConfigSettings">
-                            <a href="adminConfigSettings.html">系統設定</a>
-                        </li>
-                        <li id="adminSoftwareUpgrade">
-                            <a href="adminSoftwareUpgrade.html">軟體升級</a>
-                        </li>
-                        <li id="adminFontManager">
-                            <a href="adminFontManager.html">字型管理</a>
-                        </li>
-                        <li id="adminLicense">
-                            <a href="adminLicense.html">產品資訊</a>
-                        </li>
-                        <li id="module_list" class="bg-primary">
-                            模組列表
-                        </li>
-                    </ul>
+                    <div class="list-group nav-sidebar">
+                        <div class="list-group-item list-group-item-info">
+                            <b><script>document.write(l10nstrings.strMainMenu)</script></b>
+                        </div>
+                        <a class="list-group-item" id="admin" href="admin.html"><script>document.write(l10nstrings.strOverview)</script></a>
+                        <a class="list-group-item" id="adminAnalytics" href="adminAnalytics.html"><script>document.write(l10nstrings.strAnalytics)</script></a>
+                        <a class="list-group-item" id="adminLog" href="adminLog.html"><script>document.write(l10nstrings.strLog)</script></a>
+                        <a class="list-group-item" id="adminConfigSettings" href="adminConfigSettings.html"><script>document.write(l10nstrings.strConfigSettings)</script></a>
+                        <a class="list-group-item" id="adminSoftwareUpgrade" href="adminSoftwareUpgrade.html"><script>document.write(l10nstrings.strSoftwareUpgrade)</script></a>
+                        <a class="list-group-item" id="adminFontManager" href="adminFontManager.html"><script>document.write(l10nstrings.strFontManager)</script></a>
+                    </div>
                 </div>
                 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
                     <!--%MAIN_CONTENT%-->
                 </div>
             </div>
         </div>
-
-            <div id="rowContextMenu" class="dropdown clearfix">
-                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
-                    <li><a tabindex="-1" href="#"><script>document.write(l10nstrings.strKill)</script></a></li>
-                </ul>
-            </div>
-            <!--%FOOTER%-->
+        <!--%FOOTER%-->
     </body>
 </html>
