@@ -18,8 +18,8 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Util/XMLConfiguration.h>
+#include <Poco/TemporaryFile.h>
 
-#include "LOOLWSD.hpp"
 #include "Admin.hpp"
 #include "AdminModel.hpp"
 #include "Auth.hpp"
@@ -43,6 +43,9 @@ using namespace LOOLProtocol;
 using Poco::Net::HTTPResponse;
 using Poco::Util::Application;
 using Poco::Util::XMLConfiguration;
+using Poco::Path;
+using Poco::File;
+using Poco::TemporaryFile;
 
 #define pwdSaltLength 128
 #define pwdIterations 10000
@@ -59,11 +62,82 @@ public:
         {}
 };
 
+ReceiveFile::ReceiveFile()
+{
+    _name = "";
+    _size = 0;
+    _working = false;
+    _workID = 0;
+    _tempPath = Path::forDirectory(Poco::TemporaryFile::tempName());
+}
+
+bool ReceiveFile::begin(const std::string& fileName, const size_t fileSize)
+{
+    if (fileName.empty() || fileSize == 0)
+    {
+        return false;
+    }
+
+    _name = fileName;
+    _size = fileSize;
+    _workID ++;
+
+    _receivedSize = 0;
+
+    // 暫存目錄不存在
+    if (!File(_tempPath).exists())
+    {
+        // 就建立目錄
+        File(_tempPath).createDirectories();
+        // Process 結束就刪除整個暫存目錄
+        Poco::TemporaryFile::registerForDeletion(_tempPath.toString());
+    }
+
+    std::string workPath = getWorkPath();
+    File(workPath).createDirectories();
+    _receivedFile.open(workPath + "/" + _name, std::ofstream::out|std::ofstream::trunc);
+
+    _working = true;
+    return _working;
+}
+
+void ReceiveFile::writeData(const std::vector<char> &payload)
+{
+    _receivedFile.write(payload.data(), payload.size());
+    _receivedSize += payload.size();
+}
+
+bool ReceiveFile::isComplete()
+{
+    if (_working && _receivedSize >= _size)
+    {
+        _receivedFile.close();
+        _working = false;
+        return true;
+    }
+    return false;
+}
+
 /// Process incoming websocket messages
 void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
 {
     // FIXME: check fin, code etc.
     const std::string firstLine = getFirstLine(payload.data(), payload.size());
+
+    // 處於接收檔案狀態
+    if (_receiveFile.isWorking())
+    {
+        _receiveFile.writeData(payload); // 資料寫入檔案
+        // 通知 client 總共收到的 bytes
+        sendTextFrame("receivedSize:" + std::to_string(_receiveFile.size()));
+
+        if (_receiveFile.isComplete())
+        {
+            sendTextFrame("uploadFileReciveOK"); // 通知 client，檔案接收完畢
+        }
+        return;
+    }
+
     StringVector tokens(Util::tokenize(firstLine, ' '));
     LOG_TRC("Recv: " << firstLine << " tokens " << tokens.size());
 
@@ -366,6 +440,182 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
 #endif
         config.save(LOOLWSD::ConfigFile);
         sendTextFrame("setAdminPasswordOk");
+    }
+    // 上傳檔案
+    // 命令是: uploadFile <檔名> <檔案大小>
+    else if (tokens.equals(0, "uploadFile") && tokens.size() == 3)
+    {
+        std::string fileName;
+        Poco::URI::decode(tokens[1], fileName);
+        if (_receiveFile.begin(fileName, std::strtol(tokens[2].c_str(), nullptr, 0)))
+        {
+            sendTextFrame("readyToReceiveFile"); // 告訴 Client 可以開始上傳了
+        }
+        else
+        {
+            sendTextFrame("uploadFileInfoError"); // 告訴 Client 檔案資訊有誤
+        }
+    }
+    // 安裝升級檔
+    else if (tokens.equals(0, "upgradePackage") && tokens.size() == 1)
+    {
+        // TODO: 這裡應該要檢測 Linux 主機環境是 rpm base 或 dep base
+        std::string packageBase = "rpm"; // FIXME: getPackageBase()
+
+        // 開始安裝套件
+        std::string installTestCmd, installCmd;
+        if (packageBase == "rpm")
+        {
+            installTestCmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
+            installCmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
+        }
+        else if (packageBase == "deb")
+        {
+            // FIXME! please.
+            // installTestCmd = "sudo dpkg -i "
+            // installCmd = "sudo dpkg -i ";
+        }
+        else
+        {
+            sendTextFrame("upgradeMsg:Unsupported package installation system!");
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        // 紀錄目前工作目錄
+        std::string currentPath = Path::current();
+        // 上傳檔案所在路徑
+        Path workPath = _receiveFile.getWorkPath();
+        // 進入暫存目錄
+        if (chdir(workPath.toString().c_str()) != 0)
+        {
+            sendTextFrame("upgradeMsg:Unable to enter the temporary directory!");
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        // 上傳的檔名
+        Path workFile = _receiveFile.getWorkFileName();
+        // 取延伸檔名
+        std::string extName = workFile.getExtension();
+        // 延伸檔名轉小寫
+        std::transform(extName.begin(), extName.end(), extName.begin(), ::tolower);
+
+        std::string output;
+        std::string uncompressCmd;
+        // 檔案是否為 .deb/.rpm/.zip/.tgz or tar.gz
+        if (extName == "rpm" || extName == "deb")
+        {
+            // Do nothing.
+        }
+        // zip 型態要先解壓縮
+        else if (extName == "zip")
+        {
+            uncompressCmd = "unzip \"" + workFile.getFileName() + "\" 2>&1 ; echo $? > retcode";
+        }
+        // gz / tgz 要先解壓縮
+        else if (extName == "gz" || extName == "tgz")
+        {
+            uncompressCmd = "tar zxvf \"" + workFile.getFileName() + "\" 2>&1 ; echo $? > retcode";
+        }
+        // 未知的檔案型態
+        else
+        {
+            sendTextFrame("upgradeMsg:Unknown file type!");
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        FILE *fp;
+        char buffer[128];
+        std::ifstream in;
+        int retcode; // 指令結束狀態碼
+
+        // 一、是否需要先解壓縮
+        if (!uncompressCmd.empty())
+        {
+            sendTextFrame("upgradeMsg:File uncompressing...");
+            sendTextFrame("upgradeInfo:Command: " + uncompressCmd + "\n\n");
+            fp = popen(uncompressCmd.c_str(), "r");
+            while (fgets(buffer, sizeof(buffer), fp))
+            {
+                output.append(buffer);
+            }
+            pclose(fp);
+            // 傳回輸出內容
+            sendTextFrame("upgradeInfo:" + output);
+            // 讀取指令結束碼
+            in.open("./retcode", std::ifstream::in);
+            in.getline(buffer, sizeof(buffer));
+            in.close();
+            retcode = std::atoi(buffer);
+            // 指令執行有錯
+            if (retcode != 0)
+            {
+                File(workPath).remove(true); // 砍掉該檔案整個目錄
+                sendTextFrame("uncompressPackageFail");
+                return;
+            }
+        }
+
+        // 二、測試是否能升級
+        sendTextFrame("upgradeMsg:Test whether it can be upgraded.");
+        sendTextFrame("upgradeInfo:Command: " + installTestCmd + "\n\n");
+        fp = popen(installTestCmd.c_str(), "r");
+        output.clear();
+        while (fgets(buffer, sizeof(buffer), fp))
+        {
+            output.append(buffer);
+        }
+        pclose(fp);
+        // 傳回輸出內容
+        sendTextFrame("upgradeInfo:" + output);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buffer, sizeof(buffer));
+        in.close();
+        retcode = std::atoi(buffer);
+        // 指令執行有錯
+        if (retcode != 0)
+        {
+            File(workPath).remove(true); // 砍掉該檔案整個目錄
+            sendTextFrame("upgradePackageTestFail");
+            return;
+        }
+
+        // 三、正式升級
+        sendTextFrame("upgradeMsg:Start the real upgrade.");
+        sendTextFrame("upgradeInfo:Command: " + installCmd + "\n\n");
+        fp = popen(installCmd.c_str(), "r");
+        output.clear();
+        while (fgets(buffer, sizeof(buffer), fp))
+        {
+            output.append(buffer);
+        }
+        pclose(fp);
+        // 傳回輸出內容
+        sendTextFrame("upgradeInfo:" + output);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buffer, sizeof(buffer));
+        in.close();
+        retcode = std::atoi(buffer);
+        // 指令執行有錯
+        if (retcode != 0)
+        {
+            File(workPath).remove(true); // 砍掉該檔案整個目錄
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        // 回到之前的工作目錄
+        chdir(currentPath.c_str());
+        File(workPath).remove(true); // 砍掉工作暫存目錄
+        sendTextFrame("upgradeSuccess");
+    }
+    else
+    {
+        std::cerr << "未知指令:\"" << firstLine << "\"\n";
     }
 }
 
