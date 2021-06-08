@@ -72,7 +72,7 @@ function createCollapsable(parentNode, id, text) {
 
 // This function takes the list of the users viewing a specific document. Creates an HTML element holding the list.
 function createDocumentUserListElement(cell, doc) {
-	var collapsable = createCollapsable(cell, 'ucontainer' + doc['pid'], String(doc['views'].length) + _(' user(s).'));
+	var collapsable = createCollapsable(cell, 'ucontainer' + doc['pid'], String(doc['views'].length) + ' ' + _('user(s).'));
 	for (var i = 0; i < doc['views'].length; i++) {
 		collapsable.addItem('user' + doc['views'][i]['sessionid'], doc['views'][i]['userName']);
 	}
@@ -95,16 +95,6 @@ function upsertDocsTable(doc, sName, socket) {
 	sessionCloseCell.style.cursor = 'pointer';
 	if (add === true) { row.appendChild(sessionCloseCell); } else { row.cells[0] = sessionCloseCell; }
 	sessionCloseCell.onclick = function() {
-		/* var dialog = (new DlgYesNo())
-		.title(_('Confirmation'))
-		.text(_('Are you sure you want to terminate this session?'))
-		.yesButtonText(_('OK'))
-		.noButtonText(_('Cancel'))
-		.type('warning')
-		.yesFunction(function() {
-			socket.send('kill ' + doc['pid']);
-		});
-		dialog.open(); */
 		vex.dialog.confirm({
 			message: _('Are you sure you want to terminate this session?'),
 			buttons: [
@@ -112,7 +102,6 @@ function upsertDocsTable(doc, sName, socket) {
 				$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
 			],
 			callback: function (value) {
-				//console.log(value);
 				if (value) {
 					socket.send('kill ' + doc['pid']);
 				}
@@ -193,12 +182,12 @@ function upsertUsersTable(docPid, sName, userList) {
 
 			var docInfoCell = document.createElement('td');
 			row.appendChild(docInfoCell);
-			collapsable = createCollapsable(docInfoCell, 'docListContainer_' + encodedUId, '1' + ' document(s) open.');
+			collapsable = createCollapsable(docInfoCell, 'docListContainer_' + encodedUId, '1' + ' ' + _('document(s) open.'));
 			collapsable.addItem(userList[i]['sessionid'] + '_' + docPid, sName);
 		}
 		else {
 			collapsable = getCollapsibleClass('docListContainer_' + encodedUId);
-			collapsable.setText(String(parseInt(collapsable.getText()) + 1) + _(' document(s) open.'));
+			collapsable.setText(String(parseInt(collapsable.getText()) + 1) + ' ' + _('document(s) open.'));
 			collapsable.addItem(userList[i]['sessionid'] + '_' + docPid, sName);
 		}
 	}
