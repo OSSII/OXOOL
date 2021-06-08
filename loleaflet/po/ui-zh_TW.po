@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-05 12:03+0800\n"
+"POT-Creation-Date: 2021-06-08 14:35+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,233 +19,310 @@ msgstr ""
 "X-Pootle-Revision: 3609394\n"
 "X-Pootle-Path: /zh_TW/libo_online/loleaflet-ui-zh_TW.po\n"
 
-#: admin/admin.strings.js:6
+#: admin/admin.strings.js:7
 msgid "Admin console"
 msgstr "管理主控臺"
 
-#: admin/admin.strings.js:7
+#: admin/admin.strings.js:8
 msgid "Settings"
 msgstr "設定"
 
-#: admin/admin.strings.js:8
+#: admin/admin.strings.js:9
+msgid "Main menu"
+msgstr "功能選單"
+
+#: admin/admin.strings.js:10
 msgid "Overview"
 msgstr "概覽"
 
-#: admin/admin.strings.js:9
+#: admin/admin.strings.js:11
 msgid "(current)"
 msgstr "（目前）"
 
-#: admin/admin.strings.js:10
+#: admin/admin.strings.js:12
 msgid "Analytics"
 msgstr "分析"
 
-#: admin/admin.strings.js:11
+#: admin/admin.strings.js:13
 msgid "History"
 msgstr "最後使用記錄"
 
-#: admin/admin.strings.js:12
+#: admin/admin.strings.js:14
+msgid "Log"
+msgstr "日誌"
+
+#: admin/admin.strings.js:15
+msgid "System configuration"
+msgstr "系統配置設定"
+
+#: admin/admin.strings.js:16
+msgid "Table conversion"
+msgstr "表格轉試算表"
+
+#: admin/admin.strings.js:17
+msgid "Template Repo"
+msgstr "範本中心"
+
+#: admin/admin.strings.js:18
+msgid "ODF report template"
+msgstr "ODF 報表管理"
+
+#: admin/admin.strings.js:19
+msgid "Software upgrade"
+msgstr "軟體升級"
+
+#: admin/admin.strings.js:20
+msgid "Font manager"
+msgstr "字型管理"
+
+#: admin/admin.strings.js:21
 msgid "Dashboard"
 msgstr "控制面板"
 
-#: admin/admin.strings.js:13
+#: admin/admin.strings.js:22
 msgid "Users online"
 msgstr "線上使用者"
 
-#: admin/admin.strings.js:14
+#: admin/admin.strings.js:23 admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
 msgid "User Name"
 msgstr "使用者名稱"
 
-#: admin/admin.strings.js:15
+#: admin/admin.strings.js:24
 msgid "Documents opened"
 msgstr "開啟的文件"
 
-#: admin/admin.strings.js:16
+#: admin/admin.strings.js:25
+#, fuzzy
+msgid "Documents open"
+msgstr "開啟的文件"
+
+#: admin/admin.strings.js:26 admin/src/AdminSocketOverview.js:121
+#: admin/src/AdminSocketOverview.js:334
+#, fuzzy
+msgid " user(s)."
+msgstr "個使用者"
+
+#: admin/admin.strings.js:27
+#, fuzzy
+msgid " document(s) open."
+msgstr "個文件開啟"
+
+#: admin/admin.strings.js:28
 msgid "Number of Documents"
 msgstr "文件數"
 
-#: admin/admin.strings.js:17
+#: admin/admin.strings.js:29
 msgid "Memory consumed"
 msgstr "消耗的記憶體"
 
-#: admin/admin.strings.js:18
+#: admin/admin.strings.js:30
 msgid "Bytes sent"
-msgstr "已傳送位元組"
+msgstr "已傳送的流量"
 
-#: admin/admin.strings.js:19
+#: admin/admin.strings.js:31
 msgid "Bytes received"
-msgstr "已接收位元組"
+msgstr "已接收的流量"
 
-#: admin/admin.strings.js:20
+#: admin/admin.strings.js:32
 msgid "PID"
 msgstr "PID"
 
-#: admin/admin.strings.js:21
+#: admin/admin.strings.js:33
 msgid "Document"
 msgstr "文件"
 
-#: admin/admin.strings.js:22
+#: admin/admin.strings.js:34
 msgid "Number of views"
 msgstr "檢視的次數"
 
-#: admin/admin.strings.js:23
+#: admin/admin.strings.js:35
+msgid "Views"
+msgstr "開啟者"
+
+#: admin/admin.strings.js:36
 msgid "Elapsed time"
 msgstr "經過的時間"
 
-#: admin/admin.strings.js:24
+#: admin/admin.strings.js:37
 msgid "Idle time"
 msgstr "閒置時間"
 
-#: admin/admin.strings.js:25
+#: admin/admin.strings.js:38
 msgid "Modified"
 msgstr "最後修改"
 
-#: admin/admin.strings.js:26
+#: admin/admin.strings.js:39
 msgid "Kill"
 msgstr "截殺"
 
-#: admin/admin.strings.js:27
+#: admin/admin.strings.js:40
 msgid "Graphs"
 msgstr "圖表"
 
-#: admin/admin.strings.js:28
+#: admin/admin.strings.js:41
 msgid "Memory Graph"
 msgstr "記憶體圖表"
 
-#: admin/admin.strings.js:29
+#: admin/admin.strings.js:42
 msgid "CPU Graph"
 msgstr "CPU 圖表"
 
-#: admin/admin.strings.js:30
+#: admin/admin.strings.js:43
 msgid "Network Graph"
 msgstr "網路圖表"
 
-#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:241
+#: admin/admin.strings.js:44 src/layer/marker/Annotation.js:241
 msgid "Save"
 msgstr "儲存"
 
-#: admin/admin.strings.js:32
+#: admin/admin.strings.js:45
 msgid "Cache size of memory statistics"
 msgstr "記憶體統計資料的快取大小"
 
-#: admin/admin.strings.js:33
+#: admin/admin.strings.js:46
 msgid "Time interval of memory statistics (in ms)"
 msgstr "記憶體統計的時間間隔（單位毫秒）"
 
-#: admin/admin.strings.js:34
+#: admin/admin.strings.js:47
 msgid "Cache size of CPU statistics"
 msgstr "CPU 統計資料的快取大小"
 
-#: admin/admin.strings.js:35
+#: admin/admin.strings.js:48
 msgid "Time interval of CPU statistics (in ms)"
 msgstr "CPU 統計資料的時間間隔（單位毫秒）"
 
-#: admin/admin.strings.js:36
+#: admin/admin.strings.js:49 admin/src/AdminSocketOverview.js:93
+msgid "Kill session."
+msgstr "中止作業"
+
+#: admin/admin.strings.js:50
 msgid "Maximum Document process virtual memory (in MB) - reduce only"
-msgstr "最大文件程序虛擬記憶體 (以 MB 計) - 僅減少"
+msgstr "最大文件程序虛擬記憶體 (以 MB 計) - 只能減少"
 
-#: admin/admin.strings.js:37
+#: admin/admin.strings.js:51
 msgid "Maximum Document process stack memory (in KB) - reduce only"
-msgstr "最大文件程序堆疊記憶體 (以 MB 計) - 僅減少"
+msgstr "最大文件程序堆疊記憶體 (以 MB 計) - 只能減少"
 
-#: admin/admin.strings.js:38
+#: admin/admin.strings.js:52
 msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
-msgstr "寫入磁碟的最大允許檔案大小 (以 MB 計) - 僅減少"
+msgstr "寫入磁碟的最大允許檔案大小 (以 MB 計) - 只能減少"
 
-#: admin/admin.strings.js:39
+#: admin/admin.strings.js:53
 msgid "Documents:"
 msgstr "文件："
 
-#: admin/admin.strings.js:40
+#: admin/admin.strings.js:54
 msgid "Expired:"
 msgstr "逾期："
 
-#: admin/admin.strings.js:41
+#: admin/admin.strings.js:55
 msgid "Refresh"
 msgstr "重整"
 
-#: admin/admin.strings.js:42
+#: admin/admin.strings.js:56
+msgid "Shutdown Server"
+msgstr "關閉伺服器"
+
+#: admin/admin.strings.js:57
 msgid "Server uptime"
 msgstr "服務時間"
 
-#: admin/src/AdminSocketAnalytics.js:219
+#: admin/admin.strings.js:58
+msgid "Refresh Log"
+msgstr "更新日誌"
+
+#: admin/admin.strings.js:59
+msgid "Channel Filter:"
+msgstr "過濾類別："
+
+#: admin/admin.strings.js:60 js/toolbar.js:714 js/toolbar.js:1940
+#: uiconfig/dialogs/InsertBreak.js:19
+msgid "None"
+msgstr "無"
+
+#: admin/admin.strings.js:61
+msgid "Set Log Levels"
+msgstr "設定紀錄層級"
+
+#: admin/admin.strings.js:62
+msgid "Log Levels"
+msgstr "紀錄層級"
+
+#: admin/admin.strings.js:63 uiconfig/dialogs/BindingLineDialog.js:99
+#: uiconfig/dialogs/ColumnWidth.js:31 uiconfig/dialogs/DeleteCell.js:51
+#: uiconfig/dialogs/HeaderAndFooter.js:65 uiconfig/dialogs/InsertCell.js:27
+#: uiconfig/dialogs/PdfWatermarkText.js:26 uiconfig/dialogs/RemoveCell.js:27
+#: uiconfig/dialogs/RowHeight.js:31 uiconfig/dialogs/SetTabBgColor.js:24
+#: uiconfig/dialogs/SplitCell.js:55
+msgid "Close"
+msgstr "關閉"
+
+#: admin/admin.strings.js:64
+msgid "Update Log Levels"
+msgstr "更新紀錄層級"
+
+#: admin/admin.strings.js:65
+msgid "Version Information"
+msgstr "版本資訊"
+
+#: admin/src/AdminSocketAnalytics.js:205
 msgid "Received"
 msgstr "已接收"
 
-#: admin/src/AdminSocketAnalytics.js:223
+#: admin/src/AdminSocketAnalytics.js:209
 msgid "Sent"
 msgstr "已送出"
 
-#: admin/src/AdminSocketBase.js:54
+#: admin/src/AdminSocketBase.js:60
+msgid "Server has been shut down; please reload the page."
+msgstr "伺服器已關閉，請重新載入頁面"
+
+#: admin/src/AdminSocketBase.js:70
 msgid "Connection error"
 msgstr "連線錯誤"
 
-#: admin/src/AdminSocketOverview.js:102
-msgid "Are you sure you want to terminate this session?"
-msgstr "您確定要終止本次的作業階段？"
+#: admin/src/AdminSocketFontManager.js:12
+msgid "Upload"
+msgstr "上傳"
 
-#: admin/src/AdminSocketOverview.js:183 admin/src/AdminSocketOverview.js:285
-msgid "Documents"
-msgstr "文件"
+#: admin/src/AdminSocketFontManager.js:13
+msgid "File"
+msgstr "檔案"
 
-#: admin/src/AdminSocketSettings.js:34
-msgid "Are you sure you want to shut down the server?"
-msgstr "您確定要讓伺服器關機？"
+#: admin/src/AdminSocketFontManager.js:14 js/toolbar.js:2459
+#: uiconfig/dialogs/BindingLineDialog.js:36
+msgid "Font"
+msgstr "字型"
 
-#: admin/src/AdminSocketGlobalFunction.js:19
+#: admin/src/AdminSocketFontManager.js:15
+msgid "File name"
+msgstr "檔案名稱"
+
+#: admin/src/AdminSocketFontManager.js:16
+msgid "Font name (preview)"
+msgstr "字型名稱（預覽）"
+
+#: admin/src/AdminSocketFontManager.js:17 js/toolbar.js:2436
+#: uiconfig/dialogs/InsertBreak.js:30
+msgid "Style"
+msgstr "樣式"
+
+#: admin/src/AdminSocketFontManager.js:18
+msgid "Color font"
+msgstr "彩色字型"
+
+#: admin/src/AdminSocketFontManager.js:19
+msgid "Symbol font"
+msgstr "符號字型"
+
+#: admin/src/AdminSocketGlobalFunction.js:10
 msgid "Are you sure you want to restart the online service?"
 msgstr "您確定要重新啟動線上服務嗎？"
 
-#: admin/src/AdminSocketGlobalFunction.js:28
-msgid ""
-"For security reasons, please enter your original management account and "
-"password."
-msgstr "為了安全理由，請輸入管理帳號及密碼"
-
-#: admin/src/AdminSocketGlobalFunction.js:30
-#: admin/src/AdminSocketGlobalFunction.js:53
-#, fuzzy
-msgid "Username"
-msgstr "帳號"
-
-#: admin/src/AdminSocketGlobalFunction.js:31
-#: admin/src/AdminSocketGlobalFunction.js:54 src/control/Control.Tabs.js:138
-#: uiconfig/dialogs/ProtectTable.js:21 uiconfig/dialogs/ProtectTable.js:22
-msgid "Password"
-msgstr "密碼"
-
-#: admin/src/AdminSocketGlobalFunction.js:34
-msgid "Verification"
-msgstr "驗證"
-
-#: admin/src/AdminSocketGlobalFunction.js:35
-#: admin/src/AdminSocketGlobalFunction.js:59 js/toolbar.js:1101
-#: js/toolbar.js:1372 src/layer/marker/Annotation.js:181 src/map/Map.js:109
-#: uiconfig/dialogs/AddTableAtEnd.js:46
-#: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
-#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/dlgSecurePrint.js:73
-#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
-#: uiconfig/dialogs/HeaderAndFooter.js:150 uiconfig/dialogs/InsertBreak.js:57
-#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertImage.js:102
-#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
-#: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:54
-#: uiconfig/dialogs/ProtectTable.js:59 uiconfig/dialogs/RemoveCell.js:54
-#: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
-#: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
-#: uiconfig/dialogs/SetHyperLinkTable.js:148
-#: uiconfig/dialogs/SetTabBgColor.js:57 uiconfig/dialogs/ShowTable.js:55
-#: uiconfig/dialogs/SplitCell.js:106 uiconfig/dialogs/TraceChangeMode.js:65
-msgid "Cancel"
-msgstr "取消"
-
-#: admin/src/AdminSocketGlobalFunction.js:51
-msgid "Please enter a new account and password."
-msgstr "請輸入新的帳號及密碼"
-
-#: admin/src/AdminSocketGlobalFunction.js:55
-msgid "Confirm password"
-msgstr "確認密碼"
-
-#: admin/src/AdminSocketGlobalFunction.js:58 src/map/Map.js:108
+#: admin/src/AdminSocketGlobalFunction.js:12
+#: admin/src/AdminSocketGlobalFunction.js:56
+#: admin/src/AdminSocketOverview.js:101 src/map/Map.js:108
 #: uiconfig/dialogs/AddTableAtEnd.js:39
 #: uiconfig/dialogs/BindingLineDialog.js:113 uiconfig/dialogs/ColumnWidth.js:49
 #: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/dlgSecurePrint.js:44
@@ -263,36 +340,179 @@ msgstr "確認密碼"
 msgid "OK"
 msgstr "確定"
 
-#: admin/src/AdminSocketGlobalFunction.js:71
+#: admin/src/AdminSocketGlobalFunction.js:13
+#: admin/src/AdminSocketGlobalFunction.js:33
+#: admin/src/AdminSocketGlobalFunction.js:57
+#: admin/src/AdminSocketOverview.js:102 js/toolbar.js:1101 js/toolbar.js:1372
+#: src/layer/marker/Annotation.js:181 src/map/Map.js:109
+#: uiconfig/dialogs/AddTableAtEnd.js:46
+#: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
+#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/dlgSecurePrint.js:73
+#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
+#: uiconfig/dialogs/HeaderAndFooter.js:150 uiconfig/dialogs/InsertBreak.js:57
+#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertImage.js:102
+#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
+#: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:54
+#: uiconfig/dialogs/ProtectTable.js:59 uiconfig/dialogs/RemoveCell.js:54
+#: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
+#: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
+#: uiconfig/dialogs/SetHyperLinkTable.js:148
+#: uiconfig/dialogs/SetTabBgColor.js:57 uiconfig/dialogs/ShowTable.js:55
+#: uiconfig/dialogs/SplitCell.js:106 uiconfig/dialogs/TraceChangeMode.js:65
+msgid "Cancel"
+msgstr "取消"
+
+#: admin/src/AdminSocketGlobalFunction.js:26
+msgid ""
+"For security reasons, please enter your original management account and "
+"password."
+msgstr "為了安全理由，請輸入管理帳號及密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:29
+#: admin/src/AdminSocketGlobalFunction.js:52 src/control/Control.Tabs.js:138
+#: uiconfig/dialogs/ProtectTable.js:21 uiconfig/dialogs/ProtectTable.js:22
+msgid "Password"
+msgstr "密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:32
+msgid "Verification"
+msgstr "驗證"
+
+#: admin/src/AdminSocketGlobalFunction.js:49
+msgid "Please enter a new account and password."
+msgstr "請輸入新的帳號及密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:53
+msgid "Confirm password"
+msgstr "確認密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:69
 msgid "The password does not match the confirmation password!"
 msgstr "密碼與確認密碼不符！"
 
-#: admin/src/AdminSocketGlobalFunction.js:86
+#: admin/src/AdminSocketGlobalFunction.js:84
 msgid "Restart service"
 msgstr "重啟服務"
 
-#: admin/src/AdminSocketGlobalFunction.js:87
+#: admin/src/AdminSocketGlobalFunction.js:85
 msgid "Change account password"
 msgstr "變更帳號密碼"
 
-#: admin/src/AdminSocketGlobalFunction.js:128
+#: admin/src/AdminSocketGlobalFunction.js:126
 msgid "The account or password is inconsistent with the system!"
 msgstr "帳號或密碼與系統不一致！"
 
-#: admin/src/AdminSocketGlobalFunction.js:138
+#: admin/src/AdminSocketGlobalFunction.js:136
 msgid ""
 "The account and password have been updated and will take effect after the "
 "next service restart."
 msgstr "帳號及密碼已更新，將在下次服務重新啟動後生效。"
 
-#: admin/src/AdminSocketGlobalFunction.js:142
+#: admin/src/AdminSocketGlobalFunction.js:140
 msgid "Version"
 msgstr "版本"
 
-#: admin/src/AdminSocketGlobalFunction.js:147
-#: admin/src/AdminSocketGlobalFunction.js:152
+#: admin/src/AdminSocketGlobalFunction.js:145
+#: admin/src/AdminSocketGlobalFunction.js:150
 msgid "Core"
 msgstr "核心"
+
+#: admin/src/AdminSocketOverview.js:75
+msgid "user(s)."
+msgstr "個使用者"
+
+#: admin/src/AdminSocketOverview.js:99
+msgid "Are you sure you want to terminate this session?"
+msgstr "您確定要中止這個作業階段？"
+
+#: admin/src/AdminSocketOverview.js:185 admin/src/AdminSocketOverview.js:190
+msgid "document(s) open."
+msgstr "個文件開啟"
+
+#: admin/src/AdminSocketOverview.js:383
+msgid "Failed to set jwt authentication cookie over insecure connection"
+msgstr "jwt cookie 身份驗證不能在不安全的連線使用"
+
+#: admin/src/AdminSocketOverview.js:387
+msgid "Failed to authenticate this session over protocol %0"
+msgstr "不能通過 %0 協議進行身份驗證"
+
+#: admin/src/AdminSocketSettings.js:34
+msgid "Are you sure you want to shut down the server?"
+msgstr "確定要關閉伺服器？"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:12
+msgid "Upload upgrade file"
+msgstr "上傳升級軟體"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:13
+msgid "Select file"
+msgstr "選擇檔案"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:14
+msgid "Upload progress"
+msgstr "上傳進度"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:15
+msgid "Unsupported package installation system!"
+msgstr "該系統不支援此種軟體安裝！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:16
+msgid "Unable to enter the temporary directory!"
+msgstr "無法進入暫存目錄！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:17
+msgid "Unknown file type!"
+msgstr "未知的檔案類型！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:18
+msgid "File uncompressing..."
+msgstr "檔案解壓縮中……"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:19
+msgid "Test whether it can be upgraded."
+msgstr "測試是否能升級"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:20
+msgid "Start the upgrade."
+msgstr "開始升級作業"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:21
+msgid "Start the real upgrade."
+msgstr "開始真正升級"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:22
+#: admin/src/AdminSocketSoftwareUpgrade.js:126
+msgid "Transmission"
+msgstr "傳送"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:94
+msgid "The upload file command is wrong, the syntax is as follows:"
+msgstr "上傳檔案的指令錯誤，語法如下："
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:98
+msgid "Start the software upgrade..."
+msgstr "開始升級軟體……"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:102
+msgid "File decompression failed!"
+msgstr "檔案解壓縮錯誤！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:105
+msgid "Test upgrade failed!"
+msgstr "測試升級失敗！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:108
+msgid "Software upgrade is successful."
+msgstr "軟體升級成功"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:111
+msgid "You may need to restart the service."
+msgstr "您可能需要重新啟動伺服器"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:114
+msgid "Software upgrade failed!"
+msgstr "軟體升級失敗"
 
 #: admin/src/Util.js:14
 msgid "kB"
@@ -310,6 +530,26 @@ msgstr "GB"
 msgid "TB"
 msgstr "TB"
 
+#: admin/src/Util.js:14
+msgid "PB"
+msgstr "PB"
+
+#: admin/src/Util.js:14
+msgid "EB"
+msgstr "EB"
+
+#: admin/src/Util.js:14
+msgid "ZB"
+msgstr "ZB"
+
+#: admin/src/Util.js:14
+msgid "YB"
+msgstr "YB"
+
+#: admin/src/Util.js:14
+msgid "BB"
+msgstr "BB"
+
 #: admin/src/Util.js:43 admin/src/Util.js:45
 msgid " hrs"
 msgstr " 小時"
@@ -321,10 +561,6 @@ msgstr " 分鐘"
 #: admin/src/Util.js:54
 msgid " s"
 msgstr " 秒"
-
-#: js/toolbar.js:714 js/toolbar.js:1940 uiconfig/dialogs/InsertBreak.js:19
-msgid "None"
-msgstr "無"
 
 #: js/toolbar.js:715
 msgid "Wipe"
@@ -406,7 +642,7 @@ msgstr "插入形狀"
 msgid "Worksheet link"
 msgstr "工作表連結"
 
-#: js/toolbar.js:990 js/toolbar.js:2779
+#: js/toolbar.js:990 js/toolbar.js:2815
 msgid "Common symbols"
 msgstr "常用符號"
 
@@ -562,36 +798,28 @@ msgstr "1 位使用者"
 msgid "0 users"
 msgstr "0 位使用者"
 
-#: js/toolbar.js:2235
+#: js/toolbar.js:2258
 msgid "Document saved"
 msgstr "文件已儲存"
 
-#: js/toolbar.js:2400 uiconfig/dialogs/InsertBreak.js:30
-msgid "Style"
-msgstr "樣式"
-
-#: js/toolbar.js:2423 uiconfig/dialogs/BindingLineDialog.js:36
-msgid "Font"
-msgstr "字型"
-
-#: js/toolbar.js:2444
+#: js/toolbar.js:2480
 msgid "Previous slide"
 msgstr "上一張投影片"
 
-#: js/toolbar.js:2445
+#: js/toolbar.js:2481
 msgid "Next slide"
 msgstr "下一張投影片"
 
-#: js/toolbar.js:2531
+#: js/toolbar.js:2567
 msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to resolve"
 msgstr "多位使用者間取消動作/再次動作發生衝突。請使用文件修復來解決問題"
 
-#: js/toolbar.js:2946 src/control/Control.DocumentRepair.js:95
+#: js/toolbar.js:2982 src/control/Control.DocumentRepair.js:95
 msgid "You"
 msgstr "您"
 
-#: js/toolbar.js:2952
+#: js/toolbar.js:2988
 msgid "Readonly"
 msgstr "唯讀"
 
@@ -769,7 +997,7 @@ msgstr "檔案已儲存，將開啟此加密文件。"
 msgid "Renaming..."
 msgstr "正在更改檔名…"
 
-#: src/control/Toolbar.js:895
+#: src/control/Toolbar.js:897
 msgid "This version of %productName is powered by"
 msgstr "此 %productName 版本源自"
 
@@ -860,13 +1088,13 @@ msgstr "提供的密碼錯誤。請重試。"
 
 #: src/core/Socket.js:733
 msgid "Connecting..."
-msgstr "連接中..."
+msgstr "連線中..."
 
 #: src/core/Socket.js:893
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
-msgstr "我們沒辦法連接您的文件。請重試一次。"
+msgstr "無法開啟您的文件。請重試一次。"
 
 #: src/othermessages.js:6
 msgid "Autofilter do not support in multiuser mode"
@@ -1258,14 +1486,6 @@ msgstr "邊距"
 msgid "cm"
 msgstr "公分"
 
-#: uiconfig/dialogs/BindingLineDialog.js:99 uiconfig/dialogs/ColumnWidth.js:31
-#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/HeaderAndFooter.js:65
-#: uiconfig/dialogs/InsertCell.js:27 uiconfig/dialogs/PdfWatermarkText.js:26
-#: uiconfig/dialogs/RemoveCell.js:27 uiconfig/dialogs/RowHeight.js:31
-#: uiconfig/dialogs/SetTabBgColor.js:24 uiconfig/dialogs/SplitCell.js:55
-msgid "Close"
-msgstr "關閉"
-
 #: uiconfig/dialogs/ColumnWidth.js:19
 msgid "Width"
 msgstr "寬度"
@@ -1292,7 +1512,6 @@ msgid "Formulas"
 msgstr "公式"
 
 #: uiconfig/dialogs/DeleteCell.js:32
-#, fuzzy
 msgid "Comments"
 msgstr "註解"
 
@@ -1329,7 +1548,6 @@ msgid "input ex:AAA;BBB"
 msgstr "輸入 例:AAA;BBB"
 
 #: uiconfig/dialogs/HeaderAndFooter.js:36
-#, fuzzy
 msgid "Date and time"
 msgstr "日期和時間"
 
@@ -1346,7 +1564,6 @@ msgid "Variable"
 msgstr "變數"
 
 #: uiconfig/dialogs/HeaderAndFooter.js:40
-#, fuzzy
 msgid "Format"
 msgstr "格式"
 
@@ -1555,12 +1772,10 @@ msgid "Include"
 msgstr "包括"
 
 #: uiconfig/dialogs/RowOrColGroup.js:30
-#, fuzzy
 msgid "Row"
 msgstr "列"
 
 #: uiconfig/dialogs/RowOrColGroup.js:32
-#, fuzzy
 msgid "Column"
 msgstr "欄"
 
@@ -1603,6 +1818,13 @@ msgstr "停止追蹤修訂，將會遺失所有更改的資訊。"
 #: uiconfig/dialogs/TraceChangeMode.js:44
 msgid "Warning"
 msgstr "警告"
+
+#~ msgid "Documents"
+#~ msgstr "文件"
+
+#, fuzzy
+#~ msgid "Username"
+#~ msgstr "帳號"
 
 #~ msgid "File type"
 #~ msgstr "檔案類型"

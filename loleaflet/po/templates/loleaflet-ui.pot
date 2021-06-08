@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-05 12:03+0800\n"
+"POT-Creation-Date: 2021-06-08 14:35+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,232 +18,307 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: admin/admin.strings.js:6
+#: admin/admin.strings.js:7
 msgid "Admin console"
 msgstr ""
 
-#: admin/admin.strings.js:7
+#: admin/admin.strings.js:8
 msgid "Settings"
 msgstr ""
 
-#: admin/admin.strings.js:8
-msgid "Overview"
-msgstr ""
-
 #: admin/admin.strings.js:9
-msgid "(current)"
+msgid "Main menu"
 msgstr ""
 
 #: admin/admin.strings.js:10
-msgid "Analytics"
+msgid "Overview"
 msgstr ""
 
 #: admin/admin.strings.js:11
-msgid "History"
+msgid "(current)"
 msgstr ""
 
 #: admin/admin.strings.js:12
-msgid "Dashboard"
+msgid "Analytics"
 msgstr ""
 
 #: admin/admin.strings.js:13
-msgid "Users online"
+msgid "History"
 msgstr ""
 
 #: admin/admin.strings.js:14
-msgid "User Name"
+msgid "Log"
 msgstr ""
 
 #: admin/admin.strings.js:15
-msgid "Documents opened"
+msgid "System configuration"
 msgstr ""
 
 #: admin/admin.strings.js:16
-msgid "Number of Documents"
+msgid "Table conversion"
 msgstr ""
 
 #: admin/admin.strings.js:17
-msgid "Memory consumed"
+msgid "Template Repo"
 msgstr ""
 
 #: admin/admin.strings.js:18
-msgid "Bytes sent"
+msgid "ODF report template"
 msgstr ""
 
 #: admin/admin.strings.js:19
-msgid "Bytes received"
+msgid "Software upgrade"
 msgstr ""
 
 #: admin/admin.strings.js:20
-msgid "PID"
+msgid "Font manager"
 msgstr ""
 
 #: admin/admin.strings.js:21
-msgid "Document"
+msgid "Dashboard"
 msgstr ""
 
 #: admin/admin.strings.js:22
-msgid "Number of views"
+msgid "Users online"
 msgstr ""
 
-#: admin/admin.strings.js:23
-msgid "Elapsed time"
+#: admin/admin.strings.js:23 admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
+msgid "User Name"
 msgstr ""
 
 #: admin/admin.strings.js:24
-msgid "Idle time"
+msgid "Documents opened"
 msgstr ""
 
 #: admin/admin.strings.js:25
-msgid "Modified"
+msgid "Documents open"
 msgstr ""
 
-#: admin/admin.strings.js:26
-msgid "Kill"
+#: admin/admin.strings.js:26 admin/src/AdminSocketOverview.js:121
+#: admin/src/AdminSocketOverview.js:334
+msgid " user(s)."
 msgstr ""
 
 #: admin/admin.strings.js:27
-msgid "Graphs"
+msgid " document(s) open."
 msgstr ""
 
 #: admin/admin.strings.js:28
-msgid "Memory Graph"
+msgid "Number of Documents"
 msgstr ""
 
 #: admin/admin.strings.js:29
-msgid "CPU Graph"
+msgid "Memory consumed"
 msgstr ""
 
 #: admin/admin.strings.js:30
-msgid "Network Graph"
+msgid "Bytes sent"
 msgstr ""
 
-#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:241
-msgid "Save"
+#: admin/admin.strings.js:31
+msgid "Bytes received"
 msgstr ""
 
 #: admin/admin.strings.js:32
-msgid "Cache size of memory statistics"
+msgid "PID"
 msgstr ""
 
 #: admin/admin.strings.js:33
-msgid "Time interval of memory statistics (in ms)"
+msgid "Document"
 msgstr ""
 
 #: admin/admin.strings.js:34
-msgid "Cache size of CPU statistics"
+msgid "Number of views"
 msgstr ""
 
 #: admin/admin.strings.js:35
-msgid "Time interval of CPU statistics (in ms)"
+msgid "Views"
 msgstr ""
 
 #: admin/admin.strings.js:36
-msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgid "Elapsed time"
 msgstr ""
 
 #: admin/admin.strings.js:37
-msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgid "Idle time"
 msgstr ""
 
 #: admin/admin.strings.js:38
-msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgid "Modified"
 msgstr ""
 
 #: admin/admin.strings.js:39
-msgid "Documents:"
+msgid "Kill"
 msgstr ""
 
 #: admin/admin.strings.js:40
-msgid "Expired:"
+msgid "Graphs"
 msgstr ""
 
 #: admin/admin.strings.js:41
-msgid "Refresh"
+msgid "Memory Graph"
 msgstr ""
 
 #: admin/admin.strings.js:42
+msgid "CPU Graph"
+msgstr ""
+
+#: admin/admin.strings.js:43
+msgid "Network Graph"
+msgstr ""
+
+#: admin/admin.strings.js:44 src/layer/marker/Annotation.js:241
+msgid "Save"
+msgstr ""
+
+#: admin/admin.strings.js:45
+msgid "Cache size of memory statistics"
+msgstr ""
+
+#: admin/admin.strings.js:46
+msgid "Time interval of memory statistics (in ms)"
+msgstr ""
+
+#: admin/admin.strings.js:47
+msgid "Cache size of CPU statistics"
+msgstr ""
+
+#: admin/admin.strings.js:48
+msgid "Time interval of CPU statistics (in ms)"
+msgstr ""
+
+#: admin/admin.strings.js:49 admin/src/AdminSocketOverview.js:93
+msgid "Kill session."
+msgstr ""
+
+#: admin/admin.strings.js:50
+msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgstr ""
+
+#: admin/admin.strings.js:51
+msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgstr ""
+
+#: admin/admin.strings.js:52
+msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgstr ""
+
+#: admin/admin.strings.js:53
+msgid "Documents:"
+msgstr ""
+
+#: admin/admin.strings.js:54
+msgid "Expired:"
+msgstr ""
+
+#: admin/admin.strings.js:55
+msgid "Refresh"
+msgstr ""
+
+#: admin/admin.strings.js:56
+msgid "Shutdown Server"
+msgstr ""
+
+#: admin/admin.strings.js:57
 msgid "Server uptime"
 msgstr ""
 
-#: admin/src/AdminSocketAnalytics.js:219
+#: admin/admin.strings.js:58
+msgid "Refresh Log"
+msgstr ""
+
+#: admin/admin.strings.js:59
+msgid "Channel Filter:"
+msgstr ""
+
+#: admin/admin.strings.js:60 js/toolbar.js:714 js/toolbar.js:1940
+#: uiconfig/dialogs/InsertBreak.js:19
+msgid "None"
+msgstr ""
+
+#: admin/admin.strings.js:61
+msgid "Set Log Levels"
+msgstr ""
+
+#: admin/admin.strings.js:62
+msgid "Log Levels"
+msgstr ""
+
+#: admin/admin.strings.js:63 uiconfig/dialogs/BindingLineDialog.js:99
+#: uiconfig/dialogs/ColumnWidth.js:31 uiconfig/dialogs/DeleteCell.js:51
+#: uiconfig/dialogs/HeaderAndFooter.js:65 uiconfig/dialogs/InsertCell.js:27
+#: uiconfig/dialogs/PdfWatermarkText.js:26 uiconfig/dialogs/RemoveCell.js:27
+#: uiconfig/dialogs/RowHeight.js:31 uiconfig/dialogs/SetTabBgColor.js:24
+#: uiconfig/dialogs/SplitCell.js:55
+msgid "Close"
+msgstr ""
+
+#: admin/admin.strings.js:64
+msgid "Update Log Levels"
+msgstr ""
+
+#: admin/admin.strings.js:65
+msgid "Version Information"
+msgstr ""
+
+#: admin/src/AdminSocketAnalytics.js:205
 msgid "Received"
 msgstr ""
 
-#: admin/src/AdminSocketAnalytics.js:223
+#: admin/src/AdminSocketAnalytics.js:209
 msgid "Sent"
 msgstr ""
 
-#: admin/src/AdminSocketBase.js:54
+#: admin/src/AdminSocketBase.js:60
+msgid "Server has been shut down; please reload the page."
+msgstr ""
+
+#: admin/src/AdminSocketBase.js:70
 msgid "Connection error"
 msgstr ""
 
-#: admin/src/AdminSocketOverview.js:102
-msgid "Are you sure you want to terminate this session?"
+#: admin/src/AdminSocketFontManager.js:12
+msgid "Upload"
 msgstr ""
 
-#: admin/src/AdminSocketOverview.js:183 admin/src/AdminSocketOverview.js:285
-msgid "Documents"
+#: admin/src/AdminSocketFontManager.js:13
+msgid "File"
 msgstr ""
 
-#: admin/src/AdminSocketSettings.js:34
-msgid "Are you sure you want to shut down the server?"
+#: admin/src/AdminSocketFontManager.js:14 js/toolbar.js:2459
+#: uiconfig/dialogs/BindingLineDialog.js:36
+msgid "Font"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:19
+#: admin/src/AdminSocketFontManager.js:15
+msgid "File name"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:16
+msgid "Font name (preview)"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:17 js/toolbar.js:2436
+#: uiconfig/dialogs/InsertBreak.js:30
+msgid "Style"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:18
+msgid "Color font"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:19
+msgid "Symbol font"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:10
 msgid "Are you sure you want to restart the online service?"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:28
-msgid ""
-"For security reasons, please enter your original management account and "
-"password."
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:30
-#: admin/src/AdminSocketGlobalFunction.js:53
-msgid "Username"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:31
-#: admin/src/AdminSocketGlobalFunction.js:54 src/control/Control.Tabs.js:138
-#: uiconfig/dialogs/ProtectTable.js:21 uiconfig/dialogs/ProtectTable.js:22
-msgid "Password"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:34
-msgid "Verification"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:35
-#: admin/src/AdminSocketGlobalFunction.js:59 js/toolbar.js:1101
-#: js/toolbar.js:1372 src/layer/marker/Annotation.js:181 src/map/Map.js:109
-#: uiconfig/dialogs/AddTableAtEnd.js:46
-#: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
-#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/dlgSecurePrint.js:73
-#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
-#: uiconfig/dialogs/HeaderAndFooter.js:150 uiconfig/dialogs/InsertBreak.js:57
-#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertImage.js:102
-#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
-#: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:54
-#: uiconfig/dialogs/ProtectTable.js:59 uiconfig/dialogs/RemoveCell.js:54
-#: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
-#: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
-#: uiconfig/dialogs/SetHyperLinkTable.js:148
-#: uiconfig/dialogs/SetTabBgColor.js:57 uiconfig/dialogs/ShowTable.js:55
-#: uiconfig/dialogs/SplitCell.js:106 uiconfig/dialogs/TraceChangeMode.js:65
-msgid "Cancel"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:51
-msgid "Please enter a new account and password."
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:55
-msgid "Confirm password"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:58 src/map/Map.js:108
+#: admin/src/AdminSocketGlobalFunction.js:12
+#: admin/src/AdminSocketGlobalFunction.js:56
+#: admin/src/AdminSocketOverview.js:101 src/map/Map.js:108
 #: uiconfig/dialogs/AddTableAtEnd.js:39
 #: uiconfig/dialogs/BindingLineDialog.js:113 uiconfig/dialogs/ColumnWidth.js:49
 #: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/dlgSecurePrint.js:44
@@ -261,35 +336,178 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:71
+#: admin/src/AdminSocketGlobalFunction.js:13
+#: admin/src/AdminSocketGlobalFunction.js:33
+#: admin/src/AdminSocketGlobalFunction.js:57
+#: admin/src/AdminSocketOverview.js:102 js/toolbar.js:1101 js/toolbar.js:1372
+#: src/layer/marker/Annotation.js:181 src/map/Map.js:109
+#: uiconfig/dialogs/AddTableAtEnd.js:46
+#: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
+#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/dlgSecurePrint.js:73
+#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
+#: uiconfig/dialogs/HeaderAndFooter.js:150 uiconfig/dialogs/InsertBreak.js:57
+#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertImage.js:102
+#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
+#: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:54
+#: uiconfig/dialogs/ProtectTable.js:59 uiconfig/dialogs/RemoveCell.js:54
+#: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
+#: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
+#: uiconfig/dialogs/SetHyperLinkTable.js:148
+#: uiconfig/dialogs/SetTabBgColor.js:57 uiconfig/dialogs/ShowTable.js:55
+#: uiconfig/dialogs/SplitCell.js:106 uiconfig/dialogs/TraceChangeMode.js:65
+msgid "Cancel"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:26
+msgid ""
+"For security reasons, please enter your original management account and "
+"password."
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:29
+#: admin/src/AdminSocketGlobalFunction.js:52 src/control/Control.Tabs.js:138
+#: uiconfig/dialogs/ProtectTable.js:21 uiconfig/dialogs/ProtectTable.js:22
+msgid "Password"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:32
+msgid "Verification"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:49
+msgid "Please enter a new account and password."
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:53
+msgid "Confirm password"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:69
 msgid "The password does not match the confirmation password!"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:86
+#: admin/src/AdminSocketGlobalFunction.js:84
 msgid "Restart service"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:87
+#: admin/src/AdminSocketGlobalFunction.js:85
 msgid "Change account password"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:128
+#: admin/src/AdminSocketGlobalFunction.js:126
 msgid "The account or password is inconsistent with the system!"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:138
+#: admin/src/AdminSocketGlobalFunction.js:136
 msgid ""
 "The account and password have been updated and will take effect after the "
 "next service restart."
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:142
+#: admin/src/AdminSocketGlobalFunction.js:140
 msgid "Version"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:147
-#: admin/src/AdminSocketGlobalFunction.js:152
+#: admin/src/AdminSocketGlobalFunction.js:145
+#: admin/src/AdminSocketGlobalFunction.js:150
 msgid "Core"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:75
+msgid "user(s)."
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:99
+msgid "Are you sure you want to terminate this session?"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:185 admin/src/AdminSocketOverview.js:190
+msgid "document(s) open."
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:383
+msgid "Failed to set jwt authentication cookie over insecure connection"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:387
+msgid "Failed to authenticate this session over protocol %0"
+msgstr ""
+
+#: admin/src/AdminSocketSettings.js:34
+msgid "Are you sure you want to shut down the server?"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:12
+msgid "Upload upgrade file"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:13
+msgid "Select file"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:14
+msgid "Upload progress"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:15
+msgid "Unsupported package installation system!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:16
+msgid "Unable to enter the temporary directory!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:17
+msgid "Unknown file type!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:18
+msgid "File uncompressing..."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:19
+msgid "Test whether it can be upgraded."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:20
+msgid "Start the upgrade."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:21
+msgid "Start the real upgrade."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:22
+#: admin/src/AdminSocketSoftwareUpgrade.js:126
+msgid "Transmission"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:94
+msgid "The upload file command is wrong, the syntax is as follows:"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:98
+msgid "Start the software upgrade..."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:102
+msgid "File decompression failed!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:105
+msgid "Test upgrade failed!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:108
+msgid "Software upgrade is successful."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:111
+msgid "You may need to restart the service."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:114
+msgid "Software upgrade failed!"
 msgstr ""
 
 #: admin/src/Util.js:14
@@ -308,6 +526,26 @@ msgstr ""
 msgid "TB"
 msgstr ""
 
+#: admin/src/Util.js:14
+msgid "PB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "EB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "ZB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "YB"
+msgstr ""
+
+#: admin/src/Util.js:14
+msgid "BB"
+msgstr ""
+
 #: admin/src/Util.js:43 admin/src/Util.js:45
 msgid " hrs"
 msgstr ""
@@ -318,10 +556,6 @@ msgstr ""
 
 #: admin/src/Util.js:54
 msgid " s"
-msgstr ""
-
-#: js/toolbar.js:714 js/toolbar.js:1940 uiconfig/dialogs/InsertBreak.js:19
-msgid "None"
 msgstr ""
 
 #: js/toolbar.js:715
@@ -404,7 +638,7 @@ msgstr ""
 msgid "Worksheet link"
 msgstr ""
 
-#: js/toolbar.js:990 js/toolbar.js:2779
+#: js/toolbar.js:990 js/toolbar.js:2815
 msgid "Common symbols"
 msgstr ""
 
@@ -560,36 +794,28 @@ msgstr ""
 msgid "0 users"
 msgstr ""
 
-#: js/toolbar.js:2235
+#: js/toolbar.js:2258
 msgid "Document saved"
 msgstr ""
 
-#: js/toolbar.js:2400 uiconfig/dialogs/InsertBreak.js:30
-msgid "Style"
-msgstr ""
-
-#: js/toolbar.js:2423 uiconfig/dialogs/BindingLineDialog.js:36
-msgid "Font"
-msgstr ""
-
-#: js/toolbar.js:2444
+#: js/toolbar.js:2480
 msgid "Previous slide"
 msgstr ""
 
-#: js/toolbar.js:2445
+#: js/toolbar.js:2481
 msgid "Next slide"
 msgstr ""
 
-#: js/toolbar.js:2531
+#: js/toolbar.js:2567
 msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to resolve"
 msgstr ""
 
-#: js/toolbar.js:2946 src/control/Control.DocumentRepair.js:95
+#: js/toolbar.js:2982 src/control/Control.DocumentRepair.js:95
 msgid "You"
 msgstr ""
 
-#: js/toolbar.js:2952
+#: js/toolbar.js:2988
 msgid "Readonly"
 msgstr ""
 
@@ -767,7 +993,7 @@ msgstr ""
 msgid "Renaming..."
 msgstr ""
 
-#: src/control/Toolbar.js:895
+#: src/control/Toolbar.js:897
 msgid "This version of %productName is powered by"
 msgstr ""
 
@@ -1245,14 +1471,6 @@ msgstr ""
 #: uiconfig/dialogs/BindingLineDialog.js:50 uiconfig/dialogs/ColumnWidth.js:21
 #: uiconfig/dialogs/RowHeight.js:21
 msgid "cm"
-msgstr ""
-
-#: uiconfig/dialogs/BindingLineDialog.js:99 uiconfig/dialogs/ColumnWidth.js:31
-#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/HeaderAndFooter.js:65
-#: uiconfig/dialogs/InsertCell.js:27 uiconfig/dialogs/PdfWatermarkText.js:26
-#: uiconfig/dialogs/RemoveCell.js:27 uiconfig/dialogs/RowHeight.js:31
-#: uiconfig/dialogs/SetTabBgColor.js:24 uiconfig/dialogs/SplitCell.js:55
-msgid "Close"
 msgstr ""
 
 #: uiconfig/dialogs/ColumnWidth.js:19
