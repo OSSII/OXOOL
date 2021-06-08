@@ -2,11 +2,22 @@
 /*
 	Font manager.
 */
-/* global AdminSocketBase Admin $ */
+/* global AdminSocketBase Admin $ _ */
 var AdminSocketFontManager = AdminSocketBase.extend({
 	constructor: function(host) {
 		this.base(host);
 	},
+
+	_l10nMsg: [
+		_('Upload'), // 上傳
+		_('File'), // 檔案
+		_('Font'), // 字型
+		_('File name'), // 檔案名稱
+		_('Font name (preview)'), // 字型名稱(預覽)
+		_('Style'), // 式樣
+		_('Color font'), // 彩色字型
+		_('Symbol font'), // 符號字型
+	],
 
 	_lang: String.locale.toLowerCase(),
 	_fontList: {},
@@ -44,7 +55,7 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 			var yes = confirm('刪除選取的 ' + checked.length + ' 個檔案嗎？');
 			if (yes) {
 				for (var i = 0 ; i < checked.length ; i++) {
-					that.socket.send('deleteFont ' + encodeURIComponent(checked[i].value));
+					that.socket.send('deleteFont ' + encodeURI(checked[i].value));
 				}
 				that.socket.send('getFontlist');
 			}
@@ -83,20 +94,16 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 		} else if (textMsg.startsWith('receivedSize:')) { // Server 通知已收到的檔案大小
 			var totalBytes = parseInt(textMsg.substr(13), 10);
 			console.debug(this._fileInfo.name + ' recv ' + totalBytes + 'bytes');
-		} else if (textMsg === 'upgradeFileReciveOK') { // Server 通知檔案接收完畢
+		} else if (textMsg === 'uploadFileReciveOK') { // Server 通知檔案接收完畢
 			console.debug(this._fileInfo.name + ' upload OK');
-			this.socket.send('moveFontFile'); // 通知 Server 移動字型檔案
-		} else if (textMsg === 'moveFontSuccess') {
-			console.debug('字型檔案移動 OK');
-			this.socket.send('clearUpgradeFiles'); // 清除升級暫存檔案
-		} else if (textMsg === 'moveFontFail') {
-			console.debug('字型檔案移動失敗');
-			this.socket.send('clearUpgradeFiles'); // 清除升級暫存檔案
-		} else if (textMsg === 'clearUpgradeFilesOK') { // 清除升級暫存檔案成功
-			console.debug('清除升級暫存檔案成功');
+			this.socket.send('installFont'); // 通知 Server 安裝字型
+		} else if (textMsg === 'installFontSuccess') {
+			console.debug('字型安裝成功');
 			this._uploadInOrder(); // 繼續上傳下個檔案（如果還有的話）
-		} else if (textMsg === 'clearUpgradeFilesFail') { // 清除升級暫存檔案失敗
-			console.debug('清除升級暫存檔案失敗');
+		} else if (textMsg === 'installFontFail') {
+			console.debug('字型安裝失敗');
+		} else if (textMsg === 'deleteFontSuccess') {
+			console.debug('字型刪除成功');
 		} else {
 			console.debug('unknow message :', textMsg);
 		}
@@ -109,8 +116,11 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 	_uploadInOrder: function() {
 		if (this._uploadIndex < this._uploadFileList.length) {
 			this._fileInfo = this._uploadFileList[this._uploadIndex];
-			var fileObj = {name: this._fileInfo.name, size:this._fileInfo.size};
-			this.socket.send('uploadFont ' + JSON.stringify(fileObj));
+			this.socket.send(
+				'uploadFile ' +
+				encodeURI(this._fileInfo.name) + ' ' +
+				this._fileInfo.size
+			);
 			var percent = Math.floor(((this._uploadIndex + 1) / this._uploadFileList.length) * 100); // 計算傳送比例
 			$('#progressbar').css('width', percent +'%')
 				.attr('aria-valuenow', percent)
