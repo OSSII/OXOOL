@@ -655,6 +655,7 @@ namespace Util
         return
             "{ \"Version\":  \"" + version + "\", "
             "\"Hash\":     \"" + hash + "\", "
+            "\"Branch\": \"" + LOOLWSD_BRANCH + "\", "
             "\"Protocol\": \"" + LOOLProtocol::GetProtocolVersion() + "\", "
             "\"Id\":  \"" + Util::getProcessIdentifier() + "\" }";
     }
