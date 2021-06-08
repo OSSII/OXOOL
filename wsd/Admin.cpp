@@ -9,6 +9,9 @@
 
 #include <config.h>
 
+#include <fontconfig/fontconfig.h>
+#include <fontconfig/fcfreetype.h>
+
 #include <cassert>
 #include <mutex>
 #include <sys/poll.h>
@@ -51,9 +54,59 @@ using Poco::TemporaryFile;
 #define pwdIterations 10000
 #define pwdHashLength 128
 
+const std::string fontsDir =
+#if ENABLE_DEBUG
+    DEBUG_ABSSRCDIR "/fonts";
+#else
+    "/usr/share/fonts/" PACKAGE_NAME;
+#endif
+
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 1000;
 const std::string levelList[] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
+
+namespace
+{
+// 掃描 OxOOL 管理的字型目錄
+const std::string scanFontDir()
+{
+    const std::string format = "{\"%{file|basename}\":{\"index\":%{index}, \"family\":\"%{family}\", \"familylang\":\"%{familylang}\", \"style\":\"%{style}\", \"stylelang\":\"%{stylelang}\", \"weight\":\"%{weight}\", \"slant\":\"%{slant}\", \"color\":\"%{color|downcase}\", \"symbol\":\"%{symbol|downcase}\", \"variable\":\"%{variable|downcase}\", \"lang\":\"%{lang}\"}}";
+    FcFontSet *fs = FcFontSetCreate();
+    FcStrSet *dirs = FcStrSetCreate();
+    FcStrList *strlist = FcStrListCreate(dirs);
+    FcChar8 *file = (FcChar8*)fontsDir.c_str();
+    do
+    {
+        FcDirScan(fs, dirs, NULL, NULL, file, FcTrue);
+    }
+    while ((file = FcStrListNext(strlist)));
+    FcStrListDone(strlist);
+    FcStrSetDestroy(dirs);
+
+    std::string jsonStr("[");
+    for (int i = 0; i < fs->nfont; i++)
+    {
+        FcPattern *pat = fs->fonts[i];
+        FcChar8 *s = FcPatternFormat(pat, (FcChar8 *)format.c_str());
+
+        if (i > 0) jsonStr.append(",");
+
+        jsonStr.append((char *)s);
+        FcStrFree(s);
+    }
+    jsonStr.append("]");
+    FcFontSetDestroy(fs);
+    FcFini();
+    return jsonStr;
+}
+
+// 利用 fc-cache 重建 oxool 管理的字型目錄
+void makeFontCach()
+{
+    std::string fontCacheCmd = "fc-cache -f -r \"" + fontsDir + "\"";
+    system(fontCacheCmd.c_str());
+}
+}
 
 class OxoolConfig final: public XMLConfiguration
 {
@@ -116,6 +169,14 @@ bool ReceiveFile::isComplete()
         return true;
     }
     return false;
+}
+
+void ReceiveFile::deleteWorkDir()
+{
+    if (File(getWorkPath()).exists())
+    {
+        File(getWorkPath()).remove(true);
+    }
 }
 
 /// Process incoming websocket messages
@@ -552,7 +613,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             // 指令執行有錯
             if (retcode != 0)
             {
-                File(workPath).remove(true); // 砍掉該檔案整個目錄
+                _receiveFile.deleteWorkDir(); // 砍掉該檔案整個目錄
                 sendTextFrame("uncompressPackageFail");
                 return;
             }
@@ -578,7 +639,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         // 指令執行有錯
         if (retcode != 0)
         {
-            File(workPath).remove(true); // 砍掉該檔案整個目錄
+            _receiveFile.deleteWorkDir(); // 砍掉該檔案整個目錄
             sendTextFrame("upgradePackageTestFail");
             return;
         }
@@ -603,15 +664,56 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         // 指令執行有錯
         if (retcode != 0)
         {
-            File(workPath).remove(true); // 砍掉該檔案整個目錄
+            _receiveFile.deleteWorkDir(); // 砍掉該檔案整個目錄
             sendTextFrame("upgradeFail");
             return;
         }
 
         // 回到之前的工作目錄
         chdir(currentPath.c_str());
-        File(workPath).remove(true); // 砍掉工作暫存目錄
+        _receiveFile.deleteWorkDir(); // 砍掉工作暫存目錄
         sendTextFrame("upgradeSuccess");
+    }
+    // 傳回管理字型檔案列表
+    else if (tokens.equals(0, "getFontlist") && tokens.size() == 1)
+    {
+        sendTextFrame("fontList: " + scanFontDir());
+    }
+    // 安裝上傳的字型檔案到 oxool 管理的字型目錄及 systemplate/
+    // oxool 管理的字型目錄是 /usr/share/fonts/oxool
+    // ndcodfweb 管理的字型目錄是 /usr/share/fonts/ndcodfweb
+    else if (tokens.equals(0, "installFont") && tokens.size() == 1)
+    {
+        const std::string sysTemplateFontsDir = LOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
+        std::string fontFile = _receiveFile.getWorkPath() + "/" + _receiveFile.getWorkFileName();
+        File font(fontFile);
+        font.copyTo(fontsDir);
+        font.copyTo(sysTemplateFontsDir);
+        _receiveFile.deleteWorkDir(); // 砍掉工作暫存目錄
+        makeFontCach(); // 重建 font cache
+        sendTextFrame("installFontSuccess");
+    }
+    // 刪除字型
+    // 語法：deleteFont <檔名>
+    else if (tokens.equals(0, "deleteFont") && tokens.size() == 2)
+    {
+        const std::string sysTemplateFontsDir = LOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
+        std::string fileName;
+        Poco::URI::decode(tokens[1], fileName);
+        File masterFont(fontsDir + "/" + fileName);
+        File tempFont(sysTemplateFontsDir + "/" + fileName);
+
+        if (masterFont.exists())
+        {
+            masterFont.remove();
+        }
+
+        if (tempFont.exists())
+        {
+            tempFont.remove();
+        }
+        makeFontCach(); // 重建 font cache
+        sendTextFrame("deleteFontSuccess");
     }
     else
     {

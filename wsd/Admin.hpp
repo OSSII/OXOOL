@@ -46,6 +46,9 @@ public:
     /// 取得目前接收檔案檔名
     std::string getWorkFileName() { return _name; }
 
+    /// 清除工作目錄
+    void deleteWorkDir();
+
 private:
     Poco::Path _tempPath; // 暫存目錄
 
