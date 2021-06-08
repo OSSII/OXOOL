@@ -3,7 +3,7 @@
 	Abstract class
 */
 
-/* global _ Util vex Base Admin */
+/* global _ Util vex Base */
 
 // polyfill startsWith for IE11
 if (typeof String.prototype.startsWith !== 'function') {
@@ -15,7 +15,7 @@ if (typeof String.prototype.startsWith !== 'function') {
 var AdminSocketBase = Base.extend({
 	socket: null,
 
-	constructor: function(host) {
+	constructor: function (host) {
 		// because i am abstract
 		if (this.constructor === AdminSocketBase) {
 			throw new Error('Cannot instantiate abstract class');
@@ -31,27 +31,42 @@ var AdminSocketBase = Base.extend({
 			this.socket.onerror = this.onSocketError.bind(this);
 			this.socket.binaryType = 'arraybuffer';
 		}
+
+		this.pageWillBeRefreshed = false;
+		var onBeforeFunction = function() {
+			this.pageWillBeRefreshed = true;
+		};
+		window.onbeforeunload = onBeforeFunction.bind(this);
 	},
 
-	onSocketOpen: function() {
+	onSocketOpen: function () {
 		// Authenticate
 		var cookie = Util.getCookie('jwt');
 		this.socket.send('auth ' + cookie);
 	},
 
-	onSocketMessage: function() {
+	onSocketMessage: function () {
 		/* Implemented by child */
 	},
 
-	onSocketClose: function() {
-		this.socket.onerror = function() {};
-		this.socket.onclose = function() {};
-		this.socket.onmessage = function() {};
+	onSocketClose: function () {
+		this.socket.onerror = function () { };
+		this.socket.onclose = function () { };
+		this.socket.onmessage = function () { };
 		this.socket.close();
+
+		if (this.pageWillBeRefreshed === false) {
+			this.vexInstance = vex.open({
+				content: _('Server has been shut down; please reload the page.'),
+				contentClassName: 'loleaflet-user-idle',
+				showCloseButton: false,
+				overlayClosesOnClick: false,
+				escapeButtonCloses: false,
+			});
+		}
 	},
 
-	onSocketError: function() {
+	onSocketError: function () {
 		vex.dialog.alert(_('Connection error'));
 	}
 });
-Admin.SocketBase = AdminSocketBase;

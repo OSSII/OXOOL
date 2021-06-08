@@ -7,16 +7,16 @@
 var Util = Base.extend({
 	constructor: null
 
-}, { // class itnerface
+}, { // class interface
 
 	humanizeMem: function (kbytes) {
 		var unit = 1000;
-		var units = [_('kB'), _('MB'), _('GB'), _('TB')];
+		var units = [_('kB'), _('MB'), _('GB'), _('TB'), _('PB'), _('EB'), _('ZB'), _('YB'), _('BB')];
 		for (var i = 0; Math.abs(kbytes) >= unit && i < units.length; i++) {
 			kbytes /= unit;
 		}
 
-		return kbytes + ' ' + units[i];
+		return kbytes.toFixed(1) + ' ' + units[i];
 	},
 
 	humanizeSecs: function(secs) {
