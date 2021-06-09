@@ -3,7 +3,7 @@
 	Abstract class
 */
 
-/* global _ Util vex Base */
+/* global _ Util vex Base $ */
 
 // polyfill startsWith for IE11
 if (typeof String.prototype.startsWith !== 'function') {
@@ -14,6 +14,7 @@ if (typeof String.prototype.startsWith !== 'function') {
 
 var AdminSocketBase = Base.extend({
 	socket: null,
+	connectCount: 0,
 
 	constructor: function (host) {
 		// because i am abstract
@@ -57,16 +58,47 @@ var AdminSocketBase = Base.extend({
 
 		if (this.pageWillBeRefreshed === false) {
 			this.vexInstance = vex.open({
-				content: _('Server has been shut down; please reload the page.'),
+				content: _('Server has been shut down; please reload the page.') +
+						'<p id="wait-server-start"></p>',
 				contentClassName: 'loleaflet-user-idle',
 				showCloseButton: false,
 				overlayClosesOnClick: false,
 				escapeButtonCloses: false,
 			});
+			this.waitServerStart(); // 進入等待 Server 重啟循環
 		}
 	},
 
 	onSocketError: function () {
 		vex.dialog.alert(_('Connection error'));
+	},
+
+	// Add by Firefly <firefly@ossii.com.tw>
+	// 偵測 OxOOL Server 是否啟動，若是，就重新 reload 當前頁面
+	waitServerStart: function () {
+		var that = this;
+		this.connectCount ++;
+		$('#wait-server-start').text(_('Try to reconnect...') + ' #' + this.connectCount);
+		setTimeout(function () {
+			// 偵測 OxOOL 是否已經啟動
+			// get "/" 位址，若傳回 OK 表示正常
+			$.ajax({
+				type: 'GET',
+				url: '/',
+				timeout: 100, // 0.1 秒
+				success: function(data/*, textStatus*/) {
+					if (data === 'OK') {
+						location.reload();
+					}  else {
+						// 繼續測試
+						that.waitServerStart();
+					}
+				},
+				error:function(/*xhr, ajaxOptions, thrownError*/) {
+					// 繼續測試
+					that.waitServerStart();
+				}
+			});
+		}, 4900);
 	}
 });
