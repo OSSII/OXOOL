@@ -193,7 +193,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     {
         _receiveFile.writeData(payload); // 資料寫入檔案
         // 通知 client 總共收到的 bytes
-        sendTextFrame("receivedSize:" + std::to_string(_receiveFile.size()));
+        sendTextFrame("receivedSize:" + std::to_string(_receiveFile.size()), true);
 
         if (_receiveFile.isComplete())
         {
@@ -523,7 +523,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     // 安裝升級檔
     else if (tokens.equals(0, "upgradePackage") && tokens.size() == 1)
     {
-        // TODO: 這裡應該要檢測 Linux 主機環境是 rpm base 或 dep base
+        // TODO: 這裡應該要檢測 Linux 主機環境是 rpm base 或 deb base
         std::string packageBase = "rpm"; // FIXME: getPackageBase()
 
         // 開始安裝套件
@@ -565,7 +565,6 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         // 延伸檔名轉小寫
         std::transform(extName.begin(), extName.end(), extName.begin(), ::tolower);
 
-        std::string output;
         std::string uncompressCmd;
         // 檔案是否為 .deb/.rpm/.zip/.tgz or tar.gz
         if (extName == "rpm" || extName == "deb")
@@ -598,16 +597,15 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         // 一、是否需要先解壓縮
         if (!uncompressCmd.empty())
         {
-            sendTextFrame("upgradeMsg:File uncompressing...");
-            sendTextFrame("upgradeInfo:Command: " + uncompressCmd + "\n\n");
+            sendTextFrame("upgradeMsg:File uncompressing...", true);
+            sendTextFrame("upgradeInfo:Command: " + uncompressCmd + "\n\n", true);
             fp = popen(uncompressCmd.c_str(), "r");
             while (fgets(buffer, sizeof(buffer), fp))
             {
-                output.append(buffer);
+                // 傳回輸出內容
+                sendTextFrame("upgradeInfo:" + std::string(buffer), true);
             }
             pclose(fp);
-            // 傳回輸出內容
-            sendTextFrame("upgradeInfo:" + output);
             // 讀取指令結束碼
             in.open("./retcode", std::ifstream::in);
             in.getline(buffer, sizeof(buffer));
@@ -623,17 +621,15 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         }
 
         // 二、測試是否能升級
-        sendTextFrame("upgradeMsg:Test whether it can be upgraded.");
-        sendTextFrame("upgradeInfo:Command: " + installTestCmd + "\n\n");
+        sendTextFrame("upgradeMsg:Test whether it can be upgraded.", true);
+        sendTextFrame("upgradeInfo:Command: " + installTestCmd + "\n\n", true);
         fp = popen(installTestCmd.c_str(), "r");
-        output.clear();
         while (fgets(buffer, sizeof(buffer), fp))
         {
-            output.append(buffer);
+            // 傳回輸出內容
+            sendTextFrame("upgradeInfo:" + std::string(buffer), true);
         }
         pclose(fp);
-        // 傳回輸出內容
-        sendTextFrame("upgradeInfo:" + output);
         // 讀取指令結束碼
         in.open("./retcode", std::ifstream::in);
         in.getline(buffer, sizeof(buffer));
@@ -648,17 +644,15 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         }
 
         // 三、正式升級
-        sendTextFrame("upgradeMsg:Start the real upgrade.");
-        sendTextFrame("upgradeInfo:Command: " + installCmd + "\n\n");
+        sendTextFrame("upgradeMsg:Start the real upgrade.", true);
+        sendTextFrame("upgradeInfo:Command: " + installCmd + "\n\n", true);
         fp = popen(installCmd.c_str(), "r");
-        output.clear();
         while (fgets(buffer, sizeof(buffer), fp))
         {
-            output.append(buffer);
+            // 傳回輸出內容
+            sendTextFrame("upgradeInfo:" + std::string(buffer), true);
         }
         pclose(fp);
-        // 傳回輸出內容
-        sendTextFrame("upgradeInfo:" + output);
         // 讀取指令結束碼
         in.open("./retcode", std::ifstream::in);
         in.getline(buffer, sizeof(buffer));
@@ -743,7 +737,7 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager)
     _sessionId = Util::decodeId(LOOLWSD::GetConnectionId());
 }
 
-void AdminSocketHandler::sendTextFrame(const std::string& message)
+void AdminSocketHandler::sendTextFrame(const std::string& message, bool flush)
 {
     if (!Util::isFuzzing())
     {
@@ -753,7 +747,7 @@ void AdminSocketHandler::sendTextFrame(const std::string& message)
     if (_isAuthenticated)
     {
         LOG_TRC("send admin text frame '" << message << '\'');
-        sendMessage(message);
+        sendMessage(message.c_str(), message.size(), WSOpCode::Text, flush);
     }
     else
         LOG_TRC("Skip sending message to non-authenticated client: '" << message << '\'');

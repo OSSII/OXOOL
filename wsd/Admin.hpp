@@ -86,7 +86,9 @@ public:
 
 private:
     /// Sends text frames simply to authenticated clients.
-    void sendTextFrame(const std::string& message);
+    /// Modified by Firefly <firefly@ossii.com.tw>
+    /// 若 flush = true 的話，會立刻把資料傳出去，預設為 flase
+    void sendTextFrame(const std::string& message, bool flush = false);
 
 private:
     Admin* _admin;
