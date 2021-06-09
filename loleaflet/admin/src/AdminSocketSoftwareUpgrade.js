@@ -130,8 +130,8 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		}
 	},
 
-	onSocketClose: function()
-	{
+	onSocketClose: function() {
+		this.base.call(this);
 	}
 });
 

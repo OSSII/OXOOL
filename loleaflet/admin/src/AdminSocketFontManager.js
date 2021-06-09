@@ -110,7 +110,7 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 	},
 
 	onSocketClose: function() {
-
+		this.base.call(this);
 	},
 
 	_uploadInOrder: function() {
