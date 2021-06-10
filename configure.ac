@@ -1174,9 +1174,7 @@ fi
 AM_CONDITIONAL([ENABLE_CYPRESS], [$ENABLE_CYPRESS])
 
 AC_CONFIG_FILES([Makefile
-                 cypress_test/Makefile
                  gtk/Makefile
-                 test/Makefile
                  loleaflet/Makefile
                  extensions/Makefile
                  loleaflet/npm-shrinkwrap.json
