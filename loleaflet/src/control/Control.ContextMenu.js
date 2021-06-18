@@ -102,18 +102,6 @@ L.Control.ContextMenu = L.Control.extend({
 							if (docType === 'drawing') {
 								docType = 'presentation';
 							}
-							var e = new ClipboardEvent('copy') ;
-							if (map._clipboardContainer.getValue() !== '') {
-								L.Compatibility.clipboardSet(e, map._clipboardContainer.getValue());
-								map._clipboardContainer.setValue('');
-							} else if (map._docLayer._selectionTextContent) {
-								// Modified by Firefly <firefly@ossii.com.tw>
-								// 防止從 Calc 複製的儲存格，貼上 excel 多出一列
-								var textContent = docType === 'spreadsheet' ? map._docLayer._selectionTextContent.trim() : map._docLayer._selectionTextContent;
-								L.Compatibility.clipboardSet(e, textContent);
-								// remember the copied text, for rich copy/paste inside a document
-								map._docLayer._selectionTextHash = map._docLayer._selectionTextContent;
-							}
 							// 是否有替代指令？
 							var altCmd = that._alternativeCommand[docType][key];
 							map.executeAllowedCommand(altCmd !== undefined ? altCmd : key);
