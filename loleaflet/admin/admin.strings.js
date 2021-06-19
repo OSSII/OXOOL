@@ -1,68 +1,39 @@
 /* -*- js-indent-level: 8 -*- */
 /* Stringtable for Admin Console User Interface */
 /* global _ */
-var l10nstrings = {};
+var l10nstrings = {
+	productName: 'OxOffice Online',
+	/**
+	 * 找出整頁中，含有 _="字串" 的 DOM，把該 DOM 的 innerHTML 改成 _("字串") 的值
+	 */
+	fullPageTranslation: function(dumpUntranslatedString) {
+		if (typeof dumpUntranslatedString !== 'boolean') {
+			dumpUntranslatedString = false;
+		}
+		document.querySelectorAll('[_]').forEach(function(element) {
+			var origStr = element.getAttribute('_'); // 原始字串
+			var tranStr = _(origStr); // 翻譯字串
+			element.innerHTML = tranStr;
+			if (dumpUntranslatedString && origStr === tranStr) {
+				console.warn('"'+ origStr +'" : Untranslated.');
+			}
+		}.bind(this));
+	},
 
-l10nstrings.strProductName = 'OxOffice Online';
-l10nstrings.strAdminConsole = _('Admin console');
-l10nstrings.strSettings = _('Settings');
-l10nstrings.strMainMenu = _('Main menu');
-l10nstrings.strOverview = _('Overview');
-l10nstrings.strCurrent = _('(current)');
-l10nstrings.strAnalytics = _('Analytics');
-l10nstrings.strHistory = _('History');
-l10nstrings.strLog = _('Log');
-l10nstrings.strConfigSettings = _('System configuration');
-l10nstrings.strTbl2sc = _('Table conversion');
-l10nstrings.strTemplateRepo = _('Template Repo');
-l10nstrings.strMergeODF = _('ODF report template');
-l10nstrings.strSoftwareUpgrade = _('Software upgrade');
-l10nstrings.strFontManager = _('Font manager')
-l10nstrings.strDashboard = _('Dashboard');
-l10nstrings.strUsersOnline = _('Users online');
-l10nstrings.strUserName = _('User Name');
-l10nstrings.strDocumentsOpened = _('Documents opened');
-l10nstrings.strDocumentsOpen = _('Documents open');
-l10nstrings.strUsers = _(' user(s).');
-l10nstrings.strUserOpenDocuments = _(' document(s) open.');
-l10nstrings.strDocumentNumber = _('Number of Documents');
-l10nstrings.strMemoryConsumed = _('Memory consumed');
-l10nstrings.strSentBytes = _('Bytes sent');
-l10nstrings.strRecvBytes = _('Bytes received');
-l10nstrings.strPid = _('PID');
-l10nstrings.strDocument = _('Document');
-l10nstrings.strNumberOfViews = _('Number of views');
-l10nstrings.strViewers = _('Views');
-l10nstrings.strElapsedTime = _('Elapsed time');
-l10nstrings.strIdleTime = _('Idle time');
-l10nstrings.strModified = _('Modified');
-l10nstrings.strKill = _('Kill');
-l10nstrings.strGraphs = _('Graphs');
-l10nstrings.strMemoryGraph = _('Memory Graph');
-l10nstrings.strCpuGraph = _('CPU Graph');
-l10nstrings.strNetGraph = _('Network Graph');
-l10nstrings.strSave = _('Save');
-l10nstrings.strMemoryStatsCachesize = _('Cache size of memory statistics');
-l10nstrings.strMemoryStatsInterval = _('Time interval of memory statistics (in ms)');
-l10nstrings.strCpuStatsCachesize = _('Cache size of CPU statistics');
-l10nstrings.strCpuStatsInterval = _('Time interval of CPU statistics (in ms)');
-l10nstrings.strKillSessionToolTip = _('Kill session.');
-l10nstrings.strLimitVirtMemMb = _('Maximum Document process virtual memory (in MB) - reduce only');
-l10nstrings.strLimitStackMemKb = _('Maximum Document process stack memory (in KB) - reduce only');
-l10nstrings.strLimitFileSizeMb = _('Maximum file size allowed to write to disk (in MB) - reduce only');
-l10nstrings.strDocuments = _('Documents:');
-l10nstrings.strExpired = _('Expired:');
-l10nstrings.strRefresh = _('Refresh');
-l10nstrings.strShutdown = _('Shutdown Server');
-l10nstrings.strServerUptime = _('Server uptime');
-l10nstrings.strRefreshLog = _('Refresh Log');
-l10nstrings.strChannelFilter = _('Channel Filter:');
-l10nstrings.strChannelFilterNone = _('None');
-l10nstrings.strSetLogLevels = _('Set Log Levels');
-l10nstrings.strLogLevels = _('Log Levels');
-l10nstrings.strCloseModal = _('Close');
-l10nstrings.strUpdateLogLevels = _('Update Log Levels');
-l10nstrings.strVersionInfo = _('Version Information');
+	// 內部翻譯的字串陣列
+	strings: [
+		_('Admin console'), // 管理主控臺
+		_('Overview'), // 概覽
+		_('Analytics'), // 分析
+		_('Log'), // 日誌
+		_('System configuration'), // 系統配置設定
+		_('Software upgrade'), // 軟體升級
+		_('Font manager'), // 字型管理
+		_('Table conversion'), // 表格轉試算表
+		_('Template Repo'), // 範本中心
+		_('ODF report template'), // ODF 報表管理
+	],
+};
 
 if (module) {
 	module.exports = l10nstrings;
