@@ -58,8 +58,11 @@ var AdminSocketBase = Base.extend({
 
 		if (this.pageWillBeRefreshed === false) {
 			this.vexInstance = vex.open({
-				content: _('Server has been shut down; please reload the page.') +
-						'<p id="wait-server-start"></p>',
+				content: _('Server has been shut down; Waiting to be back online.') +
+						'<div>' +
+						'<span class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>' +
+						' <span id="wait-server-start"></span>' +
+						'</div>',
 				contentClassName: 'loleaflet-user-idle',
 				showCloseButton: false,
 				overlayClosesOnClick: false,
@@ -99,6 +102,6 @@ var AdminSocketBase = Base.extend({
 					that.waitServerStart();
 				}
 			});
-		}, 4900);
+		}, 2900);
 	}
 });
