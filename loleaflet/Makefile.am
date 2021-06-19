@@ -50,7 +50,7 @@ LOLEAFLET_DRAW_CSS_SRC = $(shell find $(srcdir)/plugins/draw-$(DRAW_VERSION)/dis
 LOLEAFLET_HTML_SRC = $(shell find $(srcdir)/html -name '*.html')
 LOLEAFLET_HTML_DST = $(patsubst $(srcdir)/html/%.html,$(builddir)/dist/%.html,$(LOLEAFLET_HTML_SRC))
 
-LOLEAFLET_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name 'OFL.txt' -or -name '*.svg')
+LOLEAFLET_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name '*.woff*' -or -name 'OFL.txt' -or -name '*.svg' -or -name '*.min.js')
 LOLEAFLET_ADMIN_ALL = $(shell find $(srcdir)/admin -name '*')
 LOLEAFLET_ADMIN_DST = $(patsubst $(srcdir)/admin/%,$(builddir)/dist/admin/%,$(LOLEAFLET_ADMIN_SRC))
 
@@ -133,7 +133,6 @@ PLUGINS_JS =\
 	jquery.mCustomScrollbar.js \
 	w2ui-1.5.rc1.js \
 	toolbar.js \
-	screenwatermark.js \
 	main.js
 
 PLUGINS_JS_SRC = $(shell find $(srcdir)/js -name '*.js')
@@ -200,7 +199,6 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_DST) \
 	$(builddir)/dist/global.js \
 	$(builddir)/dist/w2ui-1.5.rc1.js \
 	$(builddir)/dist/toolbar.js \
-	$(builddir)/dist/screenwatermark.js \
 	$(builddir)/dist/main.js
 	@touch $@
 else
@@ -229,7 +227,6 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 	$(srcdir)/js/jquery.mCustomScrollbar.js \
 	$(srcdir)/js/w2ui-1.5.rc1.js \
 	$(srcdir)/js/toolbar.js \
-	$(srcdir)/js/screenwatermark.js \
 	$(srcdir)/js/main.js
 	@echo "Uglify loleaflet js files..."
 	NODE_PATH=$(abs_builddir)/node_modules $(NODE) node_modules/uglify-js/bin/uglifyjs \
@@ -240,7 +237,6 @@ $(builddir)/dist/bundle.js: $(NODE_MODULES_JS_SRC) \
 		$(srcdir)/js/w2ui-1.5.rc1.js \
 		$(builddir)/dist/loleaflet-src.js \
 		$(srcdir)/js/toolbar.js \
-		$(srcdir)/js/screenwatermark.js \
 		$(srcdir)/js/main.js \
 		--output $@
 endif
@@ -323,7 +319,6 @@ pot:
 		admin/admin.strings.js \
 		admin/src/*.js \
 		js/toolbar.js \
-		js/screenwatermark.js \
 		src/control/Control.AlertDialog.js \
 		src/control/Control.ContextMenu.js \
 		src/control/Control.DocumentRepair.js \
