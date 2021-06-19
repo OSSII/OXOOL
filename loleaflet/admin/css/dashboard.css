@@ -1,230 +1,100 @@
-/*
- * Base structure
- */
+:root {
+  --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
 
-/* Move down content because we have a fixed navbar that is 50px tall */
 body {
-  padding-top: 61px;
-  font-family: Arial, "Liberation Sans", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", "Source Han Sans TC", sans-serif
+  font-size: .875rem;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    padding: 6px 15px;
-}
-
-
-/*
- * Global add-ons
- */
-
-.sub-header {
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-/*
- * Top navigation
- * Hide default border to remove 1px line.
- */
-.navbar-fixed-top {
-  border: 0;
+.feather {
+  width: 16px;
+  height: 16px;
+  vertical-align: text-bottom;
 }
 
 /*
  * Sidebar
  */
 
-/* Hide for mobile, show later */
 .sidebar {
-  display: none;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100; /* Behind the navbar */
+  padding: 48px 0 0; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
-@media (min-width: 768px) {
+
+@media (max-width: 767.98px) {
   .sidebar {
-    position: fixed;
-    top: 61px;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-    display: block;
-    padding: 0px;
-    overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-    background-color: #f5f5f5;
-    border-right: 1px solid #eee;
+    top: 5rem;
   }
 }
 
-/* Sidebar navigation */
-/* .nav-sidebar {
-  margin-right: -21px;
-  margin-bottom: 20px;
-  margin-left: -20px;
-} */
-
-.nav-sidebar > a {
-  padding-left: 24px;
-}
-
-/* .nav-sidebar > .active > a,
-.nav-sidebar > .active > a:hover,
-.nav-sidebar > .active > a:focus {
-  color: #fff;
-} */
-
-
-.modal {
-  text-align: center;
-  padding: 0!important;
-}
-
-.modal:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -4px;
-}
-
-.modal-dialog {
-  display: inline-block;
-  text-align: left;
-  vertical-align: middle;
-}
-
-/*
- * Main content
- */
-
-.main {
-  padding: 20px;
-}
-@media (min-width: 768px) {
-  .main {
-    padding-right: 40px;
-    padding-left: 40px;
-  }
-}
-.main .page-header {
-  margin-top: 0;
-}
-
-
-/*
- * Placeholder dashboard ideas
- */
-
-.placeholders {
-  margin-bottom: 30px;
-  text-align: center;
-}
-.placeholders h4 {
-  margin-bottom: 0;
-}
-.placeholder {
-  margin-bottom: 20px;
-}
-.placeholder .main-data {
-  display: inline-block;
-  border-radius: 50%;
-  font-size: 18px;
-  color: blue;
-}
-
-/*
- * Custom
- */
-
-#rowContextMenu {
-  position: absolute;
-  display: none;
-}
-.userContainer, .docContainer{
-  position: absolute;
-}
-tr:hover .userContainer .dropdown-menu, td:hover .docContainer .dropdown-menu{
-  display: block;
-}
-
-/*
- * User list view
- */
-.view-opt-button{
-  border: 1px solid lightgrey;
-  border-radius: 5px;
-  padding: 4px 5px;
-  cursor: pointer;
-  transition: background-color .3s;
-}
-.view-opt-button:hover{
-  background-color: #f5f5f5;
-}
-.selected-view-opt{
-  background-color: #f5f5f5;
-}
-
-/*
- * Graph view buttons
- */
-.nav-tabs > li.active > a{
-  background-color: #f5f5f5;
-}
-.graph-content {
-  background-color: #f5f5f5;
-}
-
-.axis path, .axis line{
-  fill: none;
-  stroke: grey;
-  stroke-width: 1;
-  shape-rendering: crispEdges;
-}
-
-path {
-  stroke-width: 1;
-}
-
-.material-switch > input[type="checkbox"] {
-  display: none;
-}
-
-.material-switch > label {
-  cursor: pointer;
-  height: 0px;
+.sidebar-sticky {
   position: relative;
-  width: 32px;
+  top: 0;
+  height: calc(100vh - 48px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
-.material-switch > label::before {
-  background: rgb(0, 0, 0);
-  box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  content: '';
-  height: 12px;
-  margin-top: -8px;
-  position:absolute;
-  opacity: 0.3;
-  transition: all 0.1s ease-in-out;
-  width: 32px;
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
 }
-.material-switch > label::after {
-  background: rgb(255, 255, 255);
-  border-radius: 16px;
-  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-  content: '';
-  height: 16px;
-  left: -4px;
-  margin-top: -6px;
-  position: absolute;
-  top: -4px;
-  transition: all 0.1s ease-in-out;
-  width: 16px;
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #727272;
 }
-.material-switch > input[type="checkbox"]:checked + label::before {
-  background: inherit;
-  opacity: 0.5;
+
+.sidebar .nav-link.active {
+  color: #007bff;
 }
-.material-switch > input[type="checkbox"]:checked + label::after {
-  background: inherit;
-  left: 20px;
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+.sidebar-heading {
+  font-size: .75rem;
+  text-transform: uppercase;
+}
+
+/*
+ * Navbar
+ */
+
+.navbar-brand {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  font-size: 1rem;
+  background-color: rgba(0, 0, 0, .25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+.navbar .navbar-toggler {
+  top: .25rem;
+  right: 1rem;
+}
+
+.navbar .form-control {
+  padding: .75rem 1rem;
+  border-width: 0;
+  border-radius: 0;
+}
+
+.form-control-dark {
+  color: #fff;
+  background-color: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .1);
+}
+
+.form-control-dark:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
 }

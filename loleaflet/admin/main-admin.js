@@ -1,7 +1,5 @@
 /* -*- js-indent-level: 8 -*- */
 // CSS requires
-require('bootstrap/dist/css/bootstrap.css');
-require('./css/dashboard.css');
 require('vex-js/css/vex.css');
 require('vex-js/css/vex-theme-default.css');
 
@@ -23,5 +21,4 @@ global._ = function (string) {
 global.l10nstrings = require('./admin.strings.js');
 
 global.d3 = require('d3');
-require('bootstrap/dist/js/bootstrap.js');
 global.Admin = require('admin-src.js');
