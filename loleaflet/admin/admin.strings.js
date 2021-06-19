@@ -12,6 +12,10 @@ var l10nstrings = {
 		}
 		document.querySelectorAll('[_]').forEach(function(element) {
 			var origStr = element.getAttribute('_'); // 原始字串
+			// 翻譯字串是空的就結束
+			if (origStr === '') {
+				return;
+			}
 			var tranStr = _(origStr); // 翻譯字串
 			element.innerHTML = tranStr;
 			if (dumpUntranslatedString && origStr === tranStr) {
