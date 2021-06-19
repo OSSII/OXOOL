@@ -9,9 +9,7 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 	},
 
 	_l10nMsg: [
-		_('Upload upgrade file'), // 上傳升級檔案
-		_('Select file'), // 選擇檔案
-		_('Upload progress'), // 上傳進度
+		_('The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb'), // 接受以下的檔案類型
 		_('Unsupported package installation system!'), // 不支援的套件安裝系統
 		_('Unable to enter the temporary directory!'), // 無法進入暫存目錄
 		_('Unknown file type!'), // 未知的檔案型態
@@ -86,15 +84,14 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		case 'readyToReceiveFile':	//  Server 已準備接收檔案
 			$('#filename').attr('disabled', true);
 			$('#upload').attr('disabled', true);
-			$('#progress').show();
+			$('#console').show();
 			this._uploadFile(0);
 			break;
 		case 'uploadFileInfoError': // 上傳檔案資訊有誤
 			vex.dialog.alert(_('The upload file command is wrong, the syntax is as follows:') + '<br>uploadFile <file name> <file size>');
 			break;
 		case 'uploadFileReciveOK': // 檔案接收完畢
-			$('#work-area').show();
-			this._addMessage('<p class="text-info h4"><b>' + _('Start the software upgrade...') + '</b></p>');
+			this._addMessage('<p class="text-info h4 fw-bold">' + _('Start the software upgrade...') + '</p>');
 			this.socket.send('upgradePackage'); // 通知正式升級
 			break;
 		case 'uncompressPackageFail': // 解壓縮失敗
@@ -105,18 +102,18 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 			break;
 		case 'upgradeSuccess': // 軟體升級成功
 			var successMsg = _('Software upgrade is successful.');
-			this._addMessage('<p class="text-success h4"><b>' + successMsg + '</b></p>');
+			this._addMessage('<p class="text-success h4 fw-bold">' + successMsg + '</p>');
 			vex.dialog.alert('<p class="text-success">' + successMsg +
 				'<br>' + _('You may need to restart the service.') + '</p>');
 			break;
 		case 'upgradeFail': // 軟體升級失敗
-			this._addMessage('<p class="text-danger">' + _('Software upgrade failed!') + '</p>');
+			this._addMessage('<p class="text-danger h4 fw-bold">' + _('Software upgrade failed!') + '</p>');
 			break;
 		default:
 			if (textMsg.startsWith('upgradeInfo:')) {
 				this._addMessage(textMsg.substr(12));
 			} else if (textMsg.startsWith('upgradeMsg:')) {
-				this._addMessage('<p class="text-info h4"><b>' + _(textMsg.substr(11)) + '<b><p>');
+				this._addMessage('<p class="text-info h4 fw-bold">' + _(textMsg.substr(11)) + '<p>');
 			} else if (textMsg.startsWith('receivedSize:')) {
 				var totalBytes = textMsg.substr(13);
 				var percent = Math.floor((totalBytes / this._fileInfo.size) * 100); // 計算傳送比例

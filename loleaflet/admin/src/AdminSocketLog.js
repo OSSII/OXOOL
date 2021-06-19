@@ -2,9 +2,19 @@
 /*
 	Socket to be intialized on opening the log page in Admin console
 */
-/* global Admin $ AdminSocketBase */
+/* global Admin $ AdminSocketBase _ */
 var AdminSocketLog = AdminSocketBase.extend({
 	_logLines: '',
+
+	_l10n: [
+		_('None'), // 無
+		_('Channel Filter:'), // 過濾類別:
+		_('Refresh Log'), // 更新日誌
+		_('Set Log Levels'), // 設定紀錄層級
+		_('Log Levels'), // 紀錄層級
+		_('Update Log Levels'), // 更新紀錄層級
+
+	],
 
 	constructor: function(host) {
 		this.base(host);
@@ -69,27 +79,22 @@ var AdminSocketLog = AdminSocketBase.extend({
 				var channelLogLevel = channelListArr[i].split('=')[1];
 
 				var newDiv = document.createElement('div');
-				newDiv.className = 'form-group form-group-sm';
+				newDiv.className = 'input-group mb-2';
 
 				var newLabel = document.createElement('label');
-				newLabel.className = 'control-label col-md-3';
-				newLabel.setAttribute('for', 'channel-' + channelName);
+				newLabel.className = 'input-group-text col-sm-2';
 				newLabel.innerText = channelName;
-
-				var newSubDivision = document.createElement('div');
-				newSubDivision.className = 'col-md-9';
 
 				var newSelectElement = document.createElement('select');
 				newSelectElement.name = 'channel-' + channelName;
 				newSelectElement.id = 'channel-' + channelName;
 				newSelectElement.innerHTML = innerHTML;
 				newSelectElement.value = channelLogLevel;
-				newSelectElement.className = 'form-control';
+				newSelectElement.className = 'form-select';
 
 				channelForm.appendChild(newDiv);
 				newDiv.appendChild(newLabel);
-				newDiv.appendChild(newSubDivision);
-				newSubDivision.appendChild(newSelectElement);
+				newDiv.appendChild(newSelectElement);
 			}
 		}
 	},

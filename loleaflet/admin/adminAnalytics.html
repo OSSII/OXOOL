@@ -1,21 +1,12 @@
 <script>Admin.Analytics(host);</script>
-<ul class="nav nav-tabs">
-    <li class="active">
-        <a href="#memview" data-toggle="tab">
-            <span><script>document.write(l10nstrings.strMemoryGraph)</script></span>
-        </a>
-    </li>
-    <li>
-        <a href="#cpuview" data-toggle="tab">
-            <span><script>document.write(l10nstrings.strCpuGraph)</script></span>
-        </a>
-    </li>
-    <li>
-        <a href="#networkview" data-toggle="tab">
-            <span><script>document.write(l10nstrings.strNetGraph)</script></span>
-        </a>
-    </li>
-</ul>
+<nav>
+    <div class="nav nav-tabs" role="tablist">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#memview" type="button" role="tab" aria-selected="true" _="Memory Graph"></button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cpuview" type="button" role="tab" aria-selected="false" _="CPU Graph"></button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#networkview" type="button" role="tab" aria-selected="false" _="Network Graph"></button>
+    </div>
+</nav>
+
 <div class="tab-content graph-content">
     <div id="memview" class="active tab-pane">
         <div class="graph-container">
@@ -39,4 +30,3 @@
         </div>
     </div>
 </div>
-<script>$('#adminAnalytics').addClass('active');</script>

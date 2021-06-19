@@ -1,42 +1,40 @@
 <script>Admin.Log(host);</script>
-
-<div class="row">
-  <div class="col-md-5 col-sm-3">
-    <div class="input-group">
-      <span class="input-group-addon" id="sizing-addon3"><script>document.write(l10nstrings.strChannelFilter)</script></span>
-      <select class="form-control" id="log-channel-filter">
-        <option><script>document.write(l10nstrings.strChannelFilterNone)</script></option>
-      </select>
+<div class="row g-3 align-items-end">
+    <div class="col-7">
+        <div class="form-floating">
+            <select class="form-select" id="log-channel-filter">
+            <option _="None"></option>
+            </select>
+            <label for="log-channel-filter" _="Channel Filter:"></label>
+        </div>
     </div>
-  </div>
-  <div>
-      <button type="button" class="btn btn-success" id="refresh-log"><script>document.write(l10nstrings.strRefreshLog)</script></button>
-      <button type="button" class="btn btn-primary" id="button-open-log-list-modal" data-toggle="modal" data-target="#channel-list-modal">
-        <script>document.write(l10nstrings.strSetLogLevels)</script>
-      </button>
-  </div>
+    <div class="col-5">
+        <div class="input-group">
+            <button type="button" class="btn btn-outline-success" id="refresh-log" _="Refresh Log"></button>
+            <button type="button" class="btn btn-outline-primary" id="button-open-log-list-modal" data-bs-toggle="modal" data-bs-target="#channel-list-modal" _="Set Log Levels"></button>
+        </div>
+    </div>
+    <div class="col-12">
+        <textarea id="log-lines" class="form-control bg-dark text-light" style="height:70vh;" readonly="true" wrap="off"></textarea>
+    </div>
 </div>
-<p></p>
-<textarea id="log-lines" style="width:100%;height:100%;min-height: calc(100vh - 200px);background-color:#000000;color:#ffffff;" readonly="true" wrap="off"></textarea>
 
 <!-- Modal -->
-<div id="channel-list-modal" class="modal" role="dialog">
-  <div class="modal-dialog modal-sm" role="document">
-    <div class="modal-content">
-      <header class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title"><script>document.write(l10nstrings.strLogLevels)</script></h4>
-      </header>
-      <section class="modal-body">
-        <form id="form-channel-list" class="form-horizontal"></form>
-      </section>
-      <footer class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"><script>document.write(l10nstrings.strCloseModal)</script></button>
-          <button type="button" class="btn btn-primary btn-sm" form="form-channel-list" id="update-log-levels"><script>document.write(l10nstrings.strUpdateLogLevels)</script></button>
-      </footer>
+<div class="modal" id="channel-list-modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h4 class="modal-title" _="Log Levels"></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </header>
+            <section class="modal-body">
+                <form id="form-channel-list">
+                </form>
+            </section>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" _="Cancel"></button>
+                <button type="button" class="btn btn-primary" form="form-channel-list" id="update-log-levels" data-bs-dismiss="modal" _="Update Log Levels"></button>
+            </footer>
+        </div>
     </div>
-  </div>
 </div>
-<script>$('#adminLog').addClass('active');</script>

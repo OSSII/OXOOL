@@ -25,7 +25,7 @@ function GlobalFunctionCheckAccountPassword()
 	vex.dialog.open({
 		message: _('For security reasons, please enter your original management account and password.'),
 		input: [
-			'<input class="form-control" name="username" type="text" placeholder="' + _('User Name') + '" required />',
+			'<input class="form-control" name="username" type="text" placeholder="' + _('User name') + '" required />',
 			'<input name="password" type="password" placeholder="' + _('Password') + '" required />'
 		].join(''),
 		buttons: [
@@ -35,12 +35,12 @@ function GlobalFunctionCheckAccountPassword()
 		callback: function (data) {
 			if (data)
 			{
-				GlobalSocketClass.socket.send('isConfigAuthOk ' + 
+				GlobalSocketClass.socket.send('isConfigAuthOk ' +
 												data.username + ' ' + data.password);
 			}
 		}
 	})
-	
+
 }
 
 function GlobalFunctionChangeAccountPassword()
@@ -48,7 +48,7 @@ function GlobalFunctionChangeAccountPassword()
 	vex.dialog.open({
 		message: _('Please enter a new account and password.'),
 		input: [
-			'<input class="form-control" name="username" type="text" placeholder="' + _('User Name') + '" required />',
+			'<input class="form-control" name="username" type="text" placeholder="' + _('User name') + '" required />',
 			'<input class="form-control" name="password" type="password" placeholder="' + _('Password') + '" required />',
 			'<input class="form-control" name="confirmpassword" type="password" placeholder="' + _('Confirm password') + '" required />'
 		].join(''),
@@ -61,7 +61,7 @@ function GlobalFunctionChangeAccountPassword()
 			{
 				if (data.password === data.confirmpassword)
 				{
-					GlobalSocketClass.socket.send('setAdminPassword ' + 
+					GlobalSocketClass.socket.send('setAdminPassword ' +
 													data.username + ' ' + data.password);
 				}
 				else
@@ -81,16 +81,15 @@ function GlobalFunctionStart()
 
 	var funcs =
 	[
-		{name: _('Restart service'), exec: function() {GlobalFunctionRestartService();}},
-		{name: _('Change account password'), exec: function() {GlobalFunctionCheckAccountPassword();}}
+		{name: '<i class="bi bi-bootstrap-reboot text-warning">&nbsp;</i>' + _('Restart service'), exec: function() {GlobalFunctionRestartService();}},
+		{name: '<i class="bi bi-key text-warning">&nbsp;</i>' + _('Change account password'), exec: function() {GlobalFunctionCheckAccountPassword();}}
 	];
 
 	for (var i in funcs)
 	{
 		var $item = $(document.createElement('li'))
-				.append('<a href="#">' + funcs[i].name + '</a>')
-				.click(funcs[i].exec);
-
+			.append('<button class="dropdown-item" type="button">' + funcs[i].name + '</button>')
+			.click(funcs[i].exec);
 		$menubar.append($item);
 	}
 }
@@ -99,8 +98,7 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 	constructor: function(host) {
 		this.base(host);
 		GlobalSocketClass = this;
-		$(document).ready(function()
-		{
+		$(document).ready(function() {
 			GlobalFunctionStart();
 		});
 	},
@@ -142,12 +140,12 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 		else if (textMsg.startsWith('lokitversion ')) {
 			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
 			if (lokitVersionObj.ProductName === 'OxOffice') {
-				$('#lokit').text(' , ' + _('Core') + ' : ' +
+				$('#lokit').text(_('Core') + ' : ' +
 				lokitVersionObj.ProductName + ' ' +
 				lokitVersionObj.ProductVersion + '(' +
 				lokitVersionObj.ProductExtension + ')');
 			} else {
-				$('#lokit').text(' , ' + _('Core') + ' : ' +
+				$('#lokit').text(_('Core') + ' : ' +
 				lokitVersionObj.ProductName + '(' +
 				lokitVersionObj.ProductVersion +
 				lokitVersionObj.ProductExtension + ')');

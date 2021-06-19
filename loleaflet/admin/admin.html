@@ -1,77 +1,109 @@
 <script>Admin.Overview(host);</script>
-
-<div class="row placeholders">
-    <div class="col-xs-6 col-sm-2 placeholder">
-        <h5><script>document.write(l10nstrings.strUsersOnline)</script></h5>
-        <div class="main-data" id="active_users_count">0</div>
-    </div>
-    <div class="col-xs-6 col-sm-2 placeholder">
-        <h5><script>document.write(l10nstrings.strDocumentsOpened)</script></h5>
-        <div class="main-data" id="active_docs_count">0</div>
-    </div>
-    <div class="col-xs-6 col-sm-2 placeholder">
-        <h5><script>document.write(l10nstrings.strMemoryConsumed)</script></h5>
-        <div class="main-data" id="mem_consumed">0</div>
-    </div>
-    <div class="col-xs-6 col-sm-2 placeholder">
-        <h5><script>document.write(l10nstrings.strSentBytes)</script></h5>
-        <div class="main-data" id="sent_bytes">0</div>
-    </div>
-    <div class="col-xs-6 col-sm-2 placeholder">
-        <h5><script>document.write(l10nstrings.strRecvBytes)</script></h5>
-        <div class="main-data" id="recv_bytes">0</div>
-    </div>
-    <div class="col-xs-6 col-sm-2 placeholder">
-        <h5><script>document.write(l10nstrings.strServerUptime)</script></h5>
-        <div class="main-data" id="uptime">0</div>
-    </div>
-</div>
-<div class="container-fluid">
-    <ul class="nav nav-tabs">
-        <li class="active">
-            <a href="#view1" data-toggle="tab">
-                <span><script>document.write(l10nstrings.strDocumentsOpened)</script></span>
-            </a>
-        </li>
-        <li>
-            <a href="#view2" data-toggle="tab">
-                <span><script>document.write(l10nstrings.strUsersOnline)</script></span>
-            </a>
-        </li>
-    </ul>
-
-    <div class="tab-content">
-        <div id="view1" class="active tab-pane table-responsive">
-            <table id="docview" class="table table-bordered table-striped">
-                <thead>
-                    <tr class="text-center">
-                        <th></th><!--This header doesn't need text, this column will hold session closer buttons.-->
-                        <th><script>document.write(l10nstrings.strViewers)</script></th>
-                        <th><script>document.write(l10nstrings.strPid)</script></th>
-                        <th><script>document.write(l10nstrings.strDocument)</script></th>
-                        <th><script>document.write(l10nstrings.strMemoryConsumed)</script></th>
-                        <th><script>document.write(l10nstrings.strElapsedTime)</script></th>
-                        <th><script>document.write(l10nstrings.strIdleTime)</script></th>
-                        <th><script>document.write(l10nstrings.strModified)</script></th>
-                    </tr>
-                </thead>
-                <tbody id="doclist">
-                </tbody>
-            </table>
+<div class="row g-3">
+    <!-- 線上用者 -->
+    <div class="col-sm-2">
+        <div class="card mb-2 text-center">
+            <div class="card-header">
+                <strong class="h6" _="Users online"></strong>
+            </div>
+            <div class="card-body">
+                <strong class="h6 text-primary" id="active_users_count"></strong>
+            </div>
         </div>
-
-        <div id="view2" class="tab-pane table-responsive">
-            <table id="userview" class="tab-pane table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th><script>document.write(l10nstrings.strUserName)</script></th>
-                        <th><script>document.write(l10nstrings.strDocumentNumber)</script></th>
-                    </tr>
-                </thead>
-                <tbody id="userlist">
-                </tbody>
-            </table>
+    </div>
+    <!-- 開啟的文件 -->
+    <div class="col-sm-2">
+        <div class="card mb-2 text-center">
+            <div class="card-header">
+                <strong class="h6" _="Documents opened"></strong>
+            </div>
+            <div class="card-body">
+                <strong class="h6 text-primary" id="active_docs_count"></strong>
+            </div>
+        </div>
+    </div>
+    <!-- 消耗的記憶體 -->
+    <div class="col-sm-2">
+        <div class="card mb-2 text-center">
+            <div class="card-header">
+                <strong class="h6" _="Memory consumed"></strong>
+            </div>
+            <div class="card-body">
+                <strong class="h6 text-primary" id="mem_consumed"></strong>
+            </div>
+        </div>
+    </div>
+    <!-- 傳送的流量 -->
+    <div class="col-sm-2">
+        <div class="card mb-2 text-center">
+            <div class="card-header">
+                <strong class="h6" _="Bytes sent"></strong>
+            </div>
+            <div class="card-body">
+                <strong class="h6 text-primary" id="sent_bytes"></strong>
+            </div>
+        </div>
+    </div>
+    <!-- 接收的流量 -->
+    <div class="col-sm-2">
+        <div class="card mb-2 text-center">
+            <div class="card-header">
+                <strong class="h6" _="Bytes received"></strong>
+            </div>
+            <div class="card-body">
+                <strong class="h6 text-primary" id="recv_bytes"></strong>
+            </div>
+        </div>
+    </div>
+    <!-- 服務時間 -->
+    <div class="col-sm-2">
+        <div class="card mb-2 text-center">
+            <div class="card-header">
+                <strong class="h6" _="Server uptime"></strong>
+            </div>
+            <div class="card-body">
+                <strong class="h6 text-primary" id="uptime"></strong>
+            </div>
         </div>
     </div>
 </div>
-<script>$('#admin').addClass('active');</script>
+
+<nav>
+    <div class="nav nav-tabs" role="tablist">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#view1" type="button" role="tab" aria-selected="true" _="Documents opened"></button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#view2" type="button" role="tab" aria-selected="false" _="Users online"></script></button>
+    </div>
+</nav>
+<div class="tab-content">
+    <div id="view1" class="active tab-pane table-responsive">
+        <table id="docview" class="table table-bordered table-striped table-hover align-middle">
+            <thead>
+                <tr class="text-center">
+                    <th></th><!-- 中止作業按鈕 -->
+                    <th _="Views"></th>
+                    <th _="PID"></th>
+                    <th _="Document"></th>
+                    <th _="Memory consumed"></th>
+                    <th _="Elapsed time"></th>
+                    <th _="Idle time"></th>
+                    <th _="Modified"></th>
+                </tr>
+            </thead>
+            <tbody id="doclist">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="view2" class="tab-pane table-responsive">
+        <table id="userview" class="table table-bordered table-striped table-hover align-middle">
+            <thead>
+                <tr class="text-center">
+                    <th class="w-25" _="User name"></th>
+                    <th _="Number of Documents"></th>
+                </tr>
+            </thead>
+            <tbody id="userlist">
+            </tbody>
+        </table>
+    </div>
+</div>
