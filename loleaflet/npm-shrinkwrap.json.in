@@ -230,11 +230,6 @@
       "integrity": "sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA==",
       "dev": true
     },
-    "bootstrap": {
-      "version": "3.4.1",
-      "resolved": "file:node_shrinkwrap/bootstrap-3.4.1.tgz",
-      "dev": true
-    },
     "brace-expansion": {
       "version": "1.1.11",
       "resolved": "file:node_shrinkwrap/brace-expansion-1.1.11.tgz",

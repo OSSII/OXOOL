@@ -5,7 +5,6 @@
   "devDependencies": {
     "@braintree/sanitize-url": "3.0.0",
     "autolinker": "1.4.3",
-    "bootstrap": "3.4.1",
     "browserify": "13.1.0",
     "browserify-css": "0.9.1",
     "d3": "5.16.0",
