@@ -109,7 +109,7 @@ msgstr "K 位元組"
 
 #: admin/src/AdminSocketConfigSettings.js:16
 msgid "M Bytes"
-msgstr "K 位元組"
+msgstr "M 位元組"
 
 #: admin/src/AdminSocketConfigSettings.js:17
 msgid "General settings"
