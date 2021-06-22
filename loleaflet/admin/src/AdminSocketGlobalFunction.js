@@ -103,6 +103,10 @@ var AdminSocketGlobalFunction = AdminSocketBase.extend({
 		});
 	},
 
+	_l10n: [
+		_('System'), // 系統
+	],
+
 	onSocketOpen: function() {
 		// Base class' onSocketOpen handles authentication
 		this.base.call(this);

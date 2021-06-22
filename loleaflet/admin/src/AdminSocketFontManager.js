@@ -8,6 +8,16 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 		this.base(host);
 	},
 
+	_l10n: [
+		_('Select all'), // 全選
+		_('File name'), // 檔案名稱
+		_('Font name (preview)'), // 字型名稱（預覽）
+		_('Style'), // 樣式
+		_('Color font'), // 彩色字型
+		_('Symbol font'), // 符號字型
+		_('Delete selected files?'), // 刪除選取的字型嗎？
+	],
+
 	_lang: String.locale.toLowerCase(),
 	_fontList: {},
 
