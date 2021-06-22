@@ -84,3 +84,7 @@ body {
 .form-label, .form-check-label {
   font-weight: bold;
 }
+
+input[type="number"] {
+  text-align: right;
+}
