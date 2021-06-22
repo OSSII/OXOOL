@@ -34,6 +34,7 @@
 #include "TileCache.hpp"
 #include <Unit.hpp>
 #include <Util.hpp>
+#include <JsonUtil.hpp>
 
 #include <net/Socket.hpp>
 #include <net/SslSocket.hpp>
@@ -49,6 +50,9 @@ using Poco::Util::XMLConfiguration;
 using Poco::Path;
 using Poco::File;
 using Poco::TemporaryFile;
+using Poco::JSON::Object;
+using Poco::JSON::Array;
+using Poco::Dynamic::Var;
 
 #define pwdSaltLength 128
 #define pwdIterations 10000
@@ -64,6 +68,14 @@ const std::string fontsDir =
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 1000;
 const std::string levelList[] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
+
+
+class OxoolConfig final: public XMLConfiguration
+{
+public:
+    OxoolConfig()
+        {}
+};
 
 namespace
 {
@@ -101,22 +113,81 @@ const std::string scanFontDir()
 }
 
 // 利用 fc-cache 重建 oxool 管理的字型目錄
-void makeFontCach()
+void makeFontCache()
 {
-    std::string fontCacheCmd = "fc-cache \"" + fontsDir + "\"";
+    std::string fontCacheCmd = "fc-cache -f \"" + fontsDir + "\"";
     if (system(fontCacheCmd.c_str()))
     {
         /* do nothing */
     }
 }
+
+bool convertToJson(OxoolConfig &config, const std::string &key, Object &json)
+{
+    bool success = true;
+    const size_t bracketPos = key.find("[");
+    // 不含 "[" 的 Key
+    const std::string nudeKey = (bracketPos == std::string::npos ? key : key.substr(0, bracketPos));
+    const std::string typeKey(key + "[@type]"); // type="型態"
+    const std::string defaultKey(key + "[@default]"); // default=""
+
+    try
+    {
+        if (config.has(key))
+        {
+            std::string pValue = config.getString(key, "");
+            // 如果值是空的，而且有預設值的話，讀取預設值
+            if (pValue.length() == 0 && config.has(defaultKey))
+            {
+                pValue = config.getString(defaultKey, "");
+            }
+
+            std::string pType = "string"; // 預設的類型
+            if (config.has(typeKey))
+            {
+                // 有指定型態的話，讀取該型態
+                pType = config.getString(typeKey, "string");
+            }
+
+            Var any(pValue);
+
+            // 依據指定型態轉換
+            if (pType == "bool" || pValue == "true" || pValue == "false")
+            {
+                json.set(key, any.convert<bool>());
+            }
+            else if (pType == "double")
+            {
+                json.set(key, any.convert<double>());
+            }
+            else if (pType == "int" || pType == "int64")
+            {
+                json.set(key, any.convert<long>());
+            }
+            else if (pType == "uint" || pType == "uint64")
+            {
+                json.set(key, any.convert<unsigned long>());
+            }
+            else
+            {
+                json.set(key, any);
+            }
+        }
+        else
+        {
+            success = false;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "convertToJson() error : " << key << "(" << e.what() << ")\n";
+        success = false;
+    }
+
+    return success;
+}
 }
 
-class OxoolConfig final: public XMLConfiguration
-{
-public:
-    OxoolConfig()
-        {}
-};
 
 ReceiveFile::ReceiveFile()
 {
@@ -211,7 +282,6 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         return;
     }
 
-    OxoolConfig config;
     AdminModel& model = _admin->getModel();
 
     if (tokens.equals(0, "auth"))
@@ -461,6 +531,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     // 變更管理帳號及密碼
     else if (tokens.equals(0, "setAdminPassword") && tokens.size() == 3)
     {
+        OxoolConfig config;
         config.load(LOOLWSD::ConfigFile);
         std::string adminUser = tokens[1];
         std::string adminPwd  = tokens[2];
@@ -691,6 +762,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     }
     // 刪除字型
     // 語法：deleteFont <檔名>
+    // 檔名要用 encodeURI()
     else if (tokens.equals(0, "deleteFont") && tokens.size() == 2)
     {
         const std::string sysTemplateFontsDir = LOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
@@ -711,9 +783,134 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         sendTextFrame("deleteFontSuccess");
     }
     // 重建 font cache
-    else if (tokens.equals(0, "makeFontCach") && tokens.size() == 1)
+    else if (tokens.equals(0, "makeFontCache") && tokens.size() == 1)
     {
-        makeFontCach(); // 重建 font cache
+        makeFontCache(); // 重建 font cache
+    }
+    // 從 oxoolwsd.xml 讀取指定的內容
+    else if (tokens.equals(0, "getConfig") && tokens.size() > 1)
+    {
+        OxoolConfig config;
+        config.load(LOOLWSD::ConfigFile); // 載入 config 檔案
+        Object json;
+
+        // 依序讀取各 key 的設定值
+        for (size_t i = 1 ; i < tokens.size() ; i++)
+        {
+            const std::string key(tokens[i]); // 在 xml 中的 tag
+            // 如果結尾是否是 "[]"，表示要讀取的是陣列形式
+            const bool isArray = (key.substr(key.length() - 2, 2) == "[]");
+
+            // 一般形式
+            if (!isArray)
+            {
+                // 轉換失敗就給 null
+                if (!convertToJson(config, key, json))
+                {
+                    json.set(key, Var());
+                }
+            }
+            else // 處理陣列形式
+            {
+                const std::string realKey = key.substr(0, key.length() - 2);
+                Array array;
+
+                for (size_t index = 0 ; ; index++)
+                {
+                    Object property;
+                    std::string arrayKey = realKey + "[" + std::to_string(index) + "]";
+                    if (convertToJson(config, arrayKey, property))
+                    {
+                        Object realElement;
+                        realElement.set("value", property.get(arrayKey));
+
+                        std::string descKey = arrayKey + "[@desc]";
+                        if (convertToJson(config, descKey, property))
+                            realElement.set("desc", property.get(descKey));
+
+                        std::string allowKey = arrayKey + "[@allow]";
+                        if (convertToJson(config, allowKey, property))
+                            realElement.set("allow", property.get(allowKey));
+
+                        array.add(realElement);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                json.set(key, array);
+            }
+        }
+
+        std::ostringstream oss;
+        json.stringify(oss);
+        sendTextFrame("settings " + oss.str());
+    }
+    // 把資料存入 oxoolwsd.xml
+    // 指令格式為 setConfig <encodeURI 過的 Json 字串>
+    else if (tokens.equals(0, "setConfig") && tokens.size() == 2)
+    {
+        std::string jsonString;
+        Poco::URI::decode(tokens[1], jsonString);
+
+        // 轉成 Json 物件
+        Object::Ptr object;
+        if (JsonUtil::parseJSON(jsonString, object))
+        {
+            OxoolConfig config;
+            config.load(LOOLWSD::ConfigFile); // 載入 config 檔案
+
+            for (Object::ConstIterator it = object->begin(); it != object->end(); ++it)
+            {
+                const std::string key(it->first);
+                // value 是陣列
+                if (it->second.isArray())
+                {
+                    // 去掉 Key 最後面的 "[]"
+                    const std::string realKey = key.substr(0, key.length() - 2);
+                    // 先把 XML 中的 realKey 陣列清空
+                    const std::string firstItem =realKey + "[0]";
+                    while (config.has(firstItem))
+                    {
+                        config.remove(firstItem);
+                    }
+
+                    // 轉成 Array
+                    Array::Ptr array = it->second.extract<Array::Ptr>();
+                    // 處理陣列
+                    for (size_t i = 0; i < array->size() ; i++)
+                    {
+                        // realKey 加上索引 [0....N]
+                        const std::string arrayKey = realKey + "[" + std::to_string(i) + "]";
+                        // 取出物件
+                        Object::Ptr subObj = array->getObject(i);
+                        // 處理物件每組 key: value
+                        for (Object::ConstIterator subIt = subObj->begin() ; subIt != subObj->end() ; ++subIt)
+                        {
+                            std::string fullKey = arrayKey;
+                            if (subIt->first != "value")
+                            {
+                                fullKey += "[@" + subIt->first + "]";
+                            }
+                            // 變更 fullKey 的值
+                            config.setString(fullKey, subIt->second.toString());
+                        }
+                    }
+                }
+                // 直接填入字串
+                else
+                {
+                    config.setString(key, it->second.toString());
+                }
+            }
+            config.save(LOOLWSD::ConfigFile); // 存回檔案
+            sendTextFrame("setConfigOk");
+        }
+        else
+        {
+            sendTextFrame("setConfigNothing");
+        }
     }
     else
     {
