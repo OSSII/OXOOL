@@ -1,394 +1,645 @@
-<script>
-    $(document).ready(function() {
-        $('#saveConfig').attr('disabled', false)
-            .click(function ()
-                {
-                    $('#saveConfig').attr('disabled', true);
+<script>Admin.ConfigSettings(host);</script>
+<!-- 編輯區範例
+<div class="card mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold">標題</div>
+    </div>
+    <div class="card-body row g-2">
 
-                    var form = $('#mainform input, select, textarea');
-                    var json = {};
-                    for (var i= 0 ; i < form.length ; i++)
-                    {
-                        var id = form[i].id;
-                        if (id == 'net.post_allow.host' ||
-                            id == 'net.cors_allow.host' ||
-                            id == 'storage.wopi.host' ||
-                            id == 'storage.webdav.host')
-                        {
-                            var arr = document.getElementsByClassName(id + '[]');
-                            for (var j = 0 ; j < arr.length ; j++)
-                            {
-                                var pad = '0000';
-                                var zj = (pad + j).slice(-pad.length);
-                                json[id + '[' + zj + ']'] = arr[j].textContent;
-                                var allow = arr[j].attributes.allow;
-                                if (typeof allow != 'undefined')
-                                {
-                                    json[id + '[' + zj + '][@allow]'] = allow.value;
-                                }
-                            }
-                            continue;
-                        }
+    </div>
+</div>
+-->
+<form id="mainform" spellcheck="false">
+<div class="card border-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="General settings"><!--一般設定--></div>
+    </div>
+    <div class="card-body row g-3">
+        <div class="col-md-6">
+            <label for="server_name" class="form-label" _="Server name"><!--主機名稱--></label>
+            <input type="text" class="form-control" id="server_name">
+            <div class="form-text" id="server_name[@desc]"></div>
+        </div>
+        <div class="col-md-2">
+            <label for="client_port_number" class="form-label" _="Port"><!--Port--></label>
+            <input type="text" class="form-control" id="client_port_number">
+            <div class="form-text" id="client_port_number[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label for="loleaflet_html" class="form-label" _="Custom UI file name"></label>
+            <input type="text" class="form-control" id="loleaflet_html">
+            <div class="form-text" id="loleaflet_html[@desc]"></div>
+        </div>
+    </div>
+</div>
 
-                        var value;
-                        var input = document.getElementById(id);
-                        if (input)
-                        {
-                            switch (input.type)
-                            {
-                                case 'checkbox':
-                                case 'radio':
-                                    value = input.checked ? 'true' : 'false';
-                                    break;
-                                default:
-                                    value = input.value;
-                                    break;
-                            }
-                            json[id] = value;
-                        }
-                    }
-                    config.setConfig(JSON.stringify(json));
-                })
-    });
-    Admin.ConfigSettings(host);
-</script>
+<!-- 文件編輯設定 -->
+<div class="card border-3 mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="Document editing settings"><!--文件編輯設定--></div>
+    </div>
+    <div class="card-body row g-3">
+        <div class="col-md-4">
+            <label for="per_document.max_concurrency" class="form-label" _="Available threads per document"></label>
+            <input type="number" min="1" class="form-control" id="per_document.max_concurrency">
+            <div class="form-text" id="per_document.max_concurrency[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="convert_to">
+                <label class="form-check-label" for="convert_to" _="Enable file conversion"></label>
+                <div class="form-text" id="convert_to[@desc]"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label for="per_document.batch_priority" class="form-label" _="File conversion priority (1-19)"></label>
+            <input type="number" min="1" step="1" max="19" class="form-control" id="per_document.batch_priority">
+            <div class="form-text" id="per_document.batch_priority[@desc]"></div>
+        </div>
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-12">
+            <label for="per_document.document_signing_url" class="form-label" _="Document signing URL"></label>
+            <input type="text" class="form-control" id="per_document.document_signing_url">
+            <div class="form-text" id="per_document.document_signing_url[@desc]"></div>
+        </div>
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-12">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="per_document.redlining_as_comments">
+                <label class="form-check-label" for="per_document.redlining_as_comments" _="Tracked changes show comments"></label>
+                <div class="form-text" id="per_document.redlining_as_comments[@desc]"></div>
+            </div>
+        </div>
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-4">
+            <label for="per_document.idle_timeout_secs" class="form-label" _="Unload document when idle"></label>
+            <div class="input-group">
+                <input type="number" min="0" step="60" class="form-control" id="per_document.idle_timeout_secs">
+                <span class="input-group-text" _="seconds"></span>
+            </div>
+            <div class="form-text" id="per_document.idle_timeout_secs[@desc]"></div>
+        </div>
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-4">
+            <label for="per_document.idlesave_duration_secs" class="form-label" _="How long is it idle to auto save (if modified)"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.idlesave_duration_secs">
+                <span class="input-group-text" _="seconds"></span>
+            </div>
+            <div class="form-text" id="per_document.idlesave_duration_secs[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.autosave_duration_secs" _="Auto save time (if modified)"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.autosave_duration_secs">
+                <span class="input-group-text" _="seconds"></span>
+            </div>
+            <div class="form-text" id="per_document.autosave_duration_secs[@desc]"></div>
+        </div>
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-12">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="per_document.always_save_on_exit">
+                <label class="form-check-label" for="per_document.always_save_on_exit" _="When leaving the editor, it is forced to save even if it has not been modified"></label>
+                <div class="form-text" id="per_document.always_save_on_exit[@desc]"></div>
+            </div>
+        </div>
 
-<h2 class="page-header">系統設定</h2>
-<form class="form-horizontal" id="mainform">
-    <div class="panel-group">
-        <!-- 一般設定 -->
-        <div class="panel panel-primary">
-            <div class="panel-heading"><strong>一般設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="server_name">主機名稱</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="server_name">
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.limit_virt_mem_mb" _="Virtual memory available for each document"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.limit_virt_mem_mb">
+                <span class="input-group-text" _="M Bytes"></span>
+            </div>
+            <div class="form-text" id="per_document.limit_virt_mem_mb[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.limit_stack_mem_kb" _="Maximum stack size available for each document procress"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.limit_stack_mem_kb">
+                <span class="input-group-text" _="K Bytes"></span>
+            </div>
+            <div class="form-text" id="per_document.limit_stack_mem_kb[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.limit_file_size_mb" _="File size that can be written by each document procress"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.limit_file_size_mb">
+                <span class="input-group-text" _="M Bytes"></span>
+            </div>
+            <div class="form-text" id="per_document.limit_file_size_mb[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.limit_num_open_files" _="The number of files that can be opened by each document procress"></label>
+            <input type="number" min="0" class="form-control" id="per_document.limit_num_open_files">
+            <div class="form-text" id="per_document.limit_num_open_files[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.limit_load_secs" _="Load file time limit"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.limit_load_secs">
+                <span class="input-group-text" _="seconds"></span>
+            </div>
+            <div class="form-text" id="per_document.limit_load_secs[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="per_document.limit_convert_secs" _="File conversion time limit"></label>
+            <div class="input-group">
+                <input type="number" min="0" class="form-control" id="per_document.limit_convert_secs">
+                <span class="input-group-text" _="seconds"></span>
+            </div>
+            <div class="form-text" id="per_document.limit_convert_secs[@desc]"></div>
+        </div>
+
+        <!------------------ 分隔列  --------------->
+        <div class="col-md-12 p-3 bg-light border border-3 rounded">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="per_document.cleanup[@enable]">
+                        <label class="form-check-label" for="per_document.cleanup[@enable]" _="Cleanup mechanism(after enabling, the following settings will be effective)"></label>
+                        <div class="form-text" id="per_document.cleanup[@desc]"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="client_port_number">Port</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="client_port_number">
+                <div class="col-md-4">
+                    <label class="form-label" for="per_document.cleanup.cleanup_interval_ms" _="Interval time"></label>
+                    <div class="input-group">
+                        <input type="number" min="0" class="form-control" id="per_document.cleanup.cleanup_interval_ms">
+                        <span class="input-group-text" _="millisecond"></span>
                     </div>
+                    <div class="form-text" id="per_document.cleanup.cleanup_interval_ms[@desc]"></div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="loleaflet_html">文件編輯首頁檔名</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="loleaflet_html">
+
+                <div class="col-md-4">
+                    <label class="form-label" for="per_document.cleanup.bad_behavior_period_secs" _="Survival time before bad files are cleaned up"></label>
+                    <div class="input-group">
+                        <input type="number" min="0" class="form-control" id="per_document.cleanup.bad_behavior_period_secs">
+                        <span class="input-group-text" _="seconds"></span>
                     </div>
+                    <div class="form-text" id="per_document.cleanup.bad_behavior_period_secs[@desc]"></div>
                 </div>
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="convert_to">啟用轉檔功能</label>
-                    <div class="col-md-9  material-switch">
-                        <input type="checkbox" class="form-control" id="convert_to">
-                        <label for="convert_to" class="label-success"></label>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="per_document.cleanup.idle_time_secs" _="Idle time before becoming a bad document"></label>
+                    <div class="input-group">
+                        <input type="number" min="0" class="form-control" id="per_document.cleanup.idle_time_secs">
+                        <span class="input-group-text" _="seconds"></span>
                     </div>
+                    <div class="form-text" id="per_document.cleanup.idle_time_secs[@desc]"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="per_document.cleanup.limit_dirty_mem_mb" _="Memory usage before becoming a bad document"></label>
+                    <div class="input-group">
+                        <input type="number" min="0" class="form-control" id="per_document.cleanup.limit_dirty_mem_mb">
+                        <span class="input-group-text" _="M Bytes"></span>
+                    </div>
+                    <div class="form-text" id="per_document.cleanup.limit_dirty_mem_mb[@desc]"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="per_document.cleanup.limit_cpu_per" _="CPU usage before becoming a bad document"></label>
+                    <input type="number" min="0" class="form-control" id="per_document.cleanup.limit_cpu_per">
+                    <div class="form-text" id="per_document.cleanup.limit_cpu_per[@desc]"></div>
                 </div>
             </div>
         </div>
-        <!-- 文件編輯設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>文件編輯設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_document.idlesave_duration_secs">文件修改後幾秒自動儲存</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_document.idlesave_duration_secs">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_document.autosave_duration_secs">自動存檔間隔秒數</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_document.autosave_duration_secs">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="per_document.always_save_on_exit">離開編輯時，即使未修改也強制存檔</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="checkbox" class="form-control" id="per_document.always_save_on_exit">
-                        <label for="per_document.always_save_on_exit" class="label-success"></label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_document.limit_file_size_mb">每個程序可寫入的檔案大小(單位:M)</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_document.limit_file_size_mb" title="0:表示無限制">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_document.limit_num_open_files">每個程序可開啟檔案數量</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_document.limit_num_open_files" title="0:表示無限制">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_document.limit_load_secs">載入文件最大秒數</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_document.limit_load_secs" title="0:表示無限制">
-                    </div>
-                </div>
+    </div>
+</div>
+
+<!-- 文件檢視設定 -->
+<div class="card border-3 mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="Document view settings"><!--文件檢視設定--></div>
+    </div>
+    <div class="card-body row g-2">
+        <div class="col-md-6">
+            <label class="form-label" for="per_view.out_of_focus_timeout_secs" _="Browser dimming time"></label>
+            <div class="input-group">
+                <input type="number" min="0" step="10" class="form-control" id="per_view.out_of_focus_timeout_secs">
+                <span class="input-group-text" _='seconds'></span>
+            </div>
+            <div class="form-text" id="per_view.out_of_focus_timeout_secs[@desc]"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="per_view.idle_timeout_secs" _="Stop editing the dimming time"></label>
+            <div class="input-group">
+                <input type="number" min="0" step="10" class="form-control" id="per_view.idle_timeout_secs">
+                <span class="input-group-text" _="seconds"></span>
+            </div>
+            <div class="form-text" id="per_view.idle_timeout_secs[@desc]"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 日誌設定 -->
+<div class="card border-3 mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="Log settings"></div>
+    </div>
+    <div class="card-body row g-2">
+        <div class="col-md-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="logging.color">
+                <label class="form-check-label" for="logging.color" _="Color"></label>
+                <div class="form-text" id="logging.color[@desc]"></div>
             </div>
         </div>
-        <!-- 文件檢視設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>文件檢視設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_view.out_of_focus_timeout_secs">瀏覽器調暗秒數</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_view.out_of_focus_timeout_secs">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_view.idle_timeout_secs">停止編輯調暗秒數</label>
-                    <div class="col-md-9">
-                        <input type="number" class="form-control" id="per_view.idle_timeout_secs">
-                    </div>
-                </div>
+        <div class="col-md-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="logging.protocol">
+                <label class="form-check-label" for="logging.protocol" _="Enable client console output"></label>
+                <div class="form-text" id="logging.protocol[@desc]"></div>
             </div>
         </div>
-        <!-- 日誌設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>日誌設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="logging.level">紀錄層級</label>
-                    <div class="col-md-9">
-                        <select class="form-control" id="logging.level">
-                            <option value="none">無</option>
-                            <option value="fatal">致命</option>
-                            <option value="critical">緊急</option>
-                            <option value="error">錯誤</option>
-                            <option value="warning">警告</option>
-                            <option value="notice">通知</option>
-                            <option value="information">資訊</option>
-                            <option value="debug">除錯</option>
-                            <option value="trace">追蹤</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="file.property[@name=path]">日誌檔完整路徑及檔名</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="logging.file.property[@name=path]">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="logging.file.property[@name=rotation]">多久備份一次日誌？</label>
-                    <div class="col-md-9">
-                        <select class="form-control" id="logging.file.property[@name=rotation]">
-                            <option value="never">無</option>
-                            <option value="daily">每天</option>
-                            <option value="weekly">每 7 天</option>
-                            <option value="monthly">每 30 天</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="logging.file.property[@name=archive]">備份日誌識別名稱</label>
-                    <div class="col-md-9">
-                        <select class="form-control" id="logging.file.property[@name=archive]">
-                            <option value="timestamp">日誌檔名+日期時間</option>
-                            <option value="number">日誌檔名+流水號</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="logging.file.property[@name=compress]">壓縮備份日誌檔</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="checkbox" class="form-control" id="logging.file.property[@name=compress]">
-                        <label for="logging.file.property[@name=compress]" class="label-success"></label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="logging.file.property[@name=purgeAge]">日誌檔最長保留期限</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="logging.file.property[@name=purgeAge]" title="單位是: minutes/hours/days/weeks/months">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="logging.file.property[@name=purgeCount]">日誌檔保留數量</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="logging.file.property[@name=purgeCount]" title="若不清除請輸入 'none'">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="logging.file.property[@name=rotateOnOpen]">伺服器啟動時整理日誌檔</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="checkbox" class="form-control" id="logging.file.property[@name=rotateOnOpen]">
-                        <label for="logging.file.property[@name=rotateOnOpen]" class="label-success"></label>
-                    </div>
-                </div>
-            </div>
+        <div class="col-md-12">
+            <label class="form-label" for="logging.lokit_sal_log"><span class="me-3" _="Output messages from LOKit"></span>(<i class="bi bi-info-circle-fill text-info me-1"></i><a href="https://docs.libreoffice.org/sal/html/sal_log.html" target="_blank" _="Usage notes"></a>)</label>
+            <input class="form-control" type="text" id="logging.lokit_sal_log">
+            <div class="form-text" id="logging.lokit_sal_log[@desc]"></div>
         </div>
-        <!-- 網路設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>網路設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="per_document.idlesave_duration_secs">通訊協定</label>
-                    <div class="col-md-9">
-                        <select class="form-control" id="net.proto">
-                            <option value="ipv4">IPv4</option>
-                            <option value="ipv6">IPv6</option>
-                            <option value="all">全部</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3">接受 POST 客戶端來源</label>
-                    <div class="col-md-9">
-                        <input type="hidden" id="net.post_allow.host">
-                        <ul class="list-group" id="post_allow_hostlist">
-                        </ul>
-                        <a class="btn btn-primary" id="post_allow_hostAdd">新增來源</a>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3">接受 Origin 來源(CORS)</label>
-                    <div class="col-md-9">
-                        <input type="hidden" id="net.cors_allow.host">
-                        <ul class="list-group" id="cors_allow_hostlist">
-                        </ul>
-                        <a class="btn btn-primary" id="cors_allow_hostAdd">新增來源</a>
-                    </div>
-                </div>
-            </div>
+        <div class="col-md-4">
+            <label class="form-label" for="logging.level" _="Log level"></label>
+            <select class="form-select" id="logging.level">
+                <option value="none" _="None"></option>
+                <option value="fatal" _="Fatal"></option>
+                <option value="critical" _="Critical"></option>
+                <option value="error" _="Error"></option>
+                <option value="warning" _="Warning"></option>
+                <option value="notice" _="Notice"></option>
+                <option value="information" _="Information"></option>
+                <option value="debug" _="Debug"></option>
+                <option value="trace" _="Trace"></option>
+            </select>
+            <div class="form-text" id="logging.level[@desc]"></div>
         </div>
-        <!-- SSL 設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>SSL 設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="ssl.enable">啟用 SSL</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="checkbox" class="form-control" id="ssl.enable">
-                        <label for="ssl.enable" class="label-success"></label>
+
+        <div class="col-md-12 p-3 bg-light border border-3 rounded">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="logging.file">
+                        <label class="form-check-label" for="logging.file" _="Write to file (after enabling, the following settings will be effective)"></label>
+                        <div class="form-text" id="logging.file[@desc]"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="ssl.termination">使用 https 代理 (如:ngnix)</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="checkbox" class="form-control" id="ssl.termination">
-                        <label for="ssl.termination" class="label-success"></label>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="logging.file.property[@name=path]" _="Full path and file name"></label>
+                    <input class="form-control" type="text" id="logging.file.property[@name=path]">
+                    <div class="form-text" id="logging.file.property[@name=path][@desc]"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="logging.file.property[@name=rotation]" _="Backup cycle"></label>
+                    <select class="form-select" id="logging.file.property[@name=rotation]">
+                        <option value="never" _="None"></option>
+                        <option value="daily" _="Every day"></option>
+                        <option value="weekly" _="Weekly"></option>
+                        <option value="10 days" _="10 Days"></option>
+                        <option value="monthly" _="Monthly"></option>
+                    </select>
+                    <div class="form-text" id="logging.file.property[@name=rotation][@desc]"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="logging.file.property[@name=archive]" _="The identifying name of the backup log"></label>
+                    <select class="form-select" id="logging.file.property[@name=archive]">
+                        <option value="timestamp" _="Log file name + date and time"></option>
+                        <option value="number" _="Log file name + serial number"></option>
+                    </select>
+                    <div class="form-text" id="logging.file.property[@name=archive][@desc]"></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="logging.file.property[@name=compress]">
+                        <label class="form-check-label" for="logging.file.property[@name=compress]" _="Compress backup log files"></label>
+                        <div class="form-text" id="logging.file.property[@name=compress][@desc]"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="ssl.cert_file_path">CERT 檔案位置</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="ssl.cert_file_path">
+                <div class="col-md-4">
+                    <label class="form-label" for="logging.file.property[@name=purgeAge]" _="Log file retention period"></label>
+                    <select class="form-select" id="logging.file.property[@name=purgeAge]">
+                        <option value="1 weeks" _="1 Week"></option>
+                        <option value="10 days" _="10 Days"></option>
+                        <option value="1 months" _="1 Month"></option>
+                    </select>
+                    <div class="form-text" id="logging.file.property[@name=purgeAge][@desc]"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="logging.file.property[@name=purgeCount]" _="Number of log files retained"></label>
+                    <select class="form-select" id="logging.file.property[@name=purgeCount]">
+                        <option value="none" _="All"></option>
+                        <option value="1">1</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                    <div class="form-text" id="logging.file.property[@name=purgeCount][@desc]"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="logging.file.property[@name=rotateOnOpen]">
+                        <label class="form-check-label" for="logging.file.property[@name=rotateOnOpen]" _="Organize log files when the server starts"></label>
+                        <div class="form-text" id="logging.file.property[@name=rotateOnOpen][@desc]"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="ssl.key_file_path">KEY 檔案位置</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="ssl.key_file_path">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="ssl.ca_file_path">CA  檔案位置</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="ssl.ca_file_path">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="ssl.cipher_list">加密演算法規則</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="ssl.cipher_list">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 文件儲存設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>文件儲存設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="storage.filesystem[@allow]">存主機檔案系統</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="checkbox" class="form-control" id="storage.filesystem[@allow]">
-                        <label for="storage.filesystem[@allow]" class="label-success"></label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3"><input type="radio" name="storage_wopi_webdav" id="storage.wopi[@allow]">&nbsp;&nbsp;使用 WOPI</label>
-                    <div class="col-md-9">
-                        <div class="input-group">
-                            <span class="input-group-addon">WOPI 最大文件不超過</span>
-                            <input type="text" class="form-control" id="storage.wopi.max_file_size">
-                            <span class="input-group-addon">Bytes.(0 : 表示不限制)</span>
-                        </div>
-                        <input type="hidden" id="storage.wopi.host">
-                    </div>
-                </div>
-                <div form-group>
-                    <label class="col-md-3"></label>
-                    <div class="col-md-9">
-                        <ul class="list-group" id="wopi_hostlist">
-                        </ul>
-                        <a class="btn btn-primary" id="wopi_hostAdd">新增來源</a>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3"><input type="radio" name="storage_wopi_webdav" id="storage.webdav[@allow]">&nbsp;&nbsp;使用 WebDAV</label>
-                    <div class="col-md-9 material-switch">
-                        <input type="hidden" id="storage.webdav.host">
-                    </div>
-                </div>
-                <div form-group>
-                    <label class="col-md-3"></label>
-                    <div class="col-md-9">
-                        <ul class="list-group" id="webdav_hostlist">
-                        </ul>
-                        <a class="btn btn-primary" id="webdav_hostAdd">新增來源</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 浮水印設定 -->
-        <div class="panel panel-primary"  style="margin-top:30px;">
-            <div class="panel-heading"><strong>浮水印設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="text-right col-md-3" for="watermark.enable">啟用浮水印</label>
-                    <div class="col-md-9  material-switch">
-                        <input type="checkbox" class="form-control" id="watermark.enable">
-                        <label for="watermark.enable" class="label-success"></label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="watermark.text">文字</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="watermark.text">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="watermark.opacity">透明度(0-1)</label>
-                    <div class="col-md-9">
-                        <input type="number" min="0.0" max="1.0" step="0.1" class="form-control" id="watermark.opacity">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="watermark.angle">角度</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="watermark.angle">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 安全列印API設定 -->
-        <div class="panel panel-primary" style="margin-top:30px;">
-            <div class="panel-heading"><strong>安全列印API設定</strong></div>
-            <div class="panel-body">
-                <div class="form-group">
-                    <label class="control-label col-md-3" for="secureprint.api_url">API位址</label>
-                    <div class="col-md-9">
-                        <input type="text" class="form-control" id="secureprint.api_url">
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="logging.file.property[@name=flush]">
+                        <label class="form-check-label" for="logging.file.property[@name=flush]" _="Write files directly without buffering"></label>
+                        <div class="form-text" id="logging.file.property[@name=flush][@desc]"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- 網路設定 -->
+<div class="card border-3 mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="Network settings"></div>
+    </div>
+    <div class="card-body row g-2">
+
+        <div class="col-md-4">
+            <label class="form-label" for="net.proto" _="Protocol"></label>
+            <select class="form-select" id="net.proto">
+                <option value="IPv4" _="IPv4"></option>
+                <option value="IPv6" _="IPv6"></option>
+                <option value="all" _="IPv4 and IPv6"></option>
+            </select>
+            <div class="form-text" id="net.proto[@desc]"></div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label" for="net.listen" _="Listen address"></label>
+            <select class="form-select" id="net.listen">
+                <option value="any" _="Any addresses"></option>
+                <option value="loopback" _="Only this host(loopback)"></option>
+            </select>
+            <div class="form-text" id="net.listen[@desc]"></div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label" for="net.connection_timeout_secs" _="Connection timeout seconds"></label>
+            <input type="number" min="1" class="form-control" id="net.connection_timeout_secs">
+            <div class="form-text" id="net.connection_timeout_secs[@desc]"></div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label" for="net.service_root" _="Prefix path"></label>
+            <input type="text" class="form-control" id="net.service_root">
+            <div class="form-text" id="net.service_root[@desc]"></div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="net.proxy_prefix">
+                <label class="form-check-label" for="net.proxy_prefix" _="Proxy prefix"></label>
+                <div class="form-text" id="net.proxy_prefix[@desc]"></div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <label class="form-label" for="net.frame_ancestors" _="Allow embedded in iframe hosts"></label>
+            <input type="text" class="form-control" id="net.frame_ancestors">
+            <div class="form-text" id="net.frame_ancestors[@desc]"></div>
+        </div>
+
+        <!--- 允許 HTTP POST 來源設定--->
+        <div class="col-md-12 p-3 bg-light border border-3 rounded">
+            <div class="row g-3">
+
+                <div class="col-md-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="net.post_allow[@allow]">
+                        <label class="form-check-label" for="net.post_allow[@allow]" _="Allow HTTP POST hosts">允許 HTTP POST 主機</label>
+                        <div class="form-text" id="net.post_allow[@desc]"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <!-- 這是主機列表，不含允許/拒絕連線標籤 -->
+                    <div class="host-list" id="net.post_allow.host[]"></div>
+                </div>
+            </div>
+        </div>
+        <!-------------->
+
+    </div>
+</div>
+
+<!-- SSL 設定 -->
+<div class="card mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="SSL settings"></div>
+    </div>
+    <div class="card-body row g-2">
+        <div class="col-md-6">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="ssl.enable">
+                <label class="form-check-label" for="ssl.enable" _="Enable SSL"></label>
+                <div class="form-text" id="ssl.enable[@desc]"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="ssl.termination">
+                <label class="form-check-label" for="ssl.termination" _="Connection via proxy"></label>
+                <div class="form-text" id="ssl.termination[@desc]"></div>
+            </div>
+        </div>
+        <!-- 分隔 -->
+        <div class="col-md-4">
+            <label class="form-label" for="ssl.cert_file_path" _="ssl.cert_file_path"></label>
+            <input type="text" class="form-control" id="ssl.cert_file_path">
+            <div class="form-text" id="ssl.cert_file_path[@desc]"></div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label" for="ssl.key_file_path" _="ssl.key_file_path"></label>
+            <input type="text" class="form-control" id="ssl.key_file_path">
+            <div class="form-text" id="ssl.key_file_path[@desc]"></div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label" for="ssl.ca_file_path" _="ssl.ca_file_path"></label>
+            <input type="text" class="form-control" id="ssl.ca_file_path">
+            <div class="form-text" id="ssl.ca_file_path[@desc]"></div>
+        </div>
+        <!-- 分隔 -->
+        <div class="col-md-12">
+            <label class="form-label" for="ssl.cipher_list" _="Cipher suite"></label>
+            <input type="text" class="form-control" id="ssl.cipher_list">
+            <div class="form-text" id="ssl.cipher_list[@desc]"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 文件儲存設定 -->
+<div class="card mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="Backend storage settings"></div>
+    </div>
+    <div class="card-body row g-2">
+
+        <div class="col-md-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="storage.filesystem[@allow]">
+                <label class="form-check-label" for="storage.filesystem[@allow]" _="Host file system"></label>
+                <div class="form-text" id="storage.filesystem[@desc]"></div>
+            </div>
+        </div>
+
+        <!--- 來源是 WOPI -->
+        <div class="col-md-12 p-3 bg-light border border-3 rounded">
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="storage.wopi[@allow]">
+                        <label class="form-check-label" for="storage.wopi[@allow]" _="Allow WOPI storage"></label>
+                        <div class="form-text" id="storage.wopi[@desc]"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="storage.wopi.reuse_cookies">
+                        <label class="form-check-label" for="storage.wopi.reuse_cookies" _="Pass cookie"></label>
+                        <div class="form-text" id="storage.wopi.reuse_cookies[@desc]"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="storage.wopi.max_file_size" _="Max file size"></label>
+                    <input type="number" class="form-control" id="storage.wopi.max_file_size" min="0" step="1024">
+                    <div class="form-text" id="storage.wopi.max_file_size[@desc]"></div>
+                </div>
+
+                <div class="col-md-12">
+                    <!-- 這是主機列表，並且含有允許/拒絕連線標籤 -->
+                    <div class="host-list allow-property" id="storage.wopi.host[]"></div>
+                </div>
+            </div>
+        </div>
+        <!-------------->
+
+        <!--- 來源是 WebDav -->
+        <div class="col-md-12 p-3 bg-light border border-3 rounded">
+            <div class="row g-3">
+
+                <div class="col-md-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="storage.webdav[@allow]">
+                        <label class="form-check-label" for="storage.webdav[@allow]" _="Allow WebDAV storage"></label>
+                        <div class="form-text" id="storage.webdav[@desc]"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <!-- 這是主機列表，並且含有允許/拒絕連線標籤 -->
+                    <div class="host-list allow-property" id="storage.webdav.host[]"></div>
+                </div>
+            </div>
+        </div>
+        <!-------------->
+    </div>
+</div>
+
+<!-- 浮水印設定 -->
+<div class="card mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="Watermark settings"></div>
+    </div>
+    <div class="card-body row g-2">
+
+        <div class="col-md-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="watermark[@enable]">
+                <label class="form-check-label" for="watermark[@enable]" _="Enable watermark"></label>
+                <div class="form-text" id="watermark[@desc]"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="watermark.opacity" _="Opacity"></label>
+            <input type="number" class="form-control" id="watermark.opacity" min="0.1" step="0.01" max="1">
+            <div class="form-text" id="watermark.opacity[@desc]"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="watermark.angle" _="Angle"></label>
+            <input type="number" class="form-control" id="watermark.angle" min="0" step="1" max="360">
+            <div class="form-text" id="watermark.angle[@desc]"></div>
+        </div>
+        <div class="col-md-12">
+            <label class="form-label" for="watermark.text" _="Text"></label>
+            <textarea type="text" class="form-control" id="watermark.text" rows="3"></textarea>
+            <div class="form-text" id="watermark.text[@desc]"></div>
+        </div>
+
+    </div>
+
+</div>
 </form>
-<div><button class="btn btn-info pull-right" id="saveConfig" disabled><strong>更新設定</strong></button></div>
+
+<div class="row g-3 my-3">
+    <div class="col-md-12 text-end">
+        <button class="btn btn-warning pull-end" type="button" id="saveConfig" _="Update system configuration"></button>
+    </div>
+</div>
+
+<!-- 編輯主機資料的 Dialog -->
+<form class="needs-validation" id="editForm" novalidate>
+<div class="modal fade" id="editSourceDialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hostEditTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row g-3">
+                <div class="col-md-4" id="hasAllow">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="allow-deny" id="host-allow" value="allow">
+                        <label class="form-check-label" for="host-allow" _="Allow connect"></label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="allow-deny" id="host-deny" value="deny">
+                        <label class="form-check-label" for="host-deny" _="Deny connect"></label>
+                        <div class="invalid-feedback" _="Must specify allow or deny"></div>
+                      </div>
+                </div>
+                <div class="col-md-8" id="sourceField">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="host-value" required>
+                        <label class="form-label" for="host-value" _="Source"></label>
+                        <div class="invalid-feedback" _="Source must be entered"></div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="host-desc">
+                        <label class="form-label" for="host-desc" _="Description"></label>
+                      </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal" id="editFormCancel" _="Cancel"></button>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill" id="editFormOK" _="OK"></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+<!-- toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+    <div id="messageBox" class="toast hide border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="messageTitle"></strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="messageBody"></div>
+    </div>
+</div>
