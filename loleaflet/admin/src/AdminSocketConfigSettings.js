@@ -30,13 +30,13 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('How long is it idle to auto save (if modified)'), // 閒置多久自動存檔(如果修改過)
 		_('Auto save time (if modified)'), // 自動存檔時間(如果修改過)
 		_('When leaving the editor, it is forced to save even if it has not been modified'), // 離開編輯時，即使未修改也強制存檔
-		_('Virtual memory available for each document(MB)'), // 每個文件可用的虛擬記憶體
+		_('Virtual memory available for each document'), // 每個文件可用的虛擬記憶體
 		_('Maximum stack size available for each document procress'), // 每個文件程序可用的堆疊大小
 		_('File size that can be written by each document procress'), // 每個文件程序可寫入的檔案大小
 		_('The number of files that can be opened by each document procress'), // 每個文件程序可開啟的檔案數量
-		_('Load file time limit'), // 載入文件時間限制(秒)
+		_('Load file time limit'), // 載入文件時間限制
 		_('File conversion time limit'), // 轉檔時間限制
-		_('Cleanup mechanism(after enabling, the following settings will be effective)'), //清理機制（啟用後，以下設定才會有作用）
+		_('Cleanup mechanism(after enabling, the following settings will be effective)'), // 清理機制（啟用後，以下設定才會有作用）
 		_('Interval time'), // 間隔時間
 		_('Survival time before bad files are cleaned up'), // 不良文件清理前的存活時間
 		_('Idle time before becoming a bad document'), // 成為不良文件前的閒置時間
@@ -92,7 +92,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('Prefix path'), // 前綴路徑
 		_('Proxy prefix'), // 前綴代理
 		_('Allow embedded in iframe hosts'), // 允許嵌入 iframe 的主機
-		_('Allow HTTP POST hosts'), // 允許
+		_('Allow HTTP POST hosts'), // 允許 HTTP POST 的來源
 		_('SSL settings'), // SSL 設定
 		_('Enable SSL'), // 啟用 SSL
 		_('Connection via proxy'), // 使用 https 代理
