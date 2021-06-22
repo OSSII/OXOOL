@@ -127,8 +127,9 @@
       <capabilities desc="Should we require capabilities to isolate processes into chroot jails" type="bool" default="true">true</capabilities>
     </security>
 
-    <watermark>
+    <watermark desc="Add watermark when editing or printing." type="bool" enable="false">
       <opacity desc="Opacity of on-screen watermark from 0.0 to 1.0" type="double" default="0.2"></opacity>
+      <angle desc="Watermark angle." type="uint" default="45"></angle>
       <text desc="Watermark text to be displayed on the document if entered" type="string"></text>
     </watermark>
 
