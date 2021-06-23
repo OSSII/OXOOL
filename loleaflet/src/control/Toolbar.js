@@ -16,6 +16,18 @@ L.Map.include({
 
 	_hotkeyCommands: {},
 
+	/**
+	 * 紀錄後端 Office 版本資訊
+	 * { "ProductName": "OxOffice",
+	 *   "ProductVersion": "R9S0",
+	 *   "ProductExtension": "8.3.1-0",
+	 *   "OxofficeVersion": "R9S0",
+	 *   "BuildId": "9237a2d5d04b2903da3caa984e12c381bb34e609"
+	 * }
+	 */
+
+	_officeVersion: {},
+
 	// 支援匯出的格式
 	_exportFormats: {
 		text: [
@@ -536,6 +548,22 @@ L.Map.include({
 	},
 
 	/**
+	 * 設定後端 Office 版本資訊
+	 * @param {object} versionObj
+	 */
+	setOfficeVersion: function(versionObj) {
+		this._officeVersion = versionObj;
+	},
+
+	/**
+	 * 取得後端 Office 版本資訊
+	 * @returns object - 版本資訊
+	 */
+	getOfficeVersion: function() {
+		return this._officeVersion;
+	},
+
+	/**
 	 * 令 OxOOL 重新取得文件狀態
 	 * @author Firefly <firefly@ossii.com.tw>
 	 */
@@ -692,7 +720,11 @@ L.Map.include({
 			// 第一次加入 且是 uno 指令的話，設定狀態自動回報
 			if (!isExists && name.startsWith('.uno:'))
 			{
-				this._socket.sendMessage('initunostatus ' + encodeURI(name));
+				// 只有 OxOffice 或 ndcodfsys 有 initunostatus 功能
+				if (this._officeVersion.ProductName === 'OxOffice' ||
+					this._officeVersion.ProductName== 'ndcodfsys') {
+					this._socket.sendMessage('initunostatus ' + encodeURI(name));
+				}
 			}
 		}
 	},

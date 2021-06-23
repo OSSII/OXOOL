@@ -286,6 +286,9 @@ L.Socket = L.Class.extend({
 				$('#lokit-version').text(lokitVersionObj.ProductName + '(' +
 				lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension + ')');
 			}
+			// Added by Firefly <firefly@ossii.com.tw>
+			// 把後端 Office version 資料記錄下來
+			this._map.setOfficeVersion(lokitVersionObj);
 		}
 		else if (textMsg.startsWith('watermark:')) {
 			this._map.options.watermark = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
