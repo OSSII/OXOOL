@@ -93,10 +93,13 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('Proxy prefix'), // 前綴代理
 		_('Allow embedded in iframe hosts'), // 允許嵌入 iframe 的主機
 		_('Allow HTTP POST hosts'), // 允許 HTTP POST 的來源
+
 		_('SSL settings'), // SSL 設定
 		_('Enable SSL'), // 啟用 SSL
 		_('Connection via proxy'), // 使用 https 代理
-
+		_('Certificate file path'), // 數位憑證檔案位置
+		_('Private key file path'), // 私鑰檔案位置
+		_('CA file path'), // CA 憑證檔案位置
 		_('Cipher list'), // 加密演算法清單
 
 		_('Backend storage settings'), // 檔案儲存設定
@@ -104,6 +107,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('Allow WOPI storage'), // 允許來自 WOPI 主機
 		_('Max file size'), // 最大文件大小
 		_('Pass cookie'), // 傳遞 cookie
+		_('Allow WebDAV storage'), // 允許 WebDAV
 
 		_('Watermark settings'), // 浮水印設定
 		_('Enable watermark'), // 啟用浮水印
