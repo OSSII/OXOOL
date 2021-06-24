@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-23 00:11+0800\n"
+"POT-Creation-Date: 2021-06-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -413,131 +413,147 @@ msgstr ""
 msgid "Allow HTTP POST hosts"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:96
+#: admin/src/AdminSocketConfigSettings.js:97
 msgid "SSL settings"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:97
+#: admin/src/AdminSocketConfigSettings.js:98
 msgid "Enable SSL"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:98
+#: admin/src/AdminSocketConfigSettings.js:99
 msgid "Connection via proxy"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:100
-msgid "Cipher list"
+msgid "Certificate file path"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:101
+msgid "Private key file path"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:102
-msgid "Backend storage settings"
+msgid "CA file path"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:103
-msgid "Host file system"
-msgstr ""
-
-#: admin/src/AdminSocketConfigSettings.js:104
-msgid "Allow WOPI storage"
+msgid "Cipher list"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:105
-msgid "Max file size"
+msgid "Backend storage settings"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:106
-msgid "Pass cookie"
+msgid "Host file system"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:107
+msgid "Allow WOPI storage"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:108
-msgid "Watermark settings"
+msgid "Max file size"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:109
-msgid "Enable watermark"
+msgid "Pass cookie"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:110
-msgid "Opacity"
-msgstr ""
-
-#: admin/src/AdminSocketConfigSettings.js:111
-msgid "Angle"
+msgid "Allow WebDAV storage"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:112
+msgid "Watermark settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:113
+msgid "Enable watermark"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:114
+msgid "Opacity"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:115
+msgid "Angle"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:116
 #: uiconfig/dialogs/BindingLineDialog.js:32 uiconfig/dialogs/DeleteCell.js:24
 msgid "Text"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:114
+#: admin/src/AdminSocketConfigSettings.js:118
 msgid "Update system configuration"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:116
-#: admin/src/AdminSocketConfigSettings.js:167
+#: admin/src/AdminSocketConfigSettings.js:120
+#: admin/src/AdminSocketConfigSettings.js:171
 msgid "Source"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:117
-#: admin/src/AdminSocketConfigSettings.js:168
+#: admin/src/AdminSocketConfigSettings.js:121
+#: admin/src/AdminSocketConfigSettings.js:172
 msgid "Description"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:118
+#: admin/src/AdminSocketConfigSettings.js:122
 msgid "Must specify allow or deny"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:119
+#: admin/src/AdminSocketConfigSettings.js:123
 msgid "Source must be entered"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:259
+#: admin/src/AdminSocketConfigSettings.js:263
 msgid "Settings updated successfully"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:260
+#: admin/src/AdminSocketConfigSettings.js:264
 msgid "These settings will take effect after restarting the service."
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:266
+#: admin/src/AdminSocketConfigSettings.js:270
 msgid "Setting update failed"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:267
+#: admin/src/AdminSocketConfigSettings.js:271
 msgid "Please check if there is any problem with the set data."
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:331
-#: admin/src/AdminSocketConfigSettings.js:537
+#: admin/src/AdminSocketConfigSettings.js:335
+#: admin/src/AdminSocketConfigSettings.js:541
 msgid "Add source"
-msgstr ""
-
-#: admin/src/AdminSocketConfigSettings.js:394
-#: admin/src/AdminSocketConfigSettings.js:487
-msgid "Allow connect"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:398
 #: admin/src/AdminSocketConfigSettings.js:491
+msgid "Allow connect"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:402
+#: admin/src/AdminSocketConfigSettings.js:495
 msgid "Deny connect"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:423
+#: admin/src/AdminSocketConfigSettings.js:427
 #: src/control/Control.AlertDialog.js:55
 msgid "Edit"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:432
+#: admin/src/AdminSocketConfigSettings.js:436
 #: admin/src/AdminSocketFontManager.js:302 js/toolbar.js:1269
 msgid "Delete"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:502
+#: admin/src/AdminSocketConfigSettings.js:506
 msgid "Edit source"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:515
+#: admin/src/AdminSocketConfigSettings.js:519
 msgid "Delete source"
 msgstr ""
 
@@ -1249,66 +1265,66 @@ msgid "File name:"
 msgstr ""
 
 #: src/control/Preview.js:201 src/control/Preview.js:213
-#: src/control/Preview.js:223 src/control/Toolbar.js:22
-#: src/control/Toolbar.js:32 src/control/Toolbar.js:40 src/othermessages.js:16
+#: src/control/Preview.js:223 src/control/Toolbar.js:34
+#: src/control/Toolbar.js:44 src/control/Toolbar.js:52 src/othermessages.js:16
 msgid "PDF Document (.pdf)"
 msgstr ""
 
-#: src/control/Preview.js:202 src/control/Toolbar.js:23 src/othermessages.js:17
+#: src/control/Preview.js:202 src/control/Toolbar.js:35 src/othermessages.js:17
 msgid "TEXT Document (.txt)"
 msgstr ""
 
 #: src/control/Preview.js:203 src/control/Preview.js:214
-#: src/control/Preview.js:224 src/control/Toolbar.js:24
-#: src/control/Toolbar.js:33 src/control/Toolbar.js:41 src/othermessages.js:18
+#: src/control/Preview.js:224 src/control/Toolbar.js:36
+#: src/control/Toolbar.js:45 src/control/Toolbar.js:53 src/othermessages.js:18
 msgid "HTML Document (.html)"
 msgstr ""
 
-#: src/control/Preview.js:204 src/control/Toolbar.js:25 src/othermessages.js:19
+#: src/control/Preview.js:204 src/control/Toolbar.js:37 src/othermessages.js:19
 msgid "ODF text document (.odt)"
 msgstr ""
 
-#: src/control/Preview.js:205 src/control/Toolbar.js:26 src/othermessages.js:22
+#: src/control/Preview.js:205 src/control/Toolbar.js:38 src/othermessages.js:22
 msgid "Word 2003 Document (.doc)"
 msgstr ""
 
-#: src/control/Preview.js:206 src/control/Toolbar.js:27 src/othermessages.js:25
+#: src/control/Preview.js:206 src/control/Toolbar.js:39 src/othermessages.js:25
 msgid "Word Document (.docx)"
 msgstr ""
 
-#: src/control/Preview.js:207 src/control/Toolbar.js:28 src/othermessages.js:28
+#: src/control/Preview.js:207 src/control/Toolbar.js:40 src/othermessages.js:28
 msgid "Rich Text (.rtf)"
 msgstr ""
 
-#: src/control/Preview.js:208 src/control/Toolbar.js:29 src/othermessages.js:30
+#: src/control/Preview.js:208 src/control/Toolbar.js:41 src/othermessages.js:30
 msgid "EPUB Document (.epub)"
 msgstr ""
 
-#: src/control/Preview.js:215 src/control/Toolbar.js:34 src/othermessages.js:20
+#: src/control/Preview.js:215 src/control/Toolbar.js:46 src/othermessages.js:20
 msgid "ODF spreadsheet (.ods)"
 msgstr ""
 
-#: src/control/Preview.js:216 src/control/Toolbar.js:35 src/othermessages.js:23
+#: src/control/Preview.js:216 src/control/Toolbar.js:47 src/othermessages.js:23
 msgid "Excel 2003 Spreadsheet (.xls)"
 msgstr ""
 
-#: src/control/Preview.js:217 src/control/Toolbar.js:36 src/othermessages.js:26
+#: src/control/Preview.js:217 src/control/Toolbar.js:48 src/othermessages.js:26
 msgid "Excel Spreadsheet (.xlsx)"
 msgstr ""
 
-#: src/control/Preview.js:218 src/control/Toolbar.js:37 src/othermessages.js:29
+#: src/control/Preview.js:218 src/control/Toolbar.js:49 src/othermessages.js:29
 msgid "CSV (.csv)"
 msgstr ""
 
-#: src/control/Preview.js:225 src/control/Toolbar.js:42 src/othermessages.js:21
+#: src/control/Preview.js:225 src/control/Toolbar.js:54 src/othermessages.js:21
 msgid "ODF presentation (.odp)"
 msgstr ""
 
-#: src/control/Preview.js:226 src/control/Toolbar.js:43 src/othermessages.js:24
+#: src/control/Preview.js:226 src/control/Toolbar.js:55 src/othermessages.js:24
 msgid "PowerPoint 2003 Presentation (.ppt)"
 msgstr ""
 
-#: src/control/Preview.js:227 src/control/Toolbar.js:44 src/othermessages.js:27
+#: src/control/Preview.js:227 src/control/Toolbar.js:56 src/othermessages.js:27
 msgid "PowerPoint Presentation (.pptx)"
 msgstr ""
 
@@ -1320,25 +1336,25 @@ msgstr ""
 msgid "Right Margin"
 msgstr ""
 
-#: src/control/Toolbar.js:398 src/control/Toolbar.js:410
-#: src/control/Toolbar.js:419 uiconfig/dialogs/PdfWatermarkText.js:44
+#: src/control/Toolbar.js:410 src/control/Toolbar.js:422
+#: src/control/Toolbar.js:431 uiconfig/dialogs/PdfWatermarkText.js:44
 msgid "Downloading..."
 msgstr ""
 
-#: src/control/Toolbar.js:435 src/control/Toolbar.js:453
-#: src/control/Toolbar.js:506 src/map/Map.js:1281
+#: src/control/Toolbar.js:447 src/control/Toolbar.js:465
+#: src/control/Toolbar.js:518 src/map/Map.js:1281
 msgid "Saving..."
 msgstr ""
 
-#: src/control/Toolbar.js:459
+#: src/control/Toolbar.js:471
 msgid "The file has been saved, this encrypted file will be opened."
 msgstr ""
 
-#: src/control/Toolbar.js:465
+#: src/control/Toolbar.js:477
 msgid "Renaming..."
 msgstr ""
 
-#: src/control/Toolbar.js:897
+#: src/control/Toolbar.js:929
 msgid "This version of %productName is powered by"
 msgstr ""
 
@@ -1358,77 +1374,77 @@ msgstr ""
 msgid "Unsupported server version."
 msgstr ""
 
-#: src/core/Socket.js:336
+#: src/core/Socket.js:339
 msgid "Session terminated by document owner"
 msgstr ""
 
-#: src/core/Socket.js:340
+#: src/core/Socket.js:343
 msgid "Idle document - please click to reload and resume editing"
 msgstr ""
 
-#: src/core/Socket.js:347
+#: src/core/Socket.js:350
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr ""
 
-#: src/core/Socket.js:351
+#: src/core/Socket.js:354
 msgid "Oops, there is a problem connecting the document"
 msgstr ""
 
-#: src/core/Socket.js:355
+#: src/core/Socket.js:358
 msgid "Server is recycling and will be available shortly"
 msgstr ""
 
-#: src/core/Socket.js:387
+#: src/core/Socket.js:390
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr ""
 
-#: src/core/Socket.js:393
+#: src/core/Socket.js:396
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr ""
 
-#: src/core/Socket.js:515
+#: src/core/Socket.js:518
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr ""
 
-#: src/core/Socket.js:520
+#: src/core/Socket.js:523
 msgid "Discard"
 msgstr ""
 
-#: src/core/Socket.js:525
+#: src/core/Socket.js:528
 msgid "Overwrite"
 msgstr ""
 
-#: src/core/Socket.js:530
+#: src/core/Socket.js:533
 msgid "Save to new file"
 msgstr ""
 
-#: src/core/Socket.js:605
+#: src/core/Socket.js:608
 msgid "Document requires password to view."
 msgstr ""
 
-#: src/core/Socket.js:608
+#: src/core/Socket.js:611
 msgid "Document requires password to modify."
 msgstr ""
 
-#: src/core/Socket.js:610
+#: src/core/Socket.js:613
 msgid "Hit Cancel to open in view-only mode."
 msgstr ""
 
-#: src/core/Socket.js:614
+#: src/core/Socket.js:617
 msgid "Wrong password provided. Please try again."
 msgstr ""
 
-#: src/core/Socket.js:733
+#: src/core/Socket.js:736
 msgid "Connecting..."
 msgstr ""
 
-#: src/core/Socket.js:893
+#: src/core/Socket.js:896
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-23 00:11+0800\n"
+"POT-Creation-Date: 2021-06-24 16:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -414,131 +414,147 @@ msgstr "允許嵌入 iframe 的主機"
 msgid "Allow HTTP POST hosts"
 msgstr "允許 HTTP POST 的來源"
 
-#: admin/src/AdminSocketConfigSettings.js:96
+#: admin/src/AdminSocketConfigSettings.js:97
 msgid "SSL settings"
 msgstr "SSL 設定"
 
-#: admin/src/AdminSocketConfigSettings.js:97
+#: admin/src/AdminSocketConfigSettings.js:98
 msgid "Enable SSL"
 msgstr "啟用 SSL"
 
-#: admin/src/AdminSocketConfigSettings.js:98
+#: admin/src/AdminSocketConfigSettings.js:99
 msgid "Connection via proxy"
 msgstr "使用 https 代理"
 
 #: admin/src/AdminSocketConfigSettings.js:100
+msgid "Certificate file path"
+msgstr "數位憑證檔案位置"
+
+#: admin/src/AdminSocketConfigSettings.js:101
+msgid "Private key file path"
+msgstr "私鑰檔案位置"
+
+#: admin/src/AdminSocketConfigSettings.js:102
+msgid "CA file path"
+msgstr "CA 憑證檔案位置"
+
+#: admin/src/AdminSocketConfigSettings.js:103
 msgid "Cipher list"
 msgstr "加密演算法清單"
 
-#: admin/src/AdminSocketConfigSettings.js:102
+#: admin/src/AdminSocketConfigSettings.js:105
 msgid "Backend storage settings"
 msgstr "檔案儲存設定"
 
-#: admin/src/AdminSocketConfigSettings.js:103
+#: admin/src/AdminSocketConfigSettings.js:106
 msgid "Host file system"
 msgstr "主機檔案系統"
 
-#: admin/src/AdminSocketConfigSettings.js:104
+#: admin/src/AdminSocketConfigSettings.js:107
 msgid "Allow WOPI storage"
 msgstr "允許來自 WOPI 主機"
 
-#: admin/src/AdminSocketConfigSettings.js:105
+#: admin/src/AdminSocketConfigSettings.js:108
 msgid "Max file size"
 msgstr "最大文件大小"
 
-#: admin/src/AdminSocketConfigSettings.js:106
+#: admin/src/AdminSocketConfigSettings.js:109
 msgid "Pass cookie"
 msgstr "傳遞 cookie"
 
-#: admin/src/AdminSocketConfigSettings.js:108
+#: admin/src/AdminSocketConfigSettings.js:110
+msgid "Allow WebDAV storage"
+msgstr "允許來自 WebDAV 主機"
+
+#: admin/src/AdminSocketConfigSettings.js:112
 msgid "Watermark settings"
 msgstr "浮水印設定"
 
-#: admin/src/AdminSocketConfigSettings.js:109
+#: admin/src/AdminSocketConfigSettings.js:113
 msgid "Enable watermark"
 msgstr "啟用浮水印"
 
-#: admin/src/AdminSocketConfigSettings.js:110
+#: admin/src/AdminSocketConfigSettings.js:114
 msgid "Opacity"
 msgstr "不透明度"
 
-#: admin/src/AdminSocketConfigSettings.js:111
+#: admin/src/AdminSocketConfigSettings.js:115
 msgid "Angle"
 msgstr "角度"
 
-#: admin/src/AdminSocketConfigSettings.js:112
+#: admin/src/AdminSocketConfigSettings.js:116
 #: uiconfig/dialogs/BindingLineDialog.js:32 uiconfig/dialogs/DeleteCell.js:24
 msgid "Text"
 msgstr "文字"
 
-#: admin/src/AdminSocketConfigSettings.js:114
+#: admin/src/AdminSocketConfigSettings.js:118
 msgid "Update system configuration"
 msgstr "更新系統配置"
 
-#: admin/src/AdminSocketConfigSettings.js:116
-#: admin/src/AdminSocketConfigSettings.js:167
+#: admin/src/AdminSocketConfigSettings.js:120
+#: admin/src/AdminSocketConfigSettings.js:171
 msgid "Source"
 msgstr "來源"
 
-#: admin/src/AdminSocketConfigSettings.js:117
-#: admin/src/AdminSocketConfigSettings.js:168
+#: admin/src/AdminSocketConfigSettings.js:121
+#: admin/src/AdminSocketConfigSettings.js:172
 msgid "Description"
 msgstr "說明"
 
-#: admin/src/AdminSocketConfigSettings.js:118
+#: admin/src/AdminSocketConfigSettings.js:122
 msgid "Must specify allow or deny"
 msgstr "必須指明允許或拒絕"
 
-#: admin/src/AdminSocketConfigSettings.js:119
+#: admin/src/AdminSocketConfigSettings.js:123
 msgid "Source must be entered"
 msgstr "來源必須輸入"
 
-#: admin/src/AdminSocketConfigSettings.js:259
+#: admin/src/AdminSocketConfigSettings.js:263
 msgid "Settings updated successfully"
 msgstr "設定更新成功"
 
-#: admin/src/AdminSocketConfigSettings.js:260
+#: admin/src/AdminSocketConfigSettings.js:264
 msgid "These settings will take effect after restarting the service."
 msgstr "這些改變將在重新啟動服務後生效"
 
-#: admin/src/AdminSocketConfigSettings.js:266
+#: admin/src/AdminSocketConfigSettings.js:270
 msgid "Setting update failed"
 msgstr "設定更新失敗"
 
-#: admin/src/AdminSocketConfigSettings.js:267
+#: admin/src/AdminSocketConfigSettings.js:271
 msgid "Please check if there is any problem with the set data."
 msgstr "請檢查設定的資料是否有問題"
 
-#: admin/src/AdminSocketConfigSettings.js:331
-#: admin/src/AdminSocketConfigSettings.js:537
+#: admin/src/AdminSocketConfigSettings.js:335
+#: admin/src/AdminSocketConfigSettings.js:541
 msgid "Add source"
 msgstr "新增來源"
 
-#: admin/src/AdminSocketConfigSettings.js:394
-#: admin/src/AdminSocketConfigSettings.js:487
+#: admin/src/AdminSocketConfigSettings.js:398
+#: admin/src/AdminSocketConfigSettings.js:491
 msgid "Allow connect"
 msgstr "允許連線"
 
-#: admin/src/AdminSocketConfigSettings.js:398
-#: admin/src/AdminSocketConfigSettings.js:491
+#: admin/src/AdminSocketConfigSettings.js:402
+#: admin/src/AdminSocketConfigSettings.js:495
 msgid "Deny connect"
 msgstr "拒絕連線"
 
-#: admin/src/AdminSocketConfigSettings.js:423
+#: admin/src/AdminSocketConfigSettings.js:427
 #: src/control/Control.AlertDialog.js:55
 msgid "Edit"
 msgstr "編輯"
 
-#: admin/src/AdminSocketConfigSettings.js:432
+#: admin/src/AdminSocketConfigSettings.js:436
 #: admin/src/AdminSocketFontManager.js:302 js/toolbar.js:1269
 msgid "Delete"
 msgstr "刪除"
 
-#: admin/src/AdminSocketConfigSettings.js:502
+#: admin/src/AdminSocketConfigSettings.js:506
 msgid "Edit source"
 msgstr "編輯來源"
 
-#: admin/src/AdminSocketConfigSettings.js:515
+#: admin/src/AdminSocketConfigSettings.js:519
 msgid "Delete source"
 msgstr "刪除來源"
 
@@ -1250,66 +1266,66 @@ msgid "File name:"
 msgstr "檔案名稱："
 
 #: src/control/Preview.js:201 src/control/Preview.js:213
-#: src/control/Preview.js:223 src/control/Toolbar.js:22
-#: src/control/Toolbar.js:32 src/control/Toolbar.js:40 src/othermessages.js:16
+#: src/control/Preview.js:223 src/control/Toolbar.js:34
+#: src/control/Toolbar.js:44 src/control/Toolbar.js:52 src/othermessages.js:16
 msgid "PDF Document (.pdf)"
 msgstr "PDF 文件 (.pdf)"
 
-#: src/control/Preview.js:202 src/control/Toolbar.js:23 src/othermessages.js:17
+#: src/control/Preview.js:202 src/control/Toolbar.js:35 src/othermessages.js:17
 msgid "TEXT Document (.txt)"
 msgstr "純文字文件 (.txt)"
 
 #: src/control/Preview.js:203 src/control/Preview.js:214
-#: src/control/Preview.js:224 src/control/Toolbar.js:24
-#: src/control/Toolbar.js:33 src/control/Toolbar.js:41 src/othermessages.js:18
+#: src/control/Preview.js:224 src/control/Toolbar.js:36
+#: src/control/Toolbar.js:45 src/control/Toolbar.js:53 src/othermessages.js:18
 msgid "HTML Document (.html)"
 msgstr "HTML 文件(.html)"
 
-#: src/control/Preview.js:204 src/control/Toolbar.js:25 src/othermessages.js:19
+#: src/control/Preview.js:204 src/control/Toolbar.js:37 src/othermessages.js:19
 msgid "ODF text document (.odt)"
 msgstr "ODF 文字文件 (.odt)"
 
-#: src/control/Preview.js:205 src/control/Toolbar.js:26 src/othermessages.js:22
+#: src/control/Preview.js:205 src/control/Toolbar.js:38 src/othermessages.js:22
 msgid "Word 2003 Document (.doc)"
 msgstr "Word 2003 文件 (.doc)"
 
-#: src/control/Preview.js:206 src/control/Toolbar.js:27 src/othermessages.js:25
+#: src/control/Preview.js:206 src/control/Toolbar.js:39 src/othermessages.js:25
 msgid "Word Document (.docx)"
 msgstr "Word 文件 (.docx)"
 
-#: src/control/Preview.js:207 src/control/Toolbar.js:28 src/othermessages.js:28
+#: src/control/Preview.js:207 src/control/Toolbar.js:40 src/othermessages.js:28
 msgid "Rich Text (.rtf)"
 msgstr "RTF 文件 (.rtf)"
 
-#: src/control/Preview.js:208 src/control/Toolbar.js:29 src/othermessages.js:30
+#: src/control/Preview.js:208 src/control/Toolbar.js:41 src/othermessages.js:30
 msgid "EPUB Document (.epub)"
 msgstr "EPUB 電子書 (.epub)"
 
-#: src/control/Preview.js:215 src/control/Toolbar.js:34 src/othermessages.js:20
+#: src/control/Preview.js:215 src/control/Toolbar.js:46 src/othermessages.js:20
 msgid "ODF spreadsheet (.ods)"
 msgstr "ODF 試算表 (.ods)"
 
-#: src/control/Preview.js:216 src/control/Toolbar.js:35 src/othermessages.js:23
+#: src/control/Preview.js:216 src/control/Toolbar.js:47 src/othermessages.js:23
 msgid "Excel 2003 Spreadsheet (.xls)"
 msgstr "Excel 2003 試算表 (.xls)"
 
-#: src/control/Preview.js:217 src/control/Toolbar.js:36 src/othermessages.js:26
+#: src/control/Preview.js:217 src/control/Toolbar.js:48 src/othermessages.js:26
 msgid "Excel Spreadsheet (.xlsx)"
 msgstr "Excel 試算表 (.xlsx)"
 
-#: src/control/Preview.js:218 src/control/Toolbar.js:37 src/othermessages.js:29
+#: src/control/Preview.js:218 src/control/Toolbar.js:49 src/othermessages.js:29
 msgid "CSV (.csv)"
 msgstr ""
 
-#: src/control/Preview.js:225 src/control/Toolbar.js:42 src/othermessages.js:21
+#: src/control/Preview.js:225 src/control/Toolbar.js:54 src/othermessages.js:21
 msgid "ODF presentation (.odp)"
 msgstr "ODF 簡報 (.odp)"
 
-#: src/control/Preview.js:226 src/control/Toolbar.js:43 src/othermessages.js:24
+#: src/control/Preview.js:226 src/control/Toolbar.js:55 src/othermessages.js:24
 msgid "PowerPoint 2003 Presentation (.ppt)"
 msgstr "PowerPoint 2003 簡報 (.ppt)"
 
-#: src/control/Preview.js:227 src/control/Toolbar.js:44 src/othermessages.js:27
+#: src/control/Preview.js:227 src/control/Toolbar.js:56 src/othermessages.js:27
 msgid "PowerPoint Presentation (.pptx)"
 msgstr "PowerPoint 簡報 (.pptx)"
 
@@ -1321,25 +1337,25 @@ msgstr "左邊距"
 msgid "Right Margin"
 msgstr "右邊距"
 
-#: src/control/Toolbar.js:398 src/control/Toolbar.js:410
-#: src/control/Toolbar.js:419 uiconfig/dialogs/PdfWatermarkText.js:44
+#: src/control/Toolbar.js:410 src/control/Toolbar.js:422
+#: src/control/Toolbar.js:431 uiconfig/dialogs/PdfWatermarkText.js:44
 msgid "Downloading..."
 msgstr "下載中..."
 
-#: src/control/Toolbar.js:435 src/control/Toolbar.js:453
-#: src/control/Toolbar.js:506 src/map/Map.js:1281
+#: src/control/Toolbar.js:447 src/control/Toolbar.js:465
+#: src/control/Toolbar.js:518 src/map/Map.js:1281
 msgid "Saving..."
 msgstr "儲存中..."
 
-#: src/control/Toolbar.js:459
+#: src/control/Toolbar.js:471
 msgid "The file has been saved, this encrypted file will be opened."
 msgstr "檔案已儲存，將開啟此加密文件。"
 
-#: src/control/Toolbar.js:465
+#: src/control/Toolbar.js:477
 msgid "Renaming..."
 msgstr "正在更改檔名…"
 
-#: src/control/Toolbar.js:897
+#: src/control/Toolbar.js:929
 msgid "This version of %productName is powered by"
 msgstr "此 %productName 版本源自"
 
@@ -1362,77 +1378,77 @@ msgstr "糟糕，連接至 OxOffice Online 時發生問題："
 msgid "Unsupported server version."
 msgstr "未支援的伺服器版本。"
 
-#: src/core/Socket.js:336
+#: src/core/Socket.js:339
 msgid "Session terminated by document owner"
 msgstr "作業階段由文件擁有者終止"
 
-#: src/core/Socket.js:340
+#: src/core/Socket.js:343
 msgid "Idle document - please click to reload and resume editing"
 msgstr "閒置文件 - 請點按以重新載入並繼續編輯"
 
-#: src/core/Socket.js:347
+#: src/core/Socket.js:350
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr "伺服器正在關機作維護（自動存檔中）"
 
-#: src/core/Socket.js:351
+#: src/core/Socket.js:354
 msgid "Oops, there is a problem connecting the document"
 msgstr "糟糕…連接文件時發生了問題"
 
-#: src/core/Socket.js:355
+#: src/core/Socket.js:358
 msgid "Server is recycling and will be available shortly"
 msgstr "伺服器正在重啟循環，即將無法使用"
 
-#: src/core/Socket.js:387
+#: src/core/Socket.js:390
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr "儲存空間內的文件已經變更。載入新文件中。您的版本會以修訂形式存在。"
 
-#: src/core/Socket.js:393
+#: src/core/Socket.js:396
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr "還原舊的版本。任何尚未儲存的變更都會放在版本歷史中。"
 
-#: src/core/Socket.js:515
+#: src/core/Socket.js:518
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr "儲存位置中的文件已經變更。對於您尚未儲存的變更，您希望怎麼處理？"
 
-#: src/core/Socket.js:520
+#: src/core/Socket.js:523
 msgid "Discard"
 msgstr "放棄"
 
-#: src/core/Socket.js:525
+#: src/core/Socket.js:528
 msgid "Overwrite"
 msgstr "覆寫"
 
-#: src/core/Socket.js:530
+#: src/core/Socket.js:533
 msgid "Save to new file"
 msgstr "儲存為新檔案"
 
-#: src/core/Socket.js:605
+#: src/core/Socket.js:608
 msgid "Document requires password to view."
 msgstr "文件需要密碼才能檢視。"
 
-#: src/core/Socket.js:608
+#: src/core/Socket.js:611
 msgid "Document requires password to modify."
 msgstr "文件需要密碼才能修改。"
 
-#: src/core/Socket.js:610
+#: src/core/Socket.js:613
 msgid "Hit Cancel to open in view-only mode."
 msgstr "點按「取消」以唯讀模式開啟。"
 
-#: src/core/Socket.js:614
+#: src/core/Socket.js:617
 msgid "Wrong password provided. Please try again."
 msgstr "提供的密碼錯誤。請重試。"
 
-#: src/core/Socket.js:733
+#: src/core/Socket.js:736
 msgid "Connecting..."
 msgstr "連線中..."
 
-#: src/core/Socket.js:893
+#: src/core/Socket.js:896
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -2161,174 +2177,3 @@ msgstr "列數"
 msgid "Stop tracking changes, will lose information about the changes."
 msgstr "停止追蹤修訂，將會遺失所有更改的資訊。"
 
-#~ msgid "Settings"
-#~ msgstr "設定"
-
-#~ msgid "Main menu"
-#~ msgstr "功能選單"
-
-#~ msgid "(current)"
-#~ msgstr "（目前）"
-
-#~ msgid "History"
-#~ msgstr "最後使用記錄"
-
-#~ msgid "Dashboard"
-#~ msgstr "控制面板"
-
-#~ msgid "User Name"
-#~ msgstr "使用者名稱"
-
-#, fuzzy
-#~ msgid "Documents open"
-#~ msgstr "開啟的文件"
-
-#, fuzzy
-#~ msgid " user(s)."
-#~ msgstr "個使用者"
-
-#, fuzzy
-#~ msgid " document(s) open."
-#~ msgstr "個文件開啟"
-
-#~ msgid "Number of views"
-#~ msgstr "檢視的次數"
-
-#~ msgid "Kill"
-#~ msgstr "截殺"
-
-#~ msgid "Graphs"
-#~ msgstr "圖表"
-
-#~ msgid "Cache size of memory statistics"
-#~ msgstr "記憶體統計資料的快取大小"
-
-#~ msgid "Time interval of memory statistics (in ms)"
-#~ msgstr "記憶體統計的時間間隔（單位毫秒）"
-
-#~ msgid "Cache size of CPU statistics"
-#~ msgstr "CPU 統計資料的快取大小"
-
-#~ msgid "Time interval of CPU statistics (in ms)"
-#~ msgstr "CPU 統計資料的時間間隔（單位毫秒）"
-
-#~ msgid "Maximum Document process virtual memory (in MB) - reduce only"
-#~ msgstr "最大文件程序虛擬記憶體 (以 MB 計) - 只能減少"
-
-#~ msgid "Maximum Document process stack memory (in KB) - reduce only"
-#~ msgstr "最大文件程序堆疊記憶體 (以 MB 計) - 只能減少"
-
-#~ msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
-#~ msgstr "寫入磁碟的最大允許檔案大小 (以 MB 計) - 只能減少"
-
-#~ msgid "Documents:"
-#~ msgstr "文件："
-
-#~ msgid "Expired:"
-#~ msgstr "逾期："
-
-#~ msgid "Refresh"
-#~ msgstr "重整"
-
-#~ msgid "Shutdown Server"
-#~ msgstr "關閉伺服器"
-
-#~ msgid "Version Information"
-#~ msgstr "版本資訊"
-
-#~ msgid "Server has been shut down; please reload the page."
-#~ msgstr "伺服器已關閉，請重新載入頁面"
-
-#~ msgid "Upload"
-#~ msgstr "上傳"
-
-#~ msgid "File"
-#~ msgstr "檔案"
-
-#~ msgid "Upload upgrade file"
-#~ msgstr "上傳升級軟體"
-
-#~ msgid "Select file"
-#~ msgstr "選擇檔案"
-
-#~ msgid "Upload progress"
-#~ msgstr "上傳進度"
-
-#~ msgid "Documents"
-#~ msgstr "文件"
-
-#, fuzzy
-#~ msgid "Username"
-#~ msgstr "帳號"
-
-#~ msgid "File type"
-#~ msgstr "檔案類型"
-
-#~ msgid "Are you sure you want to delete this page?"
-#~ msgstr "您確定要刪除這個頁面？"
-
-#~ msgid "Save As"
-#~ msgstr "另存新檔"
-
-#~ msgid "Unspecified filename"
-#~ msgstr "未指定檔名"
-
-#~ msgid "Text orientation"
-#~ msgstr "文字方向"
-
-#~ msgid "Page size"
-#~ msgstr "頁面規格及方向"
-
-#~ msgid "Portrait"
-#~ msgstr "縱向"
-
-#~ msgid "Landscape"
-#~ msgstr "橫向"
-
-#~ msgid "Document repair"
-#~ msgstr "文件修復"
-
-#~ msgid "Function"
-#~ msgstr "函式"
-
-#~ msgid "Logout"
-#~ msgstr "登出"
-
-#~ msgid "No users"
-#~ msgstr "無使用者"
-
-#~ msgid "Internal Cut"
-#~ msgstr "內部剪下"
-
-#~ msgid "Internal Copy"
-#~ msgstr "內部複製"
-
-#~ msgid "Internal Paste"
-#~ msgstr "內部貼上"
-
-#~ msgid "Close document"
-#~ msgstr "關閉文件"
-
-#~ msgid "Textwrap"
-#~ msgstr "文字環繞"
-
-#~ msgid "No wrap"
-#~ msgstr "不環繞"
-
-#~ msgid "Page wrap"
-#~ msgstr "頁面環繞"
-
-#~ msgid "Wrap anchor only"
-#~ msgstr "僅環繞錨定"
-
-#~ msgid "Ideal wrap"
-#~ msgstr "理想環繞"
-
-#~ msgid "Left wrap"
-#~ msgstr "左側環繞"
-
-#~ msgid "Right wrap"
-#~ msgstr "右側環繞"
-
-#~ msgid "Wrap through"
-#~ msgstr "穿繞式環繞"
