@@ -316,26 +316,7 @@ L.Control.Menubar = L.Control.extend({
 			var tag = $(item).data('tag');
 			var state = $(item).hasClass('lo-menu-item-checked');
 			var args = '?PageStyle:string='+ tag + '&On:bool=' + !state;
-			if (state) {
-				var warningMsg;
-				if (unoCommand === '.uno:InsertPageHeader')
-					warningMsg = _('All contents of the header will be deleted and can not be restored.');
-				else
-					warningMsg = _('All contents of the footer will be deleted and can not be restored.');
-
-				var map = this._map;
-				L.dialog.confirm({
-					icon: 'warning',
-					message: warningMsg,
-					callback: function(e) {
-						if (e) {
-							map.sendUnoCommand(unoCommand + args);
-						}
-					}
-				});
-			} else {
-				this._map.sendUnoCommand(unoCommand + args);
-			}
+			this._map.sendUnoCommand(unoCommand + args);
 			return;
 		}
 		if (unoCommand === '.uno:VerticalText' || unoCommand === '.uno:Text') {
