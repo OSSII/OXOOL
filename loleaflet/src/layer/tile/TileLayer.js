@@ -831,9 +831,7 @@ L.TileLayer = L.GridLayer.extend({
 
 	_hasDrawLineSelection: function() {
 		var extraInfo = this._graphicSelection.extraInfo;
-		if (extraInfo && extraInfo.isDrawLine === true)
-			return true;
-		return false;
+		return (extraInfo && extraInfo.type === 2);
 	},
 	//---------------------------------------
 
