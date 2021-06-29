@@ -2,7 +2,7 @@
 /*
  * L.TileLayer is used for standard xyz-numbered tile layers.
  */
-/* global $ _ Uint8ClampedArray Uint8Array vex */
+/* global $ _ Uint8ClampedArray Uint8Array */
 // Implement String::startsWith which is non-portable (Firefox only, it seems)
 // See http://stackoverflow.com/questions/646628/how-to-check-if-a-string-startswith-another-string#4579228
 
@@ -3161,63 +3161,8 @@ L.TileLayer = L.GridLayer.extend({
 	_onFileLoadFunc: function(file) {
 		var socket = this._map._socket;
 		return function (e) {
-			if (file.type !== 'image/svg+xml') {
-				vex.dialog.confirm({
-					message: _('Do you want to compress the image? (Except SVG File)'),
-					callback: function(e) {
-						if (e) {
-							var compressRatio = 1, // 圖片壓縮比例
-							imgNewWidth = 400, // 圖片新寬度
-							img = new Image(),
-							canvas = document.createElement('canvas'),
-							context = canvas.getContext('2d'),
-							fileReader, dataUrl;
-							fileReader = new FileReader();
-							fileReader.onload = function (evt) {
-								dataUrl = evt.target.result,
-								img.src = dataUrl;
-							};
-							fileReader.readAsDataURL(file);
-
-							// 圖片載入後
-							img.onload = function () {
-								var width = this.width, // 圖片原始寬度
-								height = this.height, // 圖片原始高度
-								imgNewHeight = imgNewWidth * height / width;// 圖片新高度
-
-								// 使用 canvas 調整圖片寬高
-								canvas.width = imgNewWidth;
-								canvas.height = imgNewHeight;
-								context.clearRect(0, 0, imgNewWidth, imgNewHeight);
-
-								// 調整圖片尺寸
-								context.drawImage(img, 0, 0, imgNewWidth, imgNewHeight);
-
-								// canvas 轉換為 blob 格式、上傳
-								canvas.toBlob(function (blob) {
-									var reader = new FileReader();
-									reader.readAsDataURL(blob);
-									reader.onloadend = function () {
-										var base64data = reader.result.split(',')[1];
-										socket.sendMessage('insertpicture data='+ base64data);
-									}
-								}, 'image/jpeg', compressRatio);
-							}
-						} else {
-							var reader = new FileReader();
-							reader.readAsDataURL(file);
-							reader.onloadend = function () {
-								var base64data = reader.result.split(',')[1];
-								socket.sendMessage('insertpicture data='+ base64data);
-							}
-						}
-					}
-				});
-				return;
-			} else {
-				var blob = new Blob(['paste mimetype=' + file.type + '\n', e.target.result]);
-				socket.sendMessage(blob);
-			}
+			var blob = new Blob(['paste mimetype=' + file.type + '\n', e.target.result]);
+			socket.sendMessage(blob);
 		};
 	},
 

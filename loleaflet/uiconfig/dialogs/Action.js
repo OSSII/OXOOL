@@ -40,7 +40,7 @@ L.dialog.Action = {
 			map.print();
 			break;
 		case 'insertgraphic': // 插入電腦圖片
-			L.dialog.run('InsertImage');
+			L.DomUtil.get('insertgraphic').click();
 			break;
 		case 'insertgraphicremote': // 插入雲端圖片
 			map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
