@@ -66,10 +66,23 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "AcceptTrackedChangeToNext": {
+        "text": {
+            "menu": "Accept and Move to Next",
+            "tooltip": "Accept Track Change and select the next one",
+            "properties": "1"
+        }
+    },
     "AcceptTrackedChanges": {
         "text": {
             "menu": "~Manage...",
             "tooltip": "Manage Track Changes",
+            "properties": "1"
+        }
+    },
+    "AccessibilityCheck": {
+        "text": {
+            "menu": "~Accessibility Check...",
             "properties": "1"
         }
     },
@@ -148,6 +161,15 @@ var unoCommandsArray = {
         "global": {
             "menu": "Enable Watch",
             "properties": "1"
+        }
+    },
+    "AdditionsDialog": {
+        "global": {
+            "menu": "~Additions...",
+            "context": "~Additional Extensions...",
+            "tooltip": "Additional Extensions",
+            "properties": "1",
+            "IsExperimental": "true"
         }
     },
     "Addons": {
@@ -365,7 +387,8 @@ var unoCommandsArray = {
     "ArrowShapes": {
         "global": {
             "menu": "Arrow Shapes",
-            "context": "~Arrow",
+            "context": "~Block Arrows",
+            "tooltip": "Block Arrows",
             "properties": "1"
         }
     },
@@ -741,6 +764,14 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "AutoRedactDoc": {
+        "global": {
+            "menu": "Auto-Redact",
+            "context": "Auto-Redact",
+            "tooltip": "Auto-Redact Document",
+            "properties": "1"
+        }
+    },
     "AutoRefreshArrows": {
         "spreadsheet": {
             "menu": "A~utoRefresh Traces",
@@ -810,15 +841,15 @@ var unoCommandsArray = {
     },
     "BasicIDEAppear": {
         "global": {
-            "menu": "Edit Macros",
+            "menu": "Edit Macros...",
             "properties": "1"
         }
     },
     "BasicShapes": {
         "global": {
             "menu": "Basic Shapes",
-            "context": "~Basic",
-            "tooltip": "Insert Basic Shapes",
+            "context": "~Basic Shapes",
+            "tooltip": "Basic Shapes",
             "properties": "1"
         }
     },
@@ -1150,7 +1181,7 @@ var unoCommandsArray = {
     "CalloutShapes": {
         "global": {
             "menu": "Callout Shapes",
-            "context": "~Callout",
+            "context": "~Callouts",
             "properties": "1"
         }
     },
@@ -2016,7 +2047,7 @@ var unoCommandsArray = {
     },
     "ConnectorToolbox": {
         "presentation": {
-            "menu": "Connector",
+            "menu": "Connectors",
             "properties": "1"
         }
     },
@@ -2099,12 +2130,14 @@ var unoCommandsArray = {
     },
     "ConvertTableToText": {
         "text": {
-            "menu": "T~able to Text..."
+            "menu": "T~able to Text...",
+            "properties": "1"
         }
     },
     "ConvertTextToTable": {
         "text": {
-            "menu": "~Text to Table..."
+            "menu": "~Text to Table...",
+            "properties": "1"
         }
     },
     "ConvertToButton": {
@@ -2214,7 +2247,7 @@ var unoCommandsArray = {
         }
     },
     "CopyHyperlinkLocation": {
-        "text": {
+        "global": {
             "menu": "Copy Hyperlink Location"
         }
     },
@@ -2509,6 +2542,12 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "DatePickerFormField": {
+        "global": {
+            "menu": "Date Picker Content Control",
+            "properties": "1"
+        }
+    },
     "DecrementIndent": {
         "global": {
             "menu": "Decrease",
@@ -2736,6 +2775,12 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DeleteCommentThread": {
+        "global": {
+            "menu": "Delete Comment Thread",
+            "properties": "1"
+        }
+    },
     "DeleteFrame": {
         "global": {
             "menu": "Delete Frame"
@@ -2825,6 +2870,10 @@ var unoCommandsArray = {
             "menu": "Delete Table",
             "context": "~Table",
             "tooltip": "Delete table",
+            "properties": "1"
+        },
+        "presentation": {
+            "menu": "Delete Table",
             "properties": "1"
         }
     },
@@ -2917,6 +2966,34 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DistributeHorzCenter": {
+        "global": {
+            "menu": "Distribute Horizontally Center",
+            "context": "Horizontally ~Center",
+            "properties": "1"
+        }
+    },
+    "DistributeHorzDistance": {
+        "global": {
+            "menu": "Distribute Horizontally Spacing",
+            "context": "Horizontally ~Spacing",
+            "properties": "1"
+        }
+    },
+    "DistributeHorzLeft": {
+        "global": {
+            "menu": "Distribute Horizontally Left",
+            "context": "Horizontally ~Left",
+            "properties": "1"
+        }
+    },
+    "DistributeHorzRight": {
+        "global": {
+            "menu": "Distribute Horizontally Right",
+            "context": "Horizontally ~Right",
+            "properties": "1"
+        }
+    },
     "DistributeRows": {
         "text": {
             "menu": "Distribute Rows Evenly",
@@ -2929,7 +3006,37 @@ var unoCommandsArray = {
     },
     "DistributeSelection": {
         "global": {
-            "menu": "~Distribution...",
+            "menu": "~Distribution",
+            "tooltip": "Select at least three objects to distribute",
+            "context": "Distribute Selection",
+            "properties": "1"
+        }
+    },
+    "DistributeVertBottom": {
+        "global": {
+            "menu": "Distribute Vertically Bottom",
+            "context": "Vertically ~Bottom",
+            "properties": "1"
+        }
+    },
+    "DistributeVertCenter": {
+        "global": {
+            "menu": "Distribute Vertically Center",
+            "context": "Vertically C~enter",
+            "properties": "1"
+        }
+    },
+    "DistributeVertDistance": {
+        "global": {
+            "menu": "Distribute Vertically Spacing",
+            "context": "Vertically S~pacing",
+            "properties": "1"
+        }
+    },
+    "DistributeVertTop": {
+        "global": {
+            "menu": "Distribute Vertically Top",
+            "context": "Vertically ~Top",
             "properties": "1"
         }
     },
@@ -3019,6 +3126,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "EditChart": {
+        "global": {
+            "menu": "~Edit Chart",
+            "TargetURL": ".uno:ObjectMenue?VerbID:short=-1",
+            "properties": "1"
+        }
+    },
     "EditCommentsMenu": {
         "global": {
             "menu": "Comme~nt",
@@ -3034,6 +3148,11 @@ var unoCommandsArray = {
     "EditCurrentRegion": {
         "text": {
             "menu": "Edit Section..."
+        }
+    },
+    "EditDiagram": {
+        "global": {
+            "menu": "Edit Diagram"
         }
     },
     "EditDoc": {
@@ -3068,13 +3187,9 @@ var unoCommandsArray = {
         }
     },
     "EditHyperlink": {
-        "text": {
+        "global": {
             "menu": "~Hyperlink",
             "popup": "Edit Hyperlink...",
-            "properties": "1"
-        },
-        "presentation": {
-            "menu": "~Hyperlink...",
             "properties": "1"
         }
     },
@@ -3106,6 +3221,12 @@ var unoCommandsArray = {
             "menu": "Edit",
             "context": "~Edit...",
             "tooltip": "Edit Print Ranges",
+            "properties": "1"
+        }
+    },
+    "EditQrCode": {
+        "global": {
+            "menu": "~Edit QR Code...",
             "properties": "1"
         }
     },
@@ -3282,6 +3403,12 @@ var unoCommandsArray = {
             "menu": "Hyperlinks Active"
         }
     },
+    "ExecuteAnimationEffect": {
+        "presentation": {
+            "menu": "E~xecute Interaction...",
+            "properties": "1"
+        }
+    },
     "ExecuteMacroField": {
         "text": {
             "menu": "Run Macro Field"
@@ -3382,7 +3509,8 @@ var unoCommandsArray = {
     },
     "ExternalEdit": {
         "global": {
-            "menu": "Edit with External Tool"
+            "menu": "Edit with External Tool",
+            "properties": "1"
         }
     },
     "Extrusion3DColor": {
@@ -3512,7 +3640,8 @@ var unoCommandsArray = {
     "FillDown": {
         "spreadsheet": {
             "menu": "Fill ~Down",
-            "context": "Fill ~Down"
+            "context": "Fill ~Down",
+            "properties": "1"
         }
     },
     "FillDraft": {
@@ -3528,7 +3657,8 @@ var unoCommandsArray = {
     "FillLeft": {
         "spreadsheet": {
             "menu": "Fill ~Left",
-            "context": "Fill ~Left"
+            "context": "Fill ~Left",
+            "properties": "1"
         }
     },
     "FillModeEnd": {
@@ -3564,13 +3694,15 @@ var unoCommandsArray = {
     "FillRight": {
         "spreadsheet": {
             "menu": "Fill ~Right",
-            "context": "Fill ~Right"
+            "context": "Fill ~Right",
+            "properties": "1"
         }
     },
     "FillSeries": {
         "spreadsheet": {
             "menu": "Fill S~eries...",
-            "context": "Fill S~eries..."
+            "context": "Fill S~eries...",
+            "properties": "1"
         }
     },
     "FillShadow": {
@@ -3594,7 +3726,8 @@ var unoCommandsArray = {
     "FillTable": {
         "spreadsheet": {
             "menu": "Fill ~Sheets...",
-            "context": "Fill ~Sheets..."
+            "context": "Fill ~Sheets...",
+            "properties": "1"
         }
     },
     "FillTransparence": {
@@ -3605,7 +3738,8 @@ var unoCommandsArray = {
     "FillUp": {
         "spreadsheet": {
             "menu": "Fill ~Up",
-            "context": "Fill ~Up"
+            "context": "Fill ~Up",
+            "properties": "1"
         }
     },
     "FilterCrit": {
@@ -3895,7 +4029,6 @@ var unoCommandsArray = {
     "FontWork": {
         "global": {
             "menu": "F~ontwork",
-            "tooltip": "Insert Fontwork Text",
             "properties": "1"
         }
     },
@@ -3913,8 +4046,9 @@ var unoCommandsArray = {
     },
     "FontworkGalleryFloater": {
         "global": {
-            "menu": "Fontwork Style",
+            "menu": "Insert Fontwork",
             "context": "Fontwork...",
+            "tooltip": "Insert Fontwork Text",
             "properties": "9"
         }
     },
@@ -4390,13 +4524,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
-    "FreezePanesFirstColumn": {
+    "FreezePanesColumn": {
         "spreadsheet": {
             "menu": "Freeze First Column",
             "properties": "1"
         }
     },
-    "FreezePanesFirstRow": {
+    "FreezePanesRow": {
         "spreadsheet": {
             "menu": "Freeze First Row",
             "properties": "1"
@@ -4727,6 +4861,13 @@ var unoCommandsArray = {
             "menu": "Select to Document End"
         }
     },
+    "GoToNextPage": {
+        "text": {
+            "menu": "To Next Page",
+            "tooltip": "To Next Page",
+            "properties": "1"
+        }
+    },
     "GoToNextPara": {
         "text": {
             "menu": "To Next Paragraph"
@@ -4740,6 +4881,13 @@ var unoCommandsArray = {
     "GoToNextWord": {
         "text": {
             "menu": "To Word Right"
+        }
+    },
+    "GoToPrevPage": {
+        "text": {
+            "menu": "To Previous Page",
+            "tooltip": "To Previous Page",
+            "properties": "1"
         }
     },
     "GoToPrevPara": {
@@ -5308,7 +5456,8 @@ var unoCommandsArray = {
     },
     "HeadingRowsRepeat": {
         "text": {
-            "menu": "Header Rows Repeat Across Pages"
+            "menu": "Header Rows Repeat Across Pages",
+            "properties": "1"
         }
     },
     "HelpIndex": {
@@ -5566,6 +5715,7 @@ var unoCommandsArray = {
     "InsertAnnotation": {
         "global": {
             "menu": "Comme~nt",
+            "popup": "Insert Comment",
             "tooltip": "Insert Comment",
             "properties": "1"
         },
@@ -6059,7 +6209,7 @@ var unoCommandsArray = {
     },
     "InsertNarrowNobreakSpace": {
         "global": {
-            "menu": "Insert n~arrow no-break space (U+202F)",
+            "menu": "Insert N~arrow No-break Space",
             "properties": "1"
         }
     },
@@ -6210,6 +6360,12 @@ var unoCommandsArray = {
     "InsertPushbutton": {
         "global": {
             "menu": "Button",
+            "properties": "1"
+        }
+    },
+    "InsertQrCode": {
+        "global": {
+            "menu": "~QR Code...",
             "properties": "1"
         }
     },
@@ -6440,6 +6596,12 @@ var unoCommandsArray = {
         "global": {
             "menu": "No-~width Optional Break",
             "properties": "1"
+        }
+    },
+    "InspectorDeck": {
+        "text": {
+            "menu": "Inspector Deck",
+            "properties": "0"
         }
     },
     "InteractiveGradient": {
@@ -6707,6 +6869,60 @@ var unoCommandsArray = {
             "menu": "Current Library"
         }
     },
+    "LibreLogo-clearscreen": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$clearscreen?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-gobackward": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$gobackward?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-goforward": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$goforward?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-home": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$home?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-left": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$left?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-right": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$right?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-run": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$run?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-stop": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$stop?language=Python&location=share",
+            "properties": "1"
+        }
+    },
+    "LibreLogo-translate": {
+        "text": {
+            "TargetURL": "vnd.sun.star.script:LibreLogo|LibreLogo.py$__translate__?language=Python&location=share",
+            "properties": "1"
+        }
+    },
     "Line": {
         "global": {
             "menu": "Line",
@@ -6808,7 +7024,7 @@ var unoCommandsArray = {
     },
     "LineToolbox": {
         "global": {
-            "menu": "Curve",
+            "menu": "Curves and Polygons",
             "properties": "1"
         }
     },
@@ -6880,13 +7096,13 @@ var unoCommandsArray = {
     },
     "MacroDialog": {
         "global": {
-            "menu": "%PRODUCTNAME ~Basic...",
+            "menu": "~Basic...",
             "properties": "1"
         }
     },
     "MacroOrganizer": {
         "global": {
-            "menu": "%PRODUCTNAME Basic Macro Organizer...",
+            "menu": "Basic Macro Organizer...",
             "properties": "1"
         }
     },
@@ -7056,6 +7272,11 @@ var unoCommandsArray = {
     "MasterPageMenu": {
         "presentation": {
             "menu": "~Master"
+        }
+    },
+    "MasterSlidesPanel": {
+        "presentation": {
+            "menu": "Master Slides"
         }
     },
     "MatchCase": {
@@ -7427,7 +7648,7 @@ var unoCommandsArray = {
     },
     "NewRouting": {
         "presentation": {
-            "menu": "Reset Routing"
+            "menu": "Reset line skew"
         }
     },
     "NewWindow": {
@@ -7497,7 +7718,8 @@ var unoCommandsArray = {
     },
     "NoteVisible": {
         "spreadsheet": {
-            "menu": "Show Comment"
+            "menu": "Show Comment",
+            "properties": "1"
         }
     },
     "Notebookbar": {
@@ -7664,7 +7886,7 @@ var unoCommandsArray = {
     },
     "ObjectAlign": {
         "global": {
-            "menu": "Alig~n",
+            "menu": "Alig~n Objects",
             "properties": "1"
         }
     },
@@ -7965,8 +8187,7 @@ var unoCommandsArray = {
     },
     "PageDialog": {
         "text": {
-            "menu": "Page Settings",
-            "context": "~Page...",
+            "menu": "~Page Style...",
             "properties": "1"
         }
     },
@@ -8019,7 +8240,7 @@ var unoCommandsArray = {
     "PageSetup": {
         "presentation": {
             "menu": "Format Page",
-            "context": "Properties...",
+            "context": "Page Properties...",
             "properties": "1"
         }
     },
@@ -8111,6 +8332,20 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "PasteColumnsBefore": {
+        "text": {
+            "menu": "Paste as Columns Before",
+            "popup": "Columns ~Before",
+            "properties": "1"
+        }
+    },
+    "PasteNestedTable": {
+        "text": {
+            "menu": "Paste as Nested Table",
+            "popup": "~Nested Table",
+            "properties": "1"
+        }
+    },
     "PasteOnly": {
         "spreadsheet": {
             "menu": "Paste Only"
@@ -8137,6 +8372,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "PasteRowsBefore": {
+        "text": {
+            "menu": "Paste as Rows Above",
+            "popup": "Rows ~Above",
+            "properties": "1"
+        }
+    },
     "PasteSpecial": {
         "text": {
             "menu": "Paste ~Special...",
@@ -8155,6 +8397,13 @@ var unoCommandsArray = {
     "PasteSpecialMenu": {
         "global": {
             "menu": "Paste ~Special",
+            "properties": "1"
+        }
+    },
+    "PasteTextImportDialog": {
+        "spreadsheet": {
+            "menu": "Use Text Import Dialog",
+            "tooltip": "Use text import dialog",
             "properties": "1"
         }
     },
@@ -8408,7 +8657,25 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ProtectBookmarks": {
+        "text": {
+            "menu": "Protect Bookmarks",
+            "tooltip": "Protect bookmarks in current document",
+            "properties": "1"
+        }
+    },
+    "ProtectFields": {
+        "text": {
+            "menu": "Protect Fields",
+            "tooltip": "Protect fields in current document",
+            "properties": "1"
+        }
+    },
     "ProtectMenu": {
+        "text": {
+            "menu": "~Protect Document",
+            "properties": "1"
+        },
         "spreadsheet": {
             "menu": "~Protect Document"
         }
@@ -8475,7 +8742,8 @@ var unoCommandsArray = {
     "RandomNumberGeneratorDialog": {
         "spreadsheet": {
             "menu": "Fill R~andom Number...",
-            "context": "Fill R~andom Number..."
+            "context": "Fill R~andom Number...",
+            "properties": "1"
         }
     },
     "ReadOnlyDoc": {
@@ -8663,6 +8931,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "RejectTrackedChangeToNext": {
+        "text": {
+            "menu": "Reject and Move to Next",
+            "tooltip": "Reject Track Change and select the next one",
+            "properties": "1"
+        }
+    },
     "Reload": {
         "global": {
             "menu": "Re~load",
@@ -8699,8 +8974,8 @@ var unoCommandsArray = {
         }
     },
     "RemoveHyperlink": {
-        "text": {
-            "menu": "Remove Hyperlink",
+        "global": {
+            "menu": "~Remove Hyperlink",
             "properties": "1"
         }
     },
@@ -8748,7 +9023,7 @@ var unoCommandsArray = {
     },
     "RenameTable": {
         "spreadsheet": {
-            "menu": "~Rename Sheet...",
+            "menu": "Rename S~heet...",
             "properties": "1"
         }
     },
@@ -8805,6 +9080,18 @@ var unoCommandsArray = {
     "ResetTableProtection": {
         "text": {
             "menu": "Unprotect sheet"
+        }
+    },
+    "ResolveComment": {
+        "global": {
+            "menu": "Resolved",
+            "properties": "1"
+        }
+    },
+    "ResolveCommentThread": {
+        "global": {
+            "menu": "Resolved Thread",
+            "properties": "1"
         }
     },
     "RestoreEditingView": {
@@ -9114,7 +9401,7 @@ var unoCommandsArray = {
     },
     "SearchDialog": {
         "global": {
-            "menu": "Find & Rep~lace...",
+            "menu": "Find and Rep~lace...",
             "properties": "9"
         }
     },
@@ -9126,12 +9413,6 @@ var unoCommandsArray = {
     "SearchLabel": {
         "global": {
             "menu": "[placeholder for message]"
-        }
-    },
-    "SecurePrint": {
-        "text": {
-            "menu": "SecurePrint...",
-            "properties": "1"
         }
     },
     "Select": {
@@ -9547,6 +9828,13 @@ var unoCommandsArray = {
             "properties": "15"
         }
     },
+    "SetReminder": {
+        "text": {
+            "menu": "Set Reminder",
+            "tooltip": "Set Reminder",
+            "properties": "1"
+        }
+    },
     "SetRowHeight": {
         "text": {
             "menu": "Row Height...",
@@ -9672,6 +9960,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ShowChangesInMargin": {
+        "text": {
+            "menu": "Show tracked deletions in margin",
+            "tooltip": "Show tracked deletions in margin",
+            "properties": "1"
+        }
+    },
     "ShowColumn": {
         "spreadsheet": {
             "menu": "~Show Columns",
@@ -9741,11 +10036,6 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
-    "ShowItemBrowser": {
-        "global": {
-            "menu": "Item Browser On\/Off"
-        }
-    },
     "ShowLicense": {
         "global": {
             "menu": "License Information",
@@ -9769,6 +10059,14 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ShowOutlineContentVisibilityButton": {
+        "text": {
+            "menu": "Show outline content visibility button",
+            "tooltip": "Show outline content visibility button",
+            "properties": "1",
+            "IsExperimental": "true"
+        }
+    },
     "ShowPrecedents": {
         "spreadsheet": {
             "menu": "Trace ~Precedents",
@@ -9778,6 +10076,13 @@ var unoCommandsArray = {
     "ShowPropBrowser": {
         "global": {
             "menu": "Properties",
+            "properties": "1"
+        }
+    },
+    "ShowResolvedAnnotations": {
+        "text": {
+            "menu": "Show resolved comme~nts",
+            "context": "Resolved Comments",
             "properties": "1"
         }
     },
@@ -9823,6 +10128,12 @@ var unoCommandsArray = {
     "ShowTwoPages": {
         "text": {
             "menu": "Two Pages Preview",
+            "properties": "1"
+        }
+    },
+    "ShowWhitespace": {
+        "text": {
+            "menu": "Show Whitespac~e",
             "properties": "1"
         }
     },
@@ -9916,7 +10227,7 @@ var unoCommandsArray = {
     "SlideSetup": {
         "presentation": {
             "menu": "Format Slide",
-            "context": "Properties...",
+            "context": "Slide Properties...",
             "TargetURL": ".uno:PageSetup",
             "properties": "1"
         }
@@ -10045,6 +10356,21 @@ var unoCommandsArray = {
             "menu": "Character Spacing",
             "tooltip": "Set Character Spacing",
             "properties": "1"
+        }
+    },
+    "SpellCheckApplySuggestion": {
+        "global": {
+            "menu": "Apply Suggestion"
+        }
+    },
+    "SpellCheckIgnore": {
+        "global": {
+            "menu": "Ignore"
+        }
+    },
+    "SpellCheckIgnoreAll": {
+        "global": {
+            "menu": "IgnoreAll"
         }
     },
     "SpellDialog": {
@@ -10192,7 +10518,8 @@ var unoCommandsArray = {
     "StarShapes": {
         "global": {
             "menu": "Star Shapes",
-            "context": "S~tar",
+            "context": "S~tars and Banners",
+            "tooltip": "Stars and Banners",
             "properties": "1"
         }
     },
@@ -10629,6 +10956,12 @@ var unoCommandsArray = {
             "menu": "Styl~es"
         }
     },
+    "StylesPreview": {
+        "global": {
+            "menu": "Styles Preview",
+            "properties": "1"
+        }
+    },
     "SubScript": {
         "global": {
             "menu": "Subscript",
@@ -10694,7 +11027,7 @@ var unoCommandsArray = {
     "SymbolShapes": {
         "global": {
             "menu": "Symbol Shapes",
-            "context": "~Symbol",
+            "context": "~Symbol Shapes",
             "properties": "1"
         }
     },
@@ -10997,7 +11330,7 @@ var unoCommandsArray = {
     },
     "TextAlign": {
         "global": {
-            "menu": "Alig~n",
+            "menu": "Align Tex~t",
             "properties": "1"
         }
     },
@@ -11011,7 +11344,7 @@ var unoCommandsArray = {
             "properties": "1"
         },
         "presentation": {
-            "menu": "Te~xt...",
+            "menu": "Te~xt Attributes...",
             "properties": "1"
         }
     },
@@ -11024,8 +11357,15 @@ var unoCommandsArray = {
         "text": {
             "menu": "Text Body",
             "tooltip": "Text Body Paragraph Style",
-            "TargetURL": ".uno:StyleApply?Style:string=Text Body&FamilyName:string=ParagraphStyles",
+            "TargetURL": ".uno:StyleApply?Style:string=Text body&FamilyName:string=ParagraphStyles",
             "properties": "9"
+        }
+    },
+    "TextCombine": {
+        "presentation": {
+            "menu": "Consolidate Text",
+            "tooltip": "Merges text fragments from selected objects into one new textbox",
+            "properties": "1"
         }
     },
     "TextDraft": {
@@ -11108,6 +11448,14 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "TipOfTheDay": {
+        "global": {
+            "menu": "~Tip of the day",
+            "context": "Show Tip of the Day",
+            "tooltip": "Show the Tip of the Day dialog",
+            "properties": "1"
+        }
+    },
     "TitlePageDialog": {
         "text": {
             "menu": "Title Page...",
@@ -11179,6 +11527,14 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ToggleOutlineContentVisibility": {
+        "text": {
+            "menu": "Toggle Outline Content Visibility",
+            "tooltip": "Fold or unfold outline content in document",
+            "properties": "1",
+            "IsExperimental": "true"
+        }
+    },
     "ToggleRelative": {
         "spreadsheet": {
             "menu": "Cycle Cell Reference Types"
@@ -11214,6 +11570,13 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ToolbarModeUI": {
+        "global": {
+            "menu": "User ~Interface...",
+            "tooltip": "Shows a dialog to select the user interface",
+            "properties": "1"
+        }
+    },
     "ToolbarsMenu": {
         "global": {
             "menu": "~Toolbars",
@@ -11223,12 +11586,6 @@ var unoCommandsArray = {
     "ToolsFormsMenu": {
         "global": {
             "menu": "~Forms",
-            "properties": "1"
-        }
-    },
-    "ToolsMacroEdit": {
-        "global": {
-            "menu": "Edit Macros",
             "properties": "1"
         }
     },
@@ -11308,8 +11665,8 @@ var unoCommandsArray = {
         }
     },
     "UnderlineDotted": {
-        "spreadsheet": {
-            "menu": "Underline: Dotted"
+        "global": {
+            "menu": "Dotted Underline"
         }
     },
     "UnderlineDouble": {
@@ -11319,8 +11676,9 @@ var unoCommandsArray = {
         }
     },
     "UnderlineNone": {
-        "spreadsheet": {
-            "menu": "Underline: Off"
+        "global": {
+            "menu": "Underline: Off",
+            "properties": "9"
         }
     },
     "UnderlineSimple": {
@@ -11331,8 +11689,9 @@ var unoCommandsArray = {
         }
     },
     "UnderlineSingle": {
-        "spreadsheet": {
-            "menu": "Underline: Single"
+        "global": {
+            "menu": "Single Underline",
+            "properties": "9"
         }
     },
     "Undo": {
@@ -11544,7 +11903,7 @@ var unoCommandsArray = {
     },
     "ViewTrackChanges": {
         "text": {
-            "menu": "~Track Changes",
+            "menu": "Show ~Tracked Changes",
             "TargetURL": ".uno:ShowTrackedChanges",
             "properties": "1"
         }
@@ -11606,7 +11965,7 @@ var unoCommandsArray = {
     },
     "WordRightSel": {
         "text": {
-            "menu": "Select to Word Right"
+            "menu": "Select to End of Word"
         }
     },
     "WorkspaceMenu": {
@@ -11629,13 +11988,13 @@ var unoCommandsArray = {
     },
     "WrapIdeal": {
         "text": {
-            "menu": "~Optimal Page Wrap",
+            "menu": "~Optimal",
             "properties": "1"
         }
     },
     "WrapLeft": {
         "text": {
-            "menu": "Wrap Left",
+            "menu": "Before",
             "properties": "1"
         }
     },
@@ -11647,19 +12006,19 @@ var unoCommandsArray = {
     },
     "WrapOff": {
         "text": {
-            "menu": "Wrap Off",
+            "menu": "None",
             "properties": "15"
         }
     },
     "WrapOn": {
         "text": {
-            "menu": "~Page Wrap",
+            "menu": "~Parallel",
             "properties": "7"
         }
     },
     "WrapRight": {
         "text": {
-            "menu": "Wrap Right",
+            "menu": "After",
             "properties": "1"
         }
     },
@@ -11671,7 +12030,7 @@ var unoCommandsArray = {
     },
     "WrapThrough": {
         "text": {
-            "menu": "~Wrap Through",
+            "menu": "~Through",
             "properties": "7"
         }
     },
@@ -11738,12 +12097,9 @@ var unoCommandsArray = {
         }
     },
     "ZoomIn": {
-        "global": {
-            "menu": "Zoom Out",
-            "properties": "1"
-        },
         "spreadsheet": {
             "menu": "Zoom In",
+            "TargetURL": ".uno:ZoomPlus",
             "properties": "1"
         }
     },
@@ -11788,6 +12144,7 @@ var unoCommandsArray = {
     "ZoomOut": {
         "spreadsheet": {
             "menu": "Zoom Out",
+            "TargetURL": ".uno:ZoomMinus",
             "properties": "1"
         }
     },
