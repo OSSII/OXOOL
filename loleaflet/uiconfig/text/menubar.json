@@ -386,6 +386,9 @@
 				"id": ".uno:InsertObjectChart"
 			},
 			{
+				"id": ".uno:InsertQrCode"
+			},
+			{
 				"name": ".uno:ShapesMenu",
 				"id": ".uno:ShapesMenu",
 				"menu": [
@@ -871,8 +874,7 @@
 				]
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater",
-				"hide": true
+				"id": ".uno:FontworkGalleryFloater"
 			},
 			{
 				"id": ".uno:InsertCaptionDialog"
@@ -1036,8 +1038,7 @@
 				"hide": true
 			},
 			{
-				"id": ".uno:InsertSignatureLine",
-				"hide": true
+				"id": ".uno:InsertSignatureLine"
 			}
 		]
 	},
@@ -1341,8 +1342,7 @@
 						"id": "externaledit"
 					},
 					{
-						"id": ".uno:CompressGraphic",
-						"hide": true
+						"id": ".uno:CompressGraphic"
 					},
 					{
 						"name": ".uno:SaveGraphic",
@@ -1356,8 +1356,7 @@
 						"id": ".uno:FormatImageFilterMenu",
 						"menu": [
 							{
-								"id": ".uno:GraphicFilterSepia",
-								"hide": true
+								"id": ".uno:GraphicFilterSepia"
 							},
 							{
 								"id": ".uno:GraphicFilterSobel"
@@ -1366,19 +1365,16 @@
 								"id": ".uno:GraphicFilterInvert"
 							},
 							{
-								"id": ".uno:GraphicFilterMosaic",
-								"hide": true
+								"id": ".uno:GraphicFilterMosaic"
 							},
 							{
 								"id": ".uno:GraphicFilterPopart"
 							},
 							{
-								"id": ".uno:GraphicFilterPoster",
-								"hide": true
+								"id": ".uno:GraphicFilterPoster"
 							},
 							{
-								"id": ".uno:GraphicFilterRelief",
-								"hide": true
+								"id": ".uno:GraphicFilterRelief"
 							},
 							{
 								"id": ".uno:GraphicFilterRemoveNoise"
@@ -1387,12 +1383,10 @@
 								"id": ".uno:GraphicFilterSharpen"
 							},
 							{
-								"id": ".uno:GraphicFilterSmooth",
-								"hide": true
+								"id": ".uno:GraphicFilterSmooth"
 							},
 							{
-								"id": ".uno:GraphicFilterSolarize",
-								"hide": true
+								"id": ".uno:GraphicFilterSolarize"
 							}
 						]
 					},
@@ -1659,8 +1653,7 @@
 						"id": ".uno:InsertRowsAfter"
 					},
 					{
-						"id": ".uno:InsertRowDialog",
-						"hide": true
+						"id": ".uno:InsertRowDialog"
 					},
 					{
 						"type": "--"
@@ -1672,8 +1665,7 @@
 						"id": ".uno:InsertColumnsAfter"
 					},
 					{
-						"id": ".uno:InsertColumnDialog",
-						"hide": true
+						"id": ".uno:InsertColumnDialog"
 					}
 				]
 			},
@@ -1715,8 +1707,7 @@
 				"id": ".uno:TableAutoFitMenu",
 				"menu": [
 					{
-						"id": ".uno:SetRowHeight",
-						"hide": true
+						"id": ".uno:SetRowHeight"
 					},
 					{
 						"id": ".uno:SetMinimalRowHeight"
@@ -1731,8 +1722,7 @@
 						"type": "--"
 					},
 					{
-						"id": ".uno:SetColumnWidth",
-						"hide": true
+						"id": ".uno:SetColumnWidth"
 					},
 					{
 						"id": ".uno:SetMinimalColumnWidth"
@@ -1759,8 +1749,7 @@
 				"id": ".uno:MergeTable"
 			},
 			{
-				"id": ".uno:SplitTable",
-				"hide": true
+				"id": ".uno:SplitTable"
 			},
 			{
 				"type": "--"
@@ -1808,8 +1797,7 @@
 				]
 			},
 			{
-				"id": ".uno:TableSort",
-				"hide": true
+				"id": ".uno:TableSort"
 			},
 			{
 				"type": "--"

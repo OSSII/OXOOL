@@ -265,6 +265,9 @@
 				"id": ".uno:InsertObjectChart"
 			},
 			{
+				"id": ".uno:InsertQrCode"
+			},
+			{
 				"name": ".uno:ShapesMenu",
 				"id": ".uno:ShapesMenu",
 				"menu": [
@@ -736,6 +739,9 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
+				"id": ".uno:FontworkGalleryFloater"
+			},
+			{
 				"type": "--"
 			},
 			{
@@ -1062,6 +1068,9 @@
 						"id": "externaledit"
 					},
 					{
+						"id": ".uno:CompressGraphic"
+					},
+					{
 						"name": ".uno:SaveGraphic",
 						"id": "savegraphic"
 					},
@@ -1073,8 +1082,7 @@
 						"id": ".uno:FormatImageFilterMenu",
 						"menu": [
 							{
-								"id": ".uno:GraphicFilterSepia",
-								"hide": true
+								"id": ".uno:GraphicFilterSepia"
 							},
 							{
 								"id": ".uno:GraphicFilterSobel"
@@ -1083,19 +1091,16 @@
 								"id": ".uno:GraphicFilterInvert"
 							},
 							{
-								"id": ".uno:GraphicFilterMosaic",
-								"hide": true
+								"id": ".uno:GraphicFilterMosaic"
 							},
 							{
 								"id": ".uno:GraphicFilterPopart"
 							},
 							{
-								"id": ".uno:GraphicFilterPoster",
-								"hide": true
+								"id": ".uno:GraphicFilterPoster"
 							},
 							{
-								"id": ".uno:GraphicFilterRelief",
-								"hide": true
+								"id": ".uno:GraphicFilterRelief"
 							},
 							{
 								"id": ".uno:GraphicFilterRemoveNoise"
@@ -1104,12 +1109,10 @@
 								"id": ".uno:GraphicFilterSharpen"
 							},
 							{
-								"id": ".uno:GraphicFilterSmooth",
-								"hide": true
+								"id": ".uno:GraphicFilterSmooth"
 							},
 							{
-								"id": ".uno:GraphicFilterSolarize",
-								"hide": true
+								"id": ".uno:GraphicFilterSolarize"
 							}
 						]
 					}

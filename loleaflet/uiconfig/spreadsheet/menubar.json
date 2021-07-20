@@ -283,6 +283,9 @@
 				"id": "dialog:DiagramEditor"
 			},
 			{
+				"id": ".uno:InsertQrCode"
+			},
+			{
 				"id": ".uno:DataDataPilotRun"
 			},
 			{
@@ -763,6 +766,9 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
+				"id": ".uno:FontworkGalleryFloater"
+			},
+			{
 				"type": "--"
 			},
 			{
@@ -1191,6 +1197,9 @@
 					{
 						"name": ".uno:ExternalEdit",
 						"id": "externaledit"
+					},
+					{
+						"id": ".uno:CompressGraphic"
 					},
 					{
 						"name": ".uno:SaveGraphic",
@@ -1846,6 +1855,12 @@
 			},
 			{
 				"type": "--"
+			},
+			{
+				"id": ".uno:Protect"
+			},
+			{
+				"id": ".uno:ToolProtectionDocument"
 			}
 		]
 	},
