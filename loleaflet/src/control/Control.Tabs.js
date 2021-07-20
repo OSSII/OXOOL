@@ -121,39 +121,7 @@ L.Control.Tabs = L.Control.extend({
 						return false;
 					}.bind(this),
 					callback: (function() {
-						var pInfo = map.getPartProperty(); // 該工作表資料
-						// 工作表有保護
-						if (pInfo && pInfo.protected === '1') {
-							var args = {
-								Protect: {
-									type: 'boolean',
-									value: false
-								}
-							}
-							// 有密碼
-							if (pInfo.protectedWithPass === '1') {
-								L.dialog.prompt({
-									title: _('Unprotect sheet'),
-									icon: 'information',
-									message: _('Password'),
-									password: true,
-									callback: function(data) {
-										console.debug('password = ' + data);
-										args.PassWord = {
-											type: 'string',
-											value: data
-										},
-										map.sendUnoCommand('.uno:OxProtect', args);
-									}
-								});
-							// 沒有密碼的話就直接解除保護
-							} else {
-								map.sendUnoCommand('.uno:OxProtect', args);
-							}
-						} else {
-							// TODO: 實作外部載入保護工作表 dialog
-							L.dialog.run('ProtectTable');
-						}
+						map.sendUnoCommand('.uno:Protect');
 					}).bind(this),
 					icon: (function(opt, $itemElement, itemKey, item) {
 						item.checktype = 'checkmark';
