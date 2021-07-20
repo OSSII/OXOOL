@@ -140,6 +140,23 @@ L.Map.include({
 		'.uno:EditCurrentRegion': true, // 編輯區段...
 		'.uno:EditShapeHyperlink': true, // 編輯超連結
 		'.uno:DeleteShapeHyperlink': true, // 移除超連結
+		'.uno:EditQrCode': true, // 編輯 QR 碼...
+		'.uno:FormatDataSeries': true, // FormatDataSeries
+		'.uno:InsertDataLabels': true, // InsertDataLabels
+		'.uno:InsertTrendline': true, // InsertTrendline
+		'.uno:InsertMeanValue': true, // InsertMeanValue
+		'.uno:InsertXErrorBars': true, // InsertXErrorBars
+		'.uno:InsertYErrorBars': true, // InsertYErrorBars
+		'.uno:DiagramType': true, // DiagramType
+		'.uno:DataRanges': true, // DataRanges
+		'.uno:ResetAllDataPoints': true, // ResetAllDataPoints
+		'.uno:FormatChartArea': true, // FormatChartArea
+		'.uno:InsertTitles': true, // InsertTitles
+		'.uno:InsertRemoveAxes': true, // InsertRemoveAxes
+		'.uno:DeleteLegend': true, // DeleteLegend
+		'.uno:FormatTitle': true, // FormatTitle
+		'.uno:FormatLegend': true, // FormatLegend
+		'.uno:FormatWall': true, // FormatWall
 	},
 
 	// Add by Firefly <firefly@ossii.com.tw>
