@@ -155,7 +155,7 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         }
         else if (name == "password")
         {
-            _docPassword = value;
+            Poco::URI::decode(value, _docPassword);
             _haveDocPassword = true;
             ++offset;
         }
