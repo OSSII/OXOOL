@@ -813,6 +813,9 @@
 						"id": ".uno:InsertSlidesField"
 					}
 				]
+			},
+			{
+				"id": ".uno:HeaderAndFooter"
 			}
 		]
 	},
