@@ -125,10 +125,10 @@ L.dialog.Action = {
 			map.closeDocument();
 			break;
 		case 'externaledit': // 編輯選中的圖片
-			map._socket.sendMessage('getgraphicgelection id=edit');
+			map._socket.sendMessage('getgraphicselection id=edit');
 			break;
 		case 'savegraphic': // 儲存選中的圖片
-			map._socket.sendMessage('getgraphicgelection id=export');
+			map._socket.sendMessage('getgraphicselection id=export');
 			break;
 		case 'repair': // 修復
 			map._socket.sendMessage('commandvalues command=.uno:DocumentRepair');

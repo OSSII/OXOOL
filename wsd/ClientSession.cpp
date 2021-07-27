@@ -701,6 +701,8 @@ bool ClientSession::_handleInput(const char *buffer, int length)
              tokens[0] == "gettextselection" ||
              tokens[0] == "paste" ||
              tokens[0] == "insertfile" ||
+             tokens[0] == "insertpicture" ||
+             tokens[0] == "changepicture" ||
              tokens[0] == "key" ||
              tokens[0] == "textinput" ||
              tokens[0] == "windowkey" ||
@@ -724,6 +726,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
              tokens[0] == "uploadsigneddocument" ||
              tokens[0] == "exportsignanduploaddocument" ||
              tokens[0] == "rendershapeselection" ||
+             tokens[0] == "getgraphicselection" ||
              tokens[0] == "resizewindow" ||
              // Added by Firefly<firefly@ossii.com.tw>
              tokens[0] == "initunostatus" ||
