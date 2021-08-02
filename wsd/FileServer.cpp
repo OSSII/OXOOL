@@ -714,6 +714,15 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     unsigned long tokenTtl = 0;
     if (!accessToken.empty())
     {
+        // Added by Firefly <firefly@ossii.com.tw>
+        // 檢查 access_token 是否透過 post 傳過來
+        if (request.getMethod() != HTTPRequest::HTTP_POST)
+        {
+            LOG_ERR("access_token(" + accessToken + ") is not passed as http 'POST'!");
+            sendError(400, request, socket, "400 - Bad Request!",
+                "You are unable to access");
+            return;
+        }
         if (!accessTokenTtl.empty())
         {
             try
