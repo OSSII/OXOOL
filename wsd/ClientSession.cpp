@@ -1002,6 +1002,11 @@ bool ClientSession::filterMessage(const std::string& message) const
                 allowed = true;
             }
         }
+        // Readonly 允許執行 setpage
+        else if (tokens.size() > 1 && tokens[0] == "setpage")
+        {
+            allowed = true;
+        }
     }
 
     return allowed;
