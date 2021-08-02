@@ -695,6 +695,12 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     {
         return forwardToChild(std::string(buffer, length), docBroker);
     }
+    // 設定文件為已修改狀態
+    else if (tokens[0] == "setmodified")
+    {
+        docBroker->setModified(true);
+        return true;
+    }
     else if (tokens[0] == "outlinestate" ||
              tokens[0] == "downloadas" ||
              tokens[0] == "getchildid" ||
