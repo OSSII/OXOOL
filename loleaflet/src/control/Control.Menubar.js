@@ -12,7 +12,6 @@ L.Control.Menubar = L.Control.extend({
 		// WOPI HideExportOption 為 true 時，下列選項禁止使用
 		hideExportLists: {
 			'print': true, // 列印
-			'dialog:dlgSecurePrint': true, // 安全列印
 			'downloadas': true, // 下載為...子選單
 			'saveaspassword': true, // 以密碼另存新檔
 			'savegraphic': true, // 儲存圖片
