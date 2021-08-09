@@ -441,15 +441,6 @@ L.Map.include({
 		}
 	},
 
-	secureprint: function (filename, maskitems) {
-		if (window.ThisIsTheiOSApp) {
-			window.webkit.messageHandlers.lool.postMessage('PRINT', '*');
-		} else {
-			this.showBusy(_('Downloading...'), false);
-			this.downloadAs('print.pdf', 'pdf', 'filename=' + filename + ',mode=secureprint,'+ maskitems, 'print');
-		}
-	},
-
 	saveAs: function (url, format, options) {
 		if (url === undefined || url == null) {
 			return;

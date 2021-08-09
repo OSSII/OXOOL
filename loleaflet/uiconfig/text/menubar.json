@@ -27,11 +27,6 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"icon": ".uno:PrintDefault",
-				"name": "SecurePrint...",
-				"id": "dialog:dlgSecurePrint"
-			},
-			{
 				"name": "See revision history",
 				"id": "rev-history"
 			},
