@@ -2244,7 +2244,12 @@ function onCommandStateChanged(e) {
 		if (state === 'enabled' || state === 'disabled') {
 			state = '';
 		}
-		updateToolbarItem(statusbar, 'LanguageStatus', $('#LanguageStatus').html(_(state)).parent().html());
+		var language = _(state);
+		var split = state.split(';');
+		if (split.length > 1) {
+			language = _(split[0]);
+		}
+		updateToolbarItem(statusbar, 'LanguageStatus', $('#LanguageStatus').html(language).parent().html());
 	}
 	else if (commandName === '.uno:ModifiedStatus') {
 		var modifiedStatus = e.state === 'true';
