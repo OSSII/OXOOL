@@ -56,7 +56,10 @@ Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
     _docPassword(""),
     _haveDocPassword(false),
     _isDocPasswordProtected(false),
-    _watermarkOpacity(0.2)
+    _watermarkOpacity(0.2),
+    _watermarkAngle(0),
+    _watermarkFontFamily("Carlito"),
+    _watermarkColor(13158600)
 {
 }
 
@@ -172,6 +175,23 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         else if (name == "watermarkOpacity")
         {
             _watermarkOpacity = std::stod(value);
+            ++offset;
+        }
+        else if (name == "watermarkAngle")
+        {
+            _watermarkAngle = std::stoi(value);
+            ++offset;
+        }
+        else if (name == "watermarkFontFamily")
+        {
+            std::string decodeFontFamily;
+            Poco::URI::decode(value, decodeFontFamily);
+            _watermarkFontFamily = decodeFontFamily;
+            ++offset;
+        }
+        else if (name == "watermarkColor")
+        {
+            _watermarkColor = std::stol(value);
             ++offset;
         }
         else if (name == "timestamp")

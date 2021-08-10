@@ -26,10 +26,11 @@ public:
               const std::shared_ptr<ChildSession> & session)
         : _loKitDoc(loKitDoc)
         , _text(session->getWatermarkText())
-        , _font("Carlito")
+        , _font(session->getWatermarkFontFamily())
         , _width(0)
         , _height(0)
         , _alphaLevel(session->getWatermarkOpacity())
+        , _angle(session->getWatermarkAngle())
     {
     }
 
@@ -44,8 +45,13 @@ public:
                    LibreOfficeKitTileMode /*mode*/)
     {
         // set requested watermark size a little bit smaller than tile size
-        int width = tileWidth * 0.9;
-        int height = tileHeight * 0.9;
+        double scale = 0.9;
+        if (_angle > 0)
+        {
+            scale = 1.0;
+        }
+        int width = tileWidth * scale;
+        int height = tileHeight * scale;
 
         const std::vector<unsigned char>* pixmap = getPixmap(width, height);
 
@@ -118,7 +124,7 @@ private:
         // are always set to 0 (black) and the alpha level is 0 everywhere
         // except on the text area; the alpha level take into account of
         // performing anti-aliasing over the text edges.
-        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &_width, &_height, 450);
+        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &_width, &_height, _angle * 10);
 
         if (!textPixels)
         {
@@ -185,6 +191,7 @@ private:
     int _width;
     int _height;
     double _alphaLevel;
+    unsigned int _angle;
     std::vector<unsigned char> _pixmap;
 };
 

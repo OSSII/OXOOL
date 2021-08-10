@@ -39,6 +39,7 @@
 #include <common/Protocol.hpp>
 #include <common/Unit.hpp>
 #include <common/FileUtil.hpp>
+#include <common/JsonUtil.hpp>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -610,10 +611,25 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
 
     assert(_storage != nullptr);
 
+    // Added by Firefly <firefly@ossii.com.tw>
+    // 預先讀取 oxoolwsd.xml 的浮水印設定
+    if (LOOLWSD::getConfigValue<bool>("watermark[@enable]", false))
+    {
+        // 取得浮水印文字
+        session->setWatermarkText(LOOLWSD::getConfigValue<std::string>("watermark.text", ""));
+        // 取得不透明度
+        session->setWatermarkOpacity(LOOLWSD::getConfigValue<double>("watermark.opacity", 0.0));
+        // 取得角度
+        session->setWatermarkAngle(LOOLWSD::getConfigValue<int>("watermark.angle", 0));
+        // TODO: 取得字型名稱
+        //setWatermarkFontFamily(LOOLWSD::getConfigValue<std::string>("watermark.font", "Carlito"));
+        // TODO: 取得顏色
+        //setWatermarkColor(LOOLWSD::getConfigValue<long>("watermark.color", 13158600));
+    }
+
     // Call the storage specific fileinfo functions
     std::string userId, username;
     std::string userExtraInfo;
-    std::string watermarkText;
     std::string templateSource;
 
 #if !MOBILEAPP
@@ -626,8 +642,13 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         userId = wopifileinfo->getUserId();
         username = wopifileinfo->getUsername();
         userExtraInfo = wopifileinfo->getUserExtraInfo();
-        watermarkText = wopifileinfo->getWatermarkText();
         templateSource = wopifileinfo->getTemplateSource();
+
+        // 有指定浮水印文字
+        if (!wopifileinfo->getWatermarkText().empty())
+        {
+            session->setWatermarkText(wopifileinfo->getWatermarkText());
+        }
 
         if (!wopifileinfo->getUserCanWrite() ||
             LOOLWSD::IsViewFileExtension(wopiStorage->getFileExtension()))
@@ -687,17 +708,71 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
             wopiInfo->set("HideChangeTrackingControls", wopifileinfo->getHideChangeTrackingControls() == WopiStorage::WOPIFileInfo::TriState::True);
 
         // Added By Firefly <firefly@ossii.com.tw>
-        // 把 userExtraInfoObj 也放到 wopiInfo
-        Poco::JSON::Parser parser;
-        wopiInfo->set("UserExtraInfo", parser.parse(userExtraInfo));
+        // 如果有 userExtraInfo
+        Poco::JSON::Object::Ptr info;
+        if (!userExtraInfo.empty() && JsonUtil::parseJSON(userExtraInfo, info))
+        {
+            // 有指定 watermark
+            if (info->isObject("watermark"))
+            {
+                Poco::JSON::Object::Ptr watermark = info->getObject("watermark");
+                // 設定角度
+                if (watermark->has("angle"))
+                {
+                    session->setWatermarkAngle(JsonUtil::getJSONValue<int>(watermark, "angle"));
+                }
+                // 設定顏色
+                if (watermark->has("color"))
+                {
+                    session->setWatermarkColor(JsonUtil::getJSONValue<unsigned long>(watermark, "color"));
+                }
+                // 設定字型(若指定系統不存在的字型會崩潰，所以暫時不開放)
+                if (watermark->has("fontfamily"))
+                {
+                    session->setWatermarkFontFamily(JsonUtil::getJSONValue<std::string>(watermark, "fontfamily"));
+                }
+                // 設定透明度
+                if (watermark->has("opacity"))
+                {
+                    double opacity = JsonUtil::getJSONValue<double>(watermark, "opacity");
+                    if (opacity >= 0 && opacity <= 1.0)
+                    {
+                        session->setWatermarkOpacity(opacity);
+                    }
+                }
+                // 設定浮水印文字
+                if (watermark->has("text"))
+                {
+                    std::string watermarkText;
+                    // 傳文字陣列
+                    if (watermark->isArray("text"))
+                    {
+                        Poco::JSON::Array::Ptr txtArr = watermark->getArray("text");
+                        for (size_t i=0 ; i < txtArr->size() ; i++)
+                        {
+                            std::string text = txtArr->getElement<std::string>(i);
+                            watermarkText.append(text).append("\n");
+                        }
+                        watermarkText.pop_back(); // 去掉最後的 '\n'
+                    }
+                    // 否則視為文字
+                    else
+                    {
+                        watermarkText = JsonUtil::getJSONValue<std::string>(watermark, "text");
+                    }
+                    session->setWatermarkText(watermarkText);
+                }
+            }
+            wopiInfo->set("UserExtraInfo", info); // 把 UserExtraInfo 也一起傳給 OxOOL Client
+        }
+
         // Mark the session as 'Document owner' if WOPI hosts supports it
         if (userId == _storage->getFileInfo().getOwnerId())
         {
             LOG_DBG("Session [" << sessionId << "] is the document owner");
             session->setDocumentOwner(true);
-            // 編輯該檔案者就是擁有者本人
-            wopiInfo->set("DocumentOwner", true);
         }
+        wopiInfo->set("DocumentOwner", session->isDocumentOwner()); // 是否檔案擁有者
 
         std::ostringstream ossWopiInfo;
         wopiInfo->stringify(ossWopiInfo);
@@ -734,11 +809,14 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         }
     }
 
-
-#if ENABLE_SUPPORT_KEY
+    // Added by Firefly <firefly@ossii.com.tw>
+    // 系統指定的浮水印文字有最終複寫權
     if (!LOOLWSD::OverrideWatermark.empty())
-        watermarkText = LOOLWSD::OverrideWatermark;
-#endif
+    {
+        session->setWatermarkText(LOOLWSD::OverrideWatermark);
+        session->setWatermarkOpacity(0.2);
+        session->setWatermarkAngle(0);
+    }
 
     LOG_DBG("Setting username [" << LOOLWSD::anonymizeUsername(username) << "] and userId [" <<
             LOOLWSD::anonymizeUsername(userId) << "] for session [" << sessionId << ']');
@@ -746,7 +824,6 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
     session->setUserId(userId);
     session->setUserName(username);
     session->setUserExtraInfo(userExtraInfo);
-    session->setWatermarkText(watermarkText);
     session->recalcCanonicalViewId(_sessions);
 
     // Basic file information was stored by the above getWOPIFileInfo() or getLocalFileInfo() calls

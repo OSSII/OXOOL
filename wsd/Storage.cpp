@@ -767,10 +767,6 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
         _disableChangeTrackingShow = (booleanFlag ? WOPIFileInfo::TriState::True : WOPIFileInfo::TriState::False);
     if (JsonUtil::findJSONValue(object, "HideChangeTrackingControls", booleanFlag))
         _hideChangeTrackingControls = (booleanFlag ? WOPIFileInfo::TriState::True : WOPIFileInfo::TriState::False);
-
-    std::string overrideWatermarks = LOOLWSD::getConfigValue<std::string>("watermark.text", "");
-    if (!overrideWatermarks.empty())
-        _watermarkText = overrideWatermarks;
 }
 
 bool WopiStorage::updateLockState(const Authorization& auth, const std::string& cookies,

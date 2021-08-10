@@ -171,6 +171,14 @@ public:
 
     void setWatermarkText(const std::string& watermarkText) { _watermarkText = watermarkText; }
 
+    void setWatermarkOpacity(const double& watermarkOpacity) { _watermarkOpacity = watermarkOpacity; }
+
+    void setWatermarkAngle(const unsigned int& watermarkAngle) { _watermarkAngle = watermarkAngle; }
+
+    void setWatermarkFontFamily(const std::string& watermarkFontFamily) { _watermarkFontFamily = watermarkFontFamily; }
+
+    void setWatermarkColor(const long& watermarkColor) { _watermarkColor = watermarkColor; }
+
     void setUserExtraInfo(const std::string& userExtraInfo) { _userExtraInfo = userExtraInfo; }
 
     void setUserName(const std::string& userName) { _userName = userName; }
@@ -188,6 +196,12 @@ public:
     const std::string& getWatermarkText() const { return _watermarkText; }
 
     double getWatermarkOpacity() const { return _watermarkOpacity; }
+
+    unsigned int getWatermarkAngle() const { return _watermarkAngle; }
+
+    const std::string& getWatermarkFontFamily() const { return _watermarkFontFamily; }
+
+    unsigned long getWatermarkColor() const { return _watermarkColor; }
 
     const std::string& getLang() const { return _lang; }
 
@@ -303,6 +317,15 @@ private:
 
     /// Opacity in case a watermark has to be rendered on each tile.
     double _watermarkOpacity;
+
+    /// Watermark angle.(浮水印角度)
+    unsigned int _watermarkAngle;
+
+    /// Watermark font family.(浮水印字型)
+    std::string _watermarkFontFamily;
+
+    /// Watermark color.(浮水印顏色)
+    unsigned long _watermarkColor;
 
     /// Language for the document based on what the user has in the UI.
     std::string _lang;
