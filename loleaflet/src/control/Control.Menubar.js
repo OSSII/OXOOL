@@ -426,6 +426,11 @@ L.Control.Menubar = L.Control.extend({
 				continue;
 			}
 
+			// 隱藏列印選項
+			if (menu[i].id === 'print' && this._map['wopi'].HidePrintOption) {
+				continue;
+			}
+
 			// 設定禁止匯出
 			if (menu[i].id && this._map['wopi'].HideExportOption) {
 				// 檢查是否在禁用列表中
