@@ -420,6 +420,11 @@ var deps = {
 		desc: 'Permission change handler (edit, view, readonly).'
 	},
 
+	IconAlias: {
+		src: ['control/IconAlias.js'],
+		desc: 'Icon alias handler'
+	},
+
 	Toolbar: {
 		src: ['control/Toolbar.js'],
 		desc: 'Toolbar handler.'
