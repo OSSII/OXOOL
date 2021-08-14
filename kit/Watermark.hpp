@@ -17,9 +17,11 @@
 #include <Log.hpp>
 #include <cstdlib>
 #include <string>
+#include <cmath>
+#include <unordered_map>
 #include "ChildSession.hpp"
 
-class Watermark
+class Watermark final
 {
 public:
     Watermark(const std::shared_ptr<lok::Document>& loKitDoc,
@@ -27,15 +29,26 @@ public:
         : _loKitDoc(loKitDoc)
         , _text(session->getWatermarkText())
         , _font(session->getWatermarkFontFamily())
-        , _width(0)
-        , _height(0)
         , _alphaLevel(session->getWatermarkOpacity())
         , _angle(session->getWatermarkAngle())
     {
-    }
+        if (_loKitDoc == nullptr)
+        {
+            LOG_ERR("Watermark rendering requested without a valid document. Watermarking will be disabled.");
+            assert(_loKitDoc && "Valid loKitDoc is required for Watermark.");
+        }
 
-    ~Watermark()
-    {
+        // 把 CSS color(#RRGGBB) 格式的字串轉成 usigned long
+        std::string cssColor = session->getWatermarkColor();
+        std::string hexColor("0x");
+        hexColor.append(cssColor[0] == '#' ? cssColor.substr(1) : cssColor);
+        _color = std::strtoul(hexColor.c_str(), nullptr, 16);
+
+        // 角度若不在 0 ~ 360 範圍內，以 0 計算
+        if (_angle > 360)
+        {
+            _angle = 0;
+        }
     }
 
     void blending(unsigned char* tilePixmap,
@@ -58,26 +71,26 @@ public:
         if (pixmap && tilePixmap)
         {
             // center watermark
-            const int maxX = std::min(tileWidth, _width);
-            const int maxY = std::min(tileHeight, _height);
+            const int maxX = std::min(tileWidth, width);
+            const int maxY = std::min(tileHeight, height);
             offsetX += (tileWidth - maxX) / 2;
             offsetY += (tileHeight - maxY) / 2;
-
-            alphaBlend(*pixmap, _width, _height, offsetX, offsetY, tilePixmap, tilesPixmapWidth, tilesPixmapHeight);
+            alphaBlend(*pixmap, width, height, offsetX, offsetY, tilePixmap, tilesPixmapWidth, tilesPixmapHeight, false);
         }
     }
 
 private:
     /// Alpha blend pixels from 'from' over the 'to'.
     void alphaBlend(const std::vector<unsigned char>& from, int from_width, int from_height, int from_offset_x, int from_offset_y,
-            unsigned char* to, int to_width, int to_height)
+            unsigned char* to, int to_width, int to_height, const bool isFontBlending)
     {
+        bool isCalc = (_loKitDoc->getDocumentType() == LOK_DOCTYPE_SPREADSHEET);
         for (int to_y = from_offset_y, from_y = 0; (to_y < to_height) && (from_y < from_height) ; ++to_y, ++from_y)
             for (int to_x = from_offset_x, from_x = 0; (to_x < to_width) && (from_x < from_width); ++to_x, ++from_x)
             {
                 unsigned char* t = to + 4 * (to_y * to_width + to_x);
 
-                if (t[3] != 255)
+                if (!isFontBlending && !isCalc && t[3] != 255)
                     continue;
 
                 double dst_r = t[0];
@@ -106,29 +119,29 @@ private:
     /// Create bitmap that we later use as the watermark for every tile.
     const std::vector<unsigned char>* getPixmap(int width, int height)
     {
-        if (!_pixmap.empty() && width == _width && height == _height)
-            return &_pixmap;
-
-        _pixmap.clear();
-
-        _width = width;
-        _height = height;
-
-        if (!_loKitDoc)
+        if (_loKitDoc == nullptr)
         {
-            LOG_ERR("Watermark rendering requested without a valid document.");
             return nullptr;
         }
 
-        // renderFont returns a buffer based on RGBA mode, where r, g, b
-        // are always set to 0 (black) and the alpha level is 0 everywhere
-        // except on the text area; the alpha level take into account of
+        const size_t key = width + height * 10000;
+
+        if (_pixmaps.find(key) != _pixmaps.end())
+        {
+            return &_pixmaps[key];
+        }
+
+        // renderFont returns a buffer based on RGBA mode,
+        // the alpha level is 0 everywhere except on the text area;
+        // the alpha level take into account of
         // performing anti-aliasing over the text edges.
-        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &_width, &_height, _angle * 10);
+        const std::string fontAndColor = _font + "\n" + std::to_string(_color);
+        unsigned char* textPixels = _loKitDoc->renderFont(fontAndColor.c_str(), _text.c_str(), &width, &height, 0);
 
         if (!textPixels)
         {
             LOG_ERR("Watermark: rendering failed.");
+            return nullptr;
         }
 
         const unsigned int pixel_count = width * height * 4;
@@ -137,20 +150,58 @@ private:
         // No longer needed.
         std::free(textPixels);
 
-        _pixmap.reserve(pixel_count);
+        _pixmaps.emplace(key, std::vector<unsigned char>(pixel_count));
+        std::vector<unsigned char>& _pixmap = _pixmaps[key];
 
+        /*
+            apply 2d rotation transformation (counter-clockwise):
+            | cos(a) -sin(a) |  | x |
+            | sin(a)  cos(a) |  | y |
+        */
         // Create the white blurred background
         // Use box blur, it's enough for our purposes
+        const double PI = 3.14159265359;
+        // 角度轉成弧度(角度 × π / 180°)
+        const double RADIAN = _angle * PI / 180;
+        const double sin = std::sin(RADIAN);
+        const double cos = std::cos(RADIAN);
+
+        std::vector<unsigned char> _rotatedText(pixel_count);
+
         const int r = 2;
         const double weight = (r+1) * (r+1);
         for (int y = 0; y < height; ++y)
         {
             for (int x = 0; x < width; ++x)
             {
-                double t = 0;
-                for (int ky = std::max(y - r, 0); ky <= std::min(y + r, height - 1); ++ky)
+                const double x0 = width / 2.0;
+                const double y0 = height / 2.0;
+                // move origin to the center
+                const double fx = x - x0;
+                const double fy = y - y0;
+                const int rX = (fx * cos) - (fy * sin) + x0;
+                const int rY = (fx * sin) + (fy * cos) + y0;
+                const unsigned int pPos = 4 * (rY * width + rX);
+                if (rX >= 0 && rX <= width && rY >= 0 && rY <= height && pPos < text.size())
                 {
-                    for (int kx = std::max(x - r, 0); kx <= std::min(x + r, width - 1); ++kx)
+                    unsigned char* p = text.data() + 4 * (rY * width + rX);
+                    _rotatedText[4 * (y * width + x) + 0] = p[0];
+                    _rotatedText[4 * (y * width + x) + 1] = p[1];
+                    _rotatedText[4 * (y * width + x) + 2] = p[2];
+                    _rotatedText[4 * (y * width + x) + 3] = p[3];
+                }
+                else
+                {
+                    _rotatedText[4 * (y * width + x) + 0] = 0.0;
+                    _rotatedText[4 * (y * width + x) + 1] = 0.0;
+                    _rotatedText[4 * (y * width + x) + 2] = 0.0;
+                    _rotatedText[4 * (y * width + x) + 3] = 0.0;
+                }
+
+                double t = 0;
+                for (int ky = std::max(rY - r, 0); ky <= std::min(rY + r, height - 1); ++ky)
+                {
+                    for (int kx = std::max(rX - r, 0); kx <= std::min(rX + r, width - 1); ++kx)
                     {
                         // Pre-multiplied alpha; the text is black, so all the
                         // information is only in the alpha channel
@@ -173,7 +224,7 @@ private:
         }
 
         // Now copy the (black) text over the (white) blur
-        alphaBlend(text, _width, _height, 0, 0, _pixmap.data(), _width, _height);
+        alphaBlend(_rotatedText, width, height, 0, 0, _pixmap.data(), width, height, true);
 
         // Make the resulting pixmap semi-transparent
         for (unsigned char* p = _pixmap.data(); p < _pixmap.data() + pixel_count; p++)
@@ -188,11 +239,10 @@ private:
     std::shared_ptr<lok::Document> _loKitDoc;
     std::string _text;
     std::string _font;
-    int _width;
-    int _height;
     double _alphaLevel;
     unsigned int _angle;
-    std::vector<unsigned char> _pixmap;
+    unsigned long _color;
+    std::unordered_map<size_t, std::vector<unsigned char>> _pixmaps;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
