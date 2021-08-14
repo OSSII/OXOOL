@@ -114,6 +114,8 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('Opacity'), // 不透明度
 		_('Angle'), // 角度
 		_('Text'), // 文字
+		_('Font'), // 字型名稱
+		_('Color'), // 顏色
 
 		_('Update system configuration'), // 更新系統配置
 
@@ -221,6 +223,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 				{
 					switch (input.type)
 					{
+					case 'color':
 					case 'text':
 					case 'textarea':
 					case 'number':
@@ -250,7 +253,9 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 							this._makeHostList(key, json[key]);
 						} else {
 							console.log('未知的 input type -> ' + input.type);
-							console.log(input);
+							if (input.value !== undefined) {
+								input.value = json[key];
+							}
 						}
 						break;
 					}

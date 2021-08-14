@@ -10,7 +10,7 @@
     <mount_jail_tree desc="Controls whether the systemplate and lotemplate contents are mounted or not, which is much faster than the default of linking/copying each file." type="bool" default="true"></mount_jail_tree>
 
     <server_name desc="External hostname:port of the server running oxoolwsd. If empty, it's derived from the request (please set it if this doesn't work). Must be specified when behind a reverse-proxy or when the hostname is not reachable directly." type="string" default=""></server_name>
-    <client_port_number desc="Port number to listen to (default: 9980), must not be 9981" type="uint" default="9980">9980</client_port_number>
+    <client_port_number desc="Port number to listen to (default: 9980)." type="uint" default="9980">9980</client_port_number>
     <file_server_root_path desc="Path to the directory that should be considered root for the file server. This should be the directory containing loleaflet." type="path" relative="true" default="loleaflet/../">@LOOLWSD_DATADIR@</file_server_root_path>
 
     <convert_to desc="Is file format conversion enabled?" type="bool" default="false">false</convert_to>
@@ -130,6 +130,8 @@
     <watermark desc="Add watermark when editing or printing." type="bool" enable="false">
       <opacity desc="Opacity of on-screen watermark from 0.0 to 1.0" type="double" default="0.2"></opacity>
       <angle desc="Watermark angle." type="uint" default="45"></angle>
+      <font desc="Font name." type="string" default=""></font>
+      <color desc="Watermark text color." type="string" default="#000000"></color>
       <text desc="Watermark text to be displayed on the document if entered" type="string"></text>
     </watermark>
 
