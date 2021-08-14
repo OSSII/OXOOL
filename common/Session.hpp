@@ -177,7 +177,7 @@ public:
 
     void setWatermarkFontFamily(const std::string& watermarkFontFamily) { _watermarkFontFamily = watermarkFontFamily; }
 
-    void setWatermarkColor(const long& watermarkColor) { _watermarkColor = watermarkColor; }
+    void setWatermarkColor(const std::string& watermarkColor) { _watermarkColor = watermarkColor; }
 
     void setUserExtraInfo(const std::string& userExtraInfo) { _userExtraInfo = userExtraInfo; }
 
@@ -201,7 +201,7 @@ public:
 
     const std::string& getWatermarkFontFamily() const { return _watermarkFontFamily; }
 
-    unsigned long getWatermarkColor() const { return _watermarkColor; }
+    const std::string& getWatermarkColor() const { return _watermarkColor; }
 
     const std::string& getLang() const { return _lang; }
 
@@ -325,7 +325,7 @@ private:
     std::string _watermarkFontFamily;
 
     /// Watermark color.(浮水印顏色)
-    unsigned long _watermarkColor;
+    std::string _watermarkColor;
 
     /// Language for the document based on what the user has in the UI.
     std::string _lang;

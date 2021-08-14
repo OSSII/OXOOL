@@ -59,7 +59,7 @@ Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
     _watermarkOpacity(0.2),
     _watermarkAngle(0),
     _watermarkFontFamily("Carlito"),
-    _watermarkColor(13158600)
+    _watermarkColor("#000000")
 {
 }
 
@@ -191,7 +191,7 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         }
         else if (name == "watermarkColor")
         {
-            _watermarkColor = std::stol(value);
+            _watermarkColor = value;
             ++offset;
         }
         else if (name == "timestamp")

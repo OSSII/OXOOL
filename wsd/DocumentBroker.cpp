@@ -621,10 +621,10 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         session->setWatermarkOpacity(LOOLWSD::getConfigValue<double>("watermark.opacity", 0.0));
         // 取得角度
         session->setWatermarkAngle(LOOLWSD::getConfigValue<int>("watermark.angle", 0));
-        // TODO: 取得字型名稱
-        //setWatermarkFontFamily(LOOLWSD::getConfigValue<std::string>("watermark.font", "Carlito"));
-        // TODO: 取得顏色
-        //setWatermarkColor(LOOLWSD::getConfigValue<long>("watermark.color", 13158600));
+        // 取得字型名稱
+        session->setWatermarkFontFamily(LOOLWSD::getConfigValue<std::string>("watermark.font", "Carlito"));
+        // 取得顏色
+        session->setWatermarkColor(LOOLWSD::getConfigValue<std::string>("watermark.color", "#000000"));
     }
 
     // Call the storage specific fileinfo functions
@@ -724,9 +724,9 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
                 // 設定顏色
                 if (watermark->has("color"))
                 {
-                    session->setWatermarkColor(JsonUtil::getJSONValue<unsigned long>(watermark, "color"));
+                    session->setWatermarkColor(JsonUtil::getJSONValue<std::string>(watermark, "color"));
                 }
-                // 設定字型(若指定系統不存在的字型會崩潰，所以暫時不開放)
+                // 設定字型
                 if (watermark->has("fontfamily"))
                 {
                     session->setWatermarkFontFamily(JsonUtil::getJSONValue<std::string>(watermark, "fontfamily"));
