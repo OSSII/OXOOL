@@ -555,32 +555,40 @@
     </div>
     <div class="card-body row g-2">
 
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="watermark[@enable]">
-                <label class="form-check-label" for="watermark[@enable]" _="Enable watermark"></label>
-                <div class="form-text" id="watermark[@desc]"></div>
+                <input class="form-check-input" type="checkbox" id="watermark.editing">
+                <label class="form-check-label" for="watermark.editing" _="Enable when editing"></label>
+                <div class="form-text" id="watermark.editing[@desc]"></div>
             </div>
         </div>
-        <div class="col-md-4">
-            <label class="form-label" for="watermark.opacity" _="Opacity"></label>
-            <input type="number" class="form-control" id="watermark.opacity" min="0.1" step="0.01" max="1">
-            <div class="form-text" id="watermark.opacity[@desc]"></div>
+        <div class="col-md-6">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="watermark.printing">
+                <label class="form-check-label" for="watermark.printing" _="Enable when printting"></label>
+                <div class="form-text" id="watermark.printing[@desc]"></div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label class="form-label" for="watermark.angle" _="Angle"></label>
-            <input type="number" class="form-control" id="watermark.angle" min="0" step="1" max="360">
-            <div class="form-text" id="watermark.angle[@desc]"></div>
-        </div>
-        <div class="col-md-8">
+
+        <div class="col-md-6">
             <label class="form-label" for="watermark.font" _="Font"></label>
             <input type="text" class="form-control" id="watermark.font">
             <div class="form-text" id="watermark.font[@desc]"></div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-2">
             <label class="form-label" for="watermark.color" _="Color"></label>
-            <input type="color" class="form-control" id="watermark.color">
+            <input type="color" class="form-control form-control-color" id="watermark.color">
             <div class="form-text" id="watermark.color[@desc]"></div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" for="watermark.opacity" _="Opacity"></label>
+            <input type="number" class="form-control" id="watermark.opacity" min="0.1" step="0.01" max="1">
+            <div class="form-text" id="watermark.opacity[@desc]"></div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" for="watermark.angle" _="Angle"></label>
+            <input type="number" class="form-control" id="watermark.angle" min="0" step="1" max="360">
+            <div class="form-text" id="watermark.angle[@desc]"></div>
         </div>
         <div class="col-md-12">
             <label class="form-label" for="watermark.text" _="Text"></label>

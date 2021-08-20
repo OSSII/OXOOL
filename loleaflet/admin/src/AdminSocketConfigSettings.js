@@ -110,7 +110,8 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('Allow WebDAV storage'), // 允許 WebDAV
 
 		_('Watermark settings'), // 浮水印設定
-		_('Enable watermark'), // 啟用浮水印
+		_('Enable when editing'), // 編輯時啟用
+		_('Enable when printting'), // 列印時啟用
 		_('Opacity'), // 不透明度
 		_('Angle'), // 角度
 		_('Text'), // 文字
