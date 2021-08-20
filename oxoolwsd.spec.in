@@ -18,7 +18,7 @@ License:        MPL
 Obsoletes:	oxoolwsd
 Source0:        @PACKAGE_NAME@-%{version}-@LOOLWSD_BRANCH@.tar.gz
 BuildRequires:  libcap-devel libpng-devel poco-devel >= 1.7.5
-BuildRequires:  freetype-devel >= 2.8 fontconfig-devel >= 2.12.6 gd-devel >= 2.0.30
+BuildRequires:  freetype-devel >= 2.8 fontconfig-devel >= 2.12.6
 %if 0%{?fedora} || 0%{?rhel} >= 7
 BuildRequires:  libpcap kernel-headers
 %endif
