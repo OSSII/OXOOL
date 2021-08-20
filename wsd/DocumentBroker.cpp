@@ -613,7 +613,12 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
 
     // Added by Firefly <firefly@ossii.com.tw>
     // 預先讀取 oxoolwsd.xml 的浮水印設定
-    if (LOOLWSD::getConfigValue<bool>("watermark[@enable]", false))
+    // 編即時顯示？
+    session->setWatermarkWhenEditing(LOOLWSD::getConfigValue<bool>("watermark.editing", false));
+    // 列印或匯出 PDF 時顯示？
+    session->setWatermarkWhenPrinting(LOOLWSD::getConfigValue<bool>("watermark.printing", false));
+    // 其中之一啟用時，讀取浮水印詳細設定
+    if (session->watermarkWhenEditing() || session->watermarkWhenPrinting())
     {
         // 取得浮水印文字
         session->setWatermarkText(LOOLWSD::getConfigValue<std::string>("watermark.text", ""));
@@ -713,9 +718,23 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         if (!userExtraInfo.empty() && JsonUtil::parseJSON(userExtraInfo, info))
         {
             // 有指定 watermark
-            if (info->isObject("watermark"))
+            if (info->has("watermark") && info->isObject("watermark"))
             {
                 Poco::JSON::Object::Ptr watermark = info->getObject("watermark");
+                // 強制關閉編輯和列印使用浮水印
+                session->setWatermarkWhenEditing(false);
+                session->setWatermarkWhenPrinting(false);
+
+                if (watermark->has("editing"))
+                {
+                    session->setWatermarkWhenEditing(JsonUtil::getJSONValue<bool>(watermark, "editing"));
+                }
+
+                if (watermark->has("printing"))
+                {
+                    session->setWatermarkWhenPrinting(JsonUtil::getJSONValue<bool>(watermark, "printing"));
+                }
+
                 // 設定角度
                 if (watermark->has("angle"))
                 {
@@ -762,6 +781,8 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
                     }
                     session->setWatermarkText(watermarkText);
                 }
+                // TODO: 移除 watermark?
+                //info->remove("watermark");
             }
             wopiInfo->set("UserExtraInfo", info); // 把 UserExtraInfo 也一起傳給 OxOOL Client
         }
@@ -813,6 +834,8 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
     // 系統指定的浮水印文字有最終複寫權
     if (!LOOLWSD::OverrideWatermark.empty())
     {
+        session->setWatermarkWhenEditing(true);
+        session->setWatermarkWhenPrinting(true);
         session->setWatermarkText(LOOLWSD::OverrideWatermark);
         session->setWatermarkOpacity(0.2);
         session->setWatermarkAngle(0);

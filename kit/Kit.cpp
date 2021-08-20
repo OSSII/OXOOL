@@ -667,7 +667,7 @@ public:
                                        size_t pixmapWidth, size_t pixmapHeight,
                                        int pixelWidth, int pixelHeight,
                                        LibreOfficeKitTileMode mode) {
-                                       if (session->hasWatermark())
+                                       if (session->watermarkWhenEditing() && session->hasWatermark())
                                            session->_docWatermark->blending(data, offsetX, offsetY,
                                                                             pixmapWidth, pixmapHeight,
                                                                             pixelWidth, pixelHeight,
@@ -1270,7 +1270,7 @@ private:
                 sessionId << "] loaded view [" << viewId << "]. Have " <<
                 viewCount << " view" << (viewCount != 1 ? "s." : "."));
 
-        if (session->hasWatermark())
+        if (session->watermarkWhenEditing() && session->hasWatermark())
             session->_docWatermark.reset(new Watermark(_loKitDocument, session));
         session->recalcCanonicalViewId(_sessions);
 

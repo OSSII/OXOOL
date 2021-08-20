@@ -169,6 +169,10 @@ public:
 
     const std::string& getUserId() const { return _userId; }
 
+    void setWatermarkWhenEditing(const bool isEnable) { _watermarkWhenEditing = isEnable; }
+
+    void setWatermarkWhenPrinting(const bool isEnable) { _watermarkWhenPrinting = isEnable; }
+
     void setWatermarkText(const std::string& watermarkText) { _watermarkText = watermarkText; }
 
     void setWatermarkOpacity(const double& watermarkOpacity) { _watermarkOpacity = watermarkOpacity; }
@@ -190,6 +194,10 @@ public:
     bool isDocPasswordProtected() const { return _isDocPasswordProtected; }
 
     const std::string& getDocOptions() const { return _docOptions; }
+
+    bool watermarkWhenEditing() const { return _watermarkWhenEditing; }
+
+    bool watermarkWhenPrinting() const { return _watermarkWhenPrinting; }
 
     bool hasWatermark() const { return !_watermarkText.empty() && _watermarkOpacity > 0.0; }
 
@@ -311,6 +319,14 @@ private:
 
     /// Extra info per user, mostly mail, avatar, links, etc.
     std::string _userExtraInfo;
+
+    /// If enabled, a watermark will be displayed when editing document.
+    /// 編輯時，顯示浮水印
+    bool _watermarkWhenEditing;
+
+    /// If enabled, a watermark will be displayed when printing document or exporting PDF document.
+    /// 列印或匯出 PDF 時，顯示浮水印
+    bool _watermarkWhenPrinting;
 
     /// In case a watermark has to be rendered on each tile.
     std::string _watermarkText;

@@ -38,6 +38,13 @@ public:
             assert(_loKitDoc && "Valid loKitDoc is required for Watermark.");
         }
 
+        _font = Util::trim(_font); // 去掉前後空白
+        // 空字串的話，預設字型為 Carlito
+        if (_font.empty())
+        {
+            _font = "Carlito";
+        }
+
         // 把 CSS color(#RRGGBB) 格式的字串轉成 usigned long
         std::string cssColor = session->getWatermarkColor();
         std::string hexColor("0x");
@@ -58,13 +65,8 @@ public:
                    LibreOfficeKitTileMode /*mode*/)
     {
         // set requested watermark size a little bit smaller than tile size
-        double scale = 0.9;
-        if (_angle > 0)
-        {
-            scale = 1.0;
-        }
-        int width = tileWidth * scale;
-        int height = tileHeight * scale;
+        const int width = tileWidth * 0.9;
+        const int height = tileHeight * 0.9;
 
         const std::vector<unsigned char>* pixmap = getPixmap(width, height);
 
@@ -131,12 +133,25 @@ private:
             return &_pixmaps[key];
         }
 
+        Poco::JSON::Object jsonObj;
+        jsonObj.set("familyname", _font);
+        jsonObj.set("opacity", _alphaLevel);
+        jsonObj.set("angle", _angle);
+        jsonObj.set("color", _color);
+        jsonObj.set("bold", false); // 粗體
+        jsonObj.set("italic", false); // 斜體
+        jsonObj.set("relief", ""); // "embossed":浮凸, "engraved":雕刻, 其他:無
+        jsonObj.set("outline", false); // 輪廓(中空)
+        jsonObj.set("shadow", false); // 陰影
+
+        std::ostringstream watermark;
+        jsonObj.stringify(watermark);
+
         // renderFont returns a buffer based on RGBA mode,
         // the alpha level is 0 everywhere except on the text area;
         // the alpha level take into account of
         // performing anti-aliasing over the text edges.
-        const std::string fontAndColor = _font + "\n" + std::to_string(_color);
-        unsigned char* textPixels = _loKitDoc->renderFont(fontAndColor.c_str(), _text.c_str(), &width, &height, 0);
+        unsigned char* textPixels = _loKitDoc->renderFont(watermark.str().c_str(), _text.c_str(), &width, &height, 0);
 
         if (!textPixels)
         {

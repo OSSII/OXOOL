@@ -56,6 +56,8 @@ Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
     _docPassword(""),
     _haveDocPassword(false),
     _isDocPasswordProtected(false),
+    _watermarkWhenEditing(false),
+    _watermarkWhenPrinting(false),
     _watermarkOpacity(0.2),
     _watermarkAngle(0),
     _watermarkFontFamily("Carlito"),
@@ -165,6 +167,16 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         else if (name == "lang")
         {
             _lang = value;
+            ++offset;
+        }
+        else if (name == "watermarkWhenEditing")
+        {
+            _watermarkWhenEditing = value!= "0";
+            ++offset;
+        }
+        else if (name == "watermarkWhenPrinting")
+        {
+            _watermarkWhenPrinting = value!= "0";
             ++offset;
         }
         else if (name == "watermarkText")

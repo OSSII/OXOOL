@@ -846,6 +846,8 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             std::string encodedWatermarkText, encodedWatermarkFontFamily;
             Poco::URI::encode(getWatermarkText(), "", encodedWatermarkText);
             Poco::URI::encode(getWatermarkFontFamily(), "", encodedWatermarkFontFamily);
+            oss << " watermarkWhenEditing=" << watermarkWhenEditing();
+            oss << " watermarkWhenPrinting=" << watermarkWhenPrinting();
             oss << " watermarkText=" << encodedWatermarkText;
             oss << " watermarkOpacity=" << getWatermarkOpacity();
             oss << " watermarkAngle=" << getWatermarkAngle();
@@ -853,6 +855,8 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             oss << " watermarkColor=" << getWatermarkColor();
             // 把浮水印資料傳給 client
             Poco::JSON::Object jsonObj;
+            jsonObj.set("editing", watermarkWhenEditing());
+            jsonObj.set("printing", watermarkWhenPrinting());
             jsonObj.set("text", getWatermarkText());
             jsonObj.set("opacity", getWatermarkOpacity());
             jsonObj.set("angle", getWatermarkAngle());
