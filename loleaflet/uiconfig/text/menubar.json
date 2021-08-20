@@ -13,10 +13,6 @@
 				"id": "saveas"
 			},
 			{
-				"name": "Save As Password",
-				"id": "saveaspassword"
-			},
-			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share...",
 				"id": "shareas"
