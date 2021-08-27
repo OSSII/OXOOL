@@ -108,7 +108,7 @@
 					},
 					{
 						"id": ".uno:PasteSpecial",
-						"hotkey": "Ctrl+Shift-V"
+						"hotkey": "Ctrl+Shift+V"
 					}
 				]
 			},
