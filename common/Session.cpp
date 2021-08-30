@@ -36,6 +36,7 @@
 #include <TileCache.hpp>
 #include "Util.hpp"
 #include "Unit.hpp"
+#include "JsonUtil.hpp"
 
 using namespace LOOLProtocol;
 
@@ -57,11 +58,7 @@ Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
     _haveDocPassword(false),
     _isDocPasswordProtected(false),
     _watermarkWhenEditing(false),
-    _watermarkWhenPrinting(false),
-    _watermarkOpacity(0.2),
-    _watermarkAngle(0),
-    _watermarkFontFamily("Carlito"),
-    _watermarkColor("#000000")
+    _watermarkWhenPrinting(false)
 {
 }
 
@@ -189,21 +186,33 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
             _watermarkOpacity = std::stod(value);
             ++offset;
         }
-        else if (name == "watermarkAngle")
+        else if (name == "watermarkFont")
         {
-            _watermarkAngle = std::stoi(value);
+            std::string decodeFont;
+            Poco::URI::decode(value, decodeFont);
+            Poco::JSON::Object::Ptr jsonObj;
+            if (JsonUtil::parseJSON(decodeFont, jsonObj))
+            {
+                for (auto it = jsonObj->begin() ; it != jsonObj->end() ; it++)
+                {
+                    _watermarkFont.set(it->first, it->second);
+                }
+            }
             ++offset;
         }
-        else if (name == "watermarkFontFamily")
+        else if (name == "clientAddr")
         {
-            std::string decodeFontFamily;
-            Poco::URI::decode(value, decodeFontFamily);
-            _watermarkFontFamily = decodeFontFamily;
+            _clientAddr = value;
             ++offset;
         }
-        else if (name == "watermarkColor")
+        else if (name == "timezone")
         {
-            _watermarkColor = value;
+            _timezone = value;
+            ++offset;
+        }
+        else if (name == "timezoneOffset")
+        {
+            _timezoneOffset = std::stol(value);
             ++offset;
         }
         else if (name == "timestamp")
@@ -235,6 +244,72 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
                 _docOptions += tokens.cat(' ', offset + 1);
         }
     }
+}
+
+std::string Session::getConvertedWatermarkText()
+{
+    std::string retString = getWatermarkText();
+
+    // 使用者 ID ${id}
+    Poco::replaceInPlace(retString, std::string("${id}"), getUserId());
+    // 使用者名稱 ${name}
+    Poco::replaceInPlace(retString, std::string("${name}"), getUserName());
+    // 使用者時區 ${timezone}
+    Poco::replaceInPlace(retString, std::string("${timezone}"), getTimezone());
+
+    // 使用者 IP ${ip}
+    std::string ip = getClientAddr();
+    if (Util::startsWith(ip, "::ffff:"))
+    {
+        ip = ip.substr(7);
+    }
+    else if (ip == "::1")
+    {
+        ip = "127.0.0.1";
+    }
+    Poco::replaceInPlace(retString, std::string("${ip}"), ip);
+
+    // 系統時間加上客戶端時區偏移值，就是客戶端目前時間
+    Poco::DateTime clientDateTime(Poco::Timestamp() + Poco::Timespan(getTimezoneOffset() * 60 * -1, 0));
+
+    // 日期 ${yyyy-mm-dd}
+    Poco::replaceInPlace(retString, std::string("${yyyy-mm-dd}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%Y-%n-%e"));
+    // 日期 ${mm-dd-yyyy}
+    Poco::replaceInPlace(retString, std::string("${mm-dd-yyyy}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%n-%e-%Y"));
+    // 日期 ${dd-mm-yyyy}
+    Poco::replaceInPlace(retString, std::string("${dd/mm/yyyy}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%e-%n-%Y"));
+
+    // 日期 ${yyyy/mm/dd}
+    Poco::replaceInPlace(retString, std::string("${yyyy/mm/dd}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%Y/%n/%e"));
+    // 日期 ${mm/dd/yyyy}
+    Poco::replaceInPlace(retString, std::string("${mm/dd/yyyy}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%n/%e/%Y"));
+    // 日期 ${dd/mm/yyyy}
+    Poco::replaceInPlace(retString, std::string("${dd/mm/yyyy}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%e/%n/%Y"));
+
+    // 日期 ${yyyy.mm.dd}
+    Poco::replaceInPlace(retString, std::string("${yyyy.mm.dd}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%Y.%n.%e"));
+    // 日期 ${mm.dd.yyyy}
+    Poco::replaceInPlace(retString, std::string("${mm.dd.yyyy}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%n.%e.%Y"));
+    // 日期 ${dd.mm.yyyy}
+    Poco::replaceInPlace(retString, std::string("${dd.mm.yyyy}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%e.%n.%Y"));
+
+    // 24小時格式時間 ${time}
+    Poco::replaceInPlace(retString, std::string("${time}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%H:%M"));
+    // 12小時格式時間 ${ampm}
+    Poco::replaceInPlace(retString, std::string("${ampm}"),
+                         Poco::DateTimeFormatter::format(clientDateTime, "%h:%M %a"));
+
+    return retString;
 }
 
 void Session::disconnect()

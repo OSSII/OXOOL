@@ -841,31 +841,45 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             oss << " deviceFormFactor=" << getDeviceFormFactor();
         }
 
-        if (!getWatermarkText().empty())
+        // 有浮水印
+        if (hasWatermark())
         {
-            std::string encodedWatermarkText, encodedWatermarkFontFamily;
+            // 浮水印字型設定轉成 json 字串
+            Poco::JSON::Object jsonObj = getWatermarkFont();
+            jsonObj.set("editing", watermarkWhenEditing()); // 編輯啟用
+            jsonObj.set("printing", watermarkWhenPrinting()); // 列印或匯出 PDF 啟用
+            jsonObj.set("text", getWatermarkText()); // 浮水印文字
+            jsonObj.set("opacity", getWatermarkOpacity()); // 透明度
+            std::ostringstream jsonStream;
+            jsonObj.stringify(jsonStream);
+            // 把 json 傳給 client 端
+            sendTextFrame("watermark: " + jsonStream.str());
+
+            // 轉換浮水印字型為字串
+            std::ostringstream watermarkFont;
+            getWatermarkFont().stringify(watermarkFont);
+            std::string encodedWatermarkText, encodedWatermarkFont;
             Poco::URI::encode(getWatermarkText(), "", encodedWatermarkText);
-            Poco::URI::encode(getWatermarkFontFamily(), "", encodedWatermarkFontFamily);
+            Poco::URI::encode(watermarkFont.str(), "", encodedWatermarkFont);
+            // 傳給 kit
             oss << " watermarkWhenEditing=" << watermarkWhenEditing();
             oss << " watermarkWhenPrinting=" << watermarkWhenPrinting();
             oss << " watermarkText=" << encodedWatermarkText;
             oss << " watermarkOpacity=" << getWatermarkOpacity();
-            oss << " watermarkAngle=" << getWatermarkAngle();
-            oss << " watermarkFontFamily=" << encodedWatermarkFontFamily;
-            oss << " watermarkColor=" << getWatermarkColor();
-            // 把浮水印資料傳給 client
-            Poco::JSON::Object jsonObj;
-            jsonObj.set("editing", watermarkWhenEditing());
-            jsonObj.set("printing", watermarkWhenPrinting());
-            jsonObj.set("text", getWatermarkText());
-            jsonObj.set("opacity", getWatermarkOpacity());
-            jsonObj.set("angle", getWatermarkAngle());
-            jsonObj.set("fontfamily", getWatermarkFontFamily());
-            jsonObj.set("color", getWatermarkColor());
-            std::ostringstream watermark;
-            jsonObj.stringify(watermark);
-            sendTextFrame("watermark: " + watermark.str());
+            oss << " watermarkFont=" << encodedWatermarkFont;
         }
+
+        if (!getClientAddr().empty())
+        {
+            oss << " clientAddr=" << getClientAddr();
+        }
+
+        if (!getTimezone().empty())
+        {
+            oss << " timezone=" << getTimezone();
+        }
+
+        oss << " timezoneOffset=" << getTimezoneOffset();
 
         if (!getDocOptions().empty())
         {

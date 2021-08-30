@@ -20,6 +20,7 @@
 #include <Poco/Buffer.h>
 #include <Poco/Path.h>
 #include <Poco/Types.h>
+#include <Poco/JSON/Object.h>
 
 #include "Protocol.hpp"
 #include "Log.hpp"
@@ -165,6 +166,8 @@ public:
 
     void getIOStats(uint64_t &sent, uint64_t &recv);
 
+    std::string getConvertedWatermarkText();
+
     void setUserId(const std::string& userId) { _userId = userId; }
 
     const std::string& getUserId() const { return _userId; }
@@ -177,11 +180,11 @@ public:
 
     void setWatermarkOpacity(const double& watermarkOpacity) { _watermarkOpacity = watermarkOpacity; }
 
-    void setWatermarkAngle(const unsigned int& watermarkAngle) { _watermarkAngle = watermarkAngle; }
+    void setClientAddr(const std::string& clientAddr) { _clientAddr = clientAddr; }
 
-    void setWatermarkFontFamily(const std::string& watermarkFontFamily) { _watermarkFontFamily = watermarkFontFamily; }
+    void setTimezone(const std::string& clientTimezone) { _timezone = clientTimezone; }
 
-    void setWatermarkColor(const std::string& watermarkColor) { _watermarkColor = watermarkColor; }
+    void setTimezoneOffset(long timezoneOffset) { _timezoneOffset = timezoneOffset; }
 
     void setUserExtraInfo(const std::string& userExtraInfo) { _userExtraInfo = userExtraInfo; }
 
@@ -205,11 +208,13 @@ public:
 
     double getWatermarkOpacity() const { return _watermarkOpacity; }
 
-    unsigned int getWatermarkAngle() const { return _watermarkAngle; }
+    Poco::JSON::Object& getWatermarkFont() { return _watermarkFont; }
 
-    const std::string& getWatermarkFontFamily() const { return _watermarkFontFamily; }
+    const std::string& getClientAddr() const { return _clientAddr; }
 
-    const std::string& getWatermarkColor() const { return _watermarkColor; }
+    const std::string& getTimezone() const { return _timezone; }
+
+    long getTimezoneOffset() const { return _timezoneOffset; }
 
     const std::string& getLang() const { return _lang; }
 
@@ -334,14 +339,17 @@ private:
     /// Opacity in case a watermark has to be rendered on each tile.
     double _watermarkOpacity;
 
-    /// Watermark angle.(浮水印角度)
-    unsigned int _watermarkAngle;
+    /// Watermark font setting.
+    Poco::JSON::Object _watermarkFont;
 
-    /// Watermark font family.(浮水印字型)
-    std::string _watermarkFontFamily;
+    /// Client address(IP)
+    std::string _clientAddr;
 
-    /// Watermark color.(浮水印顏色)
-    std::string _watermarkColor;
+    /// Client timezone
+    std::string _timezone;
+
+    /// Client timezone offset
+    long _timezoneOffset;
 
     /// Language for the document based on what the user has in the UI.
     std::string _lang;

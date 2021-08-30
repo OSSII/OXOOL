@@ -13,6 +13,7 @@
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 #include <LibreOfficeKit/LibreOfficeKit.hxx>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
+#include <Poco/JSON/Object.h>
 #include <vector>
 #include <Log.hpp>
 #include <cstdlib>
@@ -27,35 +28,17 @@ public:
     Watermark(const std::shared_ptr<lok::Document>& loKitDoc,
               const std::shared_ptr<ChildSession> & session)
         : _loKitDoc(loKitDoc)
-        , _text(session->getWatermarkText())
-        , _font(session->getWatermarkFontFamily())
+        , _text(session->getConvertedWatermarkText())
         , _alphaLevel(session->getWatermarkOpacity())
-        , _angle(session->getWatermarkAngle())
     {
         if (_loKitDoc == nullptr)
         {
             LOG_ERR("Watermark rendering requested without a valid document. Watermarking will be disabled.");
             assert(_loKitDoc && "Valid loKitDoc is required for Watermark.");
         }
-
-        _font = Util::trim(_font); // 去掉前後空白
-        // 空字串的話，預設字型為 Carlito
-        if (_font.empty())
-        {
-            _font = "Carlito";
-        }
-
-        // 把 CSS color(#RRGGBB) 格式的字串轉成 usigned long
-        std::string cssColor = session->getWatermarkColor();
-        std::string hexColor("0x");
-        hexColor.append(cssColor[0] == '#' ? cssColor.substr(1) : cssColor);
-        _color = std::strtoul(hexColor.c_str(), nullptr, 16);
-
-        // 角度若不在 0 ~ 360 範圍內，以 0 計算
-        if (_angle > 360)
-        {
-            _angle = 0;
-        }
+        session->getWatermarkFont().stringify(_font);
+        // 未設定角度，預設為 45°
+        _angle = session->getWatermarkFont().optValue<int>("angle", 45);
     }
 
     void blending(unsigned char* tilePixmap,
@@ -133,25 +116,11 @@ private:
             return &_pixmaps[key];
         }
 
-        Poco::JSON::Object jsonObj;
-        jsonObj.set("familyname", _font);
-        jsonObj.set("opacity", _alphaLevel);
-        jsonObj.set("angle", _angle);
-        jsonObj.set("color", _color);
-        jsonObj.set("bold", false); // 粗體
-        jsonObj.set("italic", false); // 斜體
-        jsonObj.set("relief", ""); // "embossed":浮凸, "engraved":雕刻, 其他:無
-        jsonObj.set("outline", false); // 輪廓(中空)
-        jsonObj.set("shadow", false); // 陰影
-
-        std::ostringstream watermark;
-        jsonObj.stringify(watermark);
-
         // renderFont returns a buffer based on RGBA mode,
         // the alpha level is 0 everywhere except on the text area;
         // the alpha level take into account of
         // performing anti-aliasing over the text edges.
-        unsigned char* textPixels = _loKitDoc->renderFont(watermark.str().c_str(), _text.c_str(), &width, &height, 0);
+        unsigned char* textPixels = _loKitDoc->renderFont(_font.str().c_str(), _text.c_str(), &width, &height, 0);
 
         if (!textPixels)
         {
@@ -253,10 +222,9 @@ private:
 private:
     std::shared_ptr<lok::Document> _loKitDoc;
     std::string _text;
-    std::string _font;
     double _alphaLevel;
-    unsigned int _angle;
-    unsigned long _color;
+    int _angle;
+    std::ostringstream _font;
     std::unordered_map<size_t, std::vector<unsigned char>> _pixmaps;
 };
 

@@ -952,18 +952,10 @@ bool ChildSession::downloadAs(const char* /*buffer*/, int /*length*/, const Stri
 
     // Hack pass watermark by filteroptions to saveas
     if (watermarkWhenPrinting() && hasWatermark()) {
-        // 把 CSS color(#RRGGBB) 格式的字串轉成 usigned long
-        std::string cssColor = getWatermarkColor();
-        std::string hexColor("0x");
-        hexColor.append(cssColor[0] == '#' ? cssColor.substr(1) : cssColor);
-        unsigned long color = std::strtoul(hexColor.c_str(), nullptr, 16);
         // 把浮水印資料放進 JSON 結構
-        Poco::JSON::Object jsonObj;
-        jsonObj.set("text", getWatermarkText());
-        jsonObj.set("familyname", getWatermarkFontFamily());
+        Poco::JSON::Object jsonObj = getWatermarkFont();
+        jsonObj.set("text", getConvertedWatermarkText());
         jsonObj.set("opacity", getWatermarkOpacity());
-        jsonObj.set("angle", getWatermarkAngle() > 360 ? 0 : getWatermarkAngle());
-        jsonObj.set("color", color);
         std::ostringstream watermark;
         jsonObj.stringify(watermark);
         filterOptions += std::string(",Watermark=") + watermark.str() + std::string("WATERMARKEND");
