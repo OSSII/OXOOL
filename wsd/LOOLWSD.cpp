@@ -3367,6 +3367,7 @@ private:
                     docBroker->createNewClientSession(ws, _id, uriPublic, isReadOnly, requestDetails);
                 if (clientSession)
                 {
+                    clientSession->setClientAddr(socket->clientAddress());
                     // Transfer the client socket to the DocumentBroker when we get back to the poll:
                     disposition.setMove([docBroker, clientSession, ws]
                                         (const std::shared_ptr<Socket> &moveSocket)
