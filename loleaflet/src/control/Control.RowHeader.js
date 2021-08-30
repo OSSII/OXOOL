@@ -38,8 +38,8 @@ L.Control.RowHeader = L.Control.Header.extend({
 		this._setCanvasWidth();
 		this._setCanvasHeight();
 
-		var scale = L.getDpiScaleFactor();
-		this._canvasContext.scale(scale, scale);
+		this._scale = L.getDpiScaleFactor();
+		this._canvasContext.scale(this._scale, this._scale);
 		this._headerWidth = this._canvasWidth;
 		L.Control.Header.rowHeaderWidth = this._canvasWidth;
 
@@ -216,8 +216,7 @@ L.Control.RowHeader = L.Control.Header.extend({
 			return;
 
 		ctx.save();
-		var scale = L.getDpiScaleFactor();
-		ctx.scale(scale, scale);
+		ctx.scale(this._scale, this._scale);
 		ctx.translate(0, this._position + this._startOffset);
 		// background gradient
 		var selectionBackgroundGradient = null;
@@ -279,8 +278,8 @@ L.Control.RowHeader = L.Control.Header.extend({
 		var height = group.endPos - group.startPos;
 
 		ctx.save();
-		var scale = L.getDpiScaleFactor();
-		ctx.scale(scale, scale);
+		this._scale = L.getDpiScaleFactor();
+		ctx.scale(this._scale, this._scale);
 
 		ctx.translate(0, this._position + this._startOffset);
 		// clip mask
@@ -329,13 +328,12 @@ L.Control.RowHeader = L.Control.Header.extend({
 		var ctx = this._cornerCanvasContext;
 		var ctrlHeadSize = this._groupHeadSize;
 		var levelSpacing = this._levelSpacing;
-		var scale = L.getDpiScaleFactor();
 
 		var startOrt = levelSpacing + (ctrlHeadSize + levelSpacing) * level;
-		var startPar = this._cornerCanvas.height / scale - (ctrlHeadSize + (L.Control.Header.colHeaderHeight - ctrlHeadSize) / 2);
+		var startPar = this._cornerCanvas.height / this._scale - (ctrlHeadSize + (L.Control.Header.colHeaderHeight - ctrlHeadSize) / 2);
 
 		ctx.save();
-		ctx.scale(scale, scale);
+		ctx.scale(this._scale, this._scale);
 		ctx.fillStyle = this._hoverColor;
 		ctx.fillRect(startOrt, startPar, ctrlHeadSize, ctrlHeadSize);
 		ctx.strokeStyle = 'black';
@@ -372,9 +370,10 @@ L.Control.RowHeader = L.Control.Header.extend({
 
 	viewRowColumnHeaders: function (e) {
 		if (e.data.rows && e.data.rows.length) {
-			var dpiScale = L.getDpiScaleFactor();
 			for (var i=0 ; i < e.data.rows.length ; i++) {
-				e.data.rows[i].size = parseInt((e.data.rows[i].size * 15) / dpiScale);
+				var zoom = this._map.getZoom();
+				var zoomScale = 1.0 / this._map.getZoomScale(zoom, 10);
+				e.data.rows[i].size = Math.floor(e.data.rows[i].size * (15 / this._scale) * zoomScale);
 			}
 			this.fillRows(e.data.rows, e.data.rowGroups, e.converter, e.context);
 		}
