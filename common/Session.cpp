@@ -279,7 +279,7 @@ std::string Session::getConvertedWatermarkText()
     Poco::replaceInPlace(retString, std::string("${mm-dd-yyyy}"),
                          Poco::DateTimeFormatter::format(clientDateTime, "%n-%e-%Y"));
     // 日期 ${dd-mm-yyyy}
-    Poco::replaceInPlace(retString, std::string("${dd/mm/yyyy}"),
+    Poco::replaceInPlace(retString, std::string("${dd-mm-yyyy}"),
                          Poco::DateTimeFormatter::format(clientDateTime, "%e-%n-%Y"));
 
     // 日期 ${yyyy/mm/dd}
