@@ -254,7 +254,7 @@
             </div>
         </div>
         <div class="col-md-12">
-            <label class="form-label" for="logging.lokit_sal_log"><span class="me-3" _="Output messages from LOKit"></span>(<i class="bi bi-info-circle-fill text-info me-1"></i><a href="https://docs.libreoffice.org/sal/html/sal_log.html" target="_blank" _="Usage notes"></a>)</label>
+            <label class="form-label" for="logging.lokit_sal_log"><span class="me-3" _="Output messages from LOKit"></span>(<a href="https://docs.libreoffice.org/sal/html/sal_log.html" target="_blank"><i class="bi bi-info-circle-fill text-info me-1"></i><span _="Usage notes"></span></a>)</label>
             <input class="form-control" type="text" id="logging.lokit_sal_log">
             <div class="form-text" id="logging.lokit_sal_log[@desc]"></div>
         </div>
@@ -551,10 +551,16 @@
 <!-- 浮水印設定 -->
 <div class="card mt-3">
     <div class="card-header list-group-item-primary bg-gradient">
-        <div class="fs-6 fw-bold" _="Watermark settings"></div>
+        <div class="fs-6 fw-bold">
+            <span class="me-3" _="Watermark settings"></span>
+            <button type="button" id="watermarkWPOI" class="btn btn-info btn-sm" data-bs-toggle="popover" data-bs-content="">
+                <i class="bi bi-info-circle-fill"></i>
+                <span _="Convert to WOPI data"></span>
+            </button>
+        </div>
     </div>
-    <div class="card-body row g-2">
 
+    <div class="card-body row g-2">
         <div class="col-md-6">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="watermark.editing">
@@ -565,39 +571,81 @@
         <div class="col-md-6">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="watermark.printing">
-                <label class="form-check-label" for="watermark.printing" _="Enable when printting"></label>
+                <label class="form-check-label" for="watermark.printing" _="Enable when printing"></label>
                 <div class="form-text" id="watermark.printing[@desc]"></div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <label class="form-label" for="watermark.font" _="Font"></label>
-            <input type="text" class="form-control" id="watermark.font">
-            <div class="form-text" id="watermark.font[@desc]"></div>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label" for="watermark.color" _="Color"></label>
-            <input type="color" class="form-control form-control-color" id="watermark.color">
-            <div class="form-text" id="watermark.color[@desc]"></div>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label" for="watermark.opacity" _="Opacity"></label>
-            <input type="number" class="form-control" id="watermark.opacity" min="0.1" step="0.01" max="1">
-            <div class="form-text" id="watermark.opacity[@desc]"></div>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label" for="watermark.angle" _="Angle"></label>
-            <input type="number" class="form-control" id="watermark.angle" min="0" step="1" max="360">
-            <div class="form-text" id="watermark.angle[@desc]"></div>
-        </div>
         <div class="col-md-12">
+            <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="input-group me-2">
+                    <div class="input-group-text" _="Font"></div>
+                    <input type="text" class="form-control" id="watermark.font">
+                    <input type="color" class="form-control form-control-color" style="width:32px" id="watermark.color" title="Color">
+                </div>
+                <div class="btn-group me-2" role="group" aria-label="Basic checkbox toggle button group">
+                    <input type="checkbox" class="btn-check" id="watermark.bold" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="watermark.bold"><i class="bi bi-type-bold"></i></label>
+
+                    <input type="checkbox" class="btn-check" id="watermark.italic" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="watermark.italic"><i class="bi bi-type-italic"></i></label>
+
+                    <input type="checkbox" class="btn-check" id="watermark.outline" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="watermark.outline" _="Outline"></label>
+
+                    <input type="checkbox" class="btn-check" id="watermark.shadow" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="watermark.shadow" _="Shadow"></label>
+                </div>
+                <div class="input-group me-2">
+                    <div class="input-group-text" _="Opacity"></div>
+                    <input type="number" class="form-control" id="watermark.opacity" min="0.1" step="0.01" max="1">
+                </div>
+                <div class="input-group me-2">
+                    <div class="input-group-text" _="Angle"></div>
+                    <input type="number" class="form-control" id="watermark.angle" min="0" step="1" max="360">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
             <label class="form-label" for="watermark.text" _="Text"></label>
-            <textarea type="text" class="form-control" id="watermark.text" rows="3"></textarea>
+            <textarea type="text" class="form-control" id="watermark.text" rows="4"></textarea>
             <div class="form-text" id="watermark.text[@desc]"></div>
         </div>
+        <div class="col-md-7">
+            <p><strong _="Available tags"></strong></p>
+            <div>
+                <span _="User ID"></span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${id}</span>
 
+                <span class="ms-3" _="User name"></span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${name}</span>
+
+                <span class="ms-3" _="User IP"></span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${ip}</span>
+
+                <span class="ms-3" _="Time zone"></span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${timezone}</span>
+            </div>
+            <div class="mt-2">
+                <span _="Date format"></span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${yyyy-mm-dd}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${mm-dd-yyyy}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${dd-mm-yyyy}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${yyyy/mm/dd}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${mm-dd-yyyy}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${dd-mm-yyyy}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${yyyy.mm.dd}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${mm.dd.yyyy}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${dd.mm.yyyy}</span>
+            </div>
+            <div class="mt-2">
+                <span _="Time format"></span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${time}</span>
+                <span class="badge rounded-pill bg-secondary watermarktag">${ampm}</span>
+            </div>
+        </div>
     </div>
-
 </div>
 </form>
 

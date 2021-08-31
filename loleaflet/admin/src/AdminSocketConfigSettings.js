@@ -110,13 +110,26 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		_('Allow WebDAV storage'), // 允許 WebDAV
 
 		_('Watermark settings'), // 浮水印設定
+		_('Convert to WOPI data'), // 轉成 WOPI 資料
 		_('Enable when editing'), // 編輯時啟用
-		_('Enable when printting'), // 列印時啟用
+		_('Enable when printing'), // 列印時啟用
 		_('Opacity'), // 不透明度
 		_('Angle'), // 角度
 		_('Text'), // 文字
 		_('Font'), // 字型名稱
 		_('Color'), // 顏色
+		_('Bold'), // 粗體
+		_('Italic'), // 斜體
+		_('Outline'), // 中空
+		_('Shadow'), // 陰影
+
+		_('Available tags'), // 可用標籤
+		_('User ID'), // 使用者 ID
+		_('User name'), // 使用者名稱
+		_('User IP'), // 使用者 IP
+		_('Time zone'), // 時區
+		_('Date format'), // 日期格式
+		_('Time format'), // 時間格式
 
 		_('Update system configuration'), // 更新系統配置
 
@@ -177,7 +190,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		// 要求命令格式為 :
 		// getConfig <id1> [id2] [id3] ...
 		var cmd = 'getConfig';
-		var elements = document.querySelectorAll('#mainform input, select, textarea, .host-list ,.form-text')
+		var elements = document.querySelectorAll('#mainform input, select, textarea, .host-list ,.form-text');
 		elements.forEach(function(item) {
 			if (item.id !== undefined) {
 				cmd += ' ' + item.id;
@@ -187,6 +200,40 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		});
 		// 向 Server 要求這些 id 代表的資料
 		this.socket.send(cmd);
+
+		$('#watermarkWPOI').popover({
+			container: 'body',
+			html: true,
+			title: _('The watermark data is placed in UserExtraInfo of WOPI.'),
+			//template: '<div class="popover" role="tooltip"><div class="popover-arrow"></div><pre class="popover-body"></pre></div>',
+			content: function() {
+				var watermark = {
+					editing: document.getElementById('watermark.editing').checked, // 編輯時啟用
+					printing: document.getElementById('watermark.printing').checked, // 列印時啟用
+					familyname: document.getElementById('watermark.font').value, // 字型名稱
+					color: document.getElementById('watermark.color').value, // 顏色
+					bold: document.getElementById('watermark.bold').checked, // 粗體
+					italic: document.getElementById('watermark.italic').checked, // 斜體
+					outline: document.getElementById('watermark.outline').checked, // 中空字
+					shadow: document.getElementById('watermark.shadow').checked, // 陰影字
+					opacity: parseFloat(document.getElementById('watermark.opacity').value), // 不透明度
+					angle: parseInt(document.getElementById('watermark.angle').value), // 角度
+					text: document.getElementById('watermark.text').value // 浮水印文字
+				}
+				return '<pre>watermark:' + JSON.stringify(watermark, null, '    ') + '</pre>';
+			},
+		});
+
+		var allTags = document.querySelectorAll('.watermarktag');
+		allTags.forEach(function(item) {
+			item.style.cursor = 'pointer';
+			item.onclick = function() {
+				var watermarkText = document.getElementById('watermark.text');
+				var tag = this.innerText;
+				watermarkText.focus();
+				watermarkText.setRangeText(tag);
+			};
+		});
 
 		// 更新設定按鈕
 		$('#saveConfig').click(function() {
