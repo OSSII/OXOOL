@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-24 16:28+0800\n"
+"POT-Creation-Date: 2021-08-31 15:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -234,6 +234,7 @@ msgid "Log settings"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:51
+#: admin/src/AdminSocketConfigSettings.js:120
 #: uiconfig/dialogs/BindingLineDialog.js:33
 msgid "Color"
 msgstr ""
@@ -470,90 +471,154 @@ msgid "Watermark settings"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:113
-msgid "Enable watermark"
+msgid "Convert to WOPI data"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:114
-msgid "Opacity"
+msgid "Enable when editing"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:115
-msgid "Angle"
+msgid "Enable when printing"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:116
+msgid "Opacity"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:117
+msgid "Angle"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:118
 #: uiconfig/dialogs/BindingLineDialog.js:32 uiconfig/dialogs/DeleteCell.js:24
 msgid "Text"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:118
-msgid "Update system configuration"
-msgstr ""
-
-#: admin/src/AdminSocketConfigSettings.js:120
-#: admin/src/AdminSocketConfigSettings.js:171
-msgid "Source"
+#: admin/src/AdminSocketConfigSettings.js:119 js/toolbar.js:2464
+#: uiconfig/dialogs/BindingLineDialog.js:36
+msgid "Font"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:121
-#: admin/src/AdminSocketConfigSettings.js:172
-msgid "Description"
+msgid "Bold"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:122
-msgid "Must specify allow or deny"
+msgid "Italic"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:123
+msgid "Outline"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:124
+msgid "Shadow"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:126
+msgid "Available tags"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:127
+msgid "User ID"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:128
+#: admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:129
+msgid "User IP"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:130
+msgid "Time zone"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:131
+msgid "Date format"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:132
+msgid "Time format"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:134
+msgid "Update system configuration"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:136
+#: admin/src/AdminSocketConfigSettings.js:187
+msgid "Source"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:137
+#: admin/src/AdminSocketConfigSettings.js:188
+msgid "Description"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:138
+msgid "Must specify allow or deny"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:139
 msgid "Source must be entered"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:263
+#: admin/src/AdminSocketConfigSettings.js:207
+msgid "The watermark data is placed in UserExtraInfo of WOPI."
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:316
 msgid "Settings updated successfully"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:264
+#: admin/src/AdminSocketConfigSettings.js:317
 msgid "These settings will take effect after restarting the service."
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:270
+#: admin/src/AdminSocketConfigSettings.js:323
 msgid "Setting update failed"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:271
+#: admin/src/AdminSocketConfigSettings.js:324
 msgid "Please check if there is any problem with the set data."
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:335
-#: admin/src/AdminSocketConfigSettings.js:541
+#: admin/src/AdminSocketConfigSettings.js:388
+#: admin/src/AdminSocketConfigSettings.js:594
 msgid "Add source"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:398
-#: admin/src/AdminSocketConfigSettings.js:491
+#: admin/src/AdminSocketConfigSettings.js:451
+#: admin/src/AdminSocketConfigSettings.js:544
 msgid "Allow connect"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:402
-#: admin/src/AdminSocketConfigSettings.js:495
+#: admin/src/AdminSocketConfigSettings.js:455
+#: admin/src/AdminSocketConfigSettings.js:548
 msgid "Deny connect"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:427
+#: admin/src/AdminSocketConfigSettings.js:480
 #: src/control/Control.AlertDialog.js:55
 msgid "Edit"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:436
+#: admin/src/AdminSocketConfigSettings.js:489
 #: admin/src/AdminSocketFontManager.js:302 js/toolbar.js:1269
 msgid "Delete"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:506
+#: admin/src/AdminSocketConfigSettings.js:559
 msgid "Edit source"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:519
+#: admin/src/AdminSocketConfigSettings.js:572
 msgid "Delete source"
 msgstr ""
 
@@ -569,7 +634,7 @@ msgstr ""
 msgid "Font name (preview)"
 msgstr ""
 
-#: admin/src/AdminSocketFontManager.js:15 js/toolbar.js:2436
+#: admin/src/AdminSocketFontManager.js:15 js/toolbar.js:2441
 #: uiconfig/dialogs/InsertBreak.js:30
 msgid "Style"
 msgstr ""
@@ -617,15 +682,13 @@ msgstr ""
 #: admin/src/AdminSocketOverview.js:256 src/map/Map.js:108
 #: uiconfig/dialogs/AddTableAtEnd.js:39
 #: uiconfig/dialogs/BindingLineDialog.js:113 uiconfig/dialogs/ColumnWidth.js:49
-#: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/dlgSecurePrint.js:44
-#: uiconfig/dialogs/ExampleDialog.js:48 uiconfig/dialogs/GotoPage.js:63
-#: uiconfig/dialogs/HeaderAndFooter.js:114 uiconfig/dialogs/InsertBreak.js:50
+#: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/ExampleDialog.js:48
+#: uiconfig/dialogs/GotoPage.js:63 uiconfig/dialogs/InsertBreak.js:50
 #: uiconfig/dialogs/InsertCell.js:41 uiconfig/dialogs/InsertTable.js:64
 #: uiconfig/dialogs/MoveTable.js:51 uiconfig/dialogs/OXSaveAs.js:39
-#: uiconfig/dialogs/PdfWatermarkText.js:40 uiconfig/dialogs/ProtectTable.js:51
-#: uiconfig/dialogs/RemoveCell.js:41 uiconfig/dialogs/RemoveTable.js:40
-#: uiconfig/dialogs/RenameTable.js:42 uiconfig/dialogs/RowHeight.js:49
-#: uiconfig/dialogs/RowOrColGroup.js:50
+#: uiconfig/dialogs/PdfWatermarkText.js:40 uiconfig/dialogs/RemoveCell.js:41
+#: uiconfig/dialogs/RemoveTable.js:40 uiconfig/dialogs/RenameTable.js:42
+#: uiconfig/dialogs/RowHeight.js:49 uiconfig/dialogs/RowOrColGroup.js:50
 #: uiconfig/dialogs/SetHyperLinkTable.js:105
 #: uiconfig/dialogs/SetTabBgColor.js:38 uiconfig/dialogs/ShowTable.js:46
 #: uiconfig/dialogs/SplitCell.js:75 uiconfig/dialogs/TraceChangeMode.js:58
@@ -639,13 +702,11 @@ msgstr ""
 #: src/layer/marker/Annotation.js:181 src/map/Map.js:109
 #: uiconfig/dialogs/AddTableAtEnd.js:46
 #: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
-#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/dlgSecurePrint.js:73
-#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
-#: uiconfig/dialogs/HeaderAndFooter.js:150 uiconfig/dialogs/InsertBreak.js:57
-#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertImage.js:102
-#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
-#: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:54
-#: uiconfig/dialogs/ProtectTable.js:59 uiconfig/dialogs/RemoveCell.js:54
+#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/ExampleDialog.js:54
+#: uiconfig/dialogs/GotoPage.js:76 uiconfig/dialogs/InsertBreak.js:57
+#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertTable.js:71
+#: uiconfig/dialogs/MoveTable.js:58 uiconfig/dialogs/OXSaveAs.js:54
+#: uiconfig/dialogs/PdfWatermarkText.js:54 uiconfig/dialogs/RemoveCell.js:54
 #: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
 #: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
 #: uiconfig/dialogs/SetHyperLinkTable.js:148
@@ -660,15 +721,8 @@ msgid ""
 "password."
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:28
-#: admin/src/AdminSocketGlobalFunction.js:51
-#: src/control/Control.DocumentRepair.js:50
-msgid "User name"
-msgstr ""
-
 #: admin/src/AdminSocketGlobalFunction.js:29
-#: admin/src/AdminSocketGlobalFunction.js:52 src/control/Control.Tabs.js:138
-#: uiconfig/dialogs/ProtectTable.js:21 uiconfig/dialogs/ProtectTable.js:22
+#: admin/src/AdminSocketGlobalFunction.js:52
 msgid "Password"
 msgstr ""
 
@@ -1007,7 +1061,7 @@ msgstr ""
 msgid "Worksheet link"
 msgstr ""
 
-#: js/toolbar.js:990 js/toolbar.js:2815
+#: js/toolbar.js:990 js/toolbar.js:2820
 msgid "Common symbols"
 msgstr ""
 
@@ -1159,32 +1213,28 @@ msgstr ""
 msgid "0 users"
 msgstr ""
 
-#: js/toolbar.js:2258
+#: js/toolbar.js:2263
 msgid "Document saved"
 msgstr ""
 
-#: js/toolbar.js:2459 uiconfig/dialogs/BindingLineDialog.js:36
-msgid "Font"
-msgstr ""
-
-#: js/toolbar.js:2480
+#: js/toolbar.js:2485
 msgid "Previous slide"
 msgstr ""
 
-#: js/toolbar.js:2481
+#: js/toolbar.js:2486
 msgid "Next slide"
 msgstr ""
 
-#: js/toolbar.js:2567
+#: js/toolbar.js:2572
 msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to resolve"
 msgstr ""
 
-#: js/toolbar.js:2982 src/control/Control.DocumentRepair.js:95
+#: js/toolbar.js:2987 src/control/Control.DocumentRepair.js:95
 msgid "You"
 msgstr ""
 
-#: js/toolbar.js:2988
+#: js/toolbar.js:2993
 msgid "Readonly"
 msgstr ""
 
@@ -1224,16 +1274,8 @@ msgstr ""
 msgid "Jump to state"
 msgstr ""
 
-#: src/control/Control.Menubar.js:88
+#: src/control/Control.Menubar.js:87
 msgid "Reset to Default Language"
-msgstr ""
-
-#: src/control/Control.Menubar.js:322
-msgid "All contents of the header will be deleted and can not be restored."
-msgstr ""
-
-#: src/control/Control.Menubar.js:324
-msgid "All contents of the footer will be deleted and can not be restored."
 msgstr ""
 
 #: src/control/Control.Scroll.Annotation.js:10
@@ -1250,10 +1292,6 @@ msgstr ""
 
 #: src/control/Control.Tabs.js:74
 msgid "Insert sheet after this"
-msgstr ""
-
-#: src/control/Control.Tabs.js:136
-msgid "Unprotect sheet"
 msgstr ""
 
 #: src/control/Permission.js:32
@@ -1336,25 +1374,25 @@ msgstr ""
 msgid "Right Margin"
 msgstr ""
 
-#: src/control/Toolbar.js:410 src/control/Toolbar.js:422
-#: src/control/Toolbar.js:431 uiconfig/dialogs/PdfWatermarkText.js:44
+#: src/control/Toolbar.js:234 src/control/Toolbar.js:246
+#: uiconfig/dialogs/PdfWatermarkText.js:44
 msgid "Downloading..."
 msgstr ""
 
-#: src/control/Toolbar.js:447 src/control/Toolbar.js:465
-#: src/control/Toolbar.js:518 src/map/Map.js:1281
+#: src/control/Toolbar.js:262 src/control/Toolbar.js:280
+#: src/control/Toolbar.js:333 src/map/Map.js:1268
 msgid "Saving..."
 msgstr ""
 
-#: src/control/Toolbar.js:471
+#: src/control/Toolbar.js:286
 msgid "The file has been saved, this encrypted file will be opened."
 msgstr ""
 
-#: src/control/Toolbar.js:477
+#: src/control/Toolbar.js:292
 msgid "Renaming..."
 msgstr ""
 
-#: src/control/Toolbar.js:929
+#: src/control/Toolbar.js:705
 msgid "This version of %productName is powered by"
 msgstr ""
 
@@ -1370,81 +1408,81 @@ msgstr ""
 msgid "Oops, there is a problem connecting to LibreOffice Online : "
 msgstr ""
 
-#: src/core/Socket.js:276
+#: src/core/Socket.js:279
 msgid "Unsupported server version."
 msgstr ""
 
-#: src/core/Socket.js:339
+#: src/core/Socket.js:342
 msgid "Session terminated by document owner"
 msgstr ""
 
-#: src/core/Socket.js:343
+#: src/core/Socket.js:346
 msgid "Idle document - please click to reload and resume editing"
 msgstr ""
 
-#: src/core/Socket.js:350
+#: src/core/Socket.js:353
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr ""
 
-#: src/core/Socket.js:354
+#: src/core/Socket.js:357
 msgid "Oops, there is a problem connecting the document"
 msgstr ""
 
-#: src/core/Socket.js:358
+#: src/core/Socket.js:361
 msgid "Server is recycling and will be available shortly"
 msgstr ""
 
-#: src/core/Socket.js:390
+#: src/core/Socket.js:393
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr ""
 
-#: src/core/Socket.js:396
+#: src/core/Socket.js:399
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr ""
 
-#: src/core/Socket.js:518
+#: src/core/Socket.js:521
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr ""
 
-#: src/core/Socket.js:523
+#: src/core/Socket.js:526
 msgid "Discard"
 msgstr ""
 
-#: src/core/Socket.js:528
+#: src/core/Socket.js:531
 msgid "Overwrite"
 msgstr ""
 
-#: src/core/Socket.js:533
+#: src/core/Socket.js:536
 msgid "Save to new file"
 msgstr ""
 
-#: src/core/Socket.js:608
+#: src/core/Socket.js:611
 msgid "Document requires password to view."
 msgstr ""
 
-#: src/core/Socket.js:611
+#: src/core/Socket.js:614
 msgid "Document requires password to modify."
 msgstr ""
 
-#: src/core/Socket.js:613
+#: src/core/Socket.js:616
 msgid "Hit Cancel to open in view-only mode."
 msgstr ""
 
-#: src/core/Socket.js:617
+#: src/core/Socket.js:620
 msgid "Wrong password provided. Please try again."
 msgstr ""
 
-#: src/core/Socket.js:736
+#: src/core/Socket.js:739
 msgid "Connecting..."
 msgstr ""
 
-#: src/core/Socket.js:896
+#: src/core/Socket.js:899
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -1704,16 +1742,12 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: src/layer/tile/TileLayer.js:885
+#: src/layer/tile/TileLayer.js:883
 msgid "This type of picture editing is not yet supported."
 msgstr ""
 
-#: src/layer/tile/TileLayer.js:903
+#: src/layer/tile/TileLayer.js:901
 msgid "unnamed"
-msgstr ""
-
-#: src/layer/tile/TileLayer.js:3168
-msgid "Do you want to compress the image? (Except SVG File)"
 msgstr ""
 
 #: src/map/Map.js:233
@@ -1732,19 +1766,11 @@ msgstr ""
 msgid "minutes ago"
 msgstr ""
 
-#: src/map/Map.js:865
-msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
-msgstr ""
-
-#: src/map/Map.js:868
-msgid "Invalid Command."
-msgstr ""
-
-#: src/map/Map.js:1141
+#: src/map/Map.js:1128
 msgid "Inactive document - please click to resume editing"
 msgstr ""
 
-#: src/map/Map.js:1284
+#: src/map/Map.js:1271
 msgid "Loading..."
 msgstr ""
 
@@ -1831,10 +1857,10 @@ msgid "cm"
 msgstr ""
 
 #: uiconfig/dialogs/BindingLineDialog.js:99 uiconfig/dialogs/ColumnWidth.js:31
-#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/HeaderAndFooter.js:65
-#: uiconfig/dialogs/InsertCell.js:27 uiconfig/dialogs/PdfWatermarkText.js:26
-#: uiconfig/dialogs/RemoveCell.js:27 uiconfig/dialogs/RowHeight.js:31
-#: uiconfig/dialogs/SetTabBgColor.js:24 uiconfig/dialogs/SplitCell.js:55
+#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/InsertCell.js:27
+#: uiconfig/dialogs/PdfWatermarkText.js:26 uiconfig/dialogs/RemoveCell.js:27
+#: uiconfig/dialogs/RowHeight.js:31 uiconfig/dialogs/SetTabBgColor.js:24
+#: uiconfig/dialogs/SplitCell.js:55
 msgid "Close"
 msgstr ""
 
@@ -1879,102 +1905,6 @@ msgstr ""
 msgid "Diagram editor module not installed!"
 msgstr ""
 
-#: uiconfig/dialogs/dlgSecurePrint.js:24
-msgid "maskEmail"
-msgstr ""
-
-#: uiconfig/dialogs/dlgSecurePrint.js:25
-msgid "maskAddress"
-msgstr ""
-
-#: uiconfig/dialogs/dlgSecurePrint.js:26
-msgid "maskPhone"
-msgstr ""
-
-#: uiconfig/dialogs/dlgSecurePrint.js:27
-msgid "extraRule"
-msgstr ""
-
-#: uiconfig/dialogs/dlgSecurePrint.js:28
-msgid "input ex:AAA;BBB"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:36
-msgid "Date and time"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:37
-msgid "Fixed"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:38
-msgid "input ex:2019/01/01(no comma,space symbols)"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:39
-msgid "Variable"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:40
-msgid "Format"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:42
-msgid "Language"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:43
-msgid "Chinese(zh-TW)"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:44
-msgid "English(en)"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:46
-msgid "Footer"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:47
-msgid "Footer text"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:47
-msgid "input any string(no comma,space symbols)"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:48
-msgid "Slide number"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:49
-msgid "Do not show on the first slide"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:64
-msgid "Header and Footer"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:78
-msgid "Apply to All"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:159
-msgid "Include on Slide"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:188
-msgid "year"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:188
-msgid "month"
-msgstr ""
-
-#: uiconfig/dialogs/HeaderAndFooter.js:188
-msgid "day"
-msgstr ""
-
 #: uiconfig/dialogs/InsertBreak.js:27
 msgid "Line break"
 msgstr ""
@@ -2005,10 +1935,6 @@ msgstr ""
 
 #: uiconfig/dialogs/InsertCell.js:22
 msgid "Entire column"
-msgstr ""
-
-#: uiconfig/dialogs/InsertImage.js:20
-msgid "Compress Image(not support SVG)"
 msgstr ""
 
 #: uiconfig/dialogs/InsertTable.js:22
@@ -2057,38 +1983,6 @@ msgstr ""
 
 #: uiconfig/dialogs/PdfWatermarkText.js:25
 msgid "Add watermark"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:23
-msgid "Confirm"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:27
-msgid "Allow all users of this sheet to"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:28
-msgid "Select Protected Cells"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:29
-msgid "Select Unprotected Cells"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:30
-msgid "Insert Column"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:31
-msgid "Insert Row"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:32
-msgid "Delete Column"
-msgstr ""
-
-#: uiconfig/dialogs/ProtectTable.js:33
-msgid "Delete Row"
 msgstr ""
 
 #: uiconfig/dialogs/RemoveCell.js:19
