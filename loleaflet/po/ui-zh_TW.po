@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-24 16:28+0800\n"
+"POT-Creation-Date: 2021-08-31 15:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,6 +235,7 @@ msgid "Log settings"
 msgstr "日誌設定"
 
 #: admin/src/AdminSocketConfigSettings.js:51
+#: admin/src/AdminSocketConfigSettings.js:120
 #: uiconfig/dialogs/BindingLineDialog.js:33
 msgid "Color"
 msgstr "顏色"
@@ -471,90 +472,154 @@ msgid "Watermark settings"
 msgstr "浮水印設定"
 
 #: admin/src/AdminSocketConfigSettings.js:113
-msgid "Enable watermark"
-msgstr "啟用浮水印"
+msgid "Convert to WOPI data"
+msgstr "轉成 WOPI 資料"
 
 #: admin/src/AdminSocketConfigSettings.js:114
+msgid "Enable when editing"
+msgstr "編輯時啟用"
+
+#: admin/src/AdminSocketConfigSettings.js:115
+msgid "Enable when printing"
+msgstr "列印或匯出 PDF 時啟用"
+
+#: admin/src/AdminSocketConfigSettings.js:116
 msgid "Opacity"
 msgstr "不透明度"
 
-#: admin/src/AdminSocketConfigSettings.js:115
+#: admin/src/AdminSocketConfigSettings.js:117
 msgid "Angle"
 msgstr "角度"
 
-#: admin/src/AdminSocketConfigSettings.js:116
+#: admin/src/AdminSocketConfigSettings.js:118
 #: uiconfig/dialogs/BindingLineDialog.js:32 uiconfig/dialogs/DeleteCell.js:24
 msgid "Text"
 msgstr "文字"
 
-#: admin/src/AdminSocketConfigSettings.js:118
+#: admin/src/AdminSocketConfigSettings.js:119 js/toolbar.js:2464
+#: uiconfig/dialogs/BindingLineDialog.js:36
+msgid "Font"
+msgstr "字型"
+
+#: admin/src/AdminSocketConfigSettings.js:121
+msgid "Bold"
+msgstr "粗體"
+
+#: admin/src/AdminSocketConfigSettings.js:122
+msgid "Italic"
+msgstr "斜體"
+
+#: admin/src/AdminSocketConfigSettings.js:123
+msgid "Outline"
+msgstr "空心"
+
+#: admin/src/AdminSocketConfigSettings.js:124
+msgid "Shadow"
+msgstr "陰影"
+
+#: admin/src/AdminSocketConfigSettings.js:126
+msgid "Available tags"
+msgstr "可用的標籤"
+
+#: admin/src/AdminSocketConfigSettings.js:127
+msgid "User ID"
+msgstr "使用者 ID"
+
+#: admin/src/AdminSocketConfigSettings.js:128
+#: admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr "使用者名稱"
+
+#: admin/src/AdminSocketConfigSettings.js:129
+msgid "User IP"
+msgstr "使用者 IP 位址"
+
+#: admin/src/AdminSocketConfigSettings.js:130
+msgid "Time zone"
+msgstr "時區"
+
+#: admin/src/AdminSocketConfigSettings.js:131
+msgid "Date format"
+msgstr "日期格式"
+
+#: admin/src/AdminSocketConfigSettings.js:132
+msgid "Time format"
+msgstr "時間格式"
+
+#: admin/src/AdminSocketConfigSettings.js:134
 msgid "Update system configuration"
 msgstr "更新系統配置"
 
-#: admin/src/AdminSocketConfigSettings.js:120
-#: admin/src/AdminSocketConfigSettings.js:171
+#: admin/src/AdminSocketConfigSettings.js:136
+#: admin/src/AdminSocketConfigSettings.js:187
 msgid "Source"
 msgstr "來源"
 
-#: admin/src/AdminSocketConfigSettings.js:121
-#: admin/src/AdminSocketConfigSettings.js:172
+#: admin/src/AdminSocketConfigSettings.js:137
+#: admin/src/AdminSocketConfigSettings.js:188
 msgid "Description"
 msgstr "說明"
 
-#: admin/src/AdminSocketConfigSettings.js:122
+#: admin/src/AdminSocketConfigSettings.js:138
 msgid "Must specify allow or deny"
 msgstr "必須指明允許或拒絕"
 
-#: admin/src/AdminSocketConfigSettings.js:123
+#: admin/src/AdminSocketConfigSettings.js:139
 msgid "Source must be entered"
 msgstr "來源必須輸入"
 
-#: admin/src/AdminSocketConfigSettings.js:263
+#: admin/src/AdminSocketConfigSettings.js:207
+msgid "The watermark data is placed in UserExtraInfo of WOPI."
+msgstr "浮水印資料放在 WOPI 的 UserExtraInfo 中"
+
+#: admin/src/AdminSocketConfigSettings.js:316
 msgid "Settings updated successfully"
 msgstr "設定更新成功"
 
-#: admin/src/AdminSocketConfigSettings.js:264
+#: admin/src/AdminSocketConfigSettings.js:317
 msgid "These settings will take effect after restarting the service."
 msgstr "這些改變將在重新啟動服務後生效"
 
-#: admin/src/AdminSocketConfigSettings.js:270
+#: admin/src/AdminSocketConfigSettings.js:323
 msgid "Setting update failed"
 msgstr "設定更新失敗"
 
-#: admin/src/AdminSocketConfigSettings.js:271
+#: admin/src/AdminSocketConfigSettings.js:324
 msgid "Please check if there is any problem with the set data."
 msgstr "請檢查設定的資料是否有問題"
 
-#: admin/src/AdminSocketConfigSettings.js:335
-#: admin/src/AdminSocketConfigSettings.js:541
+#: admin/src/AdminSocketConfigSettings.js:388
+#: admin/src/AdminSocketConfigSettings.js:594
 msgid "Add source"
 msgstr "新增來源"
 
-#: admin/src/AdminSocketConfigSettings.js:398
-#: admin/src/AdminSocketConfigSettings.js:491
+#: admin/src/AdminSocketConfigSettings.js:451
+#: admin/src/AdminSocketConfigSettings.js:544
 msgid "Allow connect"
 msgstr "允許連線"
 
-#: admin/src/AdminSocketConfigSettings.js:402
-#: admin/src/AdminSocketConfigSettings.js:495
+#: admin/src/AdminSocketConfigSettings.js:455
+#: admin/src/AdminSocketConfigSettings.js:548
 msgid "Deny connect"
 msgstr "拒絕連線"
 
-#: admin/src/AdminSocketConfigSettings.js:427
+#: admin/src/AdminSocketConfigSettings.js:480
 #: src/control/Control.AlertDialog.js:55
 msgid "Edit"
 msgstr "編輯"
 
-#: admin/src/AdminSocketConfigSettings.js:436
+#: admin/src/AdminSocketConfigSettings.js:489
 #: admin/src/AdminSocketFontManager.js:302 js/toolbar.js:1269
 msgid "Delete"
 msgstr "刪除"
 
-#: admin/src/AdminSocketConfigSettings.js:506
+#: admin/src/AdminSocketConfigSettings.js:559
 msgid "Edit source"
 msgstr "編輯來源"
 
-#: admin/src/AdminSocketConfigSettings.js:519
+#: admin/src/AdminSocketConfigSettings.js:572
 msgid "Delete source"
 msgstr "刪除來源"
 
@@ -570,7 +635,7 @@ msgstr "檔案名稱"
 msgid "Font name (preview)"
 msgstr "字型名稱（預覽）"
 
-#: admin/src/AdminSocketFontManager.js:15 js/toolbar.js:2436
+#: admin/src/AdminSocketFontManager.js:15 js/toolbar.js:2441
 #: uiconfig/dialogs/InsertBreak.js:30
 msgid "Style"
 msgstr "樣式"
@@ -618,15 +683,13 @@ msgstr "您確定要重新啟動線上服務嗎？"
 #: admin/src/AdminSocketOverview.js:256 src/map/Map.js:108
 #: uiconfig/dialogs/AddTableAtEnd.js:39
 #: uiconfig/dialogs/BindingLineDialog.js:113 uiconfig/dialogs/ColumnWidth.js:49
-#: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/dlgSecurePrint.js:44
-#: uiconfig/dialogs/ExampleDialog.js:48 uiconfig/dialogs/GotoPage.js:63
-#: uiconfig/dialogs/HeaderAndFooter.js:114 uiconfig/dialogs/InsertBreak.js:50
+#: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/ExampleDialog.js:48
+#: uiconfig/dialogs/GotoPage.js:63 uiconfig/dialogs/InsertBreak.js:50
 #: uiconfig/dialogs/InsertCell.js:41 uiconfig/dialogs/InsertTable.js:64
 #: uiconfig/dialogs/MoveTable.js:51 uiconfig/dialogs/OXSaveAs.js:39
-#: uiconfig/dialogs/PdfWatermarkText.js:40 uiconfig/dialogs/ProtectTable.js:51
-#: uiconfig/dialogs/RemoveCell.js:41 uiconfig/dialogs/RemoveTable.js:40
-#: uiconfig/dialogs/RenameTable.js:42 uiconfig/dialogs/RowHeight.js:49
-#: uiconfig/dialogs/RowOrColGroup.js:50
+#: uiconfig/dialogs/PdfWatermarkText.js:40 uiconfig/dialogs/RemoveCell.js:41
+#: uiconfig/dialogs/RemoveTable.js:40 uiconfig/dialogs/RenameTable.js:42
+#: uiconfig/dialogs/RowHeight.js:49 uiconfig/dialogs/RowOrColGroup.js:50
 #: uiconfig/dialogs/SetHyperLinkTable.js:105
 #: uiconfig/dialogs/SetTabBgColor.js:38 uiconfig/dialogs/ShowTable.js:46
 #: uiconfig/dialogs/SplitCell.js:75 uiconfig/dialogs/TraceChangeMode.js:58
@@ -640,13 +703,11 @@ msgstr "確定"
 #: src/layer/marker/Annotation.js:181 src/map/Map.js:109
 #: uiconfig/dialogs/AddTableAtEnd.js:46
 #: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
-#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/dlgSecurePrint.js:73
-#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
-#: uiconfig/dialogs/HeaderAndFooter.js:150 uiconfig/dialogs/InsertBreak.js:57
-#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertImage.js:102
-#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
-#: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:54
-#: uiconfig/dialogs/ProtectTable.js:59 uiconfig/dialogs/RemoveCell.js:54
+#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/ExampleDialog.js:54
+#: uiconfig/dialogs/GotoPage.js:76 uiconfig/dialogs/InsertBreak.js:57
+#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertTable.js:71
+#: uiconfig/dialogs/MoveTable.js:58 uiconfig/dialogs/OXSaveAs.js:54
+#: uiconfig/dialogs/PdfWatermarkText.js:54 uiconfig/dialogs/RemoveCell.js:54
 #: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
 #: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
 #: uiconfig/dialogs/SetHyperLinkTable.js:148
@@ -661,15 +722,8 @@ msgid ""
 "password."
 msgstr "為了安全理由，請輸入管理帳號及密碼"
 
-#: admin/src/AdminSocketGlobalFunction.js:28
-#: admin/src/AdminSocketGlobalFunction.js:51
-#: src/control/Control.DocumentRepair.js:50
-msgid "User name"
-msgstr "使用者名稱"
-
 #: admin/src/AdminSocketGlobalFunction.js:29
-#: admin/src/AdminSocketGlobalFunction.js:52 src/control/Control.Tabs.js:138
-#: uiconfig/dialogs/ProtectTable.js:21 uiconfig/dialogs/ProtectTable.js:22
+#: admin/src/AdminSocketGlobalFunction.js:52
 msgid "Password"
 msgstr "密碼"
 
@@ -1008,7 +1062,7 @@ msgstr "插入形狀"
 msgid "Worksheet link"
 msgstr "工作表連結"
 
-#: js/toolbar.js:990 js/toolbar.js:2815
+#: js/toolbar.js:990 js/toolbar.js:2820
 msgid "Common symbols"
 msgstr "常用符號"
 
@@ -1160,32 +1214,28 @@ msgstr "1 位使用者"
 msgid "0 users"
 msgstr "0 位使用者"
 
-#: js/toolbar.js:2258
+#: js/toolbar.js:2263
 msgid "Document saved"
 msgstr "文件已儲存"
 
-#: js/toolbar.js:2459 uiconfig/dialogs/BindingLineDialog.js:36
-msgid "Font"
-msgstr "字型"
-
-#: js/toolbar.js:2480
+#: js/toolbar.js:2485
 msgid "Previous slide"
 msgstr "上一張投影片"
 
-#: js/toolbar.js:2481
+#: js/toolbar.js:2486
 msgid "Next slide"
 msgstr "下一張投影片"
 
-#: js/toolbar.js:2567
+#: js/toolbar.js:2572
 msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to resolve"
 msgstr "多位使用者間取消動作/再次動作發生衝突。請使用文件修復來解決問題"
 
-#: js/toolbar.js:2982 src/control/Control.DocumentRepair.js:95
+#: js/toolbar.js:2987 src/control/Control.DocumentRepair.js:95
 msgid "You"
 msgstr "您"
 
-#: js/toolbar.js:2988
+#: js/toolbar.js:2993
 msgid "Readonly"
 msgstr "唯讀"
 
@@ -1225,17 +1275,9 @@ msgstr "時間戳記"
 msgid "Jump to state"
 msgstr "跳回狀態"
 
-#: src/control/Control.Menubar.js:88
+#: src/control/Control.Menubar.js:87
 msgid "Reset to Default Language"
 msgstr "重設回預設語言"
-
-#: src/control/Control.Menubar.js:322
-msgid "All contents of the header will be deleted and can not be restored."
-msgstr "會刪除此頁首的所有內容，而且無法復原。"
-
-#: src/control/Control.Menubar.js:324
-msgid "All contents of the footer will be deleted and can not be restored."
-msgstr "會刪除此頁尾的所有內容，而且無法復原。"
 
 #: src/control/Control.Scroll.Annotation.js:10
 msgid "Scroll up annotations"
@@ -1252,10 +1294,6 @@ msgstr "在這之前插入工作表"
 #: src/control/Control.Tabs.js:74
 msgid "Insert sheet after this"
 msgstr "在這之後插入工作表"
-
-#: src/control/Control.Tabs.js:136
-msgid "Unprotect sheet"
-msgstr "取消工作表保護"
 
 #: src/control/Permission.js:32
 msgid "Edit in ODF format"
@@ -1337,25 +1375,25 @@ msgstr "左邊距"
 msgid "Right Margin"
 msgstr "右邊距"
 
-#: src/control/Toolbar.js:410 src/control/Toolbar.js:422
-#: src/control/Toolbar.js:431 uiconfig/dialogs/PdfWatermarkText.js:44
+#: src/control/Toolbar.js:234 src/control/Toolbar.js:246
+#: uiconfig/dialogs/PdfWatermarkText.js:44
 msgid "Downloading..."
 msgstr "下載中..."
 
-#: src/control/Toolbar.js:447 src/control/Toolbar.js:465
-#: src/control/Toolbar.js:518 src/map/Map.js:1281
+#: src/control/Toolbar.js:262 src/control/Toolbar.js:280
+#: src/control/Toolbar.js:333 src/map/Map.js:1268
 msgid "Saving..."
 msgstr "儲存中..."
 
-#: src/control/Toolbar.js:471
+#: src/control/Toolbar.js:286
 msgid "The file has been saved, this encrypted file will be opened."
 msgstr "檔案已儲存，將開啟此加密文件。"
 
-#: src/control/Toolbar.js:477
+#: src/control/Toolbar.js:292
 msgid "Renaming..."
 msgstr "正在更改檔名…"
 
-#: src/control/Toolbar.js:929
+#: src/control/Toolbar.js:705
 msgid "This version of %productName is powered by"
 msgstr "此 %productName 版本源自"
 
@@ -1374,81 +1412,81 @@ msgstr ""
 msgid "Oops, there is a problem connecting to LibreOffice Online : "
 msgstr "糟糕，連接至 OxOffice Online 時發生問題："
 
-#: src/core/Socket.js:276
+#: src/core/Socket.js:279
 msgid "Unsupported server version."
 msgstr "未支援的伺服器版本。"
 
-#: src/core/Socket.js:339
+#: src/core/Socket.js:342
 msgid "Session terminated by document owner"
 msgstr "作業階段由文件擁有者終止"
 
-#: src/core/Socket.js:343
+#: src/core/Socket.js:346
 msgid "Idle document - please click to reload and resume editing"
 msgstr "閒置文件 - 請點按以重新載入並繼續編輯"
 
-#: src/core/Socket.js:350
+#: src/core/Socket.js:353
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr "伺服器正在關機作維護（自動存檔中）"
 
-#: src/core/Socket.js:354
+#: src/core/Socket.js:357
 msgid "Oops, there is a problem connecting the document"
 msgstr "糟糕…連接文件時發生了問題"
 
-#: src/core/Socket.js:358
+#: src/core/Socket.js:361
 msgid "Server is recycling and will be available shortly"
 msgstr "伺服器正在重啟循環，即將無法使用"
 
-#: src/core/Socket.js:390
+#: src/core/Socket.js:393
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr "儲存空間內的文件已經變更。載入新文件中。您的版本會以修訂形式存在。"
 
-#: src/core/Socket.js:396
+#: src/core/Socket.js:399
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr "還原舊的版本。任何尚未儲存的變更都會放在版本歷史中。"
 
-#: src/core/Socket.js:518
+#: src/core/Socket.js:521
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr "儲存位置中的文件已經變更。對於您尚未儲存的變更，您希望怎麼處理？"
 
-#: src/core/Socket.js:523
+#: src/core/Socket.js:526
 msgid "Discard"
 msgstr "放棄"
 
-#: src/core/Socket.js:528
+#: src/core/Socket.js:531
 msgid "Overwrite"
 msgstr "覆寫"
 
-#: src/core/Socket.js:533
+#: src/core/Socket.js:536
 msgid "Save to new file"
 msgstr "儲存為新檔案"
 
-#: src/core/Socket.js:608
+#: src/core/Socket.js:611
 msgid "Document requires password to view."
 msgstr "文件需要密碼才能檢視。"
 
-#: src/core/Socket.js:611
+#: src/core/Socket.js:614
 msgid "Document requires password to modify."
 msgstr "文件需要密碼才能修改。"
 
-#: src/core/Socket.js:613
+#: src/core/Socket.js:616
 msgid "Hit Cancel to open in view-only mode."
 msgstr "點按「取消」以唯讀模式開啟。"
 
-#: src/core/Socket.js:617
+#: src/core/Socket.js:620
 msgid "Wrong password provided. Please try again."
 msgstr "提供的密碼錯誤。請重試。"
 
-#: src/core/Socket.js:736
+#: src/core/Socket.js:739
 msgid "Connecting..."
 msgstr "連線中..."
 
-#: src/core/Socket.js:896
+#: src/core/Socket.js:899
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -1710,17 +1748,13 @@ msgstr "修改"
 msgid "Remove"
 msgstr "移除"
 
-#: src/layer/tile/TileLayer.js:885
+#: src/layer/tile/TileLayer.js:883
 msgid "This type of picture editing is not yet supported."
 msgstr "尚未支援此種圖片格式的編輯"
 
-#: src/layer/tile/TileLayer.js:903
+#: src/layer/tile/TileLayer.js:901
 msgid "unnamed"
 msgstr "未命名"
-
-#: src/layer/tile/TileLayer.js:3168
-msgid "Do you want to compress the image? (Except SVG File)"
-msgstr "請問是否需要壓縮圖片？(此功能不支援 SVG 檔)"
 
 #: src/map/Map.js:233
 msgid "Initializing..."
@@ -1738,19 +1772,11 @@ msgstr "秒前"
 msgid "minutes ago"
 msgstr "分鐘前"
 
-#: src/map/Map.js:865
-msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
-msgstr "請輸入 \".uno:\" 或 \"macro:///\" 開頭的指令"
-
-#: src/map/Map.js:868
-msgid "Invalid Command."
-msgstr "不合法的命令"
-
-#: src/map/Map.js:1141
+#: src/map/Map.js:1128
 msgid "Inactive document - please click to resume editing"
 msgstr "文件閒置中 - 請點按按鍵繼續"
 
-#: src/map/Map.js:1284
+#: src/map/Map.js:1271
 msgid "Loading..."
 msgstr "載入中..."
 
@@ -1841,10 +1867,10 @@ msgid "cm"
 msgstr "公分"
 
 #: uiconfig/dialogs/BindingLineDialog.js:99 uiconfig/dialogs/ColumnWidth.js:31
-#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/HeaderAndFooter.js:65
-#: uiconfig/dialogs/InsertCell.js:27 uiconfig/dialogs/PdfWatermarkText.js:26
-#: uiconfig/dialogs/RemoveCell.js:27 uiconfig/dialogs/RowHeight.js:31
-#: uiconfig/dialogs/SetTabBgColor.js:24 uiconfig/dialogs/SplitCell.js:55
+#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/InsertCell.js:27
+#: uiconfig/dialogs/PdfWatermarkText.js:26 uiconfig/dialogs/RemoveCell.js:27
+#: uiconfig/dialogs/RowHeight.js:31 uiconfig/dialogs/SetTabBgColor.js:24
+#: uiconfig/dialogs/SplitCell.js:55
 msgid "Close"
 msgstr "關閉"
 
@@ -1889,102 +1915,6 @@ msgstr "物件"
 msgid "Diagram editor module not installed!"
 msgstr "圖表編輯器模組未安裝！"
 
-#: uiconfig/dialogs/dlgSecurePrint.js:24
-msgid "maskEmail"
-msgstr "遮蔽郵件"
-
-#: uiconfig/dialogs/dlgSecurePrint.js:25
-msgid "maskAddress"
-msgstr "遮蔽地址"
-
-#: uiconfig/dialogs/dlgSecurePrint.js:26
-msgid "maskPhone"
-msgstr "遮蔽電話"
-
-#: uiconfig/dialogs/dlgSecurePrint.js:27
-msgid "extraRule"
-msgstr "自定義遮蔽"
-
-#: uiconfig/dialogs/dlgSecurePrint.js:28
-msgid "input ex:AAA;BBB"
-msgstr "輸入 例:AAA;BBB"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:36
-msgid "Date and time"
-msgstr "日期和時間"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:37
-msgid "Fixed"
-msgstr "固定"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:38
-msgid "input ex:2019/01/01(no comma,space symbols)"
-msgstr "請填寫 ex:2019/01/01(逗號,空白無法使用)"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:39
-msgid "Variable"
-msgstr "變數"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:40
-msgid "Format"
-msgstr "格式"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:42
-msgid "Language"
-msgstr "語言"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:43
-msgid "Chinese(zh-TW)"
-msgstr "正體中文"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:44
-msgid "English(en)"
-msgstr "英語(美)"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:46
-msgid "Footer"
-msgstr "頁尾"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:47
-msgid "Footer text"
-msgstr "頁尾文字"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:47
-msgid "input any string(no comma,space symbols)"
-msgstr "請填寫任意字串(逗號,空白無法使用)"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:48
-msgid "Slide number"
-msgstr "投影片編號"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:49
-msgid "Do not show on the first slide"
-msgstr "首張投影片不顯示"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:64
-msgid "Header and Footer"
-msgstr "頁首與頁尾"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:78
-msgid "Apply to All"
-msgstr "全部套用"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:159
-msgid "Include on Slide"
-msgstr "頁首與頁尾"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:188
-msgid "year"
-msgstr "年"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:188
-msgid "month"
-msgstr "月"
-
-#: uiconfig/dialogs/HeaderAndFooter.js:188
-msgid "day"
-msgstr "日"
-
 #: uiconfig/dialogs/InsertBreak.js:27
 msgid "Line break"
 msgstr "斷行"
@@ -2016,10 +1946,6 @@ msgstr "整列"
 #: uiconfig/dialogs/InsertCell.js:22
 msgid "Entire column"
 msgstr "整欄"
-
-#: uiconfig/dialogs/InsertImage.js:20
-msgid "Compress Image(not support SVG)"
-msgstr "壓縮圖片(不支援 SVG)"
 
 #: uiconfig/dialogs/InsertTable.js:22
 msgid "Before current sheet"
@@ -2068,38 +1994,6 @@ msgstr "如果不需要，請保持空白。"
 #: uiconfig/dialogs/PdfWatermarkText.js:25
 msgid "Add watermark"
 msgstr "加入浮水印"
-
-#: uiconfig/dialogs/ProtectTable.js:23
-msgid "Confirm"
-msgstr "確認"
-
-#: uiconfig/dialogs/ProtectTable.js:27
-msgid "Allow all users of this sheet to"
-msgstr "允許此工作表的所有使用者"
-
-#: uiconfig/dialogs/ProtectTable.js:28
-msgid "Select Protected Cells"
-msgstr "選取受保護的儲存格"
-
-#: uiconfig/dialogs/ProtectTable.js:29
-msgid "Select Unprotected Cells"
-msgstr "選取未受保護的儲存格"
-
-#: uiconfig/dialogs/ProtectTable.js:30
-msgid "Insert Column"
-msgstr "插入欄"
-
-#: uiconfig/dialogs/ProtectTable.js:31
-msgid "Insert Row"
-msgstr "插入列"
-
-#: uiconfig/dialogs/ProtectTable.js:32
-msgid "Delete Column"
-msgstr "刪除欄"
-
-#: uiconfig/dialogs/ProtectTable.js:33
-msgid "Delete Row"
-msgstr "刪除列"
 
 #: uiconfig/dialogs/RemoveCell.js:19
 msgid "Shift cells up"
@@ -2177,3 +2071,122 @@ msgstr "列數"
 msgid "Stop tracking changes, will lose information about the changes."
 msgstr "停止追蹤修訂，將會遺失所有更改的資訊。"
 
+#~ msgid "Enable watermark"
+#~ msgstr "啟用浮水印"
+
+#~ msgid "All contents of the header will be deleted and can not be restored."
+#~ msgstr "會刪除此頁首的所有內容，而且無法復原。"
+
+#~ msgid "All contents of the footer will be deleted and can not be restored."
+#~ msgstr "會刪除此頁尾的所有內容，而且無法復原。"
+
+#~ msgid "Unprotect sheet"
+#~ msgstr "取消工作表保護"
+
+#~ msgid "Do you want to compress the image? (Except SVG File)"
+#~ msgstr "請問是否需要壓縮圖片？(此功能不支援 SVG 檔)"
+
+#~ msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
+#~ msgstr "請輸入 \".uno:\" 或 \"macro:///\" 開頭的指令"
+
+#~ msgid "Invalid Command."
+#~ msgstr "不合法的命令"
+
+#~ msgid "maskEmail"
+#~ msgstr "遮蔽郵件"
+
+#~ msgid "maskAddress"
+#~ msgstr "遮蔽地址"
+
+#~ msgid "maskPhone"
+#~ msgstr "遮蔽電話"
+
+#~ msgid "extraRule"
+#~ msgstr "自定義遮蔽"
+
+#~ msgid "input ex:AAA;BBB"
+#~ msgstr "輸入 例:AAA;BBB"
+
+#~ msgid "Date and time"
+#~ msgstr "日期和時間"
+
+#~ msgid "Fixed"
+#~ msgstr "固定"
+
+#~ msgid "input ex:2019/01/01(no comma,space symbols)"
+#~ msgstr "請填寫 ex:2019/01/01(逗號,空白無法使用)"
+
+#~ msgid "Variable"
+#~ msgstr "變數"
+
+#~ msgid "Format"
+#~ msgstr "格式"
+
+#~ msgid "Language"
+#~ msgstr "語言"
+
+#~ msgid "Chinese(zh-TW)"
+#~ msgstr "正體中文"
+
+#~ msgid "English(en)"
+#~ msgstr "英語(美)"
+
+#~ msgid "Footer"
+#~ msgstr "頁尾"
+
+#~ msgid "Footer text"
+#~ msgstr "頁尾文字"
+
+#~ msgid "input any string(no comma,space symbols)"
+#~ msgstr "請填寫任意字串(逗號,空白無法使用)"
+
+#~ msgid "Slide number"
+#~ msgstr "投影片編號"
+
+#~ msgid "Do not show on the first slide"
+#~ msgstr "首張投影片不顯示"
+
+#~ msgid "Header and Footer"
+#~ msgstr "頁首與頁尾"
+
+#~ msgid "Apply to All"
+#~ msgstr "全部套用"
+
+#~ msgid "Include on Slide"
+#~ msgstr "頁首與頁尾"
+
+#~ msgid "year"
+#~ msgstr "年"
+
+#~ msgid "month"
+#~ msgstr "月"
+
+#~ msgid "day"
+#~ msgstr "日"
+
+#~ msgid "Compress Image(not support SVG)"
+#~ msgstr "壓縮圖片(不支援 SVG)"
+
+#~ msgid "Confirm"
+#~ msgstr "確認"
+
+#~ msgid "Allow all users of this sheet to"
+#~ msgstr "允許此工作表的所有使用者"
+
+#~ msgid "Select Protected Cells"
+#~ msgstr "選取受保護的儲存格"
+
+#~ msgid "Select Unprotected Cells"
+#~ msgstr "選取未受保護的儲存格"
+
+#~ msgid "Insert Column"
+#~ msgstr "插入欄"
+
+#~ msgid "Insert Row"
+#~ msgstr "插入列"
+
+#~ msgid "Delete Column"
+#~ msgstr "刪除欄"
+
+#~ msgid "Delete Row"
+#~ msgstr "刪除列"
