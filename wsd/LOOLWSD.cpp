@@ -2996,7 +2996,7 @@ private:
 
         Poco::Net::HTTPResponse response;
 
-        if (requestDetails.equals(1, "convert-to"))
+        if (requestDetails.equals(1, "convert-to") && LOOLWSD::getConfigValue<bool>("convert_to", false))
         {
             // Validate sender - FIXME: should do this even earlier.
             if (!allowConvertTo(socket->clientAddress(), request, true))
@@ -3547,7 +3547,7 @@ private:
 
         // Can the convert-to be used?
         Poco::JSON::Object::Ptr convert_to = new Poco::JSON::Object;
-        Poco::Dynamic::Var available = allowConvertTo(socket->clientAddress(), request);
+        Poco::Dynamic::Var available = allowConvertTo(socket->clientAddress(), request) && LOOLWSD::getConfigValue<bool>("convert_to", false);
         convert_to->set("available", available);
 
         Poco::JSON::Object::Ptr capabilities = new Poco::JSON::Object;
