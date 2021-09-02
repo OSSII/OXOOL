@@ -304,6 +304,11 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
         std::string relPath = getRequestPathname(request);
         std::string endPoint = requestSegments[requestSegments.size() - 1];
         const auto& config = Application::instance().config();
+        // Do we have an extension.
+        const std::size_t extPoint = endPoint.find_last_of('.');
+        if (extPoint == std::string::npos)
+            throw Poco::FileNotFoundException("Invalid file.");
+        const std::string fileType = endPoint.substr(extPoint + 1);
 
         if (request.getMethod() == HTTPRequest::HTTP_POST && endPoint == "logging.html")
         {
@@ -354,13 +359,11 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
         if (FileHash.find(relPath) == FileHash.end())
         {
             // Modified by Firefly <firefly@ossii.com.tw>
-            // 如果要求的是 images/cmd/ 之下不存在的檔案，則傳回 empty.png
+            // 如果要求的是不存在的圖片檔案，則傳回 empty.png
             // 避免 404 not found.
-            bool isImages = requestSegments[requestSegments.size() - 3] == "images" ? true : false;
-            bool isCmd = requestSegments[requestSegments.size() - 2] == "cmd" ? true : false;
-            if (isImages && isCmd)
+            if (fileType == "svg" || fileType == "png" || fileType == "gif")
             {
-                LOG_DBG("\"" + requestSegments[requestSegments.size() - 1] + "\" does not exists, use empty.png instead.");
+                LOG_DBG("\"" + relPath + "\" does not exists, use empty.png instead.");
                 relPath = "/loleaflet/dist/images/empty.png";
             }
             else
@@ -400,12 +403,6 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
                 response.add("Referrer-Policy", "no-referrer");
             }
 
-            // Do we have an extension.
-            const std::size_t extPoint = endPoint.find_last_of('.');
-            if (extPoint == std::string::npos)
-                throw Poco::FileNotFoundException("Invalid file.");
-
-            const std::string fileType = endPoint.substr(extPoint + 1);
             // Added by Firefly <firefly@ossii.com.tw>
             // 只要是符合 admin*.html 的頁面，一律當成後台管理界面
             const bool isAdmin = (endPoint.substr(0, 5) == "admin" && fileType == "html");
