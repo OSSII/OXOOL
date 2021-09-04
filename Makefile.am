@@ -75,6 +75,10 @@ ACLOCAL_AMFLAGS = -I m4
 # quick and easy for now.
 include_paths = -I${top_srcdir}/common -I${top_srcdir}/net -I${top_srcdir}/wsd -I${top_srcdir}/kit ${ZLIB_CFLAGS} ${FONTCONFIG_CFLAGS}
 
+if ENABLE_OSSII_PRODUCT
+include_paths += ${OSSIIPRODUCT_CFLAGS}
+endif
+
 AM_CPPFLAGS = -pthread -DLOOLWSD_DATADIR='"@LOOLWSD_DATADIR@"' \
 	      -DLOOLWSD_CONFIGDIR='"@LOOLWSD_CONFIGDIR@"' \
 	      -DDEBUG_ABSSRCDIR='"@abs_srcdir@"' \
@@ -85,6 +89,10 @@ AM_CPPFLAGS += -DNDEBUG
 endif
 
 AM_LDFLAGS = -pthread -Wl,-E,-rpath,/snap/oxoolwsd/current/usr/lib -lpam $(ZLIB_LIBS) ${FONTCONFIG_LIBS}
+
+if ENABLE_OSSII_PRODUCT
+AM_LDFLAGS += ${OSSIIPRODUCT_LIBS}
+endif
 
 if ENABLE_SSL
 AM_LDFLAGS += -lssl -lcrypto
@@ -135,6 +143,10 @@ oxoolwsd_sources = common/Crypto.cpp \
                   wsd/Storage.cpp \
                   wsd/TileCache.cpp \
                   wsd/ProofKey.cpp
+
+if ENABLE_OSSII_PRODUCT
+oxoolwsd_sources += wsd/OssiiProduct.cpp
+endif
 
 oxoolwsd_json = $(patsubst %.cpp,%.cmd,$(oxoolwsd_sources))
 
@@ -247,6 +259,10 @@ wsd_headers = wsd/Admin.hpp \
               wsd/TileDesc.hpp \
               wsd/TraceFile.hpp \
               wsd/UserMessages.hpp
+
+if ENABLE_OSSII_PRODUCT
+wsd_headers += wsd/OssiiProduct.hpp
+endif
 
 shared_headers = common/Common.hpp \
                  common/Clipboard.hpp \

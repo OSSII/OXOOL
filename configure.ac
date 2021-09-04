@@ -85,6 +85,25 @@ if test "$use_fontconfig" = "no" ; then
     AC_MSG_ERROR([Need fontconfig, but not found or version too old.])
 fi
 
+# Check if there are 'OssiiProduct.hpp' and OssiiProduct.cpp files in the wsd directory.
+AC_MSG_CHECKING([Does it support OSSII authorization mechanism?])
+ENABLE_OSSII_PRODUCT=false
+if test -f "wsd/OssiiProduct.hpp" && test -f "wsd/OssiiProduct.cpp" ; then
+    AC_MSG_RESULT([yes])
+    PKG_CHECK_MODULES(OSSIIPRODUCT, ossiiProduct >= 1.0.0, use_ossiiProduct="yes", use_ossiiProduct="no")
+    if test "$use_ossiiProduct" = "no" ; then
+        AC_MSG_ERROR([Need ossiiProduct, but not found or version too old.])
+    fi
+    ENABLE_OSSII_PRODUCT=true
+    AC_DEFINE([ENABLE_OSSII_PRODUCT],1,[Enable OSSII product authorization mechanism.])
+    ossiiproduct_msg="enabled."
+else
+    AC_MSG_RESULT([no])
+    ossiiproduct_msg="not supported."
+fi
+AC_SUBST(ENABLE_OSSII_PRODUCT)
+AM_CONDITIONAL([ENABLE_OSSII_PRODUCT], [$ENABLE_OSSII_PRODUCT])
+
 # check for python modules
 for MODULE in lxml polib; do
     AC_MSG_CHECKING([for ${MODULE} for python3])
@@ -1271,6 +1290,7 @@ Configuration:
     Set capabilities        $setcap_msg
     Browsersync             $browsersync_msg
     cypress                 $cypress_msg
+    OSSII product           $ossiiproduct_msg
 
     \$ make # to compile"
 if test -n "$with_lo_path"; then
