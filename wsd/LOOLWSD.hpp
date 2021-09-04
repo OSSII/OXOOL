@@ -30,6 +30,10 @@
 #include "RequestDetails.hpp"
 #include "WebSocketHandler.hpp"
 
+#if ENABLE_OSSII_PRODUCT
+#include "OssiiProduct.hpp"
+#endif
+
 class ChildProcess;
 class TraceFileWriter;
 class DocumentBroker;
@@ -521,6 +525,11 @@ private:
 #if MOBILEAPP
 public:
     static int prisonerServerSocketFD;
+#endif
+
+#if ENABLE_OSSII_PRODUCT
+public:
+    static OssiiProduct Product;
 #endif
 };
 

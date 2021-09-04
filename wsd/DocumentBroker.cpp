@@ -834,6 +834,20 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         }
     }
 
+#if ENABLE_OSSII_PRODUCT
+    {
+        // 產品有授權的話，檢查 ownerId 才能確認該檔案的原始擁有者是誰
+        std::string ownerId = _storage->getFileInfo().getOwnerId();
+        if (LOOLWSD::Product.isSupported() &&
+            !LOOLWSD::Product.userExists(ownerId))
+        {
+            LOG_ERR("User \"" + ownerId + "\"" + " is not authorized to use the editor.");
+            session->sendTextFrame("error: cmd=load kind=unauthorized");
+            return false;
+        }
+    }
+#endif
+
     // Added by Firefly <firefly@ossii.com.tw>
     // 系統指定的浮水印文字有最終複寫權
     if (!LOOLWSD::OverrideWatermark.empty())
