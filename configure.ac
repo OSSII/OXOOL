@@ -306,9 +306,18 @@ AC_ARG_WITH([max-documents],
              AS_HELP_STRING([--with-max-documents],
                            [Set the limit on the total number of documents. Def: 10, Min: 2.]))
 
+AC_ARG_WITH([feedback-location],
+            AS_HELP_STRING([--with-feedback-location=<url>],
+                           [User feedback URL location. Default to http://127.0.0.1:8000/Rate/feedback.html]))
+
 AC_ARG_ENABLE(welcome-message,
     AS_HELP_STRING([--enable-welcome-message],
         [Enables welcome message on version update. Can be changed later in oxoolwsd.xml.])
+)
+
+AC_ARG_ENABLE(feedback,
+    AS_HELP_STRING([--enable-feedback],
+        [Enables feedback, user rating.])
 )
 
 AC_ARG_WITH([sanitizer],
@@ -722,6 +731,24 @@ AS_IF([test "$enable_welcome_message" = "yes"],
       [ENABLE_WELCOME_MESSAGE="true"])
 AC_DEFINE_UNQUOTED([ENABLE_WELCOME_MESSAGE],["$ENABLE_WELCOME_MESSAGE"],[Should the Release notes message on startup be enabled by default?])
 AC_SUBST(ENABLE_WELCOME_MESSAGE)
+
+ENABLE_FEEDBACK=
+FEEDBACK_LOCATION=
+
+if test "$enable_feedback" = "yes"; then
+   ENABLE_FEEDBACK="true"
+
+   if test -n "$with_feedback_location"; then
+       FEEDBACK_LOCATION=$with_feedback_location
+   else
+       FEEDBACK_LOCATION="http://127.0.0.1:8000/Rate/feedback.html"
+   fi
+fi
+
+AC_DEFINE_UNQUOTED([ENABLE_FEEDBACK],["$ENABLE_FEEDBACK"],[User feedback rating])
+AC_DEFINE_UNQUOTED([FEEDBACK_LOCATION],["$FEEDBACK_LOCATION"],[User feedback URL location])
+AC_SUBST(ENABLE_FEEDBACK)
+AM_CONDITIONAL([ENABLE_FEEDBACK], [test "$ENABLE_FEEDBACK" = "true"])
 
 ENABLE_WELCOME_MESSAGE_BUTTON=false
 AS_IF([test "$enable_welcome_message_button" = "yes"],
