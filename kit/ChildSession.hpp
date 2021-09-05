@@ -344,6 +344,9 @@ private:
 
     /// If we are copying to clipboard.
     bool _copyToClipboard;
+
+    /// window tile hash cache
+    std::vector<uint64_t> _pixmapCache;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
