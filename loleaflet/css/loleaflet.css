@@ -694,3 +694,29 @@ input,
   top: 0px;
   left: 0px;
 }
+
+.input-help {
+	border-radius: 5px;
+	padding: 5px;
+	box-sizing: content-box;
+	border: 1px solid rgb(80, 80, 80);
+	color: black;
+	background-color: rgb(255, 255, 192);
+	min-width: 150px;
+	min-height: 32px;
+	font-size: 12px;
+	box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+}
+
+.input-help > div {
+	border-radius: 3px;
+	padding: 2px;
+	background-color: darkseagreen;
+	text-align: center;	
+	font-weight: bold;
+}
+
+.input-help > p {
+	padding: 0px;
+	color: rgb(15, 15, 15);
+}

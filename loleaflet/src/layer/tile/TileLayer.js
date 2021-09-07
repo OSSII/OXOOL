@@ -606,6 +606,9 @@ L.TileLayer = L.GridLayer.extend({
 		else if (textMsg.startsWith('validitylistbutton:')) {
 			this._onValidityListButtonMsg(textMsg);
 		}
+		else if (textMsg.startsWith('validityinputhelp:')) {
+			this._onValidityInputHelpMsg(textMsg);
+		}
 		else if (textMsg.startsWith('signaturestatus:')) {
 			var signstatus = textMsg.substring('signaturestatus:'.length + 1);
 
@@ -998,6 +1001,7 @@ L.TileLayer = L.GridLayer.extend({
 		}
 		this._hideCursorIfVisible(); // 如果輸入游標有出現的話，關閉它
 		this._onUpdateGraphicSelection();
+		this._removeInputHelpMarker();
 	},
 
 	_onGraphicViewSelectionMsg: function (textMsg) {
@@ -1109,6 +1113,15 @@ L.TileLayer = L.GridLayer.extend({
 		// Calc 如果沒有選取區塊的話，清除所有文字選取區，避免畫面殘留
 		if (!this._cellSelectionArea && this._selections.getLayers().length !== 0) {
 			this._removeSelection();
+		}
+
+		this._removeInputHelpMarker();
+	},
+
+	_removeInputHelpMarker: function() {
+		if (this._inputHelpPopUp) {
+			this._map.removeLayer(this._inputHelpPopUp);
+			this._inputHelpPopUp = null;
 		}
 	},
 
@@ -2837,6 +2850,26 @@ L.TileLayer = L.GridLayer.extend({
 			this._validatedCellXY = null;
 			this._removeDropDownMarker();
 		}
+	},
+
+	_onValidityInputHelpMsg: function(textMsg) {
+		var message = textMsg.replace('validityinputhelp: ', '');
+		message = JSON.parse(message);
+
+		var icon = L.divIcon({
+			html: '<div class="input-help">'
+				+ (message.title.length > 0 ? '<div>' + message.title + '</div>' : '')
+				+ '<p>' + message.content +'</p>'
+				+ '</div>',
+			className: '',
+			iconSize: [0, 0],
+			iconAnchor: [-16, 0]
+		});
+
+		this._removeInputHelpMarker();
+		var inputHelpMarker = L.marker(this._cellCursor.getNorthEast(), {icon: icon});
+		inputHelpMarker.addTo(this._map);
+		this._inputHelpPopUp = inputHelpMarker;
 	},
 
 	_addDropDownMarker: function () {
