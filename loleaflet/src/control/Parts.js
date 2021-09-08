@@ -352,10 +352,6 @@ L.Map.include({
 				this.sendUnoCommand('.uno:Show', args);
 			}
 			break;
-		case 'presentation':
-		case 'drawing':
-			this._socket.sendMessage('showpage');
-			break;
 		}
 	},
 
@@ -371,10 +367,6 @@ L.Map.include({
 				this.forceCellCommit();
 				this.sendUnoCommand('.uno:Hide');
 			}
-			break;
-		case 'presentation':
-		case 'drawing':
-			this._socket.sendMessage('hidepage');
 			break;
 		}
 	},

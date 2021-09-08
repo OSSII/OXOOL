@@ -1435,12 +1435,10 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:ShowSlide",
-				"id": "ShowSlide"
+				"id": ".uno:ShowSlide"
 			},
 			{
-				"name": ".uno:HideSlide",
-				"id": "HideSlide"
+				"id": ".uno:HideSlide"
 			},
 			{
 				"name": ".uno:RenameSlide",

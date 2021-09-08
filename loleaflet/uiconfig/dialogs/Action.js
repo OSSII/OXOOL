@@ -82,12 +82,6 @@ L.dialog.Action = {
 				map.fire('fullscreen', {startSlideNumber: map.getCurrentPartNumber()});
 			}
 			break;
-		case 'ShowSlide': // 顯示投影片
-			map.showPage();
-			break;
-		case 'HideSlide': // 隱藏投影片
-			map.hidePage();
-			break;
 		case 'insertpage': // 新增頁面
 			map.insertPage();
 			break;
