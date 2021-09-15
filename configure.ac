@@ -100,6 +100,7 @@ if test -f "wsd/OssiiProduct.hpp" && test -f "wsd/OssiiProduct.cpp" ; then
 else
     AC_MSG_RESULT([no])
     ossiiproduct_msg="not supported."
+    AC_DEFINE([ENABLE_OSSII_PRODUCT],0,[Disable OSSII product authorization mechanism.])
 fi
 AC_SUBST(ENABLE_OSSII_PRODUCT)
 AM_CONDITIONAL([ENABLE_OSSII_PRODUCT], [$ENABLE_OSSII_PRODUCT])
