@@ -865,7 +865,8 @@
 				]
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater"
+				"id": ".uno:FontworkGalleryFloater",
+				"hide": true
 			},
 			{
 				"id": ".uno:InsertCaptionDialog"
@@ -1029,7 +1030,8 @@
 				"hide": true
 			},
 			{
-				"id": ".uno:InsertSignatureLine"
+				"id": ".uno:InsertSignatureLine",
+				"hide": true
 			}
 		]
 	},

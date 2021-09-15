@@ -762,7 +762,8 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater"
+				"id": ".uno:FontworkGalleryFloater",
+				"hide": true
 			},
 			{
 				"type": "--"

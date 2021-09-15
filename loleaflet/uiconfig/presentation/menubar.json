@@ -735,7 +735,8 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater"
+				"id": ".uno:FontworkGalleryFloater",
+				"hide": true
 			},
 			{
 				"type": "--"
@@ -1292,6 +1293,9 @@
 				"id": ".uno:EntireRow"
 			},
 			{
+				"id": ".uno:InsertRowDialog"
+			},
+			{
 				"id": ".uno:DeleteRows"
 			},
 			{
@@ -1316,6 +1320,9 @@
 				"id": ".uno:EntireColumn"
 			},
 			{
+				"id": ".uno:InsertColumnDialog"
+			},
+			{
 				"id": ".uno:DeleteColumns"
 			},
 			{
@@ -1326,6 +1333,9 @@
 			},
 			{
 				"type": "--"
+			},
+			{
+				"id": ".uno:DeleteTable"
 			},
 			{
 				"id": ".uno:SelectTable"

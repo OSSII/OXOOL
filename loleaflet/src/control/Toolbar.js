@@ -157,6 +157,8 @@ L.Map.include({
 		'.uno:FormatTitle': true, // FormatTitle
 		'.uno:FormatLegend': true, // FormatLegend
 		'.uno:FormatWall': true, // FormatWall
+		'.uno:DataSelect': true, // 選擇清單
+		'.uno:CurrentValidation': true, // 資料驗證...
 	},
 
 	applyFont: function (fontName) {
