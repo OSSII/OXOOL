@@ -75,6 +75,9 @@ L.Control.ContextMenu = L.Control.extend({
 				name: 'UNO command',
 				type: 'text',
 				events :{
+					click: function(e) {
+						e.stopPropagation();
+					},
 					keyup: function(e) {
 						if (e.keyCode === 13) { // 按下 Enter
 							console.debug(e.target.value);
