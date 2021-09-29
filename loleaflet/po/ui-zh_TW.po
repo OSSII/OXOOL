@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-31 15:39+0800\n"
+"POT-Creation-Date: 2021-09-29 17:03+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1247,7 +1247,7 @@ msgstr "開啟連結"
 msgid "The server encountered a %0 error while parsing the %1 command."
 msgstr "伺服器在解析 %1 指令時遭遇 %0 錯誤。"
 
-#: src/control/Control.ContextMenu.js:166
+#: src/control/Control.ContextMenu.js:169
 msgid "Edit worksheet hyperlink "
 msgstr "編輯工作表連結"
 
@@ -1263,7 +1263,7 @@ msgstr "類型"
 msgid "Index"
 msgstr "索引"
 
-#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:270
+#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:272
 msgid "Comment"
 msgstr "註解"
 
@@ -1375,29 +1375,29 @@ msgstr "左邊距"
 msgid "Right Margin"
 msgstr "右邊距"
 
-#: src/control/Toolbar.js:234 src/control/Toolbar.js:246
+#: src/control/Toolbar.js:237 src/control/Toolbar.js:249
 #: uiconfig/dialogs/PdfWatermarkText.js:44
 msgid "Downloading..."
 msgstr "下載中..."
 
-#: src/control/Toolbar.js:262 src/control/Toolbar.js:280
-#: src/control/Toolbar.js:333 src/map/Map.js:1268
+#: src/control/Toolbar.js:265 src/control/Toolbar.js:283
+#: src/control/Toolbar.js:336 src/map/Map.js:1268
 msgid "Saving..."
 msgstr "儲存中..."
 
-#: src/control/Toolbar.js:286
+#: src/control/Toolbar.js:289
 msgid "The file has been saved, this encrypted file will be opened."
 msgstr "檔案已儲存，將開啟此加密文件。"
 
-#: src/control/Toolbar.js:292
+#: src/control/Toolbar.js:295
 msgid "Renaming..."
 msgstr "正在更改檔名…"
 
-#: src/control/Toolbar.js:705
+#: src/control/Toolbar.js:749
 msgid "This version of %productName is powered by"
 msgstr "此 %productName 版本源自"
 
-#: src/core/Socket.js:79
+#: src/core/Socket.js:82
 msgid ""
 "IE11 has reached its maximum number of connections. Please see this document "
 "to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
@@ -1408,85 +1408,85 @@ msgstr ""
 "versions/windows/internet-explorer/ie-developer/general-info/ee330736(v=vs.85"
 ")#websocket-maximum-server-connections"
 
-#: src/core/Socket.js:81
+#: src/core/Socket.js:84
 msgid "Oops, there is a problem connecting to LibreOffice Online : "
 msgstr "糟糕，連接至 OxOffice Online 時發生問題："
 
-#: src/core/Socket.js:279
+#: src/core/Socket.js:282
 msgid "Unsupported server version."
 msgstr "未支援的伺服器版本。"
 
-#: src/core/Socket.js:342
+#: src/core/Socket.js:346
 msgid "Session terminated by document owner"
 msgstr "作業階段由文件擁有者終止"
 
-#: src/core/Socket.js:346
+#: src/core/Socket.js:350
 msgid "Idle document - please click to reload and resume editing"
 msgstr "閒置文件 - 請點按以重新載入並繼續編輯"
 
-#: src/core/Socket.js:353
+#: src/core/Socket.js:357
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr "伺服器正在關機作維護（自動存檔中）"
 
-#: src/core/Socket.js:357
+#: src/core/Socket.js:361
 msgid "Oops, there is a problem connecting the document"
 msgstr "糟糕…連接文件時發生了問題"
 
-#: src/core/Socket.js:361
+#: src/core/Socket.js:365
 msgid "Server is recycling and will be available shortly"
 msgstr "伺服器正在重啟循環，即將無法使用"
 
-#: src/core/Socket.js:393
+#: src/core/Socket.js:397
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr "儲存空間內的文件已經變更。載入新文件中。您的版本會以修訂形式存在。"
 
-#: src/core/Socket.js:399
+#: src/core/Socket.js:403
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr "還原舊的版本。任何尚未儲存的變更都會放在版本歷史中。"
 
-#: src/core/Socket.js:521
+#: src/core/Socket.js:525
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr "儲存位置中的文件已經變更。對於您尚未儲存的變更，您希望怎麼處理？"
 
-#: src/core/Socket.js:526
+#: src/core/Socket.js:530
 msgid "Discard"
 msgstr "放棄"
 
-#: src/core/Socket.js:531
+#: src/core/Socket.js:535
 msgid "Overwrite"
 msgstr "覆寫"
 
-#: src/core/Socket.js:536
+#: src/core/Socket.js:540
 msgid "Save to new file"
 msgstr "儲存為新檔案"
 
-#: src/core/Socket.js:611
+#: src/core/Socket.js:615
 msgid "Document requires password to view."
 msgstr "文件需要密碼才能檢視。"
 
-#: src/core/Socket.js:614
+#: src/core/Socket.js:618
 msgid "Document requires password to modify."
 msgstr "文件需要密碼才能修改。"
 
-#: src/core/Socket.js:616
+#: src/core/Socket.js:620
 msgid "Hit Cancel to open in view-only mode."
 msgstr "點按「取消」以唯讀模式開啟。"
 
-#: src/core/Socket.js:620
+#: src/core/Socket.js:624
 msgid "Wrong password provided. Please try again."
 msgstr "提供的密碼錯誤。請重試。"
 
-#: src/core/Socket.js:739
+#: src/core/Socket.js:743
 msgid "Connecting..."
 msgstr "連線中..."
 
-#: src/core/Socket.js:899
+#: src/core/Socket.js:903
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -1736,23 +1736,23 @@ msgstr "開啟選單"
 msgid "Save"
 msgstr "儲存"
 
-#: src/layer/marker/Annotation.js:244 src/layer/tile/TileLayer.js:240
+#: src/layer/marker/Annotation.js:244 src/layer/tile/TileLayer.js:242
 msgid "Reply"
 msgstr "回覆"
 
-#: src/layer/tile/TileLayer.js:234
+#: src/layer/tile/TileLayer.js:236
 msgid "Modify"
 msgstr "修改"
 
-#: src/layer/tile/TileLayer.js:246
+#: src/layer/tile/TileLayer.js:248
 msgid "Remove"
 msgstr "移除"
 
-#: src/layer/tile/TileLayer.js:883
+#: src/layer/tile/TileLayer.js:891
 msgid "This type of picture editing is not yet supported."
 msgstr "尚未支援此種圖片格式的編輯"
 
-#: src/layer/tile/TileLayer.js:901
+#: src/layer/tile/TileLayer.js:909
 msgid "unnamed"
 msgstr "未命名"
 
@@ -1792,7 +1792,7 @@ msgstr "從範本建立新文件…"
 msgid "Creating copy..."
 msgstr "製作副本中..."
 
-#: uiconfig/dialogs/Action.js:101
+#: uiconfig/dialogs/Action.js:95
 msgid "Are you sure you want to delete this slide?"
 msgstr "確定要刪除此投影片？"
 
@@ -1816,6 +1816,34 @@ msgstr ""
 "不能是空白，或和其他工作表名稱重複。\n"
 "也不能包含右列之特殊符號 [ ] * ? : / \\ \n"
 "第一個或最後一個字不能用 ' (單引號)。"
+
+#: uiconfig/dialogs/AutoFilter.js:13 uiconfig/dialogs/AutoFilter.js:160
+msgid "Top 10"
+msgstr "前 10 筆"
+
+#: uiconfig/dialogs/AutoFilter.js:14 uiconfig/dialogs/AutoFilter.js:170
+msgid "Non-Empty"
+msgstr "非空白"
+
+#: uiconfig/dialogs/AutoFilter.js:15 uiconfig/dialogs/AutoFilter.js:253
+msgid "Search items"
+msgstr "輸入搜尋"
+
+#: uiconfig/dialogs/AutoFilter.js:16
+msgid "Show only the current item."
+msgstr "只顯示選取項目，其他不顯示"
+
+#: uiconfig/dialogs/AutoFilter.js:17
+msgid "Hide only the current item."
+msgstr "除了選取項目不顯示，其他都顯示"
+
+#: uiconfig/dialogs/AutoFilter.js:18 uiconfig/dialogs/AutoFilter.js:603
+msgid "Ctrl + left mouse button for multiple selections."
+msgstr "Ctrl + 滑鼠左鍵可複選"
+
+#: uiconfig/dialogs/AutoFilter.js:165 uiconfig/dialogs/AutoFilter.js:409
+msgid "Empty"
+msgstr "空白"
 
 #: uiconfig/dialogs/BindingLineDialog.js:37
 msgid "Size"
