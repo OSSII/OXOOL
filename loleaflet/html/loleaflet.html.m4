@@ -151,23 +151,40 @@ ifelse(MOBILEAPP,[true],
 ifelse(MOBILEAPP,[true],
      [window.host = '';
       window.serviceRoot = '';
+      window.versionPath = '%VERSION%';
       window.accessToken = '';
       window.accessTokenTTL = '';
       window.accessHeader = '';
       window.loleafletLogging = 'true';
+      window.enableWelcomeMessage = false;
+      window.enableWelcomeMessageButton = false;
       window.outOfFocusTimeoutSecs = 1000000;
       window.idleTimeoutSecs = 1000000;
-      window.tileSize = 256;],
+      window.reuseCookies = '';
+      window.protocolDebug = false;
+      window.frameAncestors = '';
+      window.socketProxy = false;
+      window.tileSize = 256;
+      window.uiDefaults = {};],
      [window.host = '%HOST%';
       window.serviceRoot = '%SERVICE_ROOT%';
+      window.versionPath = '%VERSION%';
       window.accessToken = '%ACCESS_TOKEN%';
       window.accessTokenTTL = '%ACCESS_TOKEN_TTL%';
       window.accessHeader = '%ACCESS_HEADER%';
       window.loleafletLogging = '%LOLEAFLET_LOGGING%';
+      window.enableWelcomeMessage = %ENABLE_WELCOME_MSG%;
+      window.enableWelcomeMessageButton = %ENABLE_WELCOME_MSG_BTN%;
+      window.userInterfaceMode = '%USER_INTERFACE_MODE%';
+      window.enableMacrosExecution = '%ENABLE_MACROS_EXECUTION%';
       window.outOfFocusTimeoutSecs = %OUT_OF_FOCUS_TIMEOUT_SECS%;
       window.idleTimeoutSecs = %IDLE_TIMEOUT_SECS%;
-      window.screenWatermark = '%SCREEN_WATERMARK%';
-      window.tileSize = 256;])
+      window.reuseCookies = '%REUSE_COOKIES%';
+      window.protocolDebug = %PROTOCOL_DEBUG%;
+      window.frameAncestors = '%FRAME_ANCESTORS%';
+      window.socketProxy = %SOCKET_PROXY%;
+      window.tileSize = 256;
+      window.uiDefaults = %UI_DEFAULTS%;])
     </script>
   <script>
 
