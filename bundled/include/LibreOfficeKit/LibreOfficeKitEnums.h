@@ -783,6 +783,24 @@ typedef enum
      * }
      */
     LOK_CALLBACK_MSGBOX = 1000,
+
+    /**
+     * When launch auto filter or data select menu.
+     *
+     * The payload example:
+     * {
+     *      "type": "DataSelect" or "AutoFilter"
+     *      "part": number of sheet
+     *      "row":  number of row
+     *      "column" : number of column
+     *      "address": cell address(e.g. $A$1)
+     *      "isRTL": ture(Text from right to left) or not
+     *      "left", "top": cell position(pixel)
+     *      "width", "height": cell size(pixel)
+     *      "list": [ {"item": "item 1", "checked": boolean}, ... ]
+     * }
+     */
+    LOK_CALLBACK_LAUNCH_MENU = 1001,
 }
 LibreOfficeKitCallbackType;
 
@@ -917,6 +935,8 @@ static inline const char* lokCallbackTypeToString(int nType)
         return "LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY";
     case LOK_CALLBACK_MSGBOX:
         return "LOK_CALLBACK_MSGBOX";
+    case LOK_CALLBACK_LAUNCH_MENU:
+        return "LOK_CALLBACK_LAUNCH_MENU";
     }
 
     assert(!"Unknown LibreOfficeKitCallbackType type.");
