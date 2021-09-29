@@ -609,6 +609,9 @@ L.TileLayer = L.GridLayer.extend({
 		else if (textMsg.startsWith('validityinputhelp:')) {
 			this._onValidityInputHelpMsg(textMsg);
 		}
+		else if (textMsg.startsWith('launchmenu:')) {
+			this._onLaunchMenu(textMsg);
+		}
 		else if (textMsg.startsWith('signaturestatus:')) {
 			var signstatus = textMsg.substring('signaturestatus:'.length + 1);
 
@@ -2870,6 +2873,20 @@ L.TileLayer = L.GridLayer.extend({
 		var inputHelpMarker = L.marker(this._cellCursor.getNorthEast(), {icon: icon});
 		inputHelpMarker.addTo(this._map);
 		this._inputHelpPopUp = inputHelpMarker;
+	},
+
+	_onLaunchMenu: function(textMsg) {
+		var menu = JSON.parse(textMsg.replace('launchmenu: ', ''));
+		switch (menu.type) {
+		case 'DataSelect':
+			L.dialog.run('DataSelect', menu);
+			break;
+		case 'AutoFilter':
+			L.dialog.run('AutoFilter', menu);
+			break;
+		default:
+			console.debug('Warning! unknow launch menu :', menu);
+		}
 	},
 
 	_addDropDownMarker: function () {
