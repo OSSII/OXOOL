@@ -28,8 +28,20 @@ function _inDesktopMode() {
 global.mode = {
 	isMobile: _inMobileMode,
 	isTablet: _inTabletMode,
-	isDesktop: _inDesktopMode
+	isDesktop: _inDesktopMode,
+	getDeviceFormFactor: function() {
+		if (window.mode.isMobile())
+			return 'mobile';
+		else if (window.mode.isTablet())
+			return 'tablet';
+		else if (window.mode.isDesktop())
+			return 'desktop';
+		else
+			return null;
+	}
 };
+
+global.deviceFormFactor = window.mode.getDeviceFormFactor();
 
 var nUsers, oneUser, noUser;
 

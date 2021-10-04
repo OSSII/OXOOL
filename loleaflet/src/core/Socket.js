@@ -220,6 +220,9 @@ L.Socket = L.Class.extend({
 		if (String.locale) {
 			msg += ' lang=' + String.locale;
 		}
+		if (window.deviceFormFactor) {
+			msg += ' deviceFormFactor=' + window.deviceFormFactor;
+		}
 		if (this._map.options.renderingOptions) {
 			var options = {
 				'rendering': this._map.options.renderingOptions
