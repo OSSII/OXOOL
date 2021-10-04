@@ -404,6 +404,7 @@ L.dialog.AutoFilter = {
 		 * 		}
 		 */
 		setCheckBoxList: function(list) {
+			var that = this;
 			this._length = list.length; // 紀錄總數量
 			list.forEach(function(data, idx) {
 				var value = (data.item.length ? data.item : '(' + _('Empty') + ')');
@@ -414,6 +415,25 @@ L.dialog.AutoFilter = {
 					'padding': 0
 				}).attr({
 					'item-id': idx
+				}).click(function() {
+					// 桌面模式不處理點擊
+					if (window.mode.isDesktop()) {
+						return;
+					}
+					// 自己的 ID
+					var myId = $(this).attr('item-id');
+					// 依序處理所有的列表
+					var nodes = that.getCheckBoxNodes();
+					for (var i = 0 ; i < nodes.length ; i++) {
+						var item = nodes[i];
+						var id = $(item).attr('item-id');
+						$(item).removeClass('ui-selected');
+						that.checkBoxUnselected(id);
+						if (id === myId) {
+							$(item).addClass('ui-selected');
+							that.checkBoxSelected(myId);
+						}
+					}
 				});
 
 				var isChecked = (data.checked === 'true');
@@ -618,17 +638,20 @@ L.dialog.AutoFilter = {
 		// 設定篩選項目列表
 		this.checkItems.setCheckBoxList(list);
 
-		// 讓各篩選項目可複選
-		$(this._selectable).selectable({
-			// 選取
-			selected: function(e, ui) {
-				this.checkItems.checkBoxSelected($(ui.selected).attr('item-id'));
-			}.bind(this),
-			// 取消選取
-			unselected: function(e, ui) {
-				this.checkItems.checkBoxUnselected($(ui.unselected).attr('item-id'));
-			}.bind(this)
-		});
+		// 桌面模式才可多選
+		if (window.mode.isDesktop()) {
+			// 讓各篩選項目可複選
+			$(this._selectable).selectable({
+				// 選取
+				selected: function(e, ui) {
+					this.checkItems.checkBoxSelected($(ui.selected).attr('item-id'));
+				}.bind(this),
+				// 取消選取
+				unselected: function(e, ui) {
+					this.checkItems.checkBoxUnselected($(ui.unselected).attr('item-id'));
+				}.bind(this)
+			});
+		}
 	},
 
 	/**
