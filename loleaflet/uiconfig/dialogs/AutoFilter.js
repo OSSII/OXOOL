@@ -346,6 +346,7 @@ L.dialog.AutoFilter = {
 		_checked: 0,
 		_selectedIds: {},
 		_onComposition: false,
+		_prevCheckItem: null,
 
 		/**
 		 * 設定所屬物件
@@ -356,6 +357,7 @@ L.dialog.AutoFilter = {
 			this._checked = 0;
 			this._selectedIds = {};
 			this._onComposition = false;
+			this._prevCheckItem = null;
 		},
 
 		/**
@@ -420,20 +422,24 @@ L.dialog.AutoFilter = {
 					if (window.mode.isDesktop()) {
 						return;
 					}
+					// 已經選取過了
+					if (that._prevCheckItem) {
+						// 前一個 ID
+						var id = $(that._prevCheckItem).attr('item-id');
+						// 解除選取
+						that.checkBoxUnselected(id);
+						// 移除選取 bar
+						$(that._prevCheckItem).removeClass('ui-selected');
+					}
+
+					// 紀錄為最近選取的項目
+					that._prevCheckItem = this;
 					// 自己的 ID
 					var myId = $(this).attr('item-id');
-					// 依序處理所有的列表
-					var nodes = that.getCheckBoxNodes();
-					for (var i = 0 ; i < nodes.length ; i++) {
-						var item = nodes[i];
-						var id = $(item).attr('item-id');
-						$(item).removeClass('ui-selected');
-						that.checkBoxUnselected(id);
-						if (id === myId) {
-							$(item).addClass('ui-selected');
-							that.checkBoxSelected(myId);
-						}
-					}
+					// 紀錄選取本項 ID
+					that.checkBoxSelected(myId);
+					// 顯示選取 bar
+					$(that._prevCheckItem).addClass('ui-selected');
 				});
 
 				var isChecked = (data.checked === 'true');
