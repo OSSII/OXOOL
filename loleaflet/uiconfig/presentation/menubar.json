@@ -1,7 +1,6 @@
 [
 	{
-		"name": ".uno:PickList",
-		"id": "file",
+		"id": ".uno:PickList",
 		"menu": [
 			{
 				"name": ".uno:Save",
@@ -68,7 +67,6 @@
 		]
 	},
 	{
-		"name": ".uno:EditMenu",
 		"id": ".uno:EditMenu",
 		"menu": [
 			{
@@ -99,7 +97,6 @@
 				"hotkey": "Ctrl+V"
 			},
 			{
-				"name": ".uno:PasteSpecialMenu",
 				"id": ".uno:PasteSpecialMenu",
 				"menu": [
 					{
@@ -133,8 +130,7 @@
 		]
 	},
 	{
-		"name": ".uno:ViewMenu",
-		"id": "view",
+		"id": ".uno:ViewMenu",
 		"menu": [
 			{
 				"name": ".uno:FullScreen",
@@ -190,7 +186,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:GridMenu",
 				"id": ".uno:GridMenu",
 				"menu": [
 					{
@@ -208,7 +203,6 @@
 				]
 			},
 			{
-				"name": ".uno:SnapLinesMenu",
 				"id": ".uno:SnapLinesMenu",
 				"menu": [
 					{
@@ -240,7 +234,6 @@
 		]
 	},
 	{
-		"name": ".uno:InsertMenu",
 		"id": ".uno:InsertMenu",
 		"menu": [
 			{
@@ -264,11 +257,9 @@
 				"id": ".uno:InsertQrCode"
 			},
 			{
-				"name": ".uno:ShapesMenu",
 				"id": ".uno:ShapesMenu",
 				"menu": [
 					{
-						"name": ".uno:ShapesLineMenu",
 						"id": ".uno:ShapesLineMenu",
 						"menu": [
 							{
@@ -749,7 +740,6 @@
 				"id": ".uno:InsertSymbol"
 			},
 			{
-				"name": ".uno:FormattingMarkMenu",
 				"id": ".uno:FormattingMarkMenu",
 				"menu": [
 					{
@@ -779,7 +769,6 @@
 				"id": ".uno:InsertSlideField"
 			},
 			{
-				"name": ".uno:FieldMenu",
 				"id": ".uno:FieldMenu",
 				"menu": [
 					{
@@ -817,11 +806,9 @@
 		]
 	},
 	{
-		"name": ".uno:FormatMenu",
 		"id": ".uno:FormatMenu",
 		"menu": [
 			{
-				"name": ".uno:FormatTextMenu",
 				"id": ".uno:FormatTextMenu",
 				"menu": [
 					{
@@ -925,7 +912,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatSpacingMenu",
 				"id": ".uno:FormatSpacingMenu",
 				"menu": [
 					{
@@ -995,7 +981,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatBulletsMenu",
 				"id": ".uno:FormatBulletsMenu",
 				"menu": [
 					{
@@ -1054,7 +1039,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:FormatImageMenu",
 				"id": ".uno:FormatImageMenu",
 				"menu": [
 					{
@@ -1078,7 +1062,6 @@
 						"type": "--"
 					},
 					{
-						"name": ".uno:FormatImageFilterMenu",
 						"id": ".uno:FormatImageFilterMenu",
 						"menu": [
 							{
@@ -1119,7 +1102,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatObjectMenu",
 				"id": ".uno:FormatObjectMenu",
 				"menu": [
 					{
@@ -1149,7 +1131,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:MirrorMenu",
 				"id": ".uno:MirrorMenu",
 				"menu": [
 					{
@@ -1161,7 +1142,6 @@
 				]
 			},
 			{
-				"name": ".uno:ConvertMenu",
 				"id": ".uno:ConvertMenu",
 				"menu": [
 					{
@@ -1218,7 +1198,6 @@
 				]
 			},
 			{
-				"name": ".uno:ArrangeMenu",
 				"id": ".uno:ArrangeMenu",
 				"menu": [
 					{
@@ -1251,7 +1230,6 @@
 				]
 			},
 			{
-				"name": ".uno:GroupMenu",
 				"id": ".uno:GroupMenu",
 				"menu": [
 					{
@@ -1271,7 +1249,6 @@
 		]
 	},
 	{
-		"name": ".uno:TableMenu",
 		"id": ".uno:TableMenu",
 		"menu": [
 			{
@@ -1346,7 +1323,6 @@
 		]
 	},
 	{
-		"name": ".uno:SlideMenu",
 		"id": ".uno:SlideMenu",
 		"menu": [
 			{
@@ -1376,7 +1352,6 @@
 				"id": "deletepage"
 			},
 			{
-				"name": ".uno:SlideLayoutMenu",
 				"id": ".uno:SlideLayoutMenu",
 				"menu": [
 					{
@@ -1463,7 +1438,6 @@
 				"hide": true
 			},
 			{
-				"name": ".uno:SlideMoveMenu",
 				"id": ".uno:SlideMoveMenu",
 				"menu": [
 					{
@@ -1485,7 +1459,6 @@
 				]
 			},
 			{
-				"name": ".uno:NavigateMenu",
 				"id": ".uno:NavigateMenu",
 				"menu": [
 					{
@@ -1520,7 +1493,6 @@
 		]
 	},
 	{
-		"name": ".uno:ToolsMenu",
 		"id": ".uno:ToolsMenu",
 		"menu": [
 			{
@@ -1537,7 +1509,6 @@
 				"hide": true
 			},
 			{
-				"name": ".uno:LanguageMenu",
 				"id": ".uno:LanguageMenu",
 				"menu": [
 					{
@@ -1583,8 +1554,7 @@
 		]
 	},
 	{
-		"name": ".uno:HelpMenu",
-		"id": "help",
+		"id": ".uno:HelpMenu",
 		"menu": [
 			{
 				"icon": ".uno:HelpIndex",

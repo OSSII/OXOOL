@@ -1,7 +1,6 @@
 [
 	{
-		"name": ".uno:PickList",
-		"id": "file",
+		"id": ".uno:PickList",
 		"menu": [
 			{
 				"name": ".uno:Save",
@@ -80,7 +79,6 @@
 		]
 	},
 	{
-		"name": ".uno:EditMenu",
 		"id": ".uno:EditMenu",
 		"menu": [
 			{
@@ -115,7 +113,6 @@
 				"hotkey": "Ctrl+V"
 			},
 			{
-				"name": ".uno:PasteSpecialMenu",
 				"id": ".uno:PasteSpecialMenu",
 				"menu": [
 					{
@@ -152,7 +149,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:ChangesMenu",
 				"id": ".uno:ChangesMenu",
 				"menu": [
 					{
@@ -200,7 +196,6 @@
 				]
 			},
 			{
-				"name": ".uno:EditCommentsMenu",
 				"id": ".uno:EditCommentsMenu",
 				"menu": [
 					{
@@ -227,7 +222,6 @@
 				"id": ".uno:EditHyperlink"
 			},
 			{
-				"name": ".uno:EditLinksMenu",
 				"id": ".uno:EditLinksMenu",
 				"menu": [
 					{
@@ -253,8 +247,7 @@
 		]
 	},
 	{
-		"name": ".uno:ViewMenu",
-		"id": "view",
+		"id": ".uno:ViewMenu",
 		"menu": [
 			{
 				"name": ".uno:FullScreen",
@@ -281,7 +274,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:GridMenu",
 				"id": ".uno:GridMenu",
 				"menu": [
 					{
@@ -328,7 +320,6 @@
 		]
 	},
 	{
-		"name": ".uno:InsertMenu",
 		"id": ".uno:InsertMenu",
 		"menu": [
 			{
@@ -336,7 +327,6 @@
 				"hotkey": "Ctrl+Enter"
 			},
 			{
-				"name": ".uno:BreaksMenu",
 				"id": ".uno:BreaksMenu",
 				"menu": [
 					{
@@ -380,11 +370,9 @@
 				"id": ".uno:InsertQrCode"
 			},
 			{
-				"name": ".uno:ShapesMenu",
 				"id": ".uno:ShapesMenu",
 				"menu": [
 					{
-						"name": ".uno:ShapesLineMenu",
 						"id": ".uno:ShapesLineMenu",
 						"menu": [
 							{
@@ -853,7 +841,6 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
-				"name": ".uno:InsertFrameMenu",
 				"id": ".uno:InsertFrameMenu",
 				"menu": [
 					{
@@ -891,7 +878,6 @@
 				"id": ".uno:InsertSymbol"
 			},
 			{
-				"name": ".uno:FormattingMarkMenu",
 				"id": ".uno:FormattingMarkMenu",
 				"menu": [
 					{
@@ -925,7 +911,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:InsertFootnotesMenu",
 				"id": ".uno:InsertFootnotesMenu",
 				"menu": [
 					{
@@ -937,7 +922,6 @@
 				]
 			},
 			{
-				"name": ".uno:IndexesMenu",
 				"id": ".uno:IndexesMenu",
 				"menu": [
 					{
@@ -989,7 +973,6 @@
 				]
 			},
 			{
-				"name": ".uno:InsertHeaderFooterMenu",
 				"id": ".uno:InsertHeaderFooterMenu",
 				"menu": [
 					{
@@ -1036,11 +1019,9 @@
 		]
 	},
 	{
-		"name": ".uno:FormatMenu",
 		"id": ".uno:FormatMenu",
 		"menu": [
 			{
-				"name": ".uno:FormatTextMenu",
 				"id": ".uno:FormatTextMenu",
 				"menu": [
 					{
@@ -1146,7 +1127,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatSpacingMenu",
 				"id": ".uno:FormatSpacingMenu",
 				"menu": [
 					{
@@ -1213,7 +1193,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatBulletsMenu",
 				"id": ".uno:FormatBulletsMenu",
 				"menu": [
 					{
@@ -1327,7 +1306,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:FormatImageMenu",
 				"id": ".uno:FormatImageMenu",
 				"menu": [
 					{
@@ -1345,7 +1323,6 @@
 						"type": "--"
 					},
 					{
-						"name": ".uno:FormatImageFilterMenu",
 						"id": ".uno:FormatImageFilterMenu",
 						"menu": [
 							{
@@ -1392,7 +1369,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatObjectMenu",
 				"id": ".uno:FormatObjectMenu",
 				"menu": [
 					{
@@ -1413,7 +1389,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:AnchorMenu",
 				"id": ".uno:AnchorMenu",
 				"menu": [
 					{
@@ -1431,7 +1406,6 @@
 				]
 			},
 			{
-				"name": ".uno:WrapMenu",
 				"id": ".uno:WrapMenu",
 				"menu": [
 					{
@@ -1476,7 +1450,6 @@
 				]
 			},
 			{
-				"name": ".uno:ArrangeMenu",
 				"id": ".uno:ArrangeMenu",
 				"menu": [
 					{
@@ -1503,7 +1476,6 @@
 				]
 			},
 			{
-				"name": ".uno:RotateFlipMenu",
 				"id": ".uno:RotateFlipMenu",
 				"menu": [
 					{
@@ -1530,7 +1502,6 @@
 				]
 			},
 			{
-				"name": ".uno:GroupMenu",
 				"id": ".uno:GroupMenu",
 				"menu": [
 					{
@@ -1550,7 +1521,6 @@
 		]
 	},
 	{
-		"name": ".uno:FormatStylesMenu",
 		"id": ".uno:FormatStylesMenu",
 		"menu": [
 			{
@@ -1628,7 +1598,6 @@
 		]
 	},
 	{
-		"name": ".uno:TableMenu",
 		"id": ".uno:TableMenu",
 		"menu": [
 			{
@@ -1636,7 +1605,6 @@
 				"hotkey": "Ctrl+F12"
 			},
 			{
-				"name": ".uno:TableInsertMenu",
 				"id": ".uno:TableInsertMenu",
 				"menu": [
 					{
@@ -1663,7 +1631,6 @@
 				]
 			},
 			{
-				"name": ".uno:TableDeleteMenu",
 				"id": ".uno:TableDeleteMenu",
 				"menu": [
 					{
@@ -1678,7 +1645,6 @@
 				]
 			},
 			{
-				"name": ".uno:TableSelectMenu",
 				"id": ".uno:TableSelectMenu",
 				"menu": [
 					{
@@ -1696,7 +1662,6 @@
 				]
 			},
 			{
-				"name": ".uno:TableAutoFitMenu",
 				"id": ".uno:TableAutoFitMenu",
 				"menu": [
 					{
@@ -1778,7 +1743,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:TableConvertMenu",
 				"id": ".uno:TableConvertMenu",
 				"menu": [
 					{
@@ -1801,7 +1765,6 @@
 		]
 	},
 	{
-		"name": ".uno:ToolsMenu",
 		"id": ".uno:ToolsMenu",
 		"menu": [
 			{
@@ -1813,11 +1776,9 @@
 				"hotkey": "Shift+F7"
 			},
 			{
-				"name": ".uno:LanguageMenu",
 				"id": ".uno:LanguageMenu",
 				"menu": [
 					{
-						"name": ".uno:SetLanguageSelectionMenu",
 						"id": ".uno:SetLanguageSelectionMenu",
 						"menu": [
 							{
@@ -1827,7 +1788,6 @@
 						]
 					},
 					{
-						"name": ".uno:SetLanguageParagraphMenu",
 						"id": ".uno:SetLanguageParagraphMenu",
 						"menu": [
 							{
@@ -1837,7 +1797,6 @@
 						]
 					},
 					{
-						"name": ".uno:SetLanguageAllTextMenu",
 						"id": ".uno:SetLanguageAllTextMenu",
 						"menu": [
 							{
@@ -1855,7 +1814,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:AutoFormatMenu",
 				"id": ".uno:AutoFormatMenu",
 				"menu": [
 					{
@@ -1877,6 +1835,7 @@
 			},
 			{
 				"name": "Binding line",
+				"id": "bindingbline",
 				"menu": [
 					{
 						"name": "Insert on the left side of page",
@@ -1907,7 +1866,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:UpdateMenu",
 				"id": ".uno:UpdateMenu",
 				"menu": [
 					{
@@ -1940,8 +1898,7 @@
 		]
 	},
 	{
-		"name": ".uno:HelpMenu",
-		"id": "help",
+		"id": ".uno:HelpMenu",
 		"menu": [
 			{
 				"icon": ".uno:HelpIndex",

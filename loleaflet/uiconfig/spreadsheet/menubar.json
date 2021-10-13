@@ -1,7 +1,6 @@
 [
 	{
-		"name": ".uno:PickList",
-		"id": "file",
+		"id": ".uno:PickList",
 		"menu": [
 			{
 				"name": ".uno:Save",
@@ -72,7 +71,6 @@
 		]
 	},
 	{
-		"name": ".uno:EditMenu",
 		"id": ".uno:EditMenu",
 		"menu": [
 			{
@@ -107,7 +105,6 @@
 				"hotkey": "Ctrl+V"
 			},
 			{
-				"name": ".uno:PasteSpecialMenu",
 				"id": ".uno:PasteSpecialMenu",
 				"menu": [
 					{
@@ -153,7 +150,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:ChangesMenu",
 				"id": ".uno:ChangesMenu",
 				"menu": [
 					{
@@ -193,8 +189,7 @@
 		]
 	},
 	{
-		"name": ".uno:ViewMenu",
-		"id": "view",
+		"id": ".uno:ViewMenu",
 		"menu": [
 			{
 				"name": ".uno:FullScreen",
@@ -234,7 +229,6 @@
 				"id": ".uno:ToggleSheetGrid"
 			},
 			{
-				"name": ".uno:GridMenu",
 				"id": ".uno:GridMenu",
 				"menu": [
 					{
@@ -258,7 +252,6 @@
 		]
 	},
 	{
-		"name": ".uno:InsertMenu",
 		"id": ".uno:InsertMenu",
 		"menu": [
 			{
@@ -285,11 +278,9 @@
 				"id": ".uno:DataDataPilotRun"
 			},
 			{
-				"name": ".uno:ShapesMenu",
 				"id": ".uno:ShapesMenu",
 				"menu": [
 					{
-						"name": ".uno:ShapesLineMenu",
 						"id": ".uno:ShapesLineMenu",
 						"menu": [
 							{
@@ -781,7 +772,6 @@
 				"id": ".uno:InsertSymbol"
 			},
 			{
-				"name": ".uno:FormattingMarkMenu",
 				"id": ".uno:FormattingMarkMenu",
 				"menu": [
 					{
@@ -816,7 +806,6 @@
 				"hotkey": "Ctrl+Shift+;"
 			},
 			{
-				"name": ".uno:FieldMenu",
 				"id": ".uno:FieldMenu",
 				"menu": [
 					{
@@ -839,11 +828,9 @@
 		]
 	},
 	{
-		"name": ".uno:FormatMenu",
 		"id": ".uno:FormatMenu",
 		"menu": [
 			{
-				"name": ".uno:FormatTextMenu",
 				"id": ".uno:FormatTextMenu",
 				"menu": [
 					{
@@ -936,7 +923,6 @@
 				]
 			},
 			{
-				"name": ".uno:FormatSpacingMenu",
 				"id": ".uno:FormatSpacingMenu",
 				"menu": [
 					{
@@ -1005,7 +991,6 @@
 				]
 			},
 			{
-				"name": ".uno:NumberFormatMenu",
 				"id": ".uno:NumberFormatMenu",
 				"menu": [
 					{
@@ -1061,7 +1046,6 @@
 				"hotkey": "Ctrl+1"
 			},
 			{
-				"name": ".uno:RowMenu",
 				"id": ".uno:RowMenu",
 				"menu": [
 					{
@@ -1081,7 +1065,6 @@
 				]
 			},
 			{
-				"name": ".uno:ColumnMenu",
 				"id": ".uno:ColumnMenu",
 				"menu": [
 					{
@@ -1101,7 +1084,6 @@
 				]
 			},
 			{
-				"name": ".uno:MergeCellsMenu",
 				"id": ".uno:MergeCellsMenu",
 				"menu": [
 					{
@@ -1128,7 +1110,6 @@
 				"id": ".uno:PageFormatDialog"
 			},
 			{
-				"name": ".uno:PrintRangesMenu",
 				"id": ".uno:PrintRangesMenu",
 				"menu": [
 					{
@@ -1149,7 +1130,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:ConditionalFormatMenu",
 				"id": ".uno:ConditionalFormatMenu",
 				"menu": [
 					{
@@ -1179,7 +1159,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:FormatImageMenu",
 				"id": ".uno:FormatImageMenu",
 				"menu": [
 					{
@@ -1205,7 +1184,6 @@
 				]
 			},
 			{
-				"name": ".uno:ObjectMenu",
 				"id": ".uno:ObjectMenu",
 				"menu": [
 					{
@@ -1235,7 +1213,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:AnchorMenu",
 				"id": ".uno:AnchorMenu",
 				"menu": [
 					{
@@ -1250,7 +1227,6 @@
 				]
 			},
 			{
-				"name": ".uno:ArrangeMenu",
 				"id": ".uno:ArrangeMenu",
 				"menu": [
 					{
@@ -1277,7 +1253,6 @@
 				]
 			},
 			{
-				"name": ".uno:FlipMenu",
 				"id": ".uno:FlipMenu",
 				"menu": [
 					{
@@ -1289,7 +1264,6 @@
 				]
 			},
 			{
-				"name": ".uno:GroupMenu",
 				"id": ".uno:GroupMenu",
 				"menu": [
 					{
@@ -1309,7 +1283,6 @@
 		]
 	},
 	{
-		"name": ".uno:FormatStylesMenu",
 		"id": ".uno:FormatStylesMenu",
 		"menu": [
 			{
@@ -1354,7 +1327,6 @@
 		]
 	},
 	{
-		"name": ".uno:SheetMenu",
 		"id": ".uno:SheetMenu",
 		"menu": [
 			{
@@ -1363,7 +1335,6 @@
 				"hotkey": "Ctrl++"
 			},
 			{
-				"name": ".uno:InsertRowsMenu",
 				"id": ".uno:InsertRowsMenu",
 				"menu": [
 					{
@@ -1375,7 +1346,6 @@
 				]
 			},
 			{
-				"name": ".uno:InsertColumnsMenu",
 				"id": ".uno:InsertColumnsMenu",
 				"menu": [
 					{
@@ -1387,7 +1357,6 @@
 				]
 			},
 			{
-				"name": ".uno:InsertBreakMenu",
 				"id": ".uno:InsertBreakMenu",
 				"menu": [
 					{
@@ -1413,7 +1382,6 @@
 				"id": ".uno:DeleteColumns"
 			},
 			{
-				"name": ".uno:DelBreakMenu",
 				"id": ".uno:DelBreakMenu",
 				"menu": [
 					{
@@ -1448,7 +1416,6 @@
 				"id": "dialog:DeleteCell"
 			},
 			{
-				"name": ".uno:FillCellsMenu",
 				"id": ".uno:FillCellsMenu",
 				"menu": [
 					{
@@ -1476,7 +1443,6 @@
 				]
 			},
 			{
-				"name": ".uno:NamesMenu",
 				"id": ".uno:NamesMenu",
 				"menu": [
 					{
@@ -1495,7 +1461,6 @@
 				]
 			},
 			{
-				"name": ".uno:SheetCommentMenu",
 				"id": ".uno:SheetCommentMenu",
 				"menu": [
 					{
@@ -1544,7 +1509,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:NavigateMenu",
 				"id": ".uno:NavigateMenu",
 				"menu": [
 					{
@@ -1561,7 +1525,6 @@
 		]
 	},
 	{
-		"name": ".uno:DataMenu",
 		"id": ".uno:DataMenu",
 		"menu": [
 			{
@@ -1580,7 +1543,6 @@
 				"id": ".uno:DataFilterAutoFilter"
 			},
 			{
-				"name": ".uno:FilterMenu",
 				"id": ".uno:FilterMenu",
 				"menu": [
 					{
@@ -1610,7 +1572,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:DataPilotMenu",
 				"id": ".uno:DataPilotMenu",
 				"menu":[
 					{
@@ -1628,7 +1589,6 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:CellContentsMenu",
 				"id": ".uno:CellContentsMenu",
 				"menu": [
 					{
@@ -1669,7 +1629,6 @@
 				"id": ".uno:DataConsolidate"
 			},
 			{
-				"name": ".uno:GroupOutlineMenu",
 				"id": ".uno:GroupOutlineMenu",
 				"menu": [
 					{
@@ -1702,7 +1661,6 @@
 				]
 			},
 			{
-				"name": ".uno:StatisticsMenu",
 				"id": ".uno:StatisticsMenu",
 				"menu": [
 					{
@@ -1749,7 +1707,6 @@
 		]
 	},
 	{
-		"name": ".uno:ToolsMenu",
 		"id": ".uno:ToolsMenu",
 		"menu": [
 			{
@@ -1761,7 +1718,6 @@
 				"hotkey": "Shift+F7"
 			},
 			{
-				"name": ".uno:LanguageMenu",
 				"id": ".uno:LanguageMenu",
 				"menu": [
 					{
@@ -1804,7 +1760,6 @@
 				"id": ".uno:SolverDialog"
 			},
 			{
-				"name": ".uno:AuditMenu",
 				"id": ".uno:AuditMenu",
 				"menu": [
 					{
@@ -1862,8 +1817,7 @@
 		]
 	},
 	{
-		"name": ".uno:HelpMenu",
-		"id": "help",
+		"id": ".uno:HelpMenu",
 		"menu": [
 			{
 				"icon": ".uno:HelpIndex",
