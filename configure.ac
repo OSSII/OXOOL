@@ -88,7 +88,9 @@ fi
 # Check if there are 'OssiiProduct.hpp' and OssiiProduct.cpp files in the wsd directory.
 AC_MSG_CHECKING([Does it support OSSII authorization mechanism?])
 ENABLE_OSSII_PRODUCT=false
-if test -f "wsd/OssiiProduct.hpp" && test -f "wsd/OssiiProduct.cpp" ; then
+OSSIIPRODUCT_CPP_SIZE=$(stat -c%s "wsd/OssiiProduct.cpp")
+OSSIIPRODUCT_HPP_SIZE=$(stat -c%s "wsd/OssiiProduct.hpp")
+if test "$OSSIIPRODUCT_CPP_SIZE" -gt 0 && test "$OSSIIPRODUCT_HPP_SIZE" -gt 0; then
     AC_MSG_RESULT([yes])
     PKG_CHECK_MODULES(OSSIIPRODUCT, ossiiProduct >= 1.0.0, use_ossiiProduct="yes", use_ossiiProduct="no")
     if test "$use_ossiiProduct" = "no" ; then
