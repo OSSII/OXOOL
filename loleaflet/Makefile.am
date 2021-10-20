@@ -155,7 +155,8 @@ OXOOL_CSS_LST =\
 	$(srcdir)/css/infobar.css
 
 if ENABLE_FEEDBACK
-OXOOL_CSS_LST += $(srcdir)/css/iframedialog.css
+OXOOL_CSS_LST += $(srcdir)/css/iframedialog.css \
+	$(srcdir)/css/welcome.css
 endif
 
 OXOOL_CSS = $(filter %,$(OXOOL_CSS_LST))
@@ -384,7 +385,8 @@ if ENABLE_FEEDBACK
 OXOOL_JS_LST +=\
 	src/control/IFrameDialog.js \
 	src/map/handler/Map.Infobar.js \
-	src/map/handler/Map.Feedback.js
+	src/map/handler/Map.Feedback.js \
+	src/map/handler/Map.Welcome.js
 endif
 
 OXOOL_JS_LST +=\
