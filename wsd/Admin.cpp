@@ -186,6 +186,22 @@ bool convertToJson(OxoolConfig &config, const std::string &key, Object &json)
 
     return success;
 }
+
+/**
+ * 依據應用名稱傳揮對應的文件類型名稱
+*/
+const std::string getDocType(const std::string &appName)
+{
+    std::string docType;
+    if (appName == "writer")
+        docType = "text";
+    else if (appName == "calc")
+        docType = "spreadsheet";
+    else if (appName == "impress")
+        docType = "presentation";
+
+    return docType;
+}
 }
 
 
@@ -258,6 +274,8 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
 {
     // FIXME: check fin, code etc.
     const std::string firstLine = getFirstLine(payload.data(), payload.size());
+
+    const std::string uiconfigDir = LOOLWSD::FileServerRoot + "/loleaflet/dist/uiconfig";
 
     // 處於接收檔案狀態
     if (_receiveFile.isWorking())
@@ -910,6 +928,65 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         else
         {
             sendTextFrame("setConfigNothing");
+        }
+    }
+    // 讀取選單 menubar.json 檔或 perm.json
+    else if ((tokens.equals(0, "getMenu") || tokens.equals(0, "getMenuPerm"))
+              && tokens.size() == 2)
+    {
+        std::string docType = getDocType(tokens[1]);
+        std::string filename;
+        // 決定讀取哪個檔案
+        if (tokens.equals(0, "getMenu"))
+            filename = "menubar.json";
+        else
+            filename = "perm.json";
+
+        if (!docType.empty())
+        {
+            std::stringstream jsonStr;
+            std::string menuPath(uiconfigDir + "/" + docType + "/" + filename);
+            std::ifstream jsonFile(menuPath);
+            if (jsonFile.is_open())
+            {
+                jsonStr << jsonFile.rdbuf();
+                jsonFile.close();
+            }
+            else
+            {
+                jsonStr << "{}";
+            }
+            sendTextFrame(tokens[0] + " " + tokens[1] + " " + jsonStr.str());
+        }
+        else
+        {
+            sendTextFrame(tokens[0] + "Error '" +  tokens[1] + "' is invalid.");
+        }
+    }
+    // 更新 menubar 權限檔案 perm.json
+    // 指令: updateMenuPerm xxxx <uri encoded json string>
+    else if (tokens.equals(0, "updateMenuPerm") && tokens.size() == 3)
+    {
+        std::string docType = getDocType(tokens[1]);
+        if (!docType.empty())
+        {
+            std::string jsonString;
+            Poco::URI::decode(tokens[2], jsonString);
+            std::ofstream permFile(uiconfigDir + "/" + docType + "/perm.json");
+            if (permFile.is_open())
+            {
+                permFile << jsonString;
+                permFile.close();
+                sendTextFrame(tokens[0] + "OK " +  tokens[1]);
+            }
+            else
+            {
+                sendTextFrame(tokens[0] + "Error '" +  tokens[1] + "' perm.json.");
+            }
+        }
+        else
+        {
+            sendTextFrame(tokens[0] + "Error '" +  tokens[1] + "' is invalid.");
         }
     }
     else
