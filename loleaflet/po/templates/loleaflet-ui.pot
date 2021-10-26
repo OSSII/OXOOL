@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-29 17:03+0800\n"
+"POT-Creation-Date: 2021-10-26 15:42+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,43 +18,43 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: admin/admin.strings.js:29
+#: admin/admin.strings.js:56
 msgid "Admin console"
 msgstr ""
 
-#: admin/admin.strings.js:30
+#: admin/admin.strings.js:57
 msgid "Overview"
 msgstr ""
 
-#: admin/admin.strings.js:31
+#: admin/admin.strings.js:58
 msgid "Analytics"
 msgstr ""
 
-#: admin/admin.strings.js:32
+#: admin/admin.strings.js:59
 msgid "Log"
 msgstr ""
 
-#: admin/admin.strings.js:33
+#: admin/admin.strings.js:60
 msgid "System configuration"
 msgstr ""
 
-#: admin/admin.strings.js:34
+#: admin/admin.strings.js:61
 msgid "Software upgrade"
 msgstr ""
 
-#: admin/admin.strings.js:35
+#: admin/admin.strings.js:62
 msgid "Font manager"
 msgstr ""
 
-#: admin/admin.strings.js:36
+#: admin/admin.strings.js:63
 msgid "Table conversion"
 msgstr ""
 
-#: admin/admin.strings.js:37
+#: admin/admin.strings.js:64
 msgid "Template Repo"
 msgstr ""
 
-#: admin/admin.strings.js:38
+#: admin/admin.strings.js:65
 msgid "ODF report template"
 msgstr ""
 
@@ -256,7 +256,7 @@ msgid "Log level"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:56 admin/src/AdminSocketLog.js:10
-#: js/toolbar.js:714 js/toolbar.js:1940 uiconfig/dialogs/InsertBreak.js:19
+#: js/toolbar.js:726 js/toolbar.js:1952 uiconfig/dialogs/InsertBreak.js:19
 msgid "None"
 msgstr ""
 
@@ -495,7 +495,7 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: admin/src/AdminSocketConfigSettings.js:119 js/toolbar.js:2464
+#: admin/src/AdminSocketConfigSettings.js:119 js/toolbar.js:2476
 #: uiconfig/dialogs/BindingLineDialog.js:36
 msgid "Font"
 msgstr ""
@@ -610,7 +610,7 @@ msgid "Edit"
 msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:489
-#: admin/src/AdminSocketFontManager.js:302 js/toolbar.js:1269
+#: admin/src/AdminSocketFontManager.js:302 js/toolbar.js:1281
 msgid "Delete"
 msgstr ""
 
@@ -634,7 +634,7 @@ msgstr ""
 msgid "Font name (preview)"
 msgstr ""
 
-#: admin/src/AdminSocketFontManager.js:15 js/toolbar.js:2441
+#: admin/src/AdminSocketFontManager.js:15 js/toolbar.js:2453
 #: uiconfig/dialogs/InsertBreak.js:30
 msgid "Style"
 msgstr ""
@@ -698,7 +698,7 @@ msgstr ""
 #: admin/src/AdminSocketGlobalFunction.js:13
 #: admin/src/AdminSocketGlobalFunction.js:33
 #: admin/src/AdminSocketGlobalFunction.js:57
-#: admin/src/AdminSocketOverview.js:257 js/toolbar.js:1101 js/toolbar.js:1372
+#: admin/src/AdminSocketOverview.js:257 js/toolbar.js:1113 js/toolbar.js:1384
 #: src/layer/marker/Annotation.js:181 src/map/Map.js:109
 #: uiconfig/dialogs/AddTableAtEnd.js:46
 #: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
@@ -791,6 +791,72 @@ msgstr ""
 
 #: admin/src/AdminSocketLog.js:15
 msgid "Update Log Levels"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:13
+msgid "Menu editor"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:14
+msgid "Writer menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:15
+msgid "Calc menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:16
+msgid "Impress menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:17
+msgid "Instructions"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:18
+msgid "The option is marked with a red line to indicate that it is disabled."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:19
+msgid "Click the option to enable or disable the function."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:20
+msgid "Disable the sub-menu, all options under it will also be disabled."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:21
+msgid ""
+"There are three menus available for editing: Writer menu, Calc menu, and "
+"Impress Menu."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:22
+msgid "Show json content."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:23
+msgid "Update menu permissions."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:24
+msgid "Download"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:469
+msgid "Writer"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:476
+msgid "Calc"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:483
+msgid "Impress"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:651
+msgid "Menu permission updated successfully"
 msgstr ""
 
 #: admin/src/AdminSocketOverview.js:12
@@ -981,260 +1047,260 @@ msgstr ""
 msgid " s"
 msgstr ""
 
-#: js/toolbar.js:715
+#: js/toolbar.js:727
 msgid "Wipe"
 msgstr ""
 
-#: js/toolbar.js:716
+#: js/toolbar.js:728
 msgid "Wheel"
 msgstr ""
 
-#: js/toolbar.js:717
+#: js/toolbar.js:729
 msgid "Uncover"
 msgstr ""
 
-#: js/toolbar.js:718
+#: js/toolbar.js:730
 msgid "Bars"
 msgstr ""
 
-#: js/toolbar.js:719
+#: js/toolbar.js:731
 msgid "Checkers"
 msgstr ""
 
-#: js/toolbar.js:720
+#: js/toolbar.js:732
 msgid "Shape"
 msgstr ""
 
-#: js/toolbar.js:721
+#: js/toolbar.js:733
 msgid "Box"
 msgstr ""
 
-#: js/toolbar.js:722
+#: js/toolbar.js:734
 msgid "Wedge"
 msgstr ""
 
-#: js/toolbar.js:724
+#: js/toolbar.js:736
 msgid "Fade"
 msgstr ""
 
-#: js/toolbar.js:726
+#: js/toolbar.js:738
 msgid "Cover"
 msgstr ""
 
-#: js/toolbar.js:727
+#: js/toolbar.js:739
 msgid "Dissolve"
 msgstr ""
 
-#: js/toolbar.js:730
+#: js/toolbar.js:742
 msgid "Push"
 msgstr ""
 
-#: js/toolbar.js:731
+#: js/toolbar.js:743
 msgid "Split"
 msgstr ""
 
-#: js/toolbar.js:732
+#: js/toolbar.js:744
 msgid "Diagonal"
 msgstr ""
 
-#: js/toolbar.js:845
+#: js/toolbar.js:857
 msgid "More..."
 msgstr ""
 
-#: js/toolbar.js:907
+#: js/toolbar.js:919
 msgid "Borders"
 msgstr ""
 
-#: js/toolbar.js:968
+#: js/toolbar.js:980
 msgid "Insert table"
 msgstr ""
 
-#: js/toolbar.js:973
+#: js/toolbar.js:985
 msgid "Insert Local Image"
 msgstr ""
 
-#: js/toolbar.js:977
+#: js/toolbar.js:989
 msgid "Insert shapes"
 msgstr ""
 
-#: js/toolbar.js:985 uiconfig/dialogs/SetHyperLinkTable.js:91
+#: js/toolbar.js:997 uiconfig/dialogs/SetHyperLinkTable.js:91
 msgid "Worksheet link"
 msgstr ""
 
-#: js/toolbar.js:990 js/toolbar.js:2820
+#: js/toolbar.js:1002 js/toolbar.js:2832
 msgid "Common symbols"
 msgstr ""
 
-#: js/toolbar.js:991
+#: js/toolbar.js:1003
 msgid "More symbols"
 msgstr ""
 
-#: js/toolbar.js:1035 js/toolbar.js:1490
+#: js/toolbar.js:1047 js/toolbar.js:1502
 msgid "Always follow the editor"
 msgstr ""
 
-#: js/toolbar.js:1038 js/toolbar.js:1493
+#: js/toolbar.js:1050 js/toolbar.js:1505
 msgid "Current"
 msgstr ""
 
-#: js/toolbar.js:1092 js/toolbar.js:1363
+#: js/toolbar.js:1104 js/toolbar.js:1375
 msgid "Select function"
 msgstr ""
 
-#: js/toolbar.js:1094 js/toolbar.js:1365 js/toolbar.js:1938
+#: js/toolbar.js:1106 js/toolbar.js:1377 js/toolbar.js:1950
 msgid "Sum"
 msgstr ""
 
-#: js/toolbar.js:1095 js/toolbar.js:1366 js/toolbar.js:1933
+#: js/toolbar.js:1107 js/toolbar.js:1378 js/toolbar.js:1945
 msgid "Average"
 msgstr ""
 
-#: js/toolbar.js:1096 js/toolbar.js:1367 js/toolbar.js:1937
+#: js/toolbar.js:1108 js/toolbar.js:1379 js/toolbar.js:1949
 msgid "Minimum"
 msgstr ""
 
-#: js/toolbar.js:1097 js/toolbar.js:1368 js/toolbar.js:1936
+#: js/toolbar.js:1109 js/toolbar.js:1380 js/toolbar.js:1948
 msgid "Maximum"
 msgstr ""
 
-#: js/toolbar.js:1098 js/toolbar.js:1369 js/toolbar.js:1935
+#: js/toolbar.js:1110 js/toolbar.js:1381 js/toolbar.js:1947
 msgid "Count"
 msgstr ""
 
-#: js/toolbar.js:1102 js/toolbar.js:1373
+#: js/toolbar.js:1114 js/toolbar.js:1385
 msgid "Accept"
 msgstr ""
 
-#: js/toolbar.js:1135 js/toolbar.js:1420
+#: js/toolbar.js:1147 js/toolbar.js:1432
 msgid "First sheet"
 msgstr ""
 
-#: js/toolbar.js:1136 js/toolbar.js:1421
+#: js/toolbar.js:1148 js/toolbar.js:1433
 msgid "Previous sheet"
 msgstr ""
 
-#: js/toolbar.js:1137 js/toolbar.js:1422
+#: js/toolbar.js:1149 js/toolbar.js:1434
 msgid "Next sheet"
 msgstr ""
 
-#: js/toolbar.js:1138 js/toolbar.js:1423
+#: js/toolbar.js:1150 js/toolbar.js:1435
 msgid "Last sheet"
 msgstr ""
 
-#: js/toolbar.js:1139 js/toolbar.js:1424
+#: js/toolbar.js:1151 js/toolbar.js:1436
 msgid "Insert sheet"
 msgstr ""
 
-#: js/toolbar.js:1230 js/toolbar.js:1474 src/control/Preview.js:28
+#: js/toolbar.js:1242 js/toolbar.js:1486 src/control/Preview.js:28
 msgid "Search:"
 msgstr ""
 
-#: js/toolbar.js:1237 js/toolbar.js:1481 src/control/Preview.js:35
+#: js/toolbar.js:1249 js/toolbar.js:1493 src/control/Preview.js:35
 msgid "Cancel the search"
 msgstr ""
 
-#: js/toolbar.js:1442 src/control/Preview.js:37 src/othermessages.js:34
+#: js/toolbar.js:1454 src/control/Preview.js:37 src/othermessages.js:34
 msgid "Fullscreen presentation"
 msgstr ""
 
-#: js/toolbar.js:1448 src/othermessages.js:35 uiconfig/dialogs/MoveTable.js:28
+#: js/toolbar.js:1460 src/othermessages.js:35 uiconfig/dialogs/MoveTable.js:28
 msgid "Move"
 msgstr ""
 
-#: js/toolbar.js:1501
+#: js/toolbar.js:1513
 msgid "Reset zoom"
 msgstr ""
 
-#: js/toolbar.js:1504 src/control/Preview.js:41
+#: js/toolbar.js:1516 src/control/Preview.js:41
 msgid "Zoom factor"
 msgstr ""
 
-#: js/toolbar.js:1574
+#: js/toolbar.js:1586
 msgid "%user has joined"
 msgstr ""
 
-#: js/toolbar.js:1575
+#: js/toolbar.js:1587
 msgid "%user has left"
 msgstr ""
 
-#: js/toolbar.js:1904
+#: js/toolbar.js:1916
 msgid "Number of Sheets"
 msgstr ""
 
-#: js/toolbar.js:1909
+#: js/toolbar.js:1921
 msgid "Selected range of cells"
 msgstr ""
 
-#: js/toolbar.js:1914 js/toolbar.js:1971
+#: js/toolbar.js:1926 js/toolbar.js:1983
 msgid "Entering text mode"
 msgstr ""
 
-#: js/toolbar.js:1919 js/toolbar.js:1981 js/toolbar.js:2007
+#: js/toolbar.js:1931 js/toolbar.js:1993 js/toolbar.js:2019
 msgid "Text Language"
 msgstr ""
 
-#: js/toolbar.js:1924 js/toolbar.js:1976
+#: js/toolbar.js:1936 js/toolbar.js:1988
 msgid "Selection Mode"
 msgstr ""
 
-#: js/toolbar.js:1929
+#: js/toolbar.js:1941
 msgid "Choice of functions"
 msgstr ""
 
-#: js/toolbar.js:1934
+#: js/toolbar.js:1946
 msgid "CountA"
 msgstr ""
 
-#: js/toolbar.js:1939
+#: js/toolbar.js:1951
 msgid "Selection count"
 msgstr ""
 
-#: js/toolbar.js:1961
+#: js/toolbar.js:1973
 msgid "Number of Pages"
 msgstr ""
 
-#: js/toolbar.js:1966
+#: js/toolbar.js:1978
 msgid "Word Counter"
 msgstr ""
 
-#: js/toolbar.js:2002
+#: js/toolbar.js:2014
 msgid "Number of Slides"
 msgstr ""
 
-#: js/toolbar.js:2038
+#: js/toolbar.js:2050
 msgid "%n users"
 msgstr ""
 
-#: js/toolbar.js:2039
+#: js/toolbar.js:2051
 msgid "1 user"
 msgstr ""
 
-#: js/toolbar.js:2040
+#: js/toolbar.js:2052
 msgid "0 users"
 msgstr ""
 
-#: js/toolbar.js:2263
+#: js/toolbar.js:2275
 msgid "Document saved"
 msgstr ""
 
-#: js/toolbar.js:2485
+#: js/toolbar.js:2497
 msgid "Previous slide"
 msgstr ""
 
-#: js/toolbar.js:2486
+#: js/toolbar.js:2498
 msgid "Next slide"
 msgstr ""
 
-#: js/toolbar.js:2572
+#: js/toolbar.js:2584
 msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to resolve"
 msgstr ""
 
-#: js/toolbar.js:2987 src/control/Control.DocumentRepair.js:95
+#: js/toolbar.js:2999 src/control/Control.DocumentRepair.js:95
 msgid "You"
 msgstr ""
 
-#: js/toolbar.js:2993
+#: js/toolbar.js:3005
 msgid "Readonly"
 msgstr ""
 
@@ -1408,81 +1474,81 @@ msgstr ""
 msgid "Oops, there is a problem connecting to LibreOffice Online : "
 msgstr ""
 
-#: src/core/Socket.js:282
+#: src/core/Socket.js:285
 msgid "Unsupported server version."
 msgstr ""
 
-#: src/core/Socket.js:346
+#: src/core/Socket.js:349
 msgid "Session terminated by document owner"
 msgstr ""
 
-#: src/core/Socket.js:350
+#: src/core/Socket.js:353
 msgid "Idle document - please click to reload and resume editing"
 msgstr ""
 
-#: src/core/Socket.js:357
+#: src/core/Socket.js:360
 msgid "Server is shutting down for maintenance (auto-saving)"
 msgstr ""
 
-#: src/core/Socket.js:361
+#: src/core/Socket.js:364
 msgid "Oops, there is a problem connecting the document"
 msgstr ""
 
-#: src/core/Socket.js:365
+#: src/core/Socket.js:368
 msgid "Server is recycling and will be available shortly"
 msgstr ""
 
-#: src/core/Socket.js:397
+#: src/core/Socket.js:400
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
 msgstr ""
 
-#: src/core/Socket.js:403
+#: src/core/Socket.js:406
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
 msgstr ""
 
-#: src/core/Socket.js:525
+#: src/core/Socket.js:528
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
 msgstr ""
 
-#: src/core/Socket.js:530
+#: src/core/Socket.js:533
 msgid "Discard"
 msgstr ""
 
-#: src/core/Socket.js:535
+#: src/core/Socket.js:538
 msgid "Overwrite"
 msgstr ""
 
-#: src/core/Socket.js:540
+#: src/core/Socket.js:543
 msgid "Save to new file"
 msgstr ""
 
-#: src/core/Socket.js:615
+#: src/core/Socket.js:618
 msgid "Document requires password to view."
 msgstr ""
 
-#: src/core/Socket.js:618
+#: src/core/Socket.js:621
 msgid "Document requires password to modify."
 msgstr ""
 
-#: src/core/Socket.js:620
+#: src/core/Socket.js:623
 msgid "Hit Cancel to open in view-only mode."
 msgstr ""
 
-#: src/core/Socket.js:624
+#: src/core/Socket.js:627
 msgid "Wrong password provided. Please try again."
 msgstr ""
 
-#: src/core/Socket.js:743
+#: src/core/Socket.js:746
 msgid "Connecting..."
 msgstr ""
 
-#: src/core/Socket.js:903
+#: src/core/Socket.js:906
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
@@ -1827,11 +1893,11 @@ msgstr ""
 msgid "Hide only the current item."
 msgstr ""
 
-#: uiconfig/dialogs/AutoFilter.js:18 uiconfig/dialogs/AutoFilter.js:603
+#: uiconfig/dialogs/AutoFilter.js:18 uiconfig/dialogs/AutoFilter.js:629
 msgid "Ctrl + left mouse button for multiple selections."
 msgstr ""
 
-#: uiconfig/dialogs/AutoFilter.js:165 uiconfig/dialogs/AutoFilter.js:409
+#: uiconfig/dialogs/AutoFilter.js:165 uiconfig/dialogs/AutoFilter.js:412
 msgid "Empty"
 msgstr ""
 
