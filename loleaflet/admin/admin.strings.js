@@ -1,25 +1,52 @@
 /* -*- js-indent-level: 8 -*- */
 /* Stringtable for Admin Console User Interface */
-/* global _ */
+/* global _ _UNO */
 var l10nstrings = {
 	productName: 'OxOffice Online',
 	/**
 	 * 找出整頁中，含有 _="字串" 的 DOM，把該 DOM 的 innerHTML 改成 _("字串") 的值
 	 */
-	fullPageTranslation: function(dumpUntranslatedString) {
-		if (typeof dumpUntranslatedString !== 'boolean') {
-			dumpUntranslatedString = false;
-		}
-		document.querySelectorAll('[_]').forEach(function(element) {
-			var origStr = element.getAttribute('_'); // 原始字串
-			// 翻譯字串是空的就結束
-			if (origStr === '') {
-				return;
-			}
-			var tranStr = _(origStr); // 翻譯字串
-			element.innerHTML = tranStr;
-			if (dumpUntranslatedString && origStr === tranStr) {
-				console.warn('"'+ origStr +'" : Untranslated.');
+	fullPageTranslation: function() {
+		this.translationElement(document);
+	},
+
+	/**
+	 * 翻譯指定 DOM 內所有 element 有指定的 attribute
+	 */
+	 translationElement: function(DOM) {
+		// 需要找出的 attributes
+		var trAttrs = ['_', '_UNO', 'title', 'placeholder'];
+		DOM.querySelectorAll('[' + trAttrs.join('],[') + ']').forEach(function(el) {
+			for (var idx in trAttrs) {
+				var attrName = trAttrs[idx]
+				if (el.hasAttribute(attrName)) {
+					// 讀取該 attribute 字串
+					var origStr = el.getAttribute(attrName);
+					// 翻譯結果
+					var l10nStr = '';
+					switch (attrName) {
+					case '_':
+					case 'title':
+					case 'placeholder':
+						l10nStr = _(origStr);
+						break;
+					case '_UNO':
+						l10nStr = _UNO(origStr);
+						break;
+					default:
+						break;
+					}
+					// 替代原來的字串
+					if (attrName === 'title' || attrName === 'placeholder') {
+						el.setAttribute('title', l10nStr);
+					// 把翻譯結果插到該 element 的結尾
+					} else if (attrName === '_' || attrName === '_UNO') {
+						el.insertBefore(document.createTextNode(l10nStr), null);
+					}
+					if (origStr === l10nStr) {
+						console.debug('warning! "' + origStr + '" may not be translation.');
+					}
+				}
 			}
 		}.bind(this));
 	},
