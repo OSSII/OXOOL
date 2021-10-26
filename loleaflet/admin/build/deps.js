@@ -57,6 +57,12 @@ var deps = {
 		deps: ['AdminCore']
 	},
 
+	AdminSocketMenuEditor: {
+		src: ['src/AdminSocketMenuEditor.js'],
+		desc: 'Socket to menu editor.',
+		deps: ['AdminCore']
+	},
+
 	AdminSocketLicense: {
 		src: ['src/AdminSocketLicense.js'],
 		desc: 'Socket to license Info.',

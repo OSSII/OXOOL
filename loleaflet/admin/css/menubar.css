@@ -1,0 +1,197 @@
+/* hotkey */
+.hotkey, .hotkey:hover {
+    font-size:12px;
+    font-family:"Lucida Sans Unicode", "Lucida Sans", "Lucida Grande", Arial, sans
+serif;
+    position: absolute;
+    right: 13px;
+    display: inline-block;
+}
+
+.writer-icon-img {
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    vertical-align: bottom;
+    margin-right: 4px;
+    background-image: url('../../images/writer_icon.png');
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.calc-icon-img {
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    vertical-align: bottom;
+    margin-right: 4px;
+    background-image: url('../../images/calc_icon.png');
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.impress-icon-img {
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    vertical-align: bottom;
+    margin-right: 4px;
+    background-image: url('../../images/impress_icon.png');
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.menuicon, .menuicon:hover {
+    position: absolute;
+    left: 24px; /* 選單 ICON 前空白 */
+    height: 18px;
+    width: 18px;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.img-icon {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 18px;
+}
+
+/* item */
+.sm-nowrap .item {
+    min-width: 12.5em;
+    max-width: 20em;
+    width: 100%;
+}
+
+.sm-simple > li {
+    border-top: 0;
+    border: 0px;
+}
+
+/* Customizations to sm-simple theme to make it look like LO menu, lo-menu class */
+/*.lo-menu {
+    border: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}*/
+
+.lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active {
+    font-size: 16px;
+    line-height: 18px;
+}
+
+/*.lo-menu ul a, .lo-menu ul a:hover, .lo-menu ul a:focus, .lo-menu ul a:active {
+    font-size: 14px;
+}*/
+
+.lo-menu a.disabled {
+    cursor: default;
+}
+.lo-menu > li > a.has-submenu {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 8px;
+    border-left: 1px solid #fafafa;
+    border-right: 1px solid #fafafa;
+}
+
+.lo-menu {
+    background: #fafafa;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;
+    cursor: default;
+    z-index: auto;
+}
+
+/* Menu Item */
+.lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 48px;/* ICON */
+    padding-right: 24px;
+    color: #000;
+}
+.item-has-hotkey {
+    padding-right: 132px !important;
+}
+.lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
+    background: #538ecd;
+    color: #fff;
+}
+.lo-menu > li, .lo-menu > li > a.disabled {
+    background: #fafafa; /* top-level menus remain greyish */
+}
+.lo-menu > li > a:hover, .lo-menu > li > a:focus, .lo-menu > li > a:active, .lo-menu > li > a.highlighted {
+    background: #fafafa;
+    color: #000;
+    border-color: #bbbbbb;
+}
+.lo-menu > li > a.highlighted {
+    border-bottom-color: #fafafa
+}
+.lo-menu > li > ul {
+    margin-top: -1px !important;
+}
+.lo-menu > li > a .sub-arrow {
+    display: none;
+}
+.lo-menu ul {
+    border: 1px solid #bbbbbb;
+    background: white;
+}
+.lo-menu ul a .sub-arrow {
+    right: 0;
+    left: auto;
+    margin-right: 8px;
+    width: 5px;
+    background: url('../../images/submenuarrow.svg') no-repeat center/contain;
+}
+
+.sub-arrow::before {
+    content: ''  !important;
+}
+
+.highlighted sub-arrow::before {
+    content: ''  !important;
+}
+
+.lo-menu ul > li {
+    border-left: 0;
+    border-top: none;
+}
+.lo-menu a.separator {
+    height: 1px;
+    margin: 3px 0px 3px 44px;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: #bbbbbb;
+}
+
+.lo-menu a.strikethrough {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 0, 0, 0.7);
+}
+/* lo-menu customizations end */
+
+/* Some more lo-menu specific customizations */
+
+/* The smartmenus plugin doesn't seem to have support for icons, so implement our own pseudo-elements */
+.lo-menu-item-checked::before {
+    position: absolute;
+    content: '\2713';
+    color: blue;
+    left: 8px;
+}
+
+.lo-menu-item-checked:hover::before {
+    color: #fff;
+}
