@@ -14,12 +14,14 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		_('Writer menu'), // 文字文件簡報選單
 		_('Calc menu'), // 試算表簡報選單
 		_('Impress menu'), // 簡報選單
+		_('Instructions'), // 說明
 		_('The option is marked with a red line to indicate that it is disabled.'), // 選項劃紅線表示禁用。
 		_('Click the option to enable or disable the function.'), // 點擊選項可啟用或禁用該功能。
 		_('Disable the sub-menu, all options under it will also be disabled.'), // 禁用子選單，則其下所有選項也會禁用。
 		_('There are three menus available for editing: Writer menu, Calc menu, and Impress Menu.'), // 共有 Writer menu、Calc menu、Impress Menu 三種選單可編輯。
 		_('Show json content.'), // 顯示 JSON 內容
 		_('Update menu permissions.'), // 更新選單權限
+		_('Download'), // 下載
 	],
 
 	_iconAlias: {
