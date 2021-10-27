@@ -1804,6 +1804,21 @@
 								"id": "nonelanguage"
 							}
 						]
+					},
+					{
+						"type": "--"
+					},
+					{
+						"id": ".uno:Hyphenate",
+						"hide": true
+					},
+					{
+						"id": ".uno:ChineseConversion",
+						"hide": true
+					},
+					{
+						"id": ".uno:HangulHanjaConversion",
+						"hide": true
 					}
 				]
 			},

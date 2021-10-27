@@ -1721,16 +1721,16 @@
 				"id": ".uno:LanguageMenu",
 				"menu": [
 					{
-						"id": ".uno:Hyphenate"
+						"id": ".uno:Hyphenate",
+						"hide": true
 					},
 					{
-						"id": ".uno:ChineseConversion"
+						"id": ".uno:ChineseConversion",
+						"hide": true
 					},
 					{
-						"id": ".uno:HangulHanjaConversion"
-					},
-					{
-						"type": "--"
+						"id": ".uno:HangulHanjaConversion",
+						"hide": true
 					},
 					{
 						"type": "--"

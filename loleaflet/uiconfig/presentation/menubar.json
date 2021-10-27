@@ -1512,7 +1512,8 @@
 				"id": ".uno:LanguageMenu",
 				"menu": [
 					{
-						"id": ".uno:Hyphenation"
+						"id": ".uno:Hyphenation",
+						"hide": true
 					},
 					{
 						"type": "--"
@@ -1547,9 +1548,6 @@
 			{
 				"id": ".uno:PresentationMinimizer",
 				"hide": true
-			},
-			{
-				"type": "--"
 			}
 		]
 	},
