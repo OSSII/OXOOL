@@ -58,10 +58,6 @@ AC_SUBST([LOOLWSD_VERSION_HASH])
 
 AC_DEFINE_UNQUOTED([LOOLWSD_VERSION_HASH],[["$LOOLWSD_VERSION_HASH"]],[OxOffice Online git hash if present])
 
-LOOLWSD_BRANCH=`( cat dist_git_branch 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null ) | cut -d '-' -f 1`
-AC_SUBST([LOOLWSD_BRANCH])
-AC_DEFINE_UNQUOTED([LOOLWSD_BRANCH], [["$LOOLWSD_BRANCH"]],[git branch name])
-
 AC_CONFIG_SRCDIR([wsd/LOOLWSD.cpp])
 
 AC_CONFIG_HEADERS([config.h])
@@ -177,6 +173,11 @@ AC_ARG_WITH([app-branding],
                              [Point to a directory containing a branding.css file and possibly other files it references,
                               to be bundled and used by the iOS app. The directory structure is copied to
                               "loleaflet/dist/branding" and that directory ends upp in the app bundle as "branding".]))
+
+AC_ARG_WITH([project],
+              AS_HELP_STRING([--with-project=<project name>],
+                             [If the project name is specified, the authorized quantity
+                              and expiration date will not be checked.]))
 
 AC_ARG_ENABLE([gtkapp],
               AS_HELP_STRING([--enable-gtkapp],
@@ -395,6 +396,34 @@ AC_SUBST(ENABLE_BUNDLE)
 AC_SUBST(LOOLWSD_LOGLEVEL)
 AC_SUBST(LOOLWSD_LOG_TO_FILE)
 AC_SUBST(LOLEAFLET_LOGGING)
+
+LOOLWSD_BRANCH=`( cat dist_git_branch 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null )`
+
+# 是否為專案
+PROJECT_NAME=`cat dist_project 2>/dev/null`
+# 未預設專案
+if test "z$PROJECT_NAME" = "z"; then
+    # 是否指定專案名稱
+    if test -n "$with_project"; then
+        PROJECT_NAME="$with_project"
+        echo "$PROJECT_NAME" > dist_project
+    else
+        rm -f dist_project
+    fi
+fi
+# 再一次檢查 PROJECT_NAME 是否有值？
+# 有的話就設定專案編譯
+if test "z$PROJECT_NAME" != "z"; then
+    AC_DEFINE_UNQUOTED([PROJECT_NAME],["$PROJECT_NAME"],[Project name.])
+    AC_SUBST(PROJECT_NAME)
+    # 重新定義 LOOLWSD_BRANCH(改成專案名稱)
+    LOOLWSD_BRANCH="$PROJECT_NAME"
+    project_msg="$PROJECT_NAME"
+else
+    project_msg="None."
+fi
+AC_SUBST([LOOLWSD_BRANCH])
+AC_DEFINE_UNQUOTED([LOOLWSD_BRANCH], [["$LOOLWSD_BRANCH"]],[git branch name])
 
 if test "$enable_debug_protocol" = no; then
    ENABLE_DEBUG_PROTOCOL=false
@@ -628,7 +657,12 @@ AC_DEFINE_UNQUOTED([CORE_VERSION_HASH],[["$CORE_VERSION_HASH"]],[OxOffice core g
 
 LIBPNG_INCLUDES="$with_libpng_includes"
 LIBPNG_LIBS="$with_libpng_libs"
-LOKIT_PATH=`readlink -f $with_lokit_path`
+
+LOKIT_PATH="bundled/include"
+if test -z $with_lokit_path; then
+    with_lokit_path="$LOKIT_PATH"
+fi
+
 if test "$enable_androidapp" = "yes"; then
    if test -n "$LIBPNG_INCLUDES" ; then
       AC_MSG_ERROR([--with-libpng-includes is ignored on Android, please remove the parameter.])
@@ -918,8 +952,8 @@ AS_IF([test "$ENABLE_IOSAPP" != "true" -a "$ENABLE_ANDROIDAPP" != "true" -a "$en
           LO_PATH="${with_lo_path%/}"
           AC_MSG_RESULT([found])
       else
-          AC_MSG_RESULT([not found])
-          AC_MSG_ERROR([OxOffice path must be configured: --with-lo-path])
+          LO_PATH="/opt/oxoffice"
+          AC_MSG_RESULT([default(/opt/oxoffice)])
       fi
       ])
 
@@ -1431,6 +1465,7 @@ Configuration:
     Browsersync             $browsersync_msg
     cypress                 $cypress_msg
     OSSII product           $ossiiproduct_msg
+    Project name            $project_msg
 
     \$ make # to compile"
 if test -n "$with_lo_path"; then

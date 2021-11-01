@@ -18,3 +18,4 @@ rm -f configure
 rm -f depcomp
 rm -fr autom4te.cache
 rm -f *.tar.*
+rm -f dist_*
