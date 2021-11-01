@@ -8,7 +8,7 @@ L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help)
 	options: {
 		commandStates: {},
-
+		menuPermissions: {},
 		// WOPI HideExportOption 為 true 時，下列選項禁止使用
 		hideExportLists: {
 			'print': true, // 列印
@@ -420,6 +420,10 @@ L.Control.Menubar = L.Control.extend({
 		this._level ++;
 		// -------------------------------------
 		for (var i in menu) {
+			// 該選項禁用
+			if (this.options.menuPermissions[menu[i].id] === false) {
+				continue;
+			}
 
 			if ((menu[i].id === 'rev-history' && !revHistoryEnabled) ||
 				(menu[i].id === 'closedocument' && !closebutton)) {
@@ -662,6 +666,30 @@ L.Control.Menubar = L.Control.extend({
 			docType = 'presentation';
 
 		var that = this;
+		// 如果從 WOPI Host 有指定選單權限，就直接使用
+		if (this._map.wopi.UserExtraInfo && this._map.wopi.UserExtraInfo.MenuPermissions) {
+			this.options.menuPermissions = this.wopi.UserExtraInfo.MenuPermissions;
+			console.debug('Use WOPI menu permissions.');
+		// 否則從 OxOOL 下載
+		} else {
+			var permJsonUrl = 'uiconfig/' + docType + '/perm.json';
+			$.ajax({
+				type: 'GET',
+				url: permJsonUrl,
+				cache: false,
+				async: false,
+				dataType: 'json',
+				success: function(perm) {
+					that.options.menuPermissions = perm;
+					console.debug('Obtain system menu permissions.');
+				},
+				error: function(/*xhr, ajaxOptions, thrownError*/) {
+					that.options.menuPermissions = {};
+					console.debug('Menu permission not specified.');
+				}
+			});
+		}
+
 		var jsonUrl = 'uiconfig/' + docType + '/menubar.json';
 		$.ajax({
 			type: 'GET',
