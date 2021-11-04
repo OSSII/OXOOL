@@ -243,6 +243,10 @@
 			},
 			{
 				"id": ".uno:ShadowCursor"
+			},
+			{
+				"id": ".uno:EditDoc",
+				"hotkey": "Ctrl+Shift+M"
 			}
 		]
 	},

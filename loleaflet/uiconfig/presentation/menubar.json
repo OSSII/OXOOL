@@ -126,6 +126,13 @@
 			{
 				"id": ".uno:SearchDialog",
 				"hotkey": "Ctrl+H"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:EditDoc",
+				"hotkey": "Ctrl+Shift+M"
 			}
 		]
 	},
