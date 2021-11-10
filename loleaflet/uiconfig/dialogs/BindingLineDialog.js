@@ -124,7 +124,7 @@ L.dialog.BindingLineDialog = {
 						if (text === '') {
 							text = that._defaultText;
 						}
-						var macro  = 'macro:///OxOOL.BindingLine.insert("' + text + '", ' + numColor + '," ' + font + '", ' + size + ', ' + whatPage + ',"' + position + '", ' + boundary +')';
+						var macro  = 'macro:///OxOOL.BindingLine.insert(' + text + ', ' + numColor + ', ' + font + ', ' + size + ', ' + whatPage + ',' + position + ', ' + boundary +')';
 						console.debug('send macro:', macro);
 						that._map.sendMacroCommand(macro);
 						$(this).dialog('close');
