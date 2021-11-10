@@ -128,6 +128,9 @@ void removeJail(const std::string& root)
     FileUtil::removeFile(tmpPath, true); // Delete tmp contents with prejudice.
     unmount(tmpPath);
 
+    // Unmount the loTemplate' extensions directory.
+    unmount(Poco::Path(root, "lo/share/extensions").toString());
+
     // Unmount the loTemplate directory.
     //FIXME: technically, the loTemplate directory may have any name.
     unmount(Poco::Path(root, "lo").toString());
@@ -168,7 +171,7 @@ void cleanupJails(const std::string& root)
         for (const auto& jail : jails)
         {
             const Poco::Path path(root, jail);
-            if (jail == "tmp") // Delete tmp with prejeduce.
+            if (jail == "tmp" || jail == "extensions") // Delete tmp with prejeduce.
                 FileUtil::removeFile(path.toString(), true);
             else
                 cleanupJails(path.toString());

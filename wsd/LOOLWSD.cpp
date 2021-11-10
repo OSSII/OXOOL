@@ -96,6 +96,7 @@ using Poco::Net::PartHandler;
 #include <Poco/StreamCopier.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/URI.h>
+#include <Poco/Zip/Decompress.h>
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/MapConfiguration.h>
@@ -1246,6 +1247,45 @@ void LOOLWSD::initialize(Application& self)
     LOG_DBG("FileServerRoot before config: " << FileServerRoot);
     FileServerRoot = getPathFromConfig("file_server_root_path");
     LOG_DBG("FileServerRoot after config: " << FileServerRoot);
+
+    // Added by Firefly <firefly@ossii.com.tw>
+    // 建立執行時期的 extenstions 目錄
+    const Path extensionsRoot(ChildRoot, "extensions");
+    File(extensionsRoot).createDirectories();
+    // 掃描 OxOffice 的　/share/extensions 下的目錄
+    const Path oxofficeExtensionsPath(LoTemplate, "share/extensions");
+    LOG_DBG("Scan OxOffice extensions: " << oxofficeExtensionsPath.toString());
+    DirectoryIterator end;
+    for (DirectoryIterator it(oxofficeExtensionsPath); it != end; ++it)
+    {
+        const Path oxofficeExtension(it->path());
+        if (it->isDirectory())
+        {
+            const std::string extName = oxofficeExtension.getFileName();
+            LOG_DBG("Found OxOffice extension: '" << extName << "' and copy to " << extensionsRoot.toString());
+            // 複製到同名目錄
+            it->copyTo(extensionsRoot.toString() + "/" + extName);
+        }
+    }
+
+    // 掃描 OxOOL 的 extensions 目錄
+    const Path oxoolExtensionsPath(FileServerRoot, "extensions");
+    LOG_DBG("Scan OxOOL extensions: " << oxoolExtensionsPath.toString());
+    for (DirectoryIterator it(oxoolExtensionsPath); it != end; ++it)
+    {
+        const Path oxoolExtension(it->path());
+        if (it->isFile() && oxoolExtension.getExtension() == "oxt")
+        {
+            const std::string extName = oxoolExtension.getFileName();
+            // 以檔名為目錄名稱
+            Path oxtDirRoot(extensionsRoot, extName);
+            LOG_DBG("Found OxOOL extension: '" << extName << "' and extract to " << oxtDirRoot.toString());
+            // 解壓縮 .oxt 到自訂的 extensions 目錄
+            std::ifstream oxtStream(it->path(), std::ios::binary);
+            Poco::Zip::Decompress dec(oxtStream, oxtDirRoot, false, true);
+            dec.decompressAllFiles();
+        }
+    }
 
     WelcomeFilesRoot = getPathFromConfig("welcome.path");
     if (!getConfigValue<bool>(conf, "welcome.enable", true))

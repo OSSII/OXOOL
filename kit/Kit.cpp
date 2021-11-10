@@ -2159,6 +2159,19 @@ void lokit_main(
                     return false;
                 }
 
+                // Added by Firefly <firefly@ossii.com.tw>
+                // Mount OxOOL 自訂的 extensions 到 child root 的 OxOffice extensions
+                const std::string oxoolExtensionsRoot = Poco::Path(childRoot, "extensions").toString();
+                const std::string oxofficeExtensionsRoot = Poco::Path(loJailDestPath, "share/extensions").toString();
+                LOG_INF("Mounting " << oxoolExtensionsRoot << " -> " << oxofficeExtensionsRoot);
+                if (!JailUtil::bind(oxoolExtensionsRoot, oxofficeExtensionsRoot)
+                    || !JailUtil::remountReadonly(oxoolExtensionsRoot, oxofficeExtensionsRoot))
+                {
+                    LOG_WRN("Failed to mount [" << oxoolExtensionsRoot << "] -> [" << oxofficeExtensionsRoot
+                                                << "], will link/copy contents.");
+                    return false;
+                }
+
                 // Hard-random tmpdir inside the jail for added sercurity.
                 const std::string tempRoot = Poco::Path(childRoot, "tmp").toString();
                 Poco::File(tempRoot).createDirectories();
