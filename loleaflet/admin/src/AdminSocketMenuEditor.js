@@ -10,6 +10,8 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 	},
 
 	_l10n: [
+		_('Enabled item'), // 啟用選項
+		_('Disabled item'), // 禁用選項
 		_('Menu editor'), // 選單編輯
 		_('Writer menu'), // 文字文件簡報選單
 		_('Calc menu'), // 試算表簡報選單
@@ -19,8 +21,10 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		_('Click the option to enable or disable the function.'), // 點擊選項可啟用或禁用該功能。
 		_('Disable the sub-menu, all options under it will also be disabled.'), // 禁用子選單，則其下所有選項也會禁用。
 		_('There are three menus available for editing: Writer menu, Calc menu, and Impress Menu.'), // 共有 Writer menu、Calc menu、Impress Menu 三種選單可編輯。
-		_('Show json content.'), // 顯示 JSON 內容
+		_('Show enabled JSON content.'), // 顯示啟用 JSON 內容
+		_('Show disabled JSON content.'), // 顯示禁用 JSON 內容
 		_('Update menu permissions.'), // 更新選單權限
+		_('Reset menu'), // 重設選單
 		_('Download'), // 下載
 	],
 
@@ -501,13 +505,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		$('#updatemenu').click(function() {
 			var key = this.getEditingMenuKey();
 			if (key) {
-				var items = this._menubars[key].container.querySelectorAll('li');
-				var permList = {};
-				items.forEach(function(item) {
-					if (!item.mgr.isAvailable()) {
-						permList[item.mgr.getId()] = false;
-					}
-				});
+				var permList = this.getDisabledPermissions(key);
 				this.socket.send(
 					'updateMenuPerm ' + key + ' '
 					+ encodeURI(JSON.stringify(permList, null, '\t'))
@@ -517,37 +515,50 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 			}
 		}.bind(this));
 
-		// 顯示目前編輯的選單 JSON 內容
-		$('#showjson').click(function() {
-			var key = this.getEditingMenuKey();
-			if (key) {
-				var menubar = this.constructJsonObject(this._menubars[key].container);
-				var jsonContentTitle = document.getElementById('jsonContentTitle');
-				jsonContentTitle.innerText = this._menubars[key].title;
-				var jsonContent = document.getElementById('jsonContent');
-				jsonContent.innerText = JSON.stringify(menubar, null, '\t');
-				$('#showJsonContentDialog').modal('show');
-			} else {
-				console.error('menu key not found!');
-			}
+		// 顯示目前編輯禁用的 JSON 內容
+		$('#showdisabledjson').click(function() {
+			this.showJsonContent(true);
+		}.bind(this));
+
+		// 顯示目前編輯啟用的 JSON 內容
+		$('#showenabledjson').click(function() {
+			this.showJsonContent(false);
 		}.bind(this));
 
 		// 下載 JSON 檔案
 		$('#downloadJson').click(function() {
-			var jsonContent = document.getElementById('jsonContent').innerText;
+			var jsonContent = document.getElementById('jsonContent');
+			var isDisabled = jsonContent.getAttribute('disabledItem') === 'true';
 			// 轉換資料到 byte array
-			var byteArray = new Uint8Array(jsonContent.length);
-			for (var i = 0; i < jsonContent.length ; i++) {
-				byteArray[i] = jsonContent.charCodeAt(i);
+			var contentLen = jsonContent.innerText.length;
+			var byteArray = new Uint8Array(contentLen);
+			for (var i = 0; i < contentLen ; i++) {
+				byteArray[i] = jsonContent.innerText.charCodeAt(i);
 			}
 			var blob = new Blob([byteArray], {type: 'octet/stream'});
 			var link = L.DomUtil.create('a', '', document.body);
 			link.style = 'display: none';
 			link.href = window.URL.createObjectURL(blob);
-			link.download = this.getEditingMenuKey() + '-menubar.json';
+			link.download = this.getEditingMenuKey() + '-' +
+				(isDisabled === true ? 'disabled' : 'enabled') + '-menubar.json';
 			link.click();
 			L.DomUtil.remove(link);
-		}.bind(this))
+		}.bind(this));
+
+		// 重設選單(恢復所有選項)
+		$('#resetmenu').click(function() {
+			var key = this.getEditingMenuKey();
+			if (key) {
+				// 取得所有禁用選項陣列
+				var disabledItems = this._menubars[key].container.querySelectorAll('.strikethrough');
+				// 依序啟用
+				disabledItems.forEach(function(item) {
+					if (item.parentNode.mgr) {
+						item.parentNode.mgr.setAvailable(true);
+					}
+				});
+			}
+		}.bind(this));
 	},
 
 	/**
@@ -563,6 +574,44 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 			}
 		}
 		return null;
+	},
+
+	/**
+	 * 取得指定的編輯選單禁用列表
+	 * @param {string} key - 'writer', 'calc' or 'impress'
+	 * @returns Object
+	 */
+	getDisabledPermissions: function(key) {
+		var items = this._menubars[key].container.querySelectorAll('li'); // 取得所有選項
+		var permList = {};
+		items.forEach(function(item) {
+			// 把禁用 id 放進 permList 中
+			if (!item.mgr.isAvailable()) {
+				permList[item.mgr.getId()] = false;
+			}
+		});
+		return permList;
+	},
+
+	showJsonContent: function(isDisabled) {
+		var key = this.getEditingMenuKey();
+		if (key) {
+			var content;
+			if (isDisabled === true) {
+				content = this.getDisabledPermissions(key);
+			} else {
+				content = this.constructJsonObject(this._menubars[key].container);
+			}
+			var jsonContentTitle = document.getElementById('jsonContentTitle');
+			jsonContentTitle.innerText = this._menubars[key].title + ' '
+				+ (isDisabled ? _('(Disabled item)') : _('(Enabled item)'));
+			var jsonContent = document.getElementById('jsonContent');
+			jsonContent.setAttribute('disabledItem', isDisabled);
+			jsonContent.innerText = JSON.stringify(content, null, '\t');
+			$('#showJsonContentDialog').modal('show');
+		} else {
+			console.error('menu key not found!');
+		}
 	},
 
 	/**
