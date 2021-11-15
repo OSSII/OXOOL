@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-26 15:42+0800\n"
+"POT-Creation-Date: 2021-11-15 17:07+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -686,7 +686,7 @@ msgstr ""
 #: uiconfig/dialogs/GotoPage.js:63 uiconfig/dialogs/InsertBreak.js:50
 #: uiconfig/dialogs/InsertCell.js:41 uiconfig/dialogs/InsertTable.js:64
 #: uiconfig/dialogs/MoveTable.js:51 uiconfig/dialogs/OXSaveAs.js:39
-#: uiconfig/dialogs/PdfWatermarkText.js:40 uiconfig/dialogs/RemoveCell.js:41
+#: uiconfig/dialogs/PdfWatermarkText.js:50 uiconfig/dialogs/RemoveCell.js:41
 #: uiconfig/dialogs/RemoveTable.js:40 uiconfig/dialogs/RenameTable.js:42
 #: uiconfig/dialogs/RowHeight.js:49 uiconfig/dialogs/RowOrColGroup.js:50
 #: uiconfig/dialogs/SetHyperLinkTable.js:105
@@ -706,7 +706,7 @@ msgstr ""
 #: uiconfig/dialogs/GotoPage.js:76 uiconfig/dialogs/InsertBreak.js:57
 #: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertTable.js:71
 #: uiconfig/dialogs/MoveTable.js:58 uiconfig/dialogs/OXSaveAs.js:54
-#: uiconfig/dialogs/PdfWatermarkText.js:54 uiconfig/dialogs/RemoveCell.js:54
+#: uiconfig/dialogs/PdfWatermarkText.js:75 uiconfig/dialogs/RemoveCell.js:54
 #: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
 #: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
 #: uiconfig/dialogs/SetHyperLinkTable.js:148
@@ -793,69 +793,85 @@ msgstr ""
 msgid "Update Log Levels"
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:13
-msgid "Menu editor"
+#: admin/src/AdminSocketMenuEditor.js:13 admin/src/AdminSocketMenuEditor.js:607
+msgid "Enabled item"
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:14
-msgid "Writer menu"
+#: admin/src/AdminSocketMenuEditor.js:14 admin/src/AdminSocketMenuEditor.js:607
+msgid "Disabled item"
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:15
-msgid "Calc menu"
+msgid "Menu editor"
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:16
-msgid "Impress menu"
+msgid "Writer menu"
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:17
-msgid "Instructions"
+msgid "Calc menu"
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:18
-msgid "The option is marked with a red line to indicate that it is disabled."
+msgid "Impress menu"
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:19
-msgid "Click the option to enable or disable the function."
+msgid "Instructions"
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:20
-msgid "Disable the sub-menu, all options under it will also be disabled."
+msgid "The option is marked with a red line to indicate that it is disabled."
 msgstr ""
 
 #: admin/src/AdminSocketMenuEditor.js:21
+msgid "Click the option to enable or disable the function."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:22
+msgid "Disable the sub-menu, all options under it will also be disabled."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:23
 msgid ""
 "There are three menus available for editing: Writer menu, Calc menu, and "
 "Impress Menu."
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:22
-msgid "Show json content."
+#: admin/src/AdminSocketMenuEditor.js:24
+msgid "Show enabled JSON content."
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:23
+#: admin/src/AdminSocketMenuEditor.js:25
+msgid "Show disabled JSON content."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:26
 msgid "Update menu permissions."
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:24
+#: admin/src/AdminSocketMenuEditor.js:27
+msgid "Reset menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:28
 msgid "Download"
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:469
+#: admin/src/AdminSocketMenuEditor.js:473
 msgid "Writer"
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:476
+#: admin/src/AdminSocketMenuEditor.js:480
 msgid "Calc"
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:483
+#: admin/src/AdminSocketMenuEditor.js:487
 msgid "Impress"
 msgstr ""
 
-#: admin/src/AdminSocketMenuEditor.js:651
+#: admin/src/AdminSocketMenuEditor.js:700
 msgid "Menu permission updated successfully"
 msgstr ""
 
@@ -1441,7 +1457,7 @@ msgid "Right Margin"
 msgstr ""
 
 #: src/control/Toolbar.js:237 src/control/Toolbar.js:249
-#: uiconfig/dialogs/PdfWatermarkText.js:44
+#: uiconfig/dialogs/PdfWatermarkText.js:65
 msgid "Downloading..."
 msgstr ""
 
@@ -1952,7 +1968,7 @@ msgstr ""
 
 #: uiconfig/dialogs/BindingLineDialog.js:99 uiconfig/dialogs/ColumnWidth.js:31
 #: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/InsertCell.js:27
-#: uiconfig/dialogs/PdfWatermarkText.js:26 uiconfig/dialogs/RemoveCell.js:27
+#: uiconfig/dialogs/PdfWatermarkText.js:36 uiconfig/dialogs/RemoveCell.js:27
 #: uiconfig/dialogs/RowHeight.js:31 uiconfig/dialogs/SetTabBgColor.js:24
 #: uiconfig/dialogs/SplitCell.js:55
 msgid "Close"
@@ -2067,15 +2083,19 @@ msgstr ""
 msgid "Please enter a new filename."
 msgstr ""
 
-#: uiconfig/dialogs/PdfWatermarkText.js:20
+#: uiconfig/dialogs/PdfWatermarkText.js:13
 msgid "Watermark text"
 msgstr ""
 
-#: uiconfig/dialogs/PdfWatermarkText.js:21
+#: uiconfig/dialogs/PdfWatermarkText.js:14
 msgid "If no needed, please leave it blank."
 msgstr ""
 
-#: uiconfig/dialogs/PdfWatermarkText.js:25
+#: uiconfig/dialogs/PdfWatermarkText.js:15
+msgid "Direction"
+msgstr ""
+
+#: uiconfig/dialogs/PdfWatermarkText.js:35
 msgid "Add watermark"
 msgstr ""
 
