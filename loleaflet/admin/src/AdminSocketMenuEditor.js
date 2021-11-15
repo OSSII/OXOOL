@@ -603,8 +603,8 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 				content = this.constructJsonObject(this._menubars[key].container);
 			}
 			var jsonContentTitle = document.getElementById('jsonContentTitle');
-			jsonContentTitle.innerText = this._menubars[key].title + ' '
-				+ (isDisabled ? _('(Disabled item)') : _('(Enabled item)'));
+			jsonContentTitle.innerText = this._menubars[key].title + ' ('
+				+ (isDisabled ? _('Disabled item') : _('Enabled item')) + ')';
 			var jsonContent = document.getElementById('jsonContent');
 			jsonContent.setAttribute('disabledItem', isDisabled);
 			jsonContent.innerText = JSON.stringify(content, null, '\t');
