@@ -10,9 +10,9 @@ L.dialog.PdfWatermarkText = {
 	_dialog: L.DomUtil.create('div', '', document.body),
 
 	l10n: [
-		'Watermark text', // 浮水印文字
-		'If no needed, please leave it blank.', // 如果不需要，請保持空白
-		'Direction', // 方向
+		_('Watermark text'), // 浮水印文字
+		_('If no needed, please leave it blank.'), // 如果不需要，請保持空白
+		_('Direction'), // 方向
 	],
 
 
