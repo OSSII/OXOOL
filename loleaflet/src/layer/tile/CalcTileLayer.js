@@ -631,6 +631,10 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		}
 	},
 
+	isLayoutRTL: function () {
+		return !!this._layoutIsRTL;
+	},
+
 	_handleSheetGeometryDataMsg: function (jsonMsgObj) {
 		if (!this.sheetGeometry) {
 			this._sheetGeomFirstWait = false;
