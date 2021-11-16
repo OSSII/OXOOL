@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <algorithm>
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -25,6 +26,7 @@
 #include <map>
 #include <utility>
 #include <inttypes.h>
+#include <cctype>
 
 #include <memory.h>
 
@@ -400,6 +402,20 @@ namespace Util
     inline std::string trimmed(const char* s)
     {
         return trimmed(std::string(s));
+    }
+
+    // Trim all type of whitespace from left and right
+    inline std::string trim_whitespace(std::string s)
+    {
+        auto last =
+            std::find_if(s.rbegin(), s.rend(), [](char ch) { return !std::isspace(ch); });
+        s.erase(last.base(), s.end()); //trim from right
+
+        auto first =
+            std::find_if(s.begin(), s.end(), [](char ch) { return !std::isspace(ch); });
+        s.erase(s.begin(), first); //trim from left
+
+        return s;
     }
 
     /// Return true iff s starts with t.

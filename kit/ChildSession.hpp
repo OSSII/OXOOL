@@ -293,6 +293,9 @@ private:
     bool renderShapeSelection(const char* buffer, int length, const StringVector& tokens);
     bool getGraphicSelection(const char* buffer, int length, const StringVector& tokens);
     bool removeTextContext(const char* /*buffer*/, int /*length*/, const StringVector& tokens);
+#ifdef ENABLE_FREEMIUM
+    bool updateFreemiumStatus(const char* buffer, int length, const StringVector& tokens);
+#endif
 
     void rememberEventsForInactiveUser(const int type, const std::string& payload);
     bool formFieldEvent(const char* buffer, int length, const StringVector& tokens);

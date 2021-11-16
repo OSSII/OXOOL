@@ -12,6 +12,7 @@
     <server_name desc="External hostname:port of the server running oxoolwsd. If empty, it's derived from the request (please set it if this doesn't work). Must be specified when behind a reverse-proxy or when the hostname is not reachable directly." type="string" default=""></server_name>
     <client_port_number desc="Port number to listen to (default: 9980)." type="uint" default="9980">9980</client_port_number>
     <file_server_root_path desc="Path to the directory that should be considered root for the file server. This should be the directory containing loleaflet." type="path" relative="true" default="loleaflet/../">@LOOLWSD_DATADIR@</file_server_root_path>
+    <hexify_embedded_urls desc="Enable to protect encoded URLs from getting decoded by intermediate hops. Particularly useful on Azure deployments" type="bool" default="false"></hexify_embedded_urls>
 
     <convert_to desc="Is file format conversion enabled?" type="bool" default="false">false</convert_to>
 
@@ -191,5 +192,7 @@
 
     <monitors desc="Addresses of servers we connect to on start for monitoring">
     </monitors>
+
+    @FREEMIUM_CONFIGURATION@
 
 </config>

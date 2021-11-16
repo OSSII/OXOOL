@@ -267,6 +267,12 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         // Just ignore these.
         // FIXME: We probably should do something for "canceltiles" at least?
     }
+    else if (tokens.equals(0, "freemiumstatus"))
+    {
+#ifdef ENABLE_FREEMIUM
+        return updateFreemiumStatus(buffer, length, tokens);
+#endif
+    }
     else
     {
         // All other commands are such that they always require a LibreOfficeKitDocument session,
@@ -2590,6 +2596,23 @@ int ChildSession::getSpeed()
 
     return _cursorInvalidatedEvent.size();
 }
+
+#ifdef ENABLE_FREEMIUM
+bool ChildSession::updateFreemiumStatus(const char* /*buffer*/, int /*length*/, const StringVector& tokens)
+{
+    std::string status;
+    if (tokens.size() < 2 || !getTokenString(tokens[1], "isFreemiumUser", status))
+    {
+        sendTextFrameAndLogError("error: cmd=freemiumstatus kind=failure");
+        return false;
+    }
+
+    // TODO: 以下有空再去參考 Collabora Office
+    //getLOKitDocument()->setFreemiumDenyList(Freemium::FreemiumManager::getFreemiumDenyListString().c_str());
+    //getLOKitDocument()->setFreemiumView(_viewId, status == "true");
+    return true;
+}
+#endif
 
 void ChildSession::loKitCallback(const int type, const std::string& payload)
 {
