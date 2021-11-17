@@ -30,6 +30,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		this._mouseOverEntry = null;
 		this._lastMouseOverIndex = undefined;
 		this._hitResizeArea = false;
+		this.sectionProperties.docLayer = this._map._docLayer;
 
 		this._selectionBackgroundGradient = [ '#3465A4', '#729FCF', '#004586' ];
 
@@ -161,7 +162,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		if (!entry)
 			return;
 
-		var isRTL = this._map._docLayer.isLayoutRTL();
+		var isRTL = this.isCalcRTL();
 		var content = this._colIndexToAlpha(entry.index + 1);
 		var startX = isRTL ? this.size[0] - entry.pos : entry.pos - entry.size;
 
@@ -233,7 +234,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 		var colStart = (entry.pos - entry.size) / app.dpiScale;
 		var colEnd = entry.pos / app.dpiScale;
 
-		var isRTL = this._map._docLayer.isLayoutRTL();
+		var isRTL = this.isCalcRTL();
 
 		var left = isRTL ? rect.right - colEnd : rect.left + colStart;
 		var right = isRTL ? rect.right - colStart : rect.left + colEnd;
@@ -277,7 +278,7 @@ L.Control.ColumnHeader = L.Control.Header.extend({
 				width = 0;
 			}
 
-			var isRTL = this._map._docLayer.isLayoutRTL();
+			var isRTL = this.isCalcRTL();
 
 			if (isRTL)
 				width -= dragDistance[0];
