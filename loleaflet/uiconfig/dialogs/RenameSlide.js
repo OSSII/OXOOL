@@ -22,10 +22,10 @@ L.dialog.RenameSlide = {
 			message: _('Name'),
 			default: slideName,
 			callback: function(data) {
-				data = data.trim(); // 去掉頭尾空白
-				var error = false;
 				// 有輸入資料
 				if (data !== null) {
+					var error = false;
+					data = data.trim(); // 去掉頭尾空白
 					if (data === '') {
 						error = true;
 					} else {
