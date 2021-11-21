@@ -5009,7 +5009,8 @@ L.CanvasTileLayer = L.Layer.extend({
 				'graphicselection',
 			] : [
 				'invalidatecursor',
-				'textselection'
+				'textselection',
+				'graphicselection'
 			];
 
 			var otherViewTypes = this.isCalc() ? [
