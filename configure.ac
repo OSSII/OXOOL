@@ -796,8 +796,7 @@ AC_SUBST(VEREIGN_URL)
 # Test for build environment
 
 AS_IF([test "$ENABLE_GTKAPP" != true],
-[CXXFLAGS="$CXXFLAGS -std=c++11"
-CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wshadow"])
+[CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wshadow"])
 
 CFLAGS="$CFLAGS -Wall -Wextra"
 
@@ -835,7 +834,7 @@ AC_DEFINE_UNQUOTED([LIBFUZZER],[$LIBFUZZER],[Define to 1 if this is a libfuzzer 
 AM_CONDITIONAL([ENABLE_LIBFUZZER], [test "$LIBFUZZER" = "1"])
 
 # check for C++11 support
-HAVE_CXX11=
+HAVE_CXXSTD=
 AC_MSG_CHECKING([whether $CXX supports C++17, C++14 or C++11])
 for flag in -std=c++17 -std=gnu++14 -std=gnu++1y -std=c++14 -std=c++1y -std=gnu++11 -std=gnu++0x -std=c++11 -std=c++0x ; do
     save_CXXFLAGS=$CXXFLAGS
@@ -848,22 +847,25 @@ for flag in -std=c++17 -std=gnu++14 -std=gnu++1y -std=c++14 -std=c++1y -std=gnu+
         void f(std::vector<int> & v, std::function<bool(int, int)> fn) {
             std::sort(v.begin(), v.end(), fn);
         }
-        ]])],[CXXFLAGS_CXX11=$flag])
+        ]])],[CXXFLAGS_CXXSTD=$flag])
     AC_LANG_POP([C++])
     CXXFLAGS=$save_CXXFLAGS
-    if test -n "$CXXFLAGS_CXX11"; then
-        HAVE_CXX11=TRUE
+    if test -n "$CXXFLAGS_CXXSTD"; then
+        HAVE_CXXSTD=TRUE
         break
     fi
 done
-if test "$HAVE_CXX11" = TRUE; then
-    AC_MSG_RESULT([yes ($CXXFLAGS_CXX11)])
+if test "$HAVE_CXXSTD" = TRUE; then
+    AC_MSG_RESULT([yes ($CXXFLAGS_CXXSTD)])
 else
     AC_MSG_ERROR(no)
 fi
 
+AS_IF([test "$ENABLE_GTKAPP" != true],
+[CXXFLAGS="$CXXFLAGS $CXXFLAGS_CXXSTD"])
+
 STD_FILESYSTEM=
-if test "$CXXFLAGS_CXX11" = "-std=c++17" -a "$ENABLE_ANDROIDAPP" != "true" ; then
+if test "$CXXFLAGS_CXXSTD" = "-std=c++17" -a "$ENABLE_ANDROIDAPP" != "true" ; then
     save_CXXFLAGS=$CXXFLAGS
     CXXFLAGS="$CXXFLAGS -Werror"
     save_LIBS=$LIBS
