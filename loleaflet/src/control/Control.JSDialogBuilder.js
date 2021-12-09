@@ -2183,6 +2183,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 	},
 
 	_emptyCommentWizard: function(parentContainer, data, builder) {
+		L.DomUtil.addClass(parentContainer, 'content-has-no-comments');
 		var emptyCommentWizard = L.DomUtil.create('figure', 'empty-comment-wizard-container', parentContainer);
 		var imgNode = L.DomUtil.create('img', 'empty-comment-wizard-img', emptyCommentWizard);
 		imgNode.src = builder.map.getIconURL('showannotations');
