@@ -391,7 +391,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                     if (tokens.size() >= 5 && getTokenString(tokens, "args", args))
                         args = ",\"args\":" + args;
 
-                    uint64_t id;
+                    uint64_t id, tid;
                     uint64_t dur;
                     if (ph == "i")
                     {
@@ -406,7 +406,8 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                                                           + ",\"tid\":1},\n");
                     }
                     else if ((ph == "S" || ph == "F") &&
-                        getTokenUInt64(tokens[4], "id", id))
+                             getTokenUInt64(tokens[4], "id", id),
+                             getTokenUInt64(tokens[5], "tid", tid))
                     {
                         LOOLWSD::writeTraceEventRecording("{\"name\":\""
                                                           + name
@@ -418,8 +419,9 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                                                           + std::to_string(ts + _performanceCounterEpoch)
                                                           + ",\"pid\":"
                                                           + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
-                                                          + ",\"tid\":1"
-                                                            ",\"id\":"
+                                                          + ",\"tid\":"
+                                                          + std::to_string(tid)
+                                                          + ",\"id\":"
                                                           + std::to_string(id)
                                                           + "},\n");
                     }
