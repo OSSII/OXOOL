@@ -29,7 +29,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 
 		helper.clickOnIdle('#ParaPropertyPanel');
 
-		cy.get('#ParaLeftToRight')
+		cy.get('.unoParaLeftToRight')
 			.should('be.visible');
 	}
 
@@ -38,7 +38,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 
 		helper.clickOnIdle('#ListsPropertyPanel');
 
-		cy.get('#DefaultBullet')
+		cy.get('.unoDefaultBullet')
 			.should('be.visible');
 	}
 
@@ -50,7 +50,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 		// Set right alignment first
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#RightPara');
+		helper.clickOnIdle('.unoRightPara');
 
 		triggerNewSVG();
 
@@ -60,7 +60,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 		// Set left alignment
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#LeftPara');
+		helper.clickOnIdle('.unoLeftPara');
 
 		triggerNewSVG();
 
@@ -75,7 +75,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CenterPara');
+		helper.clickOnIdle('.unoCenterPara');
 
 		triggerNewSVG();
 
@@ -91,7 +91,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 		// Set right alignment first
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#RightPara');
+		helper.clickOnIdle('.unoRightPara');
 
 		triggerNewSVG();
 
@@ -101,7 +101,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 		// Then set justified alignment
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#JustifyPara');
+		helper.clickOnIdle('.unoJustifyPara');
 
 		triggerNewSVG();
 
@@ -127,7 +127,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 		// Then set top alignment
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CellVertTop');
+		helper.clickOnIdle('.unoCellVertTop');
 
 		triggerNewSVG();
 
@@ -142,7 +142,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CellVertCenter');
+		helper.clickOnIdle('.unoCellVertCenter');
 
 		triggerNewSVG();
 
@@ -158,7 +158,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#DefaultBullet');
+		helper.clickOnIdle('#ListsPropertyPanel .unoDefaultBullet');
 
 		triggerNewSVG();
 
@@ -174,7 +174,7 @@ describe('Apply paragraph properties on selected shape.', function() {
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#DefaultNumbering');
+		helper.clickOnIdle('#ListsPropertyPanel .unoDefaultNumbering');
 
 		triggerNewSVG();
 
