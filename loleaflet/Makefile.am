@@ -150,7 +150,8 @@ OXOOL_CSS_LST =\
 	$(srcdir)/css/btns.css \
 	$(srcdir)/css/notebookbar.css \
 	$(srcdir)/css/jssidebar.css \
-	$(srcdir)/css/override-vex.css
+	$(srcdir)/css/override-vex.css \
+	$(srcdir)/css/override-smartmenus.css
 
 if ENABLE_FEEDBACK
 OXOOL_CSS_LST += $(srcdir)/css/iframedialog.css
