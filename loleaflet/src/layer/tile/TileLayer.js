@@ -841,6 +841,19 @@ L.TileLayer = L.GridLayer.extend({
 		var extraInfo = this._graphicSelection.extraInfo;
 		return (extraInfo && extraInfo.type === 2);
 	},
+
+	_isUniformScaling: function() {
+		var extraInfo = this._graphicSelection.extraInfo;
+		if (extraInfo) {
+			if (this._map.getDocType() === 'text' && extraInfo.type === 601) {
+				return true;
+			} else if (extraInfo.type === 22 || extraInfo.type === 23) {
+				return true
+			}
+		}
+		return false;
+	},
+
 	//---------------------------------------
 
 	_isGraphicAngleDivisibleBy90: function() {
@@ -2731,7 +2744,7 @@ L.TileLayer = L.GridLayer.extend({
 			this._graphicMarker.transform.enable({
 				scaling: extraInfo.isResizable,
 				rotation: extraInfo.isRotatable && !this.hasTableSelection() && this._isGraphicCanBeRotate() && !this._hasDrawLineSelection(),
-				uniformScaling: !this._isGraphicAngleDivisibleBy90() && !this._hasDrawLineSelection(),
+				uniformScaling: this._isUniformScaling(),
 				scaleLineOnly: this._hasDrawLineSelection(),
 				scaleSouthAndEastOnly: this.hasTableSelection(),
 				angle: this._graphicSelectionAngle
