@@ -178,6 +178,10 @@ namespace Util
     /// Get version information
     void getVersionInfo(std::string& version, std::string& hash);
 
+    /// Added by Firefly <firefly@ossii.com.tw>
+    /// Get version & branch information
+    void getVersionInfo(std::string& version, std::string& hash, std::string& branch);
+
     ///< A random hex string that identifies the current process.
     std::string getProcessIdentifier();
 

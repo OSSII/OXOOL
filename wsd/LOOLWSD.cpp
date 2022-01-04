@@ -1473,6 +1473,7 @@ void LOOLWSD::initialize(Application& self)
         std::cerr << "\nOr for the admin, monitoring, capabilities & discovery:\n\n"
                   << adminURI << '\n'
                   << getServiceURI(LOOLWSD_TEST_METRICS, true) << '\n'
+                  << getServiceURI("/hosting/version") << '\n'
                   << getServiceURI("/hosting/capabilities") << '\n'
                   << getServiceURI("/hosting/discovery") << '\n'
                   << std::endl;
@@ -2567,6 +2568,9 @@ private:
             else if (requestDetails.isGet("/favicon.ico"))
                 handleFaviconRequest(requestDetails, socket);
 
+            else if (requestDetails.isGet("/hosting/version"))
+                handleVersionRequest(requestDetails, socket);
+
             else if (requestDetails.isGet("/hosting/discovery") ||
                      requestDetails.isGet("/hosting/discovery/"))
                 handleWopiDiscoveryRequest(requestDetails, socket);
@@ -2717,6 +2721,38 @@ private:
             faviconPath = LOOLWSD::FileServerRoot + "/favicon.ico";
 
         HttpHelper::sendFileAndShutdown(socket, faviconPath, mimeType);
+    }
+
+    // Added by Firefly <firefly@ossii.com.tw>
+    void handleVersionRequest(const RequestDetails &requestDetails,
+                                    const std::shared_ptr<StreamSocket>& socket)
+    {
+        assert(socket && "Must have a valid socket");
+
+        LOG_DBG("Get version request: " << requestDetails.getURI());
+        std::string loVersion, hash, branch;
+        Util::getVersionInfo(loVersion, hash, branch);
+        std::string versionStr =
+            "{ \"Version\": \"" + loVersion + "\", " +
+            "\"Hash\": \"" + hash + "\", " +
+            "\"Branch\": \"" + branch + "\" }";
+        std::string version = "{\"loolserver\":" +  versionStr;
+        version += ",\"lokitversion\":" + LOOLWSD::LOKitVersion;
+        version += "}";
+
+        std::ostringstream oss;
+        oss << "HTTP/1.1 200 OK\r\n"
+            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
+            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
+            << "Content-Length: " << version.size() << "\r\n"
+            << "Content-Type: application/json\r\n"
+            << "X-Content-Type-Options: nosniff\r\n"
+            << "\r\n"
+            << version;
+
+        socket->send(oss.str());
+        socket->shutdown();
+        LOG_INF("Sent version.json successfully.");
     }
 
     void handleWopiDiscoveryRequest(const RequestDetails &requestDetails,

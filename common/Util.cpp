@@ -641,6 +641,13 @@ namespace Util
         hash.resize(std::min(8, (int)hash.length()));
     }
 
+    // Added by Firefly <firefly@ossii.com.tw>
+    void getVersionInfo(std::string& version, std::string& hash, std::string& branch)
+    {
+        getVersionInfo(version, hash);
+        branch = std::string(LOOLWSD_BRANCH);
+    }
+
     std::string getProcessIdentifier()
     {
         static std::string id = Util::rng::getHexString(8);
