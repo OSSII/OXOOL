@@ -2017,11 +2017,8 @@ L.CanvasTileLayer = L.Layer.extend({
 	},
 
 	_extractAndSetGraphicSelection: function(messageJSON) {
-		// Calc RTL: Negate positive X coordinates from core
-		var signX = this.isCalc() && this.isLayoutRTL() ? -1 : 1;
-		var topLeftTwips = new L.Point(signX * messageJSON[0], messageJSON[1]);
-		var offset = new L.Point(signX * messageJSON[2], messageJSON[3]);
-		var bottomRightTwips = topLeftTwips.add(offset);
+		var calcRTL = this.isCalc() && this.isLayoutRTL();
+		var signX =  calcRTL ? -1 : 1;
 		var hasExtraInfo = messageJSON.length > 5;
 		var hasGridOffset = false;
 		var extraInfo = null;
@@ -2032,6 +2029,12 @@ L.CanvasTileLayer = L.Layer.extend({
 				hasGridOffset = true;
 			}
 		}
+
+		// Calc RTL: Negate positive X coordinates from core if grid offset is available.
+		signX = hasGridOffset && calcRTL ? -1 : 1;
+		var topLeftTwips = new L.Point(signX * messageJSON[0], messageJSON[1]);
+		var offset = new L.Point(signX * messageJSON[2], messageJSON[3]);
+		var bottomRightTwips = topLeftTwips.add(offset);
 
 		if (hasGridOffset) {
 			this._graphicSelectionTwips = new L.Bounds(topLeftTwips.add(this._shapeGridOffset), bottomRightTwips.add(this._shapeGridOffset));
