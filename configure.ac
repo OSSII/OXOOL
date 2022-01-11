@@ -1400,6 +1400,7 @@ AS_IF([test "$ENABLE_IOSAPP" = "true"],
       [
        echo "
 Configuration:
+    Branch name             $LOOLWSD_BRANCH
     LOKit path              ${lokit_msg}
     LO path                 $LO_PATH
     LO integration tests    ${lo_msg}
