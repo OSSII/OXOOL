@@ -1279,9 +1279,17 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
     else if (storageSaveResult.getResult() == StorageBase::SaveResult::UNAUTHORIZED)
     {
         LOG_ERR("Cannot save docKey [" << _docKey << "] to storage URI [" << uriAnonym <<
-                "]. Invalid or expired access token. Notifying client.");
-        it->second->sendTextFrameAndLogError("error: cmd=storage kind=saveunauthorized");
-        broadcastSaveResult(false, "Invalid or expired access token");
+                "]. This certification has expired or is invalid.");
+        it->second->sendTextFrameAndLogError("error: cmd=storage kind=code401");
+        broadcastSaveResult(false, "This certification has expired or is invalid.");
+    }
+    // Added by Firefly <firefly@ossii.com.tw>
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::FORBIDDEN)
+    {
+        LOG_ERR("Cannot save docKey [" << _docKey << "] to storage URI [" << uriAnonym <<
+                "]. The file contains personal or sensitive information.");
+        it->second->sendTextFrameAndLogError("error: cmd=storage kind=code403");
+        broadcastSaveResult(false, "The file contains personal or sensitive information");
     }
     else if (storageSaveResult.getResult() == StorageBase::SaveResult::FAILED)
     {
@@ -1291,6 +1299,26 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
         oss << "error: cmd=storage kind=" << (isRename ? "renamefailed" : "savefailed");
         it->second->sendTextFrame(oss.str());
         broadcastSaveResult(false, "Save failed", storageSaveResult.getErrorMsg());
+    }
+    // Add by Firefly <firefly@ossii.com.tw>
+    // 收到 http code 409 (衝突)
+    // 把錯誤訊息轉給 client
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::CONFLICT)
+    {
+        LOG_ERR("Conflict: docKey [" << _docKey << "] to URI [" << uriAnonym << "]. (Message:\"" << storageSaveResult.getResponseString() << "\")");
+        std::ostringstream oss;
+        oss << "warning: " << storageSaveResult.getResponseString();
+        it->second->sendTextFrame(oss.str());
+    }
+    // Add by Firefly <firefly@ossii.com.tw>
+    // 收到 http code 499 (自訂訊息)
+    // 把錯誤訊息轉給 client
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::STATUS_CODE_499)
+    {
+        LOG_ERR("499: docKey [" << _docKey << "] to URI [" << uriAnonym << "]. (Message:\"" << storageSaveResult.getResponseString() << "\")");
+        std::ostringstream oss;
+        oss << "warning: " << storageSaveResult.getResponseString();
+        it->second->sendTextFrame(oss.str());
     }
     else if (storageSaveResult.getResult() == StorageBase::SaveResult::DOC_CHANGED
              || storageSaveResult.getResult() == StorageBase::SaveResult::CONFLICT)
@@ -1302,6 +1330,34 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
 
         broadcastMessage(message);
         broadcastSaveResult(false, "Conflict: Document changed in storage", storageSaveResult.getErrorMsg());
+    }
+    // Add by Firefly <firefly@ossii.com.tw>
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::NOT_FOUND)
+    {
+        LOG_ERR("PutFile return code 404!");
+        it->second->sendTextFrame("error: cmd=storage kind=code404");
+        broadcastSaveResult(false, "It may not have write permission for this file.");
+    }
+    // Add by Firefly <firefly@ossii.com.tw>
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::REQUEST_ENTITY_TOO_LARGE)
+    {
+        LOG_ERR("PutFile return code 413!");
+        it->second->sendTextFrame("error: cmd=storage kind=code413");
+        broadcastSaveResult(false, "It may be that the file capacity has exceeded the upload limit.");
+    }
+    // Add by Firefly <firefly@ossii.com.tw>
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::INTERNAL_SERVER_ERROR)
+    {
+        LOG_ERR("PutFile return code 500!");
+        it->second->sendTextFrame("error: cmd=storage kind=code500");
+        broadcastSaveResult(false, "Server error or connection timeout.");
+    }
+    // Add by Firefly <firefly@ossii.com.tw>
+    else if (storageSaveResult.getResult() == StorageBase::SaveResult::NOT_IMPLEMENTED)
+    {
+        LOG_ERR("PutFile return code 501!");
+        it->second->sendTextFrame("error: cmd=storage kind=code501");
+        broadcastSaveResult(false, "This operation is not supported.");
     }
 
     return false;
