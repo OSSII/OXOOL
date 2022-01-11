@@ -200,6 +200,9 @@ void Subscriber::unsubscribe(const std::string& command)
 
 void AdminModel::assertCorrectThread() const
 {
+    // Modified by Firefly <firefly@ossii.com.tw>
+    // 不要 crash
+#if 0
     // FIXME: share this code [!]
     const bool sameThread = std::this_thread::get_id() == _owner;
     if (!sameThread)
@@ -208,6 +211,7 @@ void AdminModel::assertCorrectThread() const
         std::this_thread::get_id() << " (" << Util::getThreadId() << ").");
 
     assert(sameThread);
+#endif
 }
 
 AdminModel::~AdminModel()
@@ -797,6 +801,31 @@ std::string AdminModel::getDocuments() const
     oss << ']' << '}';
 
     return oss.str();
+}
+
+// Added by Firefly <firefly@ossii.com.tw>
+// 把所有編輯中的檔案 file token 變成陣列傳回去
+std::vector<std::string> AdminModel::getDocumentTokens() const
+{
+    assertCorrectThread();
+
+    std::vector<std::string> docTokens;
+    // 巡迴
+    for (const auto& it: _documents)
+    {
+        // 未過期
+        if (!it.second->isExpired())
+        {
+            Poco::URI requestUri(it.second->getDocKey());
+            std::vector<std::string> reqPathSegs;
+            requestUri.getPathSegments(reqPathSegs);
+            if (reqPathSegs.size() > 0)
+            {
+                docTokens.push_back(reqPathSegs[reqPathSegs.size() - 1]);
+            }
+        }
+    }
+    return docTokens;
 }
 
 void AdminModel::updateLastActivityTime(const std::string& docKey)

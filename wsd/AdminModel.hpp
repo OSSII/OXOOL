@@ -387,6 +387,8 @@ public:
 
     static int getPidsFromProcName(const std::regex& procNameRegEx, std::vector<int> *pids);
 
+    std::vector<std::string> getDocumentTokens() const;
+
 private:
     void doRemove(std::map<std::string, std::unique_ptr<Document>>::iterator &docIt);
 

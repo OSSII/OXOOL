@@ -1470,9 +1470,10 @@ void LOOLWSD::initialize(Application& self)
 
     const std::string adminURI = getServiceURI(LOOLWSD_TEST_ADMIN_CONSOLE, true);
     if (!adminURI.empty())
-        std::cerr << "\nOr for the admin, monitoring, capabilities & discovery:\n\n"
+        std::cerr << "\nOr for the admin, monitoring, loading, version, capabilities & discovery:\n\n"
                   << adminURI << '\n'
                   << getServiceURI(LOOLWSD_TEST_METRICS, true) << '\n'
+                  << getServiceURI("/lool/loading (use http POST method)") << "\n"
                   << getServiceURI("/hosting/version") << '\n'
                   << getServiceURI("/hosting/capabilities") << '\n'
                   << getServiceURI("/hosting/discovery") << '\n'
@@ -2752,7 +2753,7 @@ private:
 
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
-            << "Last-Modified: " << Poco::DateTimeFormatter::format(Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT) << "\r\n"
+            << "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
             << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
             << "Content-Length: " << version.size() << "\r\n"
             << "Content-Type: application/json\r\n"
@@ -2763,6 +2764,50 @@ private:
         socket->send(oss.str());
         socket->shutdown();
         LOG_INF("Sent version.json successfully.");
+    }
+
+    // Added by Firefly <firefly@ossii.com.tw>
+    void handleLoadingRequest(const RequestDetails &requestDetails,
+                              const std::shared_ptr<StreamSocket>& socket)
+    {
+        LOG_DBG("Get loading request: " << requestDetails.getURI());
+
+        Poco::JSON::Object jsonObj(Poco::JSON_PRESERVE_KEY_ORDER);
+
+        AdminModel& model = Admin::instance().getModel();
+        const std::string documentsOpened = model.query("active_docs_count"); // 開啟檔案數
+        const std::string usersOnline = model.query("active_users_count"); // 線上使用者數
+        const size_t totalMemoryUsage = Admin::instance().getTotalMemoryUsage(); // oxool 使用的記憶體(單位 KB)
+        const size_t totalSystemMemory = Util::getTotalSystemMemoryKb(); //  系統實際記憶體(單位 KB)
+        const double memoryConsumedPercentage = ((double)totalMemoryUsage/(double)totalSystemMemory) * 100;
+        const double uptime = model.getServerUptime();
+        const std::vector<std::string> docTokens = model.getDocumentTokens(); // 所有的 file tokens
+
+        jsonObj.set("documentsOpened", documentsOpened);
+        jsonObj.set("usersOnline", usersOnline);
+        jsonObj.set("totalMemoryUsage", std::to_string(totalMemoryUsage));
+        jsonObj.set("totalSystemMemory", std::to_string(totalSystemMemory));
+        jsonObj.set("memoryConsumedPercentage", std::to_string(memoryConsumedPercentage));
+        jsonObj.set("uptime", std::to_string(uptime));
+        jsonObj.set("documents", docTokens);
+
+        std::ostringstream loadings;
+        jsonObj.stringify(loadings);
+
+        std::ostringstream oss;
+        oss << "HTTP/1.1 200 OK\r\n"
+            << "Access-Control-Allow-Origin: *\r\n" // 避免 http CORS 問題
+            << "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
+            << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
+            << "Content-Length: " << loadings.str().size() << "\r\n"
+            << "Content-Type: application/json\r\n"
+            << "X-Content-Type-Options: nosniff\r\n"
+            << "\r\n"
+            << loadings.str();
+
+        socket->send(oss.str());
+        socket->shutdown();
+        LOG_INF("Sent loading.json successfully.");
     }
 
     void handleWopiDiscoveryRequest(const RequestDetails &requestDetails,
@@ -3178,6 +3223,11 @@ private:
                     cleanupDocBrokers();
                 }
             }
+            return;
+        }
+        else if (requestDetails.equals(1, "loading"))
+        {
+            handleLoadingRequest(requestDetails, socket);
             return;
         }
         else if (requestDetails.equals(2, "insertfile"))
