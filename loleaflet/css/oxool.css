@@ -982,7 +982,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 }
 #about-dialog-info-container {
 	align-items: center;
-	justify-content: left;
+	justify-content: flex-start;
 	flex-grow: 1;
 }
 #about-dialog-info {
