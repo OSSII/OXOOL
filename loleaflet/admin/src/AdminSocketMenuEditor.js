@@ -28,6 +28,11 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		_('Download'), // 下載
 	],
 
+	// uno command 圖示路徑
+	_cmdIconURL: '',
+	// resource 圖示路徑
+	_resIconURL: '',
+
 	_iconAlias: {
 		'acceptchanges': 'accepttrackedchanges',
 		'accepttracedchange': 'accepttrackedchange',
@@ -73,6 +78,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		'characterbackgroundpattern': 'backcolor',
 		'charactermenu': 'fontdialog',
 		'charbackcolor': 'backcolor',
+		'charspacing': 'spacing',
 		'chartmenu': 'diagramtype',
 		'charttitlemenu': 'toggletitle',
 		'checkboxformfield': 'checkbox',
@@ -179,6 +185,8 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		'formattextmenu': 'charfontname',
 		'formfilter': 'datafilterspecialfilter',
 		'formfilterexecute': 'datafilterstandardfilter',
+		'freezepanescolumn': 'freezepanesfirstcolumn',
+		'freezepanesrow': 'freezepanesfirstrow',
 		'functionbox': 'dbviewfunctions',
 		'functiondialog': 'dbviewfunctions',
 		'goodcellstyle': 'goodcellstyles',
@@ -323,6 +331,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		'objectmirrorvertical': 'mirrorvert',
 		'objects3dtoolbox': 'cube',
 		'objecttitledescription': 'insertcaptiondialog',
+		'onlinehelp': 'helpindex',
 		'openfromcalc': 'open',
 		'openfromwriter': 'open',
 		'open_h': 'open',
@@ -355,6 +364,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		'removefilter': 'removefiltersort',
 		'renametable': 'name',
 		'repaginate': 'insertpagenumberfield',
+		'reportissue': 'editdoc',
 		'rightpara': 'alignright',
 		'rotateflipmenu': 'rotateleft',
 		'rowheight': 'setminimalrowheight',
@@ -473,6 +483,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 			title: _('Writer'),
 			docType: 'text',
 			container: null,
+			color: '#2b579a',
 			menu: {}, // 選單
 			perm: {}, // 禁用列表
 		},
@@ -480,6 +491,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 			title: _('Calc'),
 			docType: 'spreadsheet',
 			container: null,
+			color: '#217346',
 			menu: {},
 			perm: {},
 		},
@@ -487,6 +499,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 			title: _('Impress'),
 			docType: 'presentation',
 			container: null,
+			color: '#bc472a',
 			menu: {},
 			perm: {},
 		},
@@ -496,7 +509,32 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		// Base class' onSocketOpen handles authentication
 		this.base.call(this);
 
+		// uno command 圖示路徑
+		this._cmdIconURL = window.loleafletPath + '/images/cmd/';
+		// resource 圖示路徑
+		this._resIconURL = window.loleafletPath + '/images/res/';
+
+		// 設定文件類別代表色
+		document.documentElement.style.setProperty('--doc-identify-color', this._menubars.writer.color);
+
 		for (var key in this._menubars) {
+			// 依據不同的文件設定代表色
+			$('#' + key + '-tab').click(function(e) {
+				var color = '#000'; // 黑色
+				switch (e.currentTarget.id) {
+				case 'writer-tab':
+					color = this._menubars.writer.color;
+					break;
+				case 'calc-tab':
+					color = this._menubars.calc.color;
+					break;
+				case 'impress-tab':
+					color = this._menubars.impress.color;
+					break;
+				}
+				document.documentElement.style.setProperty('--doc-identify-color', color);
+			}.bind(this));
+
 			this.socket.send('getMenuPerm ' + key); // 先取得選單權限
 			this.socket.send('getMenu ' + key); // 再取得選單內容
 		}
@@ -718,29 +756,33 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 	},
 
 	/**
-	 * 取得 uno 指令的 icon 圖示 URL
+	 * 把 uno 指令轉換成 icon 圖示 URL
+	 * @param {string} icon - 若為 'res:' 開頭，則尋找 images/res/ 目錄下同名的圖示
+	 * 否則尋找 images/cmd 之下的同名圖示
 	 *
-	 * @param {string} unoCommand - uno 指令
-	 * @returns string 該指令圖示完整位址
+	 * @returns {string} 該圖示的位址
 	 */
-	getUnoCommandIcon: function(unoCommand) {
-		if (this._resorceIcon[unoCommand]) {
-			return window.loleafletPath + '/images/res/' + this._resorceIcon[unoCommand] + '.svg';
+	 getIconURL: function(icon) {
+		var iconType = '.svg';
+		if (this._resorceIcon[icon]) {
+			return this._resIconURL + this._resorceIcon[icon] + iconType;
 		}
 
-		var command = unoCommand.toLowerCase(); // 轉成小寫
-		if (command.startsWith('.uno:')) {
-			command = command.substr(5);
-		} else if (command.startsWith('dialog:')) {
-			command = command.substr(7);
-		// 傳回空白圖片
-		} else {
-			return L.Util.emptyImageUrl;
+		icon = icon.toLowerCase(); // 轉成小寫
+		// 'res:' 開頭
+		if (icon.startsWith('res:')) {
+			icon = icon.substring(4);
+			return this._resIconURL + icon + iconType;
+		} else if (icon.startsWith('.uno:')) {
+			icon = icon.substring(5);
+		} else if (icon.startsWith('dialog:')) {
+			icon = icon.substring(7);
 		}
 
-		var icon = this._iconAlias[command] ? this._iconAlias[command] : command;
+		var unoIcon = this._iconAlias[icon] ? this._iconAlias[icon] : icon;
 
-		return window.loleafletPath + '/images/cmd/' + icon + '.svg';
+		console.debug('haha ' + this._cmdIconURL + unoIcon + iconType);
+		return this._cmdIconURL + unoIcon + iconType;
 	},
 
 	/**
@@ -768,7 +810,10 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 
 	createItem: function(item) {
 		var liItem = L.DomUtil.create('li', ''); // li element
-		L.DomUtil.create('a', '', liItem); // firstChild
+		var tagName = (item.type === '--' || Object.keys(item).length === 0 ? 'i' : 'a');
+
+		L.DomUtil.create(tagName, '', liItem); // firstChild
+
 		liItem.mgr = {
 			_self: liItem,
 			_item: item, // 忠實紀錄 item 資料
@@ -866,8 +911,8 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 				// 非頂層選項才需顯示圖示及 hot key
 				if (this._menuLevel > 1) {
 					var iconItem = L.DomUtil.create('i', '');
-					var iconURL = 'url("' + this.getUnoCommandIcon(
-						this.isUnoCommand(item.icon) ? item.icon : text
+					var iconURL = 'url("' + this.getIconURL(
+						item.icon ? item.icon : text
 					) + '")';
 					L.DomUtil.setClass(iconItem, 'menuicon img-icon');
 					L.DomUtil.setStyle(iconItem, 'backgroundImage', iconURL);
