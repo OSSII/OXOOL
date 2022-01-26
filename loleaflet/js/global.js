@@ -713,6 +713,10 @@ window.app = { // Shouldn't have any functions defined.
 	}
 
 	global.createWebSocket = function(uri) {
+		if ('processOxoolUrl' in window) {
+			uri = window.processOxoolUrl({ url: uri, type: 'ws' });
+		}
+
 		if (global.socketProxy) {
 			window.socketProxy = true;
 			return new global.ProxySocket(uri);

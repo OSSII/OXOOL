@@ -236,6 +236,11 @@ L.Clipboard = L.Class.extend({
 					that._downloadProgress._onUpdateProgress(progress);
 				}
 			}, false);
+
+			if ('processOxoolUrl' in window) {
+				url = window.processOxoolUrl({ url: url, type: 'clipboard' });
+			}
+
 			request.open(type, url, true /* isAsync */);
 			request.timeout = 20 * 1000; // 20 secs ...
 			request.responseType = 'blob';
