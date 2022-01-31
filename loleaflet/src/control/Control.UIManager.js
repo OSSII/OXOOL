@@ -534,6 +534,7 @@ L.Control.UIManager = L.Control.extend({
 	},
 
 	toggleStatusBar: function() {
+		this.map.fire('statusbarchanged');
 		if (this.isStatusBarVisible())
 			this.hideStatusBar();
 		else
