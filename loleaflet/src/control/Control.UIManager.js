@@ -453,6 +453,7 @@ L.Control.UIManager = L.Control.extend({
 	},
 
 	toggleRuler: function() {
+		this.map.fire('rulerchanged');
 		if (this.isRulerVisible())
 			this.hideRuler();
 		else
