@@ -293,6 +293,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	font-family: var(--oxool-font) !important;
 	font-size: 12px !important;
 	font-weight: normal !important;
+	padding: 3px 5px 4px 10px;
 }
 
 .oxool-character {
