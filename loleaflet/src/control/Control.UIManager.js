@@ -191,6 +191,7 @@ L.Control.UIManager = L.Control.extend({
 				var interactiveRuler = this.map.isPermissionEdit();
 				var isRTL = document.documentElement.dir === 'rtl';
 				L.control.ruler({position: (isRTL ? 'topright' : 'topleft'), interactive:interactiveRuler, showruler: showRuler}).addTo(this.map);
+				this.map.fire('rulerchanged');
 			}
 
 			var showResolved = this.getSavedStateOrDefault('ShowResolved');
@@ -451,16 +452,17 @@ L.Control.UIManager = L.Control.extend({
 		$('.oxool-ruler').show();
 		$('#map').addClass('hasruler');
 		this.setSavedState('ShowRuler', true);
+		this.map.fire('rulerchanged');
 	},
 
 	hideRuler: function() {
 		$('.oxool-ruler').hide();
 		$('#map').removeClass('hasruler');
 		this.setSavedState('ShowRuler', false);
+		this.map.fire('rulerchanged');
 	},
 
 	toggleRuler: function() {
-		this.map.fire('rulerchanged');
 		if (this.isRulerVisible())
 			this.hideRuler();
 		else
