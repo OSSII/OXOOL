@@ -405,7 +405,7 @@ li .disabled .keyboard {
 }
 
 #menu-last-mod a:hover {
-	color: var(--color-text-accent);
+	color: var(--color-text-darker);
 }
 
 /* For classic mode */
