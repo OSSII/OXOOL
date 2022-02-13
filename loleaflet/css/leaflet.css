@@ -239,7 +239,7 @@
 	display: inline-block;
 	margin: 3px;
 	vertical-align: middle;
-	border-bottom: solid 1px #bbbbbb;
+	border-bottom: solid 1px var(--color-border);
 }
 .leaflet-bar a,
 .leaflet-bar a:hover {
@@ -871,7 +871,7 @@ textarea.clipboard.overspot {
 	margin: 0px; /*Ruler styling*/
 }
 .oxool-ruler {
-	background-color: var(--gray-light-bg-color);
+	background-color: var(--color-background-lighter);
 	height: 20px;
 	width: 100vw;
 	margin: 0px !important;
@@ -940,7 +940,7 @@ textarea.clipboard.overspot {
 
 .oxool-ruler-face {
 	height: 100%;
-	background-color: white;
+	background-color: var(--color-main-background);
 }
 
 .oxool-ruler-maj {
@@ -989,7 +989,7 @@ textarea.clipboard.overspot {
 
 .oxool-ruler-margin {
 	height: 100%;
-	background-color: var(--gray-light-bg-color);
+	background-color: var(--color-background-lighter);
 }
 
 .oxool-ruler-left {
@@ -1010,21 +1010,21 @@ textarea.clipboard.overspot {
 }
 
 .oxool-ruler-drag.oxool-ruler-right {
-	border-left: 3px solid grey;
+	border-left: 3px solid var(--color-border-dark);
 }
 
 .oxool-ruler-drag.oxool-ruler-left {
-	border-right: 3px solid grey;
+	border-right: 3px solid var(--color-border-dark);
 }
 
 .oxool-ruler-left.leaflet-drag-moving {
 	height: 100vh;
-	border-right: 2px dotted grey;
+	border-right: 2px dotted var(--color-border-dark);
 }
 
 .oxool-ruler-right.leaflet-drag-moving {
 	height: 100vh;
-	border-left: 2px dotted grey;
+	border-left: 2px dotted var(--color-border-dark);
 }
 
 .oxool-ruler-ltooltip, .oxool-ruler-rtooltip {
@@ -1035,9 +1035,9 @@ textarea.clipboard.overspot {
 	padding: 2px 4px;
 	line-height: 20px;
 	position: absolute;
-	border: 1px solid grey;
+	border: 1px solid var(--color-border);
 	background-color: rgba(0,0,0,.4);
-	border-radius: 2px;
+	border-radius: var(--border-radius);
 	top: 24px;
 	color: white;
 }
