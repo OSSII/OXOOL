@@ -443,6 +443,7 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 
 		case 'presentation':
+		case 'drawing':
 			if (!window.mode.isMobile()) {
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
@@ -467,11 +468,6 @@ L.Control.StatusBar = L.Control.extend({
 					}
 				]);
 			}
-
-		// FALLTHROUGH intended
-		case 'drawing':
-			if (statusbar)
-				statusbar.show('prev', 'next');
 			break;
 		}
 
