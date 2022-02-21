@@ -489,8 +489,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 
 .annotation-active.modify-annotation-container .oxool-annotation-content-wrapper,
 .annotation-active.reply-annotation-container .oxool-annotation-content-wrapper {
-	min-width: 240px;
-	width: auto;
+	width: 240px;
 }
 
 .oxool-annotation-content {
