@@ -470,7 +470,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 .oxool-annotation-content-wrapper, .oxool-annotation-redline-content-wrapper {
 	padding: 8px;
 	font-family: var(--oxool-font) !important;
-	font-size: 13px;
+	font-size: var(--default-font-size);
 	text-align: left;
 	background-color: #EFEFEF; /* Fallback color for IE11. */
 	background-color: var(--gray-light-bg-color);
@@ -498,7 +498,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	background-color: var(--gray-light-txt--color);
 	color: white;
 	font-weight: bold;
-	font-size: 20px;
+	font-size: calc(var(--default-font-size)*0.9);
 	border-radius: 50%;
 	z-index: 10;
 	position: absolute;
@@ -604,7 +604,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 
 .oxool-annotation-textarea {
 	font-family: var(--oxool-font) !important;
-	font-size: 13px;
+	font-size: var(--default-font-size);
 	border: 1px solid #c8c8c8;
 	background-color: white;
 	overflow-x: hidden;
@@ -701,7 +701,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 }
 
 .oxool-annotation-date {
-	font-size: 11px;
+	font-size: var(--default-font-size);
 }
 
 .oxool-annotation-menubar {

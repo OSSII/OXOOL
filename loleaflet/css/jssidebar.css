@@ -57,7 +57,7 @@
 }
 
 .sidebar.ui-listbox {
-	font-size: 13px;
+	font-size: var(--default-font-size);
 	height: 28px;
 	box-sizing: border-box;
 	padding: 0 0px 0 4px;
@@ -75,7 +75,7 @@
 
 .menubutton.sidebar span {
 	display: none;
-	font-size: 10px;
+	font-size: calc(var(--default-font-size)*0.9);
 }
 
 .menubutton.sidebar:hover span {
@@ -240,7 +240,7 @@ div#box5.row.jsdialog.sidebar > .sidebar.jsdialog.cell {
 
 .sidebar.ui-expander-label {
 	color: var(--color-main-text);
-	font-size: 12px;
+	font-size: var(--default-font-size);
 	line-height: 22px;
 	font-weight: bold;
 	padding-left: 14px;
@@ -286,7 +286,7 @@ td.jsdialog .jsdialog.cell.sidebar {
 }
 
 .sidebar.jsdialog.checkbutton {
-	font-size: 13px;
+	font-size: var(--default-font-size);
 }
 
 .sidebar .menu-entry-icon {
