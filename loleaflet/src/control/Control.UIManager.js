@@ -505,7 +505,7 @@ L.Control.UIManager = L.Control.extend({
 			return;
 
 		this.moveObjectVertically($('#formulabar'), -1);
-		$('#toolbar-up').css('display', 'none');
+		$('#toolbar-wrapper').css('display', 'none');
 
 		$('#document-container').addClass('tabs-collapsed');
 
@@ -517,7 +517,7 @@ L.Control.UIManager = L.Control.extend({
 			return;
 
 		this.moveObjectVertically($('#formulabar'), 1);
-		$('#toolbar-up').css('display', '');
+		$('#toolbar-wrapper').css('display', '');
 
 		$('#document-container').removeClass('tabs-collapsed');
 
