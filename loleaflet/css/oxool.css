@@ -637,6 +637,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 }
 
 .oxool-annotation-img {
+	box-sizing: content-box !important;
 	max-width: 32px;
 	display: inline-block;
 	border: solid 2px;
