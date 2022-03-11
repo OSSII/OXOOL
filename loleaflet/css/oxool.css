@@ -617,8 +617,8 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 .oxool-annotation-textarea {
 	font-family: var(--oxool-font) !important;
 	font-size: var(--default-font-size);
-	border: 1px solid #c8c8c8;
-	background-color: white;
+	border: 1px solid var(--color-border);
+	background-color: var(--color-background-dark);
 	overflow-x: hidden;
 	height: 50px;
 	width: 100%;
