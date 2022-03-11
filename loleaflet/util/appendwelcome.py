@@ -19,4 +19,5 @@ for entry in welcome:
     if entry.msgid == '':
         continue
     oxoolui.append(entry)
+oxoolui.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
 oxoolui.save(sys.argv[2])
