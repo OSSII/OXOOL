@@ -10,7 +10,7 @@
 	--docs--pre-font: 'Consolas', 'Menlo', 'Lucida Console', 'Courier New', monospace;
 
 	/* Shared color for cell and selection border */
-	--cell-cursor-selection-border-color: #0074e8;
+	--cell-cursor-selection-border-color: var(--color-primary);
 
 	/* cell cursor only */
 	--cell-cursor-border-color: #2173469F;
@@ -224,7 +224,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	overflow-y: auto;
 	z-index: 1200;
 	scrollbar-width: auto;
-	scrollbar-color: #bec0c0 transparent;
+	scrollbar-color: var(--color-border) transparent;
 }
 
 #sidebar-panel::-webkit-scrollbar {
@@ -232,7 +232,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 }
 
 #sidebar-panel::-webkit-scrollbar-thumb {
-	background-color: #bec0c0;
+	background-color: var(--color-border);
 }
 
 #toolbar-wrapper {
@@ -350,8 +350,8 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 }
 
 .oxool-context-down {
-	border: 1px solid #aaaaaa;
-	background-color: #dddddd;
+	border: 1px solid var(--color-border-dark);
+	background-color: var(--color-background-dark);
 }
 
 .oxool-mobile-input {
@@ -420,7 +420,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 }
 
 .context-menu-submenu.context-menu-hover:after {
-	border-color: transparent transparent transparent #fff;
+	border-color: transparent transparent transparent var(--color-background-lighter);
 }
 
 .context-menu-submenu:after {
@@ -475,7 +475,6 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	font-family: var(--oxool-font) !important;
 	font-size: var(--default-font-size);
 	text-align: left;
-	background-color: #EFEFEF; /* Fallback color for IE11. */
 	background-color: var(--color-background-lighter);
 	box-shadow: 0 0 3px var(--color-box-shadow);
 	color: var(--color-main-text);
@@ -520,17 +519,8 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	z-index: 0;
 }
 
-nav.text-color-indicator ~ #main-document-content .oxool-annotation-reply-count-collapsed {
-	background: rgb(var(--blue1-txt-primary-color));
-}
-nav.spreadsheet-color-indicator ~ #main-document-content .oxool-annotation-reply-count-collapsed {
-	background: rgb(var(--green0-txt-primary-color));
-}
-nav.presentation-color-indicator ~ #main-document-content .oxool-annotation-reply-count-collapsed {
-	background: rgb(var(--orange1-txt-primary-color));
-}
-nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-count-collapsed {
-	background: rgb(var(--yellow0-txt-primary-color));
+#main-document-content .oxool-annotation-reply-count-collapsed {
+	background: rgb(var(--color-primary));
 }
 
 .oxool-annotation-collapsed {
@@ -606,7 +596,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 }
 
 .oxool-annotation-content-resolved {
-	color: green;
+	color: var(--color-success);
 }
 
 .oxool-annotation-edit {
@@ -742,7 +732,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 	left: 100%;
 	white-space: nowrap;
 	opacity: 0;
-	border-color: #2a2a2a;
+	border-color: var(--color-border-darker);
 	visibility: hidden;
 }
 .oxool-ruler-left[data-title]:after,
@@ -768,19 +758,19 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 
 .oxool-bar a,
 .oxool-bar a:hover {
-	background-color: #fff;
-	border-bottom: 1px solid #ccc;
+	background-color: var(--color-background-lighter);
+	border-bottom: 1px solid var(--color-border);
 	width: 30px;
 	height: 30px;
 	line-height: 30px;
 	display: block;
 	text-align: center;
 	text-decoration: none;
-	color: black;
+	color: var(--color-main-text);
 }
 
 .oxool-bar a:hover {
-	background-color: #f4f4f4;
+	background-color: var(--color-background-darker);
 }
 
 .oxool-bar a:first-child {
@@ -796,8 +786,8 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 
 .oxool-bar a.leaflet-disabled {
 	cursor: default;
-	background-color: #f4f4f4;
-	color: #bbb;
+	background-color: var(--color-background-lighter);
+	color: var(--color-text-lighter);
 }
 
 .oxool-bar a {
@@ -893,21 +883,21 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 	border: 1px solid;
 	position: absolute;
 	height: 100%;
-	border-radius: 2px;
+	border-radius: var(--border-radius);
 }
 
 .form-field-button {
-	background: #FFFFFF;
+	background-color: var(--color-background-lighter);
 	position: absolute;
 	border: 1px solid;
 	height: 100%;
 	box-sizing: content-box;
 	padding: 0px;
-	border-radius: 2px;
+	border-radius: var(--border-radius);
 }
 
 .form-field-button:hover, .form-field-button:focus {
-	background: #DDDDDD;
+	background-color: var(--color-background-dark);
 	outline: 0;
 }
 
@@ -919,7 +909,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 	position: absolute;
 	border: 1px solid;
 	cursor: pointer;
-	background: #ffffff;
+	background: var(--color-background-lighter);
 }
 
 .drop-down-field-list-item {
@@ -929,7 +919,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 }
 
 .drop-down-field-list-item.selected {
-	background: #99CCFF;
+	background-color: var(--color-primary-lighter);
 }
 .drop-down-field-list-item:hover {
 	background-color: var(--color-primary);
@@ -966,7 +956,7 @@ nav.drawing-color-indicator ~ #main-document-content .oxool-annotation-reply-cou
 	border-style: solid; /* required for ie11 */
 	display: none; /* prevent cypress failure */
 
-	color: #000000; /* color */
+	color: var(--color-background-dark); /* color */
 	opacity: 0.3; /* opacity */
 	border-top-width: 1px; /* weight */
 }
