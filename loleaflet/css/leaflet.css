@@ -20,7 +20,7 @@
 	touch-action: none;
 	-ms-touch-action: none;
 	/* visual tweaks */
-	background: #dfdfdf;
+	background: var(--color-main-background);
 	outline: 0;
 	margin: auto;
 	/* general typography */
@@ -658,7 +658,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @keyframes blink {
 	from, to {
-		background: black;
+		background: var(--color-background-darker);
 	}
 	50% {
 		background: transparent;
@@ -667,7 +667,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-moz-keyframes blink {
 	from, to {
-		background: black;
+		background: var(--color-background-darker);
 	}
 	50% {
 		background: transparent;
@@ -676,7 +676,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-webkit-keyframes blink {
 	from, to {
-		background: black;
+		background: var(--color-background-darker);
 	}
 	50% {
 		background: transparent;
@@ -685,7 +685,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-ms-keyframes blink {
 	from, to {
-		background: black;
+		background: var(--color-background-darker);
 	}
 	50% {
 		background: transparent;
@@ -694,7 +694,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-o-keyframes blink {
 	from, to {
-		background: black;
+		background: var(--color-background-darker);
 	}
 	50% {
 		background: transparent;
@@ -708,7 +708,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 }
 
 .leaflet-text-selection {
-	background: #43ACE8B5;
+	background: var(--color-primary-lighter);
 	pointer-events: none;
 	display: block;
 }
@@ -774,13 +774,13 @@ textarea.clipboard.overspot {
 }
 
 .slide-show {
-	background: #FFF;
+	background: var(--color-background-lighter);
 	display: block;
 	margin: 0 auto;
 }
 
 .leaflet-paste-progress {
-	background: #ebebeb;
+	background: var(--color-main-background);
 	border-left: 1px solid transparent;
 	border-right: 1px solid transparent;
 	border-radius: var(--border-radius);
@@ -870,7 +870,7 @@ textarea.clipboard.overspot {
 }
 
 .leaflet-slideshow {
-	background: #FFFFFF;
+	background: var(--color-background-lighter);
 }
 
 /*Ruler styling*/
@@ -927,7 +927,7 @@ textarea.clipboard.overspot {
 	top: 0;
 	bottom: 0;
 	left: 0;
-	border-right: 2px dotted grey;
+	border-right: 2px dotted var(--color-border);
 	z-index: 12;
 }
 
@@ -1044,10 +1044,10 @@ textarea.clipboard.overspot {
 	line-height: 20px;
 	position: absolute;
 	border: 1px solid var(--color-border);
-	background-color: rgba(0,0,0,.4);
+	background-color: var(--color-background-dark);
 	border-radius: var(--border-radius);
 	top: 24px;
-	color: white;
+	color: var(--color-text-dark);
 }
 
 .leaflet-canvas-container {
@@ -1063,15 +1063,15 @@ textarea.clipboard.overspot {
 	/* FIXME when we are able to drag it again:
 	cursor: grab; */
 	cursor: default;
-	stroke: #e0e0e0;
-	fill: #e0e0e0;
+	stroke: var(--color-background-dark);
+	fill: var(--color-background-dark);
 	opacity: 1;
 }
 
 .splitter-hidden {
 	opacity: 0.6;
-	stroke: #eeeeee;
-	fill: #eeeeee;
+	stroke: var(--color-background-lighter);
+	fill: var(--color-background-lighter);
 }
 
 /* FIXME when we are able to drag it again:
