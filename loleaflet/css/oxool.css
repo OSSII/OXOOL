@@ -702,7 +702,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 }
 
 .oxool-annotation-menu:hover, .oxool-annotation-menu-redline:hover, .oxool-redline-accept-button:hover, .oxool-redline-reject-button:hover {
-	border: 1px solid darkgrey;
+	border: 1px solid var(--color-border-darker);
 }
 
 .oxool-annotation-date {
