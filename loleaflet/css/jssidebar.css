@@ -441,6 +441,8 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 	position: relative;
 	left: 4px;
 }
+
+.sidebar #leftindent,
 .sidebar #LB_GLOW_TRANSPARENCY,
 .sidebar #LB_DISTANCE,
 .sidebar #LB_SHADOW_BLUR,
@@ -449,6 +451,10 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 .sidebar #setgraphtransparency {
 	position: relative;
 	right: 18px;
+}
+
+.sidebar #leftindent {
+	line-height: 32px;
 }
 
 #TableEditPanelPanelExpander #grid1 > tr > td {
