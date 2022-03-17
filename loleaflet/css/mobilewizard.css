@@ -1060,12 +1060,6 @@ label.disabled {
 	width: initial !important;
 }
 
-#mobile-wizard-popup .oxool-annotation-content,
-#mobile-wizard .oxool-annotation-content {
-	margin: 3px 3px 3px 38px;
-	padding: 0px 10px;
-}
-
 #mobile-wizard-popup .oxool-annotation-content-author,
 #mobile-wizard .oxool-annotation-content-author {
 	font-weight: bold;
