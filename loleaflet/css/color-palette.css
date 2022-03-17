@@ -45,6 +45,9 @@
 	--default-height: 24px;
 	--header-height: 38px;
 
+	/* Annotations */
+	--annotation-input-size: 240px;
+
 	/*
 		LibreOffice Colors:
 		https://wiki.documentfoundation.org/Marketing/Branding#Colors

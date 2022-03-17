@@ -480,7 +480,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	color: var(--color-main-text);
 	border: none;
 	border-radius: var(--border-radius);
-	width: 240px;
+	width: var(--annotation-input-size);
 }
 .oxool-annotation-content-wrapper:hover, .oxool-annotation-redline-content-wrapper:hover {
 	background-color: var(--color-background-dark);
@@ -490,13 +490,13 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 .annotation-active.modify-annotation-container .oxool-annotation-content-wrapper,
 .annotation-active.reply-annotation-container .oxool-annotation-content-wrapper,
 .oxool-annotation-collapsed.modalpopup {
-	width: 240px;
+	width: var(--annotation-input-size);
 }
 
 .oxool-annotation-content {
 	margin: 3px;
 	line-height: 1.4;
-	max-height: 240px;
+	max-height: var(--annotation-input-size);
 	overflow: overlay;
 }
 
@@ -618,7 +618,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 }
 
 #new-mobile-comment-input-area.oxool-annotation-textarea {
-	height: 240px;
+	height: var(--annotation-input-size);
 }
 
 .oxool-div-layer {
