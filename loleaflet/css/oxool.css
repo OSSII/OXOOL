@@ -617,6 +617,10 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	box-sizing: border-box;
 }
 
+#new-mobile-comment-input-area.oxool-annotation-textarea {
+	height: 240px;
+}
+
 .oxool-div-layer {
 	position: absolute;
 	left: 0;
