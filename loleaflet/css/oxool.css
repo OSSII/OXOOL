@@ -497,7 +497,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	margin: 3px;
 	line-height: 1.4;
 	max-height: var(--annotation-input-size);
-	overflow: overlay;
+	overflow: auto;
 }
 
 /* 註解串數量 */
