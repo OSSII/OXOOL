@@ -16,7 +16,8 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._controlHandlers['combobox'] = this._comboboxControlHandler;
 		this._controlHandlers['listbox'] = this._comboboxControlHandler;
 		this._controlHandlers['tabcontrol'] = this._overriddenTabsControlHandler;
-		this._controlHandlers['menubartoolitem'] = this._menubarToolItemHandler;
+		this._controlHandlers['menubartoolitem'] = this._inlineMenubarToolItemHandler;
+		this._controlHandlers['bigmenubartoolitem'] = this._bigMenubarToolItemHandler;
 		this._controlHandlers['bigtoolitem'] = this._bigtoolitemHandler;
 		this._controlHandlers['toolbox'] = this._toolboxHandler;
 
@@ -395,9 +396,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 				return false;
 		}
 
-		var originalInLineState = builder.options.useInLineLabelsForUnoButtons;
-		builder.options.useInLineLabelsForUnoButtons = true;
-
 		data.command = data.id;
 
 		var isDownloadAsGroup = data.id === 'downloadas';
@@ -407,8 +405,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		}
 
 		var control = builder._unoToolButton(parentContainer, data, builder, options);
-
-		builder.options.useInLineLabelsForUnoButtons = originalInLineState;
 
 		$(control.container).unbind('click.toolbutton');
 		if (!builder.map.isFreemiumDeniedItem(data)) {
@@ -428,6 +424,28 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 				});
 			});
 		}
+	},
+
+	_inlineMenubarToolItemHandler: function(parentContainer, data, builder) {
+		var originalInLineState = builder.options.useInLineLabelsForUnoButtons;
+		builder.options.useInLineLabelsForUnoButtons = true;
+
+		builder._menubarToolItemHandler(parentContainer, data, builder);
+
+		builder.options.useInLineLabelsForUnoButtons = originalInLineState;
+
+		return false;
+	},
+
+	_bigMenubarToolItemHandler: function(parentContainer, data, builder) {
+		var noLabels = builder.options.noLabelsForUnoButtons;
+		builder.options.noLabelsForUnoButtons = false;
+
+		builder._menubarToolItemHandler(parentContainer, data, builder);
+
+		builder.options.noLabelsForUnoButtons = noLabels;
+
+		return false;
 	},
 
 	_getDownloadAsSubmenuOpts: function(docType) {

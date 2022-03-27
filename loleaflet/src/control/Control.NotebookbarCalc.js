@@ -939,7 +939,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 			},
 			{
 				'id': 'toggleuimode',
-				'type': 'menubartoolitem',
+				'type': 'bigmenubartoolitem',
 				'text': _('Classic view'),
 				'command': _('Toggle UI Mode')
 			},
