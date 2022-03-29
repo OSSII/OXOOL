@@ -1789,7 +1789,7 @@ class CommentSection {
 	private clearChanges() {
 		this.containerObject.pauseDrawing();
 		for (var i: number = this.sectionProperties.commentList.length -1; i > -1; i--) {
-			if (this.sectionProperties.commentList[i].trackchange) {
+			if (this.sectionProperties.commentList[i].sectionProperties.data.trackchange) {
 				this.containerObject.removeSection(this.sectionProperties.commentList[i].name);
 				this.sectionProperties.commentList.splice(i, 1);
 			}
@@ -1805,7 +1805,7 @@ class CommentSection {
 	private clearList () {
 		this.containerObject.pauseDrawing();
 		for (var i: number = this.sectionProperties.commentList.length -1; i > -1; i--) {
-			if (!this.sectionProperties.commentList[i].trackchange) {
+			if (!this.sectionProperties.commentList[i].sectionProperties.data.trackchange) {
 				this.containerObject.removeSection(this.sectionProperties.commentList[i].name);
 				this.sectionProperties.commentList.splice(i, 1);
 			}
