@@ -658,7 +658,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @keyframes blink {
 	from, to {
-		background: var(--color-background-darker);
+		background: #000;
 	}
 	50% {
 		background: transparent;
@@ -667,7 +667,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-moz-keyframes blink {
 	from, to {
-		background: var(--color-background-darker);
+		background: #000;
 	}
 	50% {
 		background: transparent;
@@ -676,7 +676,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-webkit-keyframes blink {
 	from, to {
-		background: var(--color-background-darker);
+		background: #000;
 	}
 	50% {
 		background: transparent;
@@ -685,7 +685,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-ms-keyframes blink {
 	from, to {
-		background: var(--color-background-darker);
+		background: #000;
 	}
 	50% {
 		background: transparent;
@@ -694,7 +694,7 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 
 @-o-keyframes blink {
 	from, to {
-		background: var(--color-background-darker);
+		background: #000;
 	}
 	50% {
 		background: transparent;
