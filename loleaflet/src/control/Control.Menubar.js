@@ -1547,6 +1547,9 @@ L.Control.Menubar = L.Control.extend({
 			}
 		}
 
+		if (item.id === 'feedback' && !this._map.feedback)
+			return undefined;
+
 		var itemName;
 		if (item.name)
 			itemName = item.name;
