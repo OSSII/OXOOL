@@ -601,6 +601,8 @@ L.Control.Menubar = L.Control.extend({
 							self._map.fire('mobilewizard', {data: menuData});
 							$('#toolbar-hamburger').removeClass('menuwizard-closed').addClass('menuwizard-opened');
 							$('#mobile-wizard-header').hide();
+							$('#toolbar-mobile-back').hide();
+							$('#formulabar').hide();
 						}
 					} else if (!window.mode.isMobile()) {
 						// Ditto.
@@ -611,6 +613,8 @@ L.Control.Menubar = L.Control.extend({
 						window.mobileMenuWizard = false;
 						self._map.fire('closemobilewizard');
 						$('#toolbar-hamburger').removeClass('menuwizard-opened').addClass('menuwizard-closed');
+						$('#toolbar-mobile-back').show();
+						$('#formulabar').show();
 					}
 				});
 				// hide mobile menu beforeunload
