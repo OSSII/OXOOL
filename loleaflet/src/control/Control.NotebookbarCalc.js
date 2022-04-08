@@ -132,7 +132,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'enabled': 'true',
 				'children': [
 					{
-						'id': 'downloadas2',
+						'id': 'downloadas',
 						'type': 'menubartoolitem',
 						'text': _('Download as'),
 						'command': '.uno:InsertGraphic'
