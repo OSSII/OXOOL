@@ -141,7 +141,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 					{
 						'id': 'downloadas',
 						'type': 'menubartoolitem',
-						'text': _('Download as'),
+						'text': _('Download'),
 						'command': '.uno:InsertGraphic'
 					}
 				]
@@ -2185,7 +2185,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 
 		return children.map(function(c) {
 			if (!c.type) { return null; }
-			
+
 			var opts = Object.assign(c, {});
 
 			if (c.children && c.children.length) {
