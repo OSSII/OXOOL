@@ -931,7 +931,7 @@ L.Control.Menubar = L.Control.extend({
 			window.open('https://github.com/OSSII/oxool-community/issues', '_blank');
 		} else if (id === 'inserthyperlink') {
 			this._map.showHyperlinkDialog();
-		} else if (L.Params.revHistoryEnabled && (id === 'rev-history' || id === 'last-mod')) {
+		} else if (L.Params.revHistoryEnabled && (id === 'rev-history' || id === 'Rev-History' || id === 'last-mod')) {
 			this._map.openRevisionHistory();
 		} else if (id === 'closedocument') {
 			window.onClose();
@@ -1070,7 +1070,7 @@ L.Control.Menubar = L.Control.extend({
 			return false;
 
 		if (menuItem.type === 'action') {
-			if ((menuItem.id === 'rev-history' && !L.Params.revHistoryEnabled) ||
+			if (((menuItem.id === 'rev-history' || menuItem.id === 'Rev-History') && !L.Params.revHistoryEnabled) ||
 				(menuItem.id === 'closedocument' && !L.Params.closeButtonEnabled) ||
 				(menuItem.id === 'latestupdates' && !window.enableWelcomeMessage)) {
 				return false;
