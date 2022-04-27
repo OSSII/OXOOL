@@ -652,6 +652,9 @@ std::unique_ptr<WopiStorage::WOPIFileInfo> WopiStorage::getWOPIFileInfo(const Au
         if (wopiInfo->getSupportsLocks())
             lockCtx.initSupportsLocks();
 
+        // If FileUrl is set, we use it for GetFile.
+        _fileUrl = wopiInfo->getFileUrl();
+
         return wopiInfo;
     }
     else
@@ -760,6 +763,8 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
     JsonUtil::findJSONValue(object, "SupportsRename", _supportsRename);
     JsonUtil::findJSONValue(object, "UserCanRename", _userCanRename);
     JsonUtil::findJSONValue(object, "BreadcrumbDocName", _breadcrumbDocName);
+    JsonUtil::findJSONValue(object, "FileUrl", _fileUrl);
+
     bool booleanFlag = false;
     if (JsonUtil::findJSONValue(object, "DisableChangeTrackingRecord", booleanFlag))
         _disableChangeTrackingRecord = (booleanFlag ? WOPIFileInfo::TriState::True : WOPIFileInfo::TriState::False);
@@ -850,6 +855,48 @@ std::string WopiStorage::loadStorageFileToLocal(const Authorization& auth,
                                                 LockContext& /*lockCtx*/,
                                                 const std::string& templateUri)
 {
+    if (!templateUri.empty())
+    {
+        // Download the template file and load it normally.
+        // The document will get saved once loading in Core is complete.
+        Poco::URI templateUriObject(templateUri);
+        const std::string templateUriAnonym = LOOLWSD::anonymizeUrl(templateUri);
+        try
+        {
+            LOG_INF("WOPI::GetFile template source: " << templateUriAnonym);
+            return downloadDocument(Poco::URI(templateUri), templateUriAnonym, auth, cookies);
+        }
+        catch (const std::exception& ex)
+        {
+            LOG_ERR("Could not download template from [" + templateUriAnonym + "]. Error: "
+                    << ex.what());
+            throw; // Bubble-up the exception.
+        }
+        return std::string();
+    }
+
+    // First try the FileUrl, if provided.
+    if (!_fileUrl.empty())
+    {
+        const std::string fileUrlAnonym = LOOLWSD::anonymizeUrl(_fileUrl);
+        try
+        {
+            LOG_INF("WOPI::GetFile using FileUrl: " << fileUrlAnonym);
+            return downloadDocument(Poco::URI(_fileUrl), fileUrlAnonym, auth, cookies);
+        }
+        catch (const StorageSpaceLowException&)
+        {
+            throw; // Bubble-up the exception.
+        }
+        catch (const std::exception& ex)
+        {
+            LOG_ERR("Could not download document from WOPI FileUrl [" + fileUrlAnonym
+                        + "]. Will use default URL. Error: "
+                    << ex.what());
+        }
+    }
+
+    // Try the default URL, we either don't have FileUrl, or it failed.
     // WOPI URI to download files ends in '/contents'.
     // Add it here to get the payload instead of file info.
     Poco::URI uriObject(getUri());
@@ -860,19 +907,24 @@ std::string WopiStorage::loadStorageFileToLocal(const Authorization& auth,
     uriObjectAnonym.setPath(LOOLWSD::anonymizeUrl(uriObjectAnonym.getPath()) + "/contents");
     const std::string uriAnonym = uriObjectAnonym.toString();
 
-    if (!templateUri.empty())
+    try
     {
-        // template are created in kit process, so just obtain a reference
-        setRootFilePath(Poco::Path(getLocalRootPath(), getFileInfo().getFilename()).toString());
-        setRootFilePathAnonym(LOOLWSD::anonymizeUrl(getRootFilePath()));
-        LOG_INF("Template reference " << getRootFilePathAnonym());
-
-        setLoaded(true);
-        return Poco::Path(getJailPath(), getFileInfo().getFilename()).toString();
+        LOG_INF("WOPI::GetFile using default URI: " << uriAnonym);
+        return downloadDocument(uriObject, uriAnonym, auth, cookies);
+    }
+    catch (const std::exception& ex)
+    {
+        LOG_ERR("Cannot download document from WOPI storage uri [" + uriAnonym + "]. Error: "
+                << ex.what());
+        throw; // Bubble-up the exception.
     }
 
-    LOG_DBG("Wopi requesting: " << uriAnonym);
+    return std::string();
+}
 
+std::string WopiStorage::downloadDocument(const Poco::URI& uriObject, const std::string& uriAnonym,
+                                          const Authorization& auth, const std::string& cookies)
+{
     const auto startTime = std::chrono::steady_clock::now();
     try
     {
@@ -893,7 +945,7 @@ std::string WopiStorage::loadStorageFileToLocal(const Authorization& auth,
         Log::StreamLogger logger = Log::trace();
         if (logger.enabled())
         {
-            logger << "WOPI::GetFile header for URI [" << uriAnonym << "]:\n";
+            logger << "WOPI::GetFile response header for URI [" << uriAnonym << "]:\n";
             for (const auto& pair : response)
             {
                 logger << '\t' << pair.first << ": " << pair.second << " / ";
@@ -938,7 +990,7 @@ std::string WopiStorage::loadStorageFileToLocal(const Authorization& auth,
     }
     catch (const BadRequestException& exc)
     {
-        LOG_ERR("Cannot load document from WOPI storage uri [" + uriAnonym + "]. Error: Failed HTPP request authorization");
+        LOG_ERR("Cannot load document from WOPI storage uri [" + uriAnonym + "]. Error: Failed HTTP request authorization");
     }
 
     return "";

@@ -931,6 +931,11 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         std::string localPath = _storage->loadStorageFileToLocal(
             session->getAuthorization(), session->getCookies(), *_lockCtx, templateSource);
 
+        if (localPath.empty())
+        {
+            throw std::runtime_error("Failed to retrieve document from storage");
+        }
+
         // Only lock the document on storage for editing sessions
         // FIXME: why not lock before loadStorageFileToLocal? Would also prevent race conditions
         if (!session->isReadOnly() &&

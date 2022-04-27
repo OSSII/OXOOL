@@ -851,8 +851,7 @@ private:
     /// Load a document (or view) and register callbacks.
     bool onLoad(const std::string& sessionId,
                 const std::string& uriAnonym,
-                const std::string& renderOpts,
-                const std::string& docTemplate) override
+                const std::string& renderOpts) override
     {
         std::unique_lock<std::mutex> lock(_mutex);
 
@@ -886,7 +885,7 @@ private:
 
         try
         {
-            if (!load(session, renderOpts, docTemplate))
+            if (!load(session, renderOpts))
                 return false;
         }
         catch (const std::exception &exc)
@@ -1126,8 +1125,7 @@ private:
     }
 
     std::shared_ptr<lok::Document> load(const std::shared_ptr<ChildSession>& session,
-                                        const std::string& renderOpts,
-                                        const std::string& docTemplate)
+                                        const std::string& renderOpts)
     {
         const std::string sessionId = session->getId();
 
@@ -1168,7 +1166,7 @@ private:
             _jailedUrl = uri;
             _isDocPasswordProtected = false;
 
-            const char *pURL = docTemplate.empty() ? uri.c_str() : docTemplate.c_str();
+            const char *pURL = uri.c_str();
             LOG_DBG("Calling lokit::documentLoad(" << FileUtil::anonymizeUrl(pURL) << ", \"" << options << "\").");
             const auto start = std::chrono::system_clock::now();
             _loKitDocument.reset(_loKit->documentLoad(pURL, options.c_str()));
