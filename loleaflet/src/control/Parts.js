@@ -2,6 +2,9 @@
 /*
  * Document parts switching and selecting handler
  */
+
+/* global app */
+
 L.Map.include({
 	setPart: function (part, external, calledFromSetPartHandler) {
 		var docLayer = this._docLayer;
@@ -10,25 +13,49 @@ L.Map.include({
 		if (part === 'prev') {
 			if (docLayer._selectedPart > 0) {
 				docLayer._selectedPart -= 1;
+				this._partsDirection = -1;
 			}
 		}
 		else if (part === 'next') {
 			if (docLayer._selectedPart < docLayer._parts - 1) {
 				docLayer._selectedPart += 1;
+				this._partsDirection = 1;
 			}
 		}
 		else if (typeof (part) === 'number' && part >= 0 && part < docLayer._parts) {
+			this._partsDirection = (part >= docLayer._selectedPart) ? 1 : -1;
 			docLayer._selectedPart = part;
+			docLayer._updateReferenceMarks();
 		}
 		else {
 			return;
 		}
 
-		docLayer._selectedParts.push(docLayer._selectedPart);
+		if (app.file.fileBasedView)
+		{
+			docLayer._selectedPart = docLayer._prevSelectedPart;
+			if (typeof(part) !== 'number') {
+				docLayer._preview._scrollViewByDirection(part);
+				this._docLayer._checkSelectedPart();
+				return;
+			}
+			docLayer._preview._scrollViewToPartPosition(docLayer._selectedPart);
+			this._docLayer._checkSelectedPart();
+			return;
+		}
 
+		this.fire('scrolltopart');
+
+		docLayer._selectedParts.push(docLayer._selectedPart);
 		if (docLayer.isCursorVisible()) {
 			// a click outside the slide to clear any selection
-			this._socket.sendMessage('resetselection');
+			app.socket.sendMessage('resetselection');
+		}
+
+		// If this wasn't triggered from the server,
+		// then notify the server of the change.
+		if (!external) {
+			app.socket.sendMessage('setclientpart part=' + docLayer._selectedPart);
 		}
 
 		this.fire('updateparts', {
@@ -38,11 +65,6 @@ L.Map.include({
 			docType: docLayer._docType
 		});
 
-		// If this wasn't triggered from the server,
-		// then notify the server of the change.
-		if (!external) {
-			this._socket.sendMessage('setclientpart part=' + docLayer._selectedPart);
-		}
 		docLayer.eachView(docLayer._viewCursors, docLayer._onUpdateViewCursor, docLayer);
 		docLayer.eachView(docLayer._cellViewCursors, docLayer._onUpdateCellViewCursor, docLayer);
 		docLayer.eachView(docLayer._graphicViewMarkers, docLayer._onUpdateGraphicViewSelection, docLayer);
@@ -51,8 +73,8 @@ L.Map.include({
 		docLayer._updateOnChangePart();
 		docLayer._pruneTiles();
 		docLayer._prevSelectedPartNeedsUpdate = true;
-		if (docLayer._invalidatePreview) {
-			docLayer._invalidatePreview();
+		if (docLayer._invalidatePreviews) {
+			docLayer._invalidatePreviews();
 		}
 		docLayer._drawSearchResults();
 		if (!this._searchRequested) {
@@ -63,6 +85,7 @@ L.Map.include({
 	// part is the part index/id
 	// how is 0 to deselect, 1 to select, and 2 to toggle selection
 	selectPart: function (part, how, external) {
+		//TODO: Update/track selected parts(?).
 		var docLayer = this._docLayer;
 		var index = docLayer._selectedParts.indexOf(part);
 		if (index >= 0 && how != 1) {
@@ -84,8 +107,55 @@ L.Map.include({
 		// If this wasn't triggered from the server,
 		// then notify the server of the change.
 		if (!external) {
-			this._socket.sendMessage('selectclientpart part=' + part + ' how=' + how);
+			app.socket.sendMessage('selectclientpart part=' + part + ' how=' + how);
 		}
+	},
+
+	deselectAll: function() {
+		var docLayer = this._docLayer;
+		while (docLayer._selectedParts.length > 0) {
+			this.selectPart(docLayer._selectedParts[0], 0, false);
+		}
+	},
+
+	_processPreviewQueue: function() {
+		if (this._previewRequestsOnFly > 1) {
+			// we don't always get a response for each tile requests
+			// especially when we have more than one view
+			// the server can determine that we have the tile already
+			// and does not response to us
+			// in that case we cannot decrease previewRequestsOnFly counter
+			// we should not wait more than 2 seconds for each 3 requests
+			var now = new Date();
+			if (now - this._timeToEmptyQueue < 2000)
+				// wait until the queue is empty
+				return;
+			else {
+				this._previewRequestsOnFly = 0;
+				this._timeToEmptyQueue = now;
+			}
+		}
+		// take 3 requests from the queue:
+		while (this._previewRequestsOnFly < 3) {
+			var tile = this._previewQueue.shift();
+			if (!tile)
+				break;
+			var isVisible = this.isPreviewVisible(tile[0], true);
+			if (isVisible != true)
+				// skip this! we can't see it
+				continue;
+			this._previewRequestsOnFly++;
+			app.socket.sendMessage(tile[1]);
+		}
+	},
+
+	_addPreviewToQueue: function(part, tileMsg) {
+		for (var tile in this._previewQueue)
+			if (tile[0] === part)
+				// we already have this tile in the queue
+				// no need to ask for it twice
+				return;
+		this._previewQueue.push([part, tileMsg]);
 	},
 
 	getPreview: function (id, index, maxWidth, maxHeight, options) {
@@ -93,7 +163,7 @@ L.Map.include({
 			this._docPreviews = {};
 		}
 		var autoUpdate = options ? !!options.autoUpdate : false;
-		var forAllClients = options ? !!options.broadcast : false;
+		var fetchThumbnail = options && options.fetchThumbnail ? options.fetchThumbnail : true;
 		this._docPreviews[id] = {id: id, index: index, maxWidth: maxWidth, maxHeight: maxHeight, autoUpdate: autoUpdate, invalid: false};
 
 		var docLayer = this._docLayer;
@@ -104,8 +174,8 @@ L.Map.include({
 			var part = index;
 			var tilePosX = 0;
 			var tilePosY = 0;
-			var tileWidth = docLayer._docWidthTwips;
-			var tileHeight = docLayer._docHeightTwips;
+			var tileWidth = docLayer._partWidthTwips ? docLayer._partWidthTwips: docLayer._docWidthTwips;
+			var tileHeight = docLayer._partHeightTwips ? docLayer._partHeightTwips: docLayer._docHeightTwips;
 		}
 		var docRatio = tileWidth / tileHeight;
 		var imgRatio = maxWidth / maxHeight;
@@ -117,26 +187,27 @@ L.Map.include({
 			maxHeight = Math.round(tileHeight * maxWidth / tileWidth);
 		}
 
-		var dpiscale = L.getDpiScaleFactor();
-		if (forAllClients) {
-			dpiscale = 2; // some may be hidpi, and it is fine to send the hi-dpi slide preview to non-hpi clients
-		}
-
-		this._socket.sendMessage('tile ' +
+		if (fetchThumbnail) {
+			this._addPreviewToQueue(part, 'tile ' +
 							'nviewid=0' + ' ' +
 							'part=' + part + ' ' +
-							'width=' + maxWidth * dpiscale + ' ' +
-							'height=' + maxHeight * dpiscale + ' ' +
+							'width=' + maxWidth * app.roundedDpiScale + ' ' +
+							'height=' + maxHeight * app.roundedDpiScale + ' ' +
 							'tileposx=' + tilePosX + ' ' +
 							'tileposy=' + tilePosY + ' ' +
 							'tilewidth=' + tileWidth + ' ' +
 							'tileheight=' + tileHeight + ' ' +
 							'id=' + id + ' ' +
-							'broadcast=' + (forAllClients ? 'yes' : 'no'));
+						 'broadcast=no');
+			this._processPreviewQueue();
+		}
 
 		return {width: maxWidth, height: maxHeight};
 	},
 
+	// getCustomPreview
+	// Triggers the creation of a preview with the given id, of width X height size, of the [(tilePosX,tilePosY),
+	// (tilePosX + tileWidth, tilePosY + tileHeight)] section of the document.
 	getCustomPreview: function (id, part, width, height, tilePosX, tilePosY, tileWidth, tileHeight, options) {
 		if (!this._docPreviews) {
 			this._docPreviews = {};
@@ -145,25 +216,18 @@ L.Map.include({
 		this._docPreviews[id] = {id: id, part: part, width: width, height: height, tilePosX: tilePosX,
 			tilePosY: tilePosY, tileWidth: tileWidth, tileHeight: tileHeight, autoUpdate: autoUpdate, invalid: false};
 
-		var dpiscale = L.getDpiScaleFactor();
-
-		this._socket.sendMessage('tile ' +
+		this._addPreviewToQueue(part, 'tile ' +
 							'nviewid=0' + ' ' +
 							'part=' + part + ' ' +
-							'width=' + width * dpiscale + ' ' +
-							'height=' + height * dpiscale + ' ' +
+							'width=' + width * app.roundedDpiScale + ' ' +
+							'height=' + height * app.roundedDpiScale + ' ' +
 							'tileposx=' + tilePosX + ' ' +
 							'tileposy=' + tilePosY + ' ' +
 							'tilewidth=' + tileWidth + ' ' +
 							'tileheight=' + tileHeight + ' ' +
 							'id=' + id + ' ' +
 							'broadcast=no');
-	},
-
-	removePreviewUpdate: function (id) {
-		if (this._docPreviews && this._docPreviews[id]) {
-			this._docPreviews[id].autoUpdate = false;
-		}
+		this._processPreviewQueue();
 	},
 
 	goToPage: function (page) {
@@ -181,9 +245,19 @@ L.Map.include({
 		else if (typeof (page) === 'number' && page >= 0 && page < docLayer._pages) {
 			docLayer._currentPage = page;
 		}
-
-		// 直接跳頁
-		this._socket.sendMessage('setpage page=' + docLayer._currentPage);
+		if (!this.isPermissionEdit() && docLayer._partPageRectanglesPixels.length > docLayer._currentPage) {
+			// we can scroll to the desired page without having a LOK instance
+			var pageBounds = docLayer._partPageRectanglesPixels[docLayer._currentPage];
+			var pos = new L.Point(
+				pageBounds.min.x + (pageBounds.max.x - pageBounds.min.x) / 2,
+				pageBounds.min.y);
+			pos.y -= this.getSize().y / 4; // offset by a quater of the viewing area so that the previous page is visible
+			this.scrollTop(pos.y, {update: true});
+			this.scrollLeft(pos.x, {update: true});
+		}
+		else {
+			app.socket.sendMessage('setpage page=' + docLayer._currentPage);
+		}
 		this.fire('pagenumberchanged', {
 			currentPage: docLayer._currentPage,
 			pages: docLayer._pages,
@@ -192,11 +266,10 @@ L.Map.include({
 	},
 
 	insertPage: function(nPos) {
-		if (this.getDocType() === 'presentation') {
-			this._socket.sendMessage('uno .uno:InsertPage');
+		if (this.isPresentationOrDrawing()) {
+			app.socket.sendMessage('uno .uno:InsertPage');
 		}
 		else if (this.getDocType() === 'spreadsheet') {
-			this.forceCellCommit();
 			var command = {
 				'Name': {
 					'type': 'string',
@@ -208,7 +281,7 @@ L.Map.include({
 				}
 			};
 
-			this._socket.sendMessage('uno .uno:Insert ' + JSON.stringify(command));
+			app.socket.sendMessage('uno .uno:Insert ' + JSON.stringify(command));
 		}
 		else {
 			return;
@@ -216,10 +289,13 @@ L.Map.include({
 
 		var docLayer = this._docLayer;
 
-		this.fire('insertpage', {
-			selectedPart: docLayer._selectedPart,
-			parts:        docLayer._parts
-		});
+		// At least for Impress, we should not fire this. It causes a circular reference.
+		if (!this.isPresentationOrDrawing()) {
+			this.fire('insertpage', {
+				selectedPart: docLayer._selectedPart,
+				parts:        docLayer._parts
+			});
+		}
 
 		docLayer._parts++;
 
@@ -233,27 +309,29 @@ L.Map.include({
 	},
 
 	duplicatePage: function() {
-		if (this.getDocType() !== 'presentation') {
+		if (!this.isPresentationOrDrawing()) {
 			return;
 		}
-		this._socket.sendMessage('uno .uno:DuplicatePage');
+		app.socket.sendMessage('uno .uno:DuplicatePage');
 		var docLayer = this._docLayer;
 
-		this.fire('insertpage', {
-			selectedPart: docLayer._selectedPart,
-			parts:        docLayer._parts
-		});
+		// At least for Impress, we should not fire this. It causes a circular reference.
+		if (!this.isPresentationOrDrawing()) {
+			this.fire('insertpage', {
+				selectedPart: docLayer._selectedPart,
+				parts:        docLayer._parts
+			});
+		}
 
 		docLayer._parts++;
 		this.setPart('next');
 	},
 
 	deletePage: function (nPos) {
-		if (this.getDocType() === 'presentation') {
-			this._socket.sendMessage('uno .uno:DeletePage');
+		if (this.isPresentationOrDrawing()) {
+			app.socket.sendMessage('uno .uno:DeletePage');
 		}
 		else if (this.getDocType() === 'spreadsheet') {
-			this.forceCellCommit();
 			var command = {
 				'Index': {
 					'type': 'long',
@@ -261,7 +339,7 @@ L.Map.include({
 				}
 			};
 
-			this._socket.sendMessage('uno .uno:Remove ' + JSON.stringify(command));
+			app.socket.sendMessage('uno .uno:Remove ' + JSON.stringify(command));
 		}
 		else {
 			return;
@@ -277,10 +355,13 @@ L.Map.include({
 			return;
 		}
 
-		this.fire('deletepage', {
-			selectedPart: docLayer._selectedPart,
-			parts:        docLayer._parts
-		});
+		// At least for Impress, we should not fire this. It causes a circular reference.
+		if (!this.isPresentationOrDrawing()) {
+			this.fire('deletepage', {
+				selectedPart: docLayer._selectedPart,
+				parts:        docLayer._parts
+			});
+		}
 
 		docLayer._parts--;
 		if (docLayer._selectedPart >= docLayer._parts) {
@@ -302,7 +383,7 @@ L.Map.include({
 	 * @param {string} name - 工作表或投影片名稱
 	 * @param {number} nPos - 工作表位置(投影不須指定)
 	 */
-	renamePage: function(name, nPos) {
+	 renamePage: function(name, nPos) {
 		var command;
 		switch (this.getDocType()) {
 		case 'spreadsheet':
@@ -333,46 +414,44 @@ L.Map.include({
 	},
 
 	/**
-	 * 顯示某張工作表或投影片
-	 *
-	 * @param {string} [sheetName] - 工作表名稱(投影不須指定)
-	 * @author Firefly <firefly@ossii.com.tw>
+	 * 顯示指定名稱的工作表
+	 * @param {*} sheetName
 	 */
 	showPage: function(sheetName) {
-		switch (this.getDocType()) {
-		case 'spreadsheet':
-			if (this.hasAnyHiddenPart()) {
-				this.forceCellCommit();
-				var args = {
-					'aTableName': {
-						type: 'string',
-						value: sheetName
-					}
-				};
-				this.sendUnoCommand('.uno:Show', args);
-			}
-			break;
+		if (this.getDocType() === 'spreadsheet' && this.hasAnyHiddenPart()) {
+			var argument = {
+				aTableName: {
+					type: 'string',
+					value: sheetName
+				}
+			};
+			this.sendUnoCommand('.uno:Show', argument);
 		}
 	},
 
 	/**
-	 * 隱藏某張工作表或投影片
-	 *
-	 * @author Firefly <firefly@ossii.com.tw>
+	 * 隱藏指定編號的工作表
+	 * @param {*} tabNumber
 	 */
-	hidePage: function() {
-		switch (this.getDocType()) {
-		case 'spreadsheet':
-			if (this.getNumberOfVisibleParts() > 1) {
-				this.forceCellCommit();
-				this.sendUnoCommand('.uno:Hide');
-			}
-			break;
+	hidePage: function(tabNumber) {
+		if (this.getDocType() === 'spreadsheet' && this.getNumberOfVisibleParts() > 1) {
+			var argument = {
+				nTabNumber: {
+					type: 'int16',
+					value: tabNumber
+				}
+			};
+			this.sendUnoCommand('.uno:Hide', argument);
 		}
 	},
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 檢查工作表名稱是否合法
+	/**
+	 * 檢查工作表名稱是否合法
+	 *
+	 * @param {string} sheetName - 工作表名稱
+	 * @param {number} nPos
+	 * @returns true: 合法, false: 不合法或和現有名稱重複
+	 */
 	isSheetnameValid: function (sheetName, nPos) {
 		var partNames = this._docLayer._partNames;
 		var i;
@@ -407,8 +486,7 @@ L.Map.include({
 		return isValid;
 	},
 
-
-	/*
+	/**
 	 * 取得文件檔名(含副檔名)
 	 */
 	getFileName: function() {
@@ -417,10 +495,10 @@ L.Map.include({
 		return file.substr(idx + 1);
 	},
 
-	/*
+	/**
 	 * 取得文件檔名(不含副檔名)
 	 */
-	getDocName: function () {
+	getDocName: function() {
 		var file = this.options.wopi ? this.wopi.BaseFileName : this.options.doc;
 		var idx = file.lastIndexOf('.');
 		// 去掉副檔名
@@ -433,24 +511,36 @@ L.Map.include({
 		return file;
 	},
 
-	/*
-	 * 取得某張工作表或某個投影片詳細資料
+	/**
+	 * 取得某工作表或投影片的詳細資訊
+	 * @param {number} part - 從 0 開始的編號
+	 * @returns null: Writer或系統不支援(後端不是OxOffice)
 	 */
 	getPartProperty: function(part) {
-		var partsInfo = this._docLayer._partsInfo;
-		var info = undefined;
+		// 文字文件目前不支援取得每頁資訊
+		// TODO: 將來可能嗎？
+		if (this.getDocType() === 'text' || this._docLayer._partsInfo === undefined) {
+			return null;
+		}
 		// 未指定工作表或投影片編號，表示目前選取的工作表或投影片編號
-		if (part === undefined) {
-			part = this._docLayer._selectedPart;
-		}
-
-		if (typeof part === 'number' && partsInfo !== undefined) {
-			info = partsInfo[part];
-		}
-		return info;
+		part = (part === undefined ? this._docLayer._selectedPart : parseInt(part, 10));
+		return this._docLayer._partsInfo[part];
 	},
 
-	//---------------------------------------
+	/**
+	 * 指定工作表是否被保護
+	 * @param {number} part - 從 0 開始的編號
+	 * @returns
+	 */
+	isPartProtected: function(part) {
+		var pInfo = this.getPartProperty(part);
+		if (pInfo) {
+			return pInfo.isProtected();
+		}
+		// 否則從 stateChangeHandler 取得
+		var state = this.stateChangeHandler.getItemProperty('.uno:Protect');
+		return state.checked();
+	},
 
 	isHiddenPart: function (part) {
 		if (this.getDocType() !== 'spreadsheet')
@@ -464,7 +554,12 @@ L.Map.include({
 		return this._docLayer.hasAnyHiddenPart();
 	},
 
-	getNumberOfPages: function () {
+	/**
+	 * 取得文字文件總頁數
+	 * @author Firefly <firefly@ossii.com.tw>
+	 * @returns 總頁數
+	 */
+	getNumberOfPages: function() {
 		return this._docLayer._pages;
 	},
 
@@ -476,7 +571,11 @@ L.Map.include({
 		return this.getNumberOfParts() - this._docLayer.hiddenParts();
 	},
 
-	getHiddenPartNames: function () {
+	/**
+	 *  取得所有隱藏的工作表名稱
+	 * @returns 以逗號分隔的工作表字串
+	 */
+	getHiddenPartNames: function() {
 		var partNames = this._docLayer._partNames;
 		var names = [];
 		for (var i = 0; i < partNames.length; ++i) {
@@ -486,6 +585,11 @@ L.Map.include({
 		return names.join(',');
 	},
 
+	/**
+	 * 取得文字文件目前由表所在頁號
+	 * @author Firefly <firefly@ossii.com.tw>
+	 * @returns 目前所在頁
+	 */
 	getCurrentPageNumber: function () {
 		return this._docLayer._currentPage;
 	},
@@ -505,16 +609,7 @@ L.Map.include({
 		return this._docLayer._docType;
 	},
 
-	/**
-	 * 取得目前文件中，被 focus 的物件名稱
-	 *
-	 * @author	Firefly <firefly@ossii.com.tw>
-	 * @returns {string} 物件名稱
-	 */
-	getContextType: function () {
-		if (!this._docLayer)
-			return null;
-
-		return this._docLayer._docContext;
-	},
+	isPresentationOrDrawing: function () {
+		return this.getDocType() === 'presentation' || this.getDocType() === 'drawing';
+	}
 });

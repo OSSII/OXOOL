@@ -1,0 +1,331 @@
+.sidebar * {
+	font-family: var(--oxool-font);
+	text-transform: none !important;
+}
+
+.sidebar .ui-content .unobutton {
+	margin: 0;
+	width: 24px;
+	height: 24px;
+	vertical-align: middle;
+}
+
+#document-container:not(.mobile) + #sidebar-dock-wrapper {
+	width: 322px;
+	padding: 0;
+	border-left: 1px solid var(--gray-color) !important;
+	margin-top: 0 !important;
+	box-sizing: border-box;
+}
+
+.sidebar.spinfield {
+	max-width: 104px;
+	border: 1px solid #CCC;
+	padding: 4px 0 4px 4px;
+	border-radius: 3px;
+	height: 28px;
+	box-sizing: border-box;
+	margin-right: 1px;
+}
+.sidebar.spinfield:hover {
+	border: 1px solid var(--gray-color);
+}
+
+.spinfieldunit {
+	font-size: 12px;
+	color: var(--gray-light-txt--color);
+	margin: 5px;
+}
+
+.sidebar.ui-listbox {
+	font-size: 13px;
+	height: 28px;
+	box-sizing: border-box;
+	padding: 0 14px 0 4px;
+	min-width: auto;
+}
+
+.sidebar.jsdialog.menubutton,
+.sidebar.jsdialog.ui-listbox option,
+.sidebar.jsdialog.ui-listbox {
+	width: 150px;
+}
+
+#fontnamecombobox > .sidebar.jsdialog.ui-listbox,
+#applystyle > .sidebar.jsdialog.ui-listbox {
+	width: 172px;
+}
+
+#gradientstyle > .sidebar.jsdialog.ui-listbox {
+	width: 74px;
+}
+
+.sidebar.jsdialog.row > table.sidebar.jsdialog.ui-grid {
+	width: 290px;
+}
+
+#table-grid3.sidebar.jsdialog.vertical > .sidebar.jsdialog.row > table.sidebar.jsdialog.ui-grid > tr.sidebar.jsdialog > td.sidebar.jsdialog > .sidebar.jsdialog.vertical > .sidebar.jsdialog.row > table.sidebar.jsdialog.ui-grid {
+	width: 10px;
+}
+
+#fontsizecombobox > .sidebar.jsdialog.ui-listbox {
+	width: 86px;
+}
+
+.sidebar.ui-expander {
+	display: flex;
+	justify-content: space-between;
+	width: 290px;
+	align-items: center;
+}
+
+#selectcolor {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.sidebar.jsdialog.cell > #table-box3 {
+	width: 290px;
+}
+
+.sidebar.jsdialog.cell > #table-box3,
+.sidebar.jsdialog.cell > #table-box4 {
+	display: flex;
+	justify-content: flex-end;
+}
+
+#table-box4.sidebar.jsdialog.vertical {
+	width: auto;
+}
+
+div#negativenumbersred.checkbutton.jsdialog.sidebar,
+div#thousandseparator.checkbutton.jsdialog.sidebar {
+	height: 24px;
+}
+
+#settransparency, #fontheight,
+#document-container:not(.presentation-doctype) ~ #sidebar-dock-wrapper .sidebar.jsdialog.vertical > .sidebar.jsdialog.row > table.sidebar.ui-grid > tr.sidebar > td.sidebar:last-child,
+.sidebar.jsdialog.cell > #table-box3 > .sidebar.jsdialog.row > .sidebar.jsdialog.cell:last-child,
+.sidebar.jsdialog.cell > #table-box4 > .sidebar.jsdialog.row > .sidebar.jsdialog.cell:last-child,
+.sidebar.jsdialog.cell > #table-box4 > .sidebar.jsdialog.row > .sidebar.jsdialog.cell:nth-child(4) {
+	display: flex;
+	justify-content: flex-end;
+}
+.sidebar.ui-drawing-area {
+	max-width: 290px;
+}
+
+.sidebar.ui-expander-label {
+	color: var(--gray-light-txt--color);
+	font-size: 11px;
+	line-height: 23px;
+	font-weight: bold;
+}
+
+.sidebar.ui-expander-label.expanded {
+	padding-left: 14px;
+	font-size: 11px;
+	line-height: 23px;
+	font-weight: bold;
+}
+
+.sidebar.ui-expander-label.expanded:before {
+	margin-right: 0;
+	position: absolute;
+	left: 14px;
+}
+
+.sidebar.root-container.jsdialog > .jsdialog.sidebar {
+	width: 100%;
+}
+
+.sidebar-container > .root-container.jsdialog.sidebar {
+	margin: 0;
+}
+
+td.jsdialog .jsdialog.cell.sidebar {
+	padding: 4px 4px 4px 0;
+	width: auto;
+}
+
+.spreadsheet-document + #sidebar-dock-wrapper #ScAlignmentPropertyPanelPanelExpander #box3 > div:last-of-type,
+.presentation-doctype + #sidebar-dock-wrapper #ParaPropertyPanelPanelExpander #box1 > div:last-of-type,
+.drawing-doctype + #sidebar-dock-wrapper #ParaPropertyPanelPanelExpander #box1 > div:last-of-type {
+	display: table-row;
+}
+
+.sidebar.jsdialog.checkbutton {
+	font-size: 13px;
+}
+
+.sidebar .menu-entry-icon {
+	width: 24px;
+	height: 24px;
+}
+
+.sidebar.unotoolbutton,
+.sidebar #resetattr,
+.sidebar #FormatPaintbrush{
+	border: 1px solid transparent;
+	margin-right: 5px;
+}
+#table-textorientbox.sidebar .jsdialog .radiobutton {
+	border: 1px solid transparent;
+}
+
+/* non selected */
+.hasnotebookbar .ui-content.unotoolbutton.has-label,
+.hasnotebookbar .ui-content.unotoolbutton.inline,
+.hasnotebookbar .ui-content.unotoolbutton:not(.has-label):not(.inline),
+.sidebar.unotoolbutton {
+	background-color: transparent;
+	border: 2px solid transparent;
+	color: var(--gray-light-txt--color);
+	border-radius: 4px;
+}
+/* selected */
+.hasnotebookbar .ui-content.unotoolbutton.selected.has-label,
+.hasnotebookbar .ui-content.unotoolbutton.selected.inline,
+.hasnotebookbar .ui-content.unotoolbutton.selected:not(.has-label):not(.inline),
+.sidebar.unotoolbutton.selected {
+	background-color: var(--gray-light-bg-color);
+	border: 2px solid var(--gray-light-bg-color);
+	color: var(--gray-light-txt--color);
+	border-radius: 4px;
+}
+/* selected hover */
+.hasnotebookbar .ui-content.unotoolbutton.selected:hover,
+.unotoolbutton.notebookbar:hover,
+.hasnotebookbar .ui-content.unotoolbutton.selected:not(.has-label):not(.inline):hover,
+.sidebar.unotoolbutton:hover,
+.sidebar.unotoolbutton.selected:hover,
+.sidebar #resetattr:hover,
+.sidebar #FormatPaintbrush:hover,
+#table-textorientbox.sidebar .jsdialog .radiobutton:hover {
+	outline: 1px solid var(--gray-light-txt--color);
+	color: var(--gray-light-txt--color);
+	border-radius: 4px;
+}
+
+.sidebar #font select,
+.sidebar #fontsizecombobox select {
+	margin: 0;
+}
+
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right,
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right * {
+	display: block;
+	width: 10px;
+	height: 10px;
+}
+
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right img {
+	filter: brightness(2);
+}
+
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right:hover img {
+	filter: none;
+}
+
+#table-textorientbox.sidebar .jsdialog input[type='radio'] {
+	background: none !important;
+	width: auto;
+	height: auto;
+}
+
+.sidebar.jsdialog.ui-separator.horizontal {
+	padding-top: 0;
+}
+
+#spacinglabel {
+	padding-top: 0;
+}
+
+
+#indentlabel {
+	padding-top: 8px;
+}
+
+.spinfieldcontainer {
+	margin-right: 10px;
+}
+
+#settransparency {
+	margin-right: 5px;
+}
+
+#fillattrhb {
+	margin-left: 4px;
+	position: relative;
+	left: 38px;
+}
+
+#fillgrad1 {
+	padding: 4px 10px;
+	width: 160px;
+	position: relative;
+	left: -7px;
+}
+
+#table-verticalalignment {
+	position: relative;
+	top: 6px;
+}
+
+#LB_SHADOW_COLOR, #LB_GLOW_COLOR {
+	padding: 4px 10px;
+	width: 130px;
+	position: relative;
+	left: -11px;
+}
+
+#fillgrad2 {
+	padding-top: 4px;
+	width: 160px;
+	position: relative;
+	left: -11px;
+}
+
+#fillgrad2 > img,
+#fillgrad2 > span {
+	width: 38px;
+	height: 15px;
+}
+
+#orientationcontrol,
+#rotation,
+#misc_label {
+	visibility: hidden;
+	height: 16px;
+}
+
+#fliplabel {
+	position: relative;
+	bottom: 26px;
+}
+
+#rotationlabel {
+	position: relative;
+	bottom: 15px;
+}
+
+#ratio {
+	position: relative;
+	left: 163px;
+}
+
+button#button2.ui-pushbutton.jsdialog.sidebar {
+	width: 151px;
+	padding: 4px;
+	position: relative;
+	left: -10px;
+}
+
+#writedirection, #backgroundcolor {
+	justify-content: end;
+	margin-right: 0;
+}
+
+.sidebar .spinfieldcontainer input {
+	width: calc(100% - 28px);
+}

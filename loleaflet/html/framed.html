@@ -16,7 +16,7 @@
      LibreOffice core.) The parameters are then in our JavaScript
      passed on to the Python script that acts on the document open in
      the iframe. The Python script returns a value, which gets passed
-     to loleaflet in a unocommandresult: message, and passed on to the
+     to oxool in a unocommandresult: message, and passed on to the
      event listener on this page, which writes it to the output field.
 
      The other forms call other Python functions in other files. (In
@@ -24,13 +24,8 @@
      invoke Python functions that list, add, and delete named ranges
      in a Calc document being edited.
 
-     To test this, do 'make run', and then in your browser open the
-     equivalent of
-     http://snorken.local:9980/loleaflet/3304e9093/framed.html if the
-     browser is running on a different machine, or
-     http://localhost:9980/loleaflet/3304e9093/framed.html if running
-     on the same machine.
-
+     To test this, do 'make run', and then in your browser open:
+     https://localhost:9980/loleaflet/dist/framed.html?file_path=/opt/libreoffice/online/test/data/hello-world.ods
 -->
 
 <html>
@@ -172,7 +167,7 @@
   </head>
 
   <body style="user-select: none;">
-
+    <h3>Calc functions</h3>
     <p>
       <form id="cell-colour-form">
 	Cell: (<input type="number" name="x" min="0" max="20" value="0">, <input type="number" name="y" min="0" max="20" value="0">),
@@ -199,11 +194,18 @@
       Click <button onclick="callDeleteNamedRange(); return false;">here</button> to delete the named range called <input type="text" name="name">
     </form>
 
-    <!-- The hostname and pathnames below are obviously specific to my
-    personal environment and need to be changed appropriately. Also
-    the hex string needs to be changed of course, to the right one as
-    shown by 'make run'. -->
+    <h3>Document frame</h3>
 
-    <iframe src="http://snorken.local:9980/loleaflet/3304e9093/loleaflet.html?file_path=file:///home/tml/lo/online/test/data/empty.ods&NotWOPIButIframe=true" height="1000" width="1000"></iframe>
+    <h4>If the frame fails to load click <a id="link">here and accept security bits</a></h4>
+    <iframe id="frame" height="1000" width="1000"></iframe>
+
+    <!-- 127.0.0.2 allows us to test CSS issues -->
+    <script>
+      var uriBase = document.location.protocol + "//127.0.0.2:9980/loleaflet/42/loleaflet.html" + window.location.search;
+      var iframe = document.getElementById("frame");
+      iframe.src = uriBase + "&NotWOPIButIframe=true";
+      var msg = document.getElementById("link");
+      link.href = uriBase;
+    </script>
   </body>
 </html>

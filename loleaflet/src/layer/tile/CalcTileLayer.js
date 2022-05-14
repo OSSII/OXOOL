@@ -3,104 +3,74 @@
  * Calc tile layer is used to display a spreadsheet document
  */
 
-L.CalcTileLayer = L.TileLayer.extend({
-	STD_EXTRA_WIDTH: 113, /* 2mm extra for optimal width,
-							  * 0.1986cm with TeX points,
-							  * 0.1993cm with PS points. */
+/* global app */
+
+L.CalcTileLayer = L.CanvasTileLayer.extend({
+	options: {
+		// TODO: sync these automatically from SAL_LOK_OPTIONS
+		sheetGeometryDataEnabled: true,
+		printTwipsMsgsEnabled: true,
+		syncSplits: true, // if false, the splits/freezes are not synced with other users viewing the same sheet.
+	},
 
 	twipsToHMM: function (twips) {
 		return (twips * 127 + 36) / 72;
 	},
 
 	newAnnotation: function (comment) {
-		var annotations = this._annotations[this._selectedPart];
-		var annotation;
-		for (var key in annotations) {
-			if (this._cellCursor.contains(annotations[key]._annotation._data.cellPos)) {
-				annotation = annotations[key];
+		var commentList = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).sectionProperties.commentList;
+		var comment = null;
+
+		for (var i = 0; i < commentList.length; i++) {
+			if (this._cellCursorTwips.contains(commentList[i].sectionProperties.data.cellPos)) {
+				comment = commentList[i];
 				break;
 			}
 		}
 
-		if (!annotation) {
-			comment.cellPos = this._cellCursor;
-			annotation = this.createAnnotation(comment);
-			annotation._annotation._tag = annotation;
-			this.showAnnotation(annotation);
+		if (!comment) {
+			var newComment = {
+				cellPos: app.file.calc.cellCursor.rectangle.twips.slice(), // Copy the array.
+				anchorPos: app.file.calc.cellCursor.rectangle.twips.slice(), // Copy the array.
+				id: 'new',
+				tab: this._selectedPart,
+				dateTime: new Date().toDateString(),
+				author: this._map.getViewName(this._viewId)
+			};
+			comment = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).add(newComment);
+			comment.show();
 		}
-		annotation.editAnnotation();
-	},
-
-	createAnnotation: function (comment) {
-		var annotation = L.divOverlay(comment.cellPos).bindAnnotation(L.annotation(L.latLng(0, 0),
-			comment, comment.id === 'new' ? {noMenu: true} : {}));
-		return annotation;
+		app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).modify(comment);
+		comment.focus();
 	},
 
 	beforeAdd: function (map) {
+		map._isCursorVisible = false;
 		map._addZoomLimit(this);
 		map.on('zoomend', this._onZoomRowColumns, this);
 		map.on('updateparts', this._onUpdateParts, this);
-		map.on('AnnotationCancel', this._onAnnotationCancel, this);
-		map.on('AnnotationReply', this._onAnnotationReply, this);
-		map.on('AnnotationSave', this._onAnnotationSave, this);
-	},
-
-	clearAnnotations: function () {
-		for (var tab in this._annotations) {
-			this.hideAnnotations(tab);
-		}
-		this._annotations = {};
+		map.on('splitposchanged', this.setSplitCellFromPos, this);
+		this._setCommandStateChange(map);
+		map.uiManager.initializeSpecializedUI('spreadsheet');
 	},
 
 	onAdd: function (map) {
-		L.TileLayer.prototype.onAdd.call(this, map);
-		this._annotations = {};
-	},
+		map.addControl(L.control.tabs());
+		L.CanvasTileLayer.prototype.onAdd.call(this, map);
 
-	onAnnotationModify: function (annotation) {
-		annotation.edit();
-		annotation.focus();
-	},
-
-	onAnnotationRemove: function (id) {
-		var comment = {
-			Id: {
-				type: 'string',
-				value: id
+		map.on('resize', function () {
+			if (this.isCursorVisible()) {
+				this._onUpdateCursor(true /* scroll */);
 			}
-		};
-		var tab = this._selectedPart;
-		this._map.sendUnoCommand('.uno:DeleteNote', comment);
-		this._annotations[tab][id].closePopup();
-		this._map.focus();
-	},
+		}.bind(this));
 
-	onAnnotationReply: function (annotation) {
-		annotation.reply();
-		annotation.focus();
-	},
+		app.sectionContainer.addSection(new app.definitions.AutoFillMarkerSection());
 
-	showAnnotation: function (annotation) {
-		this._map.addLayer(annotation);
-	},
-
-	hideAnnotation: function (annotation) {
-		this._map.removeLayer(annotation);
-	},
-
-	showAnnotations: function () {
-		var annotations = this._annotations[this._selectedPart];
-		for (var key in annotations) {
-			this.showAnnotation(annotations[key]);
-		}
-	},
-
-	hideAnnotations: function (part) {
-		var annotations = this._annotations[part];
-		for (var key in annotations) {
-			this.hideAnnotation(annotations[key]);
-		}
+		this.insertMode = false;
+		this._cellSelections = Array(0);
+		this._cellCursorXY = {x: -1, y: -1};
+		this._gotFirstCellCursor = false;
+		this.requestCellCursor();
 	},
 
 	isHiddenPart: function (part) {
@@ -120,120 +90,54 @@ L.CalcTileLayer = L.TileLayer.extend({
 			return false;
 		return this.hiddenParts() !== 0;
 	},
-	_onAnnotationCancel: function (e) {
-		if (e.annotation._data.id === 'new') {
-			this.hideAnnotation(e.annotation._tag);
-		} else {
-			this._annotations[e.annotation._data.tab][e.annotation._data.id].closePopup();
-		}
-		this._map.focus();
-	},
-
-	_onAnnotationReply: function (e) {
-		var comment = {
-			Id: {
-				type: 'string',
-				value: e.annotation._data.id
-			},
-			Text: {
-				type: 'string',
-				value: e.annotation._data.reply
-			}
-		};
-		this._map.sendUnoCommand('.uno:ReplyComment', comment);
-		this._map.focus();
-	},
-
-	_onAnnotationSave: function (e) {
-		var comment;
-		if (e.annotation._data.id === 'new') {
-			comment = {
-				Text: {
-					type: 'string',
-					value: e.annotation._data.text
-				},
-				Author: {
-					type: 'string',
-					value: e.annotation._data.author
-				}
-			};
-			this._map.sendUnoCommand('.uno:InsertAnnotation', comment);
-			this.hideAnnotation(e.annotation._tag);
-		} else {
-			comment = {
-				Id: {
-					type: 'string',
-					value: e.annotation._data.id
-				},
-				Text: {
-					type: 'string',
-					value: e.annotation._data.text
-				},
-				Author: {
-					type: 'string',
-					value: this._map.getViewName(this._viewId)
-				}
-			};
-			this._map.sendUnoCommand('.uno:EditAnnotation', comment);
-			this._annotations[e.annotation._data.tab][e.annotation._data.id].closePopup();
-		}
-		this._map.focus();
-	},
 
 	_onUpdateParts: function (e) {
 		if (typeof this._prevSelectedPart === 'number' && !e.source) {
-			this.hideAnnotations(this._prevSelectedPart);
-			this.showAnnotations();
+			this.refreshViewData(undefined, false /* compatDataSrcOnly */, true /* sheetGeometryChanged */);
+			this._switchSplitPanesContext();
 		}
 	},
 
 	_onMessage: function (textMsg, img) {
-		if (textMsg.startsWith('comment:')) {
-			var obj = JSON.parse(textMsg.substring('comment:'.length + 1));
-			obj.comment.tab = parseInt(obj.comment.tab);
-			if (obj.comment.action === 'Add') {
-				obj.comment.cellPos = L.LOUtil.stringToBounds(obj.comment.cellPos);
-				obj.comment.cellPos = L.latLngBounds(this._twipsToLatLng(obj.comment.cellPos.getBottomLeft()),
-					this._twipsToLatLng(obj.comment.cellPos.getTopRight()));
-				if (!this._annotations[obj.comment.tab]) {
-					this._annotations[obj.comment.tab] = {};
-				}
-				this._annotations[obj.comment.tab][obj.comment.id] = this.createAnnotation(obj.comment);
-				if (obj.comment.tab === this._selectedPart) {
-					this.showAnnotation(this._annotations[obj.comment.tab][obj.comment.id]);
-				}
-			} else if (obj.comment.action === 'Remove') {
-				var removed = this._annotations[obj.comment.tab][obj.comment.id];
-				if (removed) {
-					this.hideAnnotation(removed);
-					delete this._annotations[obj.comment.tab][obj.comment.id];
-				}
-			} else if (obj.comment.action === 'Modify') {
-				var modified = this._annotations[obj.comment.tab][obj.comment.id];
-				obj.comment.cellPos = L.LOUtil.stringToBounds(obj.comment.cellPos);
-				obj.comment.cellPos = L.latLngBounds(this._twipsToLatLng(obj.comment.cellPos.getBottomLeft()),
-					this._twipsToLatLng(obj.comment.cellPos.getTopRight()));
-				if (modified) {
-					modified._annotation._data = obj.comment;
-					modified.setLatLngBounds(obj.comment.cellPos);
-				}
-			}
-		} else if (textMsg.startsWith('invalidateheader: column')) {
-			this._map.fire('updaterowcolumnheaders', {x: this._map._getTopLeftPoint().x, y: 0, offset: {x: undefined, y: 0}});
-			this._map._socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
+		if (textMsg.startsWith('invalidateheader: column')) {
+			this.refreshViewData({x: this._map._getTopLeftPoint().x, y: 0,
+				offset: {x: undefined, y: 0}}, true /* compatDataSrcOnly */);
+			app.socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
 		} else if (textMsg.startsWith('invalidateheader: row')) {
-			this._map.fire('updaterowcolumnheaders', {x: 0, y: this._map._getTopLeftPoint().y, offset: {x: 0, y: undefined}});
-			this._map._socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
+			this.refreshViewData({x: 0, y: this._map._getTopLeftPoint().y,
+				offset: {x: 0, y: undefined}}, true /* compatDataSrcOnly */);
+			app.socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
 		} else if (textMsg.startsWith('invalidateheader: all')) {
-			this._map.fire('updaterowcolumnheaders', {x: this._map._getTopLeftPoint().x, y: this._map._getTopLeftPoint().y, offset: {x: undefined, y: undefined}});
-			this._map._socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
+			this.refreshViewData({x: this._map._getTopLeftPoint().x, y: this._map._getTopLeftPoint().y,
+				offset: {x: undefined, y: undefined}}, true /* compatDataSrcOnly */);
+			app.socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
+		} else if (textMsg.startsWith('launchmenu:')) {
+			var menu = JSON.parse(textMsg.replace('launchmenu: ', ''));
+			switch (menu.type) {
+			case 'DataSelect':
+				L.dialog.run('DataSelect', menu);
+				break;
+			case 'AutoFilter':
+				L.dialog.run('AutoFilter', menu);
+				break;
+			default:
+				window.app.console.debug('Warning! unknow launch menu :', menu);
+			}
+		} else if (this.options.sheetGeometryDataEnabled &&
+				textMsg.startsWith('invalidatesheetgeometry:')) {
+			var params = textMsg.substring('invalidatesheetgeometry:'.length).trim().split(' ');
+			var flags = {};
+			params.forEach(function (param) {
+				flags[param] = true;
+			});
+			this.requestSheetGeometryData(flags);
 		} else {
-			L.TileLayer.prototype._onMessage.call(this, textMsg, img);
+			L.CanvasTileLayer.prototype._onMessage.call(this, textMsg, img);
 		}
 	},
 
 	_onInvalidateTilesMsg: function (textMsg) {
-		var command = this._map._socket.parseServerCmd(textMsg);
+		var command = app.socket.parseServerCmd(textMsg);
 		if (command.x === undefined || command.y === undefined || command.part === undefined) {
 			var strTwips = textMsg.match(/\d+/g);
 			command.x = parseInt(strTwips[0]);
@@ -248,17 +152,22 @@ L.CalcTileLayer = L.TileLayer.extend({
 		if (this._debug) {
 			this._debugAddInvalidationRectangle(topLeftTwips, bottomRightTwips, textMsg);
 		}
+
 		var invalidBounds = new L.Bounds(topLeftTwips, bottomRightTwips);
-		var visibleTopLeft = this._latLngToTwips(this._map.getBounds().getNorthWest());
-		var visibleBottomRight = this._latLngToTwips(this._map.getBounds().getSouthEast());
-		var visibleArea = new L.Bounds(visibleTopLeft, visibleBottomRight);
+		var visibleArea, visiblePaneAreas;
+		if (this._splitPanesContext) {
+			visiblePaneAreas = this._splitPanesContext.getTwipsBoundList();
+		}
+		else {
+			var visibleTopLeft = this._latLngToTwips(this._map.getBounds().getNorthWest());
+			var visibleBottomRight = this._latLngToTwips(this._map.getBounds().getSouthEast());
+			visibleArea = new L.Bounds(visibleTopLeft, visibleBottomRight);
+		}
 
 		var needsNewTiles = false;
 		for (var key in this._tiles) {
 			var coords = this._tiles[key].coords;
-			var tileTopLeft = this._coordsToTwips(coords);
-			var tileBottomRight = new L.Point(this._tileWidthTwips, this._tileHeightTwips);
-			var bounds = new L.Bounds(tileTopLeft, tileTopLeft.add(tileBottomRight));
+			var bounds = this._coordsToTileBounds(coords);
 			if (coords.part === command.part && invalidBounds.intersects(bounds)) {
 				if (this._tiles[key]._invalidCount) {
 					this._tiles[key]._invalidCount += 1;
@@ -266,7 +175,8 @@ L.CalcTileLayer = L.TileLayer.extend({
 				else {
 					this._tiles[key]._invalidCount = 1;
 				}
-				if (visibleArea.intersects(bounds)) {
+				var intersectsVisible = visibleArea ? visibleArea.intersects(bounds) : bounds.intersectsAny(visiblePaneAreas);
+				if (intersectsVisible) {
 					needsNewTiles = true;
 					if (this._debug) {
 						this._debugAddInvalidationData(this._tiles[key]);
@@ -291,14 +201,8 @@ L.CalcTileLayer = L.TileLayer.extend({
 			if (coords.part !== command.part) {
 				continue;
 			}
-			var scale = this._map.getZoomScale(coords.z);
-			topLeftTwips = new L.Point(
-					this.options.tileWidthTwips / scale * coords.x,
-					this.options.tileHeightTwips / scale * coords.y);
-			bottomRightTwips = topLeftTwips.add(new L.Point(
-					this.options.tileWidthTwips / scale,
-					this.options.tileHeightTwips / scale));
-			bounds = new L.Bounds(topLeftTwips, bottomRightTwips);
+
+			bounds = this._coordsToTileBounds(coords);
 			if (invalidBounds.intersects(bounds)) {
 				delete this._tileCache[key];
 			}
@@ -312,21 +216,65 @@ L.CalcTileLayer = L.TileLayer.extend({
 
 	_onSetPartMsg: function (textMsg) {
 		var part = parseInt(textMsg.match(/\d+/g)[0]);
-		if (part !== this._selectedPart && !this.isHiddenPart(part)) {
-			this._map.setPart(part, true);
-			this._map.fire('setpart', {selectedPart: this._selectedPart});
-			// TODO: test it!
-			this._map.fire('updaterowcolumnheaders');
+		if (!this.isHiddenPart(part)) {
+			this.refreshViewData(undefined, true /* compatDataSrcOnly */, false /* sheetGeometryChanged */);
+			this._replayPrintTwipsMsgAllViews('cellviewcursor');
+			this._replayPrintTwipsMsgAllViews('textviewselection');
+			// Hide previous tab's shown comment (if any).
+			app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).hideAllComments();
 		}
 	},
 
 	_onZoomRowColumns: function () {
 		this._sendClientZoom();
-		// TODO: test it!
-		this._map.fire('updaterowcolumnheaders');
+		if (this.sheetGeometry) {
+			this.sheetGeometry.setTileGeometryData(this._tileWidthTwips, this._tileHeightTwips,
+				this._tileSize);
+		}
+		this._restrictDocumentSize();
+		this.setSplitPosFromCell();
+		this._map.fire('zoomchanged');
+		this.refreshViewData();
+		this._replayPrintTwipsMsgs();
+		app.socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
 	},
 
-	_onUpdateCurrentHeader: function() {
+	_restrictDocumentSize: function () {
+
+		if (!this.sheetGeometry) {
+			return;
+		}
+
+		var maxDocSize = this.sheetGeometry.getSize('tiletwips');
+		var newDocWidth = Math.min(maxDocSize.x, this._docWidthTwips);
+		var newDocHeight = Math.min(maxDocSize.y, this._docHeightTwips);
+
+		var shouldRestrict = (newDocWidth !== this._docWidthTwips ||
+				newDocHeight !== this._docHeightTwips);
+
+		if (!shouldRestrict) {
+			return;
+		}
+
+		// When there will be a latlng conversion, we should use CSS pixels.
+		var newSizePx = this._twipsToPixels(new L.Point(newDocWidth, newDocHeight));
+
+		var topLeft = this._map.unproject(new L.Point(0, 0));
+		var bottomRight = this._map.unproject(newSizePx);
+
+		this._docPixelSize = newSizePx.clone();
+		this._docWidthTwips = newDocWidth;
+		this._docHeightTwips = newDocHeight;
+		app.file.size.twips = [newDocWidth, newDocHeight];
+		app.file.size.pixels = [Math.round(this._tileSize * (this._docWidthTwips / this._tileWidthTwips)), Math.round(this._tileSize * (this._docHeightTwips / this._tileHeightTwips))];
+		app.view.size.pixels = app.file.size.pixels.slice();
+
+		this._map.setMaxBounds(new L.LatLngBounds(topLeft, bottomRight));
+
+		this._map.fire('scrolllimits', newSizePx.clone());
+	},
+
+	_getCursorPosSize: function () {
 		var x = -1, y = -1;
 		if (this._cellCursorXY) {
 			x = this._cellCursorXY.x + 1;
@@ -336,34 +284,44 @@ L.CalcTileLayer = L.TileLayer.extend({
 		if (this._cellCursor && !this._isEmptyRectangle(this._cellCursor)) {
 			size = this._cellCursorTwips.getSize();
 		}
-		this._map.fire('updatecurrentheader', {curX: x, curY: y, width: size.x, height: size.y});
+
+		return { curX: x, curY: y, width: size.x, height: size.y };
 	},
 
-	_onUpdateSelectionHeader: function () {
-		var layers = this._selections.getLayers();
-		var layer = layers.pop();
-		if (layers.length === 0 && layer && layer.getLatLngs().length === 1) {
-			var start = this._latLngToTwips(layer.getBounds().getNorthWest()).add([1, 1]);
-			var end = this._latLngToTwips(layer.getBounds().getSouthEast()).subtract([1, 1]);
-			this._map.fire('updateselectionheader', {start: start, end: end});
-		}
-		else {
-			this._map.fire('clearselectionheader');
-		}
+	_getSelectionHeaderData: function() {
+		if (this._cellCSelections.empty())
+			return { hasSelection: false };
+
+		var bounds = this._cellCSelections.getBounds();
+		window.app.console.assert(bounds.isValid(), 'Non empty selection should have valid bounds');
+		return {
+			hasSelection: true,
+			start: this._corePixelsToTwips(bounds.min).add([1, 1]),
+			end: this._corePixelsToTwips(bounds.max).subtract([1, 1]),
+		};
 	},
 
 	_onStatusMsg: function (textMsg) {
-		var command = this._map._socket.parseServerCmd(textMsg);
+		var command = app.socket.parseServerCmd(textMsg);
 		if (command.width && command.height && this._documentInfo !== textMsg) {
+			var firstSelectedPart = (typeof this._selectedPart !== 'number');
 			this._docWidthTwips = command.width;
 			this._docHeightTwips = command.height;
+			app.file.size.twips = [this._docWidthTwips, this._docHeightTwips];
+			app.file.size.pixels = [Math.round(this._tileSize * (this._docWidthTwips / this._tileWidthTwips)), Math.round(this._tileSize * (this._docHeightTwips / this._tileHeightTwips))];
+			app.view.size.pixels = app.file.size.pixels.slice();
 			this._docType = command.type;
 			this._parts = command.parts;
 			this._selectedPart = command.selectedPart;
+			if (this.sheetGeometry && this._selectedPart != this.sheetGeometry.getPart()) {
+				// Core initiated sheet switch, need to get full sheetGeometry data for the selected sheet.
+				this.requestSheetGeometryData();
+			}
 			this._viewId = parseInt(command.viewid);
 			var mapSize = this._map.getSize();
-			var width = this._docWidthTwips / this._tileWidthTwips * this._tileSize;
-			var height = this._docHeightTwips / this._tileHeightTwips * this._tileSize;
+			var sizePx = this._twipsToPixels(new L.Point(this._docWidthTwips, this._docHeightTwips));
+			var width = sizePx.x;
+			var height = sizePx.y;
 			if (width < mapSize.x || height < mapSize.y) {
 				width = Math.max(width, mapSize.x);
 				height = Math.max(height, mapSize.y);
@@ -371,28 +329,45 @@ L.CalcTileLayer = L.TileLayer.extend({
 				var bottomRight = this._map.unproject(new L.Point(width, height));
 				this._map.setMaxBounds(new L.LatLngBounds(topLeft, bottomRight));
 				this._docPixelSize = {x: width, y: height};
-				this._map.fire('docsize', {x: width, y: height});
+				this._map.fire('scrolllimits', {x: width, y: height});
 			}
 			else {
 				this._updateMaxBounds(true);
 			}
+			// Added by Firefly <firefly@ossii.com.tw>
+			// 含有各工作表的詳細資訊
+			if (command.partsinfo !== undefined) {
+				var map = this._map;
+				this._partsInfo = command.partsinfo;
+				// 加入簡易方法，簡化程式設計
+				this._partsInfo.forEach(function(part) {
+					// 取得背景顏色
+					part.backgroundColor = function () {
+						// 背景色如果是 -1 表示預設顏色，否則轉為 CSS 表示用的顏色(#rrggbb);
+						return this.bgColor === '-1' ? '' : map.rgbToHex(this.bgColor);
+					},
+					// 背景色是否偏暗
+					part.isDark = function() {
+						return this.bgIsDark === '1';
+					};
+					// 是否被保護
+					part.isProtected = function() {
+						return this.protected === '1';
+					};
+					// 是否有密碼保護
+					part.havePassword = function() {
+						return this.protectedWithPass === '1';
+					};
+					part.isVisible = function() {
+						return this.visible === '1';
+					};
+				});
+			}
 			this._hiddenParts = command.hiddenparts || [];
 			this._documentInfo = textMsg;
-			var partMatch = textMsg.match(/[^\r\n]+/g);
-			// 使用新格式
-			if (command.partdetail !== undefined) {
-				var partsInfo = partMatch.slice(partMatch.length - this._parts);
-				this._partsInfo = [];
-				this._partNames = [];
-				for (var i=0; i < partsInfo.length ; i++) {
-					var json = JSON.parse(partsInfo[i]);
-					this._partsInfo.push(json);
-					this._partNames.push(json.name);
-				}
-			} else {
-				// only get the last matches
-				this._partNames = partMatch.slice(partMatch.length - this._parts);
-			}
+			var partNames = textMsg.match(/[^\r\n]+/g);
+			// only get the last matches
+			this._partNames = partNames.slice(partNames.length - this._parts);
 			this._map.fire('updateparts', {
 				selectedPart: this._selectedPart,
 				parts: this._parts,
@@ -403,7 +378,370 @@ L.CalcTileLayer = L.TileLayer.extend({
 			});
 			this._resetPreFetching(true);
 			this._update();
+			if (firstSelectedPart) {
+				this._switchSplitPanesContext();
+			}
 		}
+	},
+
+	// This initiates a selective repainting of row/col headers and
+	// gridlines based on the settings of coordinatesData.offset. This
+	// should be called whenever the view area changes (scrolling, panning,
+	// zooming, cursor moving out of view-area etc.).  Depending on the
+	// active sheet geometry data-source, it may ask core to send current
+	// view area's data or the global data on geometry changes.
+	refreshViewData: function (coordinatesData, compatDataSrcOnly, sheetGeometryChanged) {
+
+		if (this.options.sheetGeometryDataEnabled && compatDataSrcOnly) {
+			return;
+		}
+		// There are places that call this function with no arguments to indicate that the
+		// command arguments should be the current map area coordinates.
+		if (typeof coordinatesData != 'object') {
+			coordinatesData = {};
+		}
+
+		var offset = coordinatesData.offset || {};
+
+		var topLeftPoint = new L.Point(coordinatesData.x, coordinatesData.y);
+		var sizePx = this._map.getSize();
+
+		if (topLeftPoint.x === undefined) {
+			topLeftPoint.x = this._map._getTopLeftPoint().x;
+		}
+		if (topLeftPoint.y === undefined) {
+			topLeftPoint.y = this._map._getTopLeftPoint().y;
+		}
+
+		var updateRows = true;
+		var updateCols = true;
+
+		if (offset.x === 0) {
+			updateCols = false;
+			if (!this.options.sheetGeometryDataEnabled) {
+				topLeftPoint.x = -1;
+				sizePx.x = 0;
+			}
+		}
+		if (offset.y === 0) {
+			updateRows = false;
+			if (!this.options.sheetGeometryDataEnabled) {
+				topLeftPoint.y = -1;
+				sizePx.y = 0;
+			}
+		}
+
+		var pos = this._pixelsToTwips(topLeftPoint);
+		var size = this._pixelsToTwips(sizePx);
+
+		if (!this.options.sheetGeometryDataEnabled) {
+			this.requestViewRowColumnData(pos, size);
+			return;
+		}
+
+		if (sheetGeometryChanged || !this.sheetGeometry) {
+			this.requestSheetGeometryData(
+				{columns: updateCols, rows: updateRows});
+			return;
+		}
+
+		if (this.sheetGeometry) {
+			this.sheetGeometry.setViewArea(pos, size);
+			this._updateHeadersGridLines(undefined, updateCols, updateRows);
+		}
+	},
+
+	// This send .uno:ViewRowColumnHeaders command to core with the new view coordinates (tile-twips).
+	requestViewRowColumnData: function (pos, size) {
+
+		var payload = 'commandvalues command=.uno:ViewRowColumnHeaders?x=' + Math.round(pos.x) + '&y=' + Math.round(pos.y) +
+			'&width=' + Math.round(size.x) + '&height=' + Math.round(size.y);
+
+		app.socket.sendMessage(payload);
+	},
+
+	// sends the .uno:SheetGeometryData command optionally with arguments.
+	requestSheetGeometryData: function (flags) {
+		if (!this.sheetGeometry) {
+			// Suppress multiple requests at document load, till we get a response.
+			if (this._sheetGeomFirstWait === true) {
+				return;
+			}
+			this._sheetGeomFirstWait = true;
+		}
+		var unoCmd = '.uno:SheetGeometryData';
+		var haveArgs = (typeof flags == 'object' &&
+			(flags.columns === true || flags.rows === true || flags.all === true));
+		var payload = 'commandvalues command=' + unoCmd;
+
+		if (haveArgs) {
+			var argList = [];
+			var both = (flags.all === true);
+			if (both || flags.columns === true) {
+				argList.push('columns=1');
+			}
+			if (both || flags.rows === true) {
+				argList.push('rows=1');
+			}
+
+			var dataTypeFlagNames = ['sizes', 'hidden', 'filtered', 'groups'];
+			var dataTypesPresent = false;
+			dataTypeFlagNames.forEach(function (name) {
+				if (flags[name] === true) {
+					argList.push(name + '=1');
+					dataTypesPresent = true;
+				}
+			});
+
+			if (!dataTypesPresent) {
+				dataTypeFlagNames.forEach(function (name) {
+					argList.push(name + '=1');
+				});
+			}
+
+			payload += '?' + argList.join('&');
+		}
+
+		app.socket.sendMessage(payload);
+	},
+
+	// Sends a notification to the row/col header and gridline controls that
+	// they need repainting.
+	// viewAreaData is the parsed .uno:ViewRowColumnHeaders JSON if that source is used.
+	// else it should be undefined.
+	_updateHeadersGridLines: function (viewAreaData, updateCols, updateRows) {
+		this._map.fire('viewrowcolumnheaders', {
+			data: viewAreaData,
+			updaterows: updateRows,
+			updatecolumns: updateCols,
+			cursor: this._getCursorPosSize(),
+			selection: this._getSelectionHeaderData(),
+			converter: this._twipsToCorePixels,
+			context: this
+		});
+	},
+
+	_addRemoveGroupSections: function () {
+		// If there are row and column groups at the same time, add CornerGroup section.
+		if (this.sheetGeometry._rows._outlines._outlines.length > 0 && this.sheetGeometry._columns._outlines._outlines.length > 0) {
+			if (!this._painter._sectionContainer.doesSectionExist(L.CSections.CornerGroup.name))
+				this._painter._sectionContainer.addSection(L.control.cornerGroup());
+		}
+		else { // If not, remove CornerGroup section.
+			this._painter._sectionContainer.removeSection(L.CSections.CornerGroup.name);
+		}
+
+		// If there are row groups, add RowGroup section.
+		if (this.sheetGeometry._rows._outlines._outlines.length > 0) {
+			if (!this._painter._sectionContainer.doesSectionExist(L.CSections.RowGroup.name))
+				this._painter._sectionContainer.addSection(L.control.rowGroup());
+		}
+		else { // If not, remove RowGroup section.
+			this._painter._sectionContainer.removeSection(L.CSections.RowGroup.name);
+		}
+
+		// If there are column groups, add ColumnGroup section.
+		if (this.sheetGeometry._columns._outlines._outlines.length > 0) {
+			if (!this._painter._sectionContainer.doesSectionExist(L.CSections.ColumnGroup.name)) {
+				this._painter._sectionContainer.addSection(L.control.columnGroup());
+				this._painter._sectionContainer.canvas.style.border = '1px solid darkgrey';
+			}
+		}
+		else { // If not, remove ColumnGroup section.
+			this._painter._sectionContainer.removeSection(L.CSections.ColumnGroup.name);
+			this._painter._sectionContainer.canvas.style.border = '0px solid darkgrey';
+		}
+	},
+
+	_handleSheetGeometryDataMsg: function (jsonMsgObj) {
+		if (!this.sheetGeometry) {
+			this._sheetGeomFirstWait = false;
+			this.sheetGeometry = new L.SheetGeometry(jsonMsgObj,
+				this._tileWidthTwips, this._tileHeightTwips,
+				this._tileSize, this._selectedPart);
+
+			this._painter._sectionContainer.addSection(L.control.cornerHeader());
+			this._painter._sectionContainer.addSection(L.control.rowHeader());
+			this._painter._sectionContainer.addSection(L.control.columnHeader());
+		}
+		else {
+			this.sheetGeometry.update(jsonMsgObj, /* checkCompleteness */ false, this._selectedPart);
+		}
+
+		this._replayPrintTwipsMsgs();
+
+		this.sheetGeometry.setViewArea(this._pixelsToTwips(this._map._getTopLeftPoint()),
+			this._pixelsToTwips(this._map.getSize()));
+
+		this._addRemoveGroupSections();
+
+		this._updateHeadersGridLines(undefined, true /* updateCols */,
+			true /* updateRows */);
+
+		this.dontSendSplitPosToCore = true;
+		this.setSplitPosFromCell();
+		this.dontSendSplitPosToCore = false;
+
+		this._syncTileContainerSize();
+
+		this._map.fire('sheetgeometrychanged');
+	},
+
+	// Calculates the split position in (core-pixels) from the split-cell.
+	setSplitPosFromCell: function (forceSplittersUpdate) {
+		if (!this.sheetGeometry || !this._splitPanesContext) {
+			return;
+		}
+
+		this._splitPanesContext.setSplitPosFromCell(forceSplittersUpdate);
+	},
+
+	// Calculates the split-cell from the split position in (core-pixels).
+	setSplitCellFromPos: function () {
+
+		if (!this.sheetGeometry || !this._splitPanesContext) {
+			return;
+		}
+
+		this._splitPanesContext.setSplitCellFromPos();
+	},
+
+	_switchSplitPanesContext: function () {
+
+		if (!this.hasSplitPanesSupport()) {
+			return;
+		}
+
+		if (!this._splitPaneCache) {
+			this._splitPaneCache = {};
+		}
+
+		window.app.console.assert(typeof this._selectedPart === 'number', 'invalid selectedPart');
+
+		var spContext = this._splitPaneCache[this._selectedPart];
+		if (!spContext) {
+			spContext = new L.CalcSplitPanesContext(this);
+			this._splitPaneCache[this._selectedPart] = spContext;
+		}
+
+		this._splitPanesContext = spContext;
+		if (this.sheetGeometry) {
+			// Force update of the splitter lines.
+			this.setSplitPosFromCell(true);
+		}
+	},
+
+	_onRowColSelCount: function (e) {
+		// 切出字串內的數字成為 array
+		var rowCol = e.state.match(/\d+/g);
+		if (L.Util.isArray(rowCol)) {
+			var rowCount = rowCol[0];
+			var columnCount = rowCol[1];
+			if (rowCount > 1000000)
+				this._map.wholeColumnSelected = true;
+			else
+				this._map.wholeColumnSelected = false;
+
+			if (columnCount >= 1024)
+				this._map.wholeRowSelected = true;
+			else
+				this._map.wholeRowSelected = false;
+		}
+		else {
+			this._map.wholeColumnSelected = false;
+			this._map.wholeRowSelected = false;
+		}
+	},
+
+	/**
+	 * 設定處理狀態變更事件
+	 */
+	_setCommandStateChange: function(map) {
+		map.stateChangeHandler
+			// 凍結欄
+			.on('.uno:FreezePanesColumn', function(e) {
+				this._onSplitStateChanged(e, true /* isSplitCol */);
+			}, this)
+			// 凍結列
+			.on('.uno:FreezePanesRow', function(e) {
+				this._onSplitStateChanged(e, false /* isSplitCol */);
+			}, this)
+			// 選取欄或列
+			.on('.uno:RowColSelCount', this._onRowColSelCount, this)
+			// 插入或覆寫狀態
+			.on('.uno:InsertMode', function(e) {
+				/* If we get textselection message from core:
+				   When insertMode is active:  User is selecting some text.
+				   When insertMode is passive: User is selecting cells.
+				*/
+				this.insertMode = e.state !== 'true' && e.state !== 'false' ? false: true;
+			}, this);
+	},
+
+	_onSplitStateChanged: function (e, isSplitCol) {
+		// 沒有實際的值，就不處理
+		if (!e.hasValue()) {
+			return;
+		}
+
+		if (!this._splitPanesContext) {
+			return;
+		}
+
+		if (!this._splitCellState) {
+			this._splitCellState = new L.Point(-1, -1);
+		}
+
+		if (!e.state || e.state.length === 0) {
+			window.app.console.warn('Empty argument for ' + e.commandName);
+			return;
+		}
+
+		var newSplitIndex = Math.floor(parseInt(e.state));
+		window.app.console.assert(!isNaN(newSplitIndex) && newSplitIndex >= 0, 'invalid argument for ' + e.commandName);
+
+		// This stores the current split-cell state of core, so this should not be modified.
+		this._splitCellState[isSplitCol ? 'x' : 'y'] = newSplitIndex;
+
+		if (!this.options.syncSplits) {
+			return;
+		}
+
+		var changed = isSplitCol ? this._splitPanesContext.setSplitCol(newSplitIndex) :
+			this._splitPanesContext.setSplitRow(newSplitIndex);
+
+		if (changed) {
+			this.setSplitPosFromCell();
+		}
+	},
+
+	sendSplitIndex: function (newSplitIndex, isSplitCol) {
+
+		if (!this._map.isPermissionEdit() || !this._splitCellState || !this.options.syncSplits) {
+			return false;
+		}
+
+		var splitColState = this._splitCellState.x;
+		var splitRowState = this._splitCellState.y;
+		if (splitColState === -1 || splitRowState === -1) {
+			// Did not get the 'first' FreezePanesColumn/FreezePanesRow messages from core yet.
+			return false;
+		}
+
+		var currentState = isSplitCol ? splitColState : splitRowState;
+		if (currentState === newSplitIndex) {
+			return false;
+		}
+
+		var unoName = isSplitCol ? 'FreezePanesColumn' : 'FreezePanesRow';
+		var command = {};
+		command[unoName] = {
+			type: 'int32',
+			value: newSplitIndex
+		};
+
+		this._map.sendUnoCommand('.uno:' + unoName, command);
+		return true;
 	},
 
 	_onCommandValuesMsg: function (textMsg) {
@@ -418,56 +756,223 @@ L.CalcTileLayer = L.TileLayer.extend({
 
 		var comment;
 		if (values.commandName === '.uno:ViewRowColumnHeaders') {
-			this._map.fire('viewrowcolumnheaders', {
-				data: values,
-				converter: this._twipsToPixels,
-				context: this
-			});
-			this._onUpdateCurrentHeader();
-			this._onUpdateSelectionHeader();
+			this._updateHeadersGridLines(values);
+
+		} else if (values.commandName === '.uno:SheetGeometryData') {
+			this._handleSheetGeometryDataMsg(values);
+
 		} else if (values.comments) {
-			this.clearAnnotations();
-			for (var index in values.comments) {
-				comment = values.comments[index];
-				comment.tab = parseInt(comment.tab);
-				comment.cellPos = L.LOUtil.stringToBounds(comment.cellPos);
-				comment.cellPos = L.latLngBounds(this._twipsToLatLng(comment.cellPos.getBottomLeft()),
-					this._twipsToLatLng(comment.cellPos.getTopRight()));
-				if (!this._annotations[comment.tab]) {
-					this._annotations[comment.tab] = {};
-				}
-				this._annotations[comment.tab][comment.id] = this.createAnnotation(comment);
-			}
-			this.showAnnotations();
+			app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).clearList();
+			app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).importComments(values.comments);
 		} else if (values.commentsPos) {
-			this.hideAnnotations();
-			for (index in values.commentsPos) {
+			var section = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name);
+			for (var index in values.commentsPos) {
 				comment = values.commentsPos[index];
-				comment.tab = parseInt(comment.tab);
-				comment.cellPos = L.LOUtil.stringToBounds(comment.cellPos);
-				comment.cellPos = L.latLngBounds(this._twipsToLatLng(comment.cellPos.getBottomLeft()),
-					this._twipsToLatLng(comment.cellPos.getTopRight()));
-				var annotation = this._annotations[comment.tab][comment.id];
-				if (annotation) {
-					annotation.setLatLngBounds(comment.cellPos);
-					if (annotation.mark) {
-						annotation.mark.setLatLng(comment.cellPos.getNorthEast());
+				if (section)
+				{
+					var commentObject;
+					for (var i = 0; i < section.sectionProperties.commentList.length; i++) {
+						if (parseInt(section.sectionProperties.commentList[i].sectionProperties.data.tab) === parseInt(comment.tab)) {
+							if (parseInt(section.sectionProperties.commentList[i].sectionProperties.data.id) === parseInt(comment.id)) {
+								commentObject = section.sectionProperties.commentList[i];
+								break;
+							}
+						}
 					}
+					if (commentObject)
+						commentObject.sectionProperties.data.cellPos = section.stringToRectangles(comment.cellPos)[0];
 				}
 			}
-			this.showAnnotations();
+
+			if (section)
+				section.onCommentsDataUpdate();
+
 		} else {
-			L.TileLayer.prototype._onCommandValuesMsg.call(this, textMsg);
+			L.CanvasTileLayer.prototype._onCommandValuesMsg.call(this, textMsg);
 		}
 	},
 
 	_onTextSelectionMsg: function (textMsg) {
-		L.TileLayer.prototype._onTextSelectionMsg.call(this, textMsg);
-		this._onUpdateSelectionHeader();
+		L.CanvasTileLayer.prototype._onTextSelectionMsg.call(this, textMsg);
+		// If this is a cellSelection message, user shouldn't be editing a cell. Below check is for ensuring that.
+		if (this.insertMode === false && this._cellCursorXY && this._cellCursorXY.x !== -1) {
+			// When insertMode is false, this is a cell selection message.
+			textMsg = textMsg.replace('textselection:', '');
+			if (textMsg.trim() !== 'EMPTY' && textMsg.trim() !== '') {
+				this._cellSelections = textMsg.split(';');
+				var ratio = this._tileSize / this._tileWidthTwips;
+				var that = this;
+				this._cellSelections = this._cellSelections.map(function(element) {
+					element = element.split(',');
+					var topLeftTwips = new L.Point(parseInt(element[0]), parseInt(element[1]));
+					var offset = new L.Point(parseInt(element[2]), parseInt(element[3]));
+					var bottomRightTwips = topLeftTwips.add(offset);
+					var boundsTwips = that._convertToTileTwipsSheetArea(new L.Bounds(topLeftTwips, bottomRightTwips));
+
+					element = L.LOUtil.createRectangle(boundsTwips.min.x * ratio, boundsTwips.min.y * ratio, boundsTwips.getSize().x * ratio, boundsTwips.getSize().y * ratio);
+					return element;
+				});
+			}
+			else {
+				this._cellSelections = Array(0);
+			}
+			this._refreshRowColumnHeaders();
+		}
 	},
 
 	_onCellCursorMsg: function (textMsg) {
-		L.TileLayer.prototype._onCellCursorMsg.call(this, textMsg);
-		this._onUpdateCurrentHeader();
-	}
+		L.CanvasTileLayer.prototype._onCellCursorMsg.call(this, textMsg);
+		this._refreshRowColumnHeaders();
+		if (!this._gotFirstCellCursor && !textMsg.match('EMPTY')) {
+			// Drawing is disabled from CalcTileLayer construction, enable it now.
+			this._gotFirstCellCursor = true;
+			this._update();
+			this.enableDrawing();
+		}
+	},
+
+	_getEditCursorRectangle: function (msgObj) {
+
+		if (!this.options.printTwipsMsgsEnabled || !this.sheetGeometry ||
+			!Object.prototype.hasOwnProperty.call(msgObj, 'relrect') || !Object.prototype.hasOwnProperty.call(msgObj, 'refpoint')) {
+			// 1) non-print-twips messaging mode OR
+			// 2) the edit-cursor belongs to draw/chart objects.
+			return L.CanvasTileLayer.prototype._getEditCursorRectangle.call(this, msgObj);
+		}
+
+		if (typeof msgObj !== 'object') {
+			window.app.console.error('invalid edit cursor message');
+			return undefined;
+		}
+
+		var relrect = L.Bounds.parse(msgObj.relrect);
+		var refpoint = L.Point.parse(msgObj.refpoint);
+		refpoint = this.sheetGeometry.getTileTwipsPointFromPrint(refpoint);
+		return relrect.add(refpoint);
+	},
+
+	_getTextSelectionRectangles: function (textMsg) {
+
+		if (!this.options.printTwipsMsgsEnabled || !this.sheetGeometry) {
+			return L.CanvasTileLayer.prototype._getTextSelectionRectangles.call(this, textMsg);
+		}
+
+		if (typeof textMsg !== 'string') {
+			window.app.console.error('invalid text selection message');
+			return [];
+		}
+
+		var refpointDelim = '::';
+		var delimIndex = textMsg.indexOf(refpointDelim);
+		if (delimIndex === -1) {
+			// No refpoint information available, treat it as cell-range selection rectangle.
+			var rangeRectArray = L.Bounds.parseArray(textMsg);
+			rangeRectArray = rangeRectArray.map(function (rect) {
+				return this._convertToTileTwipsSheetArea(rect);
+			}, this);
+			return rangeRectArray;
+		}
+
+		var refpoint = L.Point.parse(textMsg.substring(delimIndex + refpointDelim.length));
+		refpoint = this.sheetGeometry.getTileTwipsPointFromPrint(refpoint);
+
+		var rectArray = L.Bounds.parseArray(textMsg.substring(0, delimIndex));
+		rectArray.forEach(function (rect) {
+			rect._add(refpoint); // compute absolute coordinates and update in-place.
+		});
+
+		return rectArray;
+	},
+
+	getSnapDocPosX: function (docPosX, unit) {
+		if (!this.options.sheetGeometryDataEnabled) {
+			return docPosX;
+		}
+
+		unit = unit || 'corepixels';
+
+		return this.sheetGeometry.getSnapDocPosX(docPosX, unit);
+	},
+
+	getSnapDocPosY: function (docPosY, unit) {
+		if (!this.options.sheetGeometryDataEnabled) {
+			return docPosY;
+		}
+
+		unit = unit || 'corepixels';
+
+		return this.sheetGeometry.getSnapDocPosY(docPosY, unit);
+	},
+
+	getSplitPanesContext: function () {
+		if (!this.hasSplitPanesSupport()) {
+			return undefined;
+		}
+
+		return this._splitPanesContext;
+	},
+
+	getMaxDocSize: function () {
+
+		if (this.sheetGeometry) {
+			return this.sheetGeometry.getSize('corepixels');
+		}
+
+		return this._twipsToPixels(new L.Point(this._docWidthTwips, this._docHeightTwips));
+	},
+
+	getCursorPos: function () {
+		return this._twipsToPixels(this._cellCursorTwips.getTopLeft());
+	},
+
+	_calculateScrollForNewCellCursor: function () {
+
+		var scroll = new L.LatLng(0, 0);
+
+		if (!this._cellCursor || this._isEmptyRectangle(this._cellCursor)) {
+			return scroll;
+		}
+
+		var map = this._map;
+		var paneRectsInLatLng = this.getPaneLatLngRectangles();
+
+		if (this._cellCursor.isInAny(paneRectsInLatLng)) {
+			return scroll; // no scroll needed.
+		}
+
+		var freePaneBounds = paneRectsInLatLng[paneRectsInLatLng.length - 1];
+		var splitPoint = map.unproject(this._splitPanesContext ? this._splitPanesContext.getSplitPos() : new L.Point(0, 0));
+
+		if (this._cellCursor.getEast() > splitPoint.lng) {
+
+			var freePaneWidth = Math.abs(freePaneBounds.getEast() - freePaneBounds.getWest());
+			var cursorWidth = Math.abs(this._cellCursor.getEast() - this._cellCursor.getWest());
+			var spacingX = cursorWidth / 4.0;
+
+			if (this._cellCursor.getWest() < freePaneBounds.getWest()) {
+				scroll.lng = this._cellCursor.getWest() - freePaneBounds.getWest() - spacingX;
+			}
+			else if (cursorWidth < freePaneWidth && this._cellCursor.getEast() > freePaneBounds.getEast()) {
+				scroll.lng = this._cellCursor.getEast() - freePaneBounds.getEast() + spacingX;
+			}
+		}
+
+		if (this._cellCursor.getSouth() < splitPoint.lat) {
+
+			var spacingY = Math.abs((this._cellCursor.getSouth() - this._cellCursor.getNorth())) / 4.0;
+			if (this._cellCursor.getNorth() > freePaneBounds.getNorth()) {
+				scroll.lat = this._cellCursor.getNorth() - freePaneBounds.getNorth() + spacingY;
+			}
+			else if (this._cellCursor.getSouth() < freePaneBounds.getSouth()) {
+				scroll.lat = this._cellCursor.getSouth() - freePaneBounds.getSouth() - spacingY;
+			}
+		}
+
+		return scroll;
+	},
+
+	getSelectedPart: function () {
+		return this._selectedPart;
+	},
 });
+

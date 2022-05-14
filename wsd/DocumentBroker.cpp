@@ -673,8 +673,20 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
             LOG_DBG("Setting the session as readonly");
             session->setReadOnly();
             if (LOOLWSD::IsViewWithCommentsFileExtension(wopiStorage->getFileExtension()))
+            {
+                LOG_DBG("Allow session to change comments");
                 session->setAllowChangeComments();
+            }
         }
+        else if (wopifileinfo->getUserCanWrite())
+        {
+            session->setReadOnly(false);
+            session->setAllowChangeComments(true);
+        }
+
+        // We will send the client about information of the usage type of the file.
+        // Some file types may be treated differently than others.
+        session->sendFileMode(session->isReadOnly(), session->isAllowChangeComments());
 
         // Construct a JSON containing relevant WOPI host properties
         Object::Ptr wopiInfo = new Object();
@@ -729,6 +741,13 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         Poco::JSON::Object::Ptr info;
         if (!userExtraInfo.empty() && JsonUtil::parseJSON(userExtraInfo, info))
         {
+            // 有指定 ip
+            // OxOOL 躲在代理伺服後面，可能抓不到真正的 client ip
+            // 若有指定 ip 的話，就以這個 ip 當作 client ip
+            if (info->has("ip")) {
+                session->setClientAddr(info->getValue<std::string>("ip"));
+            }
+
             // 有指定 watermark
             if (info->has("watermark") && info->isObject("watermark"))
             {
@@ -830,8 +849,12 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
                 LOG_DBG("Setting the session as readonly");
                 session->setReadOnly();
                 if (LOOLWSD::IsViewWithCommentsFileExtension(localStorage->getFileExtension()))
+                {
+                    LOG_DBG("Allow session to change comments");
                     session->setAllowChangeComments();
+                }
             }
+            session->sendFileMode(session->isReadOnly(), session->isAllowChangeComments());
         }
     }
 #ifdef ENABLE_FREEMIUM
@@ -1601,7 +1624,7 @@ size_t DocumentBroker::addSessionInternal(const std::shared_ptr<ClientSession>& 
     {
         LOG_ERR("Out of storage while loading document with URI [" << session->getPublicUri().toString() << "].");
 
-        // We use the same message as is sent when some of lool's own locations are full,
+        // We use the same message as is sent when some of oxool's own locations are full,
         // even if in this case it might be a totally different location (file system, or
         // some other type of storage somewhere). This message is not sent to all clients,
         // though, just to all sessions of this document.

@@ -1,0 +1,171 @@
+/* CSS specific for tablets. */
+
+/* Disable tooltips when on touch devices */
+.w2ui-tag .w2ui-tag-top {
+	display: none !important;
+}
+
+/* Make the upper toolbar scrollable using swipe as on phones. */
+#toolbar-up > .w2ui-scroll-wrapper {
+	overflow-x: scroll !important;
+	scrollbar-width: none; /*css draft (firefox only)*/
+	-ms-scrollbar: none; /*ie*/
+}
+#toolbar-up > .w2ui-scroll-wrapper::-webkit-scrollbar { /*webkit only*/
+	display: none;
+}
+#toolbar-up .w2ui-scroll-left, #toolbar-up .w2ui-scroll-right{
+	background: none;
+	height: 100%;
+	width: 0px;
+	top: 0%;
+	box-shadow: 8px 0 13px 2px #0b87e7, -6px 0px 6px 6px #007cdc;
+	border-radius: 0px;
+}
+#toolbar-up .w2ui-scroll-right{
+	right: 0;
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	-o-transform: rotate(180deg);
+	transform: rotate(180deg);
+}
+
+/* Additions for the main menu. */
+.main-nav {
+	margin: 0;
+}
+.main-nav.hasnotebookbar {
+	overflow: visible; /*make sure #Menubar's contents are visible*/
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	flex-direction: row;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+}
+.hasnotebookbar{
+	overflow: auto hidden;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+.hasnotebookbar::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+}
+.vex-content .oxool-annotation-img {
+	box-sizing: content-box !important;
+}
+
+/* pan tabs & overflow indicator */
+
+.notebookbar-tabs-container > div {
+	white-space: nowrap;
+	-webkit-box-flex: 1;
+	-webkit-flex: 1 0 auto;
+	-ms-flex: 1 0 auto;
+	flex: 1 0 auto;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	list-style-type: none;
+}
+
+.notebookbar-tabs-container::-webkit-scrollbar {
+	display: none;
+}
+.notebookbar-tabs-container {
+	position: relative;
+	z-index: 1;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: inline-flex;
+	-webkit-box-pack: start;
+	-webkit-justify-content: flex-start;
+	-ms-flex-pack: start;
+	justify-content: flex-start;
+	-webkit-overflow-scrolling: touch;
+	-ms-overflow-style: -ms-autohiding-scrollbar;
+	-ms-autohiding-scrollbar: none;
+	scrollbar-width: none;
+	-webkit-flex-wrap: nowrap;
+	-ms-flex-wrap: nowrap;
+	flex-wrap: nowrap;
+	word-wrap: nowrap;
+	max-width: 60%;
+	background: transparent no-repeat;
+	background-image: -webkit-radial-gradient(0 50%, farthest-side, rgba(0,0,0,0.2), rgba(0,0,0,0)), -webkit-radial-gradient(100% 50%, farthest-side, rgba(0,0,0,0.2), rgba(0,0,0,0));
+	background-image: -o-radial-gradient(0 50%, farthest-side, rgba(0,0,0,0.2), rgba(0,0,0,0)), -o-radial-gradient(100% 50%, farthest-side, rgba(0,0,0,0.2), rgba(0,0,0,0));
+	background-image: radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.2), rgba(0,0,0,0)), radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.2), rgba(0,0,0,0));
+	background-position: 0 0, 100% 0;
+	background-size: 1rem 100%;
+}
+
+.main-nav.readonly.hasnotebookbar .notebookbar-tabs-container {
+	display: none;
+}
+
+.notebookbar-tabs-container:after,
+.notebookbar-tabs-container:before {
+	content: '';
+	position: relative;
+	z-index: -1;
+	display: block;
+	min-width: 2rem;
+	margin: 0;
+	-webkit-box-flex: 1;
+	-webkit-flex: 1 0 auto;
+	-ms-flex: 1 0 auto;
+	flex: 1 0 auto;
+}
+
+.notebookbar-tabs-container::before {
+	max-width: 2rem;
+	background: -webkit-gradient(linear,left top, right top,from(var(--gray-light-bg-color)),color-stop(50%, var(--gray-light-bg-color)),to(rgba(255,255,255,0)));
+	background: -webkit-linear-gradient(left,var(--gray-light-bg-color),var(--gray-light-bg-color) 50%,rgba(255,255,255,0));
+	background: -o-linear-gradient(left,var(--gray-light-bg-color),var(--gray-light-bg-color) 50%,rgba(255,255,255,0));
+	background: linear-gradient(to right,var(--gray-light-bg-color),var(--gray-light-bg-color) 50%,rgba(255,255,255,0));
+}
+
+.notebookbar-tabs-container:after {
+	background: -webkit-gradient(linear,left top, right top,from(rgba(255,255,255,0)),color-stop(50%, var(--gray-light-bg-color)),to(var(--gray-light-bg-color)));
+	background: -webkit-linear-gradient(left,rgba(255,255,255,0),var(--gray-light-bg-color) 50%,var(--gray-light-bg-color));
+	background: -o-linear-gradient(left,rgba(255,255,255,0),var(--gray-light-bg-color) 50%,var(--gray-light-bg-color));
+	background: linear-gradient(to right,rgba(255,255,255,0),var(--gray-light-bg-color) 50%,var(--gray-light-bg-color));
+}
+
+.hasnotebookbar #document-titlebar {
+	position: static;
+	display: inline-flex;
+	margin: 0 32px 0 4px;
+	width: auto;
+}
+
+.main-nav.readonly.hasnotebookbar #document-titlebar {
+	width: auto;
+}
+
+.main-nav.readonly.hasnotebookbar #document-name-input {
+	min-width: 100%;
+}
+
+.main-nav.readonly.hasnotebookbar #document-title-pencil {
+	min-width: 24px;
+	margin: 0;
+}
+
+#loolwsd-version span:before,
+#lokit-version > span:before {
+	content: ' (';
+	white-space: pre;
+}
+#loolwsd-version span:after,
+#lokit-version > span:after {
+	content: ')';
+}

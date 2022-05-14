@@ -25,7 +25,7 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 	_loaded : 0, // 已經傳輸的 bytes
 
 	onSocketOpen: function() {
-		var that = this
+		var that = this;
 		// Base class' onSocketOpen handles authentication
 		this.base.call(this);
 
@@ -57,7 +57,7 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 			that._loaded += e.loaded; // 累計傳送大小
 			if (that._loaded < that._fileInfo.size)
 				that._uploadFile(nextSlice);
-		}
+		};
 		this._fileReader.readAsArrayBuffer(blob);
 	},
 
@@ -88,7 +88,7 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 			this._uploadFile(0);
 			break;
 		case 'uploadFileInfoError': // 上傳檔案資訊有誤
-			vex.dialog.alert(_('The upload file command is wrong, the syntax is as follows:') + '<br>uploadFile <file name> <file size>');
+			vex.dialog.alert({unsafeMessage: _('The upload file command is wrong, the syntax is as follows:') + '<br>uploadFile <file name> <file size>'});
 			break;
 		case 'uploadFileReciveOK': // 檔案接收完畢
 			this._addMessage('<p class="text-info h4 fw-bold">' + _('Start the software upgrade...') + '</p>');
@@ -103,8 +103,8 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 		case 'upgradeSuccess': // 軟體升級成功
 			var successMsg = _('Software upgrade is successful.');
 			this._addMessage('<p class="text-success h4 fw-bold">' + successMsg + '</p>');
-			vex.dialog.alert('<p class="text-success">' + successMsg +
-				'<br>' + _('You may need to restart the service.') + '</p>');
+			vex.dialog.alert({unsafeMessage: '<p class="text-success">' + successMsg +
+				'<br>' + _('You may need to restart the service.') + '</p>'});
 			break;
 		case 'upgradeFail': // 軟體升級失敗
 			this._addMessage('<p class="text-danger h4 fw-bold">' + _('Software upgrade failed!') + '</p>');
@@ -118,8 +118,8 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 				var totalBytes = textMsg.substr(13);
 				var percent = Math.floor((totalBytes / this._fileInfo.size) * 100); // 計算傳送比例
 				$('#progressbar').css('width', percent +'%')
-								.attr('aria-valuenow', percent)
-								.text(_('Transmission') + ' ' + percent + ' %');
+					.attr('aria-valuenow', percent)
+					.text(_('Transmission') + ' ' + percent + ' %');
 			} else {
 				console.log('未知訊息 : ' + textMsg);
 			}

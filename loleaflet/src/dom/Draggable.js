@@ -132,7 +132,7 @@ L.Draggable = L.Evented.extend({
 			}
 		}
 		if (!offset.x && !offset.y) { return; }
-		if (L.Browser.touch && Math.abs(offset.x) + Math.abs(offset.y) < 3) { return; }
+		if (L.Browser.touch && Math.abs(offset.x) + Math.abs(offset.y) < 3 && !e.autoscroll) { return; }
 
 		L.DomEvent.preventDefault(e);
 
@@ -151,9 +151,9 @@ L.Draggable = L.Evented.extend({
 		this._newPos = this._startPos.add(offset);
 
 		if (this._freezeY)
-			this._newPos.y = this._startPos.y
+			this._newPos.y = this._startPos.y;
 		if (this._freezeX)
-			this._newPos.x = this._startPos.x
+			this._newPos.x = this._startPos.x;
 
 		this._moving = true;
 

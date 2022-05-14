@@ -261,7 +261,7 @@ var AdminSocketOverview = AdminSocketBase.extend({
 							socket.send('kill ' + doc['pid']);
 						}
 					}
-				})
+				});
 			};
 			// 開啟者欄位
 			var userInfoCell = document.createElement('td');
@@ -427,7 +427,7 @@ var AdminSocketOverview = AdminSocketBase.extend({
 					var rowIndex = element.rowIndex; // 所屬的列號
 					do { // 找到所屬的 table 為止
 						element = element.parentElement;
-					} while (element.tagName !== 'TABLE')
+					} while (element.tagName !== 'TABLE');
 					// 這時的 element 是 table，才有辦法刪除整列
 					element.deleteRow(rowIndex);
 					break;

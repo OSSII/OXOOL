@@ -9,10 +9,15 @@ L.Map.mergeOptions({
 
 L.Map.SlideShow = L.Handler.extend({
 
-	_slideURL: '', // svg 存放 URL
+	_slideURL: '', // store the URL for svg
+	_cypressSVGPresentationTest: false,
 
 	initialize: function (map) {
 		this._map = map;
+		window.app.console.log('L.Map.SlideShow: Cypress in window: ' + ('Cypress' in window));
+		this._cypressSVGPresentationTest =
+			L.Browser.cypressTest && 'Cypress' in window
+			&& window.Cypress.spec.name === 'impress/fullscreen_presentation_spec.js';
 	},
 
 	addHooks: function () {
@@ -26,39 +31,44 @@ L.Map.SlideShow = L.Handler.extend({
 	},
 
 	_onFullScreen: function (e) {
-		if (window.ThisIsTheiOSApp) {
-			window.webkit.messageHandlers.lool.postMessage('SLIDESHOW', '*');
+		if (window.ThisIsTheiOSApp || window.ThisIsTheAndroidApp) {
+			window.postMobileMessage('SLIDESHOW');
 			return;
 		}
-		this._slideShow = L.DomUtil.create('iframe', 'leaflet-slideshow', this._map._container);
-		if (this._slideShow.requestFullscreen) {
-			this._slideShow.requestFullscreen();
-		}
-		else if (this._slideShow.msRequestFullscreen) {
-			this._slideShow.msRequestFullscreen();
-		}
-		else if (this._slideShow.mozRequestFullScreen) {
-			this._slideShow.mozRequestFullScreen();
-		}
-		else if (this._slideShow.webkitRequestFullscreen) {
-			this._slideShow.webkitRequestFullscreen();
-		}
 
-		L.DomEvent.on(document, 'fullscreenchange webkitfullscreenchange mozfullscreenchange msfullscreenchange',
+		if (!this._cypressSVGPresentationTest && !this._map['wopi'].DownloadAsPostMessage) {
+			this._slideShow = L.DomUtil.create('iframe', 'leaflet-slideshow', this._map._container);
+			if (this._slideShow.requestFullscreen) {
+				this._slideShow.requestFullscreen();
+			}
+			else if (this._slideShow.msRequestFullscreen) {
+				this._slideShow.msRequestFullscreen();
+			}
+			else if (this._slideShow.mozRequestFullScreen) {
+				this._slideShow.mozRequestFullScreen();
+			}
+			else if (this._slideShow.webkitRequestFullscreen) {
+				this._slideShow.webkitRequestFullscreen();
+			}
+
+			L.DomEvent.on(document, 'fullscreenchange webkitfullscreenchange mozfullscreenchange msfullscreenchange',
 				this._onFullScreenChange, this);
+		}
 
-		this.fullscreen = true;
-		this._startSlideNumber = 0; // 預設從第 0 頁開始播放
+		this._startSlideNumber = 0; // Default: start from page 0
 		if (e.startSlideNumber !== undefined) {
 			this._startSlideNumber = e.startSlideNumber;
 		}
-
+		this.fullscreen = !this._cypressSVGPresentationTest;
 		this._map.downloadAs('slideshow.svg', 'svg', null, 'slideshow');
 	},
 
 	_onFullScreenChange: function () {
+		if (this._map['wopi'].DownloadAsPostMessage) {
+			return;
+		}
 
-		this.fullscreen = document.fullscreen ||
+		this.fullscreen = document.fullscreenElement ||
 			document.webkitIsFullScreen ||
 			document.mozFullScreen ||
 			document.msFullscreenElement;
@@ -69,14 +79,18 @@ L.Map.SlideShow = L.Handler.extend({
 
 	_onSlideDownloadReady: function (e) {
 		this._slideURL = e.url;
-		console.debug('slide file url : ', this._slideURL);
+		window.app.console.debug('slide file url : ', this._slideURL);
 		this._startPlaying();
 	},
 
 	_startPlaying: function() {
-		this._slideShow.src = this._slideURL + '?StartSlideNumber=' + this._startSlideNumber;
+		if (this._cypressSVGPresentationTest) {
+			window.open(this._slideURL, '_self');
+			return;
+		}
+		var separator = (this._slideURL.indexOf('?') === -1) ? '?' : '&';
+		this._slideShow.src = this._slideURL + separator + 'StartSlideNumber=' + this._startSlideNumber;
 		this._slideShow.contentWindow.focus();
-		clearInterval(this._slideShow.contentWindow.spinnerInterval);
 	}
 });
 

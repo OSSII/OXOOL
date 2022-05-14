@@ -2,71 +2,54 @@
 /*
  * Document permission handler
  */
-/* global $ _ */
-
+/* global app $ _ vex */
 L.Map.include({
+	readonlyStartingFormats: {
+		'txt': { canEdit: true, odfFormat: 'odt' },
+		'csv': { canEdit: true, odfFormat: 'ods' },
+		'xlsb': { canEdit: false, odfFormat: 'ods' }
+	},
+
 	setPermission: function (perm) {
+		var button = $('#mobile-edit-button');
+		button.off('click');
+		// app.file.fileBasedView is new view that has continuous scrolling
+		// used for PDF and we dont permit editing for PDFs
+		// this._shouldStartReadOnly() is a check for files that should start in readonly mode and even on desktop browser
+		// we warn the user about loosing the rich formatting and offer an option to
+		// save as ODF instead of the current format
+		//
+		// For mobile we need to display the edit button for all the cases except for PDF
+		// we offer save-as to another place where the user can edit the document
+		if (!app.file.fileBasedView && (this._shouldStartReadOnly() || window.mode.isMobile() || window.mode.isTablet())) {
+			button.show();
+		} else {
+			button.hide();
+		}
+		var that = this;
 		if (perm === 'edit') {
-			var editInOdf = this.isEditInOdfFormat(); // 是否需以 ODF 格式編輯?
-			if (L.Browser.mobile || editInOdf) {
-				// 以 ODF 格式編輯的功能，只能由檔案 Owner 執行，其他人只能唯讀開啟
-				if (editInOdf && this.wopi.DocumentOwner !== true) {
-					this._enterReadOnlyMode('readonly');
-					return;
-				}
-				var button = $('#mobile-edit-button');
-				var buttonText = $('#mobile-edit-button-text');
-				// 非手機模式，變更滑鼠指標為 '手指'
-				if (!L.Browser.mobile) {
-					button.css({'cursor': 'pointer'});
-				}
-
-				if (editInOdf) {
-					button.css({
-						'padding-left': '16px',
-						'padding-right': '16px',
-						'border-radius': '16px',
-						'width': 'auto',
-						'background-color': 'rgba(0, 0, 255, 0.5)'
-					});
-					buttonText.text(' ' + _('Edit in ODF format'));
-				} else {
-					button.css({
-						'padding-left': '0',
-						'padding-right': '0',
-						'border-radius': '50%',
-						'width': '56px',
-						'background-color': 'rgba(255, 128, 0, 0.5)'
-					});
-					buttonText.text('');
-				}
-				button.show();
-				button.off('click');
-
-				var that = this;
+			if (this._shouldStartReadOnly() || window.mode.isMobile() || window.mode.isTablet()) {
 				button.on('click', function () {
-					button.hide();
-					that._enterEditMode('edit');
-					that.fire('editorgotfocus');
-					// In the iOS/android app, just clicking the mobile-edit-button is
-					// not reason enough to pop up the on-screen keyboard.
-					if (!(window.ThisIsTheiOSApp || window.ThisIsTheAndroidApp))
-						that.focus();
-					// 以 ODF 格式編輯的話，要轉檔
-					if (editInOdf) {
-						var newName = that.getDocName() + '.' + that.wopi.UserExtraInfo.SaveToOdf;
-						that.saveAs(newName);
-					}
+					that._switchToEditMode();
 				});
 
 				// temporarily, before the user touches the floating action button
 				this._enterReadOnlyMode('readonly');
-			} else {
+			}
+			else if (this.options.canTryLock) {
+				// This is a success response to an attempt to lock using mobile-edit-button
+				this._switchToEditMode();
+			}
+			else {
 				this._enterEditMode(perm);
 			}
 		}
 		else if (perm === 'view' || perm === 'readonly') {
-			if (L.Browser.mobile) {
+			if (window.ThisIsTheAndroidApp) {
+				button.on('click', function () {
+					that._requestFileCopy();
+				});
+			} else if (!this.options.canTryLock && (window.mode.isMobile() || window.mode.isTablet())) {
 				$('#mobile-edit-button').hide();
 			}
 
@@ -74,18 +57,146 @@ L.Map.include({
 		}
 	},
 
-	_enterEditMode: function (perm) {
-		if (this._permission == 'readonly' && (L.Browser.mobile || this.isEditInOdfFormat())) {
-			this.sendInitUNOCommands();
+	onLockFailed: function(reason) {
+		if (this.options.canTryLock === undefined) {
+			// This is the initial notification. This status is not permanent.
+			// Allow to try to lock the file for edit again.
+			this.options.canTryLock = true;
+
+			var alertMsg = _('The document could not be locked, and is opened in read-only mode.');
+			if (reason) {
+				alertMsg += '\n' + _('Server returned this reason:') + '\n"' + reason + '"';
+			}
+			vex.dialog.alert({ message: alertMsg });
+
+			var button = $('#mobile-edit-button');
+			// TODO: modify the icon here
+			button.show();
+			button.off('click');
+
+			button.on('click', function () {
+				app.socket.sendMessage('attemptlock');
+			});
 		}
+		else if (this.options.canTryLock) {
+			// This is a failed response to an attempt to lock using mobile-edit-button
+			alertMsg = _('The document could not be locked.');
+			if (reason) {
+				alertMsg += '\n' + _('Server returned this reason:') + '\n"' + reason + '"';
+			}
+			vex.dialog.alert({ message: alertMsg });
+		}
+		// do nothing if this.options.canTryLock is defined and is false
+	},
+
+	_getFileExtension: function (filename) {
+		return filename.substring(filename.lastIndexOf('.') + 1);
+	},
+
+	_shouldStartReadOnly: function () {
+		var fileName = this['wopi'].BaseFileName;
+		// use this feature for only integration.
+		if (!fileName) return false;
+		var extension = this._getFileExtension(fileName);
+		if (!Object.prototype.hasOwnProperty.call(this.readonlyStartingFormats, extension))
+			return false;
+		return true;
+	},
+
+	_proceedEditMode: function() {
+		var fileName = this['wopi'].BaseFileName;
+		if (fileName) {
+			var extension = this._getFileExtension(fileName);
+			var extensionInfo = this.readonlyStartingFormats[extension];
+			if (extensionInfo && !extensionInfo.canEdit)
+				return;
+		}
+		this.options.canTryLock = false; // don't respond to lockfailed anymore
+		$('#mobile-edit-button').hide();
+		this._enterEditMode('edit');
+		if (window.mode.isMobile() || window.mode.isTablet()) {
+			this.fire('editorgotfocus');
+			this.fire('closemobilewizard');
+			// In the iOS/android app, just clicking the mobile-edit-button is
+			// not reason enough to pop up the on-screen keyboard.
+			if (!(window.ThisIsTheiOSApp || window.ThisIsTheAndroidApp))
+				this.focus();
+		}
+	},
+
+	_offerSaveAs: function() {
+		var that = this;
+		var fileName = this['wopi'].BaseFileName;
+		if (!fileName) return false;
+		var extension = this._getFileExtension(fileName);
+		var extensionInfo = this.readonlyStartingFormats[extension];
+		var saveAsFormat = extensionInfo.odfFormat;
+		vex.dialog.prompt({
+			message: _('Enter a file name'),
+			placeholder: _('filename'),
+			callback: function (value) {
+				if (!value) return;
+				that.saveAs(value + '.' + saveAsFormat, saveAsFormat);
+			}
+		});
+	},
+
+	// from read-only to edit mode
+	_switchToEditMode: function () {
+		// This will be handled by the native mobile app instead
+		if (this._shouldStartReadOnly() && !window.ThisIsAMobileApp) {
+			var that = this;
+			var fileName = this['wopi'].BaseFileName;
+			var extension = this._getFileExtension(fileName);
+			var extensionInfo = this.readonlyStartingFormats[extension];
+			vex.dialog.open({
+				message: _('This document may contain formatting or content that cannot be saved in the current file format.'),
+				overlayClosesOnClick: false,
+				callback: L.bind(function (value) {
+					if (value) {
+						// offer save-as instead
+						this._offerSaveAs();
+					} else {
+						this._proceedEditMode();
+					}
+				}, that),
+				buttons: [
+					$.extend({}, vex.dialog.buttons.YES, { text: _('Save as ODF format') }),
+					$.extend({}, vex.dialog.buttons.NO, { text: extensionInfo.canEdit ? _('Continue editing') : _('Continue read only')})
+				]
+			});
+		} else {
+			this._proceedEditMode();
+		}
+	},
+
+	_requestFileCopy: function() {
+		if (window.docPermission === 'readonly') {
+			window.postMobileMessage('REQUESTFILECOPY');
+		} else {
+			this._switchToEditMode();
+		}
+	},
+
+	_enterEditMode: function (perm) {
 		this._permission = perm;
 
-		this._socket.sendMessage('requestloksession');
+		app.socket.sendMessage('requestloksession');
 		if (!L.Browser.touch) {
 			this.dragging.disable();
 		}
 
 		this.fire('updatepermission', {perm : perm});
+
+		if (this._docLayer._docType === 'text') {
+			this.setZoom(10);
+		}
+
+		if (window.ThisIsTheiOSApp && window.mode.isTablet() && this._docLayer._docType === 'spreadsheet')
+			this.showCalcInputBar(0);
+
+		if (window.ThisIsTheAndroidApp)
+			window.postMobileMessage('EDITMODE on');
 	},
 
 	_enterReadOnlyMode: function (perm) {
@@ -93,38 +204,45 @@ L.Map.include({
 
 		this.dragging.enable();
 		// disable all user interaction, will need to add keyboard too
-		this._docLayer._onUpdateCursor();
-		this._docLayer._clearSelections();
-		this._docLayer._onUpdateTextSelection();
-
+		if (this._docLayer) {
+			this._docLayer._onUpdateCursor();
+			this._docLayer._clearSelections();
+			this._docLayer._onUpdateTextSelection();
+		}
 		this.fire('updatepermission', {perm : perm});
+		this.fire('closemobilewizard');
+
+		if (window.ThisIsTheAndroidApp)
+			window.postMobileMessage('EDITMODE off');
 	},
 
 	enableSelection: function () {
-		if (this._permission === 'edit') {
+		if (this.isPermissionEdit()) {
 			return;
 		}
-		this._socket.sendMessage('requestloksession');
+		app.socket.sendMessage('requestloksession');
 		this.dragging.disable();
 	},
 
 	disableSelection: function () {
-		if (this._permission === 'edit') {
+		if (this.isPermissionEdit()) {
 			return;
 		}
 		this.dragging.enable();
 	},
 
-	isSelectionEnabled: function () {
-		return !this.dragging.enabled();
+	isPermissionEditForComments: function() {
+		// Currently we allow user to perform comment operations
+		// even in the view/readonly mode(initial mobile mode)
+		// allow comment operations if user has edit permission for doc
+		return window.docPermission === 'edit';
 	},
 
-	getPermission: function () {
-		return this._permission;
+	isPermissionReadOnly: function() {
+		return this._permission === 'readonly';
 	},
 
-	isEditInOdfFormat: function () {
-		var editInOdfFormat = this.wopi.UserExtraInfo.SaveToOdf;
-		return (['odt', 'ods', 'odp'].indexOf(editInOdfFormat) >= 0);
+	isPermissionEdit: function() {
+		return this._permission === 'edit';
 	}
 });

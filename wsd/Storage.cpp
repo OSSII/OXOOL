@@ -51,6 +51,7 @@
 #include "ProofKey.hpp"
 #include <common/FileUtil.hpp>
 #include <common/JsonUtil.hpp>
+#include <OxOOLPrivateKeyHandler.hpp>
 
 using std::size_t;
 
@@ -154,20 +155,21 @@ void StorageBase::initialize()
         sslClientParams.caLocation = LOOLWSD::getPathFromConfigWithFallback("storage.ssl.ca_file_path", "ssl.ca_file_path");
         sslClientParams.cipherList = LOOLWSD::getPathFromConfigWithFallback("storage.ssl.cipher_list", "ssl.cipher_list");
 
-        sslClientParams.verificationMode = (sslClientParams.caLocation.empty() ? Poco::Net::Context::VERIFY_NONE : Poco::Net::Context::VERIFY_STRICT);
+        //sslClientParams.verificationMode = (sslClientParams.caLocation.empty() ? Poco::Net::Context::VERIFY_NONE : Poco::Net::Context::VERIFY_STRICT);
+        sslClientParams.verificationMode = Poco::Net::Context::VERIFY_NONE;
         sslClientParams.loadDefaultCAs = true;
     }
     else
         sslClientParams.verificationMode = Poco::Net::Context::VERIFY_NONE;
 
-    Poco::SharedPtr<Poco::Net::PrivateKeyPassphraseHandler> consoleClientHandler = new Poco::Net::KeyConsoleHandler(false);
+    Poco::SharedPtr<Poco::Net::PrivateKeyPassphraseHandler> privateKeyHandler = new Poco::Net::OxOOLPrivateKeyHandler(false, LOOLWSD::SSLPrivateKeyPassword);
     Poco::SharedPtr<Poco::Net::InvalidCertificateHandler> invalidClientCertHandler = new Poco::Net::AcceptCertificateHandler(false);
 
     Poco::Net::Context::Ptr sslClientContext = new Poco::Net::Context(Poco::Net::Context::CLIENT_USE, sslClientParams);
     sslClientContext->disableProtocols(Poco::Net::Context::Protocols::PROTO_SSLV2 |
                                        Poco::Net::Context::Protocols::PROTO_SSLV3 |
                                        Poco::Net::Context::Protocols::PROTO_TLSV1);
-    Poco::Net::SSLManager::instance().initializeClient(consoleClientHandler, invalidClientCertHandler, sslClientContext);
+    Poco::Net::SSLManager::instance().initializeClient(privateKeyHandler, invalidClientCertHandler, sslClientContext);
 #endif
 #else
     FilesystemEnabled = true;
@@ -511,7 +513,7 @@ void LockContext::initSupportsLocks()
 
     // first time token setup
     _supportsLocks = true;
-    _lockToken = "lool-lock" + Util::rng::getHexString(8);
+    _lockToken = "oxool-lock" + Util::rng::getHexString(8);
 #endif
 }
 
@@ -1200,8 +1202,8 @@ WopiStorage::saveLocalFileToStorage(const Authorization& auth, const std::string
             Poco::JSON::Object::Ptr object;
             if (JsonUtil::parseJSON(oss.str(), object))
             {
-                const unsigned loolStatusCode = JsonUtil::getJSONValue<unsigned>(object, "LOOLStatusCode");
-                if (loolStatusCode == static_cast<unsigned>(LOOLStatusCode::DOC_CHANGED))
+                const unsigned oxoolStatusCode = JsonUtil::getJSONValue<unsigned>(object, "LOOLStatusCode");
+                if (oxoolStatusCode == static_cast<unsigned>(LOOLStatusCode::DOC_CHANGED))
                 {
                     saveResult.setResult(StorageBase::SaveResult::DOC_CHANGED);
                 }

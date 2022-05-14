@@ -1,23 +1,23 @@
-oxool (3.2.5-1.master) unstable; urgency=low
+oxool (4.1.2-1.ossii) unstable; urgency=low
 
-  * Release 3.2.5
+  * Bump package version to 4.1.2-1
 
- -- Firefly <firefly@ossii.com.tw>  Wed, 25 Mar 2020 15:08:33 +0800
+ -- Firefly <firefly@ossii.com.tw>  Thu, 12 May 2022 18:19:04 +0800
 
-oxool (3.2.4-1.master) unstable; urgency=low
+oxool (4.1.1-1.ossii) unstable; urgency=low
 
-  * Release 3.2.4
+  * Bump package version to 4.1.1-1
 
- -- Firefly <firefly@ossii.com.tw>  Tue, 25 Feb 2020 12:55:45 +0800
+ -- Firefly <firefly@ossii.com.tw>  Wed, 20 Apr 2022 14:25:58 +0800
 
-oxool (3.2.3-1.master) unstable; urgency=low
+oxool (4.1.0-1.ossii) unstable; urgency=low
 
-  * Release 3.2.3
+  * Bump package version to 4.1.0-1
 
- -- Firefly <firefly@ossii.com.tw>  Mon, 03 Feb 2020 11:52:23 +0800
+ -- Firefly <firefly@ossii.com.tw>  Tue, 15 Feb 2022 14:29:05 +0800
 
-oxool (3.2.2-1.master) unstable; urgency=low
+oxool (4.0.0-1.oxool) unstable; urgency=low
 
   * Initial release
 
- -- Firefly <firefly@ossii.com.tw>  Sat, 01 Feb 2020 16:01:57 +0800
+ -- Firefly <firefly@ossii.com.tw>  Tue, 23 Nov 2021 10:50:28 +0800

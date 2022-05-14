@@ -58,7 +58,7 @@ var AdminSocketBase = Base.extend({
 
 		if (this.pageWillBeRefreshed === false) {
 			this.vexInstance = vex.open({
-				content: _('Server has been shut down; Waiting to be back online.') +
+				unsafeContent: _('Server has been shut down; Waiting to be back online.') +
 						'<div>' +
 						'<span class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>' +
 						' <span id="wait-server-start"></span>' +

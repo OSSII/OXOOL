@@ -21,7 +21,8 @@ L.DomUtil = {
 	},
 
 	setStyle: function (el, style, value) {
-		el.style[style] = value;
+		if (el !== undefined)
+			el.style[style] = value;
 	},
 
 	create: function (tagName, className, container) {
@@ -107,6 +108,12 @@ L.DomUtil = {
 			el.classList.remove(name);
 		} else {
 			L.DomUtil.setClass(el, L.Util.trim((' ' + L.DomUtil.getClass(el) + ' ').replace(' ' + name + ' ', ' ')));
+		}
+	},
+
+	removeChildNodes: function (el) {
+		while (el.hasChildNodes()) {
+			el.removeChild(el.lastChild);
 		}
 	},
 
@@ -196,12 +203,25 @@ L.DomUtil = {
 		return el._leaflet_pos;
 	},
 
-	isLandscape: function() {
-		return window.matchMedia && window.matchMedia('(orientation: landscape)').matches;
-	},
-
 	isPortrait: function() {
 		return window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+	},
+
+	// Add/remove a portrait or landscape class from the list of elementns.
+	updateElementsOrientation: function(elements) {
+		var remove = 'portrait';
+		var add = 'landscape';
+		if (L.DomUtil.isPortrait()) {
+			remove = 'landscape';
+			add = 'portrait';
+		}
+
+		for (var i = 0; i < elements.length; ++i) {
+			var element = elements[i];
+			var domElement = L.DomUtil.get(element);
+			L.DomUtil.removeClass(domElement, remove);
+			L.DomUtil.addClass(domElement, add);
+		}
 	}
 };
 
@@ -210,16 +230,16 @@ L.DomUtil = {
 	// prefix style property names
 
 	L.DomUtil.TRANSFORM = L.DomUtil.testProp(
-			['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+		['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
 	L.DomUtil.TRANSFORM_ORIGIN = L.DomUtil.testProp(
-			['transformOrigin', 'msTransformOrigin', 'WebkitTransformOrigin']);
+		['transformOrigin', 'msTransformOrigin', 'WebkitTransformOrigin']);
 
 	// webkitTransition comes first because some browser versions that drop vendor prefix don't do
 	// the same for the transitionend event, in particular the Android 4.1 stock browser
 
 	var transition = L.DomUtil.TRANSITION = L.DomUtil.testProp(
-			['webkitTransition', 'transition', 'OTransition', 'MozTransition', 'msTransition']);
+		['webkitTransition', 'transition', 'OTransition', 'MozTransition', 'msTransition']);
 
 	L.DomUtil.TRANSITION_END =
 			transition === 'webkitTransition' || transition === 'OTransition' ? transition + 'End' : 'transitionend';

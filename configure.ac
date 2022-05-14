@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.63])
 
-AC_INIT([oxool], [master], [develop@ossii.com.tw])
+AC_INIT([oxool], [4.1.2], [develop@ossii.com.tw])
 LT_INIT([shared, disable-static, dlopen])
 
 AM_INIT_AUTOMAKE([1.10 foreign subdir-objects tar-pax -Wno-portability])
@@ -58,7 +58,7 @@ AC_SUBST([LOOLWSD_VERSION_HASH])
 
 AC_DEFINE_UNQUOTED([LOOLWSD_VERSION_HASH],[["$LOOLWSD_VERSION_HASH"]],[OxOffice Online git hash if present])
 
-LOOLWSD_BRANCH=`( cat dist_git_branch 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null )`
+LOOLWSD_BRANCH=`( cat dist_git_branch 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null ) | cut -d '-' -f 1`
 AC_SUBST([LOOLWSD_BRANCH])
 AC_DEFINE_UNQUOTED([LOOLWSD_BRANCH], [["$LOOLWSD_BRANCH"]],[git branch name])
 
@@ -139,6 +139,10 @@ AC_LINK_IFELSE([AC_LANG_SOURCE([
 AC_ARG_ENABLE([debug],
               AS_HELP_STRING([--enable-debug],
                              [Enable debugging, link with debugging version of Poco libraries]))
+
+AC_ARG_ENABLE([bundle],
+              AS_HELP_STRING([--enable-bundle],
+                             [Enable creating bundled JS and CSS even with --enable-debug]))
 
 AC_ARG_ENABLE([debug-protocol],
     AS_HELP_STRING([--disable-debug-protocol],
@@ -359,9 +363,11 @@ AS_IF([test "$enable_debug" = yes -a -n "$with_poco_libs"],
 
 ENABLE_DEBUG=false
 ENABLE_DEBUG_PROTOCOL=false
+ENABLE_BUNDLE=true
 LOOLWSD_LOGLEVEL="warning"
 LOOLWSD_LOG_TO_FILE="true"
 LOOLWSD_LOGFILE="/var/log/oxoolwsd.log"
+OXOOLWSD_TRACEEVENTFILE="/var/log/oxoolwsd.trace.json"
 LOOLWSD_ANONYMIZE_USER_DATA=false
 LOLEAFLET_LOGGING="false"
 debug_msg="secure mode: product build"
@@ -373,13 +379,19 @@ if test "$enable_debug" = "yes"; then
    LOOLWSD_LOGLEVEL="trace"
    LOOLWSD_LOG_TO_FILE="true"
    LOOLWSD_LOGFILE="/tmp/oxoolwsd.log"
+   OXOOLWSD_TRACEEVENTFILE="/tmp/oxoolwsd.trace.json"
    LOOLWSD_ANONYMIZE_USER_DATA=false
    LOLEAFLET_LOGGING="true"
    debug_msg="low security debugging mode"
+   if test "$enable_bundle" != "yes"; then
+      ENABLE_BUNDLE=false
+      bundle_msg="using individual JS and CSS files"
+   fi
 else
     AC_DEFINE([ENABLE_DEBUG],0,[Whether to compile in some extra debugging support code and disable some security pieces])
 fi
 AC_SUBST(ENABLE_DEBUG)
+AC_SUBST(ENABLE_BUNDLE)
 AC_SUBST(LOOLWSD_LOGLEVEL)
 AC_SUBST(LOOLWSD_LOG_TO_FILE)
 AC_SUBST(LOLEAFLET_LOGGING)
@@ -401,6 +413,12 @@ if test -n "$with_logfile" ; then
    LOOLWSD_LOGFILE="$with_logfile"
 fi
 AC_SUBST(LOOLWSD_LOGFILE)
+
+if test -n "$with_trace_event_file" ; then
+   OXOOLWSD_TRACEEVENTFILE="$with_trace_event_file"
+fi
+AC_SUBST(OXOOLWSD_TRACEEVENTFILE)
+AC_DEFINE_UNQUOTED([OXOOLWSD_TRACEEVENTFILE], [["]$OXOOLWSD_TRACEEVENTFILE["]], [Destination for Trace Event output])
 
 if test "$enable_anonymization" = "yes" ; then
    LOOLWSD_ANONYMIZE_USER_DATA=true
@@ -658,7 +676,7 @@ if test "$enable_iosapp" = yes -a -z "$with_vendor"; then
     AC_MSG_ERROR([You must use --with-vendor when configuring for the iOS app])
 fi
 if test -z "$with_vendor" -o "$with_vendor" = "no"; then
-    VENDOR="$USERNAME"
+    VENDOR="OSS Integral Institute Co., Ltd"
 
     if test -z "$VENDOR"; then
         VENDOR="$USER"
@@ -1314,8 +1332,8 @@ AM_SUBST_NOTMAKE(FREEMIUM_CONFIGURATION)
 AC_CONFIG_FILES([Makefile
                  gtk/Makefile
                  loleaflet/Makefile
-                 extensions/Makefile
                  loleaflet/npm-shrinkwrap.json
+                 extensions/Makefile
                  bundled/include/LibreOfficeKit/Makefile
                  src/include/Makefile
                  src/lib/Makefile

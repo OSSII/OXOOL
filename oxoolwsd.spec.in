@@ -19,6 +19,7 @@ Obsoletes:	oxoolwsd
 Source0:        @PACKAGE_NAME@-%{version}-@LOOLWSD_BRANCH@.tar.gz
 BuildRequires:  libcap-devel libpng-devel poco-devel >= 1.7.5
 BuildRequires:  freetype-devel >= 2.8 fontconfig-devel >= 2.12.6
+BuildRequires:  ossiiProduct-devel >= 1.0.0
 %if 0%{?fedora} || 0%{?rhel} >= 7
 BuildRequires:  libpcap kernel-headers
 %endif
@@ -35,7 +36,7 @@ Requires:       poco-crypto >= 1.7.5 poco-foundation >= 1.7.5 poco-json >= 1.7.5
 Summary:	Files for build OxOffice Online Editor.
 Requires:	%{name} = %{version}
 %description	devel
-Files for build OxOffice Online Editor. 
+Files for build OxOffice Online Editor.
 
 %prep
 %setup -q -n %{name}-%{version}-@LOOLWSD_BRANCH@
@@ -169,6 +170,6 @@ if [ $arg = 0 ] ; then
     loolparent=`cd ${loroot} && cd .. && /bin/pwd`
     rm -rf ${loolparent}/%{name}/*
 fi
- 
+
 
 %changelog

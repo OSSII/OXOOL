@@ -142,13 +142,13 @@ L.dialog.AutoFilter = {
 			{
 				type: 'action',
 				cmd:  'SortAscending',
-				icon: this._map.getUnoCommandIcon('.uno:SortAscending'),
+				icon: this._map.getIconURL('.uno:SortAscending'),
 				text: '.uno:SortAscending'
 			},
 			{
 				type: 'action',
 				cmd:  'SortDescending',
-				icon: this._map.getUnoCommandIcon('.uno:SortDescending'),
+				icon: this._map.getIconURL('.uno:SortDescending'),
 				text: '.uno:SortDescending'
 			},
 			{
@@ -175,7 +175,7 @@ L.dialog.AutoFilter = {
 			{
 				type: 'action',
 				cmd:  'Custom',
-				icon: this._map.getUnoCommandIcon('.uno:DataFilterStandardFilter'),
+				icon: this._map.getIconURL('.uno:DataFilterStandardFilter'),
 				text: '.uno:DataFilterStandardFilter'
 			}
 		];
@@ -187,7 +187,7 @@ L.dialog.AutoFilter = {
 				item.setAttribute('action-mode', data.cmd);
 				var div = L.DomUtil.create('div', '', item);
 				div.textContent = this._map.isUnoCommand(data.text)
-								? _UNO(data.text, this._map.getDocType(), true) : data.text;
+					? _UNO(data.text, this._map.getDocType(), true) : data.text;
 
 				$('<img></img>').css({
 					'width': '12px',
@@ -195,7 +195,7 @@ L.dialog.AutoFilter = {
 					'margin-right': '6px',
 					'vertical-align': 'text-bottom'
 				}).attr('src', (data.icon ? data.icon : L.Util.emptyImageUrl))
-				.prependTo(div);
+					.prependTo(div);
 				break;
 			default:
 				break;
@@ -267,8 +267,8 @@ L.dialog.AutoFilter = {
 	 * 建構全選/單選區
 	 */
 	_makeCheckButton: function() {
-		var selectCurrentIcon = L.Icon.Default.imagePath + '/res/popup_select_current.svg';
-		var unSelectCurrentIcon = L.Icon.Default.imagePath + '/res/popup_unselect_current.svg';
+		var selectCurrentIcon = this._map.getIconURL('res:popup_select_current');
+		var unSelectCurrentIcon = this._map.getIconURL('res:popup_unselect_current');
 		this._checkButton = L.DomUtil.create('div', '', this._dialog);
 		$(this._checkButton).css({
 			'margin-top': '2px',
@@ -576,7 +576,7 @@ L.dialog.AutoFilter = {
 		 */
 		isCheckAll: function() {
 			// 項目數量不為 0 且等於被選取數量
-			return (this._length && this._checked === this._length)
+			return (this._length && this._checked === this._length);
 		},
 
 		/**
@@ -595,21 +595,21 @@ L.dialog.AutoFilter = {
 				return;
 			}
 
-			var checkIcon = L.Icon.Default.imagePath + '/res/';
+			var checkIcon;
 			// 全部未勾選
 			if (this.isUncheckAll()) {
-				checkIcon += 'checkmono1.svg';
+				checkIcon = 'res:checkmono1';
 				$(this._parent._okButton).attr('disabled', true); // 確定按鈕停用
 			// 全部勾選
 			} else if (this.isCheckAll()) {
-				checkIcon += 'checkmono2.svg';
+				checkIcon= 'res:checkmono2';
 				$(this._parent._okButton).attr('disabled', false); // 確定按鈕啟用
 			// 否則就是部份勾選
 			} else {
-				checkIcon += 'checkmono7.svg';
+				checkIcon = 'res:checkmono7';
 				$(this._parent._okButton).attr('disabled', false); // 確定按鈕啟用
 			}
-			this._parent._checkMode.src = checkIcon; // 改變 icon 圖示
+			this._parent._checkMode.src = this._parent._map.getIconURL(checkIcon); // 改變 icon 圖示
 		}
 	},
 
@@ -714,7 +714,7 @@ L.dialog.AutoFilter = {
 								value: (checkbox.getAttribute('isdate') === 'true')
 							}
 						}
-					}
+					};
 					unoArgs.Entry.value.push(data);
 				}
 			}
@@ -746,4 +746,4 @@ L.dialog.AutoFilter = {
 			this._dialog = null;
 		}
 	}
-}
+};

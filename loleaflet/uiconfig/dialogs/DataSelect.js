@@ -13,7 +13,6 @@ L.dialog.DataSelect = {
 	},
 
 	run: function(args) {
-		console.debug(args);
 		var that = this;
 
 		// 沒有標題欄
@@ -75,7 +74,7 @@ L.dialog.DataSelect = {
 		}
 
 		// 選項有變更，把選取的資料填入儲存格後，關閉選單
-		$('#' + selectId).on('change', function() {
+		$('#' + selectId).on('click', function() {
 			var command = {
 				'StringName': {
 					type: 'string',
@@ -86,7 +85,7 @@ L.dialog.DataSelect = {
 					value: false
 				}
 			};
-			that._map.sendUnoCommand('.uno:EnterString ', command);
+			that._map.sendUnoCommand('.uno:EnterString', command);
 			that._closeDialog();
 		});
 

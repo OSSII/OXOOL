@@ -458,6 +458,17 @@ struct _LibreOfficeKitDocumentClass
     void (*sendFormFieldEvent) (LibreOfficeKitDocument* pThis,
                                 const char* pArguments);
 
+    /// @see lok::Document::setBlockedCommandList
+    void (*setBlockedCommandList) (LibreOfficeKitDocument* pThis,
+                                int nViewId,
+                                const char* bolckedCommandList);
+
+    /// @see lok::Document::renderSearchResult
+    bool (*renderSearchResult) (LibreOfficeKitDocument* pThis,
+                                const char* pSearchResult,
+                                unsigned char** pBitmapBuffer,
+                                int* pWidth, int* pHeight, size_t* pByteSize);
+
     /// Added by Firefly<firefly@ossii.com.tw>
     /// @see lok::Document::initUnoStatus
     void (*initUnoStatus) (LibreOfficeKitDocument* pThis,

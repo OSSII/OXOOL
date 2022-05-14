@@ -317,6 +317,11 @@ var unoCommandsArray = {
             "menu": "Align to Vertical Center of Line"
         }
     },
+    "AllTitles": {
+        "chart": {
+            "menu": "~All Titles..."
+        }
+    },
     "AlphaListStyle": {
         "text": {
             "menu": "Alphabet Uppercase List",
@@ -382,6 +387,12 @@ var unoCommandsArray = {
         },
         "presentation": {
             "menu": "~Arrange"
+        }
+    },
+    "ArrangeRow": {
+        "chart": {
+            "menu": "Arrange~ment",
+            "properties": "1"
         }
     },
     "ArrowShapes": {
@@ -824,6 +835,10 @@ var unoCommandsArray = {
         "presentation": {
             "menu": "Send Back~ward",
             "properties": "1"
+        },
+        "chart": {
+            "menu": "Send Back~ward",
+            "properties": "1"
         }
     },
     "BadCellStyles": {
@@ -832,6 +847,11 @@ var unoCommandsArray = {
             "tooltip": "Bad Cell Style",
             "TargetURL": ".uno:StyleApply?Style:string=Bad&FamilyName:string=CellStyles",
             "properties": "9"
+        }
+    },
+    "BarWidth": {
+        "chart": {
+            "menu": "Bar Width"
         }
     },
     "BasicBreak": {
@@ -1449,10 +1469,21 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ChartElementSelector": {
+        "chart": {
+            "menu": "Select Chart Element",
+            "properties": "0"
+        }
+    },
     "ChartMenu": {
         "global": {
             "menu": "~Chart",
             "properties": "1"
+        }
+    },
+    "ChartTitleMenu": {
+        "chart": {
+            "menu": "~Title"
         }
     },
     "CheckBox": {
@@ -1717,7 +1748,8 @@ var unoCommandsArray = {
         "global": [],
         "text": [],
         "spreadsheet": [],
-        "presentation": []
+        "presentation": [],
+        "chart": []
     },
     "CommentChange": {
         "spreadsheet": {
@@ -2054,6 +2086,11 @@ var unoCommandsArray = {
     "Context": {
         "global": {
             "menu": "Current Context"
+        }
+    },
+    "ContextType": {
+        "chart": {
+            "menu": "Chart Type"
         }
     },
     "ContinueNumbering": {
@@ -2426,6 +2463,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DataDescriptionType": {
+        "chart": {
+            "menu": "Caption Type for Chart Data"
+        }
+    },
     "DataFilterAutoFilter": {
         "spreadsheet": {
             "menu": "Auto~Filter",
@@ -2462,6 +2504,18 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DataInColumns": {
+        "chart": {
+            "menu": "Data in Columns",
+            "properties": "1"
+        }
+    },
+    "DataInRows": {
+        "chart": {
+            "menu": "Data in Rows",
+            "properties": "1"
+        }
+    },
     "DataMenu": {
         "global": {
             "menu": "~Data"
@@ -2488,6 +2542,12 @@ var unoCommandsArray = {
     "DataProviderRefresh": {
         "spreadsheet": {
             "menu": "Refresh Data Provider",
+            "properties": "1"
+        }
+    },
+    "DataRanges": {
+        "chart": {
+            "menu": "~Data Ranges...",
             "properties": "1"
         }
     },
@@ -2595,6 +2655,11 @@ var unoCommandsArray = {
             "tooltip": "Default Character Style",
             "TargetURL": ".uno:StyleApply?Style:string=Standard&FamilyName:string=CharacterStyles",
             "properties": "9"
+        }
+    },
+    "DefaultColors": {
+        "chart": {
+            "menu": "Default Colors for Data Series"
         }
     },
     "DefaultNumbering": {
@@ -2740,6 +2805,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DeleteAxis": {
+        "chart": {
+            "menu": "Delete Axis"
+        }
+    },
     "DeleteCell": {
         "spreadsheet": {
             "menu": "Delete C~ells...",
@@ -2781,6 +2851,16 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DeleteDataLabel": {
+        "chart": {
+            "menu": "Delete Single Data Label"
+        }
+    },
+    "DeleteDataLabels": {
+        "chart": {
+            "menu": "Delete Data Labels"
+        }
+    },
     "DeleteFrame": {
         "global": {
             "menu": "Delete Frame"
@@ -2791,10 +2871,30 @@ var unoCommandsArray = {
             "menu": "Delete Layer"
         }
     },
+    "DeleteLegend": {
+        "chart": {
+            "menu": "Delete Legend"
+        }
+    },
+    "DeleteMajorGrid": {
+        "chart": {
+            "menu": "Delete Major Grid"
+        }
+    },
     "DeleteMasterPage": {
         "presentation": {
             "menu": "Delete Master",
             "properties": "1"
+        }
+    },
+    "DeleteMeanValue": {
+        "chart": {
+            "menu": "Delete Mean ~Value Line"
+        }
+    },
+    "DeleteMinorGrid": {
+        "chart": {
+            "menu": "Delete Minor Grid"
         }
     },
     "DeleteNote": {
@@ -2822,6 +2922,11 @@ var unoCommandsArray = {
             "context": "~Clear",
             "tooltip": "Clear Print Ranges",
             "properties": "1"
+        }
+    },
+    "DeleteR2Value": {
+        "chart": {
+            "menu": "Delete R²"
         }
     },
     "DeleteRecord": {
@@ -2877,6 +2982,26 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "DeleteTrendline": {
+        "chart": {
+            "menu": "Delete Tre~nd Line"
+        }
+    },
+    "DeleteTrendlineEquation": {
+        "chart": {
+            "menu": "Delete Trend Line ~Equation"
+        }
+    },
+    "DeleteXErrorBars": {
+        "chart": {
+            "menu": "Delete X Error ~Bars"
+        }
+    },
+    "DeleteYErrorBars": {
+        "chart": {
+            "menu": "Delete Y Error ~Bars"
+        }
+    },
     "DescriptiveStatisticsDialog": {
         "spreadsheet": {
             "menu": "~Descriptive Statistics...",
@@ -2923,6 +3048,116 @@ var unoCommandsArray = {
     "DiaTime": {
         "presentation": {
             "menu": "Time",
+            "properties": "1"
+        }
+    },
+    "DiagramArea": {
+        "chart": {
+            "menu": "Chart ~Area...",
+            "properties": "1"
+        }
+    },
+    "DiagramAxisA": {
+        "chart": {
+            "menu": "~Secondary X Axis..."
+        }
+    },
+    "DiagramAxisAll": {
+        "chart": {
+            "menu": "~All Axes...",
+            "properties": "1"
+        }
+    },
+    "DiagramAxisB": {
+        "chart": {
+            "menu": "S~econdary Y Axis..."
+        }
+    },
+    "DiagramAxisMenu": {
+        "chart": {
+            "menu": "A~xis",
+            "properties": "1"
+        }
+    },
+    "DiagramAxisX": {
+        "chart": {
+            "menu": "~X Axis...",
+            "properties": "1"
+        }
+    },
+    "DiagramAxisY": {
+        "chart": {
+            "menu": "~Y Axis...",
+            "properties": "1"
+        }
+    },
+    "DiagramAxisZ": {
+        "chart": {
+            "menu": "~Z Axis...",
+            "properties": "1"
+        }
+    },
+    "DiagramData": {
+        "chart": {
+            "menu": "~Data Table...",
+            "properties": "1"
+        }
+    },
+    "DiagramFloor": {
+        "chart": {
+            "menu": "Chart ~Floor..."
+        }
+    },
+    "DiagramGridAll": {
+        "chart": {
+            "menu": "~All Grids..."
+        }
+    },
+    "DiagramGridMenu": {
+        "chart": {
+            "menu": "~Grid",
+            "properties": "1"
+        }
+    },
+    "DiagramGridXHelp": {
+        "chart": {
+            "menu": "Y Axis Minor ~Grid..."
+        }
+    },
+    "DiagramGridXMain": {
+        "chart": {
+            "menu": "~Y Axis Major Grid..."
+        }
+    },
+    "DiagramGridYHelp": {
+        "chart": {
+            "menu": "X Axis ~Minor Grid..."
+        }
+    },
+    "DiagramGridYMain": {
+        "chart": {
+            "menu": "~X Axis Major Grid..."
+        }
+    },
+    "DiagramGridZHelp": {
+        "chart": {
+            "menu": "Z Ax~is Minor Grid..."
+        }
+    },
+    "DiagramGridZMain": {
+        "chart": {
+            "menu": "~Z Axis Major Grid..."
+        }
+    },
+    "DiagramType": {
+        "chart": {
+            "menu": "Chart T~ype...",
+            "properties": "1"
+        }
+    },
+    "DiagramWall": {
+        "chart": {
+            "menu": "Chart ~Wall...",
             "properties": "1"
         }
     },
@@ -4320,6 +4555,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "FormatAxis": {
+        "chart": {
+            "menu": "Format Axis..."
+        }
+    },
     "FormatBulletsMenu": {
         "global": {
             "menu": "Lis~ts",
@@ -4339,15 +4579,45 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "FormatChartArea": {
+        "chart": {
+            "menu": "Format Chart Area..."
+        }
+    },
     "FormatColumns": {
         "text": {
             "menu": "Co~lumns...",
             "properties": "1"
         }
     },
+    "FormatDataLabel": {
+        "chart": {
+            "menu": "Format Single Data Label..."
+        }
+    },
+    "FormatDataLabels": {
+        "chart": {
+            "menu": "Format Data Labels..."
+        }
+    },
+    "FormatDataPoint": {
+        "chart": {
+            "menu": "Format Data Point..."
+        }
+    },
+    "FormatDataSeries": {
+        "chart": {
+            "menu": "Format Data Series..."
+        }
+    },
     "FormatDropcap": {
         "text": {
             "menu": "Drop Caps"
+        }
+    },
+    "FormatFloor": {
+        "chart": {
+            "menu": "Format Floor..."
         }
     },
     "FormatFormMenu": {
@@ -4383,15 +4653,35 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "FormatLegend": {
+        "chart": {
+            "menu": "Format Legend..."
+        }
+    },
     "FormatLine": {
         "global": {
             "menu": "L~ine...",
             "properties": "1"
         }
     },
+    "FormatMajorGrid": {
+        "chart": {
+            "menu": "Format Major Grid..."
+        }
+    },
+    "FormatMeanValue": {
+        "chart": {
+            "menu": "Format Mean Value Line..."
+        }
+    },
     "FormatMenu": {
         "global": {
             "menu": "F~ormat"
+        }
+    },
+    "FormatMinorGrid": {
+        "chart": {
+            "menu": "Format Minor Grid..."
         }
     },
     "FormatObjectMenu": {
@@ -4418,10 +4708,26 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "FormatSelection": {
+        "chart": {
+            "menu": "Format Selection...",
+            "properties": "1"
+        }
+    },
     "FormatSpacingMenu": {
         "global": {
             "menu": "~Spacing",
             "properties": "1"
+        }
+    },
+    "FormatStockGain": {
+        "chart": {
+            "menu": "Format Stock Gain..."
+        }
+    },
+    "FormatStockLoss": {
+        "chart": {
+            "menu": "Format Stock Loss..."
         }
     },
     "FormatStylesMenu": {
@@ -4436,10 +4742,40 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "FormatTitle": {
+        "chart": {
+            "menu": "Format Title..."
+        }
+    },
+    "FormatTrendline": {
+        "chart": {
+            "menu": "Format Trend Line..."
+        }
+    },
+    "FormatTrendlineEquation": {
+        "chart": {
+            "menu": "Format Trend Line Equation..."
+        }
+    },
     "FormatUngroup": {
         "global": {
             "menu": "~Ungroup",
             "properties": "1"
+        }
+    },
+    "FormatWall": {
+        "chart": {
+            "menu": "Format Wall..."
+        }
+    },
+    "FormatXErrorBars": {
+        "chart": {
+            "menu": "Format X Error Bars..."
+        }
+    },
+    "FormatYErrorBars": {
+        "chart": {
+            "menu": "Format Y Error Bars..."
         }
     },
     "FormattedField": {
@@ -4456,6 +4792,10 @@ var unoCommandsArray = {
     },
     "Forward": {
         "presentation": {
+            "menu": "Bring ~Forward",
+            "properties": "1"
+        },
+        "chart": {
             "menu": "Bring ~Forward",
             "properties": "1"
         }
@@ -5745,6 +6085,16 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "InsertAxis": {
+        "chart": {
+            "menu": "Insert Axis"
+        }
+    },
+    "InsertAxisTitle": {
+        "chart": {
+            "menu": "Insert Axis Title"
+        }
+    },
     "InsertBookmark": {
         "text": {
             "menu": "Bookmar~k...",
@@ -5897,6 +6247,16 @@ var unoCommandsArray = {
             "menu": "Insert Current Time",
             "context": "~Time",
             "properties": "1"
+        }
+    },
+    "InsertDataLabel": {
+        "chart": {
+            "menu": "Insert Single Data Label"
+        }
+    },
+    "InsertDataLabels": {
+        "chart": {
+            "menu": "Insert Data Labels"
         }
     },
     "InsertDateAndTime": {
@@ -6157,6 +6517,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "InsertLegend": {
+        "chart": {
+            "menu": "Insert Legend"
+        }
+    },
     "InsertLinebreak": {
         "text": {
             "menu": "Insert Manual Row Break",
@@ -6167,6 +6532,11 @@ var unoCommandsArray = {
         "global": {
             "menu": "List Box",
             "properties": "1"
+        }
+    },
+    "InsertMajorGrid": {
+        "chart": {
+            "menu": "Insert Major Grid"
         }
     },
     "InsertMasterPage": {
@@ -6181,10 +6551,70 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "InsertMeanValue": {
+        "chart": {
+            "menu": "Insert Mean ~Value Line"
+        }
+    },
     "InsertMenu": {
         "global": {
             "menu": "~Insert",
             "properties": "1"
+        }
+    },
+    "InsertMenuAxes": {
+        "chart": {
+            "menu": "~Axes...",
+            "properties": "1"
+        }
+    },
+    "InsertMenuDataLabels": {
+        "chart": {
+            "menu": "~Data Labels..."
+        }
+    },
+    "InsertMenuGrids": {
+        "chart": {
+            "menu": "~Grids...",
+            "properties": "1"
+        }
+    },
+    "InsertMenuLegend": {
+        "chart": {
+            "menu": "Position",
+            "context": "~Legend...",
+            "properties": "1"
+        }
+    },
+    "InsertMenuMeanValues": {
+        "chart": {
+            "menu": "Mean ~Value Lines"
+        }
+    },
+    "InsertMenuTitles": {
+        "chart": {
+            "menu": "~Titles...",
+            "properties": "1"
+        }
+    },
+    "InsertMenuTrendlines": {
+        "chart": {
+            "menu": "Tre~nd Line..."
+        }
+    },
+    "InsertMenuXErrorBars": {
+        "chart": {
+            "menu": "X Error ~Bars..."
+        }
+    },
+    "InsertMenuYErrorBars": {
+        "chart": {
+            "menu": "Y Error ~Bars..."
+        }
+    },
+    "InsertMinorGrid": {
+        "chart": {
+            "menu": "Insert Minor Grid"
         }
     },
     "InsertMode": {
@@ -6369,6 +6799,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "InsertR2Value": {
+        "chart": {
+            "menu": "Insert R²"
+        }
+    },
     "InsertRLM": {
         "global": {
             "menu": "~Right-to-left Mark",
@@ -6380,6 +6815,11 @@ var unoCommandsArray = {
             "menu": "Cross-reference...",
             "tooltip": "Insert Cross-reference",
             "properties": "1"
+        }
+    },
+    "InsertRemoveAxes": {
+        "chart": {
+            "menu": "Insert\/Delete Axes..."
         }
     },
     "InsertRowBreak": {
@@ -6568,6 +7008,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "InsertTitles": {
+        "chart": {
+            "menu": "Insert Titles..."
+        }
+    },
     "InsertToolbox": {
         "presentation": {
             "menu": "Insert",
@@ -6584,6 +7029,31 @@ var unoCommandsArray = {
         "global": {
             "menu": "Tree Control",
             "properties": "1"
+        }
+    },
+    "InsertTrendline": {
+        "chart": {
+            "menu": "Insert Tre~nd Line..."
+        }
+    },
+    "InsertTrendlineEquation": {
+        "chart": {
+            "menu": "Insert Trend Line ~Equation"
+        }
+    },
+    "InsertTrendlineEquationAndR2": {
+        "chart": {
+            "menu": "Insert R² and Trend Line Equation"
+        }
+    },
+    "InsertXErrorBars": {
+        "chart": {
+            "menu": "Insert X Error ~Bars..."
+        }
+    },
+    "InsertYErrorBars": {
+        "chart": {
+            "menu": "Insert Y Error ~Bars..."
         }
     },
     "InsertZWNBSP": {
@@ -6864,6 +7334,18 @@ var unoCommandsArray = {
             "properties": "11"
         }
     },
+    "Legend": {
+        "chart": {
+            "menu": "Format Legend",
+            "context": "~Legend...",
+            "properties": "1"
+        }
+    },
+    "LegendPosition": {
+        "chart": {
+            "menu": "Legend Position"
+        }
+    },
     "LibSelector": {
         "global": {
             "menu": "Current Library"
@@ -6938,6 +7420,10 @@ var unoCommandsArray = {
     },
     "LineArrowEnd": {
         "global": {
+            "menu": "Line Ends with Arrow",
+            "properties": "1"
+        },
+        "chart": {
             "menu": "Line Ends with Arrow",
             "properties": "1"
         }
@@ -7194,6 +7680,11 @@ var unoCommandsArray = {
         "text": {
             "menu": "Mail Merge Wi~zard...",
             "properties": "1"
+        }
+    },
+    "MainTitle": {
+        "chart": {
+            "menu": "~Main Title..."
         }
     },
     "ManageBreakPoints": {
@@ -7610,6 +8101,12 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "NewArrangement": {
+        "chart": {
+            "menu": "Automatic Layout",
+            "properties": "1"
+        }
+    },
     "NewDoc": {
         "global": {
             "menu": "Templates",
@@ -7861,6 +8358,11 @@ var unoCommandsArray = {
             "properties": "11"
         }
     },
+    "NumberOfLines": {
+        "chart": {
+            "menu": "Number of lines in combination chart"
+        }
+    },
     "NumberOrNoNumber": {
         "text": {
             "menu": "Numbering On\/Off"
@@ -7959,6 +8461,9 @@ var unoCommandsArray = {
         "global": {
             "menu": "Description...",
             "properties": "1"
+        },
+        "chart": {
+            "menu": "Description..."
         }
     },
     "Objects3DToolbox": {
@@ -8110,7 +8615,7 @@ var unoCommandsArray = {
     },
     "OutlineFont": {
         "global": {
-            "menu": "Outline",
+            "menu": "Outline Font",
             "properties": "9"
         }
     },
@@ -8487,7 +8992,8 @@ var unoCommandsArray = {
         "global": [],
         "text": [],
         "spreadsheet": [],
-        "presentation": []
+        "presentation": [],
+        "chart": []
     },
     "PreformattedParaStyle": {
         "text": {
@@ -9006,6 +9512,9 @@ var unoCommandsArray = {
         "spreadsheet": {
             "menu": "Name...",
             "properties": "1"
+        },
+        "chart": {
+            "menu": "Name..."
         }
     },
     "RenamePage": {
@@ -9058,6 +9567,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ResetAllDataPoints": {
+        "chart": {
+            "menu": "Reset all Data Points"
+        }
+    },
     "ResetAttributes": {
         "text": {
             "menu": "Clear",
@@ -9070,6 +9584,11 @@ var unoCommandsArray = {
             "context": "Clear ~Direct Formatting",
             "tooltip": "Clear Direct Formatting",
             "properties": "1"
+        }
+    },
+    "ResetDataPoint": {
+        "chart": {
+            "menu": "Reset Data Point"
         }
     },
     "ResetPrintZoom": {
@@ -9337,6 +9856,12 @@ var unoCommandsArray = {
             "menu": "Scale Screen Display"
         }
     },
+    "ScaleText": {
+        "chart": {
+            "menu": "Scale Text",
+            "properties": "1"
+        }
+    },
     "ScalingFactor": {
         "spreadsheet": {
             "menu": "Scaling Factor"
@@ -9413,6 +9938,16 @@ var unoCommandsArray = {
     "SearchLabel": {
         "global": {
             "menu": "[placeholder for message]"
+        }
+    },
+    "SecondaryXTitle": {
+        "chart": {
+            "menu": "S~econdary X Axis Title..."
+        }
+    },
+    "SecondaryYTitle": {
+        "chart": {
+            "menu": "Se~condary Y Axis Title..."
         }
     },
     "Select": {
@@ -10972,6 +11507,11 @@ var unoCommandsArray = {
             "properties": "9"
         }
     },
+    "SubTitle": {
+        "chart": {
+            "menu": "~Subtitle..."
+        }
+    },
     "Substract": {
         "global": {
             "menu": "~Subtract",
@@ -11346,6 +11886,9 @@ var unoCommandsArray = {
         "presentation": {
             "menu": "Te~xt Attributes...",
             "properties": "1"
+        },
+        "chart": {
+            "menu": "Te~xt..."
         }
     },
     "TextAutoFitToSize": {
@@ -11481,6 +12024,12 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "ToggleAxisDescr": {
+        "chart": {
+            "menu": "Show\/Hide Axis Description(s)",
+            "properties": "1"
+        }
+    },
     "ToggleBreakPoint": {
         "global": {
             "menu": "Breakpoint On\/Off",
@@ -11500,6 +12049,24 @@ var unoCommandsArray = {
     "ToggleFormula": {
         "spreadsheet": {
             "menu": "Show Formula",
+            "properties": "1"
+        }
+    },
+    "ToggleGridHorizontal": {
+        "chart": {
+            "menu": "Horizontal Grids",
+            "properties": "1"
+        }
+    },
+    "ToggleGridVertical": {
+        "chart": {
+            "menu": "Vertical Grids",
+            "properties": "1"
+        }
+    },
+    "ToggleLegend": {
+        "chart": {
+            "menu": "Legend On\/Off",
             "properties": "1"
         }
     },
@@ -11562,6 +12129,11 @@ var unoCommandsArray = {
         "spreadsheet": {
             "menu": "Protect ~Spreadsheet Structure...",
             "properties": "1"
+        }
+    },
+    "ToolSelect": {
+        "chart": {
+            "menu": "Select Tool"
         }
     },
     "ToolbarMode": {
@@ -11734,6 +12306,11 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "Update": {
+        "chart": {
+            "menu": "Update Chart"
+        }
+    },
     "UpdateAll": {
         "text": {
             "menu": "~Update All",
@@ -11808,7 +12385,8 @@ var unoCommandsArray = {
         "global": [],
         "text": [],
         "spreadsheet": [],
-        "presentation": []
+        "presentation": [],
+        "chart": []
     },
     "VFixedLine": {
         "global": {
@@ -11862,6 +12440,12 @@ var unoCommandsArray = {
     "VerticalTextFitToSizeTool": {
         "presentation": {
             "menu": "Fit Vertical Text to Frame",
+            "properties": "1"
+        }
+    },
+    "View3D": {
+        "chart": {
+            "menu": "~3D View...",
             "properties": "1"
         }
     },
@@ -12056,10 +12640,25 @@ var unoCommandsArray = {
             "properties": "1"
         }
     },
+    "XTitle": {
+        "chart": {
+            "menu": "~X Axis Title..."
+        }
+    },
+    "YTitle": {
+        "chart": {
+            "menu": "~Y Axis Title..."
+        }
+    },
     "ZTestDialog": {
         "spreadsheet": {
             "menu": "~Z-test...",
             "properties": "1"
+        }
+    },
+    "ZTitle": {
+        "chart": {
+            "menu": "~Z Axis Title..."
         }
     },
     "Zoom": {
@@ -12221,8 +12820,11 @@ window._UNO = function(string, component, isContext) {
 		componentEntry = entry['global'];
 		// 連 global 也沒有，就直接傳回指令名稱
 		if (componentEntry === undefined) {
-			return command;
-		}
+            // 找第一個找到的文件類別
+			for (component in entry) {
+            }
+            componentEntry = entry[component];
+        }
 	}
 
 	var priority = isContext === true ? ['context', 'menu'] : ['menu', 'context'];

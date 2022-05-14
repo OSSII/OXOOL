@@ -93,19 +93,8 @@ L.DivOverlay = L.Layer.extend({
 		return this;
 	},
 
-	unbindAnnotation: function () {
-		if (this._annotation) {
-			this.off('mouseover', this.openAnnotation, this);
-			this.off('mouseout', this.closeAnnotation, this);
-			this._annotation.off('AnnoationMouseLeave', this._onMouseLeave, this);
-			this._handlerAdded = false;
-			this._annotation = null;
-		}
-		return this;
-	},
-
 	_initLayout: function () {
-		this._container = L.DomUtil.create('div', 'loleaflet-div-layer');
+		this._container = L.DomUtil.create('div', 'oxool-div-layer');
 		L.DomEvent.on(this._container, 'mouseover', this._fireMouseEvents, this);
 		L.DomEvent.on(this._container, 'mouseout', this._fireMouseEvents, this);
 		L.DomUtil.setOpacity(this._container, this.options.opacity);

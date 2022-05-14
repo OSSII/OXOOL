@@ -53,7 +53,7 @@ L.PolyUtil.clipPolygon = function (points, bounds, round) {
 	return points;
 };
 
-L.PolyUtil.rectanglesToPolygons = function (rectangles, docLayer) {
+L.PolyUtil.rectanglesToPolygons = function (rectangles, docLayer, dontConvert) {
 	// algorithm found here http://stackoverflow.com/questions/13746284/merging-multiple-adjacent-rectangles-into-one-polygon
 	var eps = 20;
 	// Glue rectangles if the space between them is less then eps
@@ -87,7 +87,7 @@ L.PolyUtil.rectanglesToPolygons = function (rectangles, docLayer) {
 	function getKeys(points) {
 		var keys = [];
 		for (var key in points) {
-			if (points.hasOwnProperty(key)) {
+			if (Object.prototype.hasOwnProperty.call(points, key)) {
 				keys.push(key);
 			}
 		}
@@ -183,11 +183,19 @@ L.PolyUtil.rectanglesToPolygons = function (rectangles, docLayer) {
 		}
 		var polygon = [];
 		for (i = 0; i < p.length; i++) {
-			polygon.push(docLayer._twipsToLatLng(points[p[i][0]]));
+			if (!dontConvert)
+				polygon.push(docLayer._twipsToLatLng(points[p[i][0]]));
+			else
+				polygon.push(points[p[i][0]]);
 			delete edgesH[p[i][0]];
 			delete edgesV[p[i][0]];
 		}
-		polygon.push(docLayer._twipsToLatLng(points[p[0][0]]));
+
+		if (!dontConvert)
+			polygon.push(docLayer._twipsToLatLng(points[p[0][0]]));
+		else
+			polygon.push(points[p[0][0]]);
+
 		edgesHKeys = getKeys(edgesH);
 		polygons.push(polygon);
 	}

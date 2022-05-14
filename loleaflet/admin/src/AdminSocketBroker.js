@@ -58,4 +58,4 @@ var AdminSocketBroker = AdminSocketBase.extend({
 
 Admin.SocketBroker = function(host, methods) {
 	return new AdminSocketBroker(host, methods);
-}
+};

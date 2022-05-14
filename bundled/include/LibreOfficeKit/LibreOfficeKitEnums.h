@@ -774,6 +774,17 @@ typedef enum
     LOK_CALLBACK_VALIDITY_INPUT_HELP = 51,
 
     /**
+     * This is currently Calc only. Indicates the document background
+     * color in the payload as a RGB hex string (RRGGBB).
+     */
+    LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR = 52,
+
+    /**
+     * When a user tries to use command which is restricted for that user
+     */
+    LOK_COMMAND_BLOCKED = 53,
+
+    /**
      * Show a message on the editor's screen.
      *
      * The payload example:
@@ -933,14 +944,17 @@ static inline const char* lokCallbackTypeToString(int nType)
         return "LOK_CALLBACK_FORM_FIELD_BUTTON";
     case LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY:
         return "LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY";
+    case LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR:
+        return "LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR";
+    case LOK_COMMAND_BLOCKED:
+        return "LOK_COMMAND_BLOCKED";
     case LOK_CALLBACK_MSGBOX:
         return "LOK_CALLBACK_MSGBOX";
     case LOK_CALLBACK_LAUNCH_MENU:
         return "LOK_CALLBACK_LAUNCH_MENU";
     }
 
-    assert(!"Unknown LibreOfficeKitCallbackType type.");
-    return nullptr;
+    return "Unknown LibreOfficeKitCallbackType type.";
 }
 
 typedef enum

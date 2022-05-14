@@ -3,264 +3,457 @@
  * L.Control.PartsPreview
  */
 
-/* global $ */
+/* global _ app $ Hammer w2ui */
 L.Control.PartsPreview = L.Control.extend({
 	options: {
-		autoUpdate: true
+		fetchThumbnail: true,
+		autoUpdate: true,
+		imageClass: '',
+		frameClass: '',
+		axis: '',
+		allowOrientation: true,
+		maxWidth: window.mode.isDesktop() ? 180: (window.mode.isTablet() ? 120: 60),
+		maxHeight: window.mode.isDesktop() ? 180: (window.mode.isTablet() ? 120: 60)
 	},
+	partsFocused: false,
 
-	_gridVisible: null, // 顯示網格，預設未知
+	initialize: function (container, preview, options) {
+		L.setOptions(this, options);
 
-	onAdd: function(map) {
-		map.on('updatepermission', this._onUpdatePermission, this);
-		this._initialized = false;
-	},
-
-	_onUpdatePermission: function(e) {
-		var map = this._map;
-		var docType = map.getDocType();
-		if (docType !== 'presentation' && docType !== 'drawing') {
-			return;
+		if (!container) {
+			container = L.DomUtil.get('presentation-controls-wrapper');
 		}
 
-		if (!this._initialized) {
-			this._initialize();
+		if (!preview) {
+			preview = L.DomUtil.get('slide-sorter');
 		}
 
-		if (e.perm === 'edit') {
-			// 桌面模式啟用拖曳排序
-			/* if (window.mode.isDesktop()) {
-				$(this._scrollContainer).sortable('enable');
-			} */
-			map.on('insertpage', this._insertPreview, this);
-			map.on('deletepage', this._deletePreview, this);
-		} else {
-			//$(this._scrollContainer).sortable('disable'); // 關閉拖曳排序
-			map.off('insertpage', this._insertPreview, this);
-			map.off('deletepage', this._deletePreview, this);
-		}
+		this._container = container;
+		this._partsPreviewCont = preview;
+		this._partsPreviewCont.onscroll = this._onScroll.bind(this);
+		this._needRefreshAllPreviews = false;
 	},
 
-	_initialize: function() {
-		var that = this;
-		var map = this._map;
-
-		this._initialized = true;
+	onAdd: function (map) {
 		this._previewInitialized = false;
 		this._previewTiles = [];
-		this._presentationControlWrapper = L.DomUtil.get('presentation-controls-wrapper');
-		this._partsPreviewCont = L.DomUtil.get('slide-sorter');
+		this._direction = this.options.allowOrientation ?
+			(!window.mode.isDesktop() && L.DomUtil.isPortrait() ? 'x' : 'y') :
+			this.options.axis;
 		this._scrollY = 0;
-
-		// make room for the preview
-		L.DomUtil.addClass(map.options.documentContainer, 'parts-preview-document');
-		setTimeout(L.bind(function () {
-			map.invalidateSize();
-			$('.scroll-container').mCustomScrollbar('update');
-		}, this), 500);
-
-		// 設定寬度，避免捲動軸與預覽圖重疊
-		L.DomUtil.setStyle(
-			this._partsPreviewCont,
-			'width',
-			$(this._presentationControlWrapper).css('max-width')
-		);
-
-		$(this._partsPreviewCont).mCustomScrollbar({
-			axis: 'y',
-			theme: '3d-thick-dark',
-			scrollButtons:{enable: true},
-			alwaysShowScrollbar: 1,
-			callbacks:{
-				whileScrolling: function() {
-					that._onScroll(this);
-				}
-			}
-		});
-		this._scrollContainer = $(this._partsPreviewCont).find('.mCSB_container').get(0);
-
-		// TODO: 未來實作
-		//this.createSortable(); // 加上拖曳排序功能
-		//this.createContextMenu(); // 加上右鍵選單
+		// Hack for access this function outside of this class
+		map.isPreviewVisible = L.bind(this._isPreviewVisible, this);
 
 		map.on('updateparts', this._updateDisabled, this);
 		map.on('updatepart', this._updatePart, this);
 		map.on('tilepreview', this._updatePreview, this);
-		map.on('commandstatechanged', this._onCommandStateChanged, this);
-		map.on('resize', this._onResize, this);
+		map.on('insertpage', this._insertPreview, this);
+		map.on('deletepage', this._deletePreview, this);
+		map.on('scrolllimits', this._updateAllPreview, this);
+		map.on('scrolltopart', this._scrollToPart, this);
+
+		// Added by Firefly <firefly@ossii.com.tw>
+		// 監聽投影片母片(.uno:SlideMasterPage)狀態
+		map.stateChangeHandler.on('.uno:SlideMasterPage', this._slideMasterPage, this);
 	},
 
 	/**
-	 *
-	 * @param {object} e
+	 * 回報投影片母片狀態
+	 * @param {object} e - 狀態事件
 	 */
-	_updateDisabled: function(e) {
-		if (!this._previewInitialized) {
-			var previewContBB = this._partsPreviewCont.getBoundingClientRect();
-			this._previewContTop = previewContBB.top;
-			var bottomBound = previewContBB.bottom + previewContBB.height / 2;
-			for (var i = 0; i < e.parts; i++) {
-				this._previewTiles.push(this._createPreview(i, e.partNames[i], bottomBound));
-			}
-			this._onScroll();
-			this._previewInitialized = true;
+	_slideMasterPage: function(e) {
+		if (e.checked()) {
+			$('#document-container').removeClass('slide-normal-mode');
+			$('#document-container').addClass('slide-master-mode');
 		} else {
-			var childNodes = this._scrollContainer.childNodes;
-			if (e.partNames !== undefined) {
-				this._syncPreviews(e);
-			}
-
-			for (var j = 0; j < e.parts; j++) {
-				L.DomUtil.removeClass(childNodes[j], 'preview-frame-selected');
-			}
-			L.DomUtil.addClass(childNodes[this._map.getCurrentPartNumber()], 'preview-frame-selected');
-			this._previewTileScrollIntoView();
+			$('#document-container').removeClass('slide-master-mode');
+			$('#document-container').addClass('slide-normal-mode');
 		}
+		this._needRefreshAllPreviews = true;
+		app.socket.sendMessage('status'); // 重新要求檔案狀態
 	},
 
-	/**
-	 * UNO 指令狀態回報
-	 * @param {event} e
-	 */
-	_onCommandStateChanged: function(e) {
-		var cmdName = e.commandName;
-		var state = e.state;
-		if (this._previewInitialized &&
-			cmdName === '.uno:GridVisible' &&
-			(state === 'true' || state === 'false')) {
-			var prevState = this._gridVisible; //
-			var firstSet = (prevState === null);
-			this._gridVisible = (state === 'true' ? true : false);
-			if (!firstSet && this._gridVisible !== prevState) {
-				for (var i=0 ; i < this._previewTiles.length ; i++) {
-					this._previewTiles[i].fetched = false;
+	createScrollbar: function () {
+		this._partsPreviewCont.style.whiteSpace = 'nowrap';
+	},
+
+	_updateDisabled: function (e) {
+		var parts = e.parts;
+		var selectedPart = e.selectedPart;
+		var selectedParts = e.selectedParts;
+		var docType = e.docType;
+		if (docType === 'text' || isNaN(parts)) {
+			return;
+		}
+
+		if (docType === 'presentation' || docType === 'drawing') {
+			if (!this._previewInitialized)
+			{
+				// make room for the preview
+				var docContainer = this._map.options.documentContainer;
+				if (!L.DomUtil.hasClass(docContainer, 'parts-preview-document')) {
+					L.DomUtil.addClass(docContainer, 'parts-preview-document');
+					setTimeout(L.bind(function () {
+						this._map.invalidateSize();
+					}, this), 500);
 				}
-				this._onScroll();
+
+				var bottomBound = this._getBottomBound();
+
+				// Add a special frame just as a drop-site for reordering.
+				var frameClass = 'preview-frame ' + this.options.frameClass;
+				var frame = L.DomUtil.create('div', frameClass, this._partsPreviewCont);
+				this._addDnDHandlers(frame);
+				frame.setAttribute('draggable', false);
+				frame.setAttribute('id', 'first-drop-site');
+
+				if (window.mode.isDesktop()) {
+					L.DomUtil.setStyle(frame, 'height', '20px');
+					L.DomUtil.setStyle(frame, 'margin', '0em');
+				}
+
+				// Create the preview parts
+				for (var i = 0; i < parts; i++) {
+					this._previewTiles.push(this._createPreview(i, e.partNames[i], bottomBound));
+				}
+				if (!app.file.fileBasedView)
+					L.DomUtil.addClass(this._previewTiles[selectedPart], 'preview-img-currentpart');
+				this._onScroll(); // Load previews.
+				this._previewInitialized = true;
+			}
+			else
+			{
+				if (e.partNames !== undefined) {
+					this._syncPreviews(e);
+				}
+
+				if (!app.file.fileBasedView) {
+					// change the border style of the selected preview.
+					for (var j = 0; j < parts; j++) {
+						L.DomUtil.removeClass(this._previewTiles[j], 'preview-img-currentpart');
+						L.DomUtil.removeClass(this._previewTiles[j], 'preview-img-selectedpart');
+						if (j === selectedPart)
+							L.DomUtil.addClass(this._previewTiles[j], 'preview-img-currentpart');
+						else if (selectedParts.indexOf(j) >= 0)
+							L.DomUtil.addClass(this._previewTiles[j], 'preview-img-selectedpart');
+					}
+				}
+			}
+
+			if (!this.options.allowOrientation) {
+				return;
+			}
+
+			// update portrait / landscape
+			var removePreviewImg = 'preview-img-portrait';
+			var addPreviewImg = 'preview-img-landscape';
+			var removePreviewFrame = 'preview-frame-portrait';
+			var addPreviewFrame = 'preview-frame-landscape';
+			if (L.DomUtil.isPortrait()) {
+				removePreviewImg = 'preview-img-landscape';
+				addPreviewImg = 'preview-img-portrait';
+				removePreviewFrame = 'preview-frame-landscape';
+				addPreviewFrame = 'preview-frame-portrait';
+			}
+
+			for (i = 0; i < parts; i++) {
+				L.DomUtil.removeClass(this._previewTiles[i], removePreviewImg);
+				L.DomUtil.addClass(this._previewTiles[i], addPreviewImg);
+				// 需要更新預覽圖
+				if (this._needRefreshAllPreviews) {
+					this._map._docLayer._onMessage('invalidatetiles: EMPTY, ' + i);
+				}
+			}
+			this._needRefreshAllPreviews = false; // 關閉預覽圖更新要求
+
+			var previewFrame = $(this._partsPreviewCont).find('.preview-frame');
+			previewFrame.removeClass(removePreviewFrame);
+			previewFrame.addClass(addPreviewFrame);
+
+			// re-create scrollbar with new direction
+			this._direction = !window.mode.isDesktop() && !window.mode.isTablet() && L.DomUtil.isPortrait() ? 'x' : 'y';
+
+			// Hide portrait view's previews when layout view is used.
+			if (this._direction === 'x' && window.mode.isMobile()) {
+				document.getElementById('mobile-slide-sorter').style.display = 'block';
+			}
+			else if (this._direction === 'y' && window.mode.isMobile()) {
+				document.getElementById('mobile-slide-sorter').style.display = 'none';
 			}
 		}
 	},
 
-	/**
-	 * 視窗改變大小
-	 */
-	_onResize: function(/*e*/) {
-		if (this._previewInitialized) {
-			var visible = L.DomUtil.getStyle(this._presentationControlWrapper, 'display');
-			// 預覽區沒有隱藏的話，捲動至可視範圍
-			if (visible !== 'none') {
-				this._previewTileScrollIntoView();
-			}
+	_updateAllPreview: function () {
+		if (this._previewTiles.length === 0) {
+			return;
 		}
-	},
 
-	/**
-	 * 檢查並捲動選取的預覽圖到可視區內
-	 */
-	_previewTileScrollIntoView: function() {
-		// 目前選取的預覽圖 DOM
-		var frame = this._scrollContainer.childNodes[this._map.getCurrentPartNumber()];
-		// 取得可視區範圍所在範圍
-		var previewRect = this._partsPreviewCont.getBoundingClientRect();
-		// 預覽圖所在範圍
-		var frameRect = frame.getBoundingClientRect();
-		var scrollOffsetY = 0; // 預設捲動位置
-		// 預覽圖上端被遮住
-		if (frameRect.top < previewRect.top) {
-			scrollOffsetY = frame.offsetTop
-		// 預覽圖下端被遮住
-		} else if (frameRect.bottom > previewRect.bottom) {
-			scrollOffsetY = frame.offsetTop - previewRect.height + frameRect.height;
-		}
-		// 捲動位置不為 0，需捲動到指定位置
-		if (scrollOffsetY !== 0) {
-			$(this._partsPreviewCont).mCustomScrollbar('scrollTo', scrollOffsetY);
+		var bottomBound = this._getBottomBound();
+		for (var prev = 0; prev < this._previewTiles.length; prev++) {
+			this._layoutPreview(prev, this._previewTiles[prev], bottomBound);
 		}
 	},
 
 	_createPreview: function (i, hashCode, bottomBound) {
-		var frame = L.DomUtil.create('div', 'preview-frame', this._scrollContainer);
-		var infoWrapper = L.DomUtil.create('div', 'preview-info-wrapper', frame);
-		L.DomUtil.create('div', 'preview-helper', infoWrapper); //infoWrapper.childNodes[0]
-		L.DomUtil.create('div', '', infoWrapper); // infoWrapper.childNodes[1] (是否有動畫)
-		L.DomUtil.create('div', '', infoWrapper); // infoWrapper.childNodes[2] (是否有投影片轉場)
+		var frameClass = 'preview-frame ' + this.options.frameClass;
+		var frame = L.DomUtil.create('div', frameClass, this._partsPreviewCont);
+		frame.id = 'preview-frame-part-' + i;
+		this._addDnDHandlers(frame);
+		L.DomUtil.create('span', 'preview-helper', frame);
 
-		var img = L.DomUtil.create('img', 'preview-img', frame);
+		var imgClassName = 'preview-img ' + this.options.imageClass;
+		var img = L.DomUtil.create('img', imgClassName, frame);
+		img.setAttribute('alt', _('preview of page ') + String(i + 1));
 		img.hash = hashCode;
-		img.src = L.Icon.Default.imagePath + '/preview_placeholder.png';
+		img.src = L.LOUtil.getImageURL('preview_placeholder.png');
 		img.fetched = false;
-
-		// 桌面模式啟用 tooltip
-		if (window.mode.isDesktop()) {
-			$(img).tooltip({
-				position: {
-					my: 'left top',
-					at: 'right+4 top+4',
-					collision: 'flipfit'
+		if (!window.mode.isDesktop()) {
+			(new Hammer(img, {recognizers: [[Hammer.Press]]}))
+				.on('press', function (e) {
+					if (this._map.isPermissionEdit()) {
+						this._addDnDTouchHandlers(e);
+					}
+				}.bind(this));
+		}
+		L.DomEvent.on(img, 'click', function (e) {
+			L.DomEvent.stopPropagation(e);
+			L.DomEvent.stop(e);
+			var part = this._findClickedPart(e.target.parentNode);
+			if (part !== null)
+				var partId = parseInt(part) - 1; // The first part is just a drop-site for reordering.
+			if (!window.mode.isDesktop() && partId === this._map._docLayer._selectedPart && !app.file.fileBasedView) {
+				// if mobile or tab then second tap will open the mobile wizard
+				if (this._map._permission === 'edit') {
+					// Remove selection to get the slide properties in mobile wizard.
+					app.socket.sendMessage('resetselection');
+					setTimeout(function () {
+						w2ui['actionbar'].click('mobile_wizard');
+					}, 0);
 				}
-			});
+			} else {
+				this._setPart(e);
+				this._map.focus();
+				this.partsFocused = true;
+				if (!window.mode.isDesktop()) {
+					// needed so on-screen keyboard doesn't pop up when switching slides,
+					// but would cause PgUp/Down to not work on desktop in slide sorter
+					document.activeElement.blur();
+				}
+			}
+			if (app.file.fileBasedView)
+				this._map._docLayer._checkSelectedPart();
+		}, this);
+
+		this._layoutPreview(i, img, bottomBound);
+
+		return img;
+	},
+
+	_getBottomBound: function () {
+		var previewContBB = this._partsPreviewCont.getBoundingClientRect();
+		var bottomBound;
+
+		// is not visible yet, assume map bounds
+		if (previewContBB.right === 0 && previewContBB.bottom === 0) {
+			previewContBB = this._map._container.getBoundingClientRect();
 		}
 
-		L.DomEvent
-			.on(img, 'click', L.DomEvent.stopPropagation)
-			.on(img, 'click', L.DomEvent.stop)
-			.on(img, 'click', this._setPart, this)
-			.on(img, 'click', this._map.focus, this._map);
+		if (this._direction === 'x') {
+			this._previewContTop = previewContBB.left;
+			bottomBound = previewContBB.right + previewContBB.width / 2;
+		} else {
+			this._previewContTop = previewContBB.top;
+			bottomBound = previewContBB.bottom + previewContBB.height / 2;
+		}
 
+		return bottomBound;
+	},
+
+	_layoutPreview: function (i, img, bottomBound) {
 		var topBound = this._previewContTop;
 		var previewFrameTop = 0;
 		var previewFrameBottom = 0;
 		if (i > 0) {
 			if (!bottomBound) {
 				var previewContBB = this._partsPreviewCont.getBoundingClientRect();
-				bottomBound = this._previewContTop + previewContBB.height + previewContBB.height / 2;
+				if (this._direction === 'x') {
+					bottomBound = this._previewContTop + previewContBB.width + previewContBB.width / 2;
+				} else {
+					bottomBound = this._previewContTop + previewContBB.height + previewContBB.height / 2;
+				}
 			}
 			previewFrameTop = this._previewContTop + this._previewFrameMargin + i * (this._previewFrameHeight + this._previewFrameMargin);
 			previewFrameTop -= this._scrollY;
 			previewFrameBottom = previewFrameTop + this._previewFrameHeight;
-			//L.DomUtil.setStyle(img, 'height', this._previewImgHeight + 'px');
-			L.DomUtil.setStyle(infoWrapper, 'height', this._previewImgHeight + 'px');
 		}
 
 		var imgSize;
 		if (i === 0 || (previewFrameTop >= topBound && previewFrameTop <= bottomBound)
 			|| (previewFrameBottom >= topBound && previewFrameBottom <= bottomBound)) {
-			imgSize = this._map.getPreview(i, i, 180, 180, {autoUpdate: this.options.autoUpdate});
+			imgSize = this._map.getPreview(i, i, this.options.maxWidth, this.options.maxHeight, {autoUpdate: this.options.autoUpdate, fetchThumbnail: this.options.fetchThumbnail});
 			img.fetched = true;
-			//L.DomUtil.setStyle(img, 'height', '');
-			L.DomUtil.setStyle(infoWrapper, 'height', imgSize.height + 'px');
+
+			if (this._direction === 'x') {
+				L.DomUtil.setStyle(img, 'width', '');
+			} else {
+				L.DomUtil.setStyle(img, 'height', '');
+			}
 		}
 
 		if (i === 0) {
 			var previewImgBorder = Math.round(parseFloat(L.DomUtil.getStyle(img, 'border-top-width')));
 			var previewImgMinWidth = Math.round(parseFloat(L.DomUtil.getStyle(img, 'min-width')));
 			var imgHeight = imgSize.height;
-			if (imgSize.width < previewImgMinWidth)
+			var imgWidth = imgSize.width;
+			if (imgSize.width < previewImgMinWidth && window.mode.isDesktop())
 				imgHeight = Math.round(imgHeight * previewImgMinWidth / imgSize.width);
-			var previewFrameBB = frame.getBoundingClientRect();
-			this._previewFrameMargin = previewFrameBB.top - this._previewContTop;
-			this._previewImgHeight = imgHeight;
-			this._previewFrameHeight = imgHeight + 2 * previewImgBorder;
-		}
-
-		return img;
-	},
-
-	_setPart: function(e) {
-		var frame = e.target.parentNode;
-		var part = $('#slide-sorter .mCSB_container .preview-frame').index(frame);
-		var currPart = this._map.getCurrentPartNumber();
-		if (part !== currPart) {
-			this._map.setPart(part);
+			var previewFrameBB = img.parentElement.getBoundingClientRect();
+			if (this._direction === 'x') {
+				this._previewFrameMargin = previewFrameBB.left - this._previewContTop;
+				this._previewImgHeight = imgWidth;
+				this._previewFrameHeight = imgWidth + 2 * previewImgBorder;
+			} else {
+				this._previewFrameMargin = previewFrameBB.top - this._previewContTop;
+				this._previewImgHeight = imgHeight;
+				this._previewFrameHeight = imgHeight + 2 * previewImgBorder;
+			}
 		}
 	},
 
-	_updatePart: function(e) {
-		if (e.part >= 0) {
-			this._map.getPreview(e.part, e.part, 180, 180, {autoUpdate: this.options.autoUpdate});
+	_scrollToPart: function() {
+		var partNo = this._map.getCurrentPartNumber();
+		// update the page back and forward buttons status
+		var pagerButtonsEvent = { selectedPart: partNo, parts: this._partsPreviewCont.children.length };
+		window.onUpdateParts(pagerButtonsEvent);
+		//var sliderSize, nodePos, nodeOffset, nodeMargin;
+		var node = this._partsPreviewCont.children[partNo];
+
+		if (node && (!this._previewTiles[partNo] || !this._isPreviewVisible(partNo, false))) {
+			var nodePos = this._direction === 'x' ? $(node).position().left : $(node).position().top;
+			var scrollDirection = window.mode.isDesktop() || window.mode.isTablet() ? 'scrollTop': (L.DomUtil.isPortrait() ? 'scrollLeft': 'scrollTop');
+			var that = this;
+			if (this._map._partsDirection < 0) {
+				setTimeout(function() {
+					that._partsPreviewCont[scrollDirection] += nodePos;
+				}, 50);
+			} else {
+				setTimeout(function() {
+					that._partsPreviewCont[scrollDirection] += nodePos;
+				}, 50);
+			}
 		}
 	},
 
-	_syncPreviews: function(e) {
+	// We will use this function because IE doesn't support "Array.from" feature.
+	_findClickedPart: function (element) {
+		for (var i = 0; i < this._partsPreviewCont.children.length; i++) {
+			if (this._partsPreviewCont.children[i] === element) {
+				return i;
+			}
+		}
+		return -1;
+	},
+
+	// This is used with fileBasedView.
+	_scrollViewToPartPosition: function (partNumber, fromBottom) {
+		if (this._map._docLayer && this._map._docLayer._isZooming)
+			return;
+		var ratio = this._map._docLayer._tileSize / this._map._docLayer._tileHeightTwips;
+		var partHeightPixels = Math.round((this._map._docLayer._partHeightTwips + this._map._docLayer._spaceBetweenParts) * ratio);
+		var scrollTop = partHeightPixels * partNumber;
+		var viewHeight = app.sectionContainer.getViewSize()[1];
+
+		if (viewHeight > partHeightPixels && partNumber > 0)
+			scrollTop -= Math.round((viewHeight - partHeightPixels) * 0.5);
+
+		// scroll to the bottom of the selected part/page instead of its top px
+		if (fromBottom)
+			scrollTop += partHeightPixels - viewHeight;
+		scrollTop = Math.round(scrollTop / app.dpiScale);
+		app.sectionContainer.getSectionWithName(L.CSections.Scroll.name).onScrollTo({x: 0, y: scrollTop});
+	},
+
+	_scrollViewByDirection: function(buttonType) {
+		if (this._map._docLayer && this._map._docLayer._isZooming)
+			return;
+		var ratio = this._map._docLayer._tileSize / this._map._docLayer._tileHeightTwips;
+		var partHeightPixels = Math.round((this._map._docLayer._partHeightTwips + this._map._docLayer._spaceBetweenParts) * ratio);
+		var scroll = Math.floor(partHeightPixels / app.dpiScale);
+		var viewHeight = Math.floor(app.sectionContainer.getViewSize()[1]);
+		var viewHeightScaled = Math.round(Math.floor(viewHeight) / app.dpiScale);
+		var scrollBySize = Math.floor(viewHeightScaled * 0.75);
+		var topPx = (app.sectionContainer.getSectionWithName(L.CSections.Scroll.name).containerObject.getDocumentTopLeft()[1] / app.dpiScale);
+		if (buttonType === 'prev') {
+			if (this._map.getCurrentPartNumber() == 0) {
+				if (topPx - scrollBySize <= 0) {
+					this._scrollViewToPartPosition(0);
+					return;
+				}
+			}
+		} else if (buttonType === 'next') {
+			if (this._map._docLayer._parts == this._map.getCurrentPartNumber() + 1) {
+				scroll *= this._map.getCurrentPartNumber();
+				var veryEnd = scroll + (Math.floor(partHeightPixels / app.dpiScale) - viewHeightScaled);
+				if (topPx + viewHeightScaled >= veryEnd) {
+					this._scrollViewToPartPosition(this._map.getCurrentPartNumber(), true);
+					return;
+				}
+			}
+		}
+		app.sectionContainer.getSectionWithName(L.CSections.Scroll.name).onScrollBy({x: 0, y: buttonType === 'prev' ? -scrollBySize : scrollBySize});
+	},
+
+	_setPart: function (e) {
+		var part = this._findClickedPart(e.target.parentNode);
+		if (part !== null) {
+			if (app.file.fileBasedView) {
+				this._scrollViewToPartPosition(part - 1);
+				return;
+			}
+
+			var partId = parseInt(part) - 1; // The first part is just a drop-site for reordering.
+
+			if (e.ctrlKey) {
+				this._map.selectPart(partId, 2, false); // Toggle selection on ctrl+click.
+				if (this.firstSelection === undefined)
+					this.firstSelection = this._map._docLayer._selectedPart;
+			} else if (e.altKey) {
+				window.app.console.log('alt');
+			} else if (e.shiftKey) {
+				if (this.firstSelection === undefined)
+					this.firstSelection = this._map._docLayer._selectedPart;
+
+				//deselect all slide
+				this._map.deselectAll();
+
+				//reselect the first origianl selection
+				this._map.setPart(this.firstSelection);
+				this._map.selectPart(this.firstSelection, 1, false);
+
+				if (this.firstSelection < partId) {
+					for (var id = this.firstSelection + 1; id <= partId; ++id) {
+						this._map.selectPart(id, 2, false);
+					}
+				} else if (this.firstSelection > partId) {
+					for (id = this.firstSelection - 1; id >= partId; --id) {
+						this._map.selectPart(id, 2, false);
+					}
+				}
+			} else {
+				this._map.setPart(partId);
+				this._map.selectPart(partId, 1, false); // And select.
+				this.firstSelection = partId;
+			}
+		}
+	},
+
+	_updatePart: function (e) {
+		if ((e.docType === 'presentation' || e.docType === 'drawing') && e.part >= 0) {
+			this._map.getPreview(e.part, e.part, this.options.maxWidth, this.options.maxHeight, {autoUpdate: this.options.autoUpdate});
+		}
+	},
+
+	_syncPreviews: function (e) {
 		var it = 0;
 		var parts = e.parts;
 		if (parts !== this._previewTiles.length) {
@@ -300,143 +493,283 @@ L.Control.PartsPreview = L.Control.extend({
 
 				for (it = 0; it < e.partNames.length; it++) {
 					this._previewTiles[it].hash = e.partNames[it];
-					this._previewTiles[it].src = L.Icon.Default.imagePath + '/preview_placeholder.png';
+					this._previewTiles[it].src = L.LOUtil.getImageURL('preview_placeholder.png');
 					this._previewTiles[it].fetched = false;
 				}
-				this._onScrollEnd();
 			}
 		}
 		else {
 			// update hash code when user click insert slide.
 			for (it = 0; it < parts; it++) {
-				this._updatePreviewProperty(it);
-			}
-		}
-	},
-
-	/**
-	 * 更新某張投影片預覽資訊
-	 *
-	 * @param {number} index - 投影片編號
-	 */
-	_updatePreviewProperty: function(index) {
-		var frame = this._scrollContainer.childNodes[index];
-		var infoWrapper = frame.childNodes[0];
-		var img = frame.childNodes[1];
-
-		var helper = infoWrapper.childNodes[0];
-		var animation = infoWrapper.childNodes[1];
-		var transition = infoWrapper.childNodes[2];
-
-		frame.slidePartNo = index; // 投影片編號 0 開始
-		helper.innerText = index + 1; // 顯示的編號從 1 開始，所以實際編號 + 1
-
-		var partInfo = this._map.getPartProperty(index);
-		if (partInfo) {
-			img.title = partInfo.name;
-			img.hash = partInfo.hashCode;
-
-			if (partInfo.selected == '1') {
-				L.DomUtil.addClass(frame, 'preview-frame-selected');
-			} else {
-				L.DomUtil.removeClass(frame, 'preview-frame-selected');
-			}
-			// 是否隱藏
-			if (partInfo.visible === '0') {
-				L.DomUtil.addClass(img, 'preview-img-blur');
-			} else {
-				L.DomUtil.removeClass(img, 'preview-img-blur');
-			}
-
-			// 是否有動畫
-			if (partInfo.hasAnimationNode !== '0') {
-				L.DomUtil.addClass(animation, 'preview-animation');
-			} else {
-				L.DomUtil.removeClass(animation, 'preview-animation');
-			}
-
-			// 是否有轉場
-			if (partInfo.transitionType !== '0') {
-				L.DomUtil.addClass(transition, 'preview-transition');
-			} else {
-				L.DomUtil.removeClass(transition, 'preview-transition');
-			}
-		}
-	},
-
-	/**
-	 * 收到預覽圖
-	 * @param {object}} e
-	 */
-	_updatePreview: function(e) {
-		this._previewTiles[e.id].src = e.tile;
-	},
-
-	_updatePreviewIds: function () {
-		$(this._partsPreviewCont).mCustomScrollbar('update');
-	},
-
-	/**
-	 * 插入預覽圖
-	 * @param {*} e
-	 */
-	_insertPreview: function(e) {
-		var newIndex = e.selectedPart + 1;
-		var newPreview = this._createPreview(newIndex, (e.hashCode === undefined ? null : e.hashCode));
-
-		// insert newPreview to newIndex position
-		this._previewTiles.splice(newIndex, 0, newPreview);
-
-		var selectedFrame = this._previewTiles[e.selectedPart].parentNode;
-		var newFrame = newPreview.parentNode;
-
-		// insert after selectedFrame
-		selectedFrame.parentNode.insertBefore(newFrame, selectedFrame.nextSibling);
-		this._updatePreviewIds();
-	},
-
-	/**
-	 * 刪除預覽圖
-	 * @param {object} e
-	 */
-	_deletePreview: function(e) {
-		var selectedFrame = this._previewTiles[e.selectedPart].parentNode;
-		L.DomUtil.remove(selectedFrame);
-		this._previewTiles.splice(e.selectedPart, 1);
-		this._updatePreviewIds();
-	},
-
-	/**
-	 * 預覽區捲動後，檢查位於預覽區內的預覽圖是否已經載入
-	 *
-	 * @param {object} e
-	 */
-	_onScroll: function(e) {
-		var scrollOffset = 0;
-		if (e) {
-			var prevScrollY = this._scrollY;
-			this._scrollY = -e.mcs.top;
-			scrollOffset = this._scrollY - prevScrollY;
-		}
-
-		var previewContBB = this._partsPreviewCont.getBoundingClientRect();
-		var extra = previewContBB.height;
-		var topBound = this._previewContTop - (scrollOffset < 0 ? extra : previewContBB.height / 2);
-		var bottomBound = this._previewContTop + previewContBB.height + (scrollOffset > 0 ? extra : previewContBB.height / 2);
-		for (var i = 0; i < this._previewTiles.length; ++i) {
-			var img = this._previewTiles[i];
-			if (img && img.parentNode && !img.fetched) {
-				var previewFrameBB = img.parentNode.getBoundingClientRect();
-				if ((previewFrameBB.top >= topBound && previewFrameBB.top <= bottomBound)
-				|| (previewFrameBB.bottom >= topBound && previewFrameBB.bottom <= bottomBound)) {
-					this._map.getPreview(i, i, 180, 180, {autoUpdate: this.options.autoUpdate});
-					img.fetched = true;
+				if (this._previewTiles[it].hash !== e.partNames[it]) {
+					this._previewTiles[it].hash = e.partNames[it];
+					this._map.getPreview(it, it, this.options.maxWidth, this.options.maxHeight, {autoUpdate: this.options.autoUpdate});
 				}
 			}
 		}
+	},
+
+	_updatePreview: function (e) {
+		if (this._map.isPresentationOrDrawing()) {
+			this._map._previewRequestsOnFly--;
+			if (this._map._previewRequestsOnFly < 0) {
+				this._map._previewRequestsOnFly = 0;
+				this._map._timeToEmptyQueue = new Date();
+			}
+			this._map._processPreviewQueue();
+			if (!this._previewInitialized)
+				return;
+			if (this._previewTiles[e.id])
+				this._previewTiles[e.id].src = e.tile.src;
+		}
+	},
+
+	_insertPreview: function (e) {
+		if (this._map.isPresentationOrDrawing()) {
+			var newIndex = e.selectedPart + 1;
+			var newPreview = this._createPreview(newIndex, (e.hashCode === undefined ? null : e.hashCode));
+
+			// insert newPreview to newIndex position
+			this._previewTiles.splice(newIndex, 0, newPreview);
+
+			var selectedFrame = this._previewTiles[e.selectedPart].parentNode;
+			var newFrame = newPreview.parentNode;
+
+			// insert after selectedFrame
+			selectedFrame.parentNode.insertBefore(newFrame, selectedFrame.nextSibling);
+		}
+	},
+
+	_deletePreview: function (e) {
+		if (this._map.isPresentationOrDrawing()) {
+			var selectedFrame = this._previewTiles[e.selectedPart].parentNode;
+			L.DomUtil.remove(selectedFrame);
+
+			this._previewTiles.splice(e.selectedPart, 1);
+		}
+	},
+
+	_onScroll: function (e) {
+		setTimeout(L.bind(function (e) {
+			var scrollOffset = 0;
+			if (e) {
+				var prevScrollY = this._scrollY;
+				var rectangle = e.target.getBoundingClientRect();
+				this._scrollY = this._direction === 'x' ? -rectangle.left : -rectangle.top;
+				scrollOffset = this._scrollY - prevScrollY;
+			}
+
+			var previewContBB = this._partsPreviewCont.getBoundingClientRect();
+			var extra =  this._direction === 'x' ? previewContBB.width : previewContBB.height;
+			var topBound = this._previewContTop - (scrollOffset < 0 ? extra : extra / 2);
+			var bottomBound = this._previewContTop + extra + (scrollOffset > 0 ? extra : extra / 2);
+			for (var i = 0; i < this._previewTiles.length; ++i) {
+				var img = this._previewTiles[i];
+				if (img && img.parentNode && !img.fetched) {
+					var previewFrameBB = img.parentNode.getBoundingClientRect();
+					if (this._direction === 'x') {
+						if ((previewFrameBB.left >= topBound && previewFrameBB.left <= bottomBound)
+						|| (previewFrameBB.right >= topBound && previewFrameBB.right <= bottomBound)) {
+							img.fetched = true;
+							this._map.getPreview(i, i, this.options.maxWidth, this.options.maxHeight, {autoUpdate: this.options.autoUpdate});
+						}
+					} else if ((previewFrameBB.top >= topBound && previewFrameBB.top <= bottomBound)
+						|| (previewFrameBB.bottom >= topBound && previewFrameBB.bottom <= bottomBound)) {
+						img.fetched = true;
+						this._map.getPreview(i, i, this.options.maxWidth, this.options.maxHeight, {autoUpdate: this.options.autoUpdate});
+					}
+				}
+			}
+		}, this, e), 0);
+	},
+
+	_isPreviewVisible: function(part, isFetching) {
+		isFetching = isFetching || false;
+		var el = this._previewTiles[part];
+		if (!el)
+			return true;
+		var elemRect = el.getBoundingClientRect();
+		var elemTop = elemRect.top;
+		var elemBottom = elemRect.bottom;
+		var elemLeft = elemRect.left;
+		var elemRight = elemRect.right;
+		var isVisible = false;
+		// dont skip the ones that are near visible or will be visible soon while scrolling.
+		if (isFetching)
+			isVisible = this._direction === 'x' ?
+				(0 - window.innerWidth / 3 <= elemLeft) && (elemRight <= window.innerWidth + window.innerWidth / 3) :
+				(0 - window.innerHeight / 3 <= elemTop) && (elemBottom <= window.innerHeight +  window.innerHeight / 3);
+		else
+			// this is for setPart function, should be completely visible for scrollto
+			isVisible = this._direction === 'x' ?
+				(elemLeft >= 0) && (elemRight <= window.innerWidth) :
+				(elemTop >= 0) && (elemBottom <= window.innerHeight);
+
+		if (!isVisible && isFetching)
+			// mark as false, this will be canceled
+			el.fetched = false;
+		return isVisible;
+	},
+
+	_addDnDHandlers: function (elem) {
+		if (app.file.fileBasedView) // No drag & drop for pdf files and the like.
+			return;
+
+		if (elem) {
+			elem.setAttribute('draggable', true);
+			elem.addEventListener('dragstart', this._handleDragStart, false);
+			elem.addEventListener('dragenter', this._handleDragEnter, false);
+			elem.addEventListener('dragover', this._handleDragOver, false);
+			elem.addEventListener('dragleave', this._handleDragLeave, false);
+			elem.addEventListener('drop', this._handleDrop, false);
+			elem.addEventListener('dragend', this._handleDragEnd, false);
+			elem.partsPreview = this;
+		}
+	},
+
+	_addDnDTouchHandlers: function (e) {
+		$(e.target).bind('touchmove', this._handleTouchMove.bind(this));
+		$(e.target).bind('touchcancel', this._handleTouchCancel.bind(this));
+		$(e.target).bind('touchend', this._handleTouchEnd.bind(this));
+
+		// To avoid having to add a new message to move an arbitrary part, let's select the
+		// slide that is being dragged.
+		var part = this._findClickedPart(e.target.parentNode);
+		if (part !== null) {
+			var partId = parseInt(part) - 1; // The first part is just a drop-site for reordering.
+			this._map.setPart(partId);
+			this._map.selectPart(partId, 1, false); // And select.
+		}
+		this.draggedSlide = L.DomUtil.create('img', '', document.body);
+		this.draggedSlide.setAttribute('src', e.target.currentSrc);
+		$(this.draggedSlide).css('position', 'absolute');
+		$(this.draggedSlide).css('height', e.target.height);
+		$(this.draggedSlide).css('width', e.target.width);
+		$(this.draggedSlide).css('left', e.center.x - (e.target.width/2));
+		$(this.draggedSlide).css('top', e.center.y - e.target.height);
+		$(this.draggedSlide).css('z-index', '10');
+		$(this.draggedSlide).css('opacity', '75%');
+		$(this.draggedSlide).css('pointer-events', 'none');
+		$('.preview-img').css('pointer-events', 'none');
+
+		this.currentNode = null;
+		this.previousNode = null;
+	},
+
+	_removeDnDTouchHandlers: function (e) {
+		$(e.target).unbind('touchmove');
+		$(e.target).unbind('touchcancel');
+		$(e.target).unbind('touchend');
+		$('.preview-img').css('pointer-events', '');
+	},
+
+	_handleTouchMove: function (e) {
+		if (e.preventDefault) {
+			e.preventDefault();
+		}
+
+		this.currentNode = document.elementFromPoint(e.originalEvent.touches[0].clientX, e.originalEvent.touches[0].clientY);
+
+		if (this.currentNode !== this.previousNode && this.previousNode !== null) {
+			$('.preview-frame').removeClass('preview-img-dropsite');
+		}
+
+		if (this.currentNode.draggable || this.currentNode.id === 'first-drop-site') {
+			this.currentNode.classList.add('preview-img-dropsite');
+		}
+
+		this.previousNode = this.currentNode;
+
+		$(this.draggedSlide).css('left', e.originalEvent.touches[0].clientX - (e.target.width/2));
+		$(this.draggedSlide).css('top', e.originalEvent.touches[0].clientY - e.target.height);
+		return false;
+	},
+
+	_handleTouchCancel: function(e) {
+		$('.preview-frame').removeClass('preview-img-dropsite');
+		$(this.draggedSlide).remove();
+		this._removeDnDTouchHandlers(e);
+	},
+
+	_handleTouchEnd: function (e) {
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		}
+		if (this.currentNode) {
+			var part = this._findClickedPart(this.currentNode);
+			if (part !== null) {
+				var partId = parseInt(part) - 1; // First frame is a drop-site for reordering.
+				if (partId < 0)
+					partId = -1; // First item is -1.
+				app.socket.sendMessage('moveselectedclientparts position=' + partId);
+			}
+		}
+		$('.preview-frame').removeClass('preview-img-dropsite');
+		$(this.draggedSlide).remove();
+		this._removeDnDTouchHandlers(e);
+		return false;
+	},
+
+	_handleDragStart: function (e) {
+		// To avoid having to add a new message to move an arbitrary part, let's select the
+		// slide that is being dragged.
+		var part = this.partsPreview._findClickedPart(e.target.parentNode);
+		if (part !== null) {
+			var partId = parseInt(part) - 1; // The first part is just a drop-site for reordering.
+			if (this.partsPreview._map._docLayer && !this.partsPreview._map._docLayer._selectedParts.indexOf(partId) >= 0)
+			{
+				this.partsPreview._map.setPart(partId);
+				this.partsPreview._map.selectPart(partId, 1, false); // And select.
+			}
+		}
+		// By default we move when dragging, but can
+		// support duplication with ctrl in the future.
+		e.dataTransfer.effectAllowed = 'move';
+	},
+
+	_handleDragOver: function (e) {
+		if (e.preventDefault) {
+			e.preventDefault();
+		}
+
+		// By default we move when dragging, but can
+		// support duplication with ctrl in the future.
+		e.dataTransfer.dropEffect = 'move';
+
+		this.classList.add('preview-img-dropsite');
+		return false;
+	},
+
+	_handleDragEnter: function () {
+	},
+
+	_handleDragLeave: function () {
+		this.classList.remove('preview-img-dropsite');
+	},
+
+	_handleDrop: function (e) {
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		}
+
+		var part = this.partsPreview._findClickedPart(e.target.parentNode);
+		if (part !== null) {
+			var partId = parseInt(part) - 1; // First frame is a drop-site for reordering.
+			if (partId < 0)
+				partId = -1; // First item is -1.
+			app.socket.sendMessage('moveselectedclientparts position=' + partId);
+		}
+
+		this.classList.remove('preview-img-dropsite');
+		return false;
+	},
+
+	_handleDragEnd: function () {
+		this.classList.remove('preview-img-dropsite');
 	}
+
 });
 
-L.control.partsPreview = function(options) {
-	return new L.Control.PartsPreview(options);
+L.control.partsPreview = function (container, preview, options) {
+	return new L.Control.PartsPreview(container, preview, options);
 };

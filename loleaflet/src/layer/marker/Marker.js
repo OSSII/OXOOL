@@ -23,24 +23,11 @@ L.Marker = L.Layer.extend({
 	initialize: function (latlng, options) {
 		L.setOptions(this, options);
 		this._latlng = L.latLng(latlng);
+		this.on('down', this.onDown);
+		this.on('up', this.onUp);
 	},
 
-	setDraggable: function(val) {
-		if (!this.dragging) {
-			this.options.draggable = val;
-			return;
-		}
-
-		if (val) {
-			this.dragging.enable();
-		} else {
-			this.dragging.disable();
-		}
-	},
-
-	onAdd: function (map) {
-		this._zoomAnimated = this._zoomAnimated && map.options.markerZoomAnimation;
-
+	onAdd: function () {
 		this._initIcon();
 		this.update();
 	},
@@ -54,11 +41,26 @@ L.Marker = L.Layer.extend({
 		this._removeShadow();
 	},
 
+	onDown: function () {
+		if (this._map && this._map.touchGesture) {
+			window.IgnorePanning = true;
+		}
+	},
+
+	onUp: function () {
+		if (this._map && this._map.touchGesture) {
+			window.IgnorePanning = undefined;
+		}
+	},
+
 	getEvents: function () {
 		var events = {viewreset: this.update};
 
-		if (this._zoomAnimated) {
-			events.zoomanim = this._animateZoom;
+		var splitPanesPossible = this._map._docLayer.hasSplitPanesSupport();
+		if (splitPanesPossible) {
+			events.moveend = this.update;
+			events.drag = this.update;
+			events.splitposchanged = this.update;
 		}
 
 		return events;
@@ -73,11 +75,6 @@ L.Marker = L.Layer.extend({
 		this._latlng = L.latLng(latlng);
 		this.update();
 		return this.fire('move', {oldLatLng: oldLatLng, latlng: this._latlng});
-	},
-
-	setZIndexOffset: function (offset) {
-		this.options.zIndexOffset = offset;
-		return this.update();
 	},
 
 	setIcon: function (icon) {
@@ -96,19 +93,30 @@ L.Marker = L.Layer.extend({
 		return this;
 	},
 
-	update: function () {
+	_updateIconPosition: function () {
 
-		if (this._icon) {
-			var pos = this._map.latLngToLayerPoint(this._latlng).round();
-			this._setPos(pos);
+		if (!this._icon) {
+			return;
 		}
 
+		var posVis = L.Layer.getLayerPositionVisibility(this._latlng,
+			this._icon.getBoundingClientRect(), this._map);
+
+		if (this._icon.style.visibility != posVis.visibility) {
+			this._icon.style.visibility = posVis.visibility;
+		}
+
+		this._setPos(posVis.position);
+	},
+
+	update: function () {
+		this._updateIconPosition();
 		return this;
 	},
 
 	_initIcon: function () {
 		var options = this.options,
-		    classToAdd = 'leaflet-zoom-' + (this._zoomAnimated ? 'animated' : 'hide');
+		    classToAdd = 'leaflet-zoom-hide';
 
 		var icon = options.icon.createIcon(this._icon),
 		    addIcon = false;
@@ -206,12 +214,6 @@ L.Marker = L.Layer.extend({
 
 	_updateZIndex: function (offset) {
 		this._icon.style.zIndex = this._zIndex + offset;
-	},
-
-	_animateZoom: function (opt) {
-		var pos = this._map._latLngToNewLayerPoint(this._latlng, opt.zoom, opt.center).round();
-
-		this._setPos(pos);
 	},
 
 	_initInteraction: function () {

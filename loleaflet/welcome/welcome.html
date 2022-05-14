@@ -1,0 +1,45 @@
+<div id="user-welcome">
+	<div class="slider">
+		<div class="slides">
+			<div id="slide-1">
+				<fig>
+					<fig id="fig-slide1-l"></fig>
+					<fig id="fig-slide1-c"></fig>
+					<fig id="fig-slide1-r"></fig>
+				</fig>
+				<h1 id="welcome-slide1-heading-1"></h1>
+				<h2 id="welcome-slide1-heading-2"></h2>
+				<p id="welcome-slide1-content"></p>
+				<div id="user-welcome--buttons">
+					<form action="#slide-2">
+						<button id='welcome-button-next-1' type="button" class="ui-pushbutton jsdialog" onclick="onSlideClick('i-slide-2')"></button>
+					</form>
+				</div>
+			</div>
+			<div id="slide-2">
+				<fig></fig>
+				<h1 id="welcome-slide2-heading-1"></h1>
+				<h2 id="welcome-slide2-heading-2"></h2>
+				<p id="welcome-slide2-content"></p>
+				<div id="user-welcome--buttons">
+					<form action="#slide-3">
+						<button id='welcome-button-next-2' type="button" class="ui-pushbutton jsdialog" onclick="onSlideClick('i-slide-3')"></button>
+					</form>
+				</div>
+			</div>
+			<div id="slide-3">
+				<fig></fig>
+				<h1 id="welcome-slide3-heading-1"></h1>
+				<h2 id="welcome-slide3-heading-2"></h2>
+				<p id="welcome-slide3-content"></p>
+				<div id="user-welcome--buttons">
+					<button id='welcome-button-close' type="button" class="ui-pushbutton jsdialog" onclick="vex.closeAll()"></button>
+				</div>
+			</div>
+		</div>
+		<btn id="i-slide-1" class="active" onclick="onSlideClick(this.id)">1</btn>
+		<btn id="i-slide-2" onclick="onSlideClick(this.id)">2</btn>
+		<btn id="i-slide-3" onclick="onSlideClick(this.id)">3</btn>
+	</div>
+	<a id="view-supported-versions" href="https://www.collaboraoffice.com/subscriptions/" target="_blank"></a>
+</div>

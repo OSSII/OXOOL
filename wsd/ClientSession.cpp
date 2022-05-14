@@ -33,6 +33,8 @@
 
 using namespace LOOLProtocol;
 
+static constexpr int SYNTHETIC_OXOOL_PID_OFFSET = 10000000;
+
 using Poco::Path;
 
 // rotates regularly
@@ -340,6 +342,115 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         return false;
     }
 
+    if (tokens.equals(0, "DEBUG"))
+    {
+        LOG_DBG("From client: " << std::string(buffer, length).substr(strlen("DEBUG") + 1));
+        return false;
+    }
+    else if (tokens.equals(0, "ERROR"))
+    {
+        LOG_ERR("From client: " << std::string(buffer, length).substr(strlen("ERROR") + 1));
+        return false;
+    }
+    else if (tokens.equals(0, "TRACEEVENT"))
+    {
+        if (LOOLWSD::EnableTraceEventLogging)
+        {
+            if (_performanceCounterEpoch == 0)
+            {
+                static bool warnedOnce = false;
+                if (!warnedOnce)
+                {
+                    LOG_WRN("For some reason the _performanceCounterEpoch is still zero, ignoring TRACEEVENT from oxool as the timestamp would be garbage");
+                    warnedOnce = true;
+                }
+                return false;
+            } else if (_performanceCounterEpoch < 1620000000000000ull || _performanceCounterEpoch > 2000000000000000ull)
+            {
+                static bool warnedOnce = false;
+                if (!warnedOnce)
+                {
+                    LOG_WRN("For some reason the _performanceCounterEpoch is bogus, ignoring TRACEEVENT from oxool as the timestamp would be garbage");
+                    warnedOnce = true;
+                }
+                return false;
+            }
+
+            if (tokens.size() >= 4)
+            {
+                // The intent is that when doing Trace Event generation, the web browser client and
+                // the server run on the same machine, so there is no clock skew problem.
+                std::string name;
+                std::string ph;
+                uint64_t ts;
+                if (getTokenString(tokens[1], "name", name) &&
+                    getTokenString(tokens[2], "ph", ph) &&
+                    getTokenUInt64(tokens[3], "ts", ts))
+                {
+                    std::string args;
+                    if (tokens.size() >= 5 && getTokenString(tokens, "args", args))
+                        args = ",\"args\":" + args;
+
+                    uint64_t id;
+                    uint64_t dur;
+                    if (ph == "i")
+                    {
+                        LOOLWSD::writeTraceEventRecording("{\"name\":\""
+                                                          + name
+                                                          + "\",\"ph\":\"i\""
+                                                          + args
+                                                          + ",\"ts\":"
+                                                          + std::to_string(ts + _performanceCounterEpoch)
+                                                          + ",\"pid\":"
+                                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
+                                                          + ",\"tid\":1},\n");
+                    }
+                    else if ((ph == "S" || ph == "F") &&
+                        getTokenUInt64(tokens[4], "id", id))
+                    {
+                        LOOLWSD::writeTraceEventRecording("{\"name\":\""
+                                                          + name
+                                                          + "\",\"ph\":\""
+                                                          + ph
+                                                          + "\""
+                                                          + args
+                                                          + ",\"ts\":"
+                                                          + std::to_string(ts + _performanceCounterEpoch)
+                                                          + ",\"pid\":"
+                                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
+                                                          + ",\"tid\":1"
+                                                            ",\"id\":"
+                                                          + std::to_string(id)
+                                                          + "},\n");
+                    }
+                    else if (ph == "X" &&
+                             getTokenUInt64(tokens[4], "dur", dur))
+                    {
+                        LOOLWSD::writeTraceEventRecording("{\"name\":\""
+                                                          + name
+                                                          + "\",\"ph\":\"X\""
+                                                          + args
+                                                          + ",\"ts\":"
+                                                          + std::to_string(ts + _performanceCounterEpoch)
+                                                          + ",\"pid\":"
+                                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
+                                                          + ",\"tid\":1"
+                                                            ",\"dur\":"
+                                                          + std::to_string(dur)
+                                                          + "},\n");
+                    }
+                    else
+                    {
+                        LOG_WRN("Unrecognized TRACEEVENT message");
+                    }
+                }
+            }
+            else
+                LOG_WRN("Unrecognized TRACEEVENT message");
+        }
+        return false;
+    }
+
     LOOLWSD::dumpIncomingTrace(docBroker->getJailId(), getId(), firstLine);
 
     if (LOOLProtocol::tokenIndicatesUserInteraction(tokens[0]))
@@ -364,10 +475,41 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             return false;
         }
 
+        _performanceCounterEpoch = 0;
+        if (tokens.size() >= 4)
+        {
+            std::string timestamp = tokens[2];
+            const char* str = timestamp.c_str();
+            char* endptr = nullptr;
+            uint64_t ts = strtoull(str, &endptr, 10);
+            if (*endptr == '\0')
+            {
+                std::string perfcounter = tokens[3].data();
+                str = perfcounter.data();
+                endptr = nullptr;
+                double counter = strtod(str, &endptr);
+                if (*endptr == '\0' && counter > 0 &&
+                    (counter < (double)(std::numeric_limits<uint64_t>::max() / 1000)))
+                {
+                    // Now we know how to translate from the client's performance.now() values to
+                    // microseconds since the epoch.
+                    _performanceCounterEpoch = ts * 1000 - (uint64_t)(counter * 1000);
+                    LOG_INF("Client timestamps: Date.now():" << ts <<
+                    ", performance.now():" << counter
+                            << " => " << _performanceCounterEpoch);
+                }
+            }
+        }
+
         // Send LOOL version information
         sendTextFrame("loolserver " + Util::getVersionJSON());
         // Send LOKit version information
         sendTextFrame("lokitversion " + LOOLWSD::LOKitVersion);
+
+        // If Trace Event generation and logging is enabled (whether it can be turned on), tell it
+        // to oxool
+        if (LOOLWSD::EnableTraceEventLogging)
+            sendTextFrame("enabletraceeventlogging yes");
 
         #if !MOBILEAPP
             // If it is not mobile, it must be Linux (for now).
@@ -852,7 +994,7 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             Poco::JSON::Object jsonObj = getWatermarkFont();
             jsonObj.set("editing", watermarkWhenEditing()); // 編輯啟用
             jsonObj.set("printing", watermarkWhenPrinting()); // 列印或匯出 PDF 啟用
-            jsonObj.set("text", getWatermarkText()); // 浮水印文字
+            jsonObj.set("text", getConvertedWatermarkText()); // 浮水印文字
             jsonObj.set("opacity", getWatermarkOpacity()); // 透明度
             std::ostringstream jsonStream;
             jsonObj.stringify(jsonStream);
@@ -1061,6 +1203,17 @@ void ClientSession::setReadOnly(bool bVal)
     const std::string sPerm = bVal ? "readonly" : "edit";
     sendTextFrame("perm: " + sPerm);
 }
+
+void ClientSession::sendFileMode(const bool readOnly, const bool editComments)
+{
+    std::string result = "filemode:{\"readOnly\": ";
+    result += readOnly ? "true": "false";
+    result += ", \"editComment\": ";
+    result += editComments ? "true": "false";
+    result += "}";
+    sendTextFrame(result);
+}
+
 
 void ClientSession::setLockFailed(const std::string& sReason)
 {

@@ -7,21 +7,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-27 15:46+0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2021-12-08 14:12+0800\n"
+"PO-Revision-Date: 2021-11-24 19:27+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/collabora-"
+"online/ui/he/>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 2.2.5\n"
-"X-Pootle-Revision: 3609082\n"
-"X-Pootle-Path: /he/libo_online/loleaflet-ui-he.po\n"
+"Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
+"n % 10 == 0) ? 2 : 3));\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: admin/admin.strings.js:6
 msgid "Admin console"
-msgstr ""
+msgstr "מסוף ניהול"
 
 #: admin/admin.strings.js:7
 msgid "Settings"
@@ -29,7 +30,7 @@ msgstr "הגדרות"
 
 #: admin/admin.strings.js:8
 msgid "Overview"
-msgstr ""
+msgstr "סקירה"
 
 #: admin/admin.strings.js:9
 msgid "(current)"
@@ -37,230 +38,894 @@ msgstr "(נוכחי)"
 
 #: admin/admin.strings.js:10
 msgid "Analytics"
-msgstr ""
+msgstr "ניתוח"
 
 #: admin/admin.strings.js:11
 msgid "History"
 msgstr "היסטוריה"
 
 #: admin/admin.strings.js:12
-msgid "Dashboard"
-msgstr ""
+msgid "Log"
+msgstr "יומן"
 
 #: admin/admin.strings.js:13
+msgid "Dashboard"
+msgstr "לוח מחוונים"
+
+#: admin/admin.strings.js:14
 msgid "Users online"
 msgstr "משתמשים מקוונים"
 
-#: admin/admin.strings.js:14
-msgid "User Name"
-msgstr ""
-
 #: admin/admin.strings.js:15
-msgid "Documents opened"
-msgstr "מסמכים שנפתחו"
+msgid "User Name"
+msgstr "שם משתמש"
 
 #: admin/admin.strings.js:16
-msgid "Number of Documents"
-msgstr ""
+msgid "Documents open"
+msgstr "מסמכים פתוחים"
 
-#: admin/admin.strings.js:17
-msgid "Memory consumed"
-msgstr ""
+#: admin/admin.strings.js:17 admin/src/AdminSocketOverview.js:73
+#: admin/src/AdminSocketOverview.js:122 admin/src/AdminSocketOverview.js:341
+msgid " user(s)."
+msgstr " משתמשים."
 
-#: admin/admin.strings.js:18
-msgid "Bytes sent"
-msgstr ""
+#: admin/admin.strings.js:18 admin/src/AdminSocketOverview.js:195
+msgid " document(s) open."
+msgstr " מסמכים פתוחים."
 
 #: admin/admin.strings.js:19
-msgid "Bytes received"
-msgstr ""
+msgid "Number of Documents"
+msgstr "מספר המסמכים"
 
 #: admin/admin.strings.js:20
-msgid "PID"
-msgstr ""
+msgid "Memory consumed"
+msgstr "זכרון שנצרך"
 
 #: admin/admin.strings.js:21
+msgid "Bytes sent"
+msgstr "בתים שנשלחו"
+
+#: admin/admin.strings.js:22
+msgid "Bytes received"
+msgstr "בתים שהתקבלו"
+
+#: admin/admin.strings.js:23
+msgid "PID"
+msgstr "מזהה תהליך"
+
+#: admin/admin.strings.js:24
 msgid "Document"
 msgstr "מסמך"
 
-#: admin/admin.strings.js:22
-msgid "Number of views"
-msgstr "מספר צפיות"
-
-#: admin/admin.strings.js:23
-msgid "Elapsed time"
-msgstr ""
-
-#: admin/admin.strings.js:24
-msgid "Idle time"
-msgstr ""
-
 #: admin/admin.strings.js:25
-msgid "Modified"
-msgstr ""
+msgid "Views"
+msgstr "צפיות"
 
 #: admin/admin.strings.js:26
-msgid "Kill"
-msgstr ""
+msgid "Elapsed time"
+msgstr "זמן שעבר"
 
 #: admin/admin.strings.js:27
+msgid "Idle time"
+msgstr "זמן המתנה"
+
+#: admin/admin.strings.js:28
+msgid "Modified"
+msgstr "עודכן"
+
+#: admin/admin.strings.js:29
+msgid "WOPI host"
+msgstr "מארח WOPI"
+
+#: admin/admin.strings.js:30
+msgid "Kill"
+msgstr "להרוג (Kill)"
+
+#: admin/admin.strings.js:31
 msgid "Graphs"
 msgstr "תרשימים"
 
-#: admin/admin.strings.js:28
+#: admin/admin.strings.js:32
 msgid "Memory Graph"
-msgstr ""
+msgstr "תרשים זכרון"
 
-#: admin/admin.strings.js:29
+#: admin/admin.strings.js:33
 msgid "CPU Graph"
-msgstr ""
+msgstr "תרשים מעבד"
 
-#: admin/admin.strings.js:30
+#: admin/admin.strings.js:34
 msgid "Network Graph"
-msgstr ""
+msgstr "תרשים רשת"
 
-#: admin/admin.strings.js:31 src/layer/marker/Annotation.js:241
+#: admin/admin.strings.js:35 src/control/Control.Notebookbar.js:248
+#: src/control/Control.NotebookbarDraw.js:24
+#: src/control/Control.NotebookbarImpress.js:24
+#: src/layer/tile/CommentListSection.ts:394
+#: src/layer/tile/CommentSection.ts:122
 msgid "Save"
 msgstr "שמירה"
 
-#: admin/admin.strings.js:32
+#: admin/admin.strings.js:36
 msgid "Cache size of memory statistics"
 msgstr "גודל מטמון של סטטיסטיקת זכרון"
 
-#: admin/admin.strings.js:33
-msgid "Time interval of memory statistics (in ms)"
-msgstr ""
-
-#: admin/admin.strings.js:34
-#, fuzzy
-msgid "Cache size of CPU statistics"
-msgstr "גודל מטמון של סטטיסטיקת זכרון"
-
-#: admin/admin.strings.js:35
-msgid "Time interval of CPU statistics (in ms)"
-msgstr ""
-
-#: admin/admin.strings.js:36
-msgid "Maximum Document process virtual memory (in MB) - reduce only"
-msgstr ""
-
 #: admin/admin.strings.js:37
-msgid "Maximum Document process stack memory (in KB) - reduce only"
-msgstr ""
+msgid "Time interval of memory statistics (in ms)"
+msgstr "הפרש זמן של סטטיסטיקת זיכרון (במילישניות)"
 
 #: admin/admin.strings.js:38
-msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
-msgstr ""
+msgid "Cache size of CPU statistics"
+msgstr "גודל מטמון של סטטיסטיקת מעבד"
 
 #: admin/admin.strings.js:39
-#, fuzzy
-msgid "Documents:"
-msgstr "מסמך"
+msgid "Time interval of CPU statistics (in ms)"
+msgstr "הפרש זמן של סטטיסטיקת מעבד (במילישניות)"
 
-#: admin/admin.strings.js:40
-msgid "Expired:"
-msgstr ""
+#: admin/admin.strings.js:40 admin/src/AdminSocketOverview.js:91
+msgid "Kill session."
+msgstr "חיסול הפעלה."
 
 #: admin/admin.strings.js:41
-msgid "Refresh"
-msgstr ""
+msgid "Maximum Document process virtual memory (in MB) - reduce only"
+msgstr "זיכרון וירטואלי מרבי לעיבוד מסמכים (במגה בתים) - להפחית בלבד"
 
 #: admin/admin.strings.js:42
+msgid "Maximum Document process stack memory (in KB) - reduce only"
+msgstr "זיכרון מערום מרבי לעיבוד מסמכים (בקילו בתים) - להפחית בלבד"
+
+#: admin/admin.strings.js:43
+msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+msgstr "גודל הקובץ המרבי שמותר לכתוב לכונן (במגה בתים) - להפחית בלבד"
+
+#: admin/admin.strings.js:44
+msgid "Documents:"
+msgstr "מסמכים:"
+
+#: admin/admin.strings.js:45
+msgid "Expired:"
+msgstr "תפוגה:"
+
+#: admin/admin.strings.js:46
+msgid "Refresh"
+msgstr "רענון"
+
+#: admin/admin.strings.js:47
+msgid "Shutdown Server"
+msgstr "כיבוי השרת"
+
+#: admin/admin.strings.js:48
 msgid "Server uptime"
-msgstr ""
+msgstr "זמן מאז ההדלקה האחרונה של השרת"
 
-#: admin/src/AdminSocketAnalytics.js:219
+#: admin/admin.strings.js:49
+msgid "Refresh Log"
+msgstr "רענון היומן"
+
+#: admin/admin.strings.js:50
+msgid "Channel Filter:"
+msgstr "מסנן ערוצים:"
+
+#: admin/admin.strings.js:51 admin/src/AdminSocketConfigSettings.js:56
+#: src/control/Control.JSDialogBuilder.js:395
+#: src/control/Control.StatusBar.js:314 uiconfig/dialogs/InsertBreak.js:19
+msgid "None"
+msgstr "ללא"
+
+#: admin/admin.strings.js:52
+msgid "Set Log Levels"
+msgstr "הגדרת רמות תיעוד היומן"
+
+#: admin/admin.strings.js:53
+msgid "Log Levels"
+msgstr "רמות תיעוד ביומן"
+
+#: admin/admin.strings.js:54 src/control/Control.AlertDialog.js:25
+#: src/control/Parts.js:421 src/control/Signing.js:611
+#: src/control/Toolbar.js:628 uiconfig/dialogs/BindingLineDialog.js:99
+#: uiconfig/dialogs/ColumnWidth.js:31 uiconfig/dialogs/DeleteCell.js:51
+#: uiconfig/dialogs/InsertCell.js:27 uiconfig/dialogs/PdfWatermarkText.js:36
+#: uiconfig/dialogs/RemoveCell.js:27 uiconfig/dialogs/RowHeight.js:31
+#: uiconfig/dialogs/SetTabBgColor.js:24 uiconfig/dialogs/SplitCell.js:55
+msgid "Close"
+msgstr "סגירה"
+
+#: admin/admin.strings.js:55
+msgid "Update Log Levels"
+msgstr "עדכון רמות תיעוד ביומן"
+
+#: admin/admin.strings.js:56
+msgid "Version Information"
+msgstr "פרטי גרסה"
+
+#: admin/src/AdminSocketAnalytics.js:205
 msgid "Received"
-msgstr ""
+msgstr "התקבל"
 
-#: admin/src/AdminSocketAnalytics.js:223
+#: admin/src/AdminSocketAnalytics.js:209
 msgid "Sent"
-msgstr ""
+msgstr "נשלח"
 
-#: admin/src/AdminSocketBase.js:54
+#: admin/src/AdminSocketBase.js:53
+msgid "Server has been shut down; please reload the page."
+msgstr "השרת נכבה, נא לרענן את העמוד."
+
+#: admin/src/AdminSocketBase.js:63
 msgid "Connection error"
+msgstr "שגיאת התחברות"
+
+#: admin/src/AdminSocketConfigSettings.js:12
+msgid "millisecond"
 msgstr ""
 
-#: admin/src/AdminSocketOverview.js:102
-#, fuzzy
-msgid "Are you sure you want to terminate this session?"
-msgstr "למחוק עמוד זה?"
-
-#: admin/src/AdminSocketOverview.js:183 admin/src/AdminSocketOverview.js:285
-#, fuzzy
-msgid "Documents"
-msgstr "מסמך"
-
-#: admin/src/AdminSocketSettings.js:34
-msgid "Are you sure you want to shut down the server?"
+#: admin/src/AdminSocketConfigSettings.js:13
+msgid "seconds"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:19
+#: admin/src/AdminSocketConfigSettings.js:14
+msgid "bytes"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:15
+msgid "K Bytes"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:16
+msgid "M Bytes"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:17
+msgid "General settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:18
+msgid "Server name"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:19
+msgid "Port"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:20
+msgid "Custom UI file name"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:23
+msgid "Document editing settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:24
+msgid "Available threads per document"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:25
+msgid "Enable file conversion"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:26
+msgid "File conversion priority (1-19)"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:27
+msgid "Document signing URL"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:28
+msgid "Tracked changes show comments"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:29
+msgid "Unload document when idle"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:30
+msgid "How long is it idle to auto save (if modified)"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:31
+msgid "Auto save time (if modified)"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:32
+msgid ""
+"When leaving the editor, it is forced to save even if it has not been "
+"modified"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:33
+msgid "Virtual memory available for each document"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:34
+msgid "Maximum stack size available for each document procress"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:35
+msgid "File size that can be written by each document procress"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:36
+msgid "The number of files that can be opened by each document procress"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:37
+msgid "Load file time limit"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:38
+msgid "File conversion time limit"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:39
+msgid ""
+"Cleanup mechanism(after enabling, the following settings will be effective)"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:40
+msgid "Interval time"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:41
+msgid "Survival time before bad files are cleaned up"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:42
+msgid "Idle time before becoming a bad document"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:43
+msgid "Memory usage before becoming a bad document"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:44
+msgid "CPU usage before becoming a bad document"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:46
+msgid "Document view settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:47
+msgid "Browser dimming time"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:48
+msgid "Stop editing the dimming time"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:50
+msgid "Log settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:51
+#: admin/src/AdminSocketConfigSettings.js:120
+#: src/control/Control.JSDialogBuilder.js:1273
+#: uiconfig/dialogs/BindingLineDialog.js:33
+msgid "Color"
+msgstr "צבע"
+
+#: admin/src/AdminSocketConfigSettings.js:52
+msgid "Enable client console output"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:53
+msgid "Output messages from LOKit"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:54
+msgid "Usage notes"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:55
+#, fuzzy
+msgid "Log level"
+msgstr "רמות תיעוד ביומן"
+
+#: admin/src/AdminSocketConfigSettings.js:57
+msgid "Fatal"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:58
+msgid "Critical"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:59
+msgid "Error"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:60
+#: uiconfig/dialogs/TraceChangeMode.js:44
+msgid "Warning"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:61
+msgid "Notice"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:62
+#, fuzzy
+msgid "Information"
+msgstr "אישור"
+
+#: admin/src/AdminSocketConfigSettings.js:63
+msgid "Debug"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:64
+msgid "Trace"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:65
+msgid ""
+"Write to file (after enabling, the following settings will be effective)"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:66
+msgid "Full path and file name"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:67
+msgid "Backup cycle"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:68
+msgid "Every day"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:69
+msgid "Weekly"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:70
+msgid "10 Days"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:71
+msgid "Monthly"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:72
+msgid "The identifying name of the backup log"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:73
+msgid "Log file name + date and time"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:74
+msgid "Log file name + serial number"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:75
+msgid "Compress backup log files"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:76
+msgid "Log file retention period"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:77
+msgid "1 Week"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:78
+msgid "1 Month"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:79
+msgid "Number of log files retained"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:80
+msgid "Organize log files when the server starts"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:81
+msgid "Write files directly without buffering"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:83
+msgid "Network settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:84
+msgid "Protocol"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:85
+msgid "IPv4"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:86
+msgid "IPv6"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:87
+msgid "IPv4 and IPv6"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:88
+msgid "Listen address"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:89
+msgid "Any addresses"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:90
+msgid "Only this host(loopback)"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:91
+msgid "Connection timeout seconds"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:92
+msgid "Prefix path"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:93
+msgid "Proxy prefix"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:94
+msgid "Allow embedded in iframe hosts"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:95
+msgid "Allow HTTP POST hosts"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:97
+msgid "SSL settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:98
+msgid "Enable SSL"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:99
+msgid "Connection via proxy"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:100
+msgid "Certificate file path"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:101
+msgid "Private key file path"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:102
+msgid "CA file path"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:103
+msgid "Cipher list"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:105
+msgid "Backend storage settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:106
+msgid "Host file system"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:107
+msgid "Allow WOPI storage"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:108
+msgid "Max file size"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:109
+msgid "Pass cookie"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:110
+msgid "Allow WebDAV storage"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:112
+msgid "Watermark settings"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:113
+msgid "Convert to WOPI data"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:114
+msgid "Enable when editing"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:115
+msgid "Enable when printing"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:116
+msgid "Opacity"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:117
+msgid "Angle"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:118
+#: src/control/Control.NotebookbarCalc.js:425 src/control/Toolbar.js:888
+#: uiconfig/dialogs/BindingLineDialog.js:32 uiconfig/dialogs/DeleteCell.js:24
+msgid "Text"
+msgstr "טקסט"
+
+#: admin/src/AdminSocketConfigSettings.js:119 src/control/Toolbar.js:45
+#: uiconfig/dialogs/BindingLineDialog.js:36
+msgid "Font"
+msgstr "גופן"
+
+#: admin/src/AdminSocketConfigSettings.js:121
+msgid "Bold"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:122
+msgid "Italic"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:123
+msgid "Outline"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:124
+msgid "Shadow"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:126
+msgid "Available tags"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:127
+msgid "User ID"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:128
+#: admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
+#: src/control/Control.DocumentRepair.js:50
+msgid "User name"
+msgstr "שם משתמש"
+
+#: admin/src/AdminSocketConfigSettings.js:129
+msgid "User IP"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:130
+msgid "Time zone"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:131
+msgid "Date format"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:132
+msgid "Time format"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:134
+msgid "Update system configuration"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:136
+#: admin/src/AdminSocketConfigSettings.js:187
+msgid "Source"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:137
+#: admin/src/AdminSocketConfigSettings.js:188
+msgid "Description"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:138
+msgid "Must specify allow or deny"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:139
+msgid "Source must be entered"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:207
+msgid "The watermark data is placed in UserExtraInfo of WOPI."
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:316
+msgid "Settings updated successfully"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:317
+msgid "These settings will take effect after restarting the service."
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:323
+msgid "Setting update failed"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:324
+msgid "Please check if there is any problem with the set data."
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:388
+#: admin/src/AdminSocketConfigSettings.js:594
+msgid "Add source"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:451
+#: admin/src/AdminSocketConfigSettings.js:544
+msgid "Allow connect"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:455
+#: admin/src/AdminSocketConfigSettings.js:548
+msgid "Deny connect"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:480
+#: src/control/Control.AlertDialog.js:66 src/control/Control.StatusBar.js:424
+msgid "Edit"
+msgstr "עריכה"
+
+#: admin/src/AdminSocketConfigSettings.js:489
+#: admin/src/AdminSocketFontManager.js:302
+#: src/control/Control.ContextMenu.js:180
+msgid "Delete"
+msgstr "מחיקה"
+
+#: admin/src/AdminSocketConfigSettings.js:559
+msgid "Edit source"
+msgstr ""
+
+#: admin/src/AdminSocketConfigSettings.js:572
+msgid "Delete source"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:12
+msgid "Select all"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:13
+#, fuzzy
+msgid "File name"
+msgstr "שם קובץ"
+
+#: admin/src/AdminSocketFontManager.js:14
+msgid "Font name (preview)"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:15
+#: src/control/Control.JSDialogBuilder.js:1449
+#: src/control/Control.TopToolbar.js:490 uiconfig/dialogs/InsertBreak.js:30
+msgid "Style"
+msgstr "סגנון"
+
+#: admin/src/AdminSocketFontManager.js:16
+msgid "Color font"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:17
+msgid "Symbol font"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:18
+msgid "Delete selected files?"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:43
+msgid "Upload font files."
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:115
+#: admin/src/AdminSocketSoftwareUpgrade.js:122
+msgid "Transmission"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:152
+msgid "Sending file"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:279
+#: admin/src/AdminSocketFontManager.js:302
+msgid "file(s)."
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:280
+msgid "font(s)."
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:10
 msgid "Are you sure you want to restart the online service?"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:12
+#: admin/src/AdminSocketGlobalFunction.js:56
+#: admin/src/AdminSocketOverview.js:99 admin/src/AdminSocketSettings.js:36
+#: src/control/Control.Menubar.js:1634
+#: src/control/Control.PresentationBar.js:102 src/control/Control.Tabs.js:305
+#: src/control/Control.Tabs.js:323 src/control/Toolbar.js:892
+#: src/core/Socket.js:991 uiconfig/dialogs/AddTableAtEnd.js:39
+#: uiconfig/dialogs/BindingLineDialog.js:113 uiconfig/dialogs/ColumnWidth.js:49
+#: uiconfig/dialogs/DeleteCell.js:66 uiconfig/dialogs/ExampleDialog.js:48
+#: uiconfig/dialogs/GotoPage.js:63 uiconfig/dialogs/InsertBreak.js:50
+#: uiconfig/dialogs/InsertCell.js:41 uiconfig/dialogs/InsertTable.js:64
+#: uiconfig/dialogs/MoveTable.js:51 uiconfig/dialogs/OXSaveAs.js:39
+#: uiconfig/dialogs/PdfWatermarkText.js:50 uiconfig/dialogs/RemoveCell.js:41
+#: uiconfig/dialogs/RemoveTable.js:40 uiconfig/dialogs/RenameTable.js:42
+#: uiconfig/dialogs/RowHeight.js:49 uiconfig/dialogs/RowOrColGroup.js:50
+#: uiconfig/dialogs/SetHyperLinkTable.js:105
+#: uiconfig/dialogs/SetTabBgColor.js:38 uiconfig/dialogs/ShowTable.js:46
+#: uiconfig/dialogs/SplitCell.js:75 uiconfig/dialogs/TraceChangeMode.js:58
+msgid "OK"
+msgstr "אישור"
+
+#: admin/src/AdminSocketGlobalFunction.js:13
+#: admin/src/AdminSocketGlobalFunction.js:33
+#: admin/src/AdminSocketGlobalFunction.js:57
+#: admin/src/AdminSocketOverview.js:100 admin/src/AdminSocketSettings.js:37
+#: src/control/Control.Command.js:90 src/control/Control.LanguageDialog.js:86
+#: src/control/Control.Menubar.js:1635 src/control/Control.MobileTopBar.js:43
+#: src/control/Control.PresentationBar.js:103 src/control/Control.Tabs.js:306
+#: src/control/Control.Tabs.js:324 src/control/Toolbar.js:893
+#: src/core/Socket.js:852 src/core/Socket.js:862 src/core/Socket.js:992
+#: src/layer/tile/CommentListSection.ts:395
+#: src/layer/tile/CommentSection.ts:121 src/layer/tile/CommentSection.ts:124
+#: uiconfig/dialogs/AddTableAtEnd.js:46
+#: uiconfig/dialogs/BindingLineDialog.js:134 uiconfig/dialogs/ColumnWidth.js:66
+#: uiconfig/dialogs/DeleteCell.js:86 uiconfig/dialogs/ExampleDialog.js:54
+#: uiconfig/dialogs/GotoPage.js:76 uiconfig/dialogs/InsertBreak.js:57
+#: uiconfig/dialogs/InsertCell.js:54 uiconfig/dialogs/InsertTable.js:71
+#: uiconfig/dialogs/MoveTable.js:58 uiconfig/dialogs/OXSaveAs.js:54
+#: uiconfig/dialogs/PdfWatermarkText.js:75 uiconfig/dialogs/RemoveCell.js:54
+#: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
+#: uiconfig/dialogs/RowHeight.js:66 uiconfig/dialogs/RowOrColGroup.js:64
+#: uiconfig/dialogs/SetHyperLinkTable.js:148
+#: uiconfig/dialogs/SetTabBgColor.js:57 uiconfig/dialogs/ShowTable.js:55
+#: uiconfig/dialogs/SplitCell.js:106 uiconfig/dialogs/TraceChangeMode.js:65
+msgid "Cancel"
+msgstr "ביטול"
+
+#: admin/src/AdminSocketGlobalFunction.js:26
 msgid ""
 "For security reasons, please enter your original management account and "
 "password."
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:30
-#: admin/src/AdminSocketGlobalFunction.js:53
-msgid "Username"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:31
-#: admin/src/AdminSocketGlobalFunction.js:54
+#: admin/src/AdminSocketGlobalFunction.js:29
+#: admin/src/AdminSocketGlobalFunction.js:52
 msgid "Password"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:34
+#: admin/src/AdminSocketGlobalFunction.js:32
 msgid "Verification"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:35
-#: admin/src/AdminSocketGlobalFunction.js:59 js/toolbar.js:1040
-#: js/toolbar.js:1291 src/layer/marker/Annotation.js:181 src/map/Map.js:106
-#: uiconfig/dialogs/AddTableAtEnd.js:46 uiconfig/dialogs/DeleteCell.js:86
-#: uiconfig/dialogs/ExampleDialog.js:54 uiconfig/dialogs/GotoPage.js:76
-#: uiconfig/dialogs/InsertBreak.js:57 uiconfig/dialogs/InsertCell.js:54
-#: uiconfig/dialogs/InsertTable.js:71 uiconfig/dialogs/MoveTable.js:58
-#: uiconfig/dialogs/OXSaveAs.js:48 uiconfig/dialogs/RemoveCell.js:54
-#: uiconfig/dialogs/RemoveTable.js:47 uiconfig/dialogs/RenameTable.js:49
-#: uiconfig/dialogs/ShowTable.js:55 uiconfig/dialogs/TraceChangeMode.js:65
-msgid "Cancel"
-msgstr "ביטול"
-
-#: admin/src/AdminSocketGlobalFunction.js:51
+#: admin/src/AdminSocketGlobalFunction.js:49
 msgid "Please enter a new account and password."
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:55
+#: admin/src/AdminSocketGlobalFunction.js:53
 msgid "Confirm password"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:58 src/map/Map.js:105
-#: uiconfig/dialogs/AddTableAtEnd.js:39 uiconfig/dialogs/DeleteCell.js:66
-#: uiconfig/dialogs/ExampleDialog.js:48 uiconfig/dialogs/GotoPage.js:63
-#: uiconfig/dialogs/InsertBreak.js:50 uiconfig/dialogs/InsertCell.js:41
-#: uiconfig/dialogs/InsertTable.js:64 uiconfig/dialogs/MoveTable.js:51
-#: uiconfig/dialogs/OXSaveAs.js:38 uiconfig/dialogs/RemoveCell.js:41
-#: uiconfig/dialogs/RemoveTable.js:40 uiconfig/dialogs/RenameTable.js:42
-#: uiconfig/dialogs/ShowTable.js:46 uiconfig/dialogs/TraceChangeMode.js:58
-msgid "OK"
-msgstr ""
-
-#: admin/src/AdminSocketGlobalFunction.js:71
+#: admin/src/AdminSocketGlobalFunction.js:69
 msgid "The password does not match the confirmation password!"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:86
+#: admin/src/AdminSocketGlobalFunction.js:84
 msgid "Restart service"
 msgstr ""
 
-#: admin/src/AdminSocketGlobalFunction.js:87
+#: admin/src/AdminSocketGlobalFunction.js:85
 msgid "Change account password"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:107
+msgid "System"
 msgstr ""
 
 #: admin/src/AdminSocketGlobalFunction.js:128
@@ -282,21 +947,203 @@ msgstr ""
 msgid "Core"
 msgstr ""
 
+#: admin/src/AdminSocketMenuEditor.js:13 admin/src/AdminSocketMenuEditor.js:607
+msgid "Enabled item"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:14 admin/src/AdminSocketMenuEditor.js:607
+msgid "Disabled item"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:15
+msgid "Menu editor"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:16
+msgid "Writer menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:17
+msgid "Calc menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:18
+msgid "Impress menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:19
+msgid "Instructions"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:20
+msgid "The option is marked with a red line to indicate that it is disabled."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:21
+msgid "Click the option to enable or disable the function."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:22
+msgid "Disable the sub-menu, all options under it will also be disabled."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:23
+msgid ""
+"There are three menus available for editing: Writer menu, Calc menu, and "
+"Impress Menu."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:24
+msgid "Show enabled JSON content."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:25
+msgid "Show disabled JSON content."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:26
+msgid "Update menu permissions."
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:27
+msgid "Reset menu"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:28
+msgid "Download"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:473
+msgid "Writer"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:480
+msgid "Calc"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:487
+msgid "Impress"
+msgstr ""
+
+#: admin/src/AdminSocketMenuEditor.js:700
+msgid "Menu permission updated successfully"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:97 admin/src/AdminSocketSettings.js:34
+msgid "Confirmation"
+msgstr "אישור"
+
+#: admin/src/AdminSocketOverview.js:98
+msgid "Are you sure you want to terminate this session?"
+msgstr "לסיים את הפעילות הנוכחית?"
+
+#: admin/src/AdminSocketOverview.js:390
+msgid "Failed to set jwt authentication cookie over insecure connection"
+msgstr "הגדרת עוגיית אימות jwt נכשלה עקב חיבור בלתי מאובטח"
+
+#: admin/src/AdminSocketOverview.js:394
+msgid "Failed to authenticate this session over protocol %0"
+msgstr "אימות ההפעלה הזו על גבי פרוטוקול %0 נכשלה"
+
+#: admin/src/AdminSocketSettings.js:35
+msgid "Are you sure you want to shut down the server?"
+msgstr "לכבות את השרת?"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:12
+msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:13
+msgid "Unsupported package installation system!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:14
+msgid "Unable to enter the temporary directory!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:15
+msgid "Unknown file type!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:16
+msgid "File uncompressing..."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:17
+msgid "Test whether it can be upgraded."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:18
+msgid "Start the upgrade."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:19
+msgid "Start the real upgrade."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:91
+msgid "The upload file command is wrong, the syntax is as follows:"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:94
+msgid "Start the software upgrade..."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:98
+msgid "File decompression failed!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:101
+msgid "Test upgrade failed!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:104
+msgid "Software upgrade is successful."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:107
+msgid "You may need to restart the service."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:110
+msgid "Software upgrade failed!"
+msgstr ""
+
 #: admin/src/Util.js:14
 msgid "kB"
-msgstr ""
+msgstr "ק״ב"
 
 #: admin/src/Util.js:14
 msgid "MB"
-msgstr ""
+msgstr "מ״ב"
 
 #: admin/src/Util.js:14
 msgid "GB"
-msgstr ""
+msgstr "ג״ב"
 
 #: admin/src/Util.js:14
 msgid "TB"
-msgstr ""
+msgstr "ט״ב"
+
+#: admin/src/Util.js:14
+msgid "PB"
+msgstr "פ״ב"
+
+#: admin/src/Util.js:14
+msgid "EB"
+msgstr "א״ב"
+
+#: admin/src/Util.js:14
+msgid "ZB"
+msgstr "ז״ב"
+
+#: admin/src/Util.js:14
+msgid "YB"
+msgstr "י״ב"
+
+#: admin/src/Util.js:14
+msgid "BB"
+msgstr "ב״ב"
 
 #: admin/src/Util.js:43 admin/src/Util.js:45
 msgid " hrs"
@@ -310,666 +1157,1397 @@ msgstr " דקות"
 msgid " s"
 msgstr " שניות"
 
-#: js/toolbar.js:684 js/toolbar.js:1850 uiconfig/dialogs/InsertBreak.js:19
-msgid "None"
-msgstr ""
-
-#: js/toolbar.js:685
-msgid "Wipe"
-msgstr ""
-
-#: js/toolbar.js:686
-msgid "Wheel"
-msgstr ""
-
-#: js/toolbar.js:687
-msgid "Uncover"
-msgstr ""
-
-#: js/toolbar.js:688
-msgid "Bars"
-msgstr ""
-
-#: js/toolbar.js:689
-msgid "Checkers"
-msgstr ""
-
-#: js/toolbar.js:690
-msgid "Shape"
-msgstr ""
-
-#: js/toolbar.js:691
-msgid "Box"
-msgstr ""
-
-#: js/toolbar.js:692
-msgid "Wedge"
-msgstr ""
-
-#: js/toolbar.js:693
-msgid "Venetian Blinds"
-msgstr ""
-
-#: js/toolbar.js:694
-msgid "Fade"
-msgstr ""
-
-#: js/toolbar.js:695
-msgid "Cut"
-msgstr ""
-
-#: js/toolbar.js:696
-msgid "Cover"
-msgstr ""
-
-#: js/toolbar.js:697
-msgid "Dissolve"
-msgstr ""
-
-#: js/toolbar.js:698
-msgid "Random"
-msgstr ""
-
-#: js/toolbar.js:699
-msgid "Comb"
-msgstr ""
-
-#: js/toolbar.js:700
-msgid "Push"
-msgstr ""
-
-#: js/toolbar.js:701
-msgid "Split"
-msgstr ""
-
-#: js/toolbar.js:702
-msgid "Diagonal"
-msgstr ""
-
-#: js/toolbar.js:703
-msgid "Tiles"
-msgstr ""
-
-#: js/toolbar.js:704
-msgid "Cube"
-msgstr ""
-
-#: js/toolbar.js:705
-msgid "Circles"
-msgstr ""
-
-#: js/toolbar.js:706
-msgid "Helix"
-msgstr ""
-
-#: js/toolbar.js:707
-msgid "Fall"
-msgstr ""
-
-#: js/toolbar.js:708
-msgid "Turn Around"
-msgstr ""
-
-#: js/toolbar.js:709
-msgid "Iris"
-msgstr ""
-
-#: js/toolbar.js:710
-msgid "Turn Down"
-msgstr ""
-
-#: js/toolbar.js:711
-msgid "Rochade"
-msgstr ""
-
-#: js/toolbar.js:712
-msgid "3D Denetian"
-msgstr ""
-
-#: js/toolbar.js:713
-msgid "Static"
-msgstr ""
-
-#: js/toolbar.js:714
-msgid "Fine Dissolve"
-msgstr ""
-
-#: js/toolbar.js:715
-msgid "Vortex"
-msgstr ""
-
-#: js/toolbar.js:716
-msgid "Ripple"
-msgstr ""
-
-#: js/toolbar.js:717
-msgid "Glitter"
-msgstr ""
-
-#: js/toolbar.js:718
-msgid "Honeycomb"
-msgstr ""
-
-#: js/toolbar.js:719
-msgid "Newsflash"
-msgstr ""
-
-#: js/toolbar.js:814
-msgid "More..."
-msgstr ""
-
-#: js/toolbar.js:875
-msgid "Borders"
-msgstr ""
-
-#: js/toolbar.js:935
-msgid "Insert table"
-msgstr ""
-
-#: js/toolbar.js:940
-msgid "Insert Local Image"
-msgstr ""
-
-#: js/toolbar.js:944
-msgid "Insert shapes"
-msgstr ""
-
-#: js/toolbar.js:952 js/toolbar.js:2683
-msgid "Common symbols"
-msgstr ""
-
-#: js/toolbar.js:953
-msgid "More symbols"
-msgstr ""
-
-#: js/toolbar.js:993 js/toolbar.js:1409
-msgid "Always follow the editor"
-msgstr ""
-
-#: js/toolbar.js:996 js/toolbar.js:1412
-msgid "Current"
-msgstr ""
-
-#: js/toolbar.js:1041 js/toolbar.js:1292
-msgid "Accept"
-msgstr ""
-
-#: js/toolbar.js:1074 js/toolbar.js:1339
-msgid "First sheet"
-msgstr ""
-
-#: js/toolbar.js:1075 js/toolbar.js:1340
-msgid "Previous sheet"
-msgstr ""
-
-#: js/toolbar.js:1076 js/toolbar.js:1341
-msgid "Next sheet"
-msgstr ""
-
-#: js/toolbar.js:1077 js/toolbar.js:1342
-msgid "Last sheet"
-msgstr ""
-
-#: js/toolbar.js:1078 js/toolbar.js:1343
-msgid "Insert sheet"
-msgstr ""
-
-#: js/toolbar.js:1169 js/toolbar.js:1393
-msgid "Search:"
-msgstr "חיפוש:"
-
-#: js/toolbar.js:1176 js/toolbar.js:1400
-msgid "Cancel the search"
-msgstr "ביטול החיפוש"
-
-#: js/toolbar.js:1208
-msgid "Delete"
-msgstr ""
-
-#: js/toolbar.js:1361 src/control/Control.Menubar.js:320
-msgid "Fullscreen presentation"
-msgstr ""
-
-#: js/toolbar.js:1367 src/control/Control.Menubar.js:322
-#: uiconfig/dialogs/MoveTable.js:28
-msgid "Move"
-msgstr ""
-
-#: js/toolbar.js:1420
-msgid "Reset zoom"
-msgstr "איפוס מרחק מתצוגה"
-
-#: js/toolbar.js:1423
-msgid "Zoom factor"
-msgstr ""
-
-#: js/toolbar.js:1493
-msgid "%user has joined"
-msgstr ""
-
-#: js/toolbar.js:1494
-msgid "%user has left"
-msgstr ""
-
-#: js/toolbar.js:1814
-#, fuzzy
-msgid "Number of Sheets"
-msgstr "מספר צפיות"
-
-#: js/toolbar.js:1819
-msgid "Selected range of cells"
-msgstr ""
-
-#: js/toolbar.js:1824 js/toolbar.js:1883
-msgid "Entering text mode"
-msgstr ""
-
-#: js/toolbar.js:1829 js/toolbar.js:1893 js/toolbar.js:1918
-msgid "Text Language"
-msgstr ""
-
-#: js/toolbar.js:1834 js/toolbar.js:1888
-msgid "Selection Mode"
-msgstr "מצב בחירה"
-
-#: js/toolbar.js:1839
-msgid "Choice of functions"
-msgstr ""
-
-#: js/toolbar.js:1843
-msgid "Average"
-msgstr "ממוצע"
-
-#: js/toolbar.js:1844
-msgid "CountA"
-msgstr ""
-
-#: js/toolbar.js:1845
-msgid "Count"
-msgstr ""
-
-#: js/toolbar.js:1846
-msgid "Maximum"
-msgstr ""
-
-#: js/toolbar.js:1847
-msgid "Minimum"
-msgstr ""
-
-#: js/toolbar.js:1848
-msgid "Sum"
-msgstr ""
-
-#: js/toolbar.js:1849
-msgid "Selection count"
-msgstr ""
-
-#: js/toolbar.js:1873
-#, fuzzy
-msgid "Number of Pages"
-msgstr "מספר צפיות"
-
-#: js/toolbar.js:1878
-msgid "Word Counter"
-msgstr ""
-
-#: js/toolbar.js:1913
-#, fuzzy
-msgid "Number of Slides"
-msgstr "מספר צפיות"
-
-#: js/toolbar.js:1950
-msgid "%n users"
-msgstr "%n משתמשים"
-
-#: js/toolbar.js:1951
-msgid "1 user"
-msgstr "משתמש אחד"
-
-#: js/toolbar.js:1952
-#, fuzzy
-msgid "0 users"
-msgstr "אין משתמשים"
-
-#: js/toolbar.js:2147
-msgid "Document saved"
-msgstr ""
-
-#: js/toolbar.js:2308 uiconfig/dialogs/InsertBreak.js:30
-msgid "Style"
-msgstr ""
-
-#: js/toolbar.js:2331
-msgid "Font"
-msgstr "גופן"
-
-#: js/toolbar.js:2352
-msgid "Previous slide"
-msgstr ""
-
-#: js/toolbar.js:2353
-msgid "Next slide"
-msgstr ""
-
-#: js/toolbar.js:2439
-msgid ""
-"Conflict Undo/Redo with multiple users. Please use document repair to resolve"
-msgstr ""
-
-#: js/toolbar.js:2850 src/control/Control.DocumentRepair.js:95
-msgid "You"
-msgstr ""
-
-#: js/toolbar.js:2856
-msgid "Readonly"
-msgstr ""
-
-#: src/control/Control.AlertDialog.js:42
+#: src/control/ColorPicker.js:122
+msgid "No color"
+msgstr "אין צבע"
+
+#: src/control/ColorPicker.js:123
+msgid "Automatic color"
+msgstr "צבע אוטומטי"
+
+#: src/control/Control.AlertDialog.js:76
 msgid "Open link"
-msgstr ""
+msgstr "פתיחת קישור"
 
-#: src/control/Control.AlertDialog.js:54
-msgid "Edit"
-msgstr ""
-
-#: src/control/Control.AlertDialog.js:75
+#: src/control/Control.AlertDialog.js:98
 msgid "The server encountered a %0 error while parsing the %1 command."
-msgstr ""
+msgstr "השרת נתקל בשגיאת %0 בעת פענוח הפקודה %1."
+
+#: src/control/Control.Command.js:89
+msgid "Unlock"
+msgstr "שחרור"
+
+#: src/control/Control.ContextMenu.js:259
+msgid "Paste Special"
+msgstr "הדבקה מיוחדת"
 
 #: src/control/Control.DocumentRepair.js:33
 msgid "Repair Document"
-msgstr ""
+msgstr "תיקון מסמך"
 
 #: src/control/Control.DocumentRepair.js:44 uiconfig/dialogs/InsertBreak.js:26
 msgid "Type"
-msgstr ""
+msgstr "סוג"
 
 #: src/control/Control.DocumentRepair.js:46
 msgid "Index"
-msgstr ""
+msgstr "מפתח"
 
-#: src/control/Control.DocumentRepair.js:48 src/layer/tile/TileLayer.js:270
+#: src/control/Control.DocumentRepair.js:48
+#: src/control/Control.JSDialogBuilder.js:2123
+#: src/layer/tile/CanvasTileLayer.js:4781
+#: src/layer/tile/CanvasTileLayer.js:4791
+#: src/layer/tile/CommentListSection.ts:827
 msgid "Comment"
-msgstr ""
-
-#: src/control/Control.DocumentRepair.js:50
-msgid "User name"
-msgstr ""
+msgstr "הערה"
 
 #: src/control/Control.DocumentRepair.js:52
 msgid "Timestamp"
-msgstr ""
+msgstr "חותמת זמן"
 
 #: src/control/Control.DocumentRepair.js:56
 msgid "Jump to state"
-msgstr ""
+msgstr "קפיצה למצב"
 
-#: src/control/Control.Menubar.js:14 src/control/Control.Menubar.js:241
-#: src/control/Control.Menubar.js:344
-msgid "Share..."
-msgstr ""
+#: src/control/Control.DocumentRepair.js:95 src/control/Control.UserList.js:286
+msgid "You"
+msgstr "אני"
 
-#: src/control/Control.Menubar.js:16 src/control/Control.Menubar.js:243
-#: src/control/Control.Menubar.js:346
-msgid "See revision history"
-msgstr ""
+#: src/control/Control.DownloadProgress.js:47
+msgid "Start download"
+msgstr "התחלת הורדה"
 
-#: src/control/Control.Menubar.js:17 src/control/Control.Menubar.js:244
-#: src/control/Control.Menubar.js:347
-msgid "Download as"
-msgstr ""
+#: src/control/Control.DownloadProgress.js:62
+msgid "Confirm copy to clipboard"
+msgstr "אישור העתקה ללוח גזירים"
 
-#: src/control/Control.Menubar.js:18 src/control/Control.Menubar.js:245
-#: src/control/Control.Menubar.js:349
-msgid "PDF Document (.pdf)"
-msgstr ""
+#: src/control/Control.FormulaBar.js:34
+msgid "Function Wizard"
+msgstr "אשף הפונקציות"
 
-#: src/control/Control.Menubar.js:19
-msgid "TEXT Document (.txt)"
-msgstr ""
+#: src/control/Control.FormulaBar.js:46
+msgid "cell address"
+msgstr "כתובת תא"
 
-#: src/control/Control.Menubar.js:20 src/control/Control.Menubar.js:246
-#: src/control/Control.Menubar.js:348
-msgid "HTML Document (.html)"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:398
+msgid "Solid"
+msgstr "אחיד"
 
-#: src/control/Control.Menubar.js:21
-msgid "ODF text document (.odt)"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:401
+msgid "Linear"
+msgstr "קווי"
 
-#: src/control/Control.Menubar.js:22
-msgid "Word 2003 Document (.doc)"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:404
+msgid "Axial"
+msgstr "צירי"
 
-#: src/control/Control.Menubar.js:23
-msgid "Word Document (.docx)"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:407
+msgid "Radial"
+msgstr "מעגלי"
 
-#: src/control/Control.Menubar.js:24
-msgid "Rich Text (.rtf)"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:410
+msgid "Ellipsoid"
+msgstr "סגלגלי"
 
-#: src/control/Control.Menubar.js:25
-msgid "Sign document"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:414
+msgid "Quadratic"
+msgstr "ריבועי"
 
-#: src/control/Control.Menubar.js:32 src/control/Control.Menubar.js:256
-#: src/control/Control.Menubar.js:360
-msgid "Repair"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:417
+msgid "Square"
+msgstr "ריבוע"
 
-#: src/control/Control.Menubar.js:63 src/control/Control.Menubar.js:273
-#: src/control/Control.Menubar.js:377
-msgid "Local Image..."
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:420
+msgid "Fixed size"
+msgstr "גודל קבוע"
 
-#: src/control/Control.Menubar.js:80 src/control/Control.Menubar.js:82
-msgid "All"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:1267
+msgid "From"
+msgstr "מ־"
 
-#: src/control/Control.Menubar.js:93
-msgid "Horizontal Line"
-msgstr ""
+#: src/control/Control.JSDialogBuilder.js:1270
+msgid "To"
+msgstr "עד"
 
-#: src/control/Control.Menubar.js:218 src/control/Control.Menubar.js:220
-#: src/control/Control.Menubar.js:222 src/control/Control.Menubar.js:332
-#: src/control/Control.Menubar.js:448
+#: src/control/Control.JSDialogBuilder.js:1402
+msgid "Select range"
+msgstr "בחירת טווח"
+
+#: src/control/Control.JSDialogBuilder.js:1445
+#: src/control/Control.NotebookbarBuilder.js:237
+msgid "Font Name"
+msgstr "שם הגופן"
+
+#: src/control/Control.JSDialogBuilder.js:1447 src/control/Toolbar.js:123
+msgid "Font Size"
+msgstr "גודל הגופן"
+
+#: src/control/Control.JSDialogBuilder.js:2109
+msgid "reply"
+msgstr "תגובה"
+
+#: src/control/Control.JSDialogBuilder.js:2112
+msgid "replies"
+msgstr "תגובות"
+
+#: src/control/Control.JSDialogBuilder.js:2184
+msgid "Insert Comment"
+msgstr "הוספת הערה"
+
+#: src/control/Control.JSDialogBuilder.js:2635
+msgid "Cell borders"
+msgstr "גבולות התא"
+
+#: src/control/Control.JSDialogBuilder.js:2826 uiconfig/dialogs/SplitCell.js:30
+msgid "Rows"
+msgstr "שורות"
+
+#: src/control/Control.JSDialogBuilder.js:2827 uiconfig/dialogs/SplitCell.js:25
+msgid "Columns"
+msgstr "עמודות"
+
+#: src/control/Control.JSDialogBuilder.js:2847
+msgid "Insert Table"
+msgstr "הוספת טבלה"
+
+#: src/control/Control.LanguageDialog.js:69 src/control/Control.Menubar.js:277
+#: src/control/Control.Menubar.js:279 src/control/Control.Menubar.js:281
+#: src/control/Control.Menubar.js:418 src/control/Control.Menubar.js:532
+#: src/control/Control.Menubar.js:741
+#: src/control/Control.NotebookbarBuilder.js:776
+#: src/control/Control.NotebookbarBuilder.js:778
+#: src/control/Control.NotebookbarBuilder.js:780
+#: src/control/Control.NotebookbarBuilder.js:804
+#: src/control/Control.NotebookbarBuilder.js:839
+#: src/control/Control.NotebookbarBuilder.js:856
+#: src/control/Control.StatusBar.js:514
 msgid "None (Do not check spelling)"
-msgstr ""
+msgstr "ללא (לא לבדוק איות)"
 
-#: src/control/Control.Menubar.js:232 src/control/Control.Menubar.js:335
-#: src/control/Control.Menubar.js:451 uiconfig/dialogs/ShowKeyboardHelp.js:59
+#: src/control/Control.Menubar.js:60 src/control/Control.Menubar.js:310
+#: src/control/Control.Menubar.js:439 src/control/Control.Menubar.js:549
+#: src/control/Control.Menubar.js:762 src/control/Control.Menubar.js:816
+#: src/control/Control.Menubar.js:872 src/control/Control.Menubar.js:918
+msgid "Share..."
+msgstr "שיתוף…"
+
+#: src/control/Control.Menubar.js:61 src/control/Control.Menubar.js:311
+#: src/control/Control.Menubar.js:441 src/control/Control.Menubar.js:550
+#: src/control/Control.Menubar.js:763 src/control/Control.Menubar.js:817
+#: src/control/Control.Menubar.js:874 src/control/Control.Menubar.js:919
+msgid "See revision history"
+msgstr "הצגת היסטוריית המהדורות"
+
+#: src/control/Control.Menubar.js:62 src/control/Control.Menubar.js:312
+#: src/control/Control.Menubar.js:442 src/control/Control.Menubar.js:551
+#: src/control/Control.Menubar.js:768 src/control/Control.Menubar.js:821
+#: src/control/Control.Menubar.js:876 src/control/Control.Menubar.js:923
+msgid "Download as"
+msgstr "הורדה בתור"
+
+#: src/control/Control.Menubar.js:62 src/control/Control.Menubar.js:312
+#: src/control/Control.Menubar.js:442 src/control/Control.Menubar.js:551
+#: src/control/Control.Menubar.js:768 src/control/Control.Menubar.js:821
+#: src/control/Control.Menubar.js:876 src/control/Control.Menubar.js:923
+msgid "Export as"
+msgstr "ייצוא בתור"
+
+#: src/control/Control.Menubar.js:63 src/control/Control.Menubar.js:313
+#: src/control/Control.Menubar.js:443 src/control/Control.Menubar.js:552
+#: src/control/Control.Menubar.js:769 src/control/Control.Menubar.js:822
+#: src/control/Control.Menubar.js:877 src/control/Control.Menubar.js:924
+#: src/control/Control.NotebookbarCalc.js:163
+#: src/control/Control.NotebookbarDraw.js:212
+#: src/control/Control.NotebookbarImpress.js:243
+#: src/control/Control.NotebookbarWriter.js:167
+msgid "PDF Document (.pdf)"
+msgstr "מסמך PDF‏ (‎.pdf)"
+
+#: src/control/Control.Menubar.js:64 src/control/Control.Menubar.js:770
+msgid "ODF text document (.odt)"
+msgstr "מסמך טקסט ODF‏ (‎.odt)"
+
+#: src/control/Control.Menubar.js:65 src/control/Control.Menubar.js:771
+#: src/control/Control.NotebookbarWriter.js:149
+msgid "Word 2003 Document (.doc)"
+msgstr "מסמך Word 2003‏ (‎.doc)"
+
+#: src/control/Control.Menubar.js:66 src/control/Control.Menubar.js:772
+#: src/control/Control.NotebookbarWriter.js:155
+msgid "Word Document (.docx)"
+msgstr "מסמך Word‏ (‎.docx)"
+
+#: src/control/Control.Menubar.js:67 src/control/Control.Menubar.js:773
+#: src/control/Control.NotebookbarWriter.js:137
+msgid "Rich Text (.rtf)"
+msgstr "טקסט עשיר (‎.rtf)"
+
+#: src/control/Control.Menubar.js:68 src/control/Control.Menubar.js:774
+msgid "EPUB (.epub)"
+msgstr "EPUB (.epub)"
+
+#: src/control/Control.Menubar.js:69 src/control/Control.Menubar.js:764
+#: src/control/Control.NotebookbarWriter.js:192 src/control/Signing.js:604
+msgid "Sign document"
+msgstr "חתימה על מסמך"
+
+#: src/control/Control.Menubar.js:72 src/control/Control.Menubar.js:320
+#: src/control/Control.Menubar.js:447 src/control/Control.Menubar.js:559
+msgid "Close document"
+msgstr "סגירת המסמך"
+
+#: src/control/Control.Menubar.js:77 src/control/Control.Menubar.js:325
+#: src/control/Control.Menubar.js:452 src/control/Control.Menubar.js:564
+#: src/control/Control.Menubar.js:779 src/control/Control.Menubar.js:831
+#: src/control/Control.Menubar.js:883 src/control/Control.Menubar.js:932
+#: src/control/Control.NotebookbarBuilder.js:769
+#: src/control/Control.NotebookbarBuilder.js:799
+#: src/control/Control.NotebookbarBuilder.js:834
+#: src/control/Control.NotebookbarBuilder.js:851
+#: src/control/Control.NotebookbarCalc.js:169
+#: src/control/Control.NotebookbarCalc.js:170
+#: src/control/Control.NotebookbarDraw.js:218
+#: src/control/Control.NotebookbarDraw.js:219
+#: src/control/Control.NotebookbarImpress.js:249
+#: src/control/Control.NotebookbarImpress.js:250
+#: src/control/Control.NotebookbarWriter.js:185
+#: src/control/Control.NotebookbarWriter.js:186
+msgid "Repair"
+msgstr "תיקון"
+
+#: src/control/Control.Menubar.js:104 src/control/Control.Menubar.js:339
+#: src/control/Control.Menubar.js:466 src/control/Control.Menubar.js:578
+#: src/control/Control.NotebookbarCalc.js:745
+#: src/control/Control.NotebookbarCalc.js:746
+#: src/control/Control.NotebookbarDraw.js:689
+#: src/control/Control.NotebookbarDraw.js:690
+#: src/control/Control.NotebookbarImpress.js:981
+#: src/control/Control.NotebookbarWriter.js:993
+#: src/control/Control.NotebookbarWriter.js:994
+#: src/control/Control.StatusBar.js:188
+msgid "Reset zoom"
+msgstr "איפוס מרחק מתצוגה"
+
+#: src/control/Control.Menubar.js:106
+#: src/control/Control.NotebookbarBuilder.js:755
+#: src/control/Control.NotebookbarWriter.js:1043
+#: src/control/Control.NotebookbarWriter.js:1044
+msgid "Show Ruler"
+msgstr "הצגת סרגל"
+
+#: src/control/Control.Menubar.js:107 src/control/Control.Menubar.js:349
+#: src/control/Control.Menubar.js:469
+#: src/control/Control.NotebookbarWriter.js:1054
+#: src/control/Control.NotebookbarWriter.js:1055
+msgid "Show Status Bar"
+msgstr "הצגת שורת מצב"
+
+#: src/control/Control.Menubar.js:116 src/control/Control.Menubar.js:352
+#: src/control/Control.Menubar.js:472 src/control/Control.Menubar.js:589
+#: src/control/Control.Menubar.js:986 src/control/Control.Menubar.js:1028
+#: src/control/Control.Menubar.js:1042 src/control/Control.Menubar.js:1065
+msgid "Local Image..."
+msgstr "תמונה מקומית…"
+
+#: src/control/Control.Menubar.js:134 src/control/Control.Menubar.js:136
+#: src/control/Control.Menubar.js:1003 src/control/Control.Menubar.js:1005
+msgid "All"
+msgstr "הכול"
+
+#: src/control/Control.Menubar.js:189
+msgid "Text orientation"
+msgstr "כיווניות טקסט"
+
+#: src/control/Control.Menubar.js:295 src/control/Control.Menubar.js:424
+#: src/control/Control.Menubar.js:535 src/control/Control.Menubar.js:747
+#: src/control/Control.NotebookbarWriter.js:217
+msgid "Online Help"
+msgstr "עזרה מקוונת"
+
+#: src/control/Control.Menubar.js:296 src/control/Control.Menubar.js:425
+#: src/control/Control.Menubar.js:536 src/control/Control.Menubar.js:748
+#: src/control/Control.NotebookbarWriter.js:228
+#: uiconfig/dialogs/ShowKeyboardHelp.js:59
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "קיצורי מקלדת"
 
-#: src/control/Control.Menubar.js:233 src/control/Control.Menubar.js:336
-#: src/control/Control.Menubar.js:452
+#: src/control/Control.Menubar.js:297 src/control/Control.Menubar.js:426
+#: src/control/Control.Menubar.js:537 src/control/Control.Menubar.js:749
+#: src/control/Control.NotebookbarWriter.js:239
+msgid "Report an issue"
+msgstr "דיווח על תקלה"
+
+#: src/control/Control.Menubar.js:298 src/control/Control.Menubar.js:427
+#: src/control/Control.Menubar.js:538 src/control/Control.Menubar.js:750
+#: src/control/Control.Menubar.js:806 src/control/Control.Menubar.js:862
+#: src/control/Control.Menubar.js:908 src/control/Control.Menubar.js:978
+#: src/control/Control.NotebookbarWriter.js:251
+msgid "Latest Updates"
+msgstr "עדכונים אחרונים"
+
+#: src/control/Control.Menubar.js:299 src/control/Control.Menubar.js:428
+#: src/control/Control.Menubar.js:539 src/control/Control.Menubar.js:751
+#: src/control/Control.Menubar.js:807 src/control/Control.Menubar.js:863
+#: src/control/Control.Menubar.js:909 src/control/Control.Menubar.js:979
+#: src/control/Control.NotebookbarWriter.js:263
+msgid "Send Feedback"
+msgstr "שליחת משוב"
+
+#: src/control/Control.Menubar.js:300 src/control/Control.Menubar.js:429
+#: src/control/Control.Menubar.js:540 src/control/Control.Menubar.js:752
+#: src/control/Control.Menubar.js:808 src/control/Control.Menubar.js:864
+#: src/control/Control.Menubar.js:910 src/control/Control.Menubar.js:980
+#: src/control/Control.NotebookbarWriter.js:274
 msgid "About"
-msgstr ""
+msgstr "על אודות"
 
-#: src/control/Control.Menubar.js:247
+#: src/control/Control.Menubar.js:302 src/control/Control.Menubar.js:431
+#: src/control/Control.Menubar.js:542 src/control/Control.Menubar.js:754
+msgid "Last modification"
+msgstr "שינוי אחרון"
+
+#: src/control/Control.Menubar.js:309 src/control/Control.Menubar.js:438
+msgid "Save Comments"
+msgstr "שמירת הערות"
+
+#: src/control/Control.Menubar.js:314 src/control/Control.Menubar.js:823
 msgid "ODF presentation (.odp)"
-msgstr ""
+msgstr "מצגת ODF ‏(‎.odp)"
 
-#: src/control/Control.Menubar.js:248
+#: src/control/Control.Menubar.js:315 src/control/Control.Menubar.js:824
+#: src/control/Control.NotebookbarImpress.js:224
 msgid "PowerPoint 2003 Presentation (.ppt)"
-msgstr ""
+msgstr "מצגת PowerPoint 2003‏ (‎.ppt)"
 
-#: src/control/Control.Menubar.js:249
+#: src/control/Control.Menubar.js:316 src/control/Control.Menubar.js:825
+#: src/control/Control.NotebookbarImpress.js:230
 msgid "PowerPoint Presentation (.pptx)"
-msgstr ""
+msgstr "מצגת PowerPoint‏ (‎.pptx)"
 
-#: src/control/Control.Menubar.js:350
+#: src/control/Control.Menubar.js:411 src/control/Control.Menubar.js:860
+#: src/control/Control.PresentationBar.js:57
+msgid "Fullscreen presentation"
+msgstr "מצגת במסך מלא"
+
+#: src/control/Control.Menubar.js:412
+msgid "Present current slide"
+msgstr "הצגת השקופית הנוכחית"
+
+#: src/control/Control.Menubar.js:444 src/control/Control.Menubar.js:826
+#: src/control/Control.Menubar.js:878
+#: src/control/Control.NotebookbarDraw.js:193
+#: src/control/Control.NotebookbarImpress.js:211
+msgid "ODF Drawing (.odg)"
+msgstr "ציור ODF‏ (‎.odg)"
+
+#: src/control/Control.Menubar.js:553 src/control/Control.Menubar.js:925
 msgid "ODF spreadsheet (.ods)"
-msgstr ""
+msgstr "מצגת ODF‏ (‎.ods)"
 
-#: src/control/Control.Menubar.js:351
+#: src/control/Control.Menubar.js:554 src/control/Control.Menubar.js:926
+#: src/control/Control.NotebookbarCalc.js:144
 msgid "Excel 2003 Spreadsheet (.xls)"
-msgstr ""
+msgstr "גיליון נתונים Excel 2003‏ (‎.xls)"
 
-#: src/control/Control.Menubar.js:352
+#: src/control/Control.Menubar.js:555 src/control/Control.Menubar.js:927
+#: src/control/Control.NotebookbarCalc.js:150
 msgid "Excel Spreadsheet (.xlsx)"
-msgstr ""
+msgstr "גיליון נתונים Excel ‏(‎.xlsx)"
 
-#: src/control/Control.Menubar.js:353
-msgid "CSV (.csv)"
-msgstr ""
+#: src/control/Control.Menubar.js:556
+msgid "CSV file (.csv)"
+msgstr "קובץ CSV‏ (‎.csv)"
 
-#: src/control/Control.Menubar.js:529
+#: src/control/Control.Menubar.js:758 src/control/Control.Menubar.js:812
+#: src/control/Control.Menubar.js:868 src/control/Control.Menubar.js:914
+#: src/control/Control.StatusBar.js:173
+msgid "Search"
+msgstr "חיפוש"
+
+#: src/control/Control.Menubar.js:803
+msgid "Page Setup"
+msgstr "הגדרת עמוד"
+
+#: src/control/Control.Menubar.js:1175 src/control/Control.StatusBar.js:513
 msgid "Reset to Default Language"
+msgstr "איפוס לשפת בררת מחדל"
+
+#: src/control/Control.Menubar.js:1539
+msgid "Insert Shape"
+msgstr "הוספת צורה"
+
+#: src/control/Control.Menubar.js:1632 uiconfig/dialogs/Action.js:95
+msgid "Are you sure you want to delete this slide?"
+msgstr "למחוק את השקופית הזו?"
+
+#: src/control/Control.Menubar.js:1758
+msgid "file type icon"
+msgstr "סמל סוג קובץ"
+
+#: src/control/Control.MobileBottomBar.js:28
+#: src/control/Control.MobileBottomBar.js:121
+#: src/control/Control.MobileBottomBar.js:188
+msgid "Show the search bar"
+msgstr "הצגת סרגל החיפוש"
+
+#: src/control/Control.MobileTopBar.js:42
+msgid "Accept"
+msgstr "אישור"
+
+#: src/control/Control.MobileWizardBuilder.js:500
+msgid "Background Color"
+msgstr "צבע הרקע"
+
+#: src/control/Control.MobileWizardBuilder.js:502
+msgid "Gradient Start"
+msgstr "התחלת מדרג"
+
+#: src/control/Control.MobileWizardBuilder.js:504
+msgid "Gradient End"
+msgstr "סוף מדרג"
+
+#: src/control/Control.Notebookbar.js:242
+#: src/control/Control.NotebookbarBuilder.js:750
+#: src/control/Control.NotebookbarBuilder.js:793
+#: src/control/Control.NotebookbarBuilder.js:821
+#: src/control/Control.NotebookbarBuilder.js:846
+#: src/control/Control.NotebookbarDraw.js:18
+#: src/control/Control.NotebookbarImpress.js:18
+msgid "Menu"
+msgstr "תפריט"
+
+#: src/control/Control.Notebookbar.js:262
+#: src/control/Control.NotebookbarDraw.js:36
+#: src/control/Control.NotebookbarImpress.js:36
+msgid "Undo"
+msgstr "החזרה"
+
+#: src/control/Control.Notebookbar.js:268
+#: src/control/Control.NotebookbarDraw.js:42
+#: src/control/Control.NotebookbarImpress.js:42
+msgid "Redo"
+msgstr "ביצוע שוב"
+
+#: src/control/Control.NotebookbarBuilder.js:554
+#: src/control/Control.TopToolbar.js:222
+msgid "Insert Local Image"
+msgstr "הוספת תמונה מקומית"
+
+#: src/control/Control.NotebookbarBuilder.js:614
+msgid "Very Tight"
+msgstr "הדוק מאוד"
+
+#: src/control/Control.NotebookbarBuilder.js:615
+msgid "Tight"
+msgstr "הדוק"
+
+#: src/control/Control.NotebookbarBuilder.js:616
+msgid "Normal"
+msgstr "רגיל"
+
+#: src/control/Control.NotebookbarBuilder.js:617
+msgid "Loose"
+msgstr "משוחרר"
+
+#: src/control/Control.NotebookbarBuilder.js:618
+msgid "Very Loose"
+msgstr "משוחרר מאוד"
+
+#: src/control/Control.NotebookbarCalc.js:12
+#: src/control/Control.NotebookbarDraw.js:79
+#: src/control/Control.NotebookbarImpress.js:91
+#: src/control/Control.NotebookbarWriter.js:12
+msgid "~File"
+msgstr "~קובץ"
+
+#: src/control/Control.NotebookbarCalc.js:17
+#: src/control/Control.NotebookbarDraw.js:84
+#: src/control/Control.NotebookbarImpress.js:96
+#: src/control/Control.NotebookbarWriter.js:17
+msgid "~Home"
+msgstr "~בית"
+
+#: src/control/Control.NotebookbarCalc.js:23
+#: src/control/Control.NotebookbarDraw.js:90
+#: src/control/Control.NotebookbarImpress.js:102
+#: src/control/Control.NotebookbarWriter.js:23
+msgid "~Insert"
+msgstr "הו~ספה"
+
+#: src/control/Control.NotebookbarCalc.js:28
+#: src/control/Control.NotebookbarDraw.js:95
+#: src/control/Control.NotebookbarImpress.js:107
+#: src/control/Control.NotebookbarWriter.js:28
+msgid "~Layout"
+msgstr "~פריסה"
+
+#: src/control/Control.NotebookbarCalc.js:33
+msgid "~Data"
+msgstr "~נתונים"
+
+#: src/control/Control.NotebookbarCalc.js:38
+#: src/control/Control.NotebookbarDraw.js:100
+#: src/control/Control.NotebookbarImpress.js:112
+#: src/control/Control.NotebookbarWriter.js:38
+msgid "~Review"
+msgstr "~סקירה"
+
+#: src/control/Control.NotebookbarCalc.js:43
+#: src/control/Control.NotebookbarDraw.js:105
+#: src/control/Control.NotebookbarImpress.js:117
+#: src/control/Control.NotebookbarWriter.js:43
+msgid "Format"
+msgstr "עיצוב"
+
+#: src/control/Control.NotebookbarCalc.js:48
+#: src/control/Control.NotebookbarWriter.js:54
+msgid "~Draw"
+msgstr "~ציור"
+
+#: src/control/Control.NotebookbarCalc.js:54
+#: src/control/Control.NotebookbarDraw.js:122
+#: src/control/Control.NotebookbarImpress.js:134
+#: src/control/Control.NotebookbarWriter.js:60
+msgid "~Help"
+msgstr "ע~זרה"
+
+#: src/control/Control.NotebookbarCalc.js:98
+#: src/control/Control.NotebookbarDraw.js:166
+#: src/control/Control.NotebookbarImpress.js:178
+#: src/control/Control.NotebookbarWriter.js:105
+msgid "Share"
+msgstr "שיתוף"
+
+#: src/control/Control.NotebookbarCalc.js:105
+#: src/control/Control.NotebookbarDraw.js:173
+#: src/control/Control.NotebookbarImpress.js:185
+#: src/control/Control.NotebookbarWriter.js:112
+msgid "See history"
+msgstr "הצגת ההיסטוריה"
+
+#: src/control/Control.NotebookbarCalc.js:125
+msgid "ODF Spreadsheet (.ods)"
+msgstr "גיליון ODF‏ (‎.ods)"
+
+#: src/control/Control.NotebookbarCalc.js:131
+msgid "CSV File (.csv)"
+msgstr "קובץ CSV ‏(‎.csv)"
+
+#: src/control/Control.NotebookbarCalc.js:416
+msgid "General"
+msgstr "כללי"
+
+#: src/control/Control.NotebookbarCalc.js:417
+msgid "Number"
+msgstr "מספר"
+
+#: src/control/Control.NotebookbarCalc.js:418
+msgid "Percent"
+msgstr "אחוז"
+
+#: src/control/Control.NotebookbarCalc.js:419
+msgid "Currency"
+msgstr "מטבע"
+
+#: src/control/Control.NotebookbarCalc.js:420
+msgid "Date"
+msgstr "תאריך"
+
+#: src/control/Control.NotebookbarCalc.js:421
+msgid "Time"
+msgstr "שעה"
+
+#: src/control/Control.NotebookbarCalc.js:422
+msgid "Scientific"
+msgstr "מדעי"
+
+#: src/control/Control.NotebookbarCalc.js:423
+msgid "Fraction"
+msgstr "שבר"
+
+#: src/control/Control.NotebookbarCalc.js:424
+msgid "Boolean Value"
+msgstr "ערך בוליאני"
+
+#: src/control/Control.NotebookbarCalc.js:558
+#: uiconfig/dialogs/SetTabBgColor.js:63
+msgid "Default"
+msgstr "בררת מחדל"
+
+#: src/control/Control.NotebookbarCalc.js:563
+msgid "Heading 1"
+msgstr "כותרת 1"
+
+#: src/control/Control.NotebookbarCalc.js:568
+msgid "Heading 2"
+msgstr "כותרת 2"
+
+#: src/control/Control.NotebookbarCalc.js:579
+msgid "Good"
+msgstr "טוב"
+
+#: src/control/Control.NotebookbarCalc.js:584
+msgid "Neutral"
+msgstr "נייטרלי"
+
+#: src/control/Control.NotebookbarCalc.js:589
+msgid "Bad"
+msgstr "רע"
+
+#: src/control/Control.NotebookbarCalc.js:651
+msgid "Insert Rows Above"
+msgstr "הוספת שורות מעל"
+
+#: src/control/Control.NotebookbarCalc.js:656
+msgid "Insert Columns Before"
+msgstr "הוספת עמודות לפני"
+
+#: src/control/Control.NotebookbarCalc.js:661
+msgid "Delete Rows"
+msgstr "מחיקת שורות"
+
+#: src/control/Control.NotebookbarCalc.js:671
+msgid "Insert Rows Below"
+msgstr "הוספת שורות מתחת"
+
+#: src/control/Control.NotebookbarCalc.js:676
+msgid "Insert Columns After"
+msgstr "הוספת עמודות אחרי"
+
+#: src/control/Control.NotebookbarCalc.js:681
+msgid "Delete Columns"
+msgstr "מחיקת עמודות"
+
+#: src/control/Control.NotebookbarDraw.js:110
+#: src/control/Control.NotebookbarImpress.js:122
+#: src/control/Control.NotebookbarWriter.js:48
+msgid "~Table"
+msgstr "~טבלה"
+
+#: src/control/Control.NotebookbarDraw.js:199
+msgid "Image (.png)"
+msgstr "תמונה (‎.png)"
+
+#: src/control/Control.NotebookbarImpress.js:30
+msgid "Start Presentation"
+msgstr "התחלת מצגת"
+
+#: src/control/Control.NotebookbarImpress.js:205
+msgid "ODF Presentation (.odp)"
+msgstr "מצגת ODF ‏(‎.odp)"
+
+#: src/control/Control.NotebookbarImpress.js:643
+msgid "Presentation"
 msgstr ""
 
-#: src/control/Control.Menubar.js:773
-msgid "All contents of the header will be deleted and can not be restored."
-msgstr ""
+#: src/control/Control.NotebookbarImpress.js:980
+msgid "Reset Zoom"
+msgstr "איפוס מרחק מתצוגה"
 
-#: src/control/Control.Menubar.js:775
-msgid "All contents of the footer will be deleted and can not be restored."
-msgstr ""
+#: src/control/Control.NotebookbarWriter.js:33
+msgid "Reference~s"
+msgstr "ה~פניות"
+
+#: src/control/Control.NotebookbarWriter.js:131
+msgid "ODF Text Document (.odt)"
+msgstr "מסמך טקסט ODF‏ (‎.odt)"
+
+#: src/control/Control.NotebookbarWriter.js:173
+msgid "EPUB Document (.epub)"
+msgstr "מסמך EPUB‏ (‎.epub)"
+
+#: src/control/Control.NotebookbarWriter.js:531
+#: src/control/Control.TopToolbar.js:101
+msgid "Default Style"
+msgstr "סגנון בררת מחדל"
+
+#: src/control/Control.NotebookbarWriter.js:535
+msgid "Text Body"
+msgstr "גוף הטקסט"
+
+#: src/control/Control.NotebookbarWriter.js:538
+msgid "Title"
+msgstr "כותרת"
+
+#: src/control/Control.PartsPreview.js:180
+msgid "preview of page "
+msgstr "תצוגה מקדימה של עמוד "
+
+#: src/control/Control.PresentationBar.js:100
+msgid "Are you sure you want to delete this page?"
+msgstr "למחוק עמוד זה?"
 
 #: src/control/Control.Scroll.Annotation.js:10
 msgid "Scroll up annotations"
-msgstr ""
+msgstr "גלילת ההערות למעלה"
 
 #: src/control/Control.Scroll.Annotation.js:12
 msgid "Scroll down annotations"
-msgstr ""
+msgstr "גלילת ההערות למטה"
 
-#: src/control/Control.Tabs.js:70
+#: src/control/Control.SearchBar.js:20
+msgid "Hide the search bar"
+msgstr "הסתרת סרגל החיפוש"
+
+#: src/control/Control.SearchBar.js:31
+msgid "Clear the search field"
+msgstr "מחיקת שדה החיפוש"
+
+#: src/control/Control.SheetsBar.js:27
+msgid "Scroll to the first sheet"
+msgstr "גלילה לגיליון הראשון"
+
+#: src/control/Control.SheetsBar.js:28
+msgid "Scroll left"
+msgstr "גלילה שמאלה"
+
+#: src/control/Control.SheetsBar.js:29
+msgid "Scroll right"
+msgstr "גלילה ימינה"
+
+#: src/control/Control.SheetsBar.js:30
+msgid "Scroll to the last sheet"
+msgstr "גלילה לגיליון האחרון"
+
+#: src/control/Control.SheetsBar.js:31
+msgid "Insert sheet"
+msgstr "הוספת גיליון"
+
+#: src/control/Control.StatusBar.js:179
+msgid "Cancel the search"
+msgstr "ביטול החיפוש"
+
+#: src/control/Control.StatusBar.js:279
+msgid "Number of Sheets"
+msgstr "מספר גליונות"
+
+#: src/control/Control.StatusBar.js:284
+msgid "Selected range of cells"
+msgstr "טווח נבחר של תאים"
+
+#: src/control/Control.StatusBar.js:289 src/control/Control.StatusBar.js:342
+msgid "Entering text mode"
+msgstr "כניסה למצב טקסט"
+
+#: src/control/Control.StatusBar.js:298 src/control/Control.StatusBar.js:347
+msgid "Selection Mode"
+msgstr "מצב בחירה"
+
+#: src/control/Control.StatusBar.js:303
+msgid "Choice of functions"
+msgstr "בחירת פונקציות"
+
+#: src/control/Control.StatusBar.js:307
+msgid "Average"
+msgstr "ממוצע"
+
+#: src/control/Control.StatusBar.js:308
+msgid "CountA"
+msgstr "כמות (לא ריקים)"
+
+#: src/control/Control.StatusBar.js:309
+msgid "Count"
+msgstr "כמות"
+
+#: src/control/Control.StatusBar.js:310
+msgid "Maximum"
+msgstr "מרבי"
+
+#: src/control/Control.StatusBar.js:311
+msgid "Minimum"
+msgstr "מזערי"
+
+#: src/control/Control.StatusBar.js:312
+msgid "Sum"
+msgstr "סכום"
+
+#: src/control/Control.StatusBar.js:313
+msgid "Selection count"
+msgstr "מונה בחירות"
+
+#: src/control/Control.StatusBar.js:332
+msgid "Number of Pages"
+msgstr "מספר עמודים"
+
+#: src/control/Control.StatusBar.js:337
+msgid "Word Counter"
+msgstr "מונה מילים"
+
+#: src/control/Control.StatusBar.js:368
+msgid "Number of Slides"
+msgstr "מספר שקופיות"
+
+#: src/control/Control.StatusBar.js:423 src/control/Control.StatusBar.js:424
+msgid "Permission Mode"
+msgstr "מצב הרשאה"
+
+#: src/control/Control.StatusBar.js:423
+msgid "Read-only"
+msgstr "קריאה בלבד"
+
+#: src/control/Control.StatusBar.js:457
+msgid "Select multiple cells"
+msgstr "בחירת מגוון תאים"
+
+#: src/control/Control.StatusBar.js:460
+msgid "Insert mode: inactive"
+msgstr "מצב הוספה: בלתי פעיל"
+
+#: src/control/Control.StatusBar.js:473
+msgid "Selection mode: inactive"
+msgstr "מצב בחירה: בלתי פעיל"
+
+#: src/control/Control.Tabs.js:54
 msgid "Insert sheet before this"
-msgstr ""
+msgstr "להוסיף גיליון לפני הנוכחי"
 
-#: src/control/Control.Tabs.js:76
+#: src/control/Control.Tabs.js:57
 msgid "Insert sheet after this"
+msgstr "להוסיף גיליון אחרי הנוכחי"
+
+#: src/control/Control.Tabs.js:81
+msgid "Move Sheet Left"
+msgstr "העברת הגיליון שמאלה"
+
+#: src/control/Control.Tabs.js:86
+msgid "Move Sheet Right"
+msgstr "העברת הגיליון ימינה"
+
+#: src/control/Control.Tabs.js:102
+msgid "Copy Sheet..."
 msgstr ""
 
-#: src/control/Ruler.js:97
-msgid "Left Margin"
-msgstr ""
+#: src/control/Control.Tabs.js:303
+msgid "Are you sure you want to delete sheet, %sheet%?"
+msgstr "למחוק את הגיליון %sheet%?"
 
-#: src/control/Ruler.js:98
-msgid "Right Margin"
-msgstr ""
+#: src/control/Control.Tabs.js:321 uiconfig/dialogs/AddTableAtEnd.js:20
+#: uiconfig/dialogs/RenameTable.js:23
+msgid "Enter new sheet name"
+msgstr "נא להקליד שם חדש לגיליון"
 
-#: src/control/Toolbar.js:338 src/control/Toolbar.js:350
-msgid "Downloading..."
-msgstr ""
+#: src/control/Control.Toolbar.js:238
+msgid "More..."
+msgstr "עוד…"
 
-#: src/control/Toolbar.js:366 src/map/Map.js:1245
-msgid "Saving..."
-msgstr ""
+#: src/control/Control.Toolbar.js:962
+msgid "Previous slide"
+msgstr "השקופית הקודמת"
 
-#: src/control/Toolbar.js:377
-msgid "Renaming..."
-msgstr ""
+#: src/control/Control.Toolbar.js:963
+msgid "Next slide"
+msgstr "השקופית הבאה"
 
-#: src/control/Toolbar.js:696
-msgid "This version of %productName is powered by"
-msgstr ""
-
-#: src/core/Socket.js:79
+#: src/control/Control.Toolbar.js:1024
 msgid ""
-"IE11 has reached its maximum number of connections. Please see this document "
-"to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
-"versions/windows/internet-explorer/ie-developer/general-info/"
-"ee330736(v=vs.85)#websocket-maximum-server-connections"
+"Conflict Undo/Redo with multiple users. Please use document repair to resolve"
+msgstr ""
+"סתירת ביטול/שחזור בין מספר משתמשים. נא להשתמש בתיקון מסמכים כדי לפתור זאת"
+
+#: src/control/Control.TopToolbar.js:155
+msgid "Borders"
+msgstr "גבולות"
+
+#: src/control/Control.TopToolbar.js:218
+msgid "Insert table"
+msgstr "הוספת טבלה"
+
+#: src/control/Control.TopToolbar.js:226
+msgid "Insert shapes"
+msgstr "הוספת צורות"
+
+#: src/control/Control.TopToolbar.js:228
+msgid "Insert connectors"
+msgstr "הוספת מחברים"
+
+#: src/control/Control.UserList.js:10
+msgid "%user has joined"
+msgstr "%user מעכשיו בערוץ"
+
+#: src/control/Control.UserList.js:11
+msgid "%user has left"
+msgstr "%user לא בערוץ עוד"
+
+#: src/control/Control.UserList.js:34
+msgid "%n users"
+msgstr "%n משתמשים"
+
+#: src/control/Control.UserList.js:35
+msgid "1 user"
+msgstr "משתמש אחד"
+
+#: src/control/Control.UserList.js:36
+msgid "0 users"
+msgstr "אין משתמשים"
+
+#: src/control/Control.UserList.js:178 src/control/Control.UserList.js:344
+msgid "Always follow the editor"
+msgstr "תמיד לעקוב אחר העורך"
+
+#: src/control/Control.UserList.js:292
+msgid "Readonly"
+msgstr "קריאה בלבד"
+
+#: src/control/Control.UserList.js:347
+msgid "Current"
+msgstr "נוכחי"
+
+#: src/control/Parts.js:422
+msgid "Show Selected Sheets"
+msgstr "הצגת הגיליונות הנבחרים"
+
+#: src/control/Permission.js:66
+msgid "The document could not be locked, and is opened in read-only mode."
+msgstr "לא ניתן לנעול את המסמך כיוון שהוא פתוח במצב לקריאה בלבד."
+
+#: src/control/Permission.js:68 src/control/Permission.js:85
+msgid "Server returned this reason:"
+msgstr "השרת החזיר את הסיבה הזאת:"
+
+#: src/control/Permission.js:83
+msgid "The document could not be locked."
+msgstr "לא ניתן לנעול את המסמך."
+
+#: src/control/Permission.js:135
+msgid "Enter a file name"
+msgstr "נא למלא שם קובץ"
+
+#: src/control/Permission.js:136
+msgid "filename"
+msgstr "שם קובץ"
+
+#: src/control/Permission.js:153
+msgid ""
+"This document may contain formatting or content that cannot be saved in the "
+"current file format."
+msgstr "המסמך עשוי להכיל עיצוב או תוכן שלא ניתן לשמור בתצורת הקובץ הנוכחית."
+
+#: src/control/Permission.js:164
+msgid "Save as ODF format"
+msgstr "לשמור בתצורת ODF"
+
+#: src/control/Permission.js:165
+msgid "Continue editing"
+msgstr "להמשיך בעריכה"
+
+#: src/control/Permission.js:165
+msgid "Continue read only"
 msgstr ""
 
-#: src/core/Socket.js:81
-msgid "Oops, there is a problem connecting to LibreOffice Online : "
+#: src/control/Ruler.js:360
+msgid "Left Margin"
+msgstr "שוליים שמאליים"
+
+#: src/control/Ruler.js:361
+msgid "Right Margin"
+msgstr "שוליים ימניים"
+
+#: src/control/Ruler.js:622
+msgid "Insert tabstop"
+msgstr "הוספת טאב עצירה"
+
+#: src/control/Ruler.js:629
+msgid "Delete tabstop"
+msgstr "מחיקת טאב עצירה"
+
+#: src/control/Signing.js:196
+msgid "Please enter the PIN Code"
+msgstr "נא להקליד את קוד ה־PIN"
+
+#: src/control/Signing.js:215
+msgid "Error at login."
+msgstr "שגיאה בכניסה."
+
+#: src/control/Signing.js:228
+msgid "Please scan the code"
+msgstr "נא לסרוק את הקוד"
+
+#: src/control/Signing.js:243
+msgid "Couldn't get the QR code image."
+msgstr "לא ניתן לקבל את תמונת קוד ה־QR."
+
+#: src/control/Signing.js:270
+msgid "Error when trying to restore access to identity."
+msgstr "אירעה שגיאה בעת הניסיון לשחזר את הגישה לזהות."
+
+#: src/control/Signing.js:276
+msgid "PIN Code"
+msgstr "קוד PIN"
+
+#: src/control/Signing.js:277
+msgid "Please enter the PIN code from the EMail or SMS"
+msgstr "נא להקליד את קוד ה־PIN מהדוא״ל או מהמסרון (SMS)"
+
+#: src/control/Signing.js:298
+msgid "Login from email or mobile number"
+msgstr "כניסה עם דוא״ל או מספר סלולרי"
+
+#: src/control/Signing.js:332
+msgid "Select document type to upload"
+msgstr "בחירת מסמך להעלאה"
+
+#: src/control/Signing.js:333
+msgid "Type:"
+msgstr "סוג:"
+
+#: src/control/Signing.js:364 src/control/Signing.js:673
+msgid "Document uploaded."
+msgstr "מסמך הועלה."
+
+#: src/control/Signing.js:491
+msgid "Select identity:"
+msgstr "בחירת זהות:"
+
+#: src/control/Signing.js:492
+msgid "Login from mobile"
+msgstr "כניסה מנייד"
+
+#: src/control/Signing.js:493
+msgid "Recover from email"
+msgstr "שחזור מדוא״ל"
+
+#: src/control/Signing.js:601
+msgid "Select passport"
+msgstr "בחירת דרכון"
+
+#: src/control/Signing.js:602
+msgid "Passport: N/A"
+msgstr "דרכון: לא זמין"
+
+#: src/control/Signing.js:604
+msgid "Sign"
+msgstr "חתום"
+
+#: src/control/Signing.js:606
+msgid "Status:"
+msgstr "מצב:"
+
+#: src/control/Signing.js:607
+msgid "N/A"
+msgstr "לא זמין"
+
+#: src/control/Signing.js:610
+msgid "Login"
+msgstr "כניסה"
+
+#: src/control/Signing.js:620
+msgid "Not Signed"
+msgstr "לא חתום"
+
+#: src/control/Signing.js:623
+msgid "This document is digitally signed and the signature is valid."
+msgstr "המסמך חתום דיגיטלית והחתימה תקינה."
+
+#: src/control/Signing.js:625
+msgid "Signed and validated"
+msgstr "חתום ומאומת"
+
+#: src/control/Signing.js:628
+msgid "This document has an invalid signature."
+msgstr "למסמך זה יש חתימה שגויה."
+
+#: src/control/Signing.js:630
+msgid "Signature broken"
+msgstr "חתימה פגומה"
+
+#: src/control/Signing.js:633
+msgid "The signature was valid, but the document has been modified."
+msgstr "החתימה תקינה אך המסמך נערך."
+
+#: src/control/Signing.js:635
+msgid "Signed but document modified"
+msgstr "חתום אבל המסמך נערך"
+
+#: src/control/Signing.js:638
+msgid "The signature is OK, but the certificate could not be validated."
+msgstr "החתימה תקינה אך לא ניתן לאמת את האישור."
+
+#: src/control/Signing.js:640
+msgid "Signed but not validated"
+msgstr "חתום אך לא מאומת"
+
+#: src/control/Signing.js:643
+msgid "The signature is OK, but the document is only partially signed."
+msgstr "החתימה תקינה אך המסמך חתום באופן חלקי בלבד."
+
+#: src/control/Signing.js:645
+msgid "Signed but not all files are signed"
+msgstr "חתום אבל לא כל הקבצים חתומים"
+
+#: src/control/Signing.js:648
+msgid ""
+"The signature is OK, but the certificate could not be validated and the "
+"document is only partially signed."
+msgstr "החתימה בסדר אך לא ניתן לתקף את האישור והמסמך חתום חלקית בלבד."
+
+#: src/control/Signing.js:650
+msgid "Signed but not validated and not all files are signed"
+msgstr "חתום אך לא תוקף ולא כל הקבצים חתומים"
+
+#: src/control/Toolbar.js:230 src/control/Toolbar.js:242
+#: uiconfig/dialogs/PdfWatermarkText.js:65
+msgid "Downloading..."
+msgstr "בהורדה…"
+
+#: src/control/Toolbar.js:258
+msgid "Saving..."
+msgstr "מתבצעת שמירה…"
+
+#: src/control/Toolbar.js:269
+msgid "Renaming..."
+msgstr "ניתן שם אחר…"
+
+#: src/control/Toolbar.js:574
+msgid "I understand the risks"
+msgstr "הסיכונים מובנים לי"
+
+#: src/control/Toolbar.js:596
+msgid "Dismiss"
+msgstr "התעלמות"
+
+#: src/control/Toolbar.js:614
+#, javascript-format
+msgid "Explore the new %oxoolVersion"
 msgstr ""
 
-#: src/core/Socket.js:274
+#: src/control/Toolbar.js:615 src/control/Toolbar.js:619
+msgid "OxOffice Online Development Edition"
+msgstr ""
+
+#: src/control/Toolbar.js:616
+#, javascript-format
+msgid ""
+"Enjoy the latest developments in online productivity, free for you to use, "
+"to explore and to use with others in the browser. <a href=\"%oxoolAppsURL\" "
+"target=\"_blank\">Apps</a> are also available for Android and iOS. "
+"%oxoolVersion introduces important improvements, in the areas of usability, "
+"visual presentation and performance."
+msgstr ""
+
+#: src/control/Toolbar.js:618
+msgid "Discover all the changes"
+msgstr ""
+
+#: src/control/Toolbar.js:620
+#, javascript-format
+msgid ""
+"Check the <a href=\"%oxoolReleaseNotesURL\" target=\"_blank\">release notes</"
+"a> and learn all about the latest milestone in performance particularly for "
+"larger groups working on documents, new native sidebar, new re-worked avatar "
+"list, asynchronous saving, faster spell checking and more."
+msgstr ""
+
+#: src/control/Toolbar.js:622
+msgid "Integrate OxOffice Online into your webapp"
+msgstr ""
+
+#: src/control/Toolbar.js:623
+msgid "Or get involved in the development"
+msgstr ""
+
+#: src/control/Toolbar.js:624
+#, javascript-format
+msgid ""
+"Learn more about integrating into your web application in the <a href="
+"\"%oxoolSdkURL\" target=\"_blank\">OxOffice Online SDK</a>. Or head over to "
+"the <a href=\"%oxoolStepByStepURL\" target=\"_blank\">step-by-step "
+"instructions</a> and build CODE from scratch. You can also help out with <a "
+"href=\"%oxoolTranslationsURL\" target=\"_blank\">translations</a> or by <a "
+"href=\"%oxoolBugreportURL\" target=\"_blank\">filing a bug report</a> with "
+"all the essential steps on how to reproduce it."
+msgstr ""
+
+#: src/control/Toolbar.js:626 src/control/Toolbar.js:627
+#, fuzzy
+msgid "Next"
+msgstr "טקסט"
+
+#: src/control/Toolbar.js:630
+msgid "Learn more about the enterprise-ready versions"
+msgstr ""
+
+#: src/control/Toolbar.js:679
+msgid ""
+"We are sorry, the information about the latest updates is not available."
+msgstr "המידע על העדכונים האחרונים אינו זמין, עמך הסליחה."
+
+#: src/control/Toolbar.js:729
+msgid "This version of %productName is powered by"
+msgstr "גרסה זו של %productName מופעלת על גבי"
+
+#: src/control/Toolbar.js:739
+msgid "\"Slow Proxy\""
+msgstr "„מתווך אטי”"
+
+#: src/control/Toolbar.js:885
+msgid "Insert hyperlink"
+msgstr "הוספת קישור"
+
+#: src/control/Toolbar.js:889
+msgid "Link"
+msgstr "קישור"
+
+#: src/core/Socket.js:56
+msgid "Oops, there is a problem connecting to %productName: "
+msgstr "אופס, אירעה תקלה בעת התחברות אל %productName: "
+
+#: src/core/Socket.js:491
+msgid "Server is now reachable. We have to refresh the page now."
+msgstr "השרת זמין כעת. עלינו לרענן את העמוד."
+
+#: src/core/Socket.js:493
+msgid "Server is now reachable..."
+msgstr "השרת נגיש כרגע…"
+
+#: src/core/Socket.js:497
+msgid "RELOAD"
+msgstr "רענון"
+
+#: src/core/Socket.js:504
+msgid "OXOOLWSD version:"
+msgstr "גרסת OXOOLWSD:"
+
+#: src/core/Socket.js:516
+msgid "Served by:"
+msgstr "מוגש על ידי:"
+
+#: src/core/Socket.js:522
 msgid "Unsupported server version."
-msgstr ""
+msgstr "גרסת השרת אינה נתמכת."
 
-#: src/core/Socket.js:331
+#: src/core/Socket.js:526
+msgid "LOKit version:"
+msgstr "גרסת LOKit:"
+
+#: src/core/Socket.js:640
 msgid "Session terminated by document owner"
-msgstr ""
+msgstr "ההפעלה נסגרה על ידי בעלי המסמך"
 
-#: src/core/Socket.js:335
+#: src/core/Socket.js:645
 msgid "Idle document - please click to reload and resume editing"
-msgstr ""
+msgstr "מסמך מושהה - יש ללחוץ כדי לטעון מחדש ולהמשיך בעריכה"
 
-#: src/core/Socket.js:342
+#: src/core/Socket.js:647
+msgid "Idle document - please tap to reload and resume editing"
+msgstr "מסמך מושהה - יש לגעת כדי לטעון מחדש ולהמשיך בעריכה"
+
+#: src/core/Socket.js:655
 msgid "Server is shutting down for maintenance (auto-saving)"
-msgstr ""
+msgstr "השרת נכבה לצורכי תחזוקה (מתבצעת שמירה אוטומטית)"
 
-#: src/core/Socket.js:346
+#: src/core/Socket.js:659
 msgid "Oops, there is a problem connecting the document"
-msgstr ""
+msgstr "אופס, אירעה תקלה בעת התחברות למסמך"
 
-#: src/core/Socket.js:350
-msgid "Server is recycling and will be available shortly"
-msgstr ""
+#: src/core/Socket.js:663
+msgid "Server is down, restarting automatically. Please wait."
+msgstr "השרת מושבת, תתבצע הפעלה אוטומטית מחדש. נא להמתין."
 
-#: src/core/Socket.js:382
+#: src/core/Socket.js:691
 msgid ""
 "Document has changed in storage. Loading the new document. Your version is "
 "available as revision."
-msgstr ""
+msgstr "המסמך השתנה באחסון. המסמך החדש נטען. הגרסה שלך זמינה לסקירה."
 
-#: src/core/Socket.js:388
+#: src/core/Socket.js:697
 msgid ""
 "Restoring older revision. Any unsaved changes will be available in version "
 "history"
+msgstr "מהדורה ישנה משוחזרת. שינויים שלא יישמרו יהיו זמינים בהיסטוריית הגרסאות"
+
+#: src/core/Socket.js:703
+msgid "Reloading the document after rename"
+msgstr "רענון המסמך אחרי שינוי שם"
+
+#: src/core/Socket.js:823
+msgid "Discard"
+msgstr "התעלמות"
+
+#: src/core/Socket.js:830
+msgid "Overwrite"
+msgstr "דריסה"
+
+#: src/core/Socket.js:845
+msgid "Save to new file"
+msgstr "שמירה לקובץ חדש"
+
+#: src/core/Socket.js:872
+msgid "Document has been changed"
 msgstr ""
 
-#: src/core/Socket.js:510
+#: src/core/Socket.js:872
 msgid ""
 "Document has been changed in storage. What would you like to do with your "
 "unsaved changes?"
-msgstr ""
+msgstr "המסמך נערך באחסון. מה ברצונך לעשות בנוגע לשינויים שלא שמרת?"
 
-#: src/core/Socket.js:515
-msgid "Discard"
-msgstr ""
-
-#: src/core/Socket.js:520
-msgid "Overwrite"
-msgstr ""
-
-#: src/core/Socket.js:525
-msgid "Save to new file"
-msgstr ""
-
-#: src/core/Socket.js:596
+#: src/core/Socket.js:942
 msgid "Document requires password to view."
-msgstr ""
+msgstr "נדרשת ססמה כדי לצפות במסמך."
 
-#: src/core/Socket.js:599
+#: src/core/Socket.js:945
 msgid "Document requires password to modify."
-msgstr ""
+msgstr "נדרשת ססמה כדי לערוך את המסמך."
 
-#: src/core/Socket.js:601
+#: src/core/Socket.js:947
 msgid "Hit Cancel to open in view-only mode."
-msgstr ""
+msgstr "יש ללחוץ על ביטול כדי לפתוח במצב צפייה בלבד."
 
-#: src/core/Socket.js:605
+#: src/core/Socket.js:951
 msgid "Wrong password provided. Please try again."
-msgstr ""
+msgstr "הססמה שסופקה שגויה. נא לנסות שוב."
 
-#: src/core/Socket.js:721
+#: src/core/Socket.js:1061
+msgid "Someone"
+msgstr "מישהו"
+
+#: src/core/Socket.js:1063
+msgid " saved this document as "
+msgstr " שמר את המסמך הזה בתור "
+
+#: src/core/Socket.js:1063
+msgid ". Do you want to join?"
+msgstr ". מעניין אותך להצטרף?"
+
+#: src/core/Socket.js:1072
+msgid "Loading..."
+msgstr "בטעינה…"
+
+#: src/core/Socket.js:1072
 msgid "Connecting..."
-msgstr ""
+msgstr "מתבצעת התחברות…"
 
-#: src/core/Socket.js:881
+#: src/core/Socket.js:1090
+msgid "The document is being renamed and will reload shortly"
+msgstr "שם המסמך נערך והוא ירוענן בעוד זמן קצר"
+
+#: src/core/Socket.js:1467
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
-msgstr ""
+msgstr "ובכן, לא נעים, לא הצלחנו להתחבר למסמך שלך. נא לנסות שוב מאוחר יותר."
+
+#: src/core/Socket.js:1484
+msgid "Reconnecting..."
+msgstr "התחברות מחדש…"
+
+#: src/core/Socket.js:1490
+msgid "The server has been disconnected."
+msgstr "השרת התנתק."
 
 #: src/errormessages.js:13
 msgid ""
 "No disk space left on server, please contact the server administrator to "
 "continue."
-msgstr ""
+msgstr "לא נשאר מקום פנוי בשרת, נא ליצור קשר עם הנהלת השרת כדי להמשיך."
 
 #: src/errormessages.js:14
 msgid ""
-"The host URL is empty. The loolwsd server is probably misconfigured, please "
+"The host URL is empty. The oxoolwsd server is probably misconfigured, please "
 "contact the administrator."
 msgstr ""
+"כתובת המארח ריקה. יתכן כי שרת ה־oxoolwsd אינו מוגדר נכון, נא ליצור קשר עם "
+"ההנהלה."
 
 #: src/errormessages.js:15
 msgid ""
@@ -978,158 +2556,319 @@ msgid ""
 "more than {docs} documents or {connections} connections are in use "
 "concurrently"
 msgstr ""
+"זו גרסה בלתי נתמכת של {productname}. כדי להימנע מהרושם שהיא מותאמת להטמעה "
+"בארגונים גדולים, הודעה זו מופיעה כאשר קיימים למעלה מ־{docs} מסמכים או "
+"{connections} חיבורים מתבצעים במקביל"
 
 #: src/errormessages.js:16
 msgid "More information and support"
-msgstr ""
+msgstr "מידע נוסף ותמיכה"
 
 #: src/errormessages.js:17
 msgid ""
 "This service is limited to %0 documents, and %1 connections total by the "
 "admin. This limit has been reached. Please try again later."
 msgstr ""
+"שירות זה מוגבל לכדי %0 מסמכים ו־%1 חיבורים סך הכול על ידי המנהל. הגעת למגבלה "
+"זו. נא לנסות שוב מאוחר יותר."
 
 #: src/errormessages.js:18
 msgid ""
 "Service is unavailable. Please try again later and report to your "
 "administrator if the issue persists."
 msgstr ""
+"השירות אינו זמין. נא לנסות שוב מאוחר יותר ולדווח להנהלה שלך אם התקלה נמשכת."
 
 #: src/errormessages.js:19
 msgid ""
 "Unauthorized WOPI host. Please try again later and report to your "
 "administrator if the issue persists."
 msgstr ""
+"מארח MOPI בלתי מורשה. נא לנסות שוב מאוחר יותר ולדווח למנהל שלך אם התקלה "
+"נמשכת."
 
 #: src/errormessages.js:20
 msgid "Wrong or missing WOPISrc parameter, please contact support."
-msgstr ""
+msgstr "המשתנים של WOPISrc חסרים או שגויים, נא ליצור קשר עם התמיכה."
 
 #: src/errormessages.js:21
 msgid ""
 "Your session will expire in %time. Please save your work and refresh the "
 "session (or webpage) to continue."
 msgstr ""
+"ההפעלה שלך תפוג בעוד %time. נא לשמור את העבודה שלך ולרענן את ההפעלה (או את "
+"דף האינטרנט) כדי להמשיך."
 
 #: src/errormessages.js:22
 msgid ""
 "Your session has been expired. Further changes to document might not be "
 "saved. Please refresh the session (or webpage) to continue."
 msgstr ""
+"הזמן שהוקצב להפעלה שלך פג. ייתכן ששינויים נוספים למסמך לא יישמרו. נא לרענן "
+"את ההפעלה (או את עמוד האינטרנט) כדי להמשיך."
 
 #: src/errormessages.js:23
 msgid ""
 "Failed to load the document. Please ensure the file type is supported and "
 "not corrupted, and try again."
-msgstr ""
+msgstr "טעינת המסמך נכשלה. נא לוודא שסוג הקובץ נתמך ושהקובץ לא פגום ולנסות שוב."
 
 #: src/errormessages.js:24
+msgid "Invalid link: '%url'"
+msgstr "קישור שגוי: ‚%url’"
+
+#: src/errormessages.js:25
+msgid ""
+"You are leaving the editor, are you sure you want to visit the following URL?"
+msgstr "פעולה זו תוביל ליציאה מהעורך, לבקר בכתובת הבאה?"
+
+#: src/errormessages.js:26
 msgid ""
 "Failed to load the document. This document is either malformed or is taking "
 "more resources than allowed. Please contact the administrator."
 msgstr ""
+"טעינת המסמך נכשלה. כנראה שהמסמך הזה פגום או שהוא צורך יותר משאבים משמותר לו. "
+"נא ליצור קשר עם הנהלת המערכת."
 
-#: src/errormessages.js:25
-msgid "Invalid link: '%url'"
-msgstr ""
+#: src/errormessages.js:27
+msgid "Cleaning up the document from the last session."
+msgstr "המסמך מההפעלה האחרונה מתפנה."
 
-#: src/errormessages.js:26
-msgid "You are leaving the editor, are you sure you want to proceed?"
-msgstr ""
+#: src/errormessages.js:28
+msgid ""
+"We are in the process of cleaning up this document from the last session, "
+"please try again later."
+msgstr "אנו מפנים את המסמך הזה מההפעלה האחרונה, נא לנסות שוב מאוחר יותר."
 
-#: src/errormessages.js:29
+#: src/errormessages.js:32
+msgid "Failed to load document."
+msgstr "טעינת המסמך נכשלה."
+
+#: src/errormessages.js:33
+msgid "Save failed due to no disk space left. Document will now be read-only."
+msgstr "השמירה נכשלה עקב מיעוט מקום פנוי בכונן. המסמך יהיה לקריאה בלבד מעתה."
+
+#: src/errormessages.js:34 src/errormessages.js:42
+msgid "Document cannot be saved due to expired or invalid access token."
+msgstr "לא ניתן לשמור את המסמך עקב אסימון גישה פגום או שתוקפו פג."
+
+#: src/errormessages.js:35
+msgid "Document cannot be saved."
+msgstr "לא ניתן לשמור את המסמך."
+
+#: src/errormessages.js:36
+msgid "Document cannot be renamed."
+msgstr "לא ניתן לשנות את שם המסמך."
+
+#: src/errormessages.js:40
 #, javascript-format
 msgid ""
 "Failed to read document from storage. Please contact your storage server "
 "(%storageserver) administrator."
 msgstr ""
+"קריאת המסמך מהאחסון נכשלה. נא ליצור קשר עם הנהלת שרת האחסון שלך "
+"(%storageserver)."
 
-#: src/errormessages.js:30
+#: src/errormessages.js:41
 #, javascript-format
 msgid ""
 "Save failed due to no disk space left on storage server. Document will now "
 "be read-only. Please contact the server (%storageserver) administrator to "
 "continue editing."
 msgstr ""
+"השמירה נכשלה כיוון שלא נשאר מקום פנוי בשרת האחסון. המסמך יהיה לקריאה בלבד. "
+"נא ליצור קשר עם הנהלת השרת (%storageserver) כדי להמשיך בעריכה."
 
-#: src/errormessages.js:31
-msgid "Document cannot be saved due to expired or invalid access token."
-msgstr ""
-
-#: src/errormessages.js:32
+#: src/errormessages.js:43
 msgid ""
 "Document cannot be saved. Check your permissions or contact the storage "
 "server administrator."
 msgstr ""
+"לא ניתן לשמור את המסמך. נא לבדוק את ההרשאות שלך או ליצור קשר עם הנהלת שרת "
+"האחסון."
 
-#: src/layer/marker/Annotation.js:210
-msgid "Accept change"
+#: src/errormessages.js:44
+msgid ""
+"Document cannot be renamed. Check your permissions or contact the storage "
+"server administrator."
 msgstr ""
+"לא ניתן לשנות את שם המסמך. נא לבדוק את ההרשאות שלך או ליצור קשר עם הנהלת שרת "
+"האחסון."
 
-#: src/layer/marker/Annotation.js:215
-msgid "Reject change"
-msgstr ""
+#: src/errormessages.js:49
+msgid "Uploading file to server failed, file not found."
+msgstr "העלאת הקובץ לשרת נכשלה, הקובץ לא נמצא."
 
-#: src/layer/marker/Annotation.js:224
-msgid "Open menu"
-msgstr ""
+#: src/errormessages.js:50
+msgid "Uploading file to server failed, the file is too large."
+msgstr "העלאת הקובץ לשרת נכשלה, הקובץ גדול מדי."
 
-#: src/layer/marker/Annotation.js:244 src/layer/tile/TileLayer.js:240
-msgid "Reply"
-msgstr ""
+#: src/layer/tile/CanvasTileLayer.js:1750
+msgid "Functions"
+msgstr "פונקציות"
 
-#: src/layer/tile/TileLayer.js:234
+#: src/layer/tile/CanvasTileLayer.js:4808
+msgid "No Comments"
+msgstr "אין הערות"
+
+#: src/layer/tile/CommentListSection.ts:774
 msgid "Modify"
-msgstr ""
+msgstr "שינוי"
 
-#: src/layer/tile/TileLayer.js:246
+#: src/layer/tile/CommentListSection.ts:780
+#: src/layer/tile/CommentSection.ts:125
+msgid "Reply"
+msgstr "תגובה"
+
+#: src/layer/tile/CommentListSection.ts:786
 msgid "Remove"
-msgstr ""
+msgstr "הסרה"
 
-#: src/map/Map.js:214
+#: src/layer/tile/CommentListSection.ts:792
+msgid "Remove Thread"
+msgstr "הסרת שרשור"
+
+#: src/layer/tile/CommentListSection.ts:798
+msgid "Resolve"
+msgstr "פתרון"
+
+#: src/layer/tile/CommentListSection.ts:798
+msgid "Unresolve"
+msgstr "ביטול פתרון"
+
+#: src/layer/tile/CommentListSection.ts:804
+msgid "Unresolve Thread"
+msgstr "ביטול פתרון שרשור"
+
+#: src/layer/tile/CommentListSection.ts:804
+msgid "Resolve Thread"
+msgstr "פתרון שרשור"
+
+#: src/layer/tile/CommentSection.ts:255
+msgid "Open menu"
+msgstr "פתיחת תפריט"
+
+#: src/layer/tile/CommentSection.ts:272 src/layer/tile/CommentSection.ts:273
+msgid "Accept change"
+msgstr "קבלת השינוי"
+
+#: src/layer/tile/CommentSection.ts:279 src/layer/tile/CommentSection.ts:280
+msgid "Reject change"
+msgstr "דחיית השינוי"
+
+#: src/main.js:88
+msgid "Warning! The browser you are using is not supported."
+msgstr "אזהרה! הדפדפן שלך אינו נתמך."
+
+#: src/map/Clipboard.js:120
+msgid "To paste outside %productName, please first click the 'download' button"
+msgstr "כדי להדביק מחוץ ל־%productName, יש ללחוץ על תחילה על כפתור ה־‚הורדה’"
+
+#: src/map/Clipboard.js:130
+msgid "Copying from the document disabled"
+msgstr "הושבתה העתקה מהמסמך"
+
+#: src/map/Clipboard.js:287
+msgid "Failed to download clipboard, please re-copy"
+msgstr "הורדת לוח הגזירים נכשלה, נא להעתיק מחדש"
+
+#: src/map/Clipboard.js:843
+msgid "<p>Please use the copy/paste buttons on your on-screen keyboard.</p>"
+msgstr "<p>נא להשתמש בכפתורים להעתקה/הדבקה שבמקלדת הצפה על גבי המסך.</p>"
+
+#: src/map/Clipboard.js:845
+msgid ""
+"<p>Your browser has very limited access to the clipboard, so use these "
+"keyboard shortcuts:</p><table class=\"warn-copy-paste\"><tr><td><kbd>Ctrl</"
+"kbd><span class=\"kbd--plus\">+</span><kbd>C</kbd></td><td><kbd>Ctrl</"
+"kbd><span class=\"kbd--plus\">+</span><kbd>X</kbd></td><td><kbd>Ctrl</"
+"kbd><span class=\"kbd--plus\">+</span><kbd>V</kbd></td></tr><tr><td>Copy</"
+"td><td>Cut</td><td>Paste</td></tr></table>"
+msgstr ""
+"<p>לדפדפן שלך יש גישה מאוד מוגבלת ללוח הגזירים, לכן כדאי להשתמש בקיצורי "
+"המקלדת:</p><table class=\"warn-copy-paste\"><tr><td><kbd>Ctrl</kbd><span "
+"class=\"kbd--plus\">+</span><kbd>C</kbd></td><td><kbd>Ctrl</kbd><span class="
+"\"kbd--plus\">+</span><kbd>X</kbd></td><td><kbd>Ctrl</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>V</kbd></td></tr><tr><td>העתקה</td><td>גזירה</td><td>הדבק"
+"ה</td></tr></table>"
+
+#: src/map/Clipboard.js:866
+msgid ""
+"<p>If you would like to share larger elements of your document with other "
+"applications it is necessary to first download them onto your device. To do "
+"that press the \"Start download\" button below, and when complete click "
+"\"Confirm copy to clipboard\".</p><p>If you are copy and pasting between "
+"documents inside %productName, there is no need to download.</p>"
+msgstr ""
+"<p>אם ברצונך לשתף רכיבים גדולים יותר מהמסמך שלך עם יישומים אחרים צריך להוריד "
+"אותם למכשיר שלך קודם. כדי לעשות זאת, יש ללחוץ על הכפתור „התחלת הורדה” שלהלן, "
+"לאחר סיום ההורדה יש ללחוץ על „אישור העתקה ללוח הגזירים”.</p><p>אם העתקת "
+"והדבקת בין מסמכים בתוך %productName, אין צורך להוריד.</p>"
+
+#: src/map/Clipboard.js:882
+msgid ""
+"<p>A download due to a large copy/paste operation has already started. "
+"Please, wait for the current download or cancel it before starting a new "
+"one</p>"
+msgstr ""
+"<p>כבר החלה הורדה עקב פעילות העתקה/הדבקה גדולה. נא להמתין לסיום ההורדה "
+"הנוכחית או לבטל אותה בטרם התחלת הורדה חדשה</p>"
+
+#: src/map/Map.js:233
 msgid "Initializing..."
-msgstr ""
+msgstr "באתחול…"
 
-#: src/map/Map.js:332
-msgid "Last modification"
-msgstr ""
+#: src/map/Map.js:422 src/map/Map.js:425 src/map/Map.js:428 src/map/Map.js:431
+msgid "Last saved:"
+msgstr "שמירה אחרונה:"
 
-#: src/map/Map.js:829
-msgid "Please enter a command starting with \".uno:\" or \"macro:///\""
-msgstr ""
+#: src/map/Map.js:1433
+msgid "Inactive document"
+msgstr "מסמך בלתי פעיל"
 
-#: src/map/Map.js:832
-msgid "Invalid Command."
-msgstr ""
+#: src/map/Map.js:1434
+msgid "Please click to resume editing"
+msgstr "לא ללחוץ כדי להמשיך לערוך"
 
-#: src/map/Map.js:1105
-msgid "Inactive document - please click to resume editing"
-msgstr ""
+#: src/map/handler/Map.FileInserter.js:100
+#, javascript-format
+msgid ""
+"The file of type: %0 cannot be uploaded to server since the file has no name"
+msgstr "לא ניתן להעלות קובץ מסוג: %0 לשרת כיוון שלקובץ אין שם"
 
-#: src/map/Map.js:1248
-msgid "Loading..."
-msgstr ""
+#: src/map/handler/Map.FileInserter.js:102
+#, javascript-format
+msgid ""
+"The file of type: %0 cannot be uploaded to server since the file is empty"
+msgstr "לא ניתן להעלות קובץ מסוג: %0 לשרת כיוון שהקובץ ריק"
 
-#: src/map/handler/Map.FileInserter.js:105
+#: src/map/handler/Map.FileInserter.js:133
 msgid "Uploading..."
-msgstr ""
+msgstr "בהעלאה…"
 
-#: src/map/handler/Map.WOPI.js:103
+#: src/map/handler/Map.FileInserter.js:147
+msgid "Uploading file to server failed with status: %0"
+msgstr "העלאת הקובץ לשרת נכשלה עם מצב השגיאה: %0"
+
+#: src/map/handler/Map.Keyboard.js:487
+msgid ""
+"<p>Your browser has very limited access to the clipboard</p><p>Please press "
+"now: <kbd>Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>V</kbd> to see "
+"more options</p><p class=\"vex-footnote\">Close popup to ignore paste "
+"special</p>"
+msgstr ""
+"<p>לדפדפן שלך יש גישה מוגבלת במיוחד ללוח הגזירים</p><p>נא להקיש כעת: "
+"<kbd>Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>V</kbd> כדי לראות "
+"אפשרויות נוספות</p><p class=\"vex-footnote\">אפשר לסגור את החלונית הקופצת כי "
+"להתעלם מהדבקה מיוחדת</p>"
+
+#: src/map/handler/Map.WOPI.js:133
 msgid "Creating new file from template..."
-msgstr ""
+msgstr "נוצר קובץ חדש מתבנית…"
 
-#: src/map/handler/Map.WOPI.js:318
+#: src/map/handler/Map.WOPI.js:410
 msgid "Creating copy..."
-msgstr ""
-
-#: uiconfig/dialogs/Action.js:87
-#, fuzzy
-msgid "Are you sure you want to delete this slide?"
-msgstr "למחוק עמוד זה?"
-
-#: uiconfig/dialogs/AddTableAtEnd.js:20 uiconfig/dialogs/RenameTable.js:23
-msgid "Enter new sheet name"
-msgstr ""
+msgstr "נוצר עותק…"
 
 #: uiconfig/dialogs/AddTableAtEnd.js:21 uiconfig/dialogs/InsertTable.js:29
 msgid "Automatic naming"
@@ -1144,6 +2883,93 @@ msgid ""
 "or the character ' (apostrophe) as first or last character."
 msgstr ""
 
+#: uiconfig/dialogs/AutoFilter.js:13 uiconfig/dialogs/AutoFilter.js:160
+msgid "Top 10"
+msgstr ""
+
+#: uiconfig/dialogs/AutoFilter.js:14 uiconfig/dialogs/AutoFilter.js:170
+msgid "Non-Empty"
+msgstr ""
+
+#: uiconfig/dialogs/AutoFilter.js:15 uiconfig/dialogs/AutoFilter.js:253
+msgid "Search items"
+msgstr ""
+
+#: uiconfig/dialogs/AutoFilter.js:16
+msgid "Show only the current item."
+msgstr ""
+
+#: uiconfig/dialogs/AutoFilter.js:17
+msgid "Hide only the current item."
+msgstr ""
+
+#: uiconfig/dialogs/AutoFilter.js:18 uiconfig/dialogs/AutoFilter.js:629
+msgid "Ctrl + left mouse button for multiple selections."
+msgstr ""
+
+#: uiconfig/dialogs/AutoFilter.js:165 uiconfig/dialogs/AutoFilter.js:412
+msgid "Empty"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:37
+msgid "Size"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:39
+#, fuzzy
+msgid "Insert"
+msgstr "הו~ספה"
+
+#: uiconfig/dialogs/BindingLineDialog.js:40
+msgid "First page"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:41
+msgid "Current page"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:42
+msgid "All pages"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:44 uiconfig/dialogs/InsertTable.js:21
+msgid "Position"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:45
+msgid "Left"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:46
+#, fuzzy
+msgid "Right"
+msgstr "הדוק"
+
+#: uiconfig/dialogs/BindingLineDialog.js:47
+msgid "Top"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:48
+msgid "Bottom"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:50
+msgid "Distance boundary"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:50 uiconfig/dialogs/ColumnWidth.js:21
+#: uiconfig/dialogs/RowHeight.js:21
+msgid "cm"
+msgstr ""
+
+#: uiconfig/dialogs/BindingLineDialog.js:98
+msgid "Binding line"
+msgstr ""
+
+#: uiconfig/dialogs/ColumnWidth.js:19
+msgid "Width"
+msgstr ""
+
 #: uiconfig/dialogs/DeleteCell.js:20 uiconfig/dialogs/InsertCell.js:18
 #: uiconfig/dialogs/RemoveCell.js:18
 msgid "Selection"
@@ -1153,13 +2979,10 @@ msgstr ""
 msgid "Delete all"
 msgstr ""
 
-#: uiconfig/dialogs/DeleteCell.js:24
-msgid "Text"
-msgstr ""
-
 #: uiconfig/dialogs/DeleteCell.js:25
+#, fuzzy
 msgid "Numbers"
-msgstr ""
+msgstr "מספר"
 
 #: uiconfig/dialogs/DeleteCell.js:28
 msgid "Date & time"
@@ -1170,20 +2993,21 @@ msgid "Formulas"
 msgstr ""
 
 #: uiconfig/dialogs/DeleteCell.js:32
+#, fuzzy
 msgid "Comments"
-msgstr ""
+msgstr "הערה"
 
 #: uiconfig/dialogs/DeleteCell.js:33
+#, fuzzy
 msgid "Formats"
-msgstr ""
+msgstr "עיצוב"
 
 #: uiconfig/dialogs/DeleteCell.js:36
 msgid "Objects"
 msgstr ""
 
-#: uiconfig/dialogs/DeleteCell.js:51 uiconfig/dialogs/InsertCell.js:27
-#: uiconfig/dialogs/RemoveCell.js:27
-msgid "Close"
+#: uiconfig/dialogs/DiagramEditor.js:63
+msgid "Diagram editor module not installed!"
 msgstr ""
 
 #: uiconfig/dialogs/InsertBreak.js:27
@@ -1218,10 +3042,6 @@ msgstr ""
 msgid "Entire column"
 msgstr ""
 
-#: uiconfig/dialogs/InsertTable.js:21
-msgid "Position"
-msgstr ""
-
 #: uiconfig/dialogs/InsertTable.js:22
 msgid "Before current sheet"
 msgstr ""
@@ -1231,19 +3051,24 @@ msgid "After current sheet"
 msgstr ""
 
 #: uiconfig/dialogs/InsertTable.js:27
+#, fuzzy
 msgid "Sheet"
-msgstr ""
+msgstr "~גיליון"
 
 #: uiconfig/dialogs/InsertTable.js:28
 msgid "No. of sheets"
 msgstr ""
 
-#: uiconfig/dialogs/InsertTable.js:29
+#: uiconfig/dialogs/InsertTable.js:29 uiconfig/dialogs/RenameSlide.js:22
 msgid "Name"
 msgstr ""
 
 #: uiconfig/dialogs/MoveTable.js:26
 msgid "- move to end position -"
+msgstr ""
+
+#: uiconfig/dialogs/MoveTable.js:28
+msgid "Move"
 msgstr ""
 
 #: uiconfig/dialogs/MoveTable.js:29
@@ -1254,12 +3079,28 @@ msgstr ""
 msgid "Insert before"
 msgstr ""
 
-#: uiconfig/dialogs/OXSaveAs.js:20
+#: uiconfig/dialogs/OXSaveAs.js:21
 msgid "File name:"
 msgstr ""
 
-#: uiconfig/dialogs/OXSaveAs.js:24
+#: uiconfig/dialogs/OXSaveAs.js:25 uiconfig/dialogs/OXSaveAs.js:48
 msgid "Please enter a new filename."
+msgstr ""
+
+#: uiconfig/dialogs/PdfWatermarkText.js:13
+msgid "Watermark text"
+msgstr ""
+
+#: uiconfig/dialogs/PdfWatermarkText.js:14
+msgid "If no needed, please leave it blank."
+msgstr ""
+
+#: uiconfig/dialogs/PdfWatermarkText.js:15
+msgid "Direction"
+msgstr ""
+
+#: uiconfig/dialogs/PdfWatermarkText.js:35
+msgid "Add watermark"
 msgstr ""
 
 #: uiconfig/dialogs/RemoveCell.js:19
@@ -1279,8 +3120,51 @@ msgid "Delete entire column(s)"
 msgstr ""
 
 #: uiconfig/dialogs/RemoveTable.js:22
+#, fuzzy
 msgid "Are you sure you want to delete sheet, %sheet% ?"
-msgstr "למחוק את הגיליון %sheet% ?"
+msgstr "למחוק את הגיליון %sheet%?"
+
+#: uiconfig/dialogs/RenameSlide.js:45
+msgid "The slide name must not be empty or a duplicate of an existing name."
+msgstr ""
+
+#: uiconfig/dialogs/RowHeight.js:19
+msgid "Height"
+msgstr ""
+
+#: uiconfig/dialogs/RowOrColGroup.js:28
+msgid "Include"
+msgstr ""
+
+#: uiconfig/dialogs/RowOrColGroup.js:30
+#, fuzzy
+msgid "Row"
+msgstr "שורות"
+
+#: uiconfig/dialogs/RowOrColGroup.js:32
+#, fuzzy
+msgid "Column"
+msgstr "עמודות"
+
+#: uiconfig/dialogs/SetHyperLinkTable.js:26
+msgid "Worksheet link not supported!"
+msgstr ""
+
+#: uiconfig/dialogs/SetHyperLinkTable.js:76
+msgid "Text to display"
+msgstr ""
+
+#: uiconfig/dialogs/SetHyperLinkTable.js:78
+msgid "Cell"
+msgstr ""
+
+#: uiconfig/dialogs/SetHyperLinkTable.js:91
+msgid "Worksheet link"
+msgstr ""
+
+#: uiconfig/dialogs/SetHyperLinkTable.js:111
+msgid "Please select the target worksheet."
+msgstr ""
 
 #: uiconfig/dialogs/ShowTable.js:29
 msgid "Hidden Sheets"
@@ -1290,18 +3174,122 @@ msgstr ""
 msgid "Stop tracking changes, will lose information about the changes."
 msgstr ""
 
-#: uiconfig/dialogs/TraceChangeMode.js:44
-msgid "Warning"
-msgstr ""
+#~ msgid "Inactive document - please click to resume editing"
+#~ msgstr "מסמך בלתי פעיל - יש ללחוץ כדי להמשיך בעריכה"
 
-#~ msgid "Are you sure you want to delete this page?"
-#~ msgstr "למחוק עמוד זה?"
+#, javascript-format
+#~ msgid "%d seconds ago"
+#~ msgstr "לפני %d שניות"
 
-#~ msgid "Document repair"
-#~ msgstr "תיקון מסמך"
+#, javascript-format
+#~ msgid "%d minutes ago"
+#~ msgstr "לפני %d דקות"
 
-#~ msgid "No users"
-#~ msgstr "אין משתמשים"
+#~ msgid ""
+#~ "IE11 has reached its maximum number of connections. Please see this document "
+#~ "to increase this limit if needed: https://docs.microsoft.com/en-us/previous-"
+#~ "versions/windows/internet-explorer/ie-developer/general-info/"
+#~ "ee330736(v=vs.85)#websocket-maximum-server-connections"
+#~ msgstr ""
+#~ "IE11 הגיע למספר החיבורים המרבי. נא לעיין במסמך הבא כדי להגדיל את המכסה בהתאם "
+#~ "לצורך: https://docs.microsoft.com/en-us/previous-versions/windows/"
+#~ "internet-explorer/ie-developer/general-info/ee330736(v=vs.85)#websocket-"
+#~ "maximum-server-connections"
 
-#~ msgid "Close document"
-#~ msgstr "סגירת המסמך"
+#~ msgid "Start upload"
+#~ msgstr "התחלת העלאה"
+
+#~ msgid "Start cross copy/paste"
+#~ msgstr "התחלת העתקה/הדבקה צולבת"
+
+#~ msgid "Line style:"
+#~ msgstr "סגנון קו:"
+
+#~ msgid "Emphasis"
+#~ msgstr "הדגשה"
+
+#~ msgid "Strong Emphasis"
+#~ msgstr "הדגשה חזקה"
+
+#~ msgid "Insert Row Break"
+#~ msgstr "הוספת מעבר שורה"
+
+#~ msgid "Insert Column Break"
+#~ msgstr "הוספת מעבר עמודה"
+
+#~ msgid "Remove Row Break"
+#~ msgstr "הסרת מעבר שורה"
+
+#~ msgid "Remove Column Break"
+#~ msgstr "הסרת מעבר עמודה"
+
+#~ msgid ""
+#~ "<p>Your browser has very limited access to the clipboard, so use these "
+#~ "keyboard shortcuts:<ul><li><b>Ctrl+C</b>: For copying.</li><li><b>Ctrl+X</"
+#~ "b>: For cutting.</li><li><b>Ctrl+V</b>: For pasting.</li></ul></p>"
+#~ msgstr ""
+#~ "<p>הגישה של הדפדפן שלך ללוח הגזירים היא מוגבלת מאוד, לכן מוטב להשתמש בקיצורי "
+#~ "מקלדת אלו:<ul><li><b>Ctrl+C</b>: להעתקה.</li><li><b>Ctrl+X</b>: "
+#~ "לגזירה.</li><li><b>Ctrl+V</b>: להדבקה.</li></ul></p>"
+
+#~ msgid "Subtitle"
+#~ msgstr "כותרת משנה"
+
+#~ msgid ""
+#~ "The Personal edition is supported by volunteers and intended for individual "
+#~ "use."
+#~ msgstr "הגרסה האישית נתמכת על ידי מתנדבים עצמאיים ומיועדת לשימוש עצמי."
+
+#~ msgid "Server is recycling and will be available shortly"
+#~ msgstr "השרת ממחזר את הפסולת ויהיה זמין תוך זמן קצר"
+
+#, fuzzy
+#~ msgid "Oops, there is a problem connecting to OxOffice Online : "
+#~ msgstr "אופס, אירעה תקלה בחיבור ל־‏LibreOffice המקוון: "
+
+#~ msgid "Number of views"
+#~ msgstr "מספר צפיות"
+
+#~ msgid "Documents"
+#~ msgstr "מסמכים"
+
+#~ msgid "First sheet"
+#~ msgstr "הגיליון הראשון"
+
+#~ msgid "Previous sheet"
+#~ msgstr "הגיליון הקודם"
+
+#~ msgid "Next sheet"
+#~ msgstr "הגיליון הבא"
+
+#~ msgid "Last sheet"
+#~ msgstr "הגיליון האחרון"
+
+#~ msgid "Gradient"
+#~ msgstr "מדרג"
+
+#~ msgid "Hatching"
+#~ msgstr "הצללה בקווים"
+
+#~ msgid "Pattern"
+#~ msgstr "תבנית"
+
+#~ msgid "Portrait"
+#~ msgstr "אנכי"
+
+#~ msgid "Landscape"
+#~ msgstr "אופקי"
+
+#, fuzzy
+#~| msgid "Text orientation"
+#~ msgid "Toggle Page Orientation"
+#~ msgstr "כיווניות טקסט"
+
+#~ msgid "Save as PDF"
+#~ msgstr "שמירה כ־PDF"
+
+#~ msgid "<p>Your browser has very limited access to the clipboard</p>"
+#~ msgstr "<p>הגישה של הדפדפן שלך ללוח הגזירים היא מוגבלת מאוד</p>"
+
+#~ msgid "Master Slides"
+#~ msgstr "שקופיות ראשיות"

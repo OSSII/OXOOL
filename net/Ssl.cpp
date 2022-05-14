@@ -30,12 +30,22 @@ extern "C"
     };
 }
 
+std::string defaultPassword;
+int passwordCB(char *buf, int size, int /*rwflag*/, void* /*userdata*/)
+{
+        strncpy(buf, defaultPassword.c_str(), size);
+        buf[size - 1] = '\0';
+        return(strlen(buf));
+}
+
+
 std::unique_ptr<SslContext> SslContext::Instance(nullptr);
 
 SslContext::SslContext(const std::string& certFilePath,
                        const std::string& keyFilePath,
                        const std::string& caFilePath,
-                       const std::string& cipherList) :
+                       const std::string& cipherList,
+                       const std::string& password) :
     _ctx(nullptr)
 {
     const std::vector<char> rand = Util::rng::getBytes(512);
@@ -75,7 +85,6 @@ SslContext::SslContext(const std::string& certFilePath,
     SSL_CTX_set_options(_ctx, SSL_OP_NO_SSLv3);
 #endif
 
-    // SSL_CTX_set_default_passwd_cb(_ctx, &privateKeyPassphraseCallback);
     ERR_clear_error();
     SSL_CTX_set_options(_ctx, SSL_OP_ALL);
 
@@ -94,6 +103,14 @@ SslContext::SslContext(const std::string& certFilePath,
 
         if (!keyFilePath.empty())
         {
+            // Added by Firefly <firefly@ossii.com.tw>
+            // 有帶 password 的話，紀錄下來，並指定 callback
+            if (password.size() > 0)
+            {
+                defaultPassword = password;
+                SSL_CTX_set_default_passwd_cb(_ctx, passwordCB);
+            }
+
             errCode = SSL_CTX_use_PrivateKey_file(_ctx, keyFilePath.c_str(), SSL_FILETYPE_PEM);
             if (errCode != 1)
             {

@@ -13,6 +13,7 @@
 #include <string>
 
 #include <Util.hpp>
+#include <Poco/URI.h>
 
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
@@ -68,6 +69,8 @@ namespace LOKitHelper
             std::ostringstream hposs;
             std::ostringstream sposs;
             std::ostringstream detail;
+            std::ostringstream names;
+            std::ostringstream hashes;
             for (int i = 0; i < parts; ++i)
             {
                 ptrValue = loKitDocument->pClass->getPartInfo(loKitDocument, i);
@@ -88,7 +91,12 @@ namespace LOKitHelper
                     }
                     else if (name == "name")
                     {
-                        detail << partinfo << "\n";
+                        detail << partinfo << ",";
+                        names << prop.second << '\n';
+                    }
+                    else if (name == "hashCode")
+                    {
+                        hashes << prop.second << '\n';
                     }
                 }
             }
@@ -110,9 +118,21 @@ namespace LOKitHelper
             std::string detailList = detail.str();
             if (!detailList.empty())
             {
-                detailList.pop_back(); // Remove last '\n'
-                oss << " partdetail=1\n";
-                oss << detailList;
+                detailList.pop_back(); // Remove last ','
+                std::string encodedDetial;
+                Poco::URI::encode("[" + detailList + "]", "", encodedDetial);
+                oss << " partsinfo=" << encodedDetial;
+
+                std::string partNames = names.str();
+                partNames.pop_back(); // Remove last '\n'
+                oss << '\n' << partNames;
+
+                std::string hashNames = hashes.str();
+                if (!hashNames.empty() && (type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING))
+                {
+                    hashNames.pop_back(); // Remove last '\n'
+                    oss << '\n' << hashNames;
+                }
             }
             else
             {
@@ -135,8 +155,15 @@ namespace LOKitHelper
                     }
                 }
             }
+        }
 
+        if (type == LOK_DOCTYPE_TEXT)
+        {
+            std::string rectangles = loKitDocument->pClass->getPartPageRectangles(loKitDocument);
+            std::string::iterator end_pos = std::remove(rectangles.begin(), rectangles.end(), ' ');
+            rectangles.erase(end_pos, rectangles.end());
 
+            oss << " pagerectangles=" << rectangles.c_str();
         }
 
         return oss.str();

@@ -66,7 +66,6 @@ L.Path.include({
 	_openPopup: function (e) {
 		if (!this._map.hasLayer(this._popup)) {
 			this._popup.setLatLng(e.latlng);
-			this._popup.setContainerPoint(e.containerPoint);
 			this._map.openPopup(this._popup);
 			this._delayClose();
 		}

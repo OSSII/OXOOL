@@ -124,9 +124,9 @@ L.dialog.BindingLineDialog = {
 						if (text === '') {
 							text = that._defaultText;
 						}
-						var macro  = 'macro:///OxOOL.BindingLine.insert(' + text + ', ' + numColor + ', ' + font + ', ' + size + ', ' + whatPage + ',' + position + ', ' + boundary +')';
+						var macro = 'macro:///OxOOL.BindingLine.insert(' + text + ', ' + numColor + ', ' + font + ', ' + size + ', ' + whatPage + ',' + position + ', ' + boundary +')';
 						console.debug('send macro:', macro);
-						that._map.sendMacroCommand(macro);
+						that._map.sendUnoCommand(macro);
 						$(this).dialog('close');
 					}
 				},
@@ -141,16 +141,14 @@ L.dialog.BindingLineDialog = {
 
 		$fontSelect.selectmenu({
 			width: 200
-		}).selectmenu('menuWidget')
-		.css({
+		}).selectmenu('menuWidget').css({
 			'height': '200px',
 			'width': '200px'
 		});
 
 		$fontSize.selectmenu({
 			width: 90
-		}).selectmenu('menuWidget')
-		.css({
+		}).selectmenu('menuWidget').css({
 			'height': '200px',
 		});
 	},

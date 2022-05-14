@@ -57,12 +57,14 @@ var l10nstrings = {
 		_('Overview'), // 概覽
 		_('Analytics'), // 分析
 		_('Log'), // 日誌
+		_('SSL certificate manager'), // SSL 憑證管理
 		_('System configuration'), // 系統配置設定
 		_('Software upgrade'), // 軟體升級
 		_('Font manager'), // 字型管理
 		_('Table conversion'), // 表格轉試算表
 		_('Template Repo'), // 範本中心
 		_('ODF report template'), // ODF 報表管理
+		_('Module list'), // 模組列表
 	],
 };
 

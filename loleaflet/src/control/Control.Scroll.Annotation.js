@@ -1,9 +1,9 @@
 /* -*- js-indent-level: 8 -*- */
 /*
- * L.Control.Scroll.Annotation
+ * L.Control.ScrollAnnotation
  */
 /* global _ */
-L.Control.Scroll.Annotation = L.Control.extend({
+L.Control.ScrollAnnotation = L.Control.extend({
 	options: {
 		position: 'topright',
 		arrowUp: '0x25b2',
@@ -14,7 +14,7 @@ L.Control.Scroll.Annotation = L.Control.extend({
 
 	onAdd: function (map) {
 		var scrollName = 'leaflet-control-scroll',
-		    container = L.DomUtil.create('div', 'loleaflet-bar');
+		    container = L.DomUtil.create('div', 'oxool-bar');
 
 		this._map = map;
 
@@ -55,6 +55,6 @@ L.Control.Scroll.Annotation = L.Control.extend({
 	}
 });
 
-L.control.scroll.annotation = function (options) {
-	return new L.Control.Scroll.Annotation(options);
+L.control.scrollannotation = function (options) {
+	return new L.Control.ScrollAnnotation(options);
 };

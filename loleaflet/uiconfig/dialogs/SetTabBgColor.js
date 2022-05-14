@@ -11,19 +11,19 @@ L.dialog.SetTabBgColor = {
 	$dialog: $(L.DomUtil.create('div', '', document.body)).uniqueId(),
 
 	// init 只會在載入的第一次執行
-	init: function(map) {
+	initialize: function() {
 		var that = this;
-		this._map = map;
+		var map = this._map;
 		this._colorId = 'SetTabBgColor_' + this.$dialog.attr('id');
 		this.$dialog.html(
-		'<input id="' + this._colorId + '" value="">'
+			'<input id="' + this._colorId + '" value="">'
 		);
 
 		this.$dialog.dialog({
 			title: _UNO('.uno:TabBgColor', 'spreadsheet'),
 			closeText: _('Close'),
 			position: {my: 'center', at: 'center', of: window},
-			minWidth: 450,
+			width: 'auto',
 			autoOpen: false, // 不自動顯示對話框
 			modal: true,	// 獨占模式
 			resizable: false, // 不能縮放視窗
@@ -87,7 +87,8 @@ L.dialog.SetTabBgColor = {
 				showInitial: true,
 				showAlpha: false,
 				showButtons: false,
-				allowEmpty: false
+				allowEmpty: false,
+				showPaletteOnly: (window.mode.isMobile() ? true : false)
 			});
 			this.$dialog.dialog('open');
 		}

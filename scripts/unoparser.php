@@ -149,7 +149,8 @@ $unoCcommandFiles = array(
 		'global' => array('file' => 'GenericCommands.xcu', 'nodes' => array()), // 通用命令
 		'text' => array('file' => 'WriterCommands.xcu', 'nodes' => array()), // Write
 		'spreadsheet' => array( 'file' => 'CalcCommands.xcu', 'nodes' => array()), // Calc
-		'presentation' => array('file' => 'DrawImpressCommands.xcu', 'nodes' => array()) // Draw & Impress
+		'presentation' => array('file' => 'DrawImpressCommands.xcu', 'nodes' => array()), // Draw & Impress
+		'chart' => array('file' => 'ChartCommands.xcu', 'nodes' => array()) // Chart
         );
 
 $unoCommandsArray = array();
@@ -238,8 +239,11 @@ window._UNO = function(string, component, isContext) {
 		componentEntry = entry['global'];
 		// 連 global 也沒有，就直接傳回指令名稱
 		if (componentEntry === undefined) {
-			return command;
-		}
+            // 找第一個找到的文件類別
+			for (component in entry) {
+            }
+            componentEntry = entry[component];
+        }
 	}
 
 	var priority = isContext === true ? ['context', 'menu'] : ['menu', 'context'];

@@ -1,6 +1,9 @@
 #!/bin/perl -w
 
 use strict;
+use File::Basename;
+
+my $path = dirname(dirname($0)) . "/";
 
 sub readwhole($) {
     my ($file) = @_;
@@ -11,11 +14,11 @@ sub readwhole($) {
 
 sub insert($) {
     my ($locale) = @_;
-    my $ui = readwhole("po/ui-$locale.po.json");
+    my $ui = readwhole($path . "po/ui-$locale.po.json");
     # Different convention: Change underscore to hyphen.
     $locale =~ s/_/-/;
-    my $uno = readwhole("l10n/uno/$locale.json");
-    my $locore = readwhole("l10n/locore/$locale.json");
+    my $uno = readwhole($path . "l10n/uno/$locale.json");
+    my $locore = readwhole($path . "l10n/locore/$locale.json");
     # Merge the fields of all three objects into one. The result of
     # po2json.py starts with "{" not followed by a newline and ends
     # with a "}" without any final newline. The json files that are in
@@ -29,8 +32,6 @@ sub insert($) {
 # woefully incomplete translation is worse than no translation at all.
 
 print "\
-window.LANG = window.getParameterByName('lang');
-window.webkit.messageHandlers.debug.postMessage('LANG is ' + window.LANG);
 
 var onlylang = window.LANG;
 var hyphen = onlylang.indexOf('-');
@@ -44,55 +45,39 @@ if (underscore > 0) {
 
 if (false) {
     ;
-} else if (onlylang == 'am') {
-    window.LOCALIZATIONS = " . insert('am') . ";
-} else if (onlylang == 'ar') {
-    window.LOCALIZATIONS = " . insert('ar') . ";
-} else if (onlylang == 'bg') {
-    window.LOCALIZATIONS = " . insert('bg') . ";
-} else if (onlylang == 'ca') {
-    window.LOCALIZATIONS = " . insert('ca') . ";
 } else if (onlylang == 'cs') {
     window.LOCALIZATIONS = " . insert('cs') . ";
-} else if (onlylang == 'cy') {
-    window.LOCALIZATIONS = " . insert('cy') . ";
 } else if (onlylang == 'da') {
     window.LOCALIZATIONS = " . insert('da') . ";
 } else if (onlylang == 'de') {
     window.LOCALIZATIONS = " . insert('de') . ";
 } else if (onlylang == 'el') {
     window.LOCALIZATIONS = " . insert('el') . ";
-} else if (window.LANG == 'en_GB') {
+} else if (window.LANG == 'en-GB' || window.LANG == 'en_GB') {
     window.LOCALIZATIONS = " . insert('en_GB') . ";
-} else if (onlylang == 'eo') {
-    window.LOCALIZATIONS = " . insert('eo') . ";
 } else if (onlylang == 'es') {
     window.LOCALIZATIONS = " . insert('es') . ";
-} else if (onlylang == 'eu') {
-    window.LOCALIZATIONS = " . insert('eu') . ";
-} else if (onlylang == 'et') {
-    window.LOCALIZATIONS = " . insert('et') . ";
 } else if (onlylang == 'fr') {
     window.LOCALIZATIONS = " . insert('fr') . ";
-} else if (onlylang == 'gd') {
-    window.LOCALIZATIONS = " . insert('gd') . ";
-} else if (onlylang == 'gl') {
-    window.LOCALIZATIONS = " . insert('gl') . ";
-} else if (onlylang == 'hr') {
-    window.LOCALIZATIONS = " . insert('hr') . ";
 } else if (onlylang == 'hu') {
     window.LOCALIZATIONS = " . insert('hu') . ";
 } else if (onlylang == 'is') {
     window.LOCALIZATIONS = " . insert('is') . ";
 } else if (onlylang == 'it') {
     window.LOCALIZATIONS = " . insert('it') . ";
+} else if (onlylang == 'ja') {
+    window.LOCALIZATIONS = " . insert('ja') . ";
+} else if (onlylang == 'ko') {
+    window.LOCALIZATIONS = " . insert('ko') . ";
 } else if (onlylang == 'nb') {
     window.LOCALIZATIONS = " . insert('nb') . ";
 } else if (onlylang == 'nl') {
     window.LOCALIZATIONS = " . insert('nl') . ";
 } else if (onlylang == 'nn') {
     window.LOCALIZATIONS = " . insert('nn') . ";
-} else if (window.LANG == 'pt_BR') {
+} else if (onlylang == 'pl') {
+    window.LOCALIZATIONS = " . insert('pl') . ";
+} else if (window.LANG == 'pt-BR' || window.LANG == 'pt_BR') {
     window.LOCALIZATIONS = " . insert('pt_BR') . ";
 } else if (onlylang == 'pt') {
     window.LOCALIZATIONS = " . insert('pt') . ";
@@ -106,7 +91,9 @@ if (false) {
     window.LOCALIZATIONS = " . insert('tr') . ";
 } else if (onlylang == 'uk') {
     window.LOCALIZATIONS = " . insert('uk') . ";
-} else if (window.LANG == 'zh_TW') {
+} else if (window.LANG == 'zh-CN' || window.LANG == 'zh-Hans-CN' || window.LANG == 'zh_CN' || window.LANG == 'zh_Hans_CN'  ) {
+    window.LOCALIZATIONS = " . insert('zh_CN') . ";
+} else if (window.LANG == 'zh-TW' || window.LANG == 'zh-Hant-TW' || window.LANG == 'zh_TW' || window.LANG == 'zh_Hant_TW') {
     window.LOCALIZATIONS = " . insert('zh_TW') . ";
 } else {
     window.LOCALIZATIONS = {};

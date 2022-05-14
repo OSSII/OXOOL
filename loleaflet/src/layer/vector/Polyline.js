@@ -27,49 +27,6 @@ L.Polyline = L.Path.extend({
 		return this.redraw();
 	},
 
-	addLatLng: function (latlng) {
-		// TODO rings
-		latlng = L.latLng(latlng);
-		this._latlngs.push(latlng);
-		this._bounds.extend(latlng);
-		return this.redraw();
-	},
-
-	spliceLatLngs: function () {
-		// TODO rings
-		var removed = [].splice.apply(this._latlngs, arguments);
-		this._setLatLngs(this._latlngs);
-		this.redraw();
-		return removed;
-	},
-
-	closestLayerPoint: function (p) {
-		var minDistance = Infinity,
-		    minPoint = null,
-		    closest = L.LineUtil._sqClosestPointOnSegment,
-		    p1, p2;
-
-		for (var j = 0, jLen = this._parts.length; j < jLen; j++) {
-			var points = this._parts[j];
-
-			for (var i = 1, len = points.length; i < len; i++) {
-				p1 = points[i - 1];
-				p2 = points[i];
-
-				var sqDist = closest(p, p1, p2, true);
-
-				if (sqDist < minDistance) {
-					minDistance = sqDist;
-					minPoint = closest(p, p1, p2);
-				}
-			}
-		}
-		if (minPoint) {
-			minPoint.distance = Math.sqrt(minDistance);
-		}
-		return minPoint;
-	},
-
 	getCenter: function () {
 		var i, halfDist, segDist, dist, p1, p2, ratio,
 		    points = this._rings[0],
@@ -138,8 +95,8 @@ L.Polyline = L.Path.extend({
 
 		if (this._latlngs.length) {
 			this._pxBounds = new L.Bounds(
-				this._map.latLngToLayerPoint(this._bounds.getSouthWest())._subtract(p),
-				this._map.latLngToLayerPoint(this._bounds.getNorthEast())._add(p));
+				this._latLngToPoint(this._bounds.getSouthWest())._subtract(p),
+				this._latLngToPoint(this._bounds.getNorthEast())._add(p));
 		}
 	},
 
@@ -153,7 +110,7 @@ L.Polyline = L.Path.extend({
 		if (flat) {
 			ring = [];
 			for (i = 0; i < len; i++) {
-				ring[i] = this._map.latLngToLayerPoint(latlngs[i]);
+				ring[i] = this._latLngToPoint(latlngs[i]);
 			}
 			result.push(ring);
 		} else {
@@ -163,9 +120,17 @@ L.Polyline = L.Path.extend({
 		}
 	},
 
+	_latLngToPoint: function (latlng) {
+		if (this.options.fixed) {
+			return this._map.project(latlng);
+		}
+
+		return this._map.latLngToLayerPoint(latlng);
+	},
+
 	// clip polyline by renderer bounds so that we have less to render for performance
 	_clipPoints: function () {
-		if (this.options.noClip) {
+		if (this.options.noClip || this._renderer instanceof L.SplitPanesSVG) {
 			this._parts = this._rings;
 			return;
 		}

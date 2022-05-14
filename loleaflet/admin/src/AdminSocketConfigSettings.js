@@ -201,27 +201,28 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 		// 向 Server 要求這些 id 代表的資料
 		this.socket.send(cmd);
 
-		$('#watermarkWPOI').popover({
-			container: 'body',
-			html: true,
-			title: _('The watermark data is placed in UserExtraInfo of WOPI.'),
-			//template: '<div class="popover" role="tooltip"><div class="popover-arrow"></div><pre class="popover-body"></pre></div>',
-			content: function() {
-				var watermark = {
-					editing: document.getElementById('watermark.editing').checked, // 編輯時啟用
-					printing: document.getElementById('watermark.printing').checked, // 列印時啟用
-					familyname: document.getElementById('watermark.font').value, // 字型名稱
-					color: document.getElementById('watermark.color').value, // 顏色
-					bold: document.getElementById('watermark.bold').checked, // 粗體
-					italic: document.getElementById('watermark.italic').checked, // 斜體
-					outline: document.getElementById('watermark.outline').checked, // 中空字
-					shadow: document.getElementById('watermark.shadow').checked, // 陰影字
-					opacity: parseFloat(document.getElementById('watermark.opacity').value), // 不透明度
-					angle: parseInt(document.getElementById('watermark.angle').value), // 角度
-					text: document.getElementById('watermark.text').value // 浮水印文字
-				}
-				return '<pre>watermark:' + JSON.stringify(watermark, null, '    ') + '</pre>';
-			},
+		$(document).ready(function() {
+			$('#watermarkWPOI').popover({
+				container: 'body',
+				html: true,
+				title: _('The watermark data is placed in UserExtraInfo of WOPI.'),
+				content: function() {
+					var watermark = {
+						editing: document.getElementById('watermark.editing').checked, // 編輯時啟用
+						printing: document.getElementById('watermark.printing').checked, // 列印時啟用
+						familyname: document.getElementById('watermark.font').value, // 字型名稱
+						color: document.getElementById('watermark.color').value, // 顏色
+						bold: document.getElementById('watermark.bold').checked, // 粗體
+						italic: document.getElementById('watermark.italic').checked, // 斜體
+						outline: document.getElementById('watermark.outline').checked, // 中空字
+						shadow: document.getElementById('watermark.shadow').checked, // 陰影字
+						opacity: parseFloat(document.getElementById('watermark.opacity').value), // 不透明度
+						angle: parseInt(document.getElementById('watermark.angle').value), // 角度
+						text: document.getElementById('watermark.text').value // 浮水印文字
+					};
+					return '<pre>watermark:' + JSON.stringify(watermark, null, '    ') + '</pre>';
+				},
+			});
 		});
 
 		var allTags = document.querySelectorAll('.watermarktag');
@@ -262,7 +263,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 			{
 				// null : 表示 xml 中找不到對應的 key
 				if (json[key] === null) {
-					console.debug('"' + key + '\" : xml 中，無此 key 請檢查！')
+					console.debug('"' + key + '\" : xml 中，無此 key 請檢查！');
 					continue;
 				}
 
@@ -454,7 +455,7 @@ var AdminSocketConfigSettings = AdminSocketBase.extend({
 			badge.setAttribute('allow', false); // 設定 attrib allow="false"
 			badge.innerText = _('Deny connect');
 		} else {
-			badge = null
+			badge = null;
 		}
 		return badge;
 	},

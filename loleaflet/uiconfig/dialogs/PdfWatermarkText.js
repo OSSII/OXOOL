@@ -5,12 +5,15 @@
  *
  * Author: Firefly <firefly@ossii.com.tw>
  */
-/* global $ _ */
+/* global app $ _ */
 L.dialog.PdfWatermarkText = {
 	_dialog: L.DomUtil.create('div', '', document.body),
 
+	_hasScreenWatermark: false, // 有無螢幕浮水印
+
 	l10n: [
 		_('Watermark text'), // 浮水印文字
+		_('Use screen watermark'), // 採用螢幕浮水印
 		_('If no needed, please leave it blank.'), // 如果不需要，請保持空白
 		_('Direction'), // 方向
 	],
@@ -21,15 +24,30 @@ L.dialog.PdfWatermarkText = {
 		var that = this;
 		this._id = $(this._dialog).uniqueId().attr('id');
 		this._watermarkTextId = this._id + '_watermarkText';
+		this._useScreenId = this._id + '_useScreen';
+		this._hasScreenWatermark = (this._map.options.watermark !== undefined && this._map.options.watermark.editing === true);
 		this._dialog.innerHTML =
-			'<span _="Watermark text"></span><input type=text id="' + this._watermarkTextId + '" /><br>' +
-			'<strong><small _="If no needed, please leave it blank."></small></strong>' +
+			'<label for="' + this._watermarkTextId + '" _="Watermark text"></label>' +
+			'<textarea id="' + this._watermarkTextId + '" rows=3 maxlength=128 style="resize:none; width:100%" title="If no needed, please leave it blank."></textarea><br>' +
+			'<button id="' + this._useScreenId + '" style="color:blue; font-size:12px; float:right; cursor:pointer; display:none" _="Use screen watermark"></button><br>' +
+
 			'<fieldset style="margin-top:8px;"><legend _="Direction"></legend>' +
 			'<label style="margin-right:24px;"><input type="radio" name="watermarkAngle" value="45" checked> <span _="Diagonal"></span></label>' +
 			'<label><input type="radio" name="watermarkAngle" value="0"> <span _="Horizontal"></span></label>' +
-			'</fieldset>'
+			'</fieldset>';
 
 		this._map.translationElement(this._dialog);
+
+		// 有螢幕浮水印，啟用使用螢幕浮水印按鈕
+		if (this._hasScreenWatermark) {
+			var $useScreenButton = $('#' + this._useScreenId);
+			$useScreenButton.click(function() {
+				var watermarkText = document.getElementById(that._watermarkTextId);
+				// 複製螢幕浮水印文字到輸入區
+				watermarkText.value = that._map.options.watermark.text;
+				watermarkText.focus(); // 聚焦
+			}).show();
+		}
 
 		$(this._dialog).dialog({
 			title: _('Add watermark'),
@@ -41,11 +59,19 @@ L.dialog.PdfWatermarkText = {
 			resizable: false, // 不能縮放視窗
 			draggable: true, // 可以拖放視窗
 			closeOnEscape: true, // 按 esc 視同關閉視窗
-			open: function(/*event, ui*/) {
-				// 預設選取第一個 button
-				$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
-			},
 			buttons: [
+				{
+					text: _('Without watermark'), // 不用浮水印
+					click: function() {
+						that._map.showBusy(_('Downloading...'), false);
+						app.socket.sendMessage('downloadas ' +
+							'name=' + encodeURIComponent(that._args.name) + ' ' +
+							'id=' + that._args.id + ' ' +
+							'format=pdf ' +
+							'options=' + that._args.options);
+						$(this).dialog('close');
+					}
+				},
 				{
 					text: _('OK'),
 					click: function() {
@@ -63,7 +89,7 @@ L.dialog.PdfWatermarkText = {
 						var jsonStr = JSON.stringify(watermark);
 						var watermarkText = (text !== '') ? ',Watermark=' + jsonStr + 'WATERMARKEND' : '';
 						that._map.showBusy(_('Downloading...'), false);
-						that._map._socket.sendMessage('downloadas ' +
+						app.socket.sendMessage('downloadas ' +
 							'name=' + encodeURIComponent(that._args.name) + ' ' +
 							'id=' + that._args.id + ' ' +
 							'format=pdf ' +

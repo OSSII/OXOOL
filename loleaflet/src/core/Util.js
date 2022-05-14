@@ -118,15 +118,6 @@ L.Util = {
 		return obj.options;
 	},
 
-	// make a URL with GET parameters out of a set of properties/values
-	getParamString: function (obj, existingUrl, uppercase) {
-		var params = [];
-		for (var i in obj) {
-			params.push(encodeURIComponent(uppercase ? i.toUpperCase() : i) + '=' + encodeURIComponent(obj[i]));
-		}
-		return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
-	},
-
 	round: function(x, e) {
 		if (!e) {
 			return Math.round(x);
@@ -158,18 +149,6 @@ L.Util = {
 
 	// minimal image URI, set to an image when disposing to flush memory
 	emptyImageUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
-
-	getDpiScaleFactor: function(useExactDPR) {
-		var dpiScale = window.devicePixelRatio ? window.devicePixelRatio : 1;
-		if (!useExactDPR)
-			dpiScale = Math.ceil(dpiScale);
-
-		if (dpiScale == 1 && L.Browser.retina) {
-			dpiScale = 2;
-		}
-
-		return dpiScale;
-	},
 
 	toggleFullScreen: function() {
 		if (!document.fullscreenElement &&
@@ -212,9 +191,10 @@ L.Util = {
 		return Math.floor(metrics.width);
 	},
 
-	replaceCtrlInMac: function(msg) {
+	replaceCtrlAltInMac: function(msg) {
 		if (navigator.appVersion.indexOf('Mac') != -1 || navigator.userAgent.indexOf('Mac') != -1) {
 			var ctrl = /Ctrl/g;
+			var alt = /Alt/g;
 			if (String.locale.startsWith('de') || String.locale.startsWith('dsb') || String.locale.startsWith('hsb')) {
 				ctrl = /Strg/g;
 			}
@@ -222,9 +202,10 @@ L.Util = {
 				ctrl = /Vald/g;
 			}
 			if (String.locale.startsWith('sl')) {
-				ctrl = /Krmilka/g;
+				ctrl = /Krmilka/gi;
+				alt = /Izmenjalka/gi;
 			}
-			return msg.replace(ctrl, '⌘');
+			return msg.replace(ctrl, '⌘').replace(alt, '⌥');
 		}
 		return msg;
 	}
@@ -279,13 +260,28 @@ if (!String.prototype.startsWith) {
 	};
 }
 
+if (!Element.prototype.remove) {
+	Element.prototype.remove = function() {
+		if (this.parentNode) {
+			this.parentNode.removeChild(this);
+		}
+	};
+}
+
+if (Number.EPSILON === undefined) {
+	Number.EPSILON = Math.pow(2, -52);
+}
+
+if (!Number.MAX_SAFE_INTEGER) {
+	Number.MAX_SAFE_INTEGER = 9007199254740991; // Math.pow(2, 53) - 1;
+}
+
 // shortcuts for most used utility functions
 L.extend = L.Util.extend;
 L.bind = L.Util.bind;
 L.stamp = L.Util.stamp;
 L.setOptions = L.Util.setOptions;
 L.round = L.Util.round;
-L.getDpiScaleFactor = L.Util.getDpiScaleFactor;
 L.toggleFullScreen = L.Util.toggleFullScreen;
 L.isEmpty = L.Util.isEmpty;
 L.mm100thToInch = L.Util.mm100thToInch;

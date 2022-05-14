@@ -1,9 +1,9 @@
-/* -*- js-indent-level: 8 -*- */
+/* -*- js-indent-level: 8; fill-column: 100 -*- */
 /*
  * Toolbar handler
  */
 
-/* global $ vex brandProductName _ _UNO _UNOTARGET*/
+/* global app $ window vex sanitizeUrl brandProductName brandProductURL _ _UNOTARGET */
 L.Map.include({
 
 	// a mapping of uno commands to more readable toolbar items
@@ -12,171 +12,208 @@ L.Map.include({
 		'.uno:CharFontName'
 	],
 
-	_allowCommands: {},
-
-	_hotkeyCommands: {},
-
-	/**
-	 * 紀錄後端 Office 版本資訊
-	 * { "ProductName": "OxOffice",
-	 *   "ProductVersion": "R9S0",
-	 *   "ProductExtension": "8.3.1-0",
-	 *   "OxofficeVersion": "R9S0",
-	 *   "BuildId": "9237a2d5d04b2903da3caa984e12c381bb34e609"
-	 * }
-	 */
-
-	_officeVersion: {},
-
-	// 支援匯出的格式
-	_exportFormats: {
-		text: [
-			{format: 'pdf', label: _('PDF Document (.pdf)')},
-			{format: 'txt', label: _('TEXT Document (.txt)')},
-			{format: 'html', label: _('HTML Document (.html)')},
-			{format: 'odt', label: _('ODF text document (.odt)')},
-			{format: 'doc', label: _('Word 2003 Document (.doc)')},
-			{format: 'docx', label: _('Word Document (.docx)')},
-			{format: 'rtf', label: _('Rich Text (.rtf)')},
-			{format: 'epub', label: _('EPUB Document (.epub)')},
-		],
-		spreadsheet: [
-			{format: 'pdf', label: _('PDF Document (.pdf)')},
-			{format: 'html', label: _('HTML Document (.html)')},
-			{format: 'ods', label: _('ODF spreadsheet (.ods)')},
-			{format: 'xls', label: _('Excel 2003 Spreadsheet (.xls)')},
-			{format: 'xlsx', label: _('Excel Spreadsheet (.xlsx)')},
-			{format: 'csv', label: _('CSV (.csv)')},
-		],
-		presentation: [
-			{format: 'pdf', label: _('PDF Document (.pdf)')},
-			{format: 'html', label: _('HTML Document (.html)')},
-			{format: 'odp', label: _('ODF presentation (.odp)')},
-			{format: 'ppt', label: _('PowerPoint 2003 Presentation (.ppt)')},
-			{format: 'pptx', label: _('PowerPoint Presentation (.pptx)')},
-		]
+	_modalDialogOptions: {
+		overlayClose:true,
+		opacity: 80,
+		overlayCss: {
+			backgroundColor : '#000'
+		},
+		containerCss: {
+			overflow : 'hidden',
+			backgroundColor : '#fff',
+			padding : '20px',
+			border : '2px solid #000'
+		}
 	},
 
-	// 右鍵選單會出現 _allowCommands 沒有的指令，暫時作法是列入未知名單中，且標記是否可用
-	_whiteCommandList: {
-		'.uno:Crop': false, // 裁剪
-		'.uno:ChangePicture': false, // 變更圖片
-		'.uno:SaveGraphic': false, // 儲存圖片
-		'.uno:ToggleObjectBezierMode': false, // 接點
-		'.uno:ToggleObjectRotateMode': false, // 旋轉
-		'.uno:AddTextBox': false, // 在圖案中加入文字方塊
-		'.uno:RemoveTextBox': false, // 移除在圖案中的文字方塊
-		'.uno:ObjectAlignLeft': true,
-		'.uno:AlignCenter': true,
-		'.uno:ObjectAlignRight': true,
-		'.uno:AlignUp': true,
-		'.uno:AlignMiddle': true,
-		'.uno:AlignDown': true,
-		'.uno:OutlineBullet': true,
-		'.uno:RemoveBullets': true,
-		'.uno:FrameDialog': true,
-		'.uno:ObjectMenue?VerbID:short=-1': false,
-		'.uno:EditHyperlink': true, // 超連結
-		'.uno:OpenHyperlinkOnCursor': true, // 開啟超連結
-		'.uno:CopyHyperlinkLocation': true, // 複製超連結位址
-		'.uno:RemoveHyperlink': true, // 移除超連結
-		'.uno:CurrentFootnoteDialog': true,
-		'.uno:SetAnchorToPage': true,
-		'.uno:SetAnchorToPara': true,
-		'.uno:SetAnchorAtChar': true,
-		'.uno:SetAnchorToChar': true,
-		'.uno:WrapOff': true,
-		'.uno:WrapOn': true,
-		'.uno:WrapLeft': true,
-		'.uno:WrapRight': true,
-		'.uno:WrapThrough': true,
-		'.uno:WrapThroughTransparencyToggle': true,
-		'.uno:WrapContour': true,
-		'.uno:WrapAnchorOnly': true,
-		'.uno:WrapIdeal': true, // 最佳頁面環繞
-		'.uno:TextWrap': true, // 編輯...
-		'.uno:BringToFront': true, // 移動到最上層
-		'.uno:ObjectForwardOne': true, // 上移一層
-		'.uno:Forward': true, // 上移一層
-		'.uno:ObjectBackOne': true, // 下移一層
-		'.uno:Backward': true, // 下移一層
-		'.uno:SendToBack': true, // 移動到最下層
-		'.uno:BeforeObject': true, // 物件之前
-		'.uno:BehindObject': true, // 物件之後
-		'.uno:SetObjectToBackground': true, // 移到背景
-		'.uno:SetObjectToForeground': true, // 移到前景
-		'.uno:RotateRight': true, // 向右旋轉 90°
-		'.uno:RotateLeft': true, // 向左旋轉 90°
-		'.uno:Rotate180': true, // 旋轉 180°
-		'.uno:FlipVertical': true, // 垂直翻轉
-		'.uno:FlipHorizontal': true, // 水平翻轉
-		'.uno:DefaultCharStyle': true, // 預設字元
-		'.uno:EmphasisCharStyle': true, // 強調
-		'.uno:StrongEmphasisCharStyle': true, // 特別強調
-		'.uno:QuoteCharStyle': true, // 引文
-		'.uno:SourceCharStyle': true, // 源碼文字
-		'.uno:TextBodyParaStyle': true, // 內文
-		'.uno:Heading1ParaStyle': true, // 標題 1
-		'.uno:Heading2ParaStyle': true, // 標題 2
-		'.uno:Heading3ParaStyle': true, // 標題 3
-		'.uno:PreformattedParaStyle': true, // 已先格式設定文字
-		'.uno:BulletListStyle': true, // 項目符號清單
-		'.uno:NumberListStyle': true, // 數字清單
-		'.uno:AlphaListStyle': true, // 大寫英文字母清單
-		'.uno:AlphaLowListStyle': true, // 小寫英文字母清單
-		'.uno:RomanListStyle': true, // 大寫羅馬數字清單
-		'.uno:RomanLowListStyle': true, // 小寫羅馬數字清單
-		'.uno:PasteUnformatted': true, // 貼上無格式設定的文字
-		'.uno:DistributeRows': true, // 平均分配列高
-		'.uno:DistributeColumns': true, // 平均分配欄寬
-		'.uno:HeadingRowsRepeat': true, // 跨頁重複標題列
-		'.uno:RowSplit': true, // 列可跨頁中斷
-		'.uno:MergeCells': true, // 合併儲存格
-		'.uno:OriginalSize': true, // 原始大小
-		'.uno:FitCellSize': true, // 符合儲存格大小
-		'.uno:SetAnchorToCell': true, // 至儲存格
-		'.uno:SetAnchorToCellResize': true, // 至儲存格 (隨儲存格調整大小)
-		'.uno:SetDefault': true, // 清除所有格式設定
-		'.uno:EditCurrentRegion': true, // 編輯區段...
-		'.uno:EditShapeHyperlink': true, // 編輯超連結
-		'.uno:DeleteShapeHyperlink': true, // 移除超連結
-		'.uno:EditQrCode': true, // 編輯 QR 碼...
-		'.uno:FormatDataSeries': true, // FormatDataSeries
-		'.uno:InsertDataLabels': true, // InsertDataLabels
-		'.uno:InsertTrendline': true, // InsertTrendline
-		'.uno:InsertMeanValue': true, // InsertMeanValue
-		'.uno:InsertXErrorBars': true, // InsertXErrorBars
-		'.uno:InsertYErrorBars': true, // InsertYErrorBars
-		'.uno:DiagramType': true, // DiagramType
-		'.uno:DataRanges': true, // DataRanges
-		'.uno:ResetAllDataPoints': true, // ResetAllDataPoints
-		'.uno:FormatChartArea': true, // FormatChartArea
-		'.uno:InsertTitles': true, // InsertTitles
-		'.uno:InsertRemoveAxes': true, // InsertRemoveAxes
-		'.uno:DeleteLegend': true, // DeleteLegend
-		'.uno:FormatTitle': true, // FormatTitle
-		'.uno:FormatLegend': true, // FormatLegend
-		'.uno:FormatWall': true, // FormatWall
-		'.uno:DataSelect': true, // 選擇清單
-		'.uno:CurrentValidation': true, // 資料驗證...
-		'.uno:DataPilotFilter': true, // 樞紐分析表篩選
+	onFontSelect: function(e) {
+		var font = e.target.value;
+		this.applyFont(font);
+		this.focus();
+	},
+
+	_getCurrentFontName: function() {
+		return this['stateChangeHandler'].getItemValue('.uno:CharFontName');
+	},
+
+	createFontSelector: function(nodeSelector) {
+		var that = this;
+
+		var fontcombobox = $(nodeSelector);
+		if (!fontcombobox.hasClass('select2')) {
+			fontcombobox.select2({
+				placeholder: _('Font')
+			});
+		}
+
+		var createSelector = function() {
+			var commandValues = that.getToolbarCommandValues('.uno:CharFontName');
+
+			var data = []; // reset data in order to avoid that the font select box is populated with styles, too.
+			// Old browsers like IE11 et al don't like Object.keys with
+			// empty arguments
+			if (typeof commandValues === 'object') {
+				data = data.concat(Object.keys(commandValues));
+			}
+			fontcombobox.empty();
+			for (var i = 0; i < data.length; ++i) {
+				if (!data[i]) continue;
+				var option = document.createElement('option');
+				option.text = data[i];
+				option.value = data[i];
+				fontcombobox.append(option);
+			}
+			fontcombobox.on('select2:select', that.onFontSelect.bind(that));
+
+			fontcombobox.val(that._getCurrentFontName()).trigger('change');
+		};
+
+		createSelector();
+
+		// 如果是手機模式，才執行這裡
+		// TODO: 未來仍須修改手機模式的字體大小選擇，
+		// 連根拔掉這個 map.createFontSelector() 及相關部份
+		if (window.mode.isMobile()) {
+			var onCommandStateChanged = function(e) {
+				var commandName = e.commandName;
+
+				if (commandName !== '.uno:CharFontName')
+					return;
+
+				if (!e.hasValue()) {
+					return;
+				}
+
+				var state = e.state;
+				var found = false;
+				fontcombobox.children('option').each(function () {
+					var value = this.value;
+					if (value.toLowerCase() === state.toLowerCase()) {
+						found = true;
+						return;
+					}
+				});
+
+				if (!found && state) {
+					fontcombobox
+						.append($('<option></option>')
+							.text(state));
+				}
+
+				fontcombobox.val(state).trigger('change');
+			};
+
+			this.off('commandstatechanged', onCommandStateChanged);
+			this.on('commandstatechanged', onCommandStateChanged);
+		}
+
+		var onFontListChanged = function(e) {
+			if (e.commandName === '.uno:CharFontName')
+				createSelector();
+		};
+
+		this.off('updatetoolbarcommandvalues', onFontListChanged);
+		this.on('updatetoolbarcommandvalues', onFontListChanged);
+	},
+
+	onFontSizeSelect: function(e) {
+		this.applyFontSize(e.target.value);
+		this.focus();
+	},
+
+	createFontSizeSelector: function(nodeSelector) {
+		var data = [6, 7, 8, 9, 10, 10.5, 11, 12, 13, 14, 15, 16, 18, 20,
+			22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72, 80, 88, 96];
+
+		var fontsizecombobox = $(nodeSelector);
+		if (!fontsizecombobox.hasClass('select2')) {
+			fontsizecombobox.select2({
+				dropdownAutoWidth: true,
+				width: 'auto',
+				placeholder: _('Font Size'),
+				//Allow manually entered font size.
+				createTag: function(query) {
+					return {
+						id: query.term,
+						text: query.term,
+						tag: true
+					};
+				},
+				tags: true,
+				sorter: function(data) { return data.sort(function(a, b) {
+					return parseFloat(a.text) - parseFloat(b.text);
+				});}
+			});
+		}
+
+		fontsizecombobox.empty();
+		for (var i = 0; i < data.length; ++i) {
+			var option = document.createElement('option');
+			option.text = data[i];
+			option.value = data[i];
+			fontsizecombobox.append(option);
+		}
+		fontsizecombobox.off('select2:select', this.onFontSizeSelect.bind(this)).on('select2:select', this.onFontSizeSelect.bind(this));
+
+		// 如果不是手機模式，就結束
+		// TODO: 未來仍須修改手機模式的字體大小選擇，
+		// 連根拔掉這個 map.createFontSizeSelector() 及相關部份
+		if (!window.mode.isMobile()) return;
+
+		var onCommandStateChanged = function(e) {
+			var commandName = e.commandName;
+
+			if (commandName !== '.uno:FontHeight')
+				return;
+
+			if (!e.hasValue()) {
+				return;
+			}
+
+			var state = e.state;
+			var found = false;
+
+			if (state === '0') {
+				state = '';
+			}
+
+			fontsizecombobox.children('option').each(function (i, e) {
+				if ($(e).text() === state) {
+					found = true;
+				}
+			});
+
+			if (!found) {
+				// we need to add the size
+				fontsizecombobox
+					.append($('<option>')
+						.text(state).val(state));
+			}
+
+			fontsizecombobox.val(state).trigger('change');
+		};
+
+		this.off('commandstatechanged', onCommandStateChanged);
+		this.on('commandstatechanged', onCommandStateChanged);
 	},
 
 	applyFont: function (fontName) {
-		if (this.getPermission() === 'edit') {
+		if (!fontName)
+			return;
+		if (this.isPermissionEdit()) {
 			var msg = 'uno .uno:CharFontName {' +
 				'"CharFontName.FamilyName": ' +
 					'{"type": "string", "value": "' + fontName + '"}}';
-			this._socket.sendMessage(msg);
+			app.socket.sendMessage(msg);
 		}
 	},
 
 	applyFontSize: function (fontSize) {
-		if (this.getPermission() === 'edit') {
+		if (this.isPermissionEdit()) {
 			var msg = 'uno .uno:FontHeight {' +
 				'"FontHeight.Height": ' +
 				'{"type": "float", "value": "' + fontSize + '"}}';
-			this._socket.sendMessage(msg);
+			app.socket.sendMessage(msg);
 		}
 	},
 
@@ -188,16 +225,6 @@ L.Map.include({
 		return undefined;
 	},
 
-	// 取得目前文件所支援的匯出格式
-	getExportFormats: function() {
-		var docType = this.getDocType();
-		if (docType === 'drawing') {
-			docType = 'presentation';
-		}
-		var formats = this._exportFormats[docType];
-		return (formats !== undefined ? formats : []);
-	},
-
 	downloadAs: function (name, format, options, id) {
 		if (this._fatal) {
 			return;
@@ -206,7 +233,7 @@ L.Map.include({
 		id = id || 'export'; // not any special download, simple export
 
 		if ((id === 'print' && this['wopi'].DisablePrint) ||
-		    (id === 'export' && this['wopi'].DisableExport)) {
+			(id === 'export' && this['wopi'].DisableExport)) {
 			this.hideBusy();
 			return;
 		}
@@ -221,8 +248,7 @@ L.Map.include({
 		// 如果是下載或列印 pdf，而且 server 也沒有指定浮水印的話
 		// 就詢問使用者是否加浮水印
 		if (format === 'pdf') {
-			if (this.options.watermark === undefined ||
-				this.options.watermark.printing !== true) {
+			if (this.options.watermark === undefined || this.options.watermark.printing !== true) {
 				L.dialog.run('PdfWatermarkText', {
 					args: {
 						name: name,
@@ -234,8 +260,9 @@ L.Map.include({
 			}
 		}
 
-		this.showBusy(_('Downloading...'), false);
-		this._socket.sendMessage('downloadas ' +
+		if (!window.ThisIsAMobileApp)
+			this.showBusy(_('Downloading...'), false);
+		app.socket.sendMessage('downloadas ' +
 			'name=' + encodeURIComponent(name) + ' ' +
 			'id=' + id + ' ' +
 			'format=' + format + ' ' +
@@ -243,8 +270,8 @@ L.Map.include({
 	},
 
 	print: function () {
-		if (window.ThisIsTheiOSApp) {
-			window.webkit.messageHandlers.lool.postMessage('PRINT', '*');
+		if (window.ThisIsTheiOSApp || window.ThisIsTheAndroidApp) {
+			window.postMobileMessage('PRINT');
 		} else {
 			this.showBusy(_('Downloading...'), false);
 			this.downloadAs('print.pdf', 'pdf', null, 'print');
@@ -263,37 +290,18 @@ L.Map.include({
 		}
 
 		this.showBusy(_('Saving...'), false);
-		this._socket.sendMessage('saveas ' +
+		app.socket.sendMessage('saveas ' +
 			'url=wopi:' + encodeURIComponent(url) + ' ' +
 			'format=' + format + ' ' +
 			'options=' + options);
 	},
-	saveAsPassword: function (url, pwd, format, options) {
-		console.debug(url, pwd, format, options);
-		if (url === undefined || url == null) {
-			return;
-		}
-		if (format === undefined || format === null) {
-			format = '';
-		}
-		if (options === undefined || options === null) {
-			options = '';
-		}
 
-		this.showBusy(_('Saving...'), false);
-		this._socket.sendMessage('saveaspassword ' +
-			'url=wopi:' + encodeURIComponent(url) + ' ' +
-			'format=' + format + ' ' +
-			'password=' + pwd + ' ' +
-			'options=' + options);
-		window.alert(_('The file has been saved, this encrypted file will be opened.'));
-	},
 	renameFile: function (filename) {
 		if (!filename) {
 			return;
 		}
 		this.showBusy(_('Renaming...'), false);
-		this._socket.sendMessage('renamefile filename=' + encodeURIComponent(filename));
+		app.socket.sendMessage('renamefile filename=' + encodeURIComponent(filename));
 	},
 
 	applyStyle: function (style, familyName) {
@@ -301,12 +309,12 @@ L.Map.include({
 			this.fire('error', {cmd: 'setStyle', kind: 'incorrectparam'});
 			return;
 		}
-		if (this._permission === 'edit') {
+		if (this.isPermissionEdit()) {
 			var msg = 'uno .uno:StyleApply {' +
 					'"Style":{"type":"string", "value": "' + style + '"},' +
 					'"FamilyName":{"type":"string", "value":"' + familyName + '"}' +
 					'}';
-			this._socket.sendMessage(msg);
+			app.socket.sendMessage(msg);
 		}
 	},
 
@@ -315,12 +323,12 @@ L.Map.include({
 			this.fire('error', {cmd: 'setLayout', kind: 'incorrectparam'});
 			return;
 		}
-		if (this._permission === 'edit') {
+		if (this.isPermissionEdit()) {
 			var msg = 'uno .uno:AssignLayout {' +
 					'"WhatPage":{"type":"unsigned short", "value": "' + this.getCurrentPartNumber() + '"},' +
 					'"WhatLayout":{"type":"unsigned short", "value": "' + layout + '"}' +
 					'}';
-			this._socket.sendMessage(msg);
+			app.socket.sendMessage(msg);
 		}
 	},
 
@@ -332,311 +340,73 @@ L.Map.include({
 		if (extendedData !== undefined) {
 			msg += ' extendedData=' + extendedData;
 		}
-		// 顯示檔案儲存中訊息
-		this.showBusy(_('Saving...'));
-		this._socket.sendMessage(msg);
+
+		app.socket.sendMessage(msg);
 	},
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 關閉檔案
-	closeDocument: function() {
-		var map = this;
-		// 文件在可編輯狀態
-		if (this._permission === 'edit') {
-			this._stopCloseDocument = false;
-			// 有強制寫入或文件已修改過
-			if (this.forceCellCommit() || this._everModified) {
-				// 通知等待 uno:Save 結果
-				this._waitSaveResult = true;
-				// 0.5 秒後呼叫存檔
-				setTimeout(function() {
-					map.save(true, true);
-				}, 500);
-				// 超過 60 秒未結束，則直接結束
-				setTimeout(function() {
-					console.debug('Save files for more than 60 seconds. Send UI_Close signal.');
-					map.sendUICloseMessage();
-				}, 60000);
-			} else {
-				this.sendUICloseMessage();
-			}
-		} else {
-			this.sendUICloseMessage();
+	/* messageNeedsToBeRedirected: function(command) {
+		if (command === '.uno:EditHyperlink') {
+			var that = this;
+			setTimeout(function () { that.showHyperlinkDialog(); }, 500);
+			return true;
 		}
-	},
-
-	/**
-	 * 設定後端 Office 版本資訊
-	 * @param {object} versionObj
-	 */
-	setOfficeVersion: function(versionObj) {
-		this._officeVersion = versionObj;
-	},
-
-	/**
-	 * 取得後端 Office 版本資訊
-	 * @returns object - 版本資訊
-	 */
-	getOfficeVersion: function() {
-		return this._officeVersion;
-	},
-
-	/**
-	 * 令 OxOOL 重新取得文件狀態
-	 * @author Firefly <firefly@ossii.com.tw>
-	 */
-	getDocumentStatus: function() {
-		// 指令稍微延遲再送出
-		setTimeout(function() {
-			this._socket.sendMessage('status');
-		}.bind(this), 100);
-	},
-
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 通知關閉編輯畫面通知
-	sendUICloseMessage: function() {
-		if (this._stopCloseDocument === true) {
-			this._stopCloseDocument = false;
-			return;
+		else {
+			return false;
 		}
-		// 未被包在 iframe 中，直接關閉視窗
-		if (window.self === window.top) {
-			window.close();
-		}
-		var map = this;
-		if (window.ThisIsAMobileApp) {
-			window.webkit.messageHandlers.lool.postMessage('BYE', '*');
-		} else {
-			map.fire('postMessage', {msgId: 'close', args: {EverModified: map._everModified, Deprecated: true}});
-			map.fire('postMessage', {msgId: 'UI_Close', args: {EverModified: map._everModified}});
-		}
-		map.remove();
-	},
+	}, */
 
 	sendUnoCommand: function (command, json) {
-		if (this._permission === 'edit') {
-			// Add by Firefly <firefly@ossii.com.tw>
-			command = command.trim(); // 去掉前後空白，(不知為何，就有程序愛加空白在命令列後面 XD)
-			// 是否有替代 uno?
-			var targetURL = _UNOTARGET(command, this.getDocType());
-			// 有的話就用替代 uno
-			if (targetURL !== '') command = targetURL;
-			// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
-			if (command.startsWith('.uno:')) {
-				 command = encodeURI(command);
-			}
-			//----------------------------------------
-			//攔截雙次點擊過得快捷功能
-			if (this._preventDoubleTrigger(command)) {
-				return;
-			}
-			this._socket.sendMessage('uno ' + command + (json ? ' ' + JSON.stringify(json) : ''));
-		}
-	},
+		command = command.trim(); // 去掉前後空白，(不知為何，就有程序愛加空白在命令列後面 XD)
+		// 是否有替代 uno?
+		var targetURL = _UNOTARGET(command, this.getDocType());
+		// 有的話就用替代 uno
+		if (targetURL !== '') command = targetURL;
+		// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
+		command = encodeURI(command);
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 取得文件式樣列表
-	getStyleFamilies: function() {
-		return this.getToolbarCommandValues('.uno:StyleApply');
-	},
+		// To exercise the Trace Event functionality, uncomment this
+		// app.socket.emitInstantTraceEvent('oxool-unocommand:' + command);
 
-	// 取得字型列表
-	getFontList: function() {
-		return this.getToolbarCommandValues('.uno:CharFontName');
-	},
+		var isAllowedInReadOnly = false;
+		var allowedCommands = ['.uno:Save', '.uno:WordCountDialog', '.uno:EditAnnotation',
+			'.uno:InsertAnnotation', '.uno:DeleteAnnotation', '.uno:Signature',
+			'.uno:ShowResolvedAnnotations'];
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 將指令加入白名單中
-	// 指令為 json 物件，內如下：
-	// name: .uno: 開頭的指令，或不重複的 id 名稱
-	// hotkey: 若有快速鍵的話請指定，快速鍵組合依序為 Ctrl + Alt + Shift + Key 字串
-	// callback: 執行該指令所需的 callback 函數
-	addAllowedCommand: function(command) {
-		// 有名稱才行
-		var obj = {};
-		if (command.name !== undefined) {
-			var name = command.name.trim();
-			var hotkey = command.hotkey;
-			var callback = command.callback;
-			var hide = command.hide;
-			var isExists = (this._allowCommands[name] !== undefined); // 是否已經存在了
-			// 如果存在，調出來
-			if (isExists) {
-				obj = this._allowCommands[name];
-			}
-			// 有 hotkey 的話，另外存入 hotkeys 命令列表
-			if (hotkey !== undefined) {
-				// 轉成小寫
-				var compar = hotkey.toLowerCase();
-				if (compar.length > 0) {
-					obj.hotkey = hotkey;
-					var keys = compar.split('+'); // 用 '+' 號切開
-					var ctrl = keys.indexOf('ctrl'); // 有無 Ctrl
-					var alt = keys.indexOf('alt'); // // 有無 Alt
-					var shift = keys.indexOf('shift'); // 有無 shift
-					var key = keys[keys.length-1]; // 取按鍵名稱
-					// 依照 Ctrl+Alt+Shift+Key 順序，重新組合 hotkey
-					keys = [];
-					if (ctrl >= 0) keys.push('Ctrl');
-					if (alt >= 0) keys.push('Alt');
-					if (shift >= 0) keys.push('Shift');
-					if (key.startsWith('arrow'))
-						key = key.substr(5);
-					keys.push(key);
-					hotkey = keys.join('+').toLowerCase(); // 組合回小寫字串
-					this._hotkeyCommands[hotkey] = name;
-				}
-			}
-			// 有 callback 的話，一併紀錄
-			if (typeof callback === 'function') {
-				obj.callback = callback;
-			}
-			// 是否隱藏
-			if (typeof hide === 'boolean') {
-				obj.hide = hide;
-			}
-			this._allowCommands[name] = obj;
-			// 第一次加入 且是 uno 指令的話，設定狀態自動回報
-			if (!isExists && name.startsWith('.uno:'))
-			{
-				// 只有 OxOffice 或 ndcodfsys 有 initunostatus 功能
-				if (this._officeVersion.ProductName === 'OxOffice' ||
-					this._officeVersion.ProductName== 'ndcodfsys') {
-					this._socket.sendMessage('initunostatus ' + encodeURI(name));
-				}
+		for (var i in allowedCommands) {
+			if (allowedCommands[i] === command) {
+				isAllowedInReadOnly = true;
+				break;
 			}
 		}
-	},
+		if (command.startsWith('.uno:SpellOnline')) {
+			var map = this;
+			var val = map['stateChangeHandler'].getItemValue('.uno:SpellOnline');
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 查詢某指令是否為白名單
-	isAllowedCommand: function(unoCommand) {
-		var whiteList = this._whiteCommandList[unoCommand];
-		var allowed = this._allowCommands[unoCommand];
-		// 如果該指令被隱藏起來，就當作不存在白名單中
-		if (allowed !== undefined && allowed.hide === true) {
-			return false;
-		}
-		if (whiteList === undefined && allowed === undefined) {
-			console.debug('Warning! ' + unoCommand + ' not in white list and allowed commands!\n', '\'' + unoCommand + '\': true, // ' + _UNO(unoCommand, this.getDocType(), true));
-			return false;
-		}
-
-		return (whiteList === true || allowed !== undefined);
-	},
-
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 查詢字串是否為 uno 指令
-	isUnoCommand: function(unoCommand) {
-		return (typeof unoCommand === 'string' && unoCommand.startsWith('.uno:'));
-	},
-
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 依據按鍵事件，執行
-	// 傳回 true 表示該按鍵是捷徑，否則傳回 false
-	executeHotkey: function(e) {
-		// 只處理 keydown 事件
-		if (e.type !== 'keydown')
-			return false;
-
-		// 如果在 Calc 儲存格編輯狀態，就不攔截
-		if (this.getDocType() === 'spreadsheet' &&
-			this._docLayer._docContext === 'EditCell') {
-			return false;
-		}
-
-		var event = e.originalEvent;
-		var hotkey = []; // 準備要組合的按鍵易讀名稱
-		var key = event.key;
-		if (event.ctrlKey || event.metaKey) hotkey.push('Ctrl');
-		if (event.altKey) hotkey.push('Alt');
-		if (event.shiftKey) hotkey.push('Shift');
-		if (key.startsWith('Arrow'))
-			key = key.substr(5);
-		hotkey.push(key);
-		var mergeKeys = hotkey.join('+').toLowerCase();
-		var matchCommand = this._hotkeyCommands[mergeKeys];
-		if (matchCommand !== undefined) {
-			console.debug('Found Hot command->' + matchCommand);
-			if (this.executeAllowedCommand(matchCommand)) {
-				e.originalEvent.preventDefault();
-				return true;
+			// proceed if the toggle button is pressed
+			if (val && (json === undefined || json === null)) {
+				 // because it is toggle, state has to be the opposite
+				var state = !(val === 'true');
+				if (window.isLocalStorageAllowed)
+					window.localStorage.setItem('SpellOnline', state);
 			}
 		}
-		return false;
-	},
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	/* 執行在白名單中的命令
-	 * 參數可以是 .uno: 開頭的指令或是 menubar 定義過的 ID
-	 */
-	executeAllowedCommand: function(command) {
-		var result = false;
-		if (typeof command === 'string') {
-			var commandData = this._allowCommands[command]; // 找出白名單資料
-			// 白名單沒有的話，找右鍵選單的白名單
-			if (commandData === undefined) {
-				commandData = this._whiteCommandList[command];
-			}
-			var uno = false, macro = false, dialog = false, action = false, callback = false;
-			// 有找到且該指令沒被隱藏
-			if (commandData !== undefined && commandData.hide !== true) {
-				// 指令開頭是 .uno:，直接執行
-				if (command.startsWith('.uno:')) {
-					this.sendUnoCommand(command);
-					uno = true;
-				} else if (command.startsWith('macro:///')) {
-					this.sendMacroCommand(command);
-					macro = true;
-				// 指令開頭是 dialog:，執行該 dialog
-				} else if (command.startsWith('dialog:')) {
-					var args = {};
-					var dialogName = '';
-					var startPos = 'dialog:'.length;
-					var queryIdx = command.indexOf('?');
-					var queryString = '';
-					if (queryIdx >= 0) {
-						dialogName = command.substring(startPos, queryIdx);
-						queryString = command.substr(queryIdx + 1);
-					} else {
-						dialogName = command.substr(startPos);
-					}
-
-					if (queryString.length) {
-						var params = queryString.split('&');
-						for (var idx in params) {
-							if (params[idx].length) {
-								var keyvalue = params[idx].split('=');
-								args[keyvalue[0]] = keyvalue[1];
-							}
-						}
-					}
-					L.dialog.run(dialogName, {args: args});
-					dialog = true;
-				} else {
-					L.dialog.run('Action', {id: command});
-					dialog = true;
-				}
-				// 有指定 callback，也執行 callback
-				if (typeof commandData.callback === 'function') {
-					commandData.callback();
-					callback = true;
-				}
-			}
-			// uno 指令或 callback 有一項被執行，才能算成功
-			result = (uno | macro | dialog | action | callback);
+		if (this.uiManager.isUIBlocked())
+			return;
+		if (this.dialog.hasOpenedDialog())
+			this.dialog.blinkOpenDialog();
+		else if (this.isPermissionEdit() || isAllowedInReadOnly) {
+			//if (!this.messageNeedsToBeRedirected(command))
+			app.socket.sendMessage('uno ' + command + (json ? ' ' + JSON.stringify(json) : ''));
 		}
-		return result;
 	},
 
 	toggleCommandState: function (unoState) {
-		if (this._permission === 'edit') {
-			// Modify by Firefly <firefly@ossii.com.tw>
-			// Support for commands beginning with macro://
-			if (!unoState.startsWith('.uno:') && !unoState.startsWith('macro://')) {
+		if (this.isPermissionEdit()) {
+			if (!unoState.startsWith('.uno:')) {
 				unoState = '.uno:' + unoState;
 			}
-			this.sendUnoCommand(unoState);
+			this.executeAllowedCommand(unoState);
 		}
 	},
 
@@ -648,106 +418,194 @@ L.Map.include({
 		this.fire('inserturl', {url: url});
 	},
 
-	/*
- 	 * 強制寫入試算表儲存格
- 	 */
-	forceCellCommit: function () {
-		var map = this;
-		var isModified = false;
-		// 如果試試算表，檢查儲存格是否在輸入狀態
-		if (map._permission === 'edit'
-			&& map.getDocType() === 'spreadsheet'
-			&& this._hasForceCellCommit !== true) {
+	selectBackground: function (file) {
+		this.fire('selectbackground', {file: file});
+	},
 
-			this._hasForceCellCommit = true; // 設定 commit 狀態，避免重複 commit
-			// 游標在編輯狀態
-			if (map._docLayer._isCursorVisible === true) {
-				isModified = true;
-				this._socket.sendMessage('setmodified'); // 設定文件為已修改狀態
-				// 送出 enter 按鍵
-				map.focus();
-				map._docLayer._postKeyboardEvent('input',
-					map.keyboard.keyCodes.enter,
-					map.keyboard._toUNOKeyCode(map.keyboard.keyCodes.enter));
-			}
-			this._hasForceCellCommit = false;
+	/** Add various content instead of the variables in the Welcome dialog */
+	_replaceVars: function(text) {
+		return text
+			.replace(/%oxoolVersion/g, app.socket.WSDServer.Version)
+			.replace(/%oxoolAppsURL/g, 'https://www.collaboraoffice.com/solutions/collabora-office-android-ios/')
+			.replace(/%oxoolReleaseNotesURL/g, 'https://www.collaboraoffice.com/code-21-11-release-notes/')
+			.replace(/%oxoolSdkURL/g, 'https://sdk.collaboraonline.com/')
+			.replace(/%oxoolStepByStepURL/g, 'https://collaboraonline.github.io/post/build-code/')
+			.replace(/%oxoolTranslationsURL/g, 'https://collaboraonline.github.io/post/translate/')
+			.replace(/%oxoolBugreportURL/g, 'https://collaboraonline.github.io/post/filebugs/');
+	},
+
+	// show the actual welcome dialog with the given data
+	_showWelcomeDialogVex: function(data, calledFromMenu) {
+		var w;
+		var iw = window.innerWidth;
+		var hasDismissBtn = window.enableWelcomeMessageButton;
+		var btnText = _('I understand the risks');
+
+		if (iw < 768) {
+			w = iw - 30;
 		}
-		return isModified;
-	},
+		else if (iw > 1920) {
+			w = 960;
+		}
+		else {
+			w = iw / 5 + 590;
+		}
 
-	/*
-	 * 字串寫入試算表儲存格
-	 * @string - 字串內容
-	 * @forceCommit - true(強制)
- 	 */
-	cellEnterString: function (string, forceCommit) {
-		var command = {
-			'StringName': {
-				type: 'string',
-				value: string
-			},
-			'DontCommit': {
-				type: 'boolean',
-				value: (forceCommit === true) ? false : true
+		if (!hasDismissBtn && window.mode.isMobile()) {
+			var ih = window.innerHeight;
+			var h = ih / 2;
+			if (iw < 768) {
+				h = ih - 170; // Hopefully enough padding to avoid extra scroll-bar on mobile,
 			}
-		};
+			var containerDiv = '<div style="max-height:' + h + 'px;overflow-y:auto;">';
+			containerDiv += data;
+			containerDiv += '</div>';
+			data = containerDiv;
+			btnText = _('Dismiss');
+			hasDismissBtn = true;
+		}
 
-		this.sendUnoCommand('.uno:EnterString ', command);
-	},
+		// show the dialog
+		var map = this;
+		vex.dialog.open({
+			unsafeMessage: data,
+			showCloseButton: !hasDismissBtn,
+			escapeButtonCloses: false,
+			overlayClosesOnClick: false,
+			className: !window.mode.isMobile() ? 'vex-theme-plain' : 'vex-theme-plain vex-welcome-mobile',
+			closeAllOnPopState: false,
+			focusFirstInput: false, // Needed to avoid auto-scroll to the bottom
+			buttons: !hasDismissBtn ? {} : [
+				$.extend({}, vex.dialog.buttons.YES, { text: btnText }),
+			],
+			afterOpen: function() {
+				$('#welcome-slide1-heading-1').text(map._replaceVars(_('Explore the new %oxoolVersion')));
+				$('#welcome-slide1-heading-2').text(_('OxOffice Online Development Edition'));
+				$('#welcome-slide1-content').html(map._replaceVars(_('Enjoy the latest developments in online productivity, free for you to use, to explore and to use with others in the browser. <a href="%oxoolAppsURL" target="_blank">Apps</a> are also available for Android and iOS. %oxoolVersion introduces important improvements, in the areas of usability, visual presentation and performance.')));
 
-	/**
-	 * 翻譯指定 DOM 內所有 element 有指定的 attribute
-	 */
-	translationElement: function(DOM) {
-		// 需要找出的 attributes
-		var trAttrs = ['_', '_UNO', 'title', 'placeholder'];
-		DOM.querySelectorAll('[' + trAttrs.join('],[') + ']').forEach(function(el) {
-			for (var idx in trAttrs) {
-				var attrName = trAttrs[idx]
-				if (el.hasAttribute(attrName)) {
-					// 讀取該 attribute 字串
-					var origStr = el.getAttribute(attrName);
-					// 翻譯結果
-					var l10nStr = '';
-					switch (attrName) {
-					case '_':
-					case 'title':
-					case 'placeholder':
-						l10nStr = _(origStr);
-						break;
-					case '_UNO':
-						l10nStr = _UNO(origStr);
-						break;
-					default:
-						break;
-					}
-					// 替代原來的字串
-					if (attrName === 'title' || attrName === 'placeholder') {
-						el.setAttribute('title', l10nStr);
-					// 把翻譯結果插到該 element 的結尾
-					} else if (attrName === '_' || attrName === '_UNO') {
-						el.insertBefore(document.createTextNode(l10nStr), null);
-					}
-					if (origStr === l10nStr) {
-						console.debug('warning! "' + origStr + '" may not be translation.');
-					}
+				$('#welcome-slide2-heading-1').text(map._replaceVars(_('Discover all the changes')));
+				$('#welcome-slide2-heading-2').text(_('OxOffice Online Development Edition'));
+				$('#welcome-slide2-content').html(map._replaceVars(_('Check the <a href="%oxoolReleaseNotesURL" target="_blank">release notes</a> and learn all about the latest milestone in performance particularly for larger groups working on documents, new native sidebar, new re-worked avatar list, asynchronous saving, faster spell checking and more.')));
+
+				$('#welcome-slide3-heading-1').text(_('Integrate OxOffice Online into your webapp'));
+				$('#welcome-slide3-heading-2').text(_('Or get involved in the development'));
+				$('#welcome-slide3-content').html(map._replaceVars(_('Learn more about integrating into your web application in the <a href="%oxoolSdkURL" target="_blank">OxOffice Online SDK</a>. Or head over to the <a href="%oxoolStepByStepURL" target="_blank">step-by-step instructions</a> and build CODE from scratch. You can also help out with <a href="%oxoolTranslationsURL" target="_blank">translations</a> or by <a href="%oxoolBugreportURL" target="_blank">filing a bug report</a> with all the essential steps on how to reproduce it.')));
+
+				$('#welcome-button-next-1').text(_('Next').replace('~', ''));
+				$('#welcome-button-next-2').text(_('Next').replace('~', ''));
+				$('#welcome-button-close').text(_('Close').replace('~', ''));
+
+				$('#view-supported-versions').text(_('Learn more about the enterprise-ready versions'));
+
+				var $vexContent = $(this.contentEl);
+				this.contentEl.style.width = w + 'px';
+
+				$vexContent.attr('tabindex', -1);
+				// Work-around to avoid the ugly all-bold dialog message on mobile
+				if (window.mode.isMobile()) {
+					var dlgMsg = document.getElementsByClassName('vex-dialog-message')[0];
+					dlgMsg.setAttribute('class', 'vex-content');
 				}
+				$vexContent.focus();
+				// workaround for https://github.com/HubSpot/vex/issues/43
+				$('.vex-overlay').css({ 'pointer-events': 'none'});
+			},
+			beforeClose: function () {
+				if (!calledFromMenu) {
+					localStorage.setItem('WSDWelcomeVersion', app.socket.WSDServer.Version);
+				}
+				map.focus();
 			}
-		}.bind(this));
+		});
 	},
 
-	renderFont: function (fontName) {
-		this._socket.sendMessage('renderfont font=' + window.encodeURIComponent(fontName));
+	showWelcomeDialog: function(calledFromMenu) {
+		window.app.console.log('showWelcomeDialog, calledFromMenu: ' + calledFromMenu);
+		var welcomeLocation = 'welcome/welcome.html';
+		if (window.socketProxy)
+			welcomeLocation = window.makeWsUrl('/loleaflet/dist/' + welcomeLocation);
+
+		var map = this;
+
+		// if the user doesn't accept cookies, or we get several triggers,
+		// ensure we only ever do this once.
+		if (!calledFromMenu && map._alreadyShownWelcomeDialog)
+			return;
+		map._alreadyShownWelcomeDialog = true;
+
+		// try to load the welcome message
+		$.get(welcomeLocation)
+			.done(function(data) {
+				map._showWelcomeDialogVex(data, calledFromMenu);
+			})
+			.fail(function() {
+				var currentDate = new Date();
+				localStorage.setItem('WSDWelcomeDisabled', 'true');
+				localStorage.setItem('WSDWelcomeDisabledDate', currentDate.toDateString());
+
+				if (calledFromMenu)
+					map._showWelcomeDialogVex(_('We are sorry, the information about the latest updates is not available.'));
+			});
+	},
+
+	shouldWelcome: function() {
+		if (!window.isLocalStorageAllowed || !window.enableWelcomeMessage)
+			return false;
+
+		var storedVersion = localStorage.getItem('WSDWelcomeVersion');
+		var currentVersion = app.socket.WSDServer.Version;
+		var welcomeDisabledCookie = localStorage.getItem('WSDWelcomeDisabled');
+		var welcomeDisabledDate = localStorage.getItem('WSDWelcomeDisabledDate');
+		var isWelcomeDisabled = false;
+
+		if (welcomeDisabledCookie && welcomeDisabledDate) {
+			// Check if we are stil in the same day
+			var currentDate = new Date();
+			if (welcomeDisabledDate === currentDate.toDateString())
+				isWelcomeDisabled = true;
+			else {
+				//Values expired. Clear the local values
+				localStorage.removeItem('WSDWelcomeDisabled');
+				localStorage.removeItem('WSDWelcomeDisabledDate');
+			}
+		}
+
+		if ((!storedVersion || storedVersion !== currentVersion) && !isWelcomeDisabled) {
+			return true;
+		}
+
+		return false;
 	},
 
 	showLOAboutDialog: function() {
+
+		// Just as a test to exercise the Async Trace Event functionality, uncomment this
+		// line and the asyncTraceEvent.finish() below.
+		// var asyncTraceEvent = app.socket.createAsyncTraceEvent('oxool-showLOAboutDialog');
+
 		// Move the div sitting in 'body' as vex-content and make it visible
 		var content = $('#about-dialog').clone().css({display: 'block'});
 		// fill product-name and product-string
-		var productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'LibreOffice Online';
-		content.find('#product-name').text(productName);
+		var productName;
+		if (window.ThisIsAMobileApp) {
+			productName = window.MobileAppName;
+		} else {
+			productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'OxOffice Online Development Edition';
+		}
+		var productURL = (typeof brandProductURL !== 'undefined') ? brandProductURL : 'https://collaboraonline.github.io/';
+		content.find('#product-name').text(productName).addClass('product-' + productName.split(/[ ()]+/).join('-').toLowerCase());
 		var productString = _('This version of %productName is powered by');
-		content.find('#product-string').text(productString.replace('%productName', productName));
+		var productNameWithURL;
+		if (!window.ThisIsAMobileApp)
+			productNameWithURL = '<a href="' + sanitizeUrl.sanitizeUrl(productURL) +
+								 '" target="_blank">' + productName + '</a>';
+		else
+			productNameWithURL = productName;
+		content.find('#product-string').html(productString.replace('%productName', productNameWithURL));
+
+		if (window.socketProxy)
+			content.find('#slow-proxy').text(_('"Slow Proxy"'));
+
 		var w;
 		var iw = window.innerWidth;
 		if (iw < 768) {
@@ -760,51 +618,171 @@ L.Map.include({
 			w = iw / 5 + 590;
 		}
 		var map = this;
-		var handler = function(event) {
-			if (event.keyCode === 68) {
+		/* var handler = function(event) {
+			if (event.key === 'd') {
 				map._docLayer.toggleTileDebugMode();
+			} else if (event.key === 'l') {
+				// L toggges the Online logging level between the default (whatever
+				// is set in oxoolwsd.xml or on the oxoolwsd command line) and the
+				// most verbose a client is allowed to set (which also can be set in
+				// oxoolwsd.xml or on the oxoolwsd command line).
+				//
+				// In a typical developer "make run" setup, the default is "trace"
+				// so there is nothing more verbose. But presumably it is different
+				// in production setups.
+
+				app.socket.threadLocalLoggingLevelToggle = !app.socket.threadLocalLoggingLevelToggle;
+
+				var newLogLevel = (app.socket.threadLocalLoggingLevelToggle ? 'verbose' : 'default');
+
+				app.socket.sendMessage('loggingleveloverride ' + newLogLevel);
+
+				var logLevelInformation = newLogLevel;
+				if (newLogLevel === 'default')
+					logLevelInformation = 'default (from oxoolwsd.xml)';
+				else if (newLogLevel === 'verbose')
+					logLevelInformation = 'most verbose (from oxoolwsd.xml)';
+				else if (newLogLevel === 'terse')
+					logLevelInformation = 'least verbose (from oxoolwsd.xml)';
+				else
+					logLevelInformation = newLogLevel;
+
+				$(app.ExpertlyTrickForLOAbout.contentEl).find('#log-level-state').html('Log level: ' + logLevelInformation);
 			}
-		};
+		}; */
 		vex.open({
-			content: content,
+			unsafeContent: content[0].outerHTML,
 			showCloseButton: true,
 			escapeButtonCloses: true,
 			overlayClosesOnClick: true,
-			contentCSS: { width: w + 'px'},
 			buttons: {},
-			afterOpen: function($vexContent) {
-				map.enable(false);
-				$(window).bind('keyup.vex', handler);
+			afterOpen: function() {
+
+				/* var touchGesture = map['touchGesture'];
+				if (touchGesture && touchGesture._hammer) {
+					touchGesture._hammer.off('tripletap', L.bind(touchGesture._onTripleTap, touchGesture));
+				}
+
+				var $vexContent = $(this.contentEl);
+				var hammer = new Hammer.Manager($vexContent.get(0));
+				hammer.add(new Hammer.Tap({ taps: 3 }));
+				hammer.on('tap', function() {
+					map._docLayer.toggleTileDebugMode();
+				}); */
+
+				this.contentEl.style.width = w + 'px';
+
+				// FIXME: When we remove vex this needs to be cleaned up.
+
+				// It is hard to access the value of "this" in this afterOpen
+				// function in the handler function. Use a global variable until
+				// somebody figures out a better way.
+				app.ExpertlyTrickForLOAbout = this;
+				//$(window).bind('keyup.vex', handler);
 				// workaround for https://github.com/HubSpot/vex/issues/43
 				$('.vex-overlay').css({ 'pointer-events': 'none'});
-				$('.vex').click(function() {
-					vex.close($vexContent.data().vex.id);
-				});
-				$('.vex-content').click(function(e) {
-					e.stopPropagation();
-				});
 			},
 			beforeClose: function () {
-				$(window).unbind('keyup.vex', handler)
-				map.enable(true);
+				/* $(window).unbind('keyup.vex', handler);
+				var touchGesture = map['touchGesture'];
+				if (touchGesture && touchGesture._hammer) {
+					touchGesture._hammer.on('tripletap', L.bind(touchGesture._onTripleTap, touchGesture));
+				} */
 				map.focus();
+
+				// Unset the global variable, see comment above.
+				app.ExpertlyTrickForLOAbout = undefined;
+				// asyncTraceEvent.finish();
 			}
 		});
 	},
 
-	// 阻擋雙擊的指令輸出的最後一道防線
-	_preventDoubleTrigger: function(command) {
+	extractContent: function(html) {
+		var parser = new DOMParser;
+		return parser.parseFromString(html, 'text/html').documentElement.getElementsByTagName('body')[0].textContent;
+	},
+
+	makeURLFromStr: function(str) {
+		if (!(str.toLowerCase().startsWith('http://') || str.toLowerCase().startsWith('https://'))) {
+			str = 'http://' + str;
+		}
+		return str;
+	},
+
+	showHyperlinkDialog: function() {
 		var map = this;
-		if (command === '.uno:Text') {
-			if (map.stateChangeHandler._stateProperties['.uno:Text'].checked) {
-				return true;
+		var text = '';
+		var link = '';
+		if (this.hyperlinkUnderCursor && this.hyperlinkUnderCursor.text && this.hyperlinkUnderCursor.link) {
+			text = this.hyperlinkUnderCursor.text;
+			link = this.hyperlinkUnderCursor.link;
+		} else if (this._clip && this._clip._selectionType == 'text') {
+			if (map['stateChangeHandler'].getItemValue('.uno:Copy') === 'enabled') {
+				text = this.extractContent(this._clip._selectionContent);
 			}
+		} else if (this._docLayer._selectedTextContent) {
+			text = this.extractContent(this._docLayer._selectedTextContent);
 		}
-		if (command === '.uno:VerticalText') {
-			if (map.stateChangeHandler._stateProperties['.uno:VerticalText'].checked) {
-				return true;
+
+		vex.dialog.open({
+			contentClassName: 'hyperlink-dialog vex-has-inputs',
+			message: _('Insert hyperlink'),
+			overlayClosesOnClick: false,
+			input: [
+				_('Text') + '<textarea name="text" id="hyperlink-text-box" style="resize: none" type="text"></textarea>',
+				_('Link') + '<input name="link" id="hyperlink-link-box" type="text" value="' + link + '"/>'
+			].join(''),
+			buttons: [
+				$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
+				$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
+			],
+			callback: function(data) {
+				if (data && data.link != '') {
+					var command = {
+						'Hyperlink.Text': {
+							type: 'string',
+							value: data.text
+						},
+						'Hyperlink.URL': {
+							type: 'string',
+							value: map.makeURLFromStr(data.link)
+						}
+					};
+					map.sendUnoCommand('.uno:SetHyperlink', command);
+					map.focus();
+				}
+				else {
+					map.focus();
+				}
+			},
+			afterOpen: function() {
+				setTimeout(function() {
+					var textBox = document.getElementById('hyperlink-text-box');
+					textBox.textContent = text ? text.trim() : '';
+					if (textBox.textContent.trim() !== '') {
+						document.getElementById('hyperlink-link-box').focus();
+					}
+					else {
+						textBox.focus();
+					}
+				}, 0);
 			}
-		}
-		return false;
-	}
+		});
+	},
+
+	openRevisionHistory: function () {
+		var map = this;
+		// if we are being loaded inside an iframe, ask
+		// our host to show revision history mode
+		map.fire('postMessage', {msgId: 'rev-history', args: {Deprecated: true}});
+		map.fire('postMessage', {msgId: 'UI_FileVersions'});
+	},
+	openShare: function () {
+		var map = this;
+		map.fire('postMessage', {msgId: 'UI_Share'});
+	},
+	openSaveAs: function () {
+		var map = this;
+		map.fire('postMessage', {msgId: 'UI_SaveAs'});
+	},
 });

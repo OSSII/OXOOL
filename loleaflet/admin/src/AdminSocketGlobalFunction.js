@@ -39,7 +39,7 @@ function GlobalFunctionCheckAccountPassword()
 												data.username + ' ' + data.password);
 			}
 		}
-	})
+	});
 
 }
 
@@ -71,7 +71,7 @@ function GlobalFunctionChangeAccountPassword()
 				}
 			}
 		}
-	})
+	});
 }
 
 function GlobalFunctionStart()

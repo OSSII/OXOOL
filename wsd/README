@@ -132,11 +132,11 @@ flag, the parent directory of oxoolwsd/ is assumed to be the
 file_server_root_path. So, for development purposes, you can access the
 leaflet files (using /loleaflet/), but it is advised to explicitly set
 the file_server_root_path to prevent any unwanted files from reading,
-especially when lool is deployed for normal public usage on servers.
+especially when oxool is deployed for normal public usage on servers.
 
 Please note that it is necessary that all the leaflet files that are
 meant to be served is under a directory named 'loleaflet'. Since, the
-loleaflet files, in lool git repo, are itself in a directory named
+loleaflet files, in oxool git repo, are itself in a directory named
 'loleaflet', this would work out of the box for development purposes.
 
 If you run oxoolwsd on HTTPS, you have to set up your own private key

@@ -11,27 +11,19 @@ L.Map.include({
 		this.panBy(new L.Point(x, y), {animate: false});
 	},
 
-	scrollDown: function (y, options) {
-		this.scroll(0, y, options);
-	},
-
-	scrollRight: function (x, options) {
-		this.scroll(x, 0, options);
-	},
-
 	scrollOffset: function () {
 		var center = this.project(this.getCenter());
 		var centerOffset = center.subtract(this.getSize().divideBy(2));
 		var offset = {};
 		offset.x = centerOffset.x < 0 ? 0 : Math.round(centerOffset.x);
-		offset.y = centerOffset.y < 0 ? 0 : Math.round(centerOffset.y);
+		offset.y = Math.round(centerOffset.y);
 		return offset;
 	},
 
 	scrollTop: function (y, options) {
 		this._setUpdateOffsetEvt(options);
 		var offset = this.scrollOffset();
-		console.debug('scrollTop: ' + y + ' ' + offset.y + ' ' + (y - offset.y));
+		window.app.console.debug('scrollTop: ' + y + ' ' + offset.y + ' ' + (y - offset.y));
 		this.panBy(new L.Point(0, y - offset.y), {animate: false});
 	},
 
@@ -49,10 +41,4 @@ L.Map.include({
 			this.off('moveend', this._docLayer._updateScrollOffset, this._docLayer);
 		}
 	},
-
-	fitWidthZoom: function (maxZoom) {
-		if (this._docLayer) {
-			this._docLayer._fitWidthZoom(null, maxZoom);
-		}
-	}
 });

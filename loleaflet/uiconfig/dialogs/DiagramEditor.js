@@ -12,7 +12,7 @@ L.dialog.DiagramEditor = {
 	haveInternalDrawio: false, // 有無內建 Drawio
 	fonts: [], // OxOOL 字型列表
 	data: '', // 待編輯資料
-	oxoolDrawioUrl: '/lool/oxdrawio/index.html', // OxOOL 內建的 Drawio 位址
+	oxoolDrawioUrl: window.serviceRoot + '/lool/oxdrawio/index.html', // OxOOL 內建的 Drawio 位址
 
 	allowExternalDrawio: false, // 是否允許使用外部 Drawio 編輯器
 
@@ -167,9 +167,9 @@ DiagramEditor.prototype.handleMessage = function(msg) {
 		var svgData = msg.data.substring(msg.data.indexOf(',') + 1);
 		// 沒有傳來資料表示是新增
 		if (this._data.length === 0) {
-			this._map._socket.sendMessage('insertpicture ' + 'data=' + svgData);
+			app.socket.sendMessage('insertpicture ' + 'data=' + svgData);
 		} else {
-			this._map._socket.sendMessage('changepicture ' + 'data=' + svgData);
+			app.socket.sendMessage('changepicture ' + 'data=' + svgData);
 		}
 		this.stop();
 		break;

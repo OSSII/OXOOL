@@ -1,0 +1,85 @@
+<script>Admin.SSLCertManager(host);</script>
+<input type="file" id="uploadFile" name="uploadFile" data-type="none" style="display:none">
+<!-- 活動提示訊息 -->
+<div id="alertPlaceholder"></div>
+
+<form id="mainform" spellcheck="false">
+<!-- SSL 設定 -->
+<div class="card mt-3">
+    <div class="card-header list-group-item-primary bg-gradient">
+        <div class="fs-6 fw-bold" _="SSL settings"></div>
+    </div>
+    <div class="card-body row g-2">
+        <div class="col-md-6">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="ssl.enable">
+                <label class="form-check-label" for="ssl.enable" _="Enable SSL"></label>
+                <div class="form-text" id="ssl.enable[@desc]"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="ssl.termination">
+                <label class="form-check-label" for="ssl.termination" _="Connection via proxy"></label>
+                <div class="form-text" id="ssl.termination[@desc]"></div>
+            </div>
+        </div>
+        <!-- 分隔 -->
+        <div class="col-md-4">
+            <label class="form-label" _="Certificate file path"></label><span id="certFileUpdated" class="d-none badge rounded-pill bg-danger ms-1 small" _="new"></span>
+            <div class="input-group">
+                <input type="text" class="form-control" id="ssl.cert_file_path" disabled readonly>
+                <button type="button" id="uploadCertFile" class="btn btn-success"><i class="bi bi-cloud-arrow-up"></i></button>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label" _="Private key file path"></label><span id="keyFileUpdated" class="d-none badge rounded-pill bg-danger ms-1 small" _="new"></span>
+            <div class="input-group">
+                <input type="text" class="form-control" id="ssl.key_file_path" disabled readonly>
+                <button type="button" id="uploadKeyFile" class="btn btn-success"><i class="bi bi-cloud-arrow-up"></i></button>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label" _="CA file path"></label><span id="caFileUpdated" class="d-none badge rounded-pill bg-danger ms-1 small" _="new"></span>
+            <div class="input-group">
+                <input type="text" class="form-control" id="ssl.ca_file_path" disabled readonly>
+                <button type="button" id="uploadCAFile" class="btn btn-success"><i class="bi bi-cloud-arrow-up"></i></button>
+            </div>
+        </div>
+        <!-- 分隔 -->
+        <div class="col-md-12">
+            <label class="form-label" for="ssl.cipher_list" _="Cipher list"></label>
+            <input type="text" class="form-control" id="ssl.cipher_list">
+            <div class="form-text" id="ssl.cipher_list[@desc]"></div>
+        </div>
+
+    </div>
+</div>
+</form>
+
+<div class="row g-3 my-3">
+    <div class="col-md-12 text-end">
+        <button class="btn btn-warning pull-end" type="button" id="saveConfig" _="Update SSL configuration"></button>
+    </div>
+</div>
+
+<!-- 編輯主機資料的 Dialog -->
+<div class="modal" id="passwordDialog" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordtitle"></h5>
+      </div>
+      <div class="modal-body">
+        <label for="requestpassword" _="The private key is password protected, please enter the password"></label>
+        <input type="password" class="form-control" id="requestpassword">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelPassword" _="Cancel"></button>
+        <button type="button" class="btn btn-primary" id="ensurePassword" _="OK"></button>
+      </div>
+    </div>
+  </div>
+</div>

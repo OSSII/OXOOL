@@ -3,7 +3,7 @@
  * L.Control.Dialog used for displaying alerts
  */
 
-/* global _ vex */
+/* global _ vex sanitizeUrl */
 L.Control.AlertDialog = L.Control.extend({
 	onAdd: function (map) {
 		// TODO: Better distinction between warnings and errors
@@ -12,15 +12,33 @@ L.Control.AlertDialog = L.Control.extend({
 	},
 
 	_onError: function(e) {
-		this._map._stopCloseDocument = true; // 如果是關閉檔案的話，就不要關閉了
-		if (vex.dialogID > 0 && !this._map._fatal) {
+		if (!this._map._fatal) {
 			// TODO. queue message errors and pop-up dialogs
 			// Close other dialogs before presenting a new one.
-			vex.close(vex.dialogID);
+			vex.closeAll();
 		}
 
 		if (e.msg) {
-			vex.dialog.alert(e.msg);
+			if (window.ThisIsAMobileApp && this._map._fatal) {
+				var buttonsList = [];
+				buttonsList.push({
+					text: _('Close'),
+					type: 'button',
+					className: 'vex-dialog-button-primary',
+					click: function() {
+						window.postMobileMessage('BYE');
+						vex.closeAll();
+					}
+				});
+
+				vex.dialog.alert({
+					message: e.msg,
+					buttons: buttonsList,
+					callback: function() {},
+				});
+			}
+			else
+				vex.dialog.alert(e.msg);
 		}
 		else if (e.cmd == 'load' && e.kind == 'docunloading') {
 			// Handled by transparently retrying.
@@ -29,47 +47,51 @@ L.Control.AlertDialog = L.Control.extend({
 			var url = e.url;
 			var messageText = window.errorMessages.leaving;
 
-			var isLinkValid = true;
-			if (url.trim().toLowerCase().startsWith('javascript:')) {
-				isLinkValid = false;
+			var isLinkValid = sanitizeUrl.sanitizeUrl(url) !== 'about:blank';
+
+			if (!isLinkValid) {
 				messageText = window.errorMessages.invalidLink;
-				messageText = messageText.replace('%url', url);
 			}
 
-			var buttonsList = [];
+			var containerWithLink = document.createElement('div');
+			containerWithLink.innerHTML = messageText;
+			var externalUrl = document.createElement('p');
+			externalUrl.classList.add('vex-dialog-external-url');
+			externalUrl.innerHTML = url;
+			containerWithLink.appendChild(externalUrl);
+			buttonsList = [];
 
 			if (isLinkValid) {
+				buttonsList.push({
+					text: _('Edit'),
+					type: 'button',
+					className: 'vex-dialog-button-secondary',
+					click: function() {
+						vex.closeAll();
+						e.map.executeAllowedCommand('.uno:HyperlinkDialog');
+					}
+				});
+
 				buttonsList.push({
 					text: _('Open link'),
 					type: 'button',
 					className: 'vex-dialog-button-primary',
-					click: function openClick () {
+					click: function() {
 						window.open(url, '_blank');
-						vex.close(vex.dialogID);
-						vex.dialogID = 0;
+						vex.closeAll();
 					}
 				});
 			}
 
-			buttonsList.push({
-				text: _('Edit'),
-				type: 'button',
-				className: 'vex-dialog-button-secondary',
-				click: function editClick () {
-					e.map.toggleCommandState('HyperlinkDialog');
-					vex.close(vex.dialogID);
-					vex.dialogID = 0;
-				}
-			});
-
 			vex.dialog.open({
-				message: messageText,
+				unsafeMessage: containerWithLink.outerHTML,
 				showCloseButton: true,
+				contentClassName: 'word-wrap-for-vex-dialog',
 				buttons: buttonsList,
 				callback: function() {},
-				beforeClose: function () {
+				afterClose: function () {
+					vex.dialogID = -1;
 					e.map.focus();
-					e.map.enable(true);
 				}
 			});
 		} else if (e.cmd && e.kind) {
@@ -78,9 +100,6 @@ L.Control.AlertDialog = L.Control.extend({
 			msg = msg.replace('%1', e.cmd);
 			vex.dialog.alert(msg);
 		}
-
-		// Remember the current dialog ID to close it later.
-		vex.dialogID = vex.globalID - 1;
 	}
 });
 

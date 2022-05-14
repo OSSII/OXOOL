@@ -787,6 +787,27 @@ public:
         mpDoc->pClass->sendFormFieldEvent(mpDoc, pArguments);
     }
 
+    void setBlockedCommandList(int nViewId, const char* bolckedCommandList)
+    {
+        mpDoc->pClass->setBlockedCommandList(mpDoc, nViewId, bolckedCommandList);
+    }
+
+    /**
+     * Render input search result to a bitmap buffer.
+     *
+     * @param pSearchResult payload containing the search result data
+     * @param pBitmapBuffer contains the bitmap; use free to deallocate.
+     * @param nWidth output bitmap width
+     * @param nHeight output bitmap height
+     * @param nByteSize output bitmap byte size
+     * @return true if successful
+     */
+    bool renderSearchResult(const char* pSearchResult, unsigned char** pBitmapBuffer,
+                            int* pWidth, int* pHeight, size_t* pByteSize)
+    {
+        return mpDoc->pClass->renderSearchResult(mpDoc, pSearchResult, pBitmapBuffer, pWidth, pHeight, pByteSize);
+    }
+
     // Added by Firefly <firefly@ossii.com.tw>
     /**
      * Let OxOffice report the status of the specified UNO command.

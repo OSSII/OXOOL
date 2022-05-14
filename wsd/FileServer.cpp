@@ -48,6 +48,7 @@
 #include <Protocol.hpp>
 #include <Util.hpp>
 
+#include <src/include/oxoolmodule.h>
 using Poco::Net::HTMLForm;
 using Poco::Net::HTTPBasicCredentials;
 using Poco::Net::HTTPRequest;
@@ -306,7 +307,7 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
         const auto& config = Application::instance().config();
         // Do we have an extension.
         const std::size_t extPoint = endPoint.find_last_of('.');
-        if (extPoint == std::string::npos)
+        if ((extPoint == std::string::npos) && (apilist.find(endPoint) == apilist.end()))
             throw Poco::FileNotFoundException("Invalid file.");
         const std::string fileType = endPoint.substr(extPoint + 1);
 
@@ -356,6 +357,14 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
         }
 
         // Is this a file we read at startup - if not; its not for serving.
+        std::string moduleName = "";
+        bool isModule = false;
+        if (apilist.find(requestDetails[3]) != apilist.end())
+        {
+            isModule = true;
+            moduleName = requestDetails[3];
+        }
+        Poco::Net::HTMLForm form(request);
         if (FileHash.find(relPath) == FileHash.end())
         {
             // Modified by Firefly <firefly@ossii.com.tw>
@@ -363,8 +372,21 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
             // 避免 404 not found.
             if (fileType == "svg" || fileType == "png" || fileType == "gif")
             {
-                LOG_DBG("\"" + relPath + "\" does not exists, use empty.png instead.");
-                relPath = "/loleaflet/dist/images/empty.png";
+                if (!isModule)
+                {
+                    LOG_DBG("\"" + relPath + "\" does not exists, use empty.png instead.");
+                    relPath = "/loleaflet/dist/images/empty.png";
+                }
+            }
+            // for /loleaflet/dist/admin/[module_name]
+            else if (requestDetails.size() >= 3)
+            {
+                moduleName = requestDetails[3];
+                if (apilist.find(moduleName) == apilist.end())
+                {
+                    moduleName = "";
+                    throw Poco::FileNotFoundException("Invalid URI request: [" + requestUri.toString() + "].");
+                }
             }
             else
             {
@@ -406,7 +428,7 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
             // Added by Firefly <firefly@ossii.com.tw>
             // 只要是符合 admin*.html 的頁面，一律當成後台管理界面
             const bool isAdmin = (endPoint.substr(0, 5) == "admin" && fileType == "html");
-            if (isAdmin)
+            if (isAdmin || (moduleName != "" && requestSegments.size()==4 ))
             {
                 preprocessAdminFile(request, requestDetails, socket);
                 return;
@@ -427,6 +449,25 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
                 mimeType = "text/xml";
             else
                 mimeType = "text/plain";
+
+            // send module resource
+            if ( moduleName != "admin" && moduleName != "" )
+            {
+                if(apilist.find(moduleName) != apilist.end())
+                {
+                    if (!LOOLWSD::AdminEnabled)
+                        throw Poco::FileAccessDeniedException("Admin console disabled");
+
+                    if (!FileServerRequestHandler::isAdminLoggedIn(request, response))
+                        throw Poco::Net::NotAuthenticatedException("Invalid admin login");
+                    auto apiHandler = apilist.find(moduleName)->second();
+                    std::size_t target_pos = request.getURI().find(moduleName);
+                    std::string targetFile = request.getURI().substr(target_pos + moduleName.size() + 1);
+                    std::string filePath = apiHandler->getHTMLFile(targetFile);
+                    HttpHelper::sendFileAndShutdown(socket, filePath, mimeType, &response, noCache);
+                    return;
+                }
+            }
 
             auto it = request.find("If-None-Match");
             if (it != request.end())
@@ -691,7 +732,7 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
 
     // We need to pass certain parameters from the loleaflet html GET URI
     // to the embedded document URI. Here we extract those params
-    // from the GET URI and set them in the generated html (see loleaflet.html.m4).
+    // from the GET URI and set them in the generated html (see oxool-src.html.m4).
     HTMLForm form(request, message);
     const std::string accessToken = form.get("access_token", "");
     const std::string accessTokenTtl = form.get("access_token_ttl", "");
@@ -700,13 +741,20 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     LOG_TRC("access_header=" << accessHeader);
     const std::string uiDefaults = form.get("ui_defaults", "");
     LOG_TRC("ui_defaults=" << uiDefaults);
+    const std::string cssVars = form.get("css_variables", "");
+    LOG_TRC("css_variables=" << cssVars);
+    const std::string postMessageOrigin = form.get("postmessage_origin", "");
+    LOG_TRC("postmessage_origin" << postMessageOrigin);
+    const std::string theme = form.get("theme", "");
+    LOG_TRC("theme=" << theme);
 
     // Escape bad characters in access token.
     // This is placed directly in javascript in loleaflet.html, we need to make sure
     // that no one can do anything nasty with their clever inputs.
-    std::string escapedAccessToken, escapedAccessHeader;
+    std::string escapedAccessToken, escapedAccessHeader, escapedPostmessageOrigin;
     Poco::URI::encode(accessToken, "'", escapedAccessToken);
     Poco::URI::encode(accessHeader, "'", escapedAccessHeader);
+    Poco::URI::encode(postMessageOrigin, "'", escapedPostmessageOrigin);
 
     unsigned long tokenTtl = 0;
     if (!accessToken.empty())
@@ -743,6 +791,7 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     Poco::replaceInPlace(preprocess, std::string("%SOCKET_PROXY%"), socketProxy);
 
     std::string responseRoot = cnxDetails.getResponseRoot();
+    std::string userInterfaceMode;
 
     Poco::replaceInPlace(preprocess, std::string("%ACCESS_TOKEN%"), escapedAccessToken);
     Poco::replaceInPlace(preprocess, std::string("%ACCESS_TOKEN_TTL%"), std::to_string(tokenTtl));
@@ -750,7 +799,8 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     Poco::replaceInPlace(preprocess, std::string("%HOST%"), cnxDetails.getWebSocketUrl());
     Poco::replaceInPlace(preprocess, std::string("%VERSION%"), std::string(LOOLWSD_VERSION_HASH));
     Poco::replaceInPlace(preprocess, std::string("%SERVICE_ROOT%"), responseRoot);
-    Poco::replaceInPlace(preprocess, std::string("%UI_DEFAULTS%"), uiDefaultsToJSON(uiDefaults));
+    Poco::replaceInPlace(preprocess, std::string("%UI_DEFAULTS%"), uiDefaultsToJSON(uiDefaults, userInterfaceMode));
+    Poco::replaceInPlace(preprocess, std::string("%POSTMESSAGE_ORIGIN%"), escapedPostmessageOrigin);
 
     const auto& config = Application::instance().config();
     std::string protocolDebug = "false";
@@ -762,7 +812,8 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
         LOOLWSD::getConfigValue<bool>("hexify_embedded_urls", false) ? "true" : "false";
     Poco::replaceInPlace(preprocess, std::string("%HEXIFY_URL%"), hexifyEmbeddedUrls);
 
-    static const std::string linkCSS("<link rel=\"stylesheet\" href=\"%s/loleaflet/" LOOLWSD_VERSION_HASH "/%s.css\">");
+    std::string themePreFix = (theme == "nextcloud") ? theme + "/" : "";
+    const std::string linkCSS("<link rel=\"stylesheet\" href=\"%s/loleaflet/" LOOLWSD_VERSION_HASH "/" + themePreFix + "%s.css\">");
     static const std::string scriptJS("<script src=\"%s/loleaflet/" LOOLWSD_VERSION_HASH "/%s.js\"></script>");
 
     std::string brandCSS(Poco::format(linkCSS, responseRoot, std::string(BRANDING)));
@@ -780,6 +831,7 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
 
     Poco::replaceInPlace(preprocess, std::string("<!--%BRANDING_CSS%-->"), brandCSS);
     Poco::replaceInPlace(preprocess, std::string("<!--%BRANDING_JS%-->"), brandJS);
+    Poco::replaceInPlace(preprocess, std::string("<!--%CSS_VARIABLES%-->"), cssVarsToStyle(cssVars));
 
     // Customization related to document signing.
     std::string documentSigningDiv;
@@ -792,7 +844,7 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     Poco::replaceInPlace(preprocess, std::string("%DOCUMENT_SIGNING_URL%"), documentSigningURL);
 
     const auto loleafletLogging = config.getString("loleaflet_logging", "false");
-    Poco::replaceInPlace(preprocess, std::string("%LOLEAFLET_LOGGING%"), loleafletLogging);
+    Poco::replaceInPlace(preprocess, std::string("%OXLEAFLET_LOGGING%"), loleafletLogging);
     const std::string outOfFocusTimeoutSecs= config.getString("per_view.out_of_focus_timeout_secs", "60");
     Poco::replaceInPlace(preprocess, std::string("%OUT_OF_FOCUS_TIMEOUT_SECS%"), outOfFocusTimeoutSecs);
     const std::string idleTimeoutSecs= config.getString("per_view.idle_timeout_secs", "900");
@@ -808,7 +860,17 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
         enableWelcomeMessageButton = "true";
     Poco::replaceInPlace(preprocess, std::string("%ENABLE_WELCOME_MSG_BTN%"), enableWelcomeMessageButton);
 
-    std::string userInterfaceMode = config.getString("user_interface.mode", "classic");
+    // the config value of 'notebookbar' or 'classic' overrides the UIMode
+    // from the WOPI
+    std::string userInterfaceModeConfig = config.getString("user_interface.mode", "classic");
+    if (userInterfaceModeConfig == "classic" || userInterfaceModeConfig == "notebookbar" || userInterfaceMode.empty())
+        userInterfaceMode = userInterfaceModeConfig;
+
+    // default to the notebookbar if the value is "default" or whatever
+    // nonsensical
+    if (userInterfaceMode != "classic" && userInterfaceMode != "notebookbar")
+        userInterfaceMode = "notebookbar";
+
     Poco::replaceInPlace(preprocess, std::string("%USER_INTERFACE_MODE%"), userInterfaceMode);
 
     // Capture cookies so we can optionally reuse them for the storage requests.
@@ -972,6 +1034,30 @@ void FileServerRequestHandler::preprocessAdminFile(const HTTPRequest& request,
     if (!FileServerRequestHandler::isAdminLoggedIn(request, response))
         throw Poco::Net::NotAuthenticatedException("Invalid admin login");
 
+    Poco::Net::HTMLForm form(request);
+    Poco::URI requestUri(request.getURI());
+    std::vector<std::string> requestSegments;
+    requestUri.getPathSegments(requestSegments);
+    std::string moduleName = "";
+    std::string admin_content = "";
+    auto dso = apilist.find(requestDetails[3]);
+    if(dso != apilist.end())
+    {
+        moduleName = requestDetails[3];
+        auto apiHandler = dso->second();
+        const std::string endPoint = "admin.html";
+        std::cout << "admin endpoint: " <<endPoint <<std::endl;
+        std::string admin_file = apiHandler->getHTMLFile(endPoint);
+        std::ifstream file(admin_file, std::ios::binary);
+        std::string file_content((std::istreambuf_iterator<char>(file)),
+                std::istreambuf_iterator<char>());
+        if (admin_file == "")
+        {
+            file_content = "<h1> 請聯絡原廠～謝謝 </h1>";
+        }
+        admin_content = file_content;
+    }
+
     ServerURL cnxDetails(requestDetails);
     std::string responseRoot = cnxDetails.getResponseRoot();
 
@@ -980,7 +1066,13 @@ void FileServerRequestHandler::preprocessAdminFile(const HTTPRequest& request,
 
     const std::string relPath = getRequestPathname(request);
     LOG_DBG("Preprocessing file: " << relPath);
-    std::string adminFile = *getUncompressedFile(relPath);
+    std::string adminFile = "";
+    if (apilist.find(moduleName) != apilist.end())
+    {
+        adminFile = admin_content;
+    }
+    else
+        adminFile = *getUncompressedFile(relPath);
     std::vector<std::string> templatePath_vec = Util::splitStringToVector(relPath, '/');
     std::string templatePath = "";
     for (unsigned int i = 0; i < templatePath_vec.size() - 1; i++)

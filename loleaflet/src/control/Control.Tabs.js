@@ -3,7 +3,7 @@
  * L.Control.Tabs is used to switch sheets in Calc
  */
 
-/* global $ _ _UNO */
+/* global $ _ _UNO Hammer */
 L.Control.Tabs = L.Control.extend({
 	onAdd: function(map) {
 		map.on('updatepermission', this._onUpdatePermission, this);
@@ -18,16 +18,16 @@ L.Control.Tabs = L.Control.extend({
 		if (!this._initialized) {
 			this._initialize();
 		}
+		setTimeout(function() {
+			$('.spreadsheet-tab').contextMenu(e.perm === 'edit');
+		}, 100);
 
-		if (window.mode.isMobile() == true) {
+		if (window.mode.isMobile()) {
 			if (e.perm === 'edit') {
-				$('.spreadsheet-tabs-container')
-					.removeClass('mobile-view')
-					.addClass('mobile-edit');
-			} else {
-				$('.spreadsheet-tabs-container')
-					.addClass('mobile-view')
-					.addClass('mobile-edit');
+				document.getElementById('spreadsheet-toolbar').style.display = 'block';
+			}
+			else {
+				document.getElementById('spreadsheet-toolbar').style.display = 'none';
 			}
 		}
 	},
@@ -38,155 +38,145 @@ L.Control.Tabs = L.Control.extend({
 		this._spreadsheetTabs = {};
 		this._tabForContextMenu = 0;
 		var map = this._map;
-		var docContainer = map.options.documentContainer;
-		this._tabsCont = L.DomUtil.create('div', 'spreadsheet-tabs-container', docContainer.parentElement);
-		L.DomEvent.on(this._tabsCont, 'touchstart',
-			function (e) {
-				if (e && e.touches.length > 1) {
-					L.DomEvent.preventDefault(e);
-				}
-			},
-			this);
+		var tableCell = document.getElementById('tb_spreadsheet-toolbar_right');
+		tableCell.style.verticalAlign = 'middle';
+		this._tabsCont = L.DomUtil.create('div', 'spreadsheet-tabs-container', tableCell);
+		var that = this;
+		function areTabsMultiple() {
+			var numItems = $('.spreadsheet-tab').length;
+			if (numItems === 1) {
+				return false;
+			}
+			return true;
+		}
+
+		// 手機模式和其他模式右鍵選單須分開處理
+		if (window.mode.isMobile()) {
+			this._menuItem = {
+				'insertsheetbefore': {name: _('Insert sheet before this'),
+					callback: (this._insertSheetBefore).bind(this)
+				},
+				'insertsheetafter': {name: _('Insert sheet after this'),
+					callback: (this._insertSheetAfter).bind(this)
+				},
+				'.uno:Remove': {
+					name: _UNO('.uno:Remove', 'spreadsheet', true),
+					callback: function() {map.executeAllowedCommand('.uno:Remove');}
+				},
+				'.uno:RenameTable': {name: _UNO('.uno:RenameTable', 'spreadsheet', true),
+					callback: function() {map.executeAllowedCommand('.uno:RenameTable');}
+				},
+				'.uno:Show': {
+					name: _UNO('.uno:Show', 'spreadsheet', true),
+					callback: function() {map.executeAllowedCommand('.uno:Show');}
+				},
+				'.uno:Hide': {
+					name: _UNO('.uno:Hide', 'spreadsheet', true),
+					callback: function() {map.executeAllowedCommand('.uno:Hide');}
+				},
+				'movesheetleft': {
+					name: _('Move Sheet Left'),
+					callback: (this._moveSheetLeft).bind(this)
+				},
+				'movesheetright': {
+					name: _('Move Sheet Right'),
+					callback: (this._moveSheetRight).bind(this)
+				},
+				'.uno:ToggleSheetGrid': {
+					name: _UNO('.uno:ToggleSheetGrid', 'spreadsheet', true),
+					callback: function() {map.executeAllowedCommand('.uno:ToggleSheetGrid');}
+				},
+				'.uno:SetTabBgColor': {
+					name: _UNO('.uno:SetTabBgColor', 'spreadsheet', true),
+					callback: function() {map.executeAllowedCommand('.uno:SetTabBgColor');}
+				},
+			};
+		} else {
+			this._menuItem = {
+				// 前方插工作表
+				'insertsheetbefore': {
+					icon: '.uno:InsertColumnsBefore',
+					name: _('Insert sheet before this'),
+					callback: (this._insertSheetBefore).bind(this)
+				},
+				// 後方插工作表
+				'insertsheetafter': {
+					icon: '.uno:InsertColumnsAfter',
+					name: _('Insert sheet after this'),
+					callback: (this._insertSheetAfter).bind(this)
+				},
+				// 刪除工作表
+				'.uno:Remove': {
+					visible: function() {
+						return (areTabsMultiple && !map.isPartProtected());
+					}
+				},
+				// 重新命名工作表
+				'.uno:RenameTable': {
+					name: _UNO('.uno:RenameTable', 'spreadsheet', true),
+					callback: function() {
+						map.executeAllowedCommand('.uno:RenameTable');
+					},
+					/* visible: function() {
+						return !map.isPartProtected();
+					} */
+				},
+				// 移動或複製工作表
+				'.uno:Move': {
+				},
+				/* // 選取全部工作表
+				'.uno:TableSelectAll': {
+					callback: function() {
+						map.sendUnoCommand('.uno:TableSelectAll');
+					}
+				},
+				// 取消選取全部工作表
+				'.uno:TableDeselectAll': {
+
+				}, */
+				'sep01': '--',
+				// 保護工作表
+				'.uno:Protect': {
+				},
+				// 隱藏工作表
+				'.uno:Hide': {
+					visible: areTabsMultiple
+				},
+				// 顯示工作表
+				'.uno:Show': {
+					visible: function() {
+						return that._map.hasAnyHiddenPart();
+					}
+				},
+				'sep02': '--',
+				// 檢視格線
+				'.uno:ToggleSheetGrid': {
+				},
+				'sep03': '--',
+				// 標籤色彩
+				'.uno:SetTabBgColor': {
+					visible: function() {
+						return !map.isPartProtected();
+					}
+				},
+			};
+			L.installContextMenu({
+				selector: '.spreadsheet-tab',
+				className: 'oxool-font',
+				trigger: 'none',
+				items: this._menuItem,
+				zIndex: 1000
+			});
+		}
 
 		map.on('updateparts', this._updateDisabled, this);
-		map.on('resize', this._selectedTabScrollIntoView, this);
-
-		L.installContextMenu({
-			selector: '.spreadsheet-tab',
-			className: 'loleaflet-font',
-			autoHide: true,
-			callback: (function(key) {
-				if (key === 'InsertColumnsAfter') {
-					map.insertPage(this._tabForContextMenu);
-				}
-				if (key === 'InsertColumnsBefore') {
-					map.insertPage(this._tabForContextMenu + 1);
-				}
-			}).bind(this),
-			items: {
-				'InsertColumnsAfter': { // 之前插入工作表
-					name: _('Insert sheet before this'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'InsertColumnsBefore': { // 之後插入工作表
-					name: _('Insert sheet after this'),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'DuplicatePage': { // 移動複製工作表
-					name: _UNO('.uno:Move', 'spreadsheet', true),
-					callback: (function() {
-						map.fire('executeDialog', {dialog: 'MoveTable'});
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'DeleteTable': { // 刪除工作表
-					name: _UNO('.uno:Remove', 'spreadsheet', true),
-					callback: (function(/*key, options*/) {
-						map.fire('executeDialog', {dialog: 'RemoveTable'});
-					}).bind(this),
-					disabled: (function() {
-						// 只有一個工作表顯示，或該工作表被保護就不能執行
-						return (map.getNumberOfVisibleParts() === 1 || this._isProtedted());
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				 },
-				'DBTableRename': { // 重新命名工作表
-					name: _UNO('.uno:RenameTable', 'spreadsheet', true),
-					callback: (function(/*key, options*/) {
-						map.fire('executeDialog', {dialog: 'RenameTable'});
-					}).bind(this),
-					disabled: (function() {
-						return this._isProtedted(); // 被保護
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				} ,
-				'sep01': '----',
-				'Protect': { // 保護工作表
-					name: _UNO('.uno:Protect', 'spreadsheet', true),
-					disabled: function(/*key, opt*/) {
-						// 透過 WOPI 編輯，且不是檔案擁有者的話，就不能執行保護/解除保護工作表
-						if (map.options.wopi && !map['wopi'].DocumentOwner) {
-							return true;
-						}
-						return false;
-					}.bind(this),
-					callback: (function() {
-						map.sendUnoCommand('.uno:Protect');
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						item.checktype = 'checkmark';
-						item.checked = this._isProtedted();
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'Hide': { // 隱藏工作表
-					name: _UNO('.uno:Hide', 'spreadsheet', true),
-					callback: (function() {
-						map.hidePage();
-					}).bind(this),
-					disabled: (function() {
-						// 只有一個工作表
-						return map.getNumberOfVisibleParts() === 1;
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'Show': { // 顯示工作表
-					name: _UNO('.uno:Show', 'spreadsheet', true),
-					callback: (function() {
-						map.fire('executeDialog', {dialog: 'ShowTable'});
-					}).bind(this),
-					disabled: (function() {
-						// 沒有隱藏的工作表才能執行
-						return !this._map.hasAnyHiddenPart();
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'BackgroundColor': { // 設定標籤色彩
-					name: _UNO('.uno:TabBgColor', 'spreadsheet', true),
-					callback: (function() {
-						map.fire('executeDialog', {dialog: 'SetTabBgColor'});
-					}).bind(this),
-					disabled: (function() {
-						// 保護狀態示
-						return this._isProtedted();
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				},
-				'sep02': '----',
-				'ToggleSheetGrid': { // 切換檢視格線
-					name: _UNO('.uno:ToggleSheetGrid', 'spreadsheet', true),
-					callback: (function() {
-						map.sendUnoCommand('.uno:ToggleSheetGrid');
-					}).bind(this),
-					icon: (function(opt, $itemElement, itemKey, item) {
-						return this._map.contextMenuIcon($itemElement, itemKey, item);
-					}).bind(this)
-				}
-			},
-			zIndex: 1000
-		});
 	},
 
 	_updateDisabled: function (e) {
 		var parts = e.parts;
 		var selectedPart = e.selectedPart;
 		var docType = e.docType;
+
 		if (docType === 'text') {
 			return;
 		}
@@ -195,15 +185,10 @@ L.Control.Tabs = L.Control.extend({
 				// make room for the preview
 				var docContainer = this._map.options.documentContainer;
 				L.DomUtil.addClass(docContainer, 'spreadsheet-document');
-				setTimeout(L.bind(function () {
-					this._map.invalidateSize();
-					$('.scroll-container').mCustomScrollbar('update');
-					$('.scroll-container').mCustomScrollbar('scrollTo', [0, 0]);
-				}, this), 100);
 				this._tabsInitialized = true;
 			}
 
-			// 紀錄水平捲動位置
+			// Save scroll position
 			var horizScrollPos = 0;
 			var scrollDiv = L.DomUtil.get('spreadsheet-tab-scroll');
 			if (scrollDiv) {
@@ -216,31 +201,91 @@ L.Control.Tabs = L.Control.extend({
 				}
 				var ssTabScroll = L.DomUtil.create('div', 'spreadsheet-tab-scroll', this._tabsCont);
 				ssTabScroll.id = 'spreadsheet-tab-scroll';
+				if (!window.mode.isMobile())
+					ssTabScroll.style.overflow = 'hidden';
+
+				this._tabsCont.style.display = 'grid';
+
+				var menuItemMobile = {};
+				Object.assign(menuItemMobile,
+					{
+						'insertsheetbefore': this._menuItem['insertsheetbefore'],
+						'insertsheetafter': this._menuItem['insertsheetafter'],
+						'.uno:RenameTable': this._menuItem['.uno:RenameTable'],
+					}
+				);
+				if (this._map.hasAnyHiddenPart()) {
+					Object.assign(menuItemMobile, {
+						'.uno:Show': this._menuItem['.uno:Show'],
+					});
+				}
+				if (this._map.getNumberOfVisibleParts() !== 1) {
+					Object.assign(menuItemMobile,
+						{
+							'.uno:Remove': this._menuItem['.uno:Remove'],
+							'.uno:Hide': this._menuItem['.uno:Hide'],
+						}
+					);
+				}
+
+				if (window.mode.isMobile()) {
+					Object.assign(menuItemMobile,
+						{
+							'.uno:ToggleSheetGrid': this._menuItem['.uno:ToggleSheetGrid'],
+							'.uno:SetTabBgColor': this._menuItem['.uno:SetTabBgColor'],
+						}
+					);
+					var menuData = L.Control.JSDialogBuilder.getMenuStructureForMobileWizard(menuItemMobile, true, '');
+				}
+
+				var frame = L.DomUtil.create('div', '', ssTabScroll);
+				frame.setAttribute('draggable', false);
+				frame.setAttribute('id', 'first-tab-drop-site');
+				this._addDnDHandlers(frame);
 
 				for (var i = 0; i < parts; i++) {
 					if (e.hiddenParts.indexOf(i) !== -1)
 						continue;
 					var id = 'spreadsheet-tab' + i;
 					var tab = L.DomUtil.create('button', 'spreadsheet-tab', ssTabScroll);
-					L.DomEvent.enableLongTap(tab, 15, 1000);
 
-					L.DomEvent.on(tab, 'contextmenu', function(j) {
-						return function() {
-							this._tabForContextMenu = j;
-							$('#spreadsheet-tab' + j).contextMenu();
-						}
-					}(i).bind(this));
+					if (window.mode.isMobile()) {
+						(new Hammer(tab, {recognizers: [[Hammer.Press]]}))
+							.on('press', function (j) {
+								return function(e) {
+									this._tabForContextMenu = j;
+									this._setPart(e);
+									window.contextMenuWizard = true;
+									if (!this._map.isPermissionReadOnly()) this._map.fire('mobilewizard', {data: menuData});
+								};
+							}(i).bind(this));
+					} else {
+						L.DomEvent.on(tab, 'dblclick', function(j) {
+							return function() {
+								// window.app.console.err('Double clicked ' + j);
+								this._tabForContextMenu = j;
+								this._map.executeAllowedCommand('.uno:RenameTable');
+							};
+						}(i).bind(this));
+						L.DomEvent.on(tab, 'contextmenu', function(j) {
+							return function(e) {
+								this._setPart(e);
+								this._tabForContextMenu = j;
+								$('#spreadsheet-tab' + j).contextMenu({x: e.x, y: e.y});
+							};
+						}(i).bind(this));
+					}
 
-					var txtNode = document.createTextNode(e.partNames[i]);
-					tab.appendChild(txtNode);
+					tab.textContent = e.partNames[i];
 					tab.id = id;
 					this._setTabInfo(i, tab);
 
 					L.DomEvent
 						.on(tab, 'click', L.DomEvent.stopPropagation)
 						.on(tab, 'click', L.DomEvent.stop)
-						.on(tab, 'mousedown', this._setPart, this)
-						.on(tab, 'mousedown', this._map.focus, this._map);
+						.on(tab, 'click', this._setPart, this)
+						.on(tab, 'click', this._map.focus, this._map);
+					this._addDnDHandlers(tab);
 					this._spreadsheetTabs[id] = tab;
 				}
 			}
@@ -250,8 +295,8 @@ L.Control.Tabs = L.Control.extend({
 				if (part === selectedPart) {
 					L.DomUtil.addClass(this._spreadsheetTabs[key], 'spreadsheet-tab-selected');
 					var pInfo = this._map.getPartProperty(part); // 讀取工作表屬性
-					if (pInfo !== undefined) {
-						var bgColor = this._convertToHtmlColor(pInfo.bgColor);
+					if (pInfo) {
+						var bgColor = pInfo.backgroundColor();
 						if (bgColor !== '') {
 							$(this._spreadsheetTabs[key]).css('border-bottom-color', bgColor);
 						}
@@ -259,103 +304,130 @@ L.Control.Tabs = L.Control.extend({
 				}
 			}
 
-			// 恢復水平捲動位置
+			// Restore horizontal scroll position
 			scrollDiv = L.DomUtil.get('spreadsheet-tab-scroll');
 			if (scrollDiv) {
 				if (this._map.insertPage && this._map.insertPage.scrollToEnd) {
 					this._map.insertPage.scrollToEnd = false;
 					scrollDiv.scrollLeft = scrollDiv.scrollWidth;
-				} else {
+				}
+				else {
 					scrollDiv.scrollLeft = horizScrollPos;
 				}
 			}
-
-			// 超出可視範圍的 SelectedTab 置於可視範圍內
-			var SelectedPosition = $('#spreadsheet-tab' + selectedPart).position()
-			if (SelectedPosition) {
-				var visualWidth = $('.spreadsheet-tab-scroll').width(); // 可視範圍 0~width
-				var selectedLeft = SelectedPosition.left;
-				if (selectedLeft > visualWidth) scrollDiv.scrollLeft = visualWidth; // 水平捲動至最右
-				if (selectedLeft < 0) scrollDiv.scrollLeft = 0; // 水平捲動至最左
-			}
-
 		}
-		this._selectedTabScrollIntoView();
+	},
+
+	_addDnDHandlers: function(element) {
+		if (!this._map.isPermissionReadOnly()) {
+			element.setAttribute('draggable', true);
+			element.addEventListener('dragstart', this._handleDragStart.bind(this), false);
+			element.addEventListener('dragenter', this._handleDragEnter, false);
+			element.addEventListener('dragover', this._handleDragOver, false);
+			element.addEventListener('dragleave', this._handleDragLeave, false);
+			element.addEventListener('drop', this._handleDrop.bind(this), false);
+			element.addEventListener('dragend', this._handleDragEnd, false);
+		}
 	},
 
 	_setPart: function (e) {
-		var part = e.target.id.match(/\d+/g)[0];
+		var part =  e.target.id.match(/\d+/g)[0];
 		if (part !== null) {
+			this._map._docLayer._clearReferences();
 			this._map.setPart(parseInt(part), /*external:*/ false, /*calledFromSetPartHandler:*/ true);
 		}
 	},
 
-	// 設定工作表標籤(未選擇)
+	/**
+	 * 設定工作表標籤(未選取狀態)
+	 * @param {*} idx
+	 * @param {*} tab
+	 */
 	_setTabInfo: function(idx, tab) {
 		var pInfo = this._map.getPartProperty(idx);
-		if (pInfo !== undefined) {
+		if (pInfo) {
 			// 設定標籤背景及文字顏色
-			var bgColor = this._convertToHtmlColor(pInfo.bgColor);
+			var bgColor = pInfo.backgroundColor();
 			if (bgColor !== '') {
 				var linearColor = '(#f8f8f8,' + bgColor + ')'; // 背景層漸
 				$(tab).css({
 					'background-color': bgColor,
 					'background': 'linear-gradient' + linearColor,
-					'color': pInfo.bgIsDark === '1' ? '#ffffff' : '#000000'
+					'color': pInfo.isDark() ? '#ffffff' : '#000000'
 				});
 			}
 			// 工作表是否保護
-			if (pInfo.protected === '1') {
+			if (pInfo.isProtected()) {
 				var span = L.DomUtil.create('span', 'spreadsheet-tab-protected', tab);
 				tab.insertBefore(span, tab.firstChild);
 			}
 		}
 	},
 
-	// 檢查工作表是否被保護
-	_isProtedted: function(idx) {
-		var isProtected = false
-		var partInfo = this._map.getPartProperty(idx);
-
-		if (partInfo !== undefined) {
-			isProtected = partInfo.protected === '1';
-		}
-		return isProtected;
+	//selected sheet is moved to new index
+	_moveSheet: function (newIndex) {
+		this._map.sendUnoCommand('.uno:Move?Copy:bool=false&UseCurrentDocument:bool=true&Index=' + newIndex);
 	},
 
-	_convertToHtmlColor: function(color) {
-		if (color === '-1') {
-			return '';
-		}
-		var sColor = parseInt(color).toString(16);
-		return '#' + '0'.repeat(6 - sColor.length) + sColor; // 不足六碼前面補0
+	_moveSheetLeft: function () {
+		var targetIndex = this._map._docLayer._partNames.indexOf(this._map._docLayer._partNames[this._map._docLayer._selectedPart]);
+		//core handles sheet with 1 base indexing
+		// 0 index means last sheet
+		if (targetIndex <= 0) return;
+		this._moveSheet(targetIndex);
 	},
 
-	// 捲動選取的標籤到可視區內
-	_selectedTabScrollIntoView: function() {
-		var container = this._tabsCont;
-		var scrollTab = this._tabsCont.firstChild; // div#spreadsheet-tab-scroll
+	_moveSheetRight: function () {
+		var targetIndex = this._map._docLayer._partNames.indexOf(this._map._docLayer._partNames[this._map._docLayer._selectedPart]) + 3;
+		this._moveSheet(targetIndex);
+	},
 
-		// 目前選取的標籤 DOM
-		var tab = scrollTab.children[this._map.getCurrentPartNumber()];
-		if (!tab) return false;
-		// 取得可視區範圍所在範圍
-		var containerRect = container.getBoundingClientRect();
-		// 標籤所在範圍
-		var tabRect = tab.getBoundingClientRect();
-		var scrollOffsetX = 0; // 預設捲動位置
-		// 選取的標籤 左邊被遮住
-		if (tabRect.left < containerRect.left) {
-			scrollOffsetX = tab.offsetLeft
-		// 選取的標籤 右邊被遮住
-		} else if (tabRect.right > containerRect.right) {
-			scrollOffsetX = tab.offsetLeft - containerRect.width + tabRect.width;
+	_insertSheetBefore: function() {
+		this._map.insertPage(this._tabForContextMenu);
+	},
+
+	_insertSheetAfter: function() {
+		this._map.insertPage(this._tabForContextMenu + 1);
+	},
+
+	_handleDragStart: function(e) {
+		this._setPart(e);
+		e.dataTransfer.effectAllowed = 'move';
+	},
+
+	_handleDragEnter: function() {
+
+	},
+
+	_handleDragOver: function(e) {
+		if (e.preventDefault) {
+			e.preventDefault();
 		}
 
-		// 捲動位置不為 0，需捲動到指定位置
-		if (scrollOffsetX !== 0) {
-			$(scrollTab).animate({scrollLeft: scrollOffsetX}, 100);
+		// By default we move when dragging, but can
+		// support duplication with ctrl in the future.
+		e.dataTransfer.dropEffect = 'move';
+
+		this.classList.add('tab-dropsite');
+		return false;
+	},
+
+	_handleDragLeave: function() {
+		this.classList.remove('tab-dropsite');
+	},
+
+	_handleDrop: function(e) {
+		if (e.stopPropagation) {
+			e.stopPropagation();
 		}
+		e.target.classList.remove('tab-dropsite');
+		var targetIndex = this._map._docLayer._partNames.indexOf(e.target.innerText);
+
+		this._moveSheet(targetIndex+2);
+	},
+
+	_handleDragEnd: function() {
+		this.classList.remove('tab-dropsite');
 	}
 });
 

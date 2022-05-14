@@ -3,13 +3,13 @@
 		"id": ".uno:PickList",
 		"menu": [
 			{
-				"name": ".uno:Save",
-				"id": "save",
+				"id": ".uno:Save",
+				"comment": "替代指令",
 				"hotkey": "Ctrl+S"
 			},
 			{
-				"name": ".uno:SaveAs",
-				"id": "saveas"
+				"id": ".uno:SaveAs",
+				"comment": "替代指令"
 			},
 			{
 				"icon": ".uno:ShareDocument",
@@ -17,8 +17,8 @@
 				"id": "shareas"
 			},
 			{
-				"name": ".uno:Print",
-				"id": "print",
+				"id": ".uno:Print",
+				"comment": "替代指令",
 				"hotkey": "Ctrl+P"
 			},
 			{
@@ -26,40 +26,49 @@
 				"id": "rev-history"
 			},
 			{
+				"icon": ".uno:ExportTo",
 				"name": "Download as",
 				"id": "downloadas",
 				"menu": [
 					{
+						"icon": "res:pdf",
 						"name": "PDF Document (.pdf)",
-						"id": "dialog:DownloadAs?ext=pdf"
+						"id": "downloadas-pdf"
 					},
 					{
+						"icon": "res:txt",
 						"name": "TEXT Document (.txt)",
-						"id": "dialog:DownloadAs?ext=txt"
+						"id": "downloadas-txt"
 					},
 					{
+						"icon": "res:html",
 						"name": "HTML Document (.html)",
-						"id": "dialog:DownloadAs?ext=html"
+						"id": "downloadas-html"
 					},
 					{
+						"icon": "res:odt",
 						"name": "ODF text document (.odt)",
-						"id": "dialog:DownloadAs?ext=odt"
+						"id": "downloadas-odt"
 					},
 					{
+						"icon": "res:doc",
 						"name": "Word 2003 Document (.doc)",
-						"id": "dialog:DownloadAs?ext=doc"
+						"id": "downloadas-doc"
 					},
 					{
+						"icon": "res:docx",
 						"name": "Word Document (.docx)",
-						"id": "dialog:DownloadAs?ext=docx"
+						"id": "downloadas-docx"
 					},
 					{
+						"icon": "res:rtf",
 						"name": "Rich Text (.rtf)",
-						"id": "dialog:DownloadAs?ext=rtf"
+						"id": "downloadas-rtf"
 					},
 					{
+						"icon": "res:epub",
 						"name": "EPUB Document (.epub)",
-						"id": "dialog:DownloadAs?ext=epub"
+						"id": "downloadas-epub"
 					}
 				]
 			},
@@ -73,8 +82,8 @@
 				"type": "--"
 			},
 			{
-				"name": ".uno:CloseDoc",
-				"id": "closedocument"
+				"id": ".uno:CloseDoc",
+				"comment": "替代指令"
 			}
 		]
 	},
@@ -141,8 +150,8 @@
 				"hotkey": "Ctrl+H"
 			},
 			{
-				"name": ".uno:GotoPage",
-				"id": "dialog:GotoPage",
+				"id": ".uno:GotoPage",
+				"comment": "替代指令",
 				"hotkey": "Ctrl+G"
 			},
 			{
@@ -278,16 +287,25 @@
 				"type": "--"
 			},
 			{
+				"id" : ".uno:Ruler",
+				"hotkey": "Ctrl+Shift+R"
+			},
+			{
+				"id": ".uno:StatusBarVisible"
+			},
+			{
 				"id": ".uno:GridMenu",
 				"menu": [
 					{
 						"id": ".uno:GridVisible"
 					},
 					{
-						"id": ".uno:GridUse"
+						"id": ".uno:GridUse",
+						"hide": true
 					},
 					{
-						"id": ".uno:HelplinesMove"
+						"id": ".uno:HelplinesMove",
+						"hide": true
 					}
 				]
 			},
@@ -309,6 +327,23 @@
 			},
 			{
 				"id": ".uno:HideWhitespace"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:ViewTrackChanges",
+				"hide": true,
+				"comment": "Show Tracked Changes"
+			},
+			{
+				"id": ".uno:ShowAnnotations",
+				"hide": true,
+				"comment": "顯示/隱藏註解"
+			},
+			{
+				"name": ".uno:ShowResolvedAnnotations",
+				"id": "showresolved"
 			},
 			{
 				"type": "--"
@@ -345,8 +380,7 @@
 						"type": "--"
 					},
 					{
-						"name": ".uno:InsertBreak",
-						"id": "dialog:InsertBreak"
+						"id": ".uno:InsertBreak"
 					}
 				]
 			},
@@ -354,12 +388,12 @@
 				"type": "--"
 			},
 			{
-				"icon": ".uno:InsertGraphic",
-				"name": "Local Image...",
-				"id": "insertgraphic"
+				"id": ".uno:InsertGraphic",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:InsertGraphic",
+				"icon": "graphicdialog",
+				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
 			{
@@ -842,6 +876,7 @@
 			{
 				"name": ".uno:InsertAnnotation",
 				"id": "insertcomment",
+				"commend": "TODO: 將 id 改為 \".uno:InsertAnnotation\", 然後取消 \"name\"",
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
@@ -856,8 +891,7 @@
 				]
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater",
-				"hide": true
+				"id": ".uno:FontworkGalleryFloater"
 			},
 			{
 				"id": ".uno:InsertCaptionDialog"
@@ -980,32 +1014,10 @@
 				"id": ".uno:InsertHeaderFooterMenu",
 				"menu": [
 					{
-						"name": ".uno:InsertPageHeader",
-						"id": "pageheadermenu",
-						"menu": [
-							{
-								"name": "All",
-								"id": "insertheader",
-								"hide": true
-							},
-							{
-								"type": "--"
-							}
-						]
+						"id": ".uno:InsertPageHeader"
 					},
 					{
-						"name": ".uno:InsertPageFooter",
-						"id": "pagefootermenu",
-						"menu": [
-							{
-								"name": "All",
-								"id": "insertfooter",
-								"hide": true
-							},
-							{
-								"type": "--"
-							}
-						]
+						"id": ".uno:InsertPageFooter"
 					}
 				]
 			},
@@ -1200,6 +1212,10 @@
 				"id": ".uno:FormatBulletsMenu",
 				"menu": [
 					{
+						"id": ".uno:RemoveBullets",
+						"hotkey": "Ctrl+Shift+F12"
+					},
+					{
 						"id": ".uno:DefaultBullet",
 						"hotkey": "Shift+F12"
 					},
@@ -1300,8 +1316,7 @@
 				"id": ".uno:FormatColumns"
 			},
 			{
-				"id": ".uno:Watermark",
-				"hide": true
+				"id": ".uno:Watermark"
 			},
 			{
 				"id": ".uno:EditRegion"
@@ -1313,15 +1328,15 @@
 				"id": ".uno:FormatImageMenu",
 				"menu": [
 					{
-						"name": ".uno:ExternalEdit",
-						"id": "externaledit"
+						"id": ".uno:ExternalEdit",
+						"comment": "替代指令"
 					},
 					{
 						"id": ".uno:CompressGraphic"
 					},
 					{
-						"name": ".uno:SaveGraphic",
-						"id": "savegraphic"
+						"id": ".uno:SaveGraphic",
+						"comment": "替代指令"
 					},
 					{
 						"type": "--"
@@ -1396,9 +1411,6 @@
 				"id": ".uno:AnchorMenu",
 				"menu": [
 					{
-						"id": ".uno:SetAnchorToPage"
-					},
-					{
 						"id": ".uno:SetAnchorToPara"
 					},
 					{
@@ -1440,7 +1452,8 @@
 						"id": ".uno:WrapContour"
 					},
 					{
-						"id": ".uno:ContourDialog"
+						"id": ".uno:ContourDialog",
+						"hide": true
 					},
 					{
 						"id": ".uno:WrapAnchorOnly"
@@ -1704,8 +1717,7 @@
 				"id": ".uno:MergeCells"
 			},
 			{
-				"name" : ".uno:SplitCell",
-				"id": "dialog:SplitCell"
+				"id": ".uno:SplitCell"
 			},
 			{
 				"id": ".uno:MergeTable"
@@ -1784,45 +1796,31 @@
 				"menu": [
 					{
 						"id": ".uno:SetLanguageSelectionMenu",
-						"menu": [
-							{
-								"name": "None (Do not check spelling)",
-								"id": "noneselection"
-							}
-						]
+						"menu": []
 					},
 					{
 						"id": ".uno:SetLanguageParagraphMenu",
-						"menu": [
-							{
-								"name": "None (Do not check spelling)",
-								"id": "noneparagraph"
-							}
-						]
+						"menu": []
 					},
 					{
 						"id": ".uno:SetLanguageAllTextMenu",
-						"menu": [
-							{
-								"name": "None (Do not check spelling)",
-								"id": "nonelanguage"
-							}
-						]
+						"menu": []
 					},
 					{
 						"type": "--"
 					},
 					{
 						"id": ".uno:Hyphenate",
-						"hide": true
+						"hide": false
 					},
 					{
 						"id": ".uno:ChineseConversion",
-						"hide": true
+						"hide": false
 					},
 					{
 						"id": ".uno:HangulHanjaConversion",
-						"hide": true
+						"hotkey": "Ctrl+Shift+F7",
+						"hide": false
 					}
 				]
 			},
@@ -1857,18 +1855,22 @@
 				"id": "bindingbline",
 				"menu": [
 					{
+						"icon": "res:fr02",
 						"name": "Insert on the left side of page",
 						"id": "macro:///OxOOL.BindingLine.insertLeft()"
 					},
 					{
+						"icon": "res:fr03",
 						"name": "Insert on the right side of page",
 						"id": "macro:///OxOOL.BindingLine.insertRight()"
 					},
 					{
+						"icon": "res:fr05",
 						"name": "Insert on the top side of page",
 						"id": "macro:///OxOOL.BindingLine.insertTop()"
 					},
 					{
+						"icon": "res:fr06",
 						"name": "Insert on the bottom side of page",
 						"id": "macro:///OxOOL.BindingLine.insertBottom()"
 					},
@@ -1921,9 +1923,21 @@
 		"menu": [
 			{
 				"icon": ".uno:HelpIndex",
+				"name": "Online Help",
+				"id": "online-help",
+				"hotkey": "F1",
+				"iosapp": false
+			},
+			{
 				"name": "Keyboard shortcuts",
-				"id": "dialog:ShowKeyboardHelp",
-				"hotkey": "Ctrl+Shift+?"
+				"id": "keyboard-shortcuts",
+				"hotkey": "Ctrl+Alt+Shift+?",
+				"iosapp": false
+			},
+			{
+				"name": "Report an issue",
+				"id": "report-an-issue",
+				"iosapp": false
 			},
 			{
 				"icon": ".uno:About",

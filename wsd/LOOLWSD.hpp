@@ -236,6 +236,7 @@ public:
     static std::string FuzzFileName;
 #endif
     static std::string UserInterface;
+    static unsigned long PdfViewerDPI;
     static std::string ConfigFile;
     static std::string ConfigDir;
     static std::string SysTemplate;
@@ -243,9 +244,14 @@ public:
     static std::string ChildRoot;
     static std::string ServerName;
     static std::string FileServerRoot;
+    static std::string SSLPrivateKeyPassword; /// SSL 私鑰密碼
     static std::string WelcomeFilesRoot; ///< From where we should serve the release notes (or otherwise useful content) that is shown on first install or version update.
     static std::string ServiceRoot; ///< There are installations that need prefixing every page with some path.
     static std::string LOKitVersion;
+    static bool EnableTraceEventLogging;
+    static FILE *TraceEventFile;
+    static void writeTraceEventRecording(const char *data, std::size_t nbytes);
+    static void writeTraceEventRecording(const std::string &recording);
     static std::string LogLevel;
     static bool AnonymizeUserData;
     static bool CheckLoolUser;

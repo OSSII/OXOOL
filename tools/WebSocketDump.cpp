@@ -263,13 +263,15 @@ int main (int argc, char **argv)
     const std::string ssl_key_file_path = "etc/key.pem";
     const std::string ssl_ca_file_path = "etc/ca-chain.cert.pem";
     const std::string ssl_cipher_list = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH";
+    const std::string ssl_password = "";
 
     // Initialize the non-blocking socket SSL.
     if (isSSL)
         SslContext::initialize(ssl_cert_file_path,
                                ssl_key_file_path,
                                ssl_ca_file_path,
-                               ssl_cipher_list);
+                               ssl_cipher_list,
+                               ssl_password);
 #endif
 
     SocketPoll acceptPoll("accept");

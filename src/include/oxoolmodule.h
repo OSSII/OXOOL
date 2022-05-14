@@ -24,7 +24,11 @@
 // base class for all shapes
 class oxoolmodule {
     public:
-        virtual void handleRequest(std::weak_ptr<StreamSocket>, Poco::MemoryInputStream&, Poco::Net::HTTPRequest&, SocketDisposition&)=0;
+        virtual void handleRequest(std::weak_ptr<StreamSocket>,
+            Poco::MemoryInputStream&,
+            Poco::Net::HTTPRequest&,
+            SocketDisposition&,
+            RequestDetails &requestDetails)=0;
         virtual std::string handleAdmin(std::string command)
         {
             return command;

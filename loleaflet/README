@@ -1,15 +1,11 @@
-Leaflet platform for LibreOffice Online
+Leaflet platform for OxOffice Online
 ========================================
 
-This is the client part of LibreOffice Online.  For the server part, see the
+This is the client part of OxOffice Online.  For the server part, see the
 ../wsd/README, and install it first.
 
 Build dependencies
 ------------------
-
-First you need to install 'jake'.  As root, do:
-
-    npm install -g jake
 
 npm is provided by the nodejs package.
 
@@ -42,6 +38,12 @@ To update any of the dependency, process often goes like this:
 If you have not installed `shrinkpack' globally using `npm install -g shrinkpack@next', it should be
 in node_modules/.bin/shrinkpack, so you can use the binary from there.
 
+If you need to get the sources:
+	make libs
+
+To bundle the file sanitize-url.js
+	browserify braintree-sanitize-url/index.js --standalone sanitizeUrl > sanitize-url.js
+
 Building
 --------
 
@@ -49,7 +51,7 @@ Just do:
 
     make
 
-Above step would create a non-minified bundle.js and admin-bundle.js without source-maps in dist/ for main loleaflet and admin console
+Above step would create a non-minified bundle.js and admin-bundle.js without source-maps in dist/ for main browser and admin console
 respectively.
 
 To build with debug-info, i.e with sourcemaps:
@@ -73,58 +75,62 @@ Running
 
 To see an example:
 
-* run loolwsd, like:
+* run oxoolwsd, like:
 
-    ./loolwsd --o:sys_template_path=${SYSTEMPLATE} --o:lo_template_path=${MASTER}/instdir --o:child_root_path=${ROOTFORJAILS}
+    ./oxoolwsd --o:sys_template_path=${SYSTEMPLATE} --o:child_root_path=${ROOTFORJAILS}
 
-Note that this will, by default, set the loolwsd's file server's root to the parent directory of loolwsd,
-which means you can access all the files in loleaflet using /loleaflet/ path. It is advised to set
+Note that this will, by default, set the oxoolwsd's file server's root to the parent directory of oxoolwsd,
+which means you can access all the files in browser using /loleaflet/ path. It is advised to set
 file_server_root_path manually for more control. See wsd/README for more information.
 
-* open dist/loleaflet.html through loolwsd's fileserver
+* open dist/loleaflet.html through oxoolwsd's fileserver
 
     https://localhost:9980/loleaflet/dist/loleaflet.html?file_path=file:///PATH/TO_DOC&host=wss://localhost:9980
 
 and you should see the document in the browser.
 Note that accessing local storage is disabled by default for security reasons. You need to explicitly enable it
-with the --o:storage.filesystem[@allow]=true option of loolwsd. In case anything goes wrong, check the loolwsd console for
+with the --o:storage.filesystem[@allow]=true option of oxoolwsd. In case anything goes wrong, check the oxoolwsd console for
 the debugging output. You might be asked to confirm the certificate if you are using self-signed certificate
-for loolwsd.
+for oxoolwsd.
+
+Development
+-----------
+
+For faster development you might want to install browser-sync which can reload app in your browsers automatically
+after you edit and save the source code (so for .css only):
+
+npm install -g browser-sync
+
+Remember to add '--enable-browsersync' argument for './configure' script and delete `dist` directory.
+
+Run server and start browser-sync:
+
+OXOOL_SERVE_FROM_FS=1 make run
+
+and in the second terminal:
+
+make sync-[writer|calc|impress]
+
+Your browser will open example document and now you can edit .css files and see the result without server restart.
+
+To run another document use:
+browser-sync start --config browsersync-config.js --startPath "loleaflet/96c23f663/loleaflet.html?file_path=file:///path/to/the/file.ods"
 
 Admin Panel
 -----------
 
-You can do live monitoring of all the user sessions running on loolwsd instance. To access the admin
-console you need to ask for admin.html file from loolwsd which resides in dist/admin/admin.html.
+You can do live monitoring of all the user sessions running on oxoolwsd instance. To access the admin
+console you need to ask for admin.html file from oxoolwsd which resides in dist/admin/admin.html.
 
 For example:
 
     https://localhost:9980/loleaflet/dist/admin/admin.html
 
-It will ask for username and password which is set by the admin_console options of loolwsd. For example you can
+It will ask for username and password which is set by the admin_console options of oxoolwsd. For example you can
 pass --o:admin_console.username=admin --o:admin_console.password=admin in command line, or set these values in
-loolwsd.xml. After entering the correct password you should be able to monitor the live documents opened, total
+oxoolwsd.xml. After entering the correct password you should be able to monitor the live documents opened, total
 users, memory consumption, document URLs with number of users viewing that document etc. You can also kill the
 documents directly from the panel which would result in closing the socket connection to the respective document.
-
-Testing
--------
-    - to run the unit tests
-        + open spec/loleaflet.html in the browser
-    - to simulate an editing session and to get the tile loading times
-        + open spec/tilebench.html in the browser
-    - to simulate a client opening several documents in the browser
-        + open spec/loadtest.html in the browser
-    - to simulate a client opening several documents in the console
-        + run: node_modules/.bin/mocha spec/headlessLoadTest.js
-    - to simulate multiple clients opening several documents in the console
-        + run: make load-test
-
-The structure of the unit tests:
-Loleaflet unit tests are located under spec/loleaflet. Following Leaflet's testing style, each test's path
-should mirror the source's path, so spec/loleaflet/control/ToolbarSpec.js tests the features from
-src/control/Toolbar.js . Any new test file needs also to be added in spec/leaflet.html
-
 
 API & events
 ------------
@@ -137,7 +143,7 @@ API & events
 Search:
     - API:
         map.search(text, [backward])
-        map.higlightAll(text)
+        map.highlightAll(text)
     - events:
         map.on('search', function (e) {}) (currently only fired when no search result is found) where:
             + e.originalPhrase = the phrase that has been searched for
@@ -214,10 +220,10 @@ Parts (like slides in presentation, or sheets in spreadsheets):
 Statusindicator (when the document is loading):
     - events
         map.on('statusindicator', function (e) {}) where:
-            + e.statusType = 'start' | 'setvalue' | 'finish' | 'loleafletloaded' | 'alltilesloaded'
+            + e.statusType = 'start' | 'setvalue' | 'finish' | 'oxoolloaded' | 'alltilesloaded'
             + e.value == a value from 0 to 100 indicating the status
               if the statusType is 'setvalue
-            + 'loleafletloaded' is fired when the JS code is initialized and the document
+            + 'oxoolloaded' is fired when the JS code is initialized and the document
                 load request is sent and we're waiting for the tiles
             + 'alltilesloaded' is fired when all newly requested (empty tiles) have been loaded
                 it is not fired during pre-fetching and during editing
@@ -330,7 +336,6 @@ Contributing
 
 Code conventions:
 
-    * 'jake lint' should be run before commiting
     * files should have unix line terminators (LF)
     * tools to convert files: dos2unix or fromdos
 
@@ -359,3 +364,33 @@ are independent of the map's div, thus enabling us to link them to the map as ne
 When the user scrolls, the map is panned by the same amount as it would've been scrolled.
 Also, some custom jquery scrollbars are used, to trigger the same scroll events across
 browsers.
+
+Z-index values:
+-------------------------------------------
+		leaflet
+-------------------------------------------
+10			map
+11			ruler
+-------------------------------------------
+		under menu
+-------------------------------------------
+990			sidebar
+999			toolbar-up
+999			Notebookbar tabs (.ui-tabs.notebookbar)
+-------------------------------------------
+		menu items
+-------------------------------------------
+x				menu-nb-hamburger > ul (calculated from jquery.smartmenus.js)
+1000			main-menu(desktop-only)
+11			toolbar-down
+1050			closebuttonwrapper (not being used currently)
+-------------------------------------------
+		on the top
+-------------------------------------------
+1105			dialogs
+1001			mobile-edit-button
+1500			mobile-wizard (with class=menuwizard)
+1501			toolbar-hamburger (with class=menuwizard-opened)
+2000			vex-overlay
+2001			vex dialog (vex-content)
+-------------------------------------------

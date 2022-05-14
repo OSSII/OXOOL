@@ -86,6 +86,12 @@ namespace Util
     /// Decode an integral ID from a string.
     std::uint64_t decodeId(const std::string& str);
 
+    /// 以 AES 256 加密字串
+    std::string encryptAES256(const std::string& text, const std::string& password="");
+
+    /// 以 AES 256 解密字串
+    std::string decryptAES256(const std::string& text, const std::string& password="");
+
     bool windowingAvailable();
 
 #if !defined(BUILDING_TESTS) && !defined(KIT_IN_PROCESS) && !MOBILEAPP

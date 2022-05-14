@@ -57,10 +57,9 @@ L.Control.Dialogs = L.Control.extend({
 	_onExecuteDialog: function(e) {
 		// 第一次呼叫的話，載入該 dialog
 		if (L.dialog[e.dialog] === undefined) {
-			var dialogURL = 'uiconfig/dialogs/' + e.dialog + '.js';
+			var dialogURL = L.LOUtil.getURL('uiconfig/dialogs/') + e.dialog + '.js';
 			var script = document.createElement('script');
 			script.type = 'text/javascript';
-			script.charset = 'UTF-8';
 			script.src = dialogURL;
 			//script.onreadystatechange = this._callback;
 			script.onload = function() {
@@ -302,17 +301,17 @@ L.Control.Dialogs = L.Control.extend({
 
 	_getDialogIcon: function(type) {
 		var iconSet = {
-			error: 'errorbox.svg',
-			information: 'infobox.svg',
-			question: 'querybox.svg',
-			success: 'successbox.svg',
-			warning: 'warningbox.svg'
+			error: 'res:errorbox',
+			information: 'res:infobox',
+			question: 'res:querybox',
+			success: 'res:successbox',
+			warning: 'res:warningbox'
 		};
 
 		if (typeof type == 'string') {
 			var icon = iconSet[type.toLowerCase()];
 			if (icon !== undefined) {
-				return L.Icon.Default.imagePath + '/res/' + icon;
+				return this._map.getIconURL(icon);
 			}
 		}
 		return null;

@@ -3,7 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 config_dir=@LOOLWSD_CONFIGDIR@
-data_dir=/usr/share/@PACKAGE_NAME@
+data_dir=@LOOLWSD_DATADIR@
+extensions_dir=@LOOLWSD_DATADIR@/extensions
 modules_dir=@LOOLWSD_MODULES_DIR@
 module_config_dir=@LOOLWSD_MODULE_CONFIG_DIR@
 module_data_dir=@LOOLWSD_MODULE_DATA_DIR@
@@ -13,4 +14,4 @@ Name: oxool
 Description: 
 Version: @VERSION@
 Libs: -L${libdir} -loxool
-Cflags: -I${includedir}/oxool -I${includedir}/oxool/common -I${includedir}/oxool/net -I${includedir}/oxool/wsd -I${includedir}/oxool/kit
+Cflags: -I${includedir}/oxool

@@ -3,54 +3,25 @@
  * Writer tile layer is used to display a text document
  */
 
-L.WriterTileLayer = L.TileLayer.extend({
+/* global app */
+L.WriterTileLayer = L.CanvasTileLayer.extend({
 
 	newAnnotation: function (comment) {
-		if (!comment.anchorPos && this._isCursorVisible) {
-			comment.anchorPos = L.bounds(this._latLngToTwips(this._visibleCursor.getSouthWest()),
-				this._latLngToTwips(this._visibleCursor.getNorthEast()));
-			comment.anchorPix = this._twipsToPixels(comment.anchorPos.min);
+		if (this._map._isCursorVisible) {
+			var temp = this._latLngToTwips(this._visibleCursor.getNorthEast());
+			comment.anchorPos = [temp.x, temp.y];
+		} else if (this._graphicSelection && !this._isEmptyRectangle(this._graphicSelection)) {
+			// An image is selected, then guess the anchor based on the graphic selection.
+			temp = this._latLngToTwips(this._graphicSelection.getSouthWest());
+			comment.anchorPos = [temp.x, temp.y];
 		}
-		if (comment.anchorPos) {
-			this._annotations.modify(this._annotations.add(comment));
-		}
+
+		var annotation = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).add(comment);
+		app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).modify(annotation);
 	},
 
-	clearAnnotations: function() {
-		if (this._annotations) {
-			this._annotations.clear();
-			this._annotations.clearChanges();
-		}
-	},
-
-	onRemove: function (map) {
-		map.off('updatemaxbounds', this._onUpdateMaxBounds, this);
-	},
-
-	onAdd: function (map) {
-		L.TileLayer.prototype.onAdd.call(this, map);
-		this._annotations = L.annotationManager(map);
-		map.on('updatemaxbounds', this._onUpdateMaxBounds, this);
-	},
-
-	onAnnotationModify: function (annotation) {
-		this._annotations.modify(annotation);
-	},
-
-	onAnnotationRemove: function (id) {
-		this._annotations.remove(id);
-	},
-
-	onAnnotationReply: function (annotation) {
-		this._annotations.reply(annotation);
-	},
-
-	onChangeAccept: function(id) {
-		this._annotations.acceptChange(id);
-	},
-
-	onChangeReject: function(id) {
-		this._annotations.rejectChange(id);
+	beforeAdd: function (map) {
+		map.uiManager.initializeSpecializedUI('text');
 	},
 
 	_onCommandValuesMsg: function (textMsg) {
@@ -65,36 +36,23 @@ L.WriterTileLayer = L.TileLayer.extend({
 		}
 
 		if (values.comments) {
-			this._annotations.fill(values.comments);
+			values.comments.forEach(function(comment) {
+				comment.id = comment.id.toString();
+				comment.parent = comment.parent.toString();
+			});
+			app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).clearList();
+			app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).importComments(values.comments);
 		}
-		else if (values.redlines) {
-			this._annotations.fillChanges(values.redlines);
-		}
-		else {
-			L.TileLayer.prototype._onCommandValuesMsg.call(this, textMsg);
-		}
-	},
-
-	_onMessage: function (textMsg, img) {
-		if (textMsg.startsWith('comment:')) {
-			var obj = JSON.parse(textMsg.substring('comment:'.length + 1));
-			this._annotations.onACKComment(obj);
-		}
-		else if (textMsg.startsWith('redlinetablemodified:')) {
-			obj = JSON.parse(textMsg.substring('redlinetablemodified:'.length + 1));
-			this._annotations.onACKComment(obj);
-		}
-		else if (textMsg.startsWith('redlinetablechanged:')) {
-			obj = JSON.parse(textMsg.substring('redlinetablechanged:'.length + 1));
-			this._annotations.onACKComment(obj);
+		else if (values.redlines && values.redlines.length > 0) {
+			app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).importChanges(values.redlines);
 		}
 		else {
-			L.TileLayer.prototype._onMessage.call(this, textMsg, img);
+			L.CanvasTileLayer.prototype._onCommandValuesMsg.call(this, textMsg);
 		}
 	},
 
 	_onInvalidateTilesMsg: function (textMsg) {
-		var command = this._map._socket.parseServerCmd(textMsg);
+		var command = app.socket.parseServerCmd(textMsg);
 		if (command.x === undefined || command.y === undefined || command.part === undefined) {
 			var strTwips = textMsg.match(/\d+/g);
 			command.x = parseInt(strTwips[0]);
@@ -117,9 +75,7 @@ L.WriterTileLayer = L.TileLayer.extend({
 		var needsNewTiles = false;
 		for (var key in this._tiles) {
 			var coords = this._tiles[key].coords;
-			var tileTopLeft = this._coordsToTwips(coords);
-			var tileBottomRight = new L.Point(this._tileWidthTwips, this._tileHeightTwips);
-			var bounds = new L.Bounds(tileTopLeft, tileTopLeft.add(tileBottomRight));
+			var bounds = this._coordsToTileBounds(coords);
 			if (coords.part === command.part && invalidBounds.intersects(bounds)) {
 				if (this._tiles[key]._invalidCount) {
 					this._tiles[key]._invalidCount += 1;
@@ -149,14 +105,7 @@ L.WriterTileLayer = L.TileLayer.extend({
 			// compute the rectangle that each tile covers in the document based
 			// on the zoom level
 			coords = this._keyToTileCoords(key);
-			var scale = this._map.getZoomScale(coords.z);
-			topLeftTwips = new L.Point(
-					this.options.tileWidthTwips / scale * coords.x,
-					this.options.tileHeightTwips / scale * coords.y);
-			bottomRightTwips = topLeftTwips.add(new L.Point(
-					this.options.tileWidthTwips / scale,
-					this.options.tileHeightTwips / scale));
-			bounds = new L.Bounds(topLeftTwips, bottomRightTwips);
+			bounds = this._coordsToTileBounds(coords);
 			if (invalidBounds.intersects(bounds)) {
 				delete this._tileCache[key];
 			}
@@ -181,7 +130,7 @@ L.WriterTileLayer = L.TileLayer.extend({
 	},
 
 	_onStatusMsg: function (textMsg) {
-		var command = this._map._socket.parseServerCmd(textMsg);
+		var command = app.socket.parseServerCmd(textMsg);
 		if (!command.width || !command.height || this._documentInfo === textMsg)
 			return;
 
@@ -189,6 +138,9 @@ L.WriterTileLayer = L.TileLayer.extend({
 		if (sizeChanged) {
 			this._docWidthTwips = command.width;
 			this._docHeightTwips = command.height;
+			app.file.size.twips = [this._docWidthTwips, this._docHeightTwips];
+			app.file.size.pixels = [Math.round(this._tileSize * (this._docWidthTwips / this._tileWidthTwips)), Math.round(this._tileSize * (this._docHeightTwips / this._tileHeightTwips))];
+			app.view.size.pixels = app.file.size.pixels.slice();
 			this._docType = command.type;
 			this._viewId = parseInt(command.viewid);
 			this._updateMaxBounds(true);
@@ -199,6 +151,7 @@ L.WriterTileLayer = L.TileLayer.extend({
 		this._parts = 1;
 		this._currentPage = command.selectedPart;
 		this._pages = command.parts;
+		app.file.writer.pageRectangleList = command.pageRectangleList.slice(); // Copy the array.
 		this._map.fire('pagenumberchanged', {
 			currentPage: this._currentPage,
 			pages: this._pages,
@@ -207,8 +160,4 @@ L.WriterTileLayer = L.TileLayer.extend({
 		this._resetPreFetching(true);
 		this._update();
 	},
-
-	_onUpdateMaxBounds: function (e) {
-		this._updateMaxBounds(e.sizeChanged, e.extraSize);
-	}
 });

@@ -260,7 +260,8 @@ wsd_headers = wsd/Admin.hpp \
               wsd/TileCache.hpp \
               wsd/TileDesc.hpp \
               wsd/TraceFile.hpp \
-              wsd/UserMessages.hpp
+              wsd/UserMessages.hpp \
+              wsd/OxOOLPrivateKeyHandler.hpp
 
 if ENABLE_OSSII_PRODUCT
 wsd_headers += wsd/OssiiProduct.hpp
@@ -321,7 +322,7 @@ noinst_HEADERS = $(wsd_headers) $(shared_headers) $(kit_headers) \
 
 dist-hook:
 	git log -1 --format=%h > $(distdir)/dist_git_hash 2> /dev/null || rm $(distdir)/dist_git_hash
-	git rev-parse --abbrev-ref HEAD > $(distdir)/dist_git_branch 2> /dev/null || rm $(distdir)/dist_git_branch
+	git rev-parse --abbrev-ref HEAD | cut -d '-' -f 1 > $(distdir)/dist_git_branch 2> /dev/null || rm $(distdir)/dist_git_branch
 
 EXTRA_DIST = discovery.xml \
              favicon.ico \

@@ -25,14 +25,12 @@ L.Canvas = L.Renderer.extend({
 	},
 
 	_update: function () {
-		if (this._map._animatingZoom && this._bounds) { return; }
-
 		L.Renderer.prototype._update.call(this);
 
 		var b = this._bounds,
 		    container = this._container,
 		    size = b.getSize(),
-		    m = L.Browser.retina ? 2 : 1;
+		    m = window.app.dpiScale;
 
 		L.DomUtil.setPosition(container, b.min);
 
@@ -42,9 +40,7 @@ L.Canvas = L.Renderer.extend({
 		container.style.width = size.x + 'px';
 		container.style.height = size.y + 'px';
 
-		if (L.Browser.retina) {
-			this._ctx.scale(2, 2);
-		}
+		this._ctx.scale(m, m);
 
 		// translate so we use the same path coordinates after canvas element moves
 		this._ctx.translate(-b.min.x, -b.min.y);
@@ -198,7 +194,7 @@ L.Canvas = L.Renderer.extend({
 	},
 
 	_onMouseMove: function (e) {
-		if (!this._map || this._map._animatingZoom) { return; }
+		if (!this._map) { return; }
 
 		var point = this._map.mouseEventToLayerPoint(e);
 

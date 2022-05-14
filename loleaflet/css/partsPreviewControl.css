@@ -1,78 +1,54 @@
-#document-container.parts-preview-document {
-        left: 250px;
-	bottom: 37px;
-}
-
-#document-container.parts-preview-document.readonly {
-	bottom: 0px;
-}
-
 #slide-sorter {
-	height: 100%;
+	white-space: nowrap;
+	overflow-x: hidden;
+	overflow-y: visible;
+	background: #dfdfdf;
+	max-height: 100%;
+	scrollbar-color: #ccc #dfdfdf;
+	scrollbar-width: thin;
+}
+
+#sidebar-panel {
+	height: 100%
 }
 
 .preview-frame {
-	float: left;
-	border: 2px solid rgba(0,0,0,0);
-	margin: 0.5em 0 0.5em 4px;
-	padding: 2px;
-	/*height: 140px;*/
-}
-
-.preview-frame-selected {
-	border-color: rgb(108, 135, 157);
-	background-color: rgb(148, 196, 233);
-}
-
-.preview-info-wrapper {
-	position: relative;
-	float: left;
-	width: 30px;
-	margin-right: 2px;
+	max-width: 190px;
+	white-space: nowrap;
+	text-align: center;
+	margin: 1em 0;
 }
 
 .preview-helper {
-	position: absolute;
-	width:100%;
-	top: 1px;
-	font-size: 14px;
-	text-align: right;
-	color: #d86344;
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
 }
-
-.preview-animation {
-	position: absolute;
-	width: 14px;
-	height: 14px;
-	right: 0px;
-	bottom: 18px;
-	background: url('images/res/click_16.svg') no-repeat center/contain;
-}
-
-.preview-transition {
-	position: absolute;
-	width: 14px;
-	height: 14px;
-	right: 0px;
-	bottom: 1px;
-	background: url('images/res/fade_effect_indicator.svg') no-repeat center/contain;
-}
-
 
 .preview-img {
-	/* In draw docs, the width of previews are small, but we want a min of 180px to align it with document's left edge */
-	float: left;
-    width: 180px;
+	/* In draw docs, the width of previews are small, but we want a min of 160px to align it with document's left edge */
+	min-width: 160px;
+	vertical-align: middle;
+	max-width: 164px;
 	cursor: pointer;
-	border: 2px solid #f0f0f0;
+	border: 2px solid #dfdfdf;
+	margin-left: 10px;
+	margin-right: 10px;
 }
 
-.preview-img-blur {
-	-webkit-filter: grayscale(100%) blur(1px);
-	filter: grayscale(100%) blur(1px);
+/* The current part the user is on. */
+.preview-img-currentpart {
+	border-color: #000000;
+	border-style: solid;
 }
 
-.mCSB_container {
-	margin-right: 0px !important;
+/* One of (potentially many) selected parts, but not the current. */
+.preview-img-selectedpart {
+	border-color: #0b87e780 !important;
+	border-style: solid;
 }
 
+/* Highlight where a slide can be dropped when reordering by drag-and-drop. */
+.preview-img-dropsite {
+	border-bottom: 20px solid var(--gray-color);
+}

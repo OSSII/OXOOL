@@ -993,9 +993,16 @@ bool ChildSession::downloadAs(const char* /*buffer*/, int /*length*/, const Stri
             (format.empty() ? "(nullptr)" : format.c_str()) << "', ' filterOptions=" <<
             (filterOptions.empty() ? "(nullptr)" : filterOptions.c_str()) << "'.");
 
-    getLOKitDocument()->saveAs(url.c_str(),
+    bool success = getLOKitDocument()->saveAs(url.c_str(),
                                format.empty() ? nullptr : format.c_str(),
                                filterOptions.empty() ? nullptr : filterOptions.c_str());
+
+    if (!success)
+    {
+        LOG_ERR("SaveAs Failed for id=" << id << " [" << url << "]. error= " << getLOKitLastError());
+        sendTextFrameAndLogError("error: cmd=downloadas kind=saveasfailed");
+        return false;
+    }
 
     // Register download id -> URL mapping in the DocumentBroker
     std::string docBrokerMessage = "registerdownload: downloadid=" + tmpDir + " url=" + urlToSend;
@@ -2887,19 +2894,31 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
     case LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY:
         sendTextFrame("invalidatesheetgeometry: " + payload);
         break;
+    case LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR:
+        sendTextFrame("documentbackgroundcolor: " + payload);
+        break;
+    case LOK_COMMAND_BLOCKED:
+        {
+#if defined(ENABLE_FEATURE_LOCK) || defined(ENABLE_FEATURE_RESTRICTION)
+            LOG_INF("COMMAND_BLOCKED: " << payload);
+            Parser parser;
+            Poco::Dynamic::Var var = parser.parse(payload);
+            Object::Ptr object = var.extract<Object::Ptr>();
+
+            std::string cmd = object->get("cmd").toString();
+            sendTextFrame("blockedcommand: cmd=" + cmd +
+                    " kind=" + getBlockedCommandType(cmd) + " code=" + object->get("code").toString());
+#endif
+        }
+        break;
     case LOK_CALLBACK_MSGBOX:
         sendTextFrame("msgbox: " + payload);
         break;
     case LOK_CALLBACK_LAUNCH_MENU:
         sendTextFrame("launchmenu: " + payload);
         break;
-
-#if !ENABLE_DEBUG
-    // we want a compilation-time failure in the debug builds; but ERR in the
-    // log in the release ones
     default:
         LOG_ERR("Unknown callback event (" << lokCallbackTypeToString(type) << "): " << payload);
-#endif
     }
 }
 

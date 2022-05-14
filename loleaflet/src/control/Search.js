@@ -1,4 +1,6 @@
 /* -*- js-indent-level: 8 -*- */
+/* global app */
+
 L.Map.include({
 	search: function (text, backward, replaceString,  command, expand) {
 		if (backward === undefined) {
@@ -16,6 +18,10 @@ L.Map.include({
 		}
 
 		var searchCmd = {
+			'SearchItem.AllTables': {
+				'type': 'boolean',
+				'value': true
+			},
 			'SearchItem.SearchString': {
 				'type': 'string'
 			},
@@ -40,8 +46,8 @@ L.Map.include({
 		var viewTopLeftpx = this.project(this.getBounds().getNorthWest());
 		var docBoundsTopLeft = this.project(this.options.maxBounds.getNorthWest());
 		var topLeft = this.unproject(new L.Point(
-				Math.max(viewTopLeftpx.x, docBoundsTopLeft.x),
-				Math.max(viewTopLeftpx.y, docBoundsTopLeft.y)));
+			Math.max(viewTopLeftpx.x, docBoundsTopLeft.x),
+			Math.max(viewTopLeftpx.y, docBoundsTopLeft.y)));
 		var topLeftTwips = this._docLayer._latLngToTwips(topLeft);
 
 		var searchStartPointX = topLeftTwips.x;
@@ -62,7 +68,7 @@ L.Map.include({
 		searchCmd['SearchItem.SearchStartPointY'].value = searchStartPointY;
 		searchCmd['SearchItem.Command'].value = command;
 		this._searchRequested = true;
-		this._socket.sendMessage('uno .uno:ExecuteSearch ' + JSON.stringify(searchCmd));
+		app.socket.sendMessage('uno .uno:ExecuteSearch ' + JSON.stringify(searchCmd));
 	},
 
 	highlightAll: function (text) {
@@ -74,6 +80,6 @@ L.Map.include({
 
 	resetSelection: function () {
 		this._docLayer._clearSearchResults();
-		this._socket.sendMessage('resetselection');
+		app.socket.sendMessage('resetselection');
 	}
 });

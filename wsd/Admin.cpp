@@ -16,6 +16,10 @@
 #include <mutex>
 #include <sys/poll.h>
 #include <unistd.h>
+#include <openssl/ssl.h>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
 
 #include <Poco/Net/HTTPCookie.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -42,6 +46,7 @@
 
 #include <common/SigUtil.hpp>
 
+#include <src/include/oxoolmodule.h>
 using namespace LOOLProtocol;
 
 using Poco::Net::HTTPResponse;
@@ -201,6 +206,60 @@ const std::string getDocType(const std::string &appName)
         docType = "presentation";
 
     return docType;
+}
+
+bool havePasswordProtect = false;
+std::string defaultPassword;
+
+// 會執行這裡，表示憑證檔案有密碼
+int passwordCB(char *buf, int size, int /*rwflag*/, void* /*userdata*/)
+{
+    havePasswordProtect = true; // 設定 havePasswordProtect 為 true
+    strncpy(buf, defaultPassword.c_str(), size);
+    buf[size - 1] = '\0';
+    return(strlen(buf));
+}
+
+#define SSL_FILE_VALID 0    // SSL 檔案有效
+#define SSL_FILE_INVALID 1  // 無效的 SSL 檔案
+#define SSL_FILE_REQUEST_PASSWORD 2 // SSL 檔案需要密碼
+
+// 檢查 cert 檔案是否有效
+int certFileValid(const std::string& certfilePath)
+{
+    // 測試 cert file
+    FILE *fp = fopen(certfilePath.c_str(), "r");
+    X509 *cert = PEM_read_X509(fp, NULL, NULL, NULL);
+    fclose(fp);
+
+    if (cert != NULL)
+    {
+        X509_free(cert);
+        return SSL_FILE_VALID; // 回覆
+    }
+    return SSL_FILE_INVALID;
+}
+
+// 檢查 private key 是否有效
+int privateKeyValid(const std::string& filePath, const std::string& password="")
+{
+    havePasswordProtect = false;
+    defaultPassword = password;
+
+    // 測試 private key
+    FILE *fp = fopen(filePath.c_str(), "r");
+    RSA *privateRsa = PEM_read_RSAPrivateKey(fp, NULL, passwordCB, NULL);
+    fclose(fp);
+
+    // 沒錯
+    if (privateRsa != NULL)
+    {
+        RSA_free(privateRsa);
+        return SSL_FILE_VALID; // 回覆
+    }
+
+    // 無密碼保護就回覆無效，否則回覆需要密碼
+    return (!havePasswordProtect ? SSL_FILE_INVALID : SSL_FILE_REQUEST_PASSWORD);
 }
 }
 
@@ -987,6 +1046,173 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         else
         {
             sendTextFrame(tokens[0] + "Error '" +  tokens[1] + "' is invalid.");
+        }
+    }
+    // 更新 SSL 相關檔案
+    else if (tokens.equals(0, "checkSSLFile") && tokens.size() == 2)
+    {
+        int checkType = SSL_FILE_VALID;
+
+        // 上傳檔案的完整路徑及檔名
+        std::string uploadFile(_receiveFile.getWorkPath() + "/" + _receiveFile.getWorkFileName());
+
+        std::string targetFile;
+        if (tokens.equals(1, "cert"))
+        {
+            targetFile = LOOLWSD::getPathFromConfig("ssl.cert_file_path");
+            checkType = certFileValid(uploadFile);
+        }
+        else if (tokens.equals(1, "key")) // 私鑰
+        {
+            targetFile = LOOLWSD::getPathFromConfig("ssl.key_file_path");
+            // 測試私鑰是否有效
+            checkType = privateKeyValid(uploadFile);
+        }
+        else if (tokens.equals(1, "ca"))
+        {
+            targetFile = LOOLWSD::getPathFromConfig("ssl.ca_file_path");
+            checkType = certFileValid(uploadFile);
+        }
+
+        // 依據狀態回報
+        switch (checkType)
+        {
+            case SSL_FILE_VALID: // SSL 檔案有效
+                {
+                    // 移動上傳檔案，加上 ".new" 的副檔名
+                    File sslFile(uploadFile);
+                    sslFile.moveTo(targetFile + ".new");
+                    sendTextFrame("checkSSLFileValid"); // 通知有效
+                    // 如果是私鑰，另外通知不需密碼
+                    if (tokens.equals(1, "key"))
+                    {
+                        sendTextFrame("checkSSLFileNoPassword");
+                    }
+                }
+                break;
+            case SSL_FILE_INVALID: // SSL 檔案無效
+                sendTextFrame("checkSSLFileInvalid");
+                break;
+            case SSL_FILE_REQUEST_PASSWORD: // SSL 檔案需要密碼
+                {
+                    File sslFile(uploadFile);
+                    sslFile.moveTo(targetFile + ".password");
+                    sendTextFrame("checkSSLFileRequestPassword");
+                }
+                break;
+            default:
+                sendTextFrame("checkSSLFileUnknownError"); // 未知錯誤
+                break;
+        }
+        _receiveFile.deleteWorkDir(); // 砍掉工作暫存目錄
+    }
+    // 強制移除殘留的 SSL 檔案
+    else if (tokens.equals(0, "removeResidualSSLFiles") && tokens.size() == 1)
+    {
+        File certFile_New(LOOLWSD::getPathFromConfig("ssl.cert_file_path") + ".new");
+        if (certFile_New.exists())
+            certFile_New.remove();
+
+        File keyFile_New(LOOLWSD::getPathFromConfig("ssl.key_file_path") + ".new");
+        if (keyFile_New.exists())
+            keyFile_New.remove();
+
+        File keyFile_Password(LOOLWSD::getPathFromConfig("ssl.key_file_path") + ".password");
+        if (keyFile_Password.exists())
+            keyFile_Password.remove();
+
+        File caFile_New(LOOLWSD::getPathFromConfig("ssl.ca_file_path") + ".new");
+        if (caFile_New.exists())
+            caFile_New.remove();
+    }
+    // 確認私鑰密碼
+    // 指令: ensureSSLPasswordConfirm <uri encoded password sring>
+    else if (tokens.equals(0, "ensureSSLPasswordConfirm") && tokens.size() == 2)
+    {
+        std::string password;
+        Poco::URI::decode(tokens[1], password);
+
+        std::string keyFile_Password(LOOLWSD::getPathFromConfig("ssl.key_file_path") + ".password");
+        if (Poco::File(keyFile_Password).exists())
+        {
+            // 認證密碼是否正確
+            int checkType = privateKeyValid(keyFile_Password, password);
+            // 不正確的話就再次要求 client 密碼
+            if (checkType != SSL_FILE_VALID)
+            {
+                // 通知密碼不正確
+                sendTextFrame("checkSSLFilePasswordIncorrect");
+            }
+            else
+            {
+                // 1. 把 .password 改名為 .new
+                std::string newName(LOOLWSD::getPathFromConfig("ssl.key_file_path") + ".new");
+                Poco::File(keyFile_Password).renameTo(newName);
+                // 2. 通知 client 端，私鑰有效
+                sendTextFrame("checkSSLFileValid");
+                // 3. 通知 client 加密過的私鑰密碼
+                sendTextFrame("PrivateKeyPassword:" + Util::encryptAES256(password));
+            }
+        }
+    }
+    // 取消確認私鑰密碼
+    else if (tokens.equals(0, "cancelSSLPasswordConfirm") && tokens.size() == 1)
+    {
+        // 移除原先暫存的私鑰檔案
+        File keyFile_Password(LOOLWSD::getPathFromConfig("ssl.key_file_path") + ".password");
+        if (keyFile_Password.exists())
+            keyFile_Password.remove();
+
+    }
+    // 設定 SSL 密碼
+    else if (tokens.equals(0, "setSSLSecurePassword") && tokens.size() == 2)
+    {
+        OxoolConfig config;
+        config.load(LOOLWSD::ConfigFile);
+
+        config.remove("ssl.password");
+        config.setString("ssl.secure_password", tokens[1]);
+        config.save(LOOLWSD::ConfigFile); // 存回檔案
+    }
+    // 替換新的 SSL 檔案
+    else if (tokens.equals(0, "replaceNewSSLFiles") && tokens.size() == 1)
+    {
+        std::string certFile(LOOLWSD::getPathFromConfig("ssl.cert_file_path"));
+        // 有新的數位憑證檔
+        if (Poco::File(certFile + ".new").exists())
+        {
+            Poco::File(certFile).moveTo(certFile + ".bak"); // 原檔改為副檔名 .bak
+            Poco::File(certFile + ".new").moveTo(certFile); // 新檔改為原檔名
+        }
+
+        std::string keyFile(LOOLWSD::getPathFromConfig("ssl.key_file_path"));
+        // 有新的私鑰
+        if (Poco::File(keyFile + ".new").exists())
+        {
+            Poco::File(keyFile).moveTo(keyFile + ".bak"); // 原檔改為副檔名 .bak
+            Poco::File(keyFile + ".new").moveTo(keyFile); // 新檔改為原檔名
+        }
+
+        std::string caFile(LOOLWSD::getPathFromConfig("ssl.ca_file_path"));
+        // 有新的 CA 憑證
+        if (Poco::File(caFile + ".new").exists())
+        {
+            Poco::File(caFile).moveTo(caFile + ".bak"); // 原檔改為副檔名 .bak
+            Poco::File(caFile + ".new").moveTo(caFile); // 新檔改為原檔名
+        }
+    }
+    else if (tokens.equals(0, "module"))
+    {
+        std::string moduleName = tokens[1];
+        if (apilist.find(moduleName) != apilist.end())
+        {
+            auto apiHandler = apilist.find(moduleName)->second();
+            std::string result = apiHandler->handleAdmin(firstLine);
+            sendTextFrame(result);
+        }
+        else
+        {
+            sendTextFrame("No such module");
         }
     }
     else

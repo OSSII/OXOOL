@@ -33,7 +33,9 @@ class FileServerRequestHandler
     /// Construct a JSON to be accepted by the loleflet.html from a list like
     /// UIMode=classic;TextRuler=true;PresentationStatusbar=false
     /// that is passed as "ui_defaults" hidden input during the iframe setup.
-    static std::string uiDefaultsToJSON(const std::string& uiDefaults);
+    static std::string uiDefaultsToJSON(const std::string& uiDefaults, std::string& uiMode);
+
+    static std::string cssVarsToStyle(const std::string& cssVars);
 
 public:
     /// Evaluate if the cookie exists, and if not, ask for the credentials.

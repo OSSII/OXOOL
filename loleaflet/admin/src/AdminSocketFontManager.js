@@ -111,8 +111,8 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 			var totalBytes = parseInt(textMsg.substr(13), 10);
 			var percent = Math.floor((totalBytes / this._fileInfo.size) * 100); // 計算傳送比例
 			$('#progressbar').css('width', percent +'%')
-							.attr('aria-valuenow', percent)
-							.text(_('Transmission') + ' ' + percent + ' %');
+				.attr('aria-valuenow', percent)
+				.text(_('Transmission') + ' ' + percent + ' %');
 			console.debug(this._fileInfo.name + ' recv ' + totalBytes + 'bytes');
 		} else if (textMsg === 'uploadFileReciveOK') { // Server 通知檔案接收完畢
 			console.debug(this._fileInfo.name + ' upload OK');
@@ -179,7 +179,7 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 			that._loaded += e.loaded; // 累計傳送大小
 			if (that._loaded < that._fileInfo.size)
 				that._uploadFile(nextSlice);
-		}
+		};
 		this._fileReader.readAsArrayBuffer(blob);
 	},
 
@@ -227,10 +227,10 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 				newProp.weight = 400;
 				break;
 			case 100: // Medium
-				newProp.weight = 500
+				newProp.weight = 500;
 				break;
 			case 180: // Semi Bold
-				newProp.weight = 600
+				newProp.weight = 600;
 				break;
 			case 200: // bold
 				newProp.weight = 700;
@@ -350,7 +350,7 @@ var AdminSocketFontManager = AdminSocketBase.extend({
 			var fileNameCell = document.createElement('td');
 			if (prop.length > 1) {
 				if (i === 0) {
-					fileNameCell.rowSpan = prop.length
+					fileNameCell.rowSpan = prop.length;
 					fileNameCell.innerHTML = formCheck;
 					row.appendChild(fileNameCell);
 				}

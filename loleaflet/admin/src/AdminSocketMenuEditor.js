@@ -921,7 +921,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 					if (item.hotkey) {
 						L.DomUtil.addClass(aItem, 'item-has-hotkey');
 						var hotkeyItem = L.DomUtil.create('span', 'hotkey', aItem);
-						hotkeyItem.textContent = L.Util.replaceCtrlInMac(item.hotkey);
+						hotkeyItem.textContent = L.Util.replaceCtrlAltInMac(item.hotkey);
 					}
 				}
 

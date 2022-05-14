@@ -1,0 +1,85 @@
+.jsdialog-container .ui-button-box button,
+.vex.vex-theme-plain .vex-dialog-button {
+	font-family: var(--oxool-font);
+	text-transform: full-size-kana;
+}
+
+.oxool-annotation-edit #annotation-cancel,
+.ui-pushbutton.jsdialog:not(#ok):not(.sidebar),
+.ui-button-box.jsdialog #cancel,
+.ui-button-box.autofilter #cancel,
+.cell.jsdialog > button:not(#ok),
+.ui-button-box.jsdialog button:not(#ok),
+.jsdialog-container #source-button,
+.jsdialog-container #destination-button,
+.jsdialog-container #refbutton,
+.jsdialog-container #assign,
+.jsdialog-container #input-range-button,
+.jsdialog-container #output-range-button,
+.jsdialog-container #variable1-range-button,
+.jsdialog-container #variable2-range-button,
+.vex.vex-theme-plain .vex-dialog-button.vex-dialog-button-secondary {
+	height: 32px;
+	line-height: 0em;
+	color: #222;
+	min-width: 62px;
+	background-color: #f1f1f1 !important;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	margin: 5px;
+	vertical-align: middle;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.oxool-annotation-edit .annotation-button,
+#annotation-reply,
+.ui-button-box.jsdialog #ok,
+.ui-button-box.autofilter #ok,
+.cell.jsdialog > button,
+.ui-button-box.jsdialog button,
+.vex.vex-theme-plain .vex-dialog-button.vex-dialog-button-primary {
+	height: 32px;
+	line-height: 0em;
+	color: #111;
+	min-width: 62px;
+	background-color: #f4f4f4;
+	border: 1px solid #777;
+	border-radius: 3px;
+	margin: 5px;
+	vertical-align: middle;
+}
+
+.vex.vex-theme-plain .vex-dialog-form .vex-dialog-buttons {
+	margin-right: -5px; /* Account for child element (button)'s margin */
+}
+
+.jsdialog.ui-button-box.end {
+	margin-top: 8px;
+}
+
+.jsdialog *[disabled] {
+	color: var(--gray-light-txt--color) !important;
+}
+
+.jsdialog.ui-button-box button[disabled='disabled'] {
+	color: var(--gray-light-txt--color) !important;
+	background-color: #fafafa !important;
+	border-color: #ccc !important;
+}
+
+.ui-button-box .jsdialog.ui-pushbutton:not(.hidden) {
+	display: initial !important;
+}
+
+/* button box */
+
+.jsdialog.ui-button-box-right {
+	display: flex;
+	float: right;
+}
+
+.jsdialog.ui-button-box-left {
+	float: left;
+}

@@ -3,13 +3,14 @@
  * L.WOPI contains WOPI related logic
  */
 
-/* global $ w2ui toolbarUpMobileItems _ */
+/* global w2ui _ app */
 L.Map.WOPI = L.Handler.extend({
 	// If the CheckFileInfo call fails on server side, we won't have any PostMessageOrigin.
 	// So use '*' because we still needs to send 'close' message to the parent frame which
 	// wouldn't be possible otherwise.
-	PostMessageOrigin: '*',
+	PostMessageOrigin: window.postmessageOriginExt || '*',
 	BaseFileName: '',
+	BreadcrumbDocName: '',
 	DocumentLoadedTime: false,
 	HidePrintOption: false,
 	HideSaveOption: false,
@@ -19,7 +20,6 @@ L.Map.WOPI = L.Handler.extend({
 	DisableExport: false,
 	DisableCopy: false,
 	DisableInactiveMessages: false,
-	DocumentOwner: false,
 	DownloadAsPostMessage: false,
 	UserCanNotWriteRelative: true,
 	EnableInsertRemoteImage: false,
@@ -28,7 +28,6 @@ L.Map.WOPI = L.Handler.extend({
 	CallPythonScriptSource: null,
 	SupportsRename: false,
 	UserCanRename: false,
-	UserExtraInfo: {},
 
 	_appLoadedConditions: {
 		docloaded: false,
@@ -53,6 +52,30 @@ L.Map.WOPI = L.Handler.extend({
 
 		this._map.on('wopiprops', this._setWopiProps, this);
 		L.DomEvent.on(window, 'message', this._postMessageListener, this);
+
+		this._map.on('updateviewslist', function() { this._postViewsMessage('Views_List'); }, this);
+
+		if (!window.ThisIsAMobileApp) {
+			// override the window.open to issue a postMessage, so that
+			// it is possible to handle the hyperlink in the integration
+			var that = this;
+			window.open = function (open) {
+				return function (url, name, features) {
+					that._map.fire('postMessage', {
+						msgId: 'UI_Hyperlink',
+						args: {
+							Url: url,
+							Name: name,
+							Features: features
+						}
+					});
+					if (!that._map._disableDefaultAction['UI_Hyperlink'])
+						return open.call(window, url, name, features);
+					else
+						return null;
+				};
+			}(window.open);
+		}
 	},
 
 	removeHooks: function() {
@@ -65,6 +88,8 @@ L.Map.WOPI = L.Handler.extend({
 
 		this._map.off('wopiprops', this._setWopiProps, this);
 		L.DomEvent.off(window, 'message', this._postMessageListener, this);
+
+		this._map.off('updateviewslist');
 	},
 
 	_setWopiProps: function(wopiInfo) {
@@ -74,6 +99,9 @@ L.Map.WOPI = L.Handler.extend({
 		}
 
 		this.BaseFileName = wopiInfo['BaseFileName'];
+		this.BreadcrumbDocName = wopiInfo['BreadcrumbDocName'];
+		if (this.BreadcrumbDocName === undefined)
+			this.BreadcrumbDocName = this.BaseFileName;
 		this.HidePrintOption = !!wopiInfo['HidePrintOption'];
 		this.HideSaveOption = !!wopiInfo['HideSaveOption'];
 		this.HideExportOption = !!wopiInfo['HideExportOption'];
@@ -88,8 +116,6 @@ L.Map.WOPI = L.Handler.extend({
 		this.SupportsRename = !!wopiInfo['SupportsRename'];
 		this.UserCanRename = !!wopiInfo['UserCanRename'];
 		this.EnableShare = !!wopiInfo['EnableShare'];
-		this.UserExtraInfo = (wopiInfo['UserExtraInfo'] !== undefined) ? wopiInfo['UserExtraInfo'] : {};
-		this.DocumentOwner = (wopiInfo['DocumentOwner'] === true);
 		if (wopiInfo['HideUserList'])
 			this.HideUserList = wopiInfo['HideUserList'].split(',');
 
@@ -141,105 +167,127 @@ L.Map.WOPI = L.Handler.extend({
 		this._map.fire('postMessage', {msgId: 'App_LoadingStatus', args: {Status: 'Document_Loaded', DocumentLoadedTime: this.DocumentLoadedTime}});
 	},
 
-	_postMessageListener: function(e) {
-		if (!window.WOPIPostmessageReady) {
-			return;
+	// Naturally we set a CSP to catch badness, but check here as well.
+	// Checking whether a message came from our iframe's parents is
+	// un-necessarily difficult.
+	_allowMessageOrigin: function(e) {
+		// cache - to avoid regexps.
+		if (this._cachedGoodOrigin && this._cachedGoodOrigin === e.origin)
+			return true;
+
+		// e.origin === 'null' when sandboxed (i.e. when the parent is a file on local filesystem).
+		if (e.origin === 'null')
+			return true;
+		try {
+			if (e.origin === window.parent.origin)
+				return true;
+		} catch (secErr) { // security error de-referencing window.parent.origin.
 		}
 
-		var msg = JSON.parse(e.data);
-		if (msg.MessageId === 'Host_PostmessageReady') {
-			// We already have a listener for this in loleaflet.html, so ignore it here
+		// sent from the server
+		var i;
+		if (!this._allowedOrigins && window.frameAncestors)
+		{
+			var ancestors = window.frameAncestors.trim().split(' ');
+			this._allowedOrigins = ancestors;
+			// convert to JS regexps from localhost:* to https*://localhost:.*
+			for (i = 0; i < ancestors.length; i++) {
+				this._allowedOrigins[i] = '(http|https)://' + ancestors[i].replace(/:\*/, ':?.*');
+			}
+		}
+
+		if (this._allowedOrigins)
+		{
+			for (i = 0; i < this._allowedOrigins.length; i++) {
+				if (e.origin.match(this._allowedOrigins[i]))
+				{
+					this._cachedGoodOrigin = e.origin;
+					return true;
+				}
+			}
+		}
+
+		// chrome only
+		if (window.location.ancestorOrigins &&
+		    window.location.ancestorOrigins.contains(e.origin))
+		{
+			this._cachedGoodOrigin = e.origin;
+			return true;
+		}
+
+		return false;
+	},
+
+	_postMessageListener: function(e) {
+		if (!this._allowMessageOrigin(e))
+			return;
+
+		var msg;
+		try {
+			msg = JSON.parse(e.data);
+		} catch (e) {
+			window.app.console.error(e);
 			return;
 		}
 
 		// allow closing documents before they are completely loaded
 		if (msg.MessageId === 'Close_Session') {
-			this._map._socket.sendMessage('closedocument');
+			app.socket.sendMessage('closedocument');
 			return;
 		}
 
-		// For all other messages, warn if trying to interact before we are completely loaded
-		if (!this._appLoaded) {
-			console.error('LibreOffice Online not loaded yet. Listen for App_LoadingStatus (Document_Loaded) event before using PostMessage API. Ignoring post message \'' + msg.MessageId + '\'.');
-			return;
-		}
-
-		if (msg.MessageId === 'Insert_Button') {
-			if (msg.Values) {
-				if (msg.Values.id && !w2ui['editbar'].get(msg.Values.id)
-				    && msg.Values.imgurl) {
-					if (this._map._permission === 'edit') {
-						// add the css rule for the image
-						var style = $('html > head > style');
-						if (style.length == 0)
-							$('html > head').append('<style/>');
-						$('html > head > style').append('.w2ui-icon.' + msg.Values.id + '{background: url(' + msg.Values.imgurl + ') no-repeat center !important; }');
-
-						// add the item to the toolbar
-						w2ui['editbar'].insert('save', [
-							{
-								type: 'button',
-								id: msg.Values.id,
-								img: msg.Values.id,
-								hint: _(msg.Values.hint), /* "Try" to localize ! */
-								postmessage: true /* Notify the host back when button is clicked */
-							}
-						]);
-						if (msg.Values.mobile)
-						{
-							// Add to our list of items to preserve when in mobile mode
-							// FIXME: Wrap the toolbar in a class so that we don't make use
-							// global variables and functions like this
-							var idx = toolbarUpMobileItems.indexOf('save');
-							toolbarUpMobileItems.splice(idx, 0, msg.Values.id);
-						}
-					}
-					else if (this._map._permission === 'readonly') {
-						// Just add a menu entry for it
-						this._map.fire('addmenu', {id: msg.Values.id, label: msg.Values.hint});
-					}
-				}
-			}
-		}
-		if (msg.MessageId === 'Show_Button' || msg.MessageId === 'Hide_Button') {
+		// Exception: UI modification can be done before WOPIPostmessageReady was fullfiled
+		if (msg.MessageId === 'Show_Button' || msg.MessageId === 'Hide_Button' || msg.MessageId === 'Remove_Button') {
 			if (!msg.Values) {
-				console.error('Property "Values" not set');
+				window.app.console.error('Property "Values" not set');
+				return;
+			}
+
+			if (!msg.Values.id) {
+				window.app.console.error('Property "Values.id" not set');
+				return;
+			}
+			var show = msg.MessageId === 'Show_Button';
+			this._map.uiManager.showButton(msg.Values.id, show);
+		}
+		else if (msg.MessageId === 'Remove_Statusbar_Element') {
+			if (!msg.Values) {
+				window.app.console.error('Property "Values" not set');
 				return;
 			}
 			if (!msg.Values.id) {
-				console.error('Property "Values.id" not set');
+				window.app.console.error('Property "Values.id" not set');
 				return;
 			}
-			if (this._map._permission !== 'edit') {
-				console.log('No toolbar in readonly mode - ignoring request.');
+			if (!w2ui['actionbar'].get(msg.Values.id)) {
+				window.app.console.error('Statusbar element with id "' + msg.Values.id + '" not found.');
 				return;
 			}
-			if (!w2ui['editbar'].get(msg.Values.id)) {
-				console.error('Toolbar button with id "' + msg.Values.id + '" not found.');
-				return;
-			}
-			if (msg.MessageId === 'Show_Button') {
-				w2ui['editbar'].show(msg.Values.id);
-			} else {
-				w2ui['editbar'].hide(msg.Values.id);
-			}
+			w2ui['actionbar'].remove(msg.Values.id);
+		}
+		else if (msg.MessageId === 'Show_Menubar') {
+			this._map.uiManager.showMenubar();
+		}
+		else if (msg.MessageId === 'Hide_Menubar') {
+			this._map.uiManager.hideMenubar();
+		}
+		else if (msg.MessageId === 'Show_Ruler') {
+			this._map.uiManager.showRuler();
+		}
+		else if (msg.MessageId === 'Hide_Ruler') {
+			this._map.uiManager.hideRuler();
 		}
 		else if (msg.MessageId === 'Show_Menu_Item' || msg.MessageId === 'Hide_Menu_Item') {
 			if (!msg.Values) {
-				console.error('Property "Values" not set');
+				window.app.console.error('Property "Values" not set');
 				return;
 			}
 			if (!msg.Values.id) {
-				console.error('Property "Values.id" not set');
+				window.app.console.error('Property "Values.id" not set');
 				return;
 			}
-			if (this._map._permission !== 'edit') {
-				console.log('Readonly mode - ignoring Hide_Menu_Item request.');
-				return;
-			}
-
 			if (!this._map.menubar || !this._map.menubar.hasItem(msg.Values.id)) {
-				console.error('Menu item with id "' + msg.Values.id + '" not found.');
+				window.app.console.error('Menu item with id "' + msg.Values.id + '" not found.');
 				return;
 			}
 
@@ -249,27 +297,57 @@ L.Map.WOPI = L.Handler.extend({
 				this._map.menubar.hideItem(msg.Values.id);
 			}
 		}
-		else if (msg.MessageId === 'Set_Settings') {
+		else if (msg.MessageId === 'Insert_Button' &&
+			msg.Values && msg.Values.id && msg.Values.imgurl) {
+			this._map.uiManager.insertButton(msg.Values);
+		}
+		else if (msg.MessageId === 'Disable_Default_UIAction') {
+			// Disable the default handler and action for a UI command.
+			// When set to true, the given UI command will issue a postmessage
+			// only. For example, UI_Save will be issued for invoking the save
+			// command (from the menu, toolbar, or keyboard shortcut) and no
+			// action will take place if 'UI_Save' is disabled via
+			// the Disable_Default_UIAction command.
+			if (msg.Values && msg.Values.action && msg.Values.disable !== undefined) {
+				this._map._disableDefaultAction[msg.Values.action] = msg.Values.disable;
+			}
+		}
+
+		// All following actions must be done after initialization is completed.
+		if (!window.WOPIPostmessageReady) {
+			return;
+		}
+
+		if (msg.MessageId === 'Host_PostmessageReady') {
+			// We already have a listener for this in loleaflet.html, so ignore it here
+			return;
+		}
+
+		if (msg.MessageId === 'Grab_Focus') {
+			this._map.makeActive();
+			return;
+		}
+
+		// allow closing documents before they are completely loaded
+		if (msg.MessageId === 'Close_Session') {
+			app.socket.sendMessage('closedocument');
+			return;
+		}
+
+		// For all other messages, warn if trying to interact before we are completely loaded
+		if (!this._appLoaded) {
+			window.app.console.error('OxOffice Online not loaded yet. Listen for App_LoadingStatus (Document_Loaded) event before using PostMessage API. Ignoring post message \'' + msg.MessageId + '\'.');
+			return;
+		}
+
+		if (msg.MessageId === 'Set_Settings') {
 			if (msg.Values) {
 				var alwaysActive = msg.Values.AlwaysActive;
 				this._map.options.alwaysActive = !!alwaysActive;
 			}
 		}
 		else if (msg.MessageId === 'Get_Views') {
-			var getMembersRespVal = [];
-			for (var viewInfoIdx in this._map._viewInfo) {
-				getMembersRespVal.push({
-					ViewId: viewInfoIdx,
-					UserName: this._map._viewInfo[viewInfoIdx].username,
-					UserId: this._map._viewInfo[viewInfoIdx].userid,
-					UserExtraInfo: this._map._viewInfo[viewInfoIdx].userextrainfo,
-					Color: this._map._viewInfo[viewInfoIdx].color,
-					ReadOnly: this._map._viewInfo[viewInfoIdx].readonly,
-					IsCurrentView: this._map._docLayer._viewId === parseInt(viewInfoIdx, 10)
-				});
-			}
-
-			this._postMessage({msgId: 'Get_Views_Resp', args: getMembersRespVal});
+			this._postViewsMessage('Get_Views_Resp');
 		}
 		else if (msg.MessageId === 'Action_Save') {
 			var dontTerminateEdit = msg.Values && msg.Values['DontTerminateEdit'];
@@ -279,6 +357,9 @@ L.Map.WOPI = L.Handler.extend({
 			this._notifySave = msg.Values && msg.Values['Notify'];
 
 			this._map.save(dontTerminateEdit, dontSaveIfUnmodified, extendedData);
+		}
+		else if (msg.MessageId === 'Action_Close') {
+			this._map.remove();
 		}
 		else if (msg.MessageId === 'Action_Print') {
 			this._map.print();
@@ -295,6 +376,12 @@ L.Map.WOPI = L.Handler.extend({
 		else if (msg.MessageId == 'Action_InsertGraphic') {
 			if (msg.Values) {
 				this._map.insertURL(msg.Values.url);
+			}
+		}
+		else if (msg.MessageId == 'Action_Paste') {
+			if (msg.Values && msg.Values.Mimetype && msg.Values.Data) {
+				var blob = new Blob(['paste mimetype=' + msg.Values.Mimetype + '\n', msg.Values.Data]);
+				app.socket.sendMessage(blob);
 			}
 		}
 		else if (msg.MessageId === 'Action_ShowBusy') {
@@ -319,19 +406,9 @@ L.Map.WOPI = L.Handler.extend({
 		else if (msg.MessageId === 'Action_SaveAs') {
 			if (msg.Values) {
 				if (msg.Values.Filename !== null && msg.Values.Filename !== undefined) {
+					this._notifySave = msg.Values['Notify'];
 					this._map.showBusy(_('Creating copy...'), false);
 					this._map.saveAs(msg.Values.Filename);
-				}
-			}
-		}
-		else if (msg.MessageId === 'Action_SaveAsPassword') {
-			if (msg.Values) {
-				if (msg.Values.Filename !== null && msg.Values.Filename !== undefined &&
-					msg.Values.Password !== null && msg.Values.Password !== undefined
-					) {
-					console.debug('Action_SaveAsPassword');
-					this._map.showBusy(_('Creating copy...'), false);
-					this._map.saveAsPassword(msg.Values.Filename, msg.Values.Password);
 				}
 			}
 		}
@@ -345,18 +422,23 @@ L.Map.WOPI = L.Handler.extend({
 		}
 		else if (msg.MessageId === 'Host_VersionRestore') {
 			if (msg.Values.Status === 'Pre_Restore') {
-				this._map._socket.sendMessage('versionrestore prerestore');
+				app.socket.sendMessage('versionrestore prerestore');
 			}
 		}
 		else if (msg.MessageId === 'CallPythonScript' &&
-			 msg.hasOwnProperty('ScriptFile') &&
-			 msg.hasOwnProperty('Function')) {
+			 Object.prototype.hasOwnProperty.call(msg, 'ScriptFile') &&
+			 Object.prototype.hasOwnProperty.call(msg, 'Function')) {
 			this._map.CallPythonScriptSource = e.source;
 			this._map.sendUnoCommand('vnd.sun.star.script:' + msg.ScriptFile + '$' + msg.Function + '?language=Python&location=share', msg.Values);
 		}
 		else if (msg.MessageId === 'Action_RemoveView') {
 			if (msg.Values && msg.Values.ViewId !== null && msg.Values.ViewId !== undefined) {
-				this._map._socket.sendMessage('removesession ' + msg.Values.ViewId);
+				app.socket.sendMessage('removesession ' + msg.Values.ViewId);
+			}
+		}
+		else if (msg.MessageId === 'Action_ChangeUIMode') {
+			if (msg.Values && msg.Values.Mode !== null && msg.Values.Mode !== undefined) {
+				this._map.fire('changeuimode', {mode: msg.Values.Mode, force: false});
 			}
 		}
 	},
@@ -381,6 +463,23 @@ L.Map.WOPI = L.Handler.extend({
 			};
 			window.parent.postMessage(JSON.stringify(msg), this.PostMessageOrigin);
 		}
+	},
+
+	_postViewsMessage: function(messageId) {
+		var getMembersRespVal = [];
+		for (var viewInfoIdx in this._map._viewInfo) {
+			getMembersRespVal.push({
+				ViewId: viewInfoIdx,
+				UserName: this._map._viewInfo[viewInfoIdx].username,
+				UserId: this._map._viewInfo[viewInfoIdx].userid,
+				UserExtraInfo: this._map._viewInfo[viewInfoIdx].userextrainfo,
+				Color: this._map._viewInfo[viewInfoIdx].color,
+				ReadOnly: this._map._viewInfo[viewInfoIdx].readonly,
+				IsCurrentView: this._map._docLayer._viewId === parseInt(viewInfoIdx, 10)
+			});
+		}
+
+		this._postMessage({msgId: messageId, args: getMembersRespVal});
 	}
 });
 

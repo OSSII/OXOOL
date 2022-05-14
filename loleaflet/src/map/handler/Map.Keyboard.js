@@ -1,9 +1,14 @@
 /* -*- js-indent-level: 8 -*- */
 /*
  * L.Map.Keyboard is handling keyboard interaction with the map, enabled by default.
+ *
+ * It handles keyboard interactions which are NOT text input, including those which
+ * don't require edit permissions (e.g. page scroll). Text input is handled
+ * at TextInput.
  */
 
-/* global w2ui */
+/* global app vex UNOKey UNOModifier _ */
+
 L.Map.mergeOptions({
 	keyboard: true,
 	keyboardPanOffset: 20,
@@ -12,106 +17,99 @@ L.Map.mergeOptions({
 
 L.Map.Keyboard = L.Handler.extend({
 
-	keyModifier: {
-		shift: 4096,
-		ctrl: 8192,
-		alt: 16384,
-		ctrlMac: 32768
-	},
-
 	keymap: {
-		8   : 1283, // backspace	: BACKSPACE
-		9   : 1282, // tab 		: TAB
-		13  : 1280, // enter 		: RETURN
+		8   : UNOKey.BACKSPACE,
+		9   : UNOKey.TAB,
+		13  : UNOKey.RETURN,
 		16  : null, // shift		: UNKOWN
 		17  : null, // ctrl		: UNKOWN
 		18  : null, // alt		: UNKOWN
 		19  : null, // pause/break	: UNKOWN
 		20  : null, // caps lock	: UNKOWN
-		27  : 1281, // escape		: ESCAPE
-		32  : 1284, // space		: SPACE
-		33  : 1030, // page up		: PAGEUP
-		34  : 1031, // page down	: PAGEDOWN
-		35  : 1029, // end		: END
-		36  : 1028, // home		: HOME
-		37  : 1026, // left arrow	: LEFT
-		38  : 1025, // up arrow		: UP
-		39  : 1027, // right arrow	: RIGHT
-		40  : 1024, // down arrow	: DOWN
-		45  : 1285, // insert		: INSERT
-		46  : 1286, // delete		: DELETE
-		48  : 256,  // 0		: NUM0
-		49  : 257,  // 1		: NUM1
-		50  : 258,  // 2		: NUM2
-		51  : 259,  // 3		: NUM3
-		52  : 260,  // 4		: NUM4
-		53  : 261,  // 5		: NUM5
-		54  : 262,  // 6		: NUM6
-		55  : 263,  // 7		: NUM7
-		56  : 264,  // 8		: NUM8
-		57  : 265,  // 9		: NUM9
-		65  : 512,  // A		: A
-		66  : 513,  // B		: B
-		67  : 514,  // C		: C
-		68  : 515,  // D		: D
-		69  : 516,  // E		: E
-		70  : 517,  // F		: F
-		71  : 518,  // G		: G
-		72  : 519,  // H		: H
-		73  : 520,  // I		: I
-		74  : 521,  // J		: J
-		75  : 522,  // K		: K
-		76  : 523,  // L		: L
-		77  : 524,  // M		: M
-		78  : 525,  // N		: N
-		79  : 526,  // O		: O
-		80  : 527,  // P		: P
-		81  : 528,  // Q		: Q
-		82  : 529,  // R		: R
-		83  : 530,  // S		: S
-		84  : 531,  // T		: T
-		85  : 532,  // U		: U
-		86  : 533,  // V		: V
-		87  : 534,  // W		: W
-		88  : 535,  // X		: X
-		89  : 536,  // Y		: Y
-		90  : 537,  // Z		: Z
+		27  : UNOKey.ESCAPE,
+		32  : UNOKey.SPACE,
+		33  : UNOKey.PAGEUP,
+		34  : UNOKey.PAGEDOWN,
+		35  : UNOKey.END,
+		36  : UNOKey.HOME,
+		37  : UNOKey.LEFT,
+		38  : UNOKey.UP,
+		39  : UNOKey.RIGHT,
+		40  : UNOKey.DOWN,
+		45  : UNOKey.INSERT,
+		46  : UNOKey.DELETE,
+		48  : UNOKey.NUM0,
+		49  : UNOKey.NUM1,
+		50  : UNOKey.NUM2,
+		51  : UNOKey.NUM3,
+		52  : UNOKey.NUM4,
+		53  : UNOKey.NUM5,
+		54  : UNOKey.NUM6,
+		55  : UNOKey.NUM7,
+		56  : UNOKey.NUM8,
+		57  : UNOKey.NUM9,
+		65  : UNOKey.A,
+		66  : UNOKey.B,
+		67  : UNOKey.C,
+		68  : UNOKey.D,
+		69  : UNOKey.E,
+		70  : UNOKey.F,
+		71  : UNOKey.G,
+		72  : UNOKey.H,
+		73  : UNOKey.I,
+		74  : UNOKey.J,
+		75  : UNOKey.K,
+		76  : UNOKey.L,
+		77  : UNOKey.M,
+		78  : UNOKey.N,
+		79  : UNOKey.O,
+		80  : UNOKey.P,
+		81  : UNOKey.Q,
+		82  : UNOKey.R,
+		83  : UNOKey.S,
+		84  : UNOKey.T,
+		85  : UNOKey.U,
+		86  : UNOKey.V,
+		87  : UNOKey.W,
+		88  : UNOKey.X,
+		89  : UNOKey.Y,
+		90  : UNOKey.Z,
 		91  : null, // left window key	: UNKOWN
 		92  : null, // right window key	: UNKOWN
 		93  : null, // select key	: UNKOWN
-		96  : 256,  // numpad 0		: NUM0
-		97  : 257,  // numpad 1		: NUM1
-		98  : 258,  // numpad 2		: NUM2
-		99  : 259,  // numpad 3		: NUM3
-		100 : 260,  // numpad 4		: NUM4
-		101 : 261,  // numpad 5		: NUM5
-		102 : 262,  // numpad 6		: NUM6
-		103 : 263,  // numpad 7		: NUM7
-		104 : 264,  // numpad 8		: NUM8
-		105 : 265,  // numpad 9		: NUM9
-		106 : 1289, // multiply		: MULTIPLY
-		107 : 1287, // add		: ADD
-		109 : 1288, // subtract		: SUBTRACT
-		110 : 1309, // decimal point	: DECIMAL
-		111 : 1290, // divide		: DIVIDE
-		112 : 768,  // f1		: F1
-		113 : 769,  // f2		: F2
-		114 : 770,  // f3		: F3
-		115 : 771,  // f4		: F4
-		116 : 772,  // f5		: F5
-		117 : 773,  // f6		: F6
-		118 : 774,  // f7		: F7
-		119 : 775,  // f8		: F8
-		120 : 776,  // f9		: F9
-		121 : 777,  // f10		: F10
-		122 : 778,  // f11		: F11
-		144 : 1313, // num lock		: NUMLOCK
-		145 : 1314, // scroll lock	: SCROLLLOCK
-		173 : 1288, // dash		: DASH (on Firefox)
-		186 : 1317, // semi-colon	: SEMICOLON
-		187 : 1295, // equal sign	: EQUAL
-		188 : 1292, // comma		: COMMA
-		189 : 1288, // dash		: DASH
+		96  : UNOKey.NUM0,
+		97  : UNOKey.NUM1,
+		98  : UNOKey.NUM2,
+		99  : UNOKey.NUM3,
+		100 : UNOKey.NUM4,
+		101 : UNOKey.NUM5,
+		102 : UNOKey.NUM6,
+		103 : UNOKey.NUM7,
+		104 : UNOKey.NUM8,
+		105 : UNOKey.NUM9,
+		106 : UNOKey.MULTIPLY,
+		107 : UNOKey.ADD,
+		109 : UNOKey.SUBTRACT,
+		110 : UNOKey.DECIMAL,
+		111 : UNOKey.DIVIDE,
+		112 : UNOKey.F1,
+		113 : UNOKey.F2,
+		114 : UNOKey.F3,
+		115 : UNOKey.F4,
+		116 : UNOKey.F5,
+		117 : UNOKey.F6,
+		118 : UNOKey.F7,
+		119 : UNOKey.F8,
+		120 : UNOKey.F9,
+		121 : UNOKey.F10,
+		122 : UNOKey.F11,
+		144 : UNOKey.NUMLOCK,
+		145 : UNOKey.SCROLLLOCK,
+		173 : UNOKey.SUBTRACT,
+		186 : UNOKey.SEMICOLON,
+		187 : UNOKey.EQUAL,
+		188 : UNOKey.COMMA,
+		189 : UNOKey.SUBTRACT,
 		190 : null, // period		: UNKOWN
 		191 : null, // forward slash	: UNKOWN
 		192 : null, // grave accent	: UNKOWN
@@ -124,7 +122,7 @@ L.Map.Keyboard = L.Handler.extend({
 	handleOnKeyDownKeys: {
 		// these keys need to be handled on keydown in order for them
 		// to work on chrome
-		8   : true, // backspace
+		// Backspace and Delete are handled at TextInput's 'beforeinput' handler.
 		9   : true, // tab
 		19  : true, // pause/break
 		20  : true, // caps lock
@@ -138,7 +136,6 @@ L.Map.Keyboard = L.Handler.extend({
 		39  : true, // right arrow
 		40  : true, // down arrow
 		45  : true, // insert
-		46  : true, // delete
 		113 : true  // f2
 	},
 
@@ -171,41 +168,23 @@ L.Map.Keyboard = L.Handler.extend({
 		if (container.tabIndex === -1) {
 			container.tabIndex = '0';
 		}
-		this._map.on('updatepermission', this.updatePermission, this); // Check Permission
-		this._map.on('mousedown', this._onMouseDown, this);
+
+		L.DomEvent.on(this._map.getContainer(), 'keydown keyup keypress', this._onKeyDown, this);
+		L.DomEvent.on(window.document, 'keydown', this._globalKeyEvent, this);
 	},
 
 	removeHooks: function () {
-		this._map.off('mousedown', this._onMouseDown, this);
-		this._map.off('keydown keyup keypress', this._onKeyDown, this);
-		this._map.off('compositionstart compositionupdate compositionend textInput', this._onIME, this);
+		L.DomEvent.off(this._map.getContainer(), 'keydown keyup keypress', this._onKeyDown, this);
+		L.DomEvent.off(window.document, 'keydown', this._globalKeyEvent, this);
 	},
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// Keyboard can only be operated in edit mode.
-	updatePermission: function (e) {
-		if (e.perm === 'edit') {
-			this._map.on('keydown keyup keypress', this._onKeyDown, this);
-			this._map.on('compositionstart compositionupdate compositionend textInput', this._onIME, this);
-		}
-	},
-
-	/*
-	 * Returns true whenever the key event shall be ignored.
-	 * This means shift+insert and shift+delete (or "insert or delete when holding
-	 * shift down"). Those events are handled elsewhere to trigger "cut" and
-	 * "paste" events, and need to be ignored in order to avoid double-handling them.
-	 */
-	_ignoreKeyEvent: function(e) {
-		var shift = e.originalEvent.shiftKey;
-		if ('key' in e.originalEvent) {
-			var key = e.originalEvent.key;
-			return (shift && (key === 'Delete' || key === 'Insert'));
-		} else {
-			// keyCode is not reliable in AZERTY/DVORAK keyboard layouts, is used
-			// only as a fallback for MSIE8.
-			var keyCode = e.originalEvent.keyCode;
-			return (shift && (keyCode === 45 || keyCode === 46));
+	_ignoreKeyEvent: function(ev) {
+		var shift = ev.shiftKey ? UNOModifier.SHIFT : 0;
+		if (shift && (ev.keyCode === 45 || ev.keyCode === 46)) {
+			// don't handle shift+insert, shift+delete
+			// These are converted to 'cut', 'paste' events which are
+			// automatically handled by us, so avoid double-handling
+			return true;
 		}
 	},
 
@@ -241,52 +220,77 @@ L.Map.Keyboard = L.Handler.extend({
 		}
 	},
 
-	_onMouseDown: function () {
-		this._map.notifyActive();
-		if (this._map._permission === 'edit') {
-			return;
-		}
-		this._map.focus();
-	},
-
 	// Convert javascript key codes to UNO key codes.
 	_toUNOKeyCode: function (keyCode) {
 		return this.keymap[keyCode] || keyCode;
 	},
 
-	_onKeyDown: function (e, keyEventFn, compEventFn, inputEle) {
+	// _onKeyDown - called only as a DOM event handler
+	// Calls _handleKeyEvent(), but only if the event doesn't have
+	// a charCode property (set to something different than 0) - that ignores
+	// any 'beforeinput', 'keypress' and 'input' events that would add
+	// printable characters. Those are handled by TextInput.js.
+	_onKeyDown: function (ev) {
+		if (this._map.uiManager.isUIBlocked())
+			return;
+
+		var completeEvent = app.socket.createCompleteTraceEvent('L.Map.Keyboard._onKeyDown', { type: ev.type, charCode: ev.charCode });
+		window.app.console.log('keyboard handler:', ev.type, ev.key, ev.charCode, this._expectingInput, ev);
+
+		if (ev.charCode == 0) {
+			this._handleKeyEvent(ev);
+		}
+		if (this._map._docLayer)
+			if (ev.shiftKey && ev.type === 'keydown')
+				this._map._docLayer.shiftKeyPressed = true;
+			else if (ev.keyCode === 16 && ev.type === 'keyup')
+				this._map._docLayer.shiftKeyPressed = false;
+		if (completeEvent)
+			completeEvent.finish();
+	},
+
+	_globalKeyEvent: function(ev) {
+		if (this._map.uiManager.isUIBlocked())
+			return;
+
+		if (this._map.jsdialog && this._map.jsdialog.hasDialogOpened()
+			&& this._map.jsdialog.handleKeyEvent(ev)) {
+			ev.preventDefault();
+			return;
+		}
+	},
+
+	// _handleKeyEvent - checks if the given keyboard event shall trigger
+	// a message to oxoolwsd, and calls the given keyEventFn(type, charcode, keycode)
+	// callback if so.
+	// Called from _onKeyDown
+	_handleKeyEvent: function (ev, keyEventFn) {
+		if (this._map.uiManager.isUIBlocked())
+			return;
+
 		this._map.notifyActive();
 		if (this._map.slideShow && this._map.slideShow.fullscreen) {
 			return;
 		}
 		var docLayer = this._map._docLayer;
-		var isDocumentInput = false; // 預設按鍵來源不是文件本身(例如:dialog)
 		if (!keyEventFn) {
 			// default is to post keyboard events on the document
-			keyEventFn = L.bind(docLayer._postKeyboardEvent, docLayer);
-			isDocumentInput = true; // 未指定按鍵處理，才能當作按鍵來源是文件本身
+			keyEventFn = L.bind(docLayer.postKeyboardEvent, docLayer);
 		}
-		if (!compEventFn) {
-			// document has winid=0
-			compEventFn = L.bind(docLayer._postCompositionEvent, docLayer, 0 /* winid */);
-		}
-		if (!inputEle) {
-			inputEle = this._map._clipboardContainer.activeElement();
-		}
+
 		this.modifier = 0;
-		var shift = e.originalEvent.shiftKey ? this.keyModifier.shift : 0;
-		var ctrl = e.originalEvent.ctrlKey ? this.keyModifier.ctrl : 0;
-		var alt = e.originalEvent.altKey ? this.keyModifier.alt : 0;
-		var cmd = e.originalEvent.metaKey ? this.keyModifier.ctrl : 0;
-		var location = e.originalEvent.location;
-		this._keyHandled = this._keyHandled || false;
+		var shift = ev.shiftKey ? UNOModifier.SHIFT : 0;
+		var ctrl = ev.ctrlKey ? UNOModifier.CTRL : 0;
+		var alt = ev.altKey ? UNOModifier.ALT : 0;
+		var cmd = ev.metaKey ? UNOModifier.CTRL : 0;
+		var location = ev.location;
 		this.modifier = shift | ctrl | alt | cmd;
 
 		// On Windows, pressing AltGr = Alt + Ctrl
 		// Presence of AltGr is detected if previous Ctrl + Alt 'location' === 2 (i.e right)
 		// because Ctrl + Alt + <some char> won't give any 'location' information.
 		if (ctrl && alt) {
-			if (e.type === 'keydown' && location === 2) {
+			if (ev.type === 'keydown' && location === 2) {
 				this._prevCtrlAltLocation = location;
 				return;
 			}
@@ -296,7 +300,7 @@ L.Map.Keyboard = L.Handler.extend({
 
 			if (this._prevCtrlAltLocation === 2 && location === 0) {
 				// and we got the final character
-				if (e.type === 'keypress') {
+				if (ev.type === 'keypress') {
 					ctrl = alt = this.modifier = 0;
 				}
 				else {
@@ -307,26 +311,15 @@ L.Map.Keyboard = L.Handler.extend({
 		}
 
 		if (ctrl || cmd) {
-			if (this._handleCtrlCommand(e)) {
+			if (this._handleCtrlCommand(ev)) {
 				return;
 			}
 		}
 
-		// 按鍵來源是文件本身才執行 hotkey 攔截
-		if (isDocumentInput && this._map.executeHotkey(e)) {
-			return;
-		}
+		var charCode = ev.charCode;
+		var keyCode = ev.keyCode;
 
-		var charCode = e.originalEvent.charCode;
-		var keyCode = e.originalEvent.keyCode;
-
-		if (!this._isComposing && e.type === 'keyup') {
-			// not compositing and keyup, clear the input so it is ready
-			// for next word (or char only)
-			inputEle.value = '';
-		}
-
-		if ((this.modifier == this.keyModifier.alt || this.modifier == this.keyModifier.shift + this.keyModifier.alt) &&
+		if ((this.modifier == UNOModifier.ALT || this.modifier == UNOModifier.SHIFT + UNOModifier.ALT) &&
 		    keyCode >= 48) {
 			// Presumably a Mac or iOS client accessing a "special character". Just ignore the alt modifier.
 			// But don't ignore it for Alt + non-printing keys.
@@ -335,9 +328,9 @@ L.Map.Keyboard = L.Handler.extend({
 		}
 
 		// handle help - F1
-		if (e.type === 'keydown' && !shift && !ctrl && !alt && !cmd && keyCode === 112) {
-			this._map.showHelp();
-			e.originalEvent.preventDefault();
+		if (ev.type === 'keydown' && !shift && !ctrl && !alt && !cmd && keyCode === 112) {
+			this._map.executeAllowedCommand('online-help');
+			ev.preventDefault();
 			return;
 		}
 
@@ -345,32 +338,32 @@ L.Map.Keyboard = L.Handler.extend({
 
 		if (this.modifier) {
 			unoKeyCode |= this.modifier;
-			if (e.type !== 'keyup' && (this.modifier !== shift || (keyCode === 32 && !docLayer._isCursorVisible))) {
+			if (ev.type !== 'keyup' && (this.modifier !== shift || (keyCode === 32 && !this._map._isCursorVisible))) {
 				keyEventFn('input', charCode, unoKeyCode);
-				e.originalEvent.preventDefault();
+				ev.preventDefault();
 				return;
 			}
 		}
 
-		if (this._map._permission === 'edit') {
+		if (this._map.stateChangeHandler._items['.uno:SlideMasterPage'] === 'true') {
+			ev.preventDefault();
+			return;
+		}
+
+		if (this._map.isPermissionEdit()) {
 			docLayer._resetPreFetching();
 
-			//初始化特定的 UI 元件
-			if (unoKeyCode === 1281) {
-				this._resetUIState();
-			}
-
-			if (this._ignoreKeyEvent(e)) {
+			if (this._ignoreKeyEvent(ev)) {
 				// key ignored
 			}
-			else if (e.type === 'keydown') {
-				this._keyHandled = false;
-
+			else if (ev.type === 'keydown') {
+				// window.app.console.log(e);
 				if (this.handleOnKeyDownKeys[keyCode] && charCode === 0) {
 					keyEventFn('input', charCode, unoKeyCode);
+					ev.preventDefault();
 				}
 			}
-			else if ((e.type === 'keypress') && (!this.handleOnKeyDownKeys[keyCode] || charCode !== 0)) {
+			else if ((ev.type === 'keypress') && (!this.handleOnKeyDownKeys[keyCode] || charCode !== 0)) {
 				if (charCode === keyCode && charCode !== 13) {
 					// Chrome sets keyCode = charCode for printable keys
 					// while LO requires it to be 0
@@ -383,227 +376,254 @@ L.Map.Keyboard = L.Handler.extend({
 				}
 
 				keyEventFn('input', charCode, unoKeyCode);
-				this._keyHandled = true;
 			}
-			else if (e.type === 'keyup') {
-				keyEventFn('up', charCode, unoKeyCode);
-				this._keyHandled = true;
+			else if (ev.type === 'keyup') {
+				if ((this.handleOnKeyDownKeys[keyCode] && charCode === 0) ||
+				    (this.modifier) ||
+				    unoKeyCode === UNOKey.RETURN) {
+					keyEventFn('up', charCode, unoKeyCode);
+				} else {
+					// was handled as textinput
+				}
 			}
 			if (keyCode === 9) {
 				// tab would change focus to other DOM elements
-				e.originalEvent.preventDefault();
+				ev.preventDefault();
 			}
 		}
-		else if (!this.modifier && (e.originalEvent.keyCode === 33 || e.originalEvent.keyCode === 34)) {
-			// let the scrollbar handle page up / page down when viewing
+		else if (!this.modifier && (keyCode === 33 || keyCode === 34) && ev.type === 'keydown') {
+			if (this._map._docLayer._docType === 'presentation' || this._map._docLayer._docType === 'drawing') {
+				var partToSelect = keyCode === 33 ? 'prev' : 'next';
+				this._map._docLayer._preview._scrollViewByDirection(partToSelect);
+				if (app.file.fileBasedView)
+					this._map._docLayer._checkSelectedPart();
+			}
 			return;
 		}
-		else if (e.type === 'keydown') {
-			var key = e.originalEvent.keyCode;
+		else if (!this.modifier && (keyCode === 35 || keyCode === 36) && ev.type === 'keydown') {
+			if (this._map._docLayer._docType === 'drawing' && app.file.fileBasedView === true) {
+				partToSelect = keyCode === 36 ? 0 : this._map._docLayer._parts -1;
+				this._map._docLayer._preview._scrollViewToPartPosition(partToSelect);
+				this._map._docLayer._checkSelectedPart();
+			}
+			return;
+		}
+		else if (ev.type === 'keydown') {
+			var key = ev.keyCode;
 			var map = this._map;
-			if (key in this._panKeys && !e.originalEvent.shiftKey) {
+			if (key in this._panKeys && !ev.shiftKey) {
 				if (map._panAnim && map._panAnim._inProgress) {
 					return;
 				}
 				map.fire('scrollby', {x: this._panKeys[key][0], y: this._panKeys[key][1]});
 			}
-			else if (key in this._panKeys && e.originalEvent.shiftKey &&
-					docLayer._selections.getLayers().length !== 0) {
+			else if (key in this._panKeys && ev.shiftKey &&
+					!docLayer._textCSelections.empty()) {
 				// if there is a selection and the user wants to modify it
 				keyEventFn('input', charCode, unoKeyCode);
 			}
 			else if (key in this._zoomKeys) {
-				map.setZoom(map.getZoom() + (e.shiftKey ? 3 : 1) * this._zoomKeys[key]);
+				map.setZoom(map.getZoom() + (ev.shiftKey ? 3 : 1) * this._zoomKeys[key], null, true /* animate? */);
 			}
 		}
 
-		L.DomEvent.stopPropagation(e.originalEvent);
+		L.DomEvent.stopPropagation(ev);
 	},
 
-	// Add by Firefly <firefly@ossii.com.tw>
-	// 指定 winId 的輸入法處理程序(對話框)
-	_onPrivateIME: function (e, id) {
-		switch (e.type)
-		{
-		case 'compositionstart':
-			this._isComposing = true;
-			break;
-		case 'compositionupdate':
-			this._map._docLayer._postCompositionEvent(id, 'input', e.data);
-			break;
-		case 'compositionend':
-			this._isComposing = false;
-			this._map._docLayer._postCompositionEvent(id, 'end', e.data);
-			break;
-		case 'textInput':
-			if (!this._keyHandled && !this._isComposing) {
-				this._map._docLayer._postCompositionEvent(id, 'input', e.data);
-				this._map._docLayer._postCompositionEvent(id, 'end', e.data);
-			}
-			break;
-		}
+	_isCtrlKey: function (e) {
+		if (window.ThisIsTheiOSApp || navigator.appVersion.indexOf('Mac') != -1 || navigator.userAgent.indexOf('Mac') != -1)
+			return e.metaKey;
+		else
+			return e.ctrlKey;
 	},
 
-	_onIME: function (e) {
-		this._map.notifyActive();
-		var viewId = this._map._docLayer._viewId;
-		var viewInfo = this._map._viewInfo[viewId];
-		// 是否只有自己在編輯
-		var onlyMe = false; /*(!viewInfo || Object.keys(this._map._viewInfo).length === 1);*/
-		// 輸入區容器
-		var clipboardContainer = this._map._clipboardContainer._container;
-		// 輸入區 input html element
-		var clipboard = this._map._clipboardContainer.activeElement();
-		// 實際游標所在容器
-		var cursorMarker = this._map._docLayer._cursorMarker;
-		if (e.type === 'compositionstart') {
-			this._isComposing = true; // we are starting composing with IME
-		} else if (e.type === 'compositionupdate') {
-			// 只有自己在編輯的話，就依照原來方式，送出組字資料就結束
-			if (onlyMe) {
-				this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
-				return;
-			}
-
-			// 計算組字區寬度
-			var width = e.originalEvent.data.length * 16;
-			if (width === 0) {
-				return;
-			}
-			var wpx = width + 'px';
-			var cursor;
-			if (cursorMarker) {
-				cursor = cursorMarker._container;
-			}
-
-			if (!L.DomUtil.hasClass(clipboard, 'overspot')) {
-				L.DomUtil.addClass(clipboard, 'overspot')
-			}
-			clipboard.style.width = wpx;
-
-			if (!L.DomUtil.hasClass(clipboardContainer, 'overspot')) {
-				L.DomUtil.addClass(clipboardContainer, 'overspot')
-			}
-			clipboardContainer.style.width = wpx;
-
-			// 共編模式組字區背景色使用該使用者的顏色
-			if (viewInfo) {
-				clipboardContainer.style.background = L.LOUtil.rgbToHex(viewInfo.color);
-			}
-
-			// 輸入區移到游標下方，避免擋住同一行
-			if (cursor) {
-				clipboardContainer.style.top = (cursor.offsetTop + cursor.clientHeight) + 'px';
-			}
-		} else if (e.type === 'compositionend') {
-			this._isComposing = false; // stop of composing with IME
-			// get the composited char codes
-			// clear the input now - best to do this ASAP so the input
-			// is clear for the next word
-			this._map._clipboardContainer.setValue('');
-			// 只有自己在編輯的話，就依照原來方式，送出結束訊息
-			if (onlyMe) {
-				// Set all keycodes to zero
-				this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
-				return;
-			}
-			// 隱藏組字區
-			L.DomUtil.removeClass(clipboard, 'overspot');
-			L.DomUtil.removeClass(clipboardContainer, 'overspot');
-			if (e.originalEvent.data.length > 0) {
-				// 送出所有組字
-				this._map._docLayer._postCompositionEvent(0, 'input', e.originalEvent.data);
-				// Set all keycodes to zero
-				this._map._docLayer._postCompositionEvent(0, 'end', e.originalEvent.data);
-			}
-		}
-
-		if (e.type === 'textInput' && !this._keyHandled && !this._isComposing) {
-			// Hack for making space and spell-check text insert work
-			// in Chrome (on Andorid) or Chrome with IME.
-			//
-			// Chrome (Android) IME triggers keyup/keydown input with
-			// code 229 when hitting space (as with all composiiton events)
-			// with addition to 'textinput' event, in which we only see that
-			// space was entered. Similar situation is also when inserting
-			// a soft-keyboard spell-check item - it is visible only with
-			// 'textinput' event (no composition event is fired).
-			// To make this work we need to insert textinput.data here..
-			//
-			// TODO: Maybe make sure this is only triggered when keydown has
-			// 229 code. Also we need to detect that composition was overriden
-			// (part or whole word deleted) with the spell-checked word. (for
-			// example: enter 'tar' and with spell-check correct that to 'rat')
-			var data = e.originalEvent.data;
-			for (var idx = 0; idx < data.length; idx++) {
-				this._map._docLayer._postKeyboardEvent('input', data[idx].charCodeAt(), 0);
-			}
-		}
-	},
-
+	// Given a DOM keyboard event that happened while the Control key was depressed,
+	// triggers the appropriate action or oxoolwsd message.
 	_handleCtrlCommand: function (e) {
+		if (this._map.uiManager.isUIBlocked())
+			return;
+
 		// Control
-		if (e.originalEvent.keyCode == 17)
+		if (e.keyCode == 17)
 			return true;
 
-		if (e.type !== 'keydown' && e.originalEvent.key !== 'c' && e.originalEvent.key !== 'v' && e.originalEvent.key !== 'x' &&
-			/* Safari */ e.originalEvent.keyCode !== 99 && e.originalEvent.keyCode !== 118 && e.originalEvent.keyCode !== 120) {
-			e.originalEvent.preventDefault();
+		if (e.type !== 'keydown' && e.key !== 'c' && e.key !== 'v' && e.key !== 'x' &&
+		/* Safari */ e.keyCode !== 99 && e.keyCode !== 118 && e.keyCode !== 120) {
+			e.preventDefault();
 			return true;
 		}
 
-		if (e.originalEvent.keyCode !== 67 && e.originalEvent.keyCode !== 86 && e.originalEvent.keyCode !== 88 &&
-			/* Safari */ e.originalEvent.keyCode !== 99 && e.originalEvent.keyCode !== 118 && e.originalEvent.keyCode !== 120 &&
-			e.originalEvent.key !== 'c' && e.originalEvent.key !== 'v' && e.originalEvent.key !== 'x') {
+		if (e.keyCode !== 67 && e.keyCode !== 86 && e.keyCode !== 88 &&
+		/* Safari */ e.keyCode !== 99 && e.keyCode !== 118 && e.keyCode !== 120 &&
+			e.key !== 'c' && e.key !== 'v' && e.key !== 'x') {
 			// not copy or paste
-			e.originalEvent.preventDefault();
+			e.preventDefault();
 		}
 
-		if (e.originalEvent.altKey || e.originalEvent.shiftKey) {
-			if (e.originalEvent.altKey) {
-				switch (e.originalEvent.keyCode) {
+		if (this._isCtrlKey(e) && e.altKey && e.shiftKey && e.key === '?') {
+			this._map.executeAllowedCommand('keyboard-shortcuts');
+			e.preventDefault();
+			return true;
+		}
+
+		// Handles paste special. The "Your browser" thing seems to indicate that this code
+		// snippet is relevant in a browser only.
+		if (!window.ThisIsAMobileApp && e.ctrlKey && e.shiftKey && e.altKey && (e.key === 'v' || e.key === 'V')) {
+			var map = this._map;
+			var msg = _('<p>Your browser has very limited access to the clipboard</p><p>Please press now: <kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>V</kbd> to see more options</p><p class="vex-footnote">Close popup to ignore paste special</p>');
+			msg = L.Util.replaceCtrlAltInMac(msg);
+			this._map._clip.pasteSpecialVex = vex.open({
+				unsafeContent: msg,
+				showCloseButton: true,
+				escapeButtonCloses: true,
+				overlayClosesOnClick: false,
+				buttons: {},
+				afterOpen: function() {
+					map.focus();
+				}
+			});
+			return true;
+		}
+
+		// Handles unformatted paste
+		if (this._isCtrlKey(e) && e.shiftKey && (e.key === 'v' || e.key === 'V')) {
+			return true;
+		}
+
+		if (this._isCtrlKey(e) && (e.key === 'k' || e.key === 'K')) {
+			this._map.showHyperlinkDialog();
+			e.preventDefault();
+			return true;
+		}
+
+		if (this._isCtrlKey(e) && (e.key === 'z' || e.key === 'Z')) {
+			app.socket.sendMessage('uno .uno:Undo');
+			e.preventDefault();
+			return true;
+		}
+
+		if (this._isCtrlKey(e) && (e.key === 'y' || e.key === 'Y')) {
+			app.socket.sendMessage('uno .uno:Redo');
+			e.preventDefault();
+			return true;
+		}
+
+		if (this._isCtrlKey(e) && !e.shiftKey && !e.altKey && (e.key === 'f' || e.key === 'F')) {
+			if (!this._map.uiManager.isStatusBarVisible()) {
+				this._map.uiManager.showStatusBar();
+			}
+			this._map.fire('focussearch');
+			e.preventDefault();
+			return true;
+		}
+
+		if (e.altKey || e.shiftKey) {
+
+			// need to handle Ctrl + Alt + C separately for Firefox
+			if (e.key === 'c' && e.altKey) {
+				this._map.insertComment();
+				return true;
+			}
+
+			// Ctrl + Alt
+			if (!e.shiftKey) {
+				switch (e.keyCode) {
+				case 53: // 5
+					app.socket.sendMessage('uno .uno:Strikeout');
+					return true;
+				case 70: // f
+					app.socket.sendMessage('uno .uno:InsertFootnote');
+					return true;
+				case 67: // c
+				case 77: // m
+					app.socket.sendMessage('uno .uno:InsertAnnotation');
+					return true;
+				case 68: // d
+					app.socket.sendMessage('uno .uno:InsertEndnote');
+					return true;
+				}
+			} else if (e.altKey) {
+				switch (e.keyCode) {
 				case 68: // Ctrl + Shift + Alt + d for tile debugging mode
 					this._map._docLayer.toggleTileDebugMode();
-					break;
 				}
 			}
 
 			return false;
 		}
+		/* Without specifying the key type, the messages are sent twice (both keydown/up) */
+		if (e.type === 'keydown' && window.ThisIsAMobileApp) {
+			if (e.key === 'c' || e.key === 'C') {
+				app.socket.sendMessage('uno .uno:Copy');
+				return true;
+			}
+			else if (e.key === 'v' || e.key === 'V') {
+				app.socket.sendMessage('uno .uno:Paste');
+				return true;
+			}
+			else if (e.key === 'x' || e.key === 'X') {
+				app.socket.sendMessage('uno .uno:Cut');
+				return true;
+			}
+			if (window.ThisIsTheAndroidApp)
+				e.preventDefault();
+		}
 
-		switch (e.originalEvent.keyCode) {
-		case 67: // c
-		case 88: // x
-		case 99: // c (Safari)
-		case 120: // x (Safari)
+		switch (e.keyCode) {
+		case 51: // 3
+			if (this._map.getDocType() === 'spreadsheet') {
+				app.socket.sendMessage('uno .uno:SetOptimalColumnWidthDirect');
+				app.socket.sendMessage('commandvalues command=.uno:ViewRowColumnHeaders');
+				return true;
+			}
+			return false;
+		case 53: // 5
+			if (this._map.getDocType() === 'spreadsheet') {
+				app.socket.sendMessage('uno .uno:Strikeout');
+				return true;
+			}
+			return false;
+		case 67: // 'C'
+		case 88: // 'X'
+		case 99: // 'c'
+		case 120: // 'x'
 		case 91: // Left Cmd (Safari)
 		case 93: // Right Cmd (Safari)
 			// we prepare for a copy or cut event
-			this._map._clipboardContainer.setValue(window.getSelection().toString());
 			this._map.focus();
-			this._map._clipboardContainer.select();
+			this._map._textInput.select();
+			return true;
+		case 80: // p
+			this._map.print();
 			return true;
 		case 83: // s
-			this._map.save(false /* An explicit save should terminate cell edit */,
-			               false /* An explicit save should save it again */);
+			// Save only when not read-only.
+			if (!this._map.isPermissionReadOnly()) {
+				this._map.fire('postMessage', {msgId: 'UI_Save', args: { source: 'keyboard' }});
+				if (!this._map._disableDefaultAction['UI_Save']) {
+					this._map.save(false /* An explicit save should terminate cell edit */,
+					               false /* An explicit save should save it again */);
+				}
+			}
 			return true;
 		case 86: // v
 		case 118: // v (Safari)
 			return true;
+		case 112: // f1
+			app.socket.sendMessage('uno .uno:NoteVisible');
+			return true;
+		case 188: // ,
+			app.socket.sendMessage('uno .uno:SubScript');
+			return true;
+		case 190: // .
+			app.socket.sendMessage('uno .uno:SuperScript');
+			return true;
 		}
-		if (e.type === 'keypress' && (e.originalEvent.ctrlKey || e.originalEvent.metaKey) &&
-			(e.originalEvent.key === 'c' || e.originalEvent.key === 'v' || e.originalEvent.key === 'x')) {
+		if (e.type === 'keypress' && (e.ctrlKey || e.metaKey) &&
+			(e.key === 'c' || e.key === 'v' || e.key === 'x')) {
 			// need to handle this separately for Firefox
 			return true;
 		}
 		return false;
-	},
-
-	_resetUIState: function() {
-		var toolbar = w2ui['editbar'];
-		toolbar.uncheck('verticaltext');
-		toolbar.uncheck('horizontaltext');
 	}
 });
-
-L.Map.addInitHook('addHandler', 'keyboard', L.Map.Keyboard);

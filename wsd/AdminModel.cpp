@@ -292,7 +292,7 @@ std::string AdminModel::query(const std::string& command)
     return std::string("");
 }
 
-/// Returns memory consumed by all active loolkit processes
+/// Returns memory consumed by all active oxoolkit processes
 unsigned AdminModel::getKitsMemoryUsage()
 {
     assertCorrectThread();

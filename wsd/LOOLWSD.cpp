@@ -18,7 +18,7 @@
 #define LOOLWSD_TEST_ADMIN_CONSOLE "/loleaflet/dist/admin/admin.html"
 
 /* Default loleaflet UI used in for monitoring URI */
-#define LOOLWSD_TEST_METRICS "/lool/getMetrics"
+#define LOOLWSD_TEST_METRICS "/oxool/getMetrics"
 
 /* Default loleaflet UI used in the start test URI */
 #define LOOLWSD_TEST_LOLEAFLET_UI "/loleaflet/" LOOLWSD_VERSION_HASH "/loleaflet.html"
@@ -94,6 +94,7 @@ using Poco::Net::PartHandler;
 #include <Poco/Path.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/StreamCopier.h>
+#include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/URI.h>
 #include <Poco/Zip/Decompress.h>
@@ -157,6 +158,9 @@ using Poco::Net::PartHandler;
 #include "OssiiProduct.hpp"
 #endif
 
+#include <src/include/oxoolmodule.h>
+std::map<std::string, maker_t *, std::less<std::string> > apilist;
+
 using namespace LOOLProtocol;
 
 using Poco::DirectoryIterator;
@@ -168,6 +172,7 @@ using Poco::Net::MessageHeader;
 using Poco::Net::NameValueCollection;
 using Poco::Path;
 using Poco::StreamCopier;
+using Poco::StringTokenizer;
 using Poco::TemporaryFile;
 using Poco::URI;
 using Poco::Util::Application;
@@ -282,6 +287,20 @@ void alertAllUsersInternal(const std::string& msg)
 #endif
 
 } // end anonymous namespace
+
+void LOOLWSD::writeTraceEventRecording(const char *data, std::size_t nbytes)
+{
+    static std::mutex traceEventFileMutex;
+
+    std::unique_lock<std::mutex> lock(traceEventFileMutex);
+
+    fwrite(data, nbytes, 1, LOOLWSD::TraceEventFile);
+}
+
+void LOOLWSD::writeTraceEventRecording(const std::string &recording)
+{
+    writeTraceEventRecording(recording.data(), recording.length());
+}
 
 void LOOLWSD::checkSessionLimitsAndWarnClients()
 {
@@ -746,13 +765,17 @@ std::string LOOLWSD::LoTemplate = LO_PATH;
 std::string LOOLWSD::ChildRoot;
 std::string LOOLWSD::ServerName;
 std::string LOOLWSD::FileServerRoot;
+std::string LOOLWSD::SSLPrivateKeyPassword;
 std::string LOOLWSD::WelcomeFilesRoot;
 std::string LOOLWSD::ServiceRoot;
 std::string LOOLWSD::LOKitVersion;
 std::string LOOLWSD::ConfigFile = LOOLWSD_CONFIGDIR "/oxoolwsd.xml";
 std::string LOOLWSD::ConfigDir = LOOLWSD_CONFIGDIR "/conf.d";
+bool LOOLWSD::EnableTraceEventLogging = false;
+FILE *LOOLWSD::TraceEventFile = NULL;
 std::string LOOLWSD::LogLevel = "trace";
 std::string LOOLWSD::UserInterface = "classic";
+unsigned long LOOLWSD::PdfViewerDPI = 96;
 bool LOOLWSD::AnonymizeUserData = false;
 bool LOOLWSD::CheckLoolUser = true;
 bool LOOLWSD::CleanupOnly = false; //< If we should cleanup and exit.
@@ -1043,12 +1066,15 @@ void LOOLWSD::initialize(Application& self)
 
     // Setup user interface mode
     UserInterface = getConfigValue<std::string>(conf, "user_interface.mode", "classic");
+    // Setup user interface pdf viewer resolution dpi
+    PdfViewerDPI = getConfigValue<unsigned int>(conf, "user_interface.pdf_viewer_resolution_dpi", 96);
 
     // Set the log-level after complete initialization to force maximum details at startup.
     LogLevel = getConfigValue<std::string>(conf, "logging.level", "trace");
     setenv("LOOL_LOGLEVEL", LogLevel.c_str(), true);
     std::string SalLog = getConfigValue<std::string>(conf, "logging.lokit_sal_log", "-INFO-WARN");
     setenv("SAL_LOG", SalLog.c_str(), 0);
+
     const bool withColor = getConfigValue<bool>(conf, "logging.color", true) && isatty(fileno(stderr));
     if (withColor)
     {
@@ -1091,6 +1117,30 @@ void LOOLWSD::initialize(Application& self)
     if (LogLevel != "trace")
     {
         LOG_INF("Setting log-level to [trace] and delaying setting to configured [" << LogLevel << "] until after WSD initialization.");
+    }
+
+    if (EnableTraceEventLogging)
+    {
+        const auto traceEventFile = getConfigValue<std::string>(conf, "trace_event.path", OXOOLWSD_TRACEEVENTFILE);
+        LOG_INF("Trace Event file is " << traceEventFile << ".");
+        TraceEventFile = fopen(traceEventFile.c_str(), "w");
+        if (TraceEventFile != NULL)
+        {
+            if (fcntl(fileno(TraceEventFile), F_SETFD, FD_CLOEXEC) == -1)
+            {
+                fclose(TraceEventFile);
+                TraceEventFile = NULL;
+            }
+            else
+            {
+                fprintf(TraceEventFile, "[\n");
+                // Output a metadata event that tells that this is the WSD process
+                fprintf(TraceEventFile, "{\"name\":\"process_name\",\"ph\":\"M\",\"args\":{\"name\":\"WSD\"},\"pid\":%d,\"tid\":%ld},\n",
+                        getpid(), (long) Util::getThreadId());
+                fprintf(TraceEventFile, "{\"name\":\"thread_name\",\"ph\":\"M\",\"args\":{\"name\":\"Main\"},\"pid\":%d,\"tid\":%ld},\n",
+                        getpid(), (long) Util::getThreadId());
+            }
+        }
     }
 
     ServerName = config().getString("server_name");
@@ -1198,6 +1248,23 @@ void LOOLWSD::initialize(Application& self)
     if (LOOLWSD::isSSLEnabled())
     {
         LOG_INF("SSL support: SSL is enabled.");
+        // Added By Firefly <firefly@ossii.com.tw>
+        // 取得 SSL 私鑰密碼
+        if (config().has("ssl.secure_password")) // AES 256 編碼
+        {
+            LOG_INF("SSL Private key use secure password.");
+            std::string encryptedKey = getConfigValue<std::string>(conf, "ssl.secure_password", "");
+            // 如果安全密碼非空白，解密後再放到 LOOLWSD::SSLPrivateKeyPassword
+            if (!encryptedKey.empty())
+            {
+                LOOLWSD::SSLPrivateKeyPassword = Util::decryptAES256(encryptedKey);
+            }
+        }
+        else if (config().has("ssl.password")) // 明碼儲存
+        {
+            LOG_INF("Use SSL Private use plaintext.");
+            LOOLWSD::SSLPrivateKeyPassword = getConfigValue<std::string>(conf, "ssl.password", "");
+        }
     }
     else
     {
@@ -1513,7 +1580,8 @@ void LOOLWSD::initializeSSL()
     SslContext::initialize(ssl_cert_file_path,
                            ssl_key_file_path,
                            ssl_ca_file_path,
-                           ssl_cipher_list);
+                           ssl_cipher_list,
+                           LOOLWSD::SSLPrivateKeyPassword);
 #endif
 }
 
@@ -1956,6 +2024,7 @@ bool LOOLWSD::createForKit()
         args.push_back("--noseccomp");
 
     args.push_back("--ui=" + UserInterface);
+    args.push_back("--pdfdpi=" + std::to_string(PdfViewerDPI));
 
     if (!CheckLoolUser)
         args.push_back("--disable-lool-user-checking");
@@ -2476,6 +2545,9 @@ private:
             // re-write ServiceRoot and cache.
             RequestDetails requestDetails(request, LOOLWSD::ServiceRoot);
             // LOG_TRC("Request details " << requestDetails.toString());
+            Poco::URI requestUri(request.getURI());
+            std::vector<std::string> reqPathSegs;
+            requestUri.getPathSegments(reqPathSegs);
 
             // Config & security ...
             if (requestDetails.isProxy())
@@ -2521,7 +2593,7 @@ private:
                 }
 
             }
-            else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
+            else if (requestDetails.equals(RequestDetails::Field::Type, "oxool") &&
                      requestDetails.equals(1, "getMetrics"))
             {
                 // See metrics.txt
@@ -2588,10 +2660,29 @@ private:
 //              Util::dumpHex(std::cerr, "clipboard:\n", "", socket->getInBuffer()); // lots of data ...
                 handleClipboardRequest(request, message, disposition, socket);
             }
-
             else if (requestDetails.isProxy() && requestDetails.equals(2, "ws"))
                 handleClientProxyRequest(request, requestDetails, message, disposition);
 
+            // module api
+            else if (requestDetails.equals(RequestDetails::Field::Type, "lool")
+                    && apilist.find(reqPathSegs[1]) != apilist.end())
+            {
+                std::cout << "API : " << reqPathSegs[1] << "\n";
+                std::cout << "[LOOLWSD] DocBrokers map address : " << &DocBrokers << "\n";
+                std::cout << "[LOOLWSD] DocBrokersMutex address : " << &DocBrokersMutex << "\n";
+                auto dso = apilist.find(reqPathSegs[1]);
+                if(dso != apilist.end())
+                {
+                    std::string pdecoded;
+                    Poco::URI::decode(request.getURI(), pdecoded);
+                    request.setURI(pdecoded);
+                    RequestDetails modulerequestDetails(request, "");
+                    oxoolmodule *apiHandler = dso->second();
+                    apiHandler->setMutex(&DocBrokersMutex, DocBrokers, _id);
+                    apiHandler->handleRequest(_socket, message, request, disposition, modulerequestDetails);
+                    _module_exit_application = apiHandler->exit_application;
+                }
+            }
             else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
                      requestDetails.equals(2, "ws") && requestDetails.isWebSocket())
                 handleClientWsUpgrade(request, requestDetails, disposition, socket);
@@ -2603,18 +2694,38 @@ private:
             }
             else
             {
-                LOG_ERR("Unknown resource: " << requestDetails.toString());
+                StringTokenizer reqPathTokens(request.getURI(), "/?", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
+                if (!(request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0) &&
+                    reqPathTokens.count() > 0 && reqPathTokens[0] == "lool")
+                {
+                    std::cout << "else  handlePostRequest " << "\n";
+                    // All post requests have url prefix 'lool'.
+                    handlePostRequest(requestDetails, request, message, disposition, socket);
+                }
+                else if (reqPathTokens.count() > 2 && reqPathTokens[0] == "lool" && reqPathTokens[2] == "ws" &&
+                         request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
+                {
+                    std::cout << "else  handleClientWsUpgrade " << "\n";
+                    std::string decodedUri;
+                    Poco::URI::decode(reqPathTokens[1], decodedUri);
+                    handleClientWsUpgrade(request, requestDetails, disposition, socket);
+                }
+                else
+                {
+                    std::cout << "else  Unknown resource" << "\n";
+                    LOG_ERR("Unknown resource: " << requestDetails.toString());
 
-                // Bad request.
-                std::ostringstream oss;
-                oss << "HTTP/1.1 400\r\n"
-                    "Date: " << Util::getHttpTimeNow() << "\r\n"
-                    "User-Agent: " WOPI_AGENT_STRING "\r\n"
-                    "Content-Length: 0\r\n"
-                    "\r\n";
-                socket->send(oss.str());
-                socket->shutdown();
-                return;
+                    // Bad request.
+                    std::ostringstream oss;
+                    oss << "HTTP/1.1 400\r\n"
+                        "Date: " << Util::getHttpTimeNow() << "\r\n"
+                        "User-Agent: " WOPI_AGENT_STRING "\r\n"
+                        "Content-Length: 0\r\n"
+                        "\r\n";
+                    socket->send(oss.str());
+                    socket->shutdown();
+                    return;
+                }
             }
         }
         catch (const std::exception& exc)
@@ -2682,6 +2793,17 @@ private:
 
     void performWrites() override
     {
+    }
+
+    void onDisconnect() override
+    {
+        if (_module_exit_application)
+        {
+            std::cout << "close fork process" << std::endl;
+            auto socket = _socket.lock();
+            socket->closeConnection();
+            _exit(Application::EXIT_SOFTWARE);
+        }
     }
 
 #if !MOBILEAPP
@@ -3756,6 +3878,9 @@ private:
 
     /// Cache for static files, to avoid reading and processing from disk.
     static std::map<std::string, std::string> StaticFileContentCache;
+
+    /// This is for module application exit the fork process
+    bool _module_exit_application = false;
 };
 
 std::map<std::string, std::string> ClientRequestDispatcher::StaticFileContentCache;
@@ -3913,6 +4038,7 @@ public:
            << "\n  IsProxyPrefixEnabled: " << (LOOLWSD::IsProxyPrefixEnabled ? "yes" : "no")
            << "\n  OverrideWatermark: " << LOOLWSD::OverrideWatermark
            << "\n  UserInterface: " << LOOLWSD::UserInterface
+           << "\n  PdfViewerDPI: " << LOOLWSD::PdfViewerDPI
             ;
 
         os << "\nServer poll:\n";
@@ -4352,12 +4478,47 @@ void LOOLWSD::cleanup()
     DocBrokers.clear();
 }
 
+// OXOOLMODULE Init
+#include <Poco/Glob.h>
+#include <dlfcn.h>
+#include <string>
+#include <set>
+void initModule(){
+#if ENABLE_DEBUG
+    std::string modDir = "./*.so";
+#else
+    std::string modDir = "/usr/lib64/oxool/*.so";
+#endif
+
+    std::set<std::string> files;
+    Poco::Glob::glob(modDir, files);
+
+    std::cout << "[Module list] -- " << modDir << std::endl;
+    for (auto it = files.begin() ; it != files.end(); ++ it)
+    {
+        auto afile = *it;
+        auto libpath = std::string(Poco::Path(afile).toString());
+#if ENABLE_DEBUG
+        libpath = "./" + libpath;
+#endif
+        std::cout << libpath <<"\n";
+        void *handle;
+        handle = dlopen(libpath.c_str(), RTLD_NOW);
+        if(!handle)
+        {
+            std::cout << "Error Loading : " << dlerror() << std::endl;
+        }
+    }
+    std::cout << std::endl;
+}
+
 int LOOLWSD::main(const std::vector<std::string>& /*args*/)
 {
 #if MOBILEAPP && !defined IOS
     SigUtil::resetTerminationFlag();
 #endif
 
+    initModule();
     int returnValue;
 
     try {

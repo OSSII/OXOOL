@@ -40,6 +40,8 @@ public:
 
     void setReadOnly(bool bValue = true) override;
 
+    void sendFileMode(const bool readOnly, const bool editComments);
+
     void setLockFailed(const std::string& sReason);
 
     enum SessionState {
@@ -320,8 +322,14 @@ private:
     /// Time when loading of view started
     std::chrono::steady_clock::time_point _viewLoadStart;
 
+    /// Store last sent payload of form field button, so we can filter out redundant messages.
+    std::string _lastSentFormFielButtonMessage;
+
     /// Secure session id token for proxyprotocol authentication
     std::string _proxyAccess;
+
+    /// Epoch of the client's performance.now() function, as microseconds sinze Unix epoch
+    uint64_t _performanceCounterEpoch;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

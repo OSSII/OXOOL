@@ -1,0 +1,13 @@
+@-moz-document url-prefix() {
+	#formulabar #formulaInput, #formulabar #addressInput{
+		border-radius: 0px;
+		border: 1px solid #bbbbbb !important;
+	}
+	#toolbar-up{
+		top: -1px;
+	}
+}
+#toolbar-wrapper.mobile{
+	border-top: none;
+	z-index: auto !important;
+}

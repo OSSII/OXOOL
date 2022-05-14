@@ -26,7 +26,6 @@ L.Popup = L.Layer.extend({
 		autoClose: true,
 		// keepInView: false,
 		// className: '',
-		zoomAnimation: true
 	},
 
 	initialize: function (options, source) {
@@ -36,8 +35,6 @@ L.Popup = L.Layer.extend({
 	},
 
 	onAdd: function (map) {
-		this._zoomAnimated = this._zoomAnimated && this.options.zoomAnimation;
-
 		if (!this._container) {
 			this._initLayout();
 		}
@@ -94,15 +91,6 @@ L.Popup = L.Layer.extend({
 		return this;
 	},
 
-	setContainerPoint: function (containerPoint) {
-		this._containerPoint = containerPoint;
-		return this;
-	},
-
-	getContent: function () {
-		return this._content;
-	},
-
 	setContent: function (content) {
 		this._content = content;
 		this.update();
@@ -124,18 +112,19 @@ L.Popup = L.Layer.extend({
 	},
 
 	getEvents: function () {
-		var events = {viewreset: this._updatePosition},
-		    options = this.options;
+		var events = {
+			viewreset: this._updatePosition,
+			move: this._updatePosition
+		};
+		var options = this.options;
 
-		if (this._zoomAnimated) {
-			events.zoomanim = this._animateZoom;
-		}
 		if ('closeOnClick' in options ? options.closeOnClick : this._map.options.closePopupOnClick) {
 			events.preclick = this._close;
 		}
 		if (options.keepInView) {
 			events.moveend = this._adjustPan;
 		}
+
 		return events;
 	},
 
@@ -153,7 +142,7 @@ L.Popup = L.Layer.extend({
 		var prefix = 'leaflet-popup',
 		    container = this._container = L.DomUtil.create('div',
 			prefix + ' ' + (this.options.className || '') +
-			' leaflet-zoom-' + (this._zoomAnimated ? 'animated' : 'hide'));
+			' leaflet-zoom-hide');
 
 		if (this.options.closeButton) {
 			var closeButton = this._closeButton = L.DomUtil.create('a', prefix + '-close-button', container);
@@ -162,9 +151,6 @@ L.Popup = L.Layer.extend({
 
 			L.DomEvent.on(closeButton, 'click', this._onCloseButtonClick, this);
 		}
-
-		this._tipContainer = L.DomUtil.create('div', prefix + '-tip-container', container);
-		this._tipUp = L.DomUtil.create('div', prefix + '-tip-up', this._tipContainer);
 
 		var wrapper = this._wrapper = L.DomUtil.create('div', prefix + '-content-wrapper', container);
 		this._contentNode = L.DomUtil.create('div', prefix + '-content', wrapper);
@@ -179,7 +165,6 @@ L.Popup = L.Layer.extend({
 
 		if (this.options.backgroundColor) {
 			this._tip.style['background-color'] = this._wrapper.style['background-color'] = this.options.backgroundColor;
-			this._tipUp.style['background-color'] = this._wrapper.style['background-color'] = this.options.backgroundColor;
 		}
 
 		if (this.options.color) {
@@ -234,47 +219,30 @@ L.Popup = L.Layer.extend({
 		this._containerWidth = this._container.offsetWidth;
 	},
 
+
+
 	_updatePosition: function () {
 		if (!this._map) { return; }
 
-		var pos = this._map.latLngToLayerPoint(this._latlng),
-		    offset = L.point(this.options.offset);
+		var offset = L.point(this.options.offset);
+		var posVis = L.Layer.getLayerPositionVisibility(this._latlng, {
+			width: this._containerWidth,
+			height: this._container.offsetHeight
+		}, this._map,
+		new L.Point(
+			offset.x - Math.round(this._containerWidth / 2),
+			-this._container.offsetHeight - offset.y));
+		var pos = posVis.position;
 
-		var pointY =  (this._containerPoint !== undefined ? this._containerPoint.y : pos.y);
-		var realHeight = this._wrapper.offsetHeight + this._tipContainer.offsetHeight;
-
-		if (pointY < realHeight) {
-			this._tip.style.display='none';
-			this._tipUp.style.display='block';
-		} else {
-			this._tip.style.display='block';
-			this._tipUp.style.display='none';
-		}
-
-		if (this._zoomAnimated) {
-			L.DomUtil.setPosition(this._container, pos);
-		} else {
-			offset = offset.add(pos);
-		}
+		offset = offset.add(pos);
 
 		var bottom = this._containerBottom = -offset.y,
-		    top = 0,
 		    left = this._containerLeft = -Math.round(this._containerWidth / 2) + offset.x;
 
-		// If the top space will cover the pop-up window, it will be displayed at the bottom. 
-		if (pointY < realHeight) {
-			this._container.style.top = top + 'px';
-			this._container.style.bottom = '';
-		} else {
-			this._container.style.top = '';
-			this._container.style.bottom = bottom + 'px';
-		}
+		// bottom position the popup in case the height of the popup changes (images loading etc)
+		this._container.style.bottom = bottom + 'px';
 		this._container.style.left = left + 'px';
-	},
-
-	_animateZoom: function (e) {
-		var pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center);
-		L.DomUtil.setPosition(this._container, pos);
+		this._container.style.visibility = posVis.visibility;
 	},
 
 	_adjustPan: function () {
@@ -284,10 +252,6 @@ L.Popup = L.Layer.extend({
 		    containerHeight = this._container.offsetHeight,
 		    containerWidth = this._containerWidth,
 		    layerPos = new L.Point(this._containerLeft, -containerHeight - this._containerBottom);
-
-		if (this._zoomAnimated) {
-			layerPos._add(L.DomUtil.getPosition(this._container));
-		}
 
 		var containerPos = map.layerPointToContainerPoint(layerPos),
 		    padding = L.point(this.options.autoPanPadding),
