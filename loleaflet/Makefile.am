@@ -301,7 +301,6 @@ OXOOL_JS_LST =\
 	src/map/handler/Map.DoubleClickZoom.js \
 	src/dom/DomEvent.Pointer.js \
 	src/map/handler/Map.TouchGesture.js \
-	src/map/handler/Map.BoxZoom.js \
 	src/map/handler/Map.Keyboard.js \
 	src/dom/DomEvent.MultiClick.js \
 	src/map/handler/Map.Mouse.js \
