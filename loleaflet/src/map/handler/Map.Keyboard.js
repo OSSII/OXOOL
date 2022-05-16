@@ -7,7 +7,7 @@
  * at TextInput.
  */
 
-/* global app vex UNOKey UNOModifier _ */
+/* global app UNOKey UNOModifier */
 
 L.Map.mergeOptions({
 	keyboard: true,
@@ -273,7 +273,7 @@ L.Map.Keyboard = L.Handler.extend({
 			return;
 		}
 		var docLayer = this._map._docLayer;
-		if (!keyEventFn) {
+		if (!keyEventFn && docLayer.postKeyboardEvent) {
 			// default is to post keyboard events on the document
 			keyEventFn = L.bind(docLayer.postKeyboardEvent, docLayer);
 		}
@@ -339,8 +339,11 @@ L.Map.Keyboard = L.Handler.extend({
 		if (this.modifier) {
 			unoKeyCode |= this.modifier;
 			if (ev.type !== 'keyup' && (this.modifier !== shift || (keyCode === 32 && !this._map._isCursorVisible))) {
-				keyEventFn('input', charCode, unoKeyCode);
-				ev.preventDefault();
+				if (keyEventFn) {
+					keyEventFn('input', charCode, unoKeyCode);
+					ev.preventDefault();
+				}
+
 				return;
 			}
 		}
@@ -359,8 +362,10 @@ L.Map.Keyboard = L.Handler.extend({
 			else if (ev.type === 'keydown') {
 				// window.app.console.log(e);
 				if (this.handleOnKeyDownKeys[keyCode] && charCode === 0) {
-					keyEventFn('input', charCode, unoKeyCode);
-					ev.preventDefault();
+					if (keyEventFn) {
+						keyEventFn('input', charCode, unoKeyCode);
+						ev.preventDefault();
+					}
 				}
 			}
 			else if ((ev.type === 'keypress') && (!this.handleOnKeyDownKeys[keyCode] || charCode !== 0)) {
@@ -375,13 +380,17 @@ L.Map.Keyboard = L.Handler.extend({
 					docLayer._debugKeypressQueue.push(+new Date());
 				}
 
-				keyEventFn('input', charCode, unoKeyCode);
+				if (keyEventFn) {
+					keyEventFn('input', charCode, unoKeyCode);
+				}
 			}
 			else if (ev.type === 'keyup') {
 				if ((this.handleOnKeyDownKeys[keyCode] && charCode === 0) ||
 				    (this.modifier) ||
 				    unoKeyCode === UNOKey.RETURN) {
-					keyEventFn('up', charCode, unoKeyCode);
+					if (keyEventFn) {
+						keyEventFn('up', charCode, unoKeyCode);
+					}
 				} else {
 					// was handled as textinput
 				}
@@ -420,7 +429,9 @@ L.Map.Keyboard = L.Handler.extend({
 			else if (key in this._panKeys && ev.shiftKey &&
 					!docLayer._textCSelections.empty()) {
 				// if there is a selection and the user wants to modify it
-				keyEventFn('input', charCode, unoKeyCode);
+				if (keyEventFn) {
+					keyEventFn('input', charCode, unoKeyCode);
+				}
 			}
 			else if (key in this._zoomKeys) {
 				map.setZoom(map.getZoom() + (ev.shiftKey ? 3 : 1) * this._zoomKeys[key], null, true /* animate? */);
@@ -469,19 +480,7 @@ L.Map.Keyboard = L.Handler.extend({
 		// Handles paste special. The "Your browser" thing seems to indicate that this code
 		// snippet is relevant in a browser only.
 		if (!window.ThisIsAMobileApp && e.ctrlKey && e.shiftKey && e.altKey && (e.key === 'v' || e.key === 'V')) {
-			var map = this._map;
-			var msg = _('<p>Your browser has very limited access to the clipboard</p><p>Please press now: <kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>V</kbd> to see more options</p><p class="vex-footnote">Close popup to ignore paste special</p>');
-			msg = L.Util.replaceCtrlAltInMac(msg);
-			this._map._clip.pasteSpecialVex = vex.open({
-				unsafeContent: msg,
-				showCloseButton: true,
-				escapeButtonCloses: true,
-				overlayClosesOnClick: false,
-				buttons: {},
-				afterOpen: function() {
-					map.focus();
-				}
-			});
+			this._map._clip._openPasteSpecialPopup();
 			return true;
 		}
 
