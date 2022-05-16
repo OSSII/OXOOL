@@ -54,7 +54,6 @@ static bool SingleKit = false;
 #endif
 
 static std::string UserInterface;
-static unsigned long PdfViewerDPI = 96;
 static bool DisplayVersion = false;
 static std::string UnitTestLibrary;
 static std::string LogLevel;
@@ -486,6 +485,7 @@ int main(int argc, char** argv)
     std::string loSubPath;
     std::string sysTemplate;
     std::string loTemplate;
+    unsigned long PdfViewerDPI = 96;
 
     for (int i = 0; i < argc; ++i)
     {
@@ -603,7 +603,6 @@ int main(int argc, char** argv)
 
     // 設定檢視 PDF 時的 DPI
     setenv("PDFIMPORT_RESOLUTION_DPI", std::to_string(PdfViewerDPI).c_str(), 0);
-    std::cout << "PDFIMPORT_RESOLUTION_DPI=" << std::to_string(PdfViewerDPI).c_str() << "\n";
 
     if (!std::getenv("LD_BIND_NOW")) // must be set by parent.
         LOG_INF("Note: LD_BIND_NOW is not set.");
