@@ -3,10 +3,8 @@
  * L.Control.FormulaBar
  */
 
-/* global $ w2ui _ _UNO */
+/* global $ w2ui _ */
 L.Control.FormulaBar = L.Control.extend({
-
-	_bar: null,
 
 	onAdd: function (map) {
 		this.map = map;
@@ -21,19 +19,12 @@ L.Control.FormulaBar = L.Control.extend({
 				L.DomUtil.get('addressInput').value = e.address;
 			}
 		});
-
-		map.on('cellformula', function (e) {
-			if (document.activeElement !== L.DomUtil.get('formulaInput')) {
-				// if the user is not editing the formula bar
-				L.DomUtil.get('formulaInput').value = e.formula;
-			}
-		});
 	},
 
 	create: function() {
 		var that = this;
 		var toolbar = $('#formulabar');
-		this._bar = toolbar.w2toolbar({
+		toolbar.w2toolbar({
 			name: 'formulabar',
 			hidden: true,
 			items: [
@@ -41,28 +32,17 @@ L.Control.FormulaBar = L.Control.extend({
 				{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
 				{type: 'break'},
 				{type: 'button', id: 'functiondialog', img: 'functiondialog', hint: _('Function Wizard')},
-				{type: 'menu', id: 'sum', img: 'autosum', hint: _('Select function'),
-					items: [
-						{id: 'autosum', text: _('Sum'), uno:'.uno:AutoSum', stateChange: true},
-						{id: 'autoaverage', text: _('Average'), uno:'.uno:AutoAverage', stateChange: true},
-						{id: 'automin', text: _('Minimum'), uno:'.uno:AutoMin', stateChange: true},
-						{id: 'automax', text: _('Maximum'),  uno:'.uno:AutoMax', stateChange: true},
-						{id: 'autocount', text: _('Count'),  uno:'.uno:AutoCount', stateChange: true},
-					]
-				},
-				{type: 'button', id: 'function',  img: 'equal', hint: _UNO('InsertMath')},
-				{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
-				{type: 'button', hidden: true, id: 'acceptformula',  img: 'ok', hint: _('Accept')},
-				{type: 'html', id: 'formula', html: '<input type="text "id="formulaInput">'},
-				//{type: 'html', id: 'formula', html: '<div id="calc-inputbar-wrapper"><div id="calc-inputbar"></div></div>'}
+				{type: 'html', id: 'formula', html: '<div id="calc-inputbar-wrapper"><div id="calc-inputbar"></div></div>'}
 			],
 			onClick: function (e) {
 				that.onClick(e, e.target);
 				window.hideTooltip(this, e.target);
+			},
+			onRefresh: function() {
+				$('#addressInput').off('keyup', that.onAddressInput.bind(that)).on('keyup', that.onAddressInput.bind(that));
 			}
 		});
 		this.map.uiManager.enableTooltip(toolbar);
-		this.map.setupStateChangesForToolbar({toolbar: this._bar});
 		document.getElementById('addressInput').setAttribute('aria-label', _('cell address'));
 
 		toolbar.bind('touchstart', function(e) {
@@ -77,11 +57,6 @@ L.Control.FormulaBar = L.Control.extend({
 		w2ui.formulabar.on('resize', function(target, e) {
 			e.isCancelled = true;
 		});
-
-		$('#addressInput').on('keyup', this.onAddressInput.bind(this));
-		$('#formulaInput').on('keyup keyupcompositionstart compositionupdate compositionend textInput', this.onFormulaInput.bind(this));
-		$('#formulaInput').on('blur', this.map.onFormulaBarBlur.bind(this));
-		$('#formulaInput').on('focus', this.map.onFormulaBarFocus.bind(this));
 	},
 
 	onClick: function(e, id, item) {
@@ -100,7 +75,12 @@ L.Control.FormulaBar = L.Control.extend({
 		}
 
 		if (item.uno) {
-			this.map.executeAllowedCommand(item.uno);
+			if (item.unosheet && this.map.getDocType() === 'spreadsheet') {
+				this.map.toggleCommandState(item.unosheet);
+			}
+			else {
+				this.map.toggleCommandState(window.getUNOCommand(item.uno));
+			}
 		}
 		else if (id === 'functiondialog') {
 			if (window.mode.isMobile() && this.map._functionWizardData) {
@@ -109,24 +89,6 @@ L.Control.FormulaBar = L.Control.extend({
 			} else {
 				this.map.sendUnoCommand('.uno:FunctionDialog');
 			}
-		} else if (id === 'function') {
-			L.DomUtil.get('formulaInput').value = '=';
-			L.DomUtil.get('formulaInput').focus();
-			this.map.cellEnterString(L.DomUtil.get('formulaInput').value);
-		} else if (id === 'cancelformula') {
-			this.map.sendUnoCommand('.uno:Cancel');
-			toolbar.hide('acceptformula', 'cancelformula');
-			toolbar.show('sum', 'function');
-		} else if (id === 'acceptformula') {
-			// focus on map, and press enter
-			this.map.focus();
-			this.map._docLayer.postKeyboardEvent(
-				'input',
-				this.map.keyboard.keyCodes.enter,
-				this.map.keyboard._toUNOKeyCode(this.map.keyboard.keyCodes.enter)
-			);
-			toolbar.hide('acceptformula', 'cancelformula');
-			toolbar.show('sum', 'function');
 		}
 	},
 
@@ -174,54 +136,23 @@ L.Control.FormulaBar = L.Control.extend({
 					type: 'string',
 					value: value
 				}
+
 			};
 			this.map.sendUnoCommand('.uno:GoToCell', command);
 		} else if (e.keyCode === 27) { // 27 = esc key
 			this.map.sendUnoCommand('.uno:Cancel');
 			this.map.focus();
 		}
-	},
-
-	/**
-	 * 公式列的輸入行為
-	 */
-	onFormulaInput: function(e) {
-		switch (e.type) {
-		case 'compositionstart':
-		case 'compositionupdate':
-			this._isComposing = true;
-			break;
-		case 'compositionend':
-			this._isComposing = false;
-			break;
-		}
-
-		// keycode = 13 is 'enter'
-		if (e.keyCode === 13) {
-			// formula bar should not have focus anymore
-			this.map.focus();
-
-			// forward the 'enter' keystroke to map to deal with the formula entered
-			var data = {
-				originalEvent: e
-			};
-			this.map.fire('keypress', data);
-		} else if (e.keyCode === 27) { // 27 = esc key
-			this.map.sendUnoCommand('.uno:Cancel');
-			this.map.focus();
-		} else if (!this._isComposing) {
-			this.map.cellEnterString(L.DomUtil.get('formulaInput').value);
-		}
-	},
+	}
 });
 
 L.Map.include({
 	onFormulaBarFocus: function() {
-		var formulabar = w2ui.formulabar;
-		if (formulabar) {
-			formulabar.hide('sum', 'function');
-			formulabar.show('cancelformula', 'acceptformula');
-		}
+		var mobileTopBar = w2ui['actionbar'];
+		mobileTopBar.hide('undo');
+		mobileTopBar.hide('redo');
+		mobileTopBar.show('cancelformula');
+		mobileTopBar.show('acceptformula');
 	},
 
 	onFormulaBarBlur: function() {
@@ -232,9 +163,11 @@ L.Map.include({
 		setTimeout(function() {
 			if ($('.leaflet-cursor').is(':visible'))
 				return;
-			var formulabar = w2ui.formulabar;
-			formulabar.show('sum', 'function');
-			formulabar.hide('cancelformula', 'acceptformula');
+			var mobileTopBar = w2ui['actionbar'];
+			mobileTopBar.show('undo');
+			mobileTopBar.show('redo');
+			mobileTopBar.hide('cancelformula');
+			mobileTopBar.hide('acceptformula');
 		}, 250);
 	}
 });
