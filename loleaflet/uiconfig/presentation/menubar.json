@@ -1039,6 +1039,9 @@
 				"hotkey": "Ctrl+Shift+M"
 			},
 			{
+				"id": ".uno:FormatPaintbrush"
+			},
+			{
 				"id": ".uno:EditStyle"
 			},
 			{
