@@ -591,9 +591,6 @@ L.Control.LokDialog = L.Control.extend({
 
 		this._map.notifyActive();
 
-		/* if (e.data && e.data.length > 0) {
-			this._map._textInput._sendCompositionEvent(e.data);
-		} */
 		// 清除輸入區資料
 		this._emptyArea(dialog.id);
 	},
@@ -1030,7 +1027,7 @@ L.Control.LokDialog = L.Control.extend({
 		$('.lokdialog_container button.ui-dialog-titlebar-close').attr('tabindex', '-1').blur();
 
 		this._createDialogCursor(strId);
-		this._createDialogInput(strId);
+		//this._createDialogInput(strId);
 		this._setupWindowEvents(id, dialogCanvas/*, dlgInput*/);
 		this._setupGestures(dialogContainer, id, dialogCanvas);
 
@@ -1158,7 +1155,7 @@ L.Control.LokDialog = L.Control.extend({
 		this._calcInputBar = this._dialogs[id];
 
 		this._createDialogCursor(strId);
-		this._createDialogInput(strId);
+		//this._createDialogInput(strId);
 		this._postLaunch(id, container, handles);
 		this._setupCalcInputBarGestures(id, handles, startHandle, endHandle);
 

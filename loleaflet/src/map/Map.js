@@ -170,7 +170,17 @@ L.Map = L.Evented.extend({
 
 		this._progressBar = L.progressOverlay(new L.point(150, 25));
 
-		this._textInput = L.textInput();
+		// 如果是桌面模式或者是 iOS 系統
+		if (window.mode.isDesktop() ||
+			(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
+			window.app.console.debug('Text input using Desktop/iOS method.');
+			// 使用為桌面及iOS特製的輸入方法
+			this._textInput = L.textInputDesktopIOS();
+		} else {
+			window.app.console.debug('Text input using complex method.');
+			// 否則就用難以理解的輸入方法 XD
+			this._textInput = L.textInput();
+		}
 		this.addLayer(this._textInput);
 
 		// When all these conditions are met, fire statusindicator:initializationcomplete
