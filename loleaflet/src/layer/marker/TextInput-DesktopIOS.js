@@ -21,8 +21,8 @@ L.TextInputDesktopIOS = L.Layer.extend({
 		this._setAcceptInput(false);
 
 		this._input = {
-			// 預設使用 onTheSpot 模式
-			_onTheSpot: true,
+			// 預設使用 overTheSpot 模式
+			_onTheSpot: false,
 			// Might need to be \xa0 in some legacy browsers ?
 			// fool GBoard into not auto-capitalizing constantly
 			_preSpaceChar: '\xa0',
@@ -49,11 +49,11 @@ L.TextInputDesktopIOS = L.Layer.extend({
 		this._isDebugOn = false;
 
 
-		if (window.mode.isDesktop()) {
+		/* if (window.mode.isDesktop()) {
 			this._input.useOverTheSpot();
 		} else {
 			this._input.useOnTheSpot();
-		}
+		} */
 
 		this._initLayout();
 
