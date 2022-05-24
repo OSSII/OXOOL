@@ -68,6 +68,7 @@ namespace LOKitHelper
         {
             std::ostringstream hposs;
             std::ostringstream sposs;
+            std::ostringstream rtlposs;
             std::ostringstream detail;
             std::ostringstream names;
             std::ostringstream hashes;
@@ -88,6 +89,11 @@ namespace LOKitHelper
                     {
                         if (prop.second == "1")
                             sposs << i << ',';
+                    }
+                    else if (name == "rtllayout")
+                    {
+                        if (prop.second == "1")
+                            rtlposs << i << ',';
                     }
                     else if (name == "name")
                     {
@@ -113,6 +119,13 @@ namespace LOKitHelper
             {
                 selectedparts.pop_back(); // Remove last ','
                 oss << " selectedparts=" << selectedparts;
+            }
+
+            std::string rtlparts = rtlposs.str();
+            if (!rtlparts.empty())
+            {
+                rtlparts.pop_back(); // Remove last ','
+                oss << " rtlparts=" << rtlparts;
             }
 
             std::string detailList = detail.str();

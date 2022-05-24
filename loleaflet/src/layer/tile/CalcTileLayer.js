@@ -302,6 +302,7 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 	},
 
 	_onStatusMsg: function (textMsg) {
+		console.log('DEBUG: onStatusMsg: ' + textMsg);
 		var command = app.socket.parseServerCmd(textMsg);
 		if (command.width && command.height && this._documentInfo !== textMsg) {
 			var firstSelectedPart = (typeof this._selectedPart !== 'number');
@@ -364,6 +365,8 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 				});
 			}
 			this._hiddenParts = command.hiddenparts || [];
+			this._rtlParts = command.rtlParts || [];
+			console.log('DEBUG: rtlParts = ' + this._rtlParts);
 			this._documentInfo = textMsg;
 			var partNames = textMsg.match(/[^\r\n]+/g);
 			// only get the last matches
