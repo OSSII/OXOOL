@@ -5,7 +5,7 @@
  * @author Firefly <firefly@ossii.com.tw>
  */
 
-/* global app _ _UNO $ */
+/* global app _ _UNO $ UNOModifier */
 L.Map.include({
 	// 可被執行的指令
 	_allowedCommands: {
@@ -425,23 +425,27 @@ L.Map.include({
 	// Add by Firefly <firefly@ossii.com.tw>
 	// 依據按鍵事件，執行
 	// 傳回 true 表示該按鍵是捷徑，否則傳回 false
-	executeHotkey: function(e) {
+	handleHotkey: function(e, modifier) {
 		// 只處理 keydown 事件
 		if (e.type !== 'keydown')
 			return false;
 
-		// 如果在 Calc 儲存格編輯狀態，就不攔截
-		if (this.getDocType() === 'spreadsheet' &&
-			this._docLayer._docContext === 'EditCell') {
-			return false;
+		if (modifier === undefined) {
+			var shift = e.shiftKey ? UNOModifier.SHIFT : 0;
+			var ctrl = e.ctrlKey ? UNOModifier.CTRL : 0;
+			var alt = e.altKey ? UNOModifier.ALT : 0;
+			var cmd = e.metaKey ? UNOModifier.CTRL : 0;
+			modifier = shift | ctrl | alt | cmd;
 		}
 
-		var event = e.originalEvent;
 		var hotkey = []; // 準備要組合的按鍵易讀名稱
-		var key = event.key;
-		if (event.ctrlKey || event.metaKey) hotkey.push('Ctrl');
-		if (event.altKey) hotkey.push('Alt');
-		if (event.shiftKey) hotkey.push('Shift');
+		var key = e.key;
+		if (modifier & UNOModifier.CTRL)
+			hotkey.push('Ctrl');
+		if (modifier & UNOModifier.ALT)
+			hotkey.push('Alt');
+		if (modifier &  UNOModifier.SHIFT)
+			hotkey.push('Shift');
 		if (key.startsWith('Arrow'))
 			key = key.substr(5);
 		hotkey.push(key);
@@ -450,7 +454,7 @@ L.Map.include({
 		if (matchCommand !== undefined) {
 			window.app.console.debug('Found Hot command->' + matchCommand);
 			if (this.executeAllowedCommand(matchCommand)) {
-				e.originalEvent.preventDefault();
+				e.preventDefault();
 				return true;
 			}
 		}

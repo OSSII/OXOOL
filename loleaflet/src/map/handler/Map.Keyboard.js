@@ -310,8 +310,14 @@ L.Map.Keyboard = L.Handler.extend({
 			}
 		}
 
-		if (ctrl || cmd) {
-			if (this._handleCtrlCommand(ev)) {
+		// 快捷鍵處理，只有在編輯文件時，才可執行
+		if (this._map.editorHasFocus()) {
+			// 處理配合 Ctrl 的快捷鍵
+			if ((ctrl || cmd) && this._handleCtrlCommand(ev)) {
+				return;
+			}
+			// 處理其他在選單上有定義快捷鍵的指令
+			if (this._map.handleHotkey(ev, this.modifier)) {
 				return;
 			}
 		}
@@ -325,13 +331,6 @@ L.Map.Keyboard = L.Handler.extend({
 			// But don't ignore it for Alt + non-printing keys.
 			this.modifier -= alt;
 			alt = 0;
-		}
-
-		// handle help - F1
-		if (ev.type === 'keydown' && !shift && !ctrl && !alt && !cmd && keyCode === 112) {
-			this._map.executeAllowedCommand('online-help');
-			ev.preventDefault();
-			return;
 		}
 
 		var unoKeyCode = this._toUNOKeyCode(keyCode);
@@ -471,12 +470,6 @@ L.Map.Keyboard = L.Handler.extend({
 			e.preventDefault();
 		}
 
-		if (this._isCtrlKey(e) && e.altKey && e.shiftKey && e.key === '?') {
-			this._map.executeAllowedCommand('keyboard-shortcuts');
-			e.preventDefault();
-			return true;
-		}
-
 		// Handles paste special. The "Your browser" thing seems to indicate that this code
 		// snippet is relevant in a browser only.
 		if (!window.ThisIsAMobileApp && e.ctrlKey && e.shiftKey && e.altKey && (e.key === 'v' || e.key === 'V')) {
@@ -489,24 +482,6 @@ L.Map.Keyboard = L.Handler.extend({
 			return true;
 		}
 
-		if (this._isCtrlKey(e) && (e.key === 'k' || e.key === 'K')) {
-			this._map.showHyperlinkDialog();
-			e.preventDefault();
-			return true;
-		}
-
-		if (this._isCtrlKey(e) && (e.key === 'z' || e.key === 'Z')) {
-			app.socket.sendMessage('uno .uno:Undo');
-			e.preventDefault();
-			return true;
-		}
-
-		if (this._isCtrlKey(e) && (e.key === 'y' || e.key === 'Y')) {
-			app.socket.sendMessage('uno .uno:Redo');
-			e.preventDefault();
-			return true;
-		}
-
 		if (this._isCtrlKey(e) && !e.shiftKey && !e.altKey && (e.key === 'f' || e.key === 'F')) {
 			if (!this._map.uiManager.isStatusBarVisible()) {
 				this._map.uiManager.showStatusBar();
@@ -516,40 +491,6 @@ L.Map.Keyboard = L.Handler.extend({
 			return true;
 		}
 
-		if (e.altKey || e.shiftKey) {
-
-			// need to handle Ctrl + Alt + C separately for Firefox
-			if (e.key === 'c' && e.altKey) {
-				this._map.insertComment();
-				return true;
-			}
-
-			// Ctrl + Alt
-			if (!e.shiftKey) {
-				switch (e.keyCode) {
-				case 53: // 5
-					app.socket.sendMessage('uno .uno:Strikeout');
-					return true;
-				case 70: // f
-					app.socket.sendMessage('uno .uno:InsertFootnote');
-					return true;
-				case 67: // c
-				case 77: // m
-					app.socket.sendMessage('uno .uno:InsertAnnotation');
-					return true;
-				case 68: // d
-					app.socket.sendMessage('uno .uno:InsertEndnote');
-					return true;
-				}
-			} else if (e.altKey) {
-				switch (e.keyCode) {
-				case 68: // Ctrl + Shift + Alt + d for tile debugging mode
-					this._map._docLayer.toggleTileDebugMode();
-				}
-			}
-
-			return false;
-		}
 		/* Without specifying the key type, the messages are sent twice (both keydown/up) */
 		if (e.type === 'keydown' && window.ThisIsAMobileApp) {
 			if (e.key === 'c' || e.key === 'C') {
@@ -568,61 +509,6 @@ L.Map.Keyboard = L.Handler.extend({
 				e.preventDefault();
 		}
 
-		switch (e.keyCode) {
-		case 51: // 3
-			if (this._map.getDocType() === 'spreadsheet') {
-				app.socket.sendMessage('uno .uno:SetOptimalColumnWidthDirect');
-				app.socket.sendMessage('commandvalues command=.uno:ViewRowColumnHeaders');
-				return true;
-			}
-			return false;
-		case 53: // 5
-			if (this._map.getDocType() === 'spreadsheet') {
-				app.socket.sendMessage('uno .uno:Strikeout');
-				return true;
-			}
-			return false;
-		case 67: // 'C'
-		case 88: // 'X'
-		case 99: // 'c'
-		case 120: // 'x'
-		case 91: // Left Cmd (Safari)
-		case 93: // Right Cmd (Safari)
-			// we prepare for a copy or cut event
-			this._map.focus();
-			this._map._textInput.select();
-			return true;
-		case 80: // p
-			this._map.print();
-			return true;
-		case 83: // s
-			// Save only when not read-only.
-			if (!this._map.isPermissionReadOnly()) {
-				this._map.fire('postMessage', {msgId: 'UI_Save', args: { source: 'keyboard' }});
-				if (!this._map._disableDefaultAction['UI_Save']) {
-					this._map.save(false /* An explicit save should terminate cell edit */,
-					               false /* An explicit save should save it again */);
-				}
-			}
-			return true;
-		case 86: // v
-		case 118: // v (Safari)
-			return true;
-		case 112: // f1
-			app.socket.sendMessage('uno .uno:NoteVisible');
-			return true;
-		case 188: // ,
-			app.socket.sendMessage('uno .uno:SubScript');
-			return true;
-		case 190: // .
-			app.socket.sendMessage('uno .uno:SuperScript');
-			return true;
-		}
-		if (e.type === 'keypress' && (e.ctrlKey || e.metaKey) &&
-			(e.key === 'c' || e.key === 'v' || e.key === 'x')) {
-			// need to handle this separately for Firefox
-			return true;
-		}
 		return false;
 	}
 });
