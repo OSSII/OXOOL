@@ -25,7 +25,7 @@ L.TextInputDesktopIOS = L.Layer.extend({
 			_onTheSpot: false,
 			// Might need to be \xa0 in some legacy browsers ?
 			// fool GBoard into not auto-capitalizing constantly
-			_preSpaceChar: '\xa0',
+			_preSpaceChar: '',
 			useOnTheSpot: function() {
 				this._onTheSpot = true;
 				this._preSpaceChar = '\xa0';
@@ -47,13 +47,6 @@ L.TextInputDesktopIOS = L.Layer.extend({
 		// Debug flag, used in fancyLog(). See the debug() method.
 		//this._isDebugOn = true;
 		this._isDebugOn = false;
-
-
-		/* if (window.mode.isDesktop()) {
-			this._input.useOverTheSpot();
-		} else {
-			this._input.useOnTheSpot();
-		} */
 
 		this._initLayout();
 
@@ -371,6 +364,7 @@ L.TextInputDesktopIOS = L.Layer.extend({
 		} else {
 			window.app.console.debug('Unknown input type :', ev.inputType);
 		}
+
 		if (!this._isComposing) {
 			this._emptyArea(); // 清除輸入區資料
 		}
@@ -450,6 +444,10 @@ L.TextInputDesktopIOS = L.Layer.extend({
 	 * @param {object} ev - envnt
 	 */
 	_onCompositionUpdate: function(/*ev*/) {
+		/**
+		 * Do nothing.
+		 * Handle in onInput()
+		 */
 	},
 
 	/**
@@ -497,15 +495,14 @@ L.TextInputDesktopIOS = L.Layer.extend({
 	},
 
 	_onKeyDown: function(ev) {
-		if (this._map.uiManager.isUIBlocked())
+		if (this._isComposing || this._map.uiManager.isUIBlocked())
 			return;
 
 		switch (ev.keyCode) {
 		case  8: // Backspace
 		case 46: // Delete
 		case 13: // Enter
-			var keyboardHandler = this._map['keyboard']; // Map.keyboard.js
-			var unoKeyCode = keyboardHandler._toUNOKeyCode(ev.keyCode);
+			var unoKeyCode = this._map['keyboard']._toUNOKeyCode(ev.keyCode);
 			this._sendKeyEvent(ev.charCode, unoKeyCode);
 			break;
 		}
@@ -517,7 +514,7 @@ L.TextInputDesktopIOS = L.Layer.extend({
 	// Across browsers, arrow up/down / home / end would move the caret to
 	// the beginning/end of the textarea/contenteditable.
 	_onKeyUp: function(/* ev */) {
-		if (this._map.uiManager.isUIBlocked())
+		if (this._isComposing || this._map.uiManager.isUIBlocked())
 			return;
 
 		this._map.notifyActive();

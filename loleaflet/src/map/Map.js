@@ -172,7 +172,7 @@ L.Map = L.Evented.extend({
 
 		// 如果是桌面模式或者是 iOS 系統
 		if (window.mode.isDesktop() ||
-			(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
+			(/iOS|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
 			window.app.console.debug('Text input using Desktop/iOS method.');
 			// 使用為桌面及iOS特製的輸入方法
 			this._textInput = L.textInputDesktopIOS();
