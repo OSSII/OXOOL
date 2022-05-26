@@ -166,29 +166,6 @@ L.Control.AlternativeCommand = L.Control.extend({
 			});
 		},
 		/**
-		 * 刪除選取的圖片或圖案
-		 * 若 calc 是選取儲存格，則執行清除儲存格 dialog
-		 */
-		'.uno:Delete': function() {
-			// 如果是是試算表
-			if (this._map.getDocType() === 'spreadsheet') {
-				// 閃動游標
-				var cursorMarker = this._map._docLayer._cursorMarker;
-				// 有閃動游標，且游標顯示，表示在輸入文字狀態，不做任何處理
-				if (cursorMarker && cursorMarker.visible) {
-					return;
-				}
-				// 選取圖案
-				if (this._map._docLayer.hasGraphicSelection()) {
-					// 送出 delete 按鍵
-					app.socket.sendMessage('key type=input char=0 key=1286');
-				}
-			} else {
-				// 否則直接傳送原來命令
-				this._map.sendUnoCommand('.uno:Delete');
-			}
-		},
-		/**
 		 * calc: 插入工作表
 		 */
 		'.uno:Insert': function() {

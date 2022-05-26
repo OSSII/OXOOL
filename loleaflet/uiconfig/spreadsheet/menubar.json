@@ -1428,9 +1428,7 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:Delete",
-				"hotkey": "Backspace",
-				"comment": "替代指令"
+				"id": ".uno:Delete"
 			},
 			{
 				"id": ".uno:FillCellsMenu",
