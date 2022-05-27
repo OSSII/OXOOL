@@ -2917,6 +2917,9 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
     case LOK_CALLBACK_LAUNCH_MENU:
         sendTextFrame("launchmenu: " + payload);
         break;
+    case LOK_CALLBACK_PRINT_RANGES:
+        sendTextFrame("printranges: " + payload);
+        break;
     default:
         LOG_ERR("Unknown callback event (" << lokCallbackTypeToString(type) << "): " << payload);
     }

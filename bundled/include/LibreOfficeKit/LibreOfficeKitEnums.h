@@ -785,6 +785,35 @@ typedef enum
     LOK_COMMAND_BLOCKED = 53,
 
     /**
+     * This is Calc specific. The payload contains print ranges of all
+     * sheets in the document.
+     *
+     * Payload example:
+     * {
+     *     "printranges" : [
+     *         {
+     *             "sheet": 0,
+     *             "ranges": [
+     *                 [0, 0, 4, 5],
+     *                 [5, 100, 8, 150]
+     *             ]
+     *         },
+     *         {
+     *             "sheet": 3,
+     *             "ranges": [
+     *                 [1, 0, 6, 10],
+     *                 [3, 200, 6, 230]
+     *             ]
+     *         }
+     *     ]
+     * }
+     *
+     * The format of the inner "ranges" array for each sheet is
+     * [<startColumn>, <startRow>, <endColumn>, <endRow>]
+     */
+    LOK_CALLBACK_PRINT_RANGES = 54,
+
+    /**
      * Show a message on the editor's screen.
      *
      * The payload example:
@@ -948,6 +977,8 @@ static inline const char* lokCallbackTypeToString(int nType)
         return "LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR";
     case LOK_COMMAND_BLOCKED:
         return "LOK_COMMAND_BLOCKED";
+    case LOK_CALLBACK_PRINT_RANGES:
+        return "LOK_CALLBACK_PRINT_RANGES";
     case LOK_CALLBACK_MSGBOX:
         return "LOK_CALLBACK_MSGBOX";
     case LOK_CALLBACK_LAUNCH_MENU:
