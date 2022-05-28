@@ -656,7 +656,7 @@ L.Control.MobileBottomBar = L.Control.extend({
 			return;
 		}
 
-		var that = this;
+		var map = this.map;
 		var toolItems = this.getToolItems(this.options.docType);
 
 		var toolbar = $('#toolbar-down');
@@ -664,20 +664,24 @@ L.Control.MobileBottomBar = L.Control.extend({
 			name: 'editbar',
 			items: toolItems,
 			onClick: function (e) {
-				//window.hideTooltip(this, e.target);
+				// In the iOS app we don't want clicking on the toolbar to pop up the keyboard.
+				if (!window.ThisIsTheiOSApp) {
+					map.focus(map.canAcceptKeyboardInput()); // Maintain same keyboard state.
+				}
 				// 檢查是否點擊到次選單選項
 				var clickedItem = (e.subItem ? e.subItem : e.item);
 				// item 沒有自己的 onClick 事件，才執行系統的 onClick 事件
 				if (typeof(clickedItem.onClick) !== 'function') {
 					if (clickedItem.uno) {
-						that.map.executeAllowedCommand(clickedItem.uno);
+						map.executeAllowedCommand(clickedItem.uno);
 					} else {
 						window.onClick(e, e.target);
 					}
 				}
+				window.hideTooltip(this, e.target);
 			},
 		});
-		//this.map.uiManager.enableTooltip(toolbar);
+		this.map.uiManager.enableTooltip(toolbar);
 
 		toolbar.bind('touchstart', function(e) {
 			w2ui['editbar'].touchStarted = true;
