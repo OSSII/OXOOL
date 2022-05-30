@@ -606,7 +606,7 @@ $(DIST_FOLDER)/welcome/%.html: $(srcdir)/welcome/%.html
 
 
 if ENABLE_DEBUG
-SourceMap=--allowJs true --sourceMap true --inlineSources true
+SourceMap=--allowJs true --sourceMap true
 endif
 
 tscompile.done: $(OXOOL_JS_SRC) $(OXOOL_TS_SRC)
