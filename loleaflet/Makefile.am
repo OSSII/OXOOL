@@ -604,13 +604,8 @@ $(DIST_FOLDER)/welcome/%.html: $(srcdir)/welcome/%.html
 		`ln -sf $(abs_srcdir)/$< $@`; \
 	fi
 
-
-if ENABLE_DEBUG
-SourceMap=--allowJs true --sourceMap true
-endif
-
 tscompile.done: $(OXOOL_JS_SRC) $(OXOOL_TS_SRC)
-	$(builddir)/node_modules/typescript/bin/tsc --typeRoots $(builddir)/node_modules/@types --outDir $(DIST_FOLDER)/src --rootDir $(srcdir)/src --checkJs false --project $(srcdir)/tsconfig.json $(SourceMap)
+	$(builddir)/node_modules/typescript/bin/tsc --typeRoots $(builddir)/node_modules/@types --outDir $(DIST_FOLDER)/src --rootDir $(srcdir)/src --checkJs false --project $(srcdir)/tsconfig.json
 	@touch $@
 
 $(OXOOL_TS_JS_DST): tscompile.done
