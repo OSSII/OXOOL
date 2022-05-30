@@ -355,6 +355,13 @@
 			{
 				"id": ".uno:Fieldnames",
 				"hotkey": "Ctrl+F9"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:Sidebar",
+				"hotkey": "Ctrl+F5"
 			}
 		]
 	},

@@ -1069,6 +1069,8 @@ L.Control.Menubar = L.Control.extend({
 		if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
 			return false;
 
+		if (menuItem.id === '.uno:Sidebar'  && window.app.dontUseSidebar)
+			return false;
 
 		// Keep track of all 'downloadas-' options and register them as
 		// export formats with docLayer which can then be publicly accessed unlike

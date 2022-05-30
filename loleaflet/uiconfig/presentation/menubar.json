@@ -246,6 +246,12 @@
 						"id": ".uno:SnapBorder"
 					}
 				]
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:Sidebar"
 			}
 		]
 	},

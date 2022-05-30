@@ -2,6 +2,7 @@
 /* global Uint8Array */
 
 window.app = { // Shouldn't have any functions defined.
+	dontUseSidebar: true,
 	definitions: {}, // Class instances are created using definitions under this variable.
 	dpiScale: window.devicePixelRatio,
 	roundedDpiScale: Math.round(window.devicePixelRatio),
