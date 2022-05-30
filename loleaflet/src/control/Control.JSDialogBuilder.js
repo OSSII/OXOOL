@@ -370,7 +370,9 @@ L.Control.JSDialogBuilder = L.Control.extend({
 	_cleanText: function(text) {
 		if (!text)
 			return '';
-		return text.replace('~', '');
+		//return text.replace('~', '');
+		// 移除快捷鍵文字
+		return window.removeAccessKey(text);
 	},
 
 	_extractUnits: function(text) {
@@ -546,10 +548,13 @@ L.Control.JSDialogBuilder = L.Control.extend({
 
 		for (var i in data.children) {
 			var child = data.children[i];
-			if (child.id === 'help')
+			if (child.id === 'help') {
+				/* 不使用 help 按鈕
 				leftAlignButtons.push(child);
-			else
+				*/
+			} else {
 				rightAlignButton.push(child);
+			}
 		}
 
 		var left = L.DomUtil.create('div', builder.options.cssClass + ' ui-button-box-left', container);
