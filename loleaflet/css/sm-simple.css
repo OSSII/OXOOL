@@ -81,7 +81,7 @@
   border-left: 40px solid transparent;
 }
 
-@media (min-width: 500px) {
+@media (min-width: 640px) {
   /* Switch to desktop layout
   -----------------------------------------------
      These transform the menu tree from
@@ -248,21 +248,3 @@
     border-top: 0;
   }
 }
-
-@media (max-width: 856px) {
-	#document-titlebar {
-		display: none !important;
-	}
-
-	#closebuttonwrapper {
-		position: fixed !important;
-        	right: 4px !important;
-	}
-}
-
-@media (max-width: 752px) {
-	menu-last-mod {
-		display: none !important;
-	}
-}
-
