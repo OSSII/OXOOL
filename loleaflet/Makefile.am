@@ -141,9 +141,9 @@ OXOOL_CSS_LST =\
 	$(builddir)/node_modules/vex-js/dist/css/vex-theme-plain.css \
 	$(builddir)/node_modules/vex-js/dist/css/vex-theme-bottom-right-corner.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-core-css.css \
+	$(builddir)/node_modules/smartmenus/dist/css/sm-simple/sm-simple.css \
 	$(builddir)/node_modules/spectrum-colorpicker2/dist/spectrum.css \
 	$(builddir)/node_modules/jquery-ui-dist/jquery-ui.css \
-	$(srcdir)/css/sm-simple.css \
 	$(srcdir)/css/menubar.css \
 	$(srcdir)/css/mobilewizard.css \
 	$(srcdir)/css/jsdialogs.css \
