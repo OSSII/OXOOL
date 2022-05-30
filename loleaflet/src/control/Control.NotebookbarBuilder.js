@@ -869,17 +869,8 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 							}
 						]},
 						{id: '.uno:GoalSeekDialog'},
-						{type: 'separator'},
-						{id: '.uno:RunMacro', hidden: disabledMacros},
 						{id: 'separator', hidden: disabledMacros},
-						{id: '.uno:ConditionalFormatMenu', menu: [
-							{id: '.uno:ConditionalFormatDialog'},
-							{id: '.uno:ColorScaleFormatDialog'},
-							{id: '.uno:DataBarFormatDialog'},
-							{id: '.uno:IconSetFormatDialog'},
-							{id: '.uno:CondDateFormatDialog'},
-							{type: 'separator'},
-							{id: '.uno:ConditionalFormatManagerDialog'}]}
+						{id: '.uno:RunMacro', hidden: disabledMacros}
 					]}
 				]}
 			],
