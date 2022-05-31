@@ -676,7 +676,7 @@ L.TextInput = L.Layer.extend({
 			this._emptyArea();
 	},
 
-	// Sends the given (UTF-8) string of text to coolwsd, as IME (text composition)
+	// Sends the given (UTF-8) string of text to oxoolwsd, as IME (text composition)
 	// messages
 	_sendText: function(text) {
 		if (false) {
@@ -825,7 +825,7 @@ L.TextInput = L.Layer.extend({
 	_removeTextContent: function(before, after) {
 		window.app.console.log('Remove ' + before + ' before, and ' + after + ' after');
 
-		/// TODO: rename the event to 'removetextcontent' as soon as coolwsd supports it
+		/// TODO: rename the event to 'removetextcontent' as soon as oxoolwsd supports it
 		/// TODO: Ask Marco about it
 		app.socket.sendMessage(
 			'removetextcontext id=' +

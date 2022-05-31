@@ -13,7 +13,7 @@ class CDarkOverlay {
         this.overlay = canvasOverlay;
     }
 
-    private invertOleBounds(oleBounds: cool.Bounds) {
+    private invertOleBounds(oleBounds: oxool.Bounds) {
         var rectanglesBounds = [];
 
         var minWidth = 0;
@@ -21,15 +21,15 @@ class CDarkOverlay {
         var fullWidth = 1000000;
         var fullHeight = 1000000;
 
-        rectanglesBounds.push(new cool.Bounds(new cool.Point(minWidth, minHeight), new cool.Point(fullWidth, oleBounds.min.y)));
-        rectanglesBounds.push(new cool.Bounds(new cool.Point(minWidth, oleBounds.min.y), oleBounds.getBottomLeft()));
-        rectanglesBounds.push(new cool.Bounds(oleBounds.getTopRight(), new cool.Point(fullWidth, oleBounds.max.y)));
-        rectanglesBounds.push(new cool.Bounds(new cool.Point(minWidth, oleBounds.max.y), new cool.Point(fullWidth, fullHeight)));
+        rectanglesBounds.push(new oxool.Bounds(new oxool.Point(minWidth, minHeight), new oxool.Point(fullWidth, oleBounds.min.y)));
+        rectanglesBounds.push(new oxool.Bounds(new oxool.Point(minWidth, oleBounds.min.y), oleBounds.getBottomLeft()));
+        rectanglesBounds.push(new oxool.Bounds(oleBounds.getTopRight(), new oxool.Point(fullWidth, oleBounds.max.y)));
+        rectanglesBounds.push(new oxool.Bounds(new oxool.Point(minWidth, oleBounds.max.y), new oxool.Point(fullWidth, fullHeight)));
 
         return rectanglesBounds;
     }
 
-    private createRectangles(rectanglesBounds: cool.Bounds[]){
+    private createRectangles(rectanglesBounds: oxool.Bounds[]){
         for (var i = 0; i < rectanglesBounds.length; i++){
             this.rectangles.push(new CRectangle(rectanglesBounds[i], {
                 pointerEvents: 'none',
@@ -45,7 +45,7 @@ class CDarkOverlay {
         return this.rectangles.length > 0;
     }
 
-    show(oleBounds: cool.Bounds){
+    show(oleBounds: oxool.Bounds){
         var rectanglesBounds = this.invertOleBounds(oleBounds);
         this.createRectangles(rectanglesBounds);
 
