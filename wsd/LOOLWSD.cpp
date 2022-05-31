@@ -1025,7 +1025,8 @@ void LOOLWSD::initialize(Application& self)
             { "freemium.impress_subscription_highlights", IMPRESS_SUBSCRIPTION_HIGHLIGHTS },
             { "freemium.draw_subscription_highlights", DRAW_SUBSCRIPTION_HIGHLIGHTS },
 #endif
-            { "user_interface.mode", USER_INTERFACE_MODE }
+            { "user_interface.mode", USER_INTERFACE_MODE },
+            { "user_interface.use_integration_theme", "false" }
           };
 
     // Set default values, in case they are missing from the config file.
