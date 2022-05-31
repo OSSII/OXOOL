@@ -195,6 +195,7 @@ L.Map.Mouse = L.Handler.extend({
 				this._mouseEventsQueue = [];
 			}
 			if (!this._map.dragging.enabled()) {
+				mousePos = docLayer._latLngToTwips(e.latlng);
 				docLayer._postMouseEvent('move', mousePos.x, mousePos.y, 1, buttons, modifier);
 
 				for (key in docLayer._selectionHandles) {
