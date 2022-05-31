@@ -151,7 +151,8 @@ OXOOL_CSS_LST =\
 	$(srcdir)/css/notebookbar.css \
 	$(srcdir)/css/jssidebar.css \
 	$(srcdir)/css/override-vex.css \
-	$(srcdir)/css/override-smartmenus.css
+	$(srcdir)/css/override-smartmenus.css \
+	$(srcdir)/css/infobar.css
 
 if ENABLE_FEEDBACK
 OXOOL_CSS_LST += $(srcdir)/css/iframedialog.css
@@ -382,6 +383,7 @@ OXOOL_JS_LST =\
 if ENABLE_FEEDBACK
 OXOOL_JS_LST +=\
 	src/control/IFrameDialog.js \
+	src/map/handler/Map.Infobar.js \
 	src/map/handler/Map.Feedback.js
 endif
 
