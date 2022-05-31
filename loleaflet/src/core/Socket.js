@@ -1705,7 +1705,7 @@ app.definitions.Socket = L.Class.extend({
 		// as directed by the SAL_LOG environment variable, and
 		// 2) all warnings on plus SAL_INFO for sc.
 		//
-		// (Note that coolwsd sets the SAL_LOG environment variable
+		// (Note that oxoolwsd sets the SAL_LOG environment variable
 		// to "-WARN-INFO", i.e. the default is that nothing is
 		// logged from core.)
 

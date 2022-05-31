@@ -689,7 +689,7 @@ L.TextInput = L.Layer.extend({
 			s = s + ']';
 			window.app.console.log('L.TextInput._sendText: ' + s);
 		}
-		this._fancyLog('send-text-to-coolwsd', text);
+		this._fancyLog('send-text-to-oxoolwsd', text);
 
 		// MSIE/Edge cannot compare a string to "\n" for whatever reason,
 		// so compare charcode as well

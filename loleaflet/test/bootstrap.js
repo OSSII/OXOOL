@@ -124,7 +124,7 @@ function parseStats(content) {
 }
 
 function dumpMemoryUse() {
-	var url = 'https://admin:admin@localhost:' + port + '/cool/getMetrics/';
+	var url = 'https://admin:admin@localhost:' + port + '/oxool/getMetrics/';
 	console.log('Fetching stats from ' + url);
 	var req = https.request(
 		url,
