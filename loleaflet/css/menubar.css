@@ -15,7 +15,7 @@
 
 #document-header {
 	position: relative;
-	/* background: #ffffff; */
+	background: transparent;
 	margin-right: 5px;
 }
 /*avoid multiple document-headers in readonly mode*/
@@ -138,9 +138,9 @@
 	padding-right: 12px;
 	padding-top: 5px;
 	/* z-index: 400; */
-	/* border-left: 1px solid #ffffff;
-	border-right: 1px solid #ffffff;
-	border-top: 1px solid transparent; */
+	border-left: 1px solid transparent;
+	border-right: 1px solid transparent;
+	border-top: 1px solid transparent;
 }
 
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
@@ -155,7 +155,7 @@
 	background: #e0e0e0;
 }
 .lo-menu > li, .lo-menu > li > .disabled {
-	background: var(--doc-identify-color);
+	background: transparent; /* top-level menus remain greyish */
 	border-left-color: transparent;
 }
 .lo-menu > li .disabled {
