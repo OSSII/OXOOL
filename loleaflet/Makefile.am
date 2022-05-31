@@ -673,10 +673,12 @@ pot:
 	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/templates/loleaflet-ui.pot \
 		admin/admin.strings.js \
 		admin/src/*.js \
+		js/w2ui-1.5.rc1.js \
 		src/control/ColorPicker.js \
 		src/control/Control.AlertDialog.js \
 		src/control/Control.Command.js \
 		src/control/Control.ContextMenu.js \
+		src/control/Control.DocumentNameInput.js \
 		src/control/Control.DocumentRepair.js \
 		src/control/Control.DownloadProgress.js \
 		src/control/Control.FormulaBar.js \
