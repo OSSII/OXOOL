@@ -475,6 +475,9 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 		}
 
+		if (isReadOnly)
+			statusbar.disable('LanguageStatus');
+
 		this.map.fire('updateuserlistcount');
 
 		window.updateVisibilityForToolbar(statusbar);
