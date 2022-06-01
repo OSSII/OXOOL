@@ -205,7 +205,7 @@ body {
 
 #sidebar-dock-wrapper {
 	display: none;
-	background: #fff;
+	background: #eee;
 	position: relative;
 	border-top: 1px solid var(--gray-color);
 	border-left: 1px solid var(--gray-color);
