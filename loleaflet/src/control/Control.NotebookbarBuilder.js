@@ -795,9 +795,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			text: [
 				{id: 'nb-hamburger', menu: [
 					{id: '.uno:SelectAll'},
-				].concat(window.ThisIsAMobileApp ? [] : [
-					{name: '.uno:FullScreen', id: 'fullscreen'},
-				]).concat([
 					{name: 'Show Ruler', id: 'showruler'},
 					{type: 'separator'},
 					{id: '.uno:ChangesMenu', menu: [
@@ -849,12 +846,11 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 						{id: '.uno:AutoFormatMenu', menu: [
 							{id: '.uno:OnlineAutoFormat'}]}
 					]}
-				])}
+				]}
 			],
 			spreadsheet: [
 				{id: 'nb-hamburger', name: _('Menu'), menu: [
 					{id: '.uno:SelectAll'},
-					{name: _UNO('.uno:FullScreen', 'spreadsheet'), id: 'fullscreen'},
 					{type: 'separator'},
 					{id: '.uno:SearchDialog'},
 					{type: 'separator'},
@@ -877,7 +873,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			presentation: [
 				{id: 'nb-hamburger', name: _('Menu'), menu: [
 					{id: '.uno:SelectAll'},
-					{name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen'},
 					{type: 'separator'},
 					{id: '.uno:SlideMasterPage'},
 					{type: 'separator'},
@@ -905,7 +900,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			],
 			drawing: [
 				{id: 'nb-hamburger', name: _('Menu'), type: 'menu', menu: [
-					{name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen'},
 					{type: 'separator'},
 					{id: '.uno:SearchDialog'},
 					{type: 'separator'},
