@@ -312,6 +312,10 @@ L.Map.Keyboard = L.Handler.extend({
 
 		// 快捷鍵處理，只有在編輯文件時，才可執行
 		if (this._map.editorHasFocus()) {
+			// 是否啟用 Ctrl+Alt+Shift+D 切換拼貼除錯模式
+			if (ev.type === 'keydown' && ctrl && alt && shift && ev.keyCode === 68) {
+				this._map._docLayer.toggleTileDebugMode();
+			}
 			// 處理配合 Ctrl 的快捷鍵
 			if ((ctrl || cmd) && this._handleCtrlCommand(ev)) {
 				return;
