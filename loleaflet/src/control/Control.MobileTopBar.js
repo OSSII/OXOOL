@@ -27,10 +27,6 @@ L.Control.MobileTopBar = L.Control.extend({
 
 	getToolItems: function(docType) {
 		var items = [
-			{	// 關閉或回到檢視模式
-				type: 'button',  id: 'closemobile',  img: 'closemobile',
-				applyDocType: 'all', applyPermission: 'all'
-			},
 			{	// 分隔線
 				type: 'break', id: 'undoredobreak',
 				applyDocType: 'all', applyPermission: {'edit': true},
@@ -131,10 +127,6 @@ L.Control.MobileTopBar = L.Control.extend({
 				toolbar.check(id);
 			}
 		}
-		else if (id === 'closemobile') {
-			// Call global onClick handler
-			window.onClick(e, id, item);
-		}
 		else if (id === 'fullscreen-drawing') {
 			if (item.checked) {
 				toolbar.uncheck(id);
@@ -204,11 +196,6 @@ L.Control.MobileTopBar = L.Control.extend({
 					}
 				}
 			}.bind(this));
-			if (e.perm === 'edit') {
-				this._bar.set('closemobile', {img: 'editmode'});
-			} else {
-				this._bar.set('closemobile', {img: 'closemobile'});
-			}
 		}
 	},
 });

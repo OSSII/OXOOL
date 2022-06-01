@@ -44,11 +44,18 @@ L.Control.UIManager = L.Control.extend({
 		var enableNotebookbar = window.userInterfaceMode === 'notebookbar';
 
 		setupToolbar(this.map); // 工具列優先設定
+		var that = this;
 
 		if (window.mode.isMobile() || !enableNotebookbar) {
 			var menubar = L.control.menubar();
 			this.map.menubar = menubar;
 			this.map.addControl(menubar);
+		}
+
+		if (window.mode.isMobile()) {
+			$('#toolbar-mobile-back').on('click', function() {
+				that.enterReadonlyOrClose();
+			});
 		}
 
 		if (!window.mode.isMobile()) {
