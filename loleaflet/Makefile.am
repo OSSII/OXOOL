@@ -58,8 +58,8 @@ endif
 OXOOL_HTML_SRC = $(shell find $(srcdir)/html -name '*.html')
 OXOOL_HTML_DST = $(patsubst $(srcdir)/html/%.html,$(DIST_FOLDER)/%.html,$(OXOOL_HTML_SRC))
 
-OXOOL_WELCOME_SRC = $(shell find $(srcdir)/welcome -name '*.html')
-OXOOL_WELCOME_DST = $(patsubst $(srcdir)/welcome/%.html,$(DIST_FOLDER)/welcome/%.html,$(OXOOL_WELCOME_SRC))
+OXOOL_WELCOME_SRC = $(shell find $(srcdir)/welcome -name '*')
+OXOOL_WELCOME_DST = $(patsubst $(srcdir)/welcome/%,$(DIST_FOLDER)/welcome/%,$(OXOOL_WELCOME_SRC))
 
 OXOOL_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name '*.woff*' -or -name 'OFL.txt' -or -name '*.svg' -or -name '*.png' -or -name '*.min.js')
 OXOOL_ADMIN_ALL = $(shell find $(srcdir)/admin -name '*')
@@ -603,7 +603,7 @@ $(DIST_FOLDER)/%.html: $(srcdir)/html/%.html
 		`ln -sf $(abs_srcdir)/$< $@`; \
 	fi
 
-$(DIST_FOLDER)/welcome/%.html: $(srcdir)/welcome/%.html
+$(DIST_FOLDER)/welcome/%: $(srcdir)/welcome/%
 	@mkdir -p $(dir $@)
 	@if test -z '$(ENABLE_BROWSERSYNC)'; then \
 		`cp $< $@`; \
