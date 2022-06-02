@@ -54,7 +54,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:shareas'] = this._shareAsControl;
 		this._toolitemHandlers['.uno:Print'] = this._printControl;
 		this._toolitemHandlers['.uno:rev-history'] = this._revHistoryControl;
-		this._toolitemHandlers['.uno:Menubar'] = this._menubarControl;
 		this._toolitemHandlers['.uno:InsertPageHeader'] = this._headerFooterControl;
 		this._toolitemHandlers['.uno:InsertPageFooter'] = this._headerFooterControl;
 		this._toolitemHandlers['.uno:Text'] = this._insertTextBoxControl;
@@ -884,120 +883,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			builder.map.openRevisionHistory();
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
-
-	_menubarControl: function(parentContainer, data, builder) {
-		var control = builder._unoToolButton(parentContainer, data, builder);
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).tooltip({disabled: true});
-		$(control.container).addClass('sm sm-simple lo-menu');
-
-		var disabledMacros = window.enableMacrosExecution === 'false';
-
-		var menu = {
-			text: [
-				{id: 'nb-hamburger', menu: [
-					{id: '.uno:ToolsMenu', menu: [
-						{id: '.uno:LanguageMenu', menu: [
-							{
-								id: '.uno:SetLanguageSelectionMenu',
-								'menu': []
-							},
-							{
-								id: '.uno:SetLanguageParagraphMenu',
-								menu: []
-							},
-							{
-								id: '.uno:SetLanguageAllTextMenu',
-								'menu': []
-							},
-							{
-								type: '--'
-							},
-							{
-								id: '.uno:Hyphenate',
-							},
-							{
-								id: '.uno:ChineseConversion',
-							},
-							{
-								id: '.uno:HangulHanjaConversion',
-								hotkey: 'Ctrl+Shift+F7'
-							}
-						]},
-						{type: 'separator'},
-						{id: '.uno:AutoFormatMenu', menu: [
-							{id: '.uno:OnlineAutoFormat'}]}
-					]}
-				]}
-			],
-			spreadsheet: [
-				{id: 'nb-hamburger', name: _('Menu'), menu: [
-					{id: '.uno:ToolsMenu', menu: [
-						{id: '.uno:LanguageMenu', menu: [
-							{
-								id: '.uno:SetLanguageAllTextMenu',
-								menu: []
-							}
-						]},
-						{id: 'separator', hidden: disabledMacros},
-						{id: '.uno:RunMacro', hidden: disabledMacros}
-					]}
-				]}
-			],
-			presentation: [
-				{id: 'nb-hamburger', name: _('Menu'), menu: [
-					{id: '.uno:ToolsMenu', menu: [
-						{id: '.uno:LanguageMenu', menu: [
-							{
-								'id': '.uno:SetLanguageAllTextMenu',
-								'menu': []
-							}
-						]},
-						{type: 'separator', hidden: disabledMacros},
-						{id: '.uno:RunMacro', hidden: disabledMacros}
-					]},
-				]}
-			],
-			drawing: [
-				{id: 'nb-hamburger', name: _('Menu'), type: 'menu', menu: [
-					{id: '.uno:ToolsMenu', menu: [
-						{id: '.uno:LanguageMenu', menu: [
-							{
-								'id': '.uno:SetLanguageAllTextMenu',
-								'menu': []
-							}
-						]},
-					]},
-				]}
-			]
-		};
-
-		var menubar = L.control.menubar({allowedReadonlyMenus: ['nb-hamburger']});
-		menubar._map = builder.map;
-
-		var docType = builder.map.getDocType();
-		var menuHtml = menubar._createMenu(menu[docType]);
-		document.getElementById('Menubar').setAttribute('role', 'menu');
-
-		$(control.container).html(menuHtml);
-
-		$(control.container).smartmenus({
-			hideOnClick: true,
-			showOnClick: true,
-			hideTimeout: 0,
-			hideDuration: 0,
-			showDuration: 0,
-			showTimeout: 0,
-			collapsibleHideDuration: 0,
-			subIndicatorsPos: 'append',
-			subIndicatorsText: '&#8250;'
-		}).on('beforeshow.smapi', menubar._beforeShow.bind(menubar))
-			.on('select.smapi', menubar._onItemSelected.bind(menubar))
-			.on('click.smapi', menubar._onItemClicked.bind(menubar));
-
-		$(menuHtml[0]).children('a').html('<img class="ui-content unobutton" src="' + L.LOUtil.getImageURL('lc_hamburger.svg') + '" id="Hamburgerimg" alt="Menu">');
 	},
 
 	buildControl: function(parent, data) {
