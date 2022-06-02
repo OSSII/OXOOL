@@ -177,7 +177,7 @@
 }
 
 .lo-menu > li > a.highlighted {
-	border-bottom-color: #fff;
+	border-bottom-color: var(--color-border-dark);
 }
 
 /* 第一層子選單 */
@@ -371,7 +371,7 @@ li .disabled .keyboard {
 }
 
 .lo-menu-item-checked:hover::before {
-	color: #fff;
+	color: var(--color-text-dark);
 	-webkit-filter: brightness(100);
 	filter: brightness(100);
 }
@@ -417,8 +417,8 @@ li .disabled .keyboard {
 
 /* For classic mode */
 #main-menu .freemium-disabled, #menu-nb-hamburger .freemium-disabled {
-	color: var(--gray-light-txt--color) !important;
-	background-color: #fafafa;
+	color: var(--color-text-lighter) !important;
+	background-color: var(--color-background-lighter);
 	box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.2);
 	background: url('images/lc_freeemiumlock.svg') right top / 24px no-repeat
 }
@@ -429,7 +429,7 @@ li .disabled .keyboard {
 }
 
 #main-menu .freemium-disabled:hover, #menu-nb-hamburger .freemium-disabled:hover {
-	background-color: #fafafa;
+	background-color: var(--color-background-lighter);
 	background-position: right bottom !important;
 }
 
