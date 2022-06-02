@@ -1835,6 +1835,10 @@
 				"id": ".uno:WordCountDialog"
 			},
 			{
+				"id": ".uno:AccessibilityCheck",
+				"hide": true
+			},
+			{
 				"type": "--"
 			},
 			{
