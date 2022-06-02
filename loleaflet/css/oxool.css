@@ -378,7 +378,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 .context-menu-icon::before {
 	font-family: var(--oxool-font) !important;
 	content: '\2713';
-	color: #0000ff !important;
+	color: var(--color-main-text) !important;
 	width: 16px !important
 }
 
