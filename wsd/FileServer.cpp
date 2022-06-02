@@ -396,11 +396,12 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
 
         const std::string loleafletHtml = config.getString("loleaflet_html", "loleaflet.html");
         if (endPoint == loleafletHtml ||
-                endPoint == "help-localizations.json" ||
-                endPoint == "localizations.json" ||
-                endPoint == "locore-localizations.json" ||
-                endPoint == "uno-localizations.json" ||
-                endPoint == "uno-localizations-override.json")
+            endPoint == "welcome.html" ||
+            endPoint == "help-localizations.json" ||
+            endPoint == "localizations.json" ||
+            endPoint == "locore-localizations.json" ||
+            endPoint == "uno-localizations.json" ||
+            endPoint == "uno-localizations-override.json")
         {
             preprocessFile(request, requestDetails, message, socket);
             return;
