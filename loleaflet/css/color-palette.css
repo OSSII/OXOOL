@@ -12,11 +12,13 @@
 	--color-text-dark: #333333;  /* select */
 	--color-text-darker: #000;  /* hover */
 	--color-text-lighter: #696969;
+	--color-text-disabled: #BBBBBB;
 
 	--color-main-background: #fff;
 	--color-background-dark: #F7F7F7;  /* select */
 	--color-background-darker: #e4e4e4;  /* hover */
 	--color-background-lighter: #f8f9fa;
+	--color-background-selected: #CCE8FF;
 
 	--color-primary: #1C99E0;
 	--color-primary-text: #fff;

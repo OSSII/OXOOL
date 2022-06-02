@@ -311,7 +311,7 @@ td.jsdialog .jsdialog.cell.sidebar {
 .hasnotebookbar .ui-content.unotoolbutton.selected.inline,
 .hasnotebookbar .ui-content.unotoolbutton.selected:not(.has-label):not(.inline),
 .sidebar.unotoolbutton.selected {
-	background-color: var(--color-background-dark);
+	background-color: var(--color-background-selected);
 	border: 1px solid transparent;
 	color: var(--color-text-dark);
 	border-radius: var(--border-radius);

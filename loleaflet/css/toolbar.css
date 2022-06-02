@@ -583,8 +583,8 @@ button.leaflet-control-search-next
 	border: 1px solid var(--color-border-darker) !important;
 }
 .w2ui-toolbar table.w2ui-button.checked {
-	background-color: var(--color-background-dark);
-	border: 1px solid var(--color-border-dark);
+	background-color: var(--color-background-selected);
+	border: 1px solid transparent;
 	color: var(--color-text-dark);
 }
 .select2-container--default .select2-selection--single:hover,
