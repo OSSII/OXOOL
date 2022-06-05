@@ -330,6 +330,7 @@ L.Control.TopToolbar = L.Control.extend({
 					}
 				}
 			},
+			{type: 'break', id: 'breakfontsizes', mobile: false, tablet: false,},
 			{	// 粗體
 				type: 'button', id: 'bold', img: 'bold', hint: _UNO('.uno:Bold', docType, true),
 				uno: '.uno:Bold', stateChange: true
