@@ -253,6 +253,18 @@
 			{
 				"id": ".uno:Sidebar",
 				"hotkey": "Ctrl+F5"
+			},
+			{
+				"id": ".uno:ModifyPage"
+			},
+			{
+				"id": ".uno:SlideChangeWindow"
+			},
+			{
+				"id": ".uno:CustomAnimation"
+			},
+			{
+				"id": ".uno:MasterSlidesPanel"
 			}
 		]
 	},
