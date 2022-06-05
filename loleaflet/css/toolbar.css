@@ -499,8 +499,10 @@ button.leaflet-control-search-next
 	color: var(--color-text-dark);
 	border-radius: var(--border-radius);
 }
-.select2-container--default .select2-selection--single .select2-selection__rendered:hover {
-	background-color: var(--color-background-darker);
+.select2-container--default .select2-selection--single .select2-selection__rendered:hover,
+.sidebar.jsdialog.ui-listbox:hover,
+.w2ui-toolbar table.w2ui-button.checked:hover {
+	background-color: var(--color-background-lighter);
 	color: var(--color-text-darker);
 }
 .select2-dropdown {
@@ -609,13 +611,6 @@ button.leaflet-control-search-next
 	background-color: var(--color-background-selected);
 	border: 1px solid transparent;
 	color: var(--color-text-dark);
-}
-.select2-container--default .select2-selection--single:hover,
-.sidebar.jsdialog.ui-listbox:hover,
-.w2ui-toolbar table.w2ui-button.checked:hover {
-	background-color: var(--color-background-darker);
-	border: 1px solid var(--color-border-darker);
-	color: var(--color-text-darker);
 }
 
 .w2ui-icon.basicshapes_ellipse { background: url('images/cmd/ellipse.svg') no-repeat center !important; }
