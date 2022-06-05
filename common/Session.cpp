@@ -163,7 +163,10 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         }
         else if (name == "lang")
         {
-            _lang = value;
+            if (value == "en")
+                _lang = "en-US";
+            else
+                _lang = value;
             ++offset;
         }
         else if (name == "watermarkWhenEditing")
