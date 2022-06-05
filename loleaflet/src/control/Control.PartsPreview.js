@@ -71,6 +71,9 @@ L.Control.PartsPreview = L.Control.extend({
 		}
 		this._map._docLayer._masterPageChanged = true;
 		this._needRefreshAllPreviews = true;
+		// clear the old tiles because they are saved in the same place
+		// since the part no will be the same for both views and it will think it is cached
+		this._map._docLayer._onMessage('invalidatetiles: EMPTY', null);
 		app.socket.sendMessage('status'); // 重新要求檔案狀態
 	},
 
