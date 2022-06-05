@@ -63,16 +63,6 @@ L.Control.AlertDialog = L.Control.extend({
 
 			if (isLinkValid) {
 				buttonsList.push({
-					text: _('Edit'),
-					type: 'button',
-					className: 'vex-dialog-button-secondary',
-					click: function() {
-						vex.closeAll();
-						e.map.executeAllowedCommand('.uno:HyperlinkDialog');
-					}
-				});
-
-				buttonsList.push({
 					text: _('Open link'),
 					type: 'button',
 					className: 'vex-dialog-button-primary',
