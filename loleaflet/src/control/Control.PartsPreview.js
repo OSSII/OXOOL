@@ -69,6 +69,7 @@ L.Control.PartsPreview = L.Control.extend({
 			$('#document-container').removeClass('slide-master-mode');
 			$('#document-container').addClass('slide-normal-mode');
 		}
+		this._map._docLayer._masterPageChanged = true;
 		this._needRefreshAllPreviews = true;
 		app.socket.sendMessage('status'); // 重新要求檔案狀態
 	},
