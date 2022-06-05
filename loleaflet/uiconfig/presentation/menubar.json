@@ -1345,14 +1345,14 @@
 		"id": ".uno:SlideMenu",
 		"menu": [
 			{
-				"name": ".uno:Presentation",
-				"id": "fullscreen-presentation",
-				"hotkey": "F5"
+				"id": ".uno:Presentation",
+				"hotkey": "F5",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:PresentationCurrentSlide",
-				"id": "presentation-currentslide",
-				"hotkey": "Shift+F5"
+				"id": ".uno:PresentationCurrentSlide",
+				"hotkey": "Shift+F5",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"

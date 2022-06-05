@@ -243,6 +243,18 @@ L.Control.AlternativeCommand = L.Control.extend({
 			L.dialog.run('SetTabBgColor');
 		},
 		/**
+		 * impress: 從第一張投影片開始播放
+		 */
+		'.uno:Presentation': function() {
+			this._map.fire('fullscreen');
+		},
+		/**
+		 * impress: 從目前投影片開始播放
+		 */
+		 '.uno:PresentationCurrentSlide': function() {
+			this._map.fire('fullscreen', {startSlideNumber: this._map.getCurrentPartNumber()});
+		},
+		/**
 		 * 顯示線上說明
 		 */
 		 'online-help': function() {
