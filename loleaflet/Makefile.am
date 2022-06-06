@@ -378,7 +378,7 @@ OXOOL_JS_LST =\
 	src/map/anim/Map.PanAnimation.js \
 	src/dom/PosAnimation.Timer.js \
 	src/control/Control.Scroll.Annotation.js \
-	src/layer/marker/DivOverlay.js
+	src/main.js
 
 if ENABLE_FEEDBACK
 OXOOL_JS_LST +=\
@@ -387,9 +387,6 @@ OXOOL_JS_LST +=\
 	src/map/handler/Map.Feedback.js \
 	src/map/handler/Map.Welcome.js
 endif
-
-OXOOL_JS_LST +=\
-	src/main.js
 
 OXOOL_JS_WEBORDER = $(filter %,$(OXOOL_JS_LST))
 
