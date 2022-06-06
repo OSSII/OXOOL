@@ -474,7 +474,7 @@ L.Control.StatusBar = L.Control.extend({
 					{type: 'break', id: 'break1'},
 					{
 						type: 'html', id: 'PageStatus',
-						html: '<div id="PageStatus" class="cool-font" title="' + _('Number of Pages') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+						html: '<div id="PageStatus" class="oxool-font" title="' + _('Number of Pages') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break2', mobile: false, tablet: false},
 					{type: 'menu-radio', id: 'LanguageStatus',
