@@ -704,11 +704,7 @@ L.Control.TopToolbar = L.Control.extend({
 	},
 
 	create: function() {
-		// 不重複建立工具列
-		if (this._bar !== null) {
-			return;
-		}
-
+		$().w2destroy('editbar');
 		var that = this;
 		var toolbar = L.DomUtil.get('toolbar-up');
 		// In case it contains garbage
