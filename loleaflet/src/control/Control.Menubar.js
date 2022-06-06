@@ -1074,7 +1074,8 @@ L.Control.Menubar = L.Control.extend({
 		if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
 			return false;
 
-		if (menuItem.id === '.uno:Sidebar'  && window.app.dontUseSidebar)
+		if ((menuItem.id === '.uno:Sidebar' || menuItem.id === '.uno:ModifyPage' || menuItem.id === '.uno:SlideChangeWindow' ||
+			menuItem.id === '.uno:CustomAnimation' || menuItem.id === '.uno:MasterSlidesPanel') && window.app.dontUseSidebar)
 			return false;
 
 		// Keep track of all 'downloadas-' options and register them as
