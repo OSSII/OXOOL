@@ -206,6 +206,7 @@ div#thousandseparator.checkbutton.jsdialog.sidebar {
 .sidebar.ui-expander-label {
 	color: var(--color-main-text);
 	font-size: var(--header-font-size);
+	font-weight: bold;
 	line-height: var(--header-height);
 	padding-left: 8px;
 	padding-right: 8px; /* for RTL mode */
