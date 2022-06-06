@@ -143,7 +143,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:Insert'] = function() {};
 		this._toolitemHandlers['.uno:InsertCell'] = function() {};
 		this._toolitemHandlers['.uno:ToolProtectionDocument'] = function() {};
-		this._toolitemHandlers['.uno:Protect'] = function() {};
 		this._toolitemHandlers['.uno:ImportFromFile'] = function() {};
 		this._toolitemHandlers['.uno:PhotoAlbumDialog'] = function() {};
 		this._toolitemHandlers['.uno:AutoFormat'] = function() {};
