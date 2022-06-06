@@ -782,7 +782,7 @@ AS_IF([test "$enable_welcome_message_button" = "yes"],
 AC_DEFINE_UNQUOTED([ENABLE_WELCOME_MESSAGE_BUTTON],["$ENABLE_WELCOME_MESSAGE_BUTTON"],[Should the Release notes message on startup should have a dismiss button instead of an x button to close by default?])
 AC_SUBST(ENABLE_WELCOME_MESSAGE_BUTTON)
 
-USER_INTERFACE_MODE='classic'
+USER_INTERFACE_MODE='compact'
 AC_DEFINE_UNQUOTED([USER_INTERFACE_MODE],["$USER_INTERFACE_MODE"],[Which user interface mode should be activated])
 AC_SUBST(USER_INTERFACE_MODE)
 

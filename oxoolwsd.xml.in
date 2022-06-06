@@ -163,7 +163,7 @@
     </welcome>
 
     <user_interface>
-      <mode type="string" desc="Controls the user interface style (classic|notebookbar)" default="@USER_INTERFACE_MODE@">@USER_INTERFACE_MODE@</mode>
+      <mode type="string" desc="Controls the user interface style. The 'default' means: Take the value from ui_defaults, or decide for one of compact or tabbed (default|compact|tabbed)" default="@USER_INTERFACE_MODE@">@USER_INTERFACE_MODE@</mode>
       <pdf_viewer_resolution_dpi desc="The resolution dpi at which to render when viewing the pdf." type="int" default="600"></pdf_viewer_resolution_dpi>
       <use_integration_theme desc="Use theme from the integrator" type="bool" default="false">false</use_integration_theme>
     </user_interface>

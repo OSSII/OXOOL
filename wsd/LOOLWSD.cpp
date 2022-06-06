@@ -1068,6 +1068,13 @@ void LOOLWSD::initialize(Application& self)
 
     // Setup user interface mode
     UserInterface = getConfigValue<std::string>(conf, "user_interface.mode", "classic");
+
+    if (UserInterface == "compact")
+        UserInterface = "classic";
+
+    if (UserInterface == "tabbed")
+        UserInterface = "notebookbar";
+
     // Setup user interface pdf viewer resolution dpi
     PdfViewerDPI = getConfigValue<unsigned int>(conf, "user_interface.pdf_viewer_resolution_dpi", 96);
 
