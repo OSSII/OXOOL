@@ -691,6 +691,20 @@ L.Control.MobileBottomBar = L.Control.extend({
 			}
 		});
 
+		if (this.map.isRestrictedUser()) {
+			for (var i = 0; i < toolItems.length; i++) {
+				var it = toolItems[i];
+				this.map.hideRestrictedItems(it, $('#tb_editbar_item_'+ it.id)[0], $('#tb_editbar_item_'+ it.id)[0]);
+			}
+		}
+
+		if (this.map.isLockedUser()) {
+			for (var i = 0; i < toolItems.length; i++) {
+				var it = toolItems[i];
+				this.map.disableLockedItem(it, $('#tb_editbar_item_'+ it.id)[0], $('#tb_editbar_item_'+ it.id)[0]);
+			}
+		}
+
 		this._updateToolbarsVisibility();
 		this.map.setupStateChangesForToolbar({toolbar: this._bar});
 	},
