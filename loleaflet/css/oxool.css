@@ -958,7 +958,8 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	border-style: solid; /* required for ie11 */
 	display: none; /* prevent cypress failure */
 
-	color: var(--color-background-dark); /* color */
+	/* 凍結欄列分隔線顏色及寬度，沒必要請勿修改 */
+	color: #000; /* color */
 	opacity: 0.3; /* opacity */
 	border-top-width: 1px; /* weight */
 }
