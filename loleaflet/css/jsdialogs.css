@@ -412,6 +412,7 @@ input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:chec
 }
 
 .jsdialog .radiobutton > label {
+	font-size: var(--default-font-size);
 	vertical-align: middle;
 }
 

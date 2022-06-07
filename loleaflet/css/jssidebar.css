@@ -422,10 +422,9 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 }
 .sidebar #rowheight,
 .sidebar #columnwidth {
-	padding-left: 24px;
+	/* padding-left: 24px; */
 }
 .sidebar #SetMinimalRowHeight,
 .sidebar #SetMinimalColumnWidth {
 	position: relative;
-	bottom: 28px;
 }
