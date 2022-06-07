@@ -407,7 +407,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		var control = builder._unoToolButton(parentContainer, data, builder, options);
 
 		$(control.container).unbind('click.toolbutton');
-		if (!builder.map.isFreemiumDeniedItem(data)) {
+		if (!builder.map.isLockedItem(data)) {
 			$(control.container).click(function () {
 				if (!isDownloadAsGroup) {
 					L.control.menubar()._executeAction.bind({_map: builder.options.map})(undefined, {id: data.id});
