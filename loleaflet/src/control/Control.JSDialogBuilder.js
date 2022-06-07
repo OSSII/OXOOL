@@ -109,6 +109,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 		this._controlHandlers['spinnerimg'] = this._spinnerImgControl;
 		this._controlHandlers['image'] = this._imageHandler;
 		this._controlHandlers['scrollwindow'] = this._scrollWindowControl;
+		this._controlHandlers['customtoolitem'] = this._mapDispatchToolItem;
 
 		this._controlHandlers['mainmenu'] = this._containerHandler;
 		this._controlHandlers['submenu'] = this._subMenuHandler;
@@ -2490,6 +2491,20 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			builder.map.disableFreemiumItem(data, parentContainer, controls['container']);
 		}
 		return controls;
+	},
+
+	_mapDispatchToolItem: function (parentContainer, data, builder) {
+		if (!data.command)
+			data.command = data.id;
+
+		var control = builder._unoToolButton(parentContainer, data, builder);
+
+		$(control.container).unbind('click.toolbutton');
+		if (!builder.map.isLockedItem(data)) {
+			$(control.container).click(function () {
+				builder.map.dispatch(data.command);
+			});
+		}
 	},
 
 	_divContainerHandler: function (parentContainer, data, builder) {

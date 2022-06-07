@@ -3,7 +3,7 @@
  * L.Control.SearchBar
  */
 
-/* global $ _UNO app */
+/* global $ _ _UNO app */
 L.Control.MobileTopBar = L.Control.extend({
 
 	options: {
@@ -40,6 +40,12 @@ L.Control.MobileTopBar = L.Control.extend({
 				type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: '.uno:Redo',
 				applyDocType: 'all', applyPermission: {'edit': true},
 				stateChange: true
+			},
+			{	// 接受公式
+				type: 'button', id: 'acceptformula', img: 'ok', hint: _('Accept'), applyDocType: {spreadsheet: true}, applyPermission: {'edit': true}, hidden: true
+			},
+			{	// 拒絕公式
+				type: 'button', id: 'cancelformula', img: 'cancel', hint: _('Cancel'), applyDocType: {spreadsheet: true}, applyPermission: {'edit': true}, hidden: true
 			},
 			{	// 彈簧(撐開用)
 				type: 'spacer', applyDocType: 'all', applyPermission: 'all'
@@ -108,6 +114,12 @@ L.Control.MobileTopBar = L.Control.extend({
 
 		if (item.uno) {
 			this.map.executeAllowedCommand(item.uno);
+		}
+		else if (id === 'cancelformula') {
+			this.map.dispatch('cancelformula');
+		}
+		else if (id === 'acceptformula') {
+			this.map.dispatch('acceptformula');
 		}
 		else if (id === 'comment_wizard') {
 			if (window.commentWizard) {
