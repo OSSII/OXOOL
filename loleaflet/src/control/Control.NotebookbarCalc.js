@@ -87,6 +87,17 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 		var hasGroupedDownloadAs = !!window.groupDownloadAsForNb;
 
 		var content = [
+			{
+				'type': 'toolbox',
+				'children': [
+					{
+						'id': 'file-save',
+						'type': 'bigtoolitem',
+						'text': _('Save'),
+						'command': '.uno:Save'
+					}
+				]
+			},
 			hasSaveAs ?
 				{
 					'id': 'file-saveas',
@@ -700,7 +711,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 			{
 				'id': 'Data-PrintRangesMenu:MenuPrintRanges',
 				'type': 'menubutton',
-				'text': _UNO('.uno:PrintRangesFormatMenu', 'spreadsheet'),
+				'text': _UNO('.uno:PrintRangesMenu', 'spreadsheet'),
 				'enabled': 'true'
 			},
 			{
@@ -1355,8 +1366,8 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'command': '.uno:SpellDialog'
 			},
 			{
-				'id': 'LanguageMenu:LanguageMenu',
-				'type': 'menubutton',
+				'id': 'LanguageMenu',
+				'type': 'bigtoolitem',
 				'text': _UNO('.uno:LanguageMenu'),
 				'command': '.uno:LanguageMenu'
 			},

@@ -95,6 +95,17 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 		var hasGroupedDownloadAs = !!window.groupDownloadAsForNb;
 
 		var content = [
+			{
+				'type': 'toolbox',
+				'children': [
+					{
+						'id': 'file-save',
+						'type': 'bigtoolitem',
+						'text': _('Save'),
+						'command': '.uno:Save'
+					}
+				]
+			},
 			hasSaveAs ?
 				{
 					'id': 'file-saveas',
@@ -1439,8 +1450,8 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 				'command': '.uno:ThesaurusDialog'
 			},
 			{
-				'id': 'LanguageMenu:LanguageMenu',
-				'type': 'menubutton',
+				'id': 'LanguageMenu',
+				'type': 'bigtoolitem',
 				'text': _UNO('.uno:LanguageMenu'),
 				'command': '.uno:LanguageMenu'
 			},

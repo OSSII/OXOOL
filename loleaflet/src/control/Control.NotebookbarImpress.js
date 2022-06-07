@@ -143,6 +143,17 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 		var hasGroupedDownloadAs = !!window.groupDownloadAsForNb;
 
 		var content = [
+			{
+				'type': 'toolbox',
+				'children': [
+					{
+						'id': 'file-save',
+						'type': 'bigtoolitem',
+						'text': _('Save'),
+						'command': '.uno:Save'
+					}
+				]
+			},
 			hasSaveAs ?
 				{
 					'id': 'file-saveas',
@@ -1190,8 +1201,8 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 				'command': '.uno:SpellDialog'
 			},
 			{
-				'id': 'LanguageMenu:LanguageMenu',
-				'type': 'menubutton',
+				'id': 'LanguageMenu',
+				'type': 'bigtoolitem',
 				'text': _UNO('.uno:LanguageMenu'),
 				'command': '.uno:LanguageMenu'
 			},
