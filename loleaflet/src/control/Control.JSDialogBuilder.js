@@ -171,18 +171,6 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			{text: _UNO('.uno:InsertLRM', 'text'), uno: 'InsertLRM'},
 			{text: _UNO('.uno:InsertRLM', 'text'), uno: 'InsertRLM'}
 		];
-		this._menus['LanguageMenu'] = [
-			{name: _UNO('.uno:SetLanguageSelectionMenu', 'text'), type: 'menu', menu: [
-				{name: _('None (Do not check spelling)'), id: 'noneselection', uno: '.uno:LanguageStatus?Language:string=Current_LANGUAGE_NONE'}]},
-			{name: _UNO('.uno:SetLanguageParagraphMenu', 'text'), type: 'menu', menu: [
-				{name: _('None (Do not check spelling)'), id: 'noneparagraph', uno: '.uno:LanguageStatus?Language:string=Paragraph_LANGUAGE_NONE'}]},
-			{name: _UNO('.uno:SetLanguageAllTextMenu', 'text'), type: 'menu', menu: [
-				{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]},
-			{type: 'separator'},
-			{text: _UNO('.uno:Hyphenate', 'text'), uno: 'Hyphenate'},
-			{text: _UNO('.uno:ChineseConversion', 'text'), uno: 'ChineseConversion'},
-			{text: _UNO('.uno:HangulHanjaConversion', 'text'), uno: 'HangulHanjaConversion'}
-		];
 		this._menus['FormatMenu'] = [
 			{text: _UNO('.uno:Bold', 'text'), uno: 'Bold'},
 			{text: _UNO('.uno:Italic', 'text'), uno: 'Italic'},
@@ -1501,7 +1489,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 	},
 
 	_pushbuttonControl: function(parentContainer, data, builder, customCallback) {
-		var wrapper = L.DomUtil.create('div', '', parentContainer); // need for freemium overlay
+		var wrapper = L.DomUtil.create('div', '', parentContainer); // need for locking overlay
 		var pushbutton = L.DomUtil.create('button', 'ui-pushbutton ' + builder.options.cssClass, wrapper);
 		pushbutton.id = data.id;
 		var pushbuttonText = builder._customPushButtonTextForId(data.id) !== '' ? builder._customPushButtonTextForId(data.id) : builder._cleanText(data.text);
@@ -2482,14 +2470,9 @@ L.Control.JSDialogBuilder = L.Control.extend({
 
 		if (data.enabled === 'false' || data.enabled === false)
 			$(button).prop('disabled', true);
-		if (window.mode.isMobile()) {
-			builder.map.hideRestrictedItems(data, controls['container'], controls['container']);
-			builder.map.disableLockedItem(data, controls['container'], controls['container']);
-		}
-		else {
-			builder.map.hideRestrictedItems(data, parentContainer, controls['container']);
-			builder.map.disableLockedItem(data, parentContainer, controls['container']);
-		}
+
+		builder.map.hideRestrictedItems(data, controls['container'], controls['container']);
+		builder.map.disableLockedItem(data, controls['container'], controls['container']);
 		return controls;
 	},
 
