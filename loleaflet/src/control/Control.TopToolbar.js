@@ -674,7 +674,7 @@ L.Control.TopToolbar = L.Control.extend({
 			{type: 'break', id: 'breaksidebar', hidden: true},
 			{type: 'button', id: 'edit', img: 'edit'},
 			{	// 側邊攔
-				type: 'button', id: 'sidebar', img: 'sidebar_modify_page', hint: _UNO('.uno:Sidebar', docType, true),
+				type: 'button', id: 'sidebar', img: 'sidebar', hint: _UNO('.uno:Sidebar', docType, true),
 				uno: '.uno:Sidebar', hidden: true, stateChange: true
 			},
 			{type: 'button', id: 'modifypage', img: 'sidebar_modify_page', hint: _UNO('.uno:ModifyPage', docType, true), uno: '.uno:ModifyPage', hidden: true},
@@ -752,6 +752,13 @@ L.Control.TopToolbar = L.Control.extend({
 	onDocLayerInit: function() {
 		var docType = this.map.getDocType();
 
+		if (!window.app.dontUseSidebar) {
+			this._bar.show('breaksidebar', 'sidebar');
+			if (docType === 'presentation') {
+				this._bar.show('modifypage', 'slidechangewindow', 'customanimation', 'masterslidespanel');
+			}
+		}
+
 		switch (docType) {
 		case 'spreadsheet':
 			if (this._bar) {
@@ -759,7 +766,7 @@ L.Control.TopToolbar = L.Control.extend({
 					'numberformatcurrency', 'numberformatpercent', 'numberformatdecimal', 'numberformatdate',
 					'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'togglemergecells', 'breakmergecells',
 					'textdirectionlefttoright', 'textdirectiontoptobottom',
-					'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting', 'backgroundcolor'/* , 'breaksidebar' *//* , 'sidebar' */);
+					'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting', 'backgroundcolor');
 				this._bar.remove('styles');
 			}
 
@@ -774,16 +781,15 @@ L.Control.TopToolbar = L.Control.extend({
 			if (this._bar)
 				this._bar.show('reset', 'leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 					'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet',/*  'incrementindent', 'decrementindent',
-					'breakindent', */ 'inserttable', 'insertannotation', 'backcolor'/* , 'breaksidebar' *//* , 'sidebar' */);
+					'breakindent', */ 'inserttable', 'insertannotation', 'backcolor');
 
 			break;
 		case 'presentation':
 			if (this._bar) {
-				this._bar.show('resetimpress', /* 'breaksidebar', 'modifypage', */
+				this._bar.show('resetimpress',
 					'leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 					'animationeffects', 'insertconnectors', 'horizontaltext', 'verticaltext', 'assignlayoutbreak', 'assignlayout',
-					'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable',  'insertannotation', 'backcolor'/* ,
-					'breaksidebar', 'modifypage', 'slidechangewindow', 'customanimation', 'masterslidespanel' */);
+					'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable',  'insertannotation', 'backcolor');
 				this._bar.remove('styles');
 			}
 			break;
@@ -791,7 +797,7 @@ L.Control.TopToolbar = L.Control.extend({
 			if (this._bar) {
 				this._bar.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 					'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttable', 'backcolor',
-					/* 'breaksidebar', */ /* 'modifypage', */ 'horizontaltext', 'verticaltext', 'insertconnectors');
+					'horizontaltext', 'verticaltext', 'insertconnectors');
 				this._bar.remove('styles');
 			}
 			break;
