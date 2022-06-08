@@ -897,6 +897,12 @@ L.Control.Menubar = L.Control.extend({
 			this._map.setZoom(this._map.options.zoom);
 		} else if (id === 'fullscreen') {
 			L.toggleFullScreen();
+		} else if (id === 'toggleuimode') {
+			if (this._map.uiManager.shouldUseNotebookbarMode()) {
+				this._map.uiManager.onChangeUIMode({mode: 'classic', force: true});
+			} else {
+				this._map.uiManager.onChangeUIMode({mode: 'notebookbar', force: true});
+			}
 		} else if (id === 'fullscreen-presentation' && this._map.getDocType() === 'presentation') {
 			this._map.fire('fullscreen');
 		} else if (id === 'presentation-currentslide' && this._map.getDocType() === 'presentation') {
@@ -1096,6 +1102,9 @@ L.Control.Menubar = L.Control.extend({
 			return false;
 
 		if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
+			return false;
+
+		if (menuItem.id === '.uno:ToolbarModeUI' && window.app.dontUseNotebookbar)
 			return false;
 
 		if ((menuItem.id === '.uno:Sidebar' || menuItem.id === '.uno:ModifyPage' || menuItem.id === '.uno:SlideChangeWindow' ||

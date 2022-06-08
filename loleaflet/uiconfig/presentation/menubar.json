@@ -198,6 +198,10 @@
 				"type": "--"
 			},
 			{
+				"id": ".uno:ToolbarModeUI",
+				"comment": "替代指令"
+			},
+			{
 				"id": ".uno:StatusBarVisible"
 			},
 			{

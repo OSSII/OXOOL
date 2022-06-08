@@ -251,13 +251,23 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * impress: 從目前投影片開始播放
 		 */
-		 '.uno:PresentationCurrentSlide': function() {
+		'.uno:PresentationCurrentSlide': function() {
 			this._map.fire('fullscreen', {startSlideNumber: this._map.getCurrentPartNumber()});
+		},
+		/**
+		 * 切換使用者界面(精簡/分頁)
+		 */
+		'.uno:ToolbarModeUI': function() {
+			if (this._map.uiManager.shouldUseNotebookbarMode()) {
+				this._map.uiManager.onChangeUIMode({mode: 'classic', force: true});
+			} else {
+				this._map.uiManager.onChangeUIMode({mode: 'notebookbar', force: true});
+			}
 		},
 		/**
 		 * 顯示線上說明
 		 */
-		 'online-help': function() {
+		'online-help': function() {
 			L.dialog.run('ShowHelp', {id: 'online-help'});
 		},
 		/**

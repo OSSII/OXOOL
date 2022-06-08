@@ -45,6 +45,9 @@ L.Control.UIManager = L.Control.extend({
 	},
 
 	shouldUseNotebookbarMode: function() {
+		if (window.app.dontUseNotebookbar)
+			return false;
+
 		var forceCompact = this.getSavedStateOrDefault('CompactMode', null);
 		return (window.userInterfaceMode === 'notebookbar' && forceCompact === null)
 			|| forceCompact === false;
