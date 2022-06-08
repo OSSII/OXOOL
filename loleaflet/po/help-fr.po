@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-08 14:12+0800\n"
+"POT-Creation-Date: 2022-06-07 17:06+0800\n"
 "PO-Revision-Date: 2021-11-20 21:17+0000\n"
 "Last-Translator: J. Lavoie <j.lavoie@net-c.ca>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/collabora-"
@@ -83,12 +83,13 @@ msgid "Display the Keyboard shortcuts help"
 msgstr "Affiche l'aide sur les raccourcis clavier"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:29
+#, fuzzy
 msgid ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>?"
 msgstr ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Maj</kbd><span class=\"kbd--"
-"plus\">+</span><kbd> ?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Maj</kbd><span class=\"kbd--plus\">+</span><kbd>V"
 
 #: html/loleaflet-help.html+div.div.h2:33
 #: html/loleaflet-help.html+div.div.h2:179
@@ -3079,10 +3080,11 @@ msgstr "Sélectionnez le texte avec le format existant"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:605
 #: html/loleaflet-help.html+div.div.ol.li.p.img:636
+#, fuzzy
 msgid ""
 "Click on the clone formatting icon <img style=\"height:0.6cm;width:0.6cm;\" "
-"alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. The mouse pointer turns to "
-"a paint bucket."
+"alt=\"\" src=\"images/cmd/formatpaintbrush.svg\">. The mouse pointer turns "
+"to a paint bucket."
 msgstr ""
 "Cliquez sur l'icône de clonage du formatage <img style=\""
 "height:0.6cm;width:0.6cm;\" alt=\"\" src=\"images/lc_formatpaintbrush.svg\">"
@@ -3261,11 +3263,12 @@ msgstr ""
 "Ouvrez la présentation dans <span class=\"productname\">%productName</span>"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:650
+#, fuzzy
 msgid ""
 "Either choose <span class=\"ui\">Slide Show</span> → <span class=\"ui\">Full "
 "Screen Presentation</span> or click on the left-most icon in the bottom of "
 "the slide panel: <img style=\"height:0.6cm;width:0.6cm;\" alt=\"\" src=\""
-"images/lc_dia.svg\">"
+"images/cmd/dia.svg\">"
 msgstr ""
 "Choisissez <span class=\"ui\">Diaporama</span> → <span class=\"ui\">"
 "Présentation en mode plein écran</span> ou cliquez sur l'icône la plus à "
@@ -3295,6 +3298,13 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p:659
 msgid "Set the properties of the element of the object."
 msgstr "Définissez les propriétés des éléments de l'objet."
+
+#~ msgid ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
+#~ msgstr ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Maj</kbd><span class=\"kbd--"
+#~ "plus\">+</span><kbd> ?"
 
 #, fuzzy
 #~ msgid ""

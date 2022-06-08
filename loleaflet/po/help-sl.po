@@ -2,9 +2,9 @@
 # Martin Srebotnjak <miles@filmsi.net>, 2016.
 msgid ""
 msgstr ""
-"Project-Id-Version: OxOffice Online - Help\n"
+"Project-Id-Version: Collabora Online - Help\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-08 14:12+0800\n"
+"POT-Creation-Date: 2022-06-07 17:06+0800\n"
 "PO-Revision-Date: 2021-11-18 08:06+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/collabora-"
@@ -89,12 +89,14 @@ msgid "Display the Keyboard shortcuts help"
 msgstr "Prikaži pomoč za tipke za bližnjice"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:29
+#, fuzzy
 msgid ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>?"
 msgstr ""
-"Krmilka</kbd><span class=\"kbd--plus\">+</span><kbd>dvigalka</kbd><span "
-"class=\"kbd--plus\">+</span><kbd>?"
+"Krmilka</kbd><span class=\"kbd--plus\">+</span><kbd>izmenjalka</kbd><span "
+"class=\"kbd--plus\">+</span><kbd>dvigalka</kbd><span class=\"kbd--plus\""
+">+</span><kbd>V"
 
 #: html/loleaflet-help.html+div.div.h2:33
 #: html/loleaflet-help.html+div.div.h2:179
@@ -2996,10 +2998,11 @@ msgstr "Izberite besedilo z obstoječim oblikovanjem."
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:605
 #: html/loleaflet-help.html+div.div.ol.li.p.img:636
+#, fuzzy
 msgid ""
 "Click on the clone formatting icon <img style=\"height:0.6cm;width:0.6cm;\" "
-"alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. The mouse pointer turns to "
-"a paint bucket."
+"alt=\"\" src=\"images/cmd/formatpaintbrush.svg\">. The mouse pointer turns "
+"to a paint bucket."
 msgstr ""
 "Kliknite ikono kloniranja oblikovanja <img style=\"height:0.6cm;width:0.6cm;"
 "\" alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. Kazalec miške se "
@@ -3164,11 +3167,12 @@ msgid ""
 msgstr "Predstavitev odprite z <span class=\"productname\">%productName</span>"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:650
+#, fuzzy
 msgid ""
 "Either choose <span class=\"ui\">Slide Show</span> → <span class=\"ui\">Full "
 "Screen Presentation</span> or click on the left-most icon in the bottom of "
 "the slide panel: <img style=\"height:0.6cm;width:0.6cm;\" alt=\"\" src=\""
-"images/lc_dia.svg\">"
+"images/cmd/dia.svg\">"
 msgstr ""
 "Izberite <span class=\"ui\">Projekcija</span> → <span class=\"ui\">"
 "Celozaslonska predstavitev</span> ali pa kliknite ikono na skrajni levi na "
@@ -3196,6 +3200,13 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p:659
 msgid "Set the properties of the element of the object."
 msgstr "Nastavite lastnosti elementa predmeta."
+
+#~ msgid ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
+#~ msgstr ""
+#~ "Krmilka</kbd><span class=\"kbd--plus\">+</span><kbd>dvigalka</kbd><span "
+#~ "class=\"kbd--plus\">+</span><kbd>?"
 
 #, fuzzy
 #~ msgid ""

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-08 14:12+0800\n"
-"PO-Revision-Date: 2020-12-12 15:29+0000\n"
+"POT-Creation-Date: 2022-06-07 17:06+0800\n"
+"PO-Revision-Date: 2022-02-21 21:27+0000\n"
 "Last-Translator: Miloš Šrámek <msramek22@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/collabora-"
 "online/help/sk/>\n"
@@ -83,12 +83,13 @@ msgid "Display the Keyboard shortcuts help"
 msgstr "Zobraziť pomocníka pre klávesové skratky"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:29
+#, fuzzy
 msgid ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>?"
 msgstr ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>V"
 
 #: html/loleaflet-help.html+div.div.h2:33
 #: html/loleaflet-help.html+div.div.h2:179
@@ -787,7 +788,6 @@ msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Tab"
 msgstr "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Tab"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:100
-#, fuzzy
 msgid ""
 "Inserts a tab stop (only in tables). Depending on the Window Manager in use, "
 "<kbd>Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Tab</kbd> may be used "
@@ -847,7 +847,6 @@ msgid "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Insert"
 msgstr "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Insert"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:105
-#, fuzzy
 msgid ""
 "3 seconds in Insert mode, Arrow Key inserts row/column, <kbd>Ctrl</kbd><span "
 "class=\"kbd--plus\">+</span><kbd>Arrow Key</kbd> inserts cell"
@@ -860,7 +859,6 @@ msgid "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Del"
 msgstr "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Del"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:106
-#, fuzzy
 msgid ""
 "3 seconds in Delete mode, Arrow key deletes row/column, <kbd>Ctrl</kbd><span "
 "class=\"kbd--plus\">+</span><kbd>Arrow key</kbd> merges cell with "
@@ -1030,23 +1028,24 @@ msgstr ""
 
 #: html/loleaflet-help.html+div.div.h2:130
 msgid "Navigating in Spreadsheets"
-msgstr ""
+msgstr "Navigácia v hárkoch"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:132
 msgid "Moves the cursor to the first cell in the sheet (A1)."
-msgstr ""
+msgstr "Presunie kurzor na prvú bunku v hárku (A1)."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:133
 msgid "Moves the cursor to the last cell on the sheet that contains data."
-msgstr ""
+msgstr "Presunie kurzor na poslednú bunku v hárku, ktorá obsahuje údaje."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:134
 msgid "Moves the cursor to the first cell of the current row."
-msgstr ""
+msgstr "Presunie kurzor na prvú bunku aktuálneho riadka."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:135
+#, fuzzy
 msgid "Moves the cursor to the last cell of the current row."
-msgstr ""
+msgstr "Presunie kurzor na prvú bunku aktuálneho riadka."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:136
 msgid ""
@@ -2965,10 +2964,11 @@ msgstr "Vyberte text s existujúcim formátom"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:605
 #: html/loleaflet-help.html+div.div.ol.li.p.img:636
+#, fuzzy
 msgid ""
 "Click on the clone formatting icon <img style=\"height:0.6cm;width:0.6cm;\" "
-"alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. The mouse pointer turns to "
-"a paint bucket."
+"alt=\"\" src=\"images/cmd/formatpaintbrush.svg\">. The mouse pointer turns "
+"to a paint bucket."
 msgstr ""
 "Kliknite na ikonu štetca formátu <img style=\"height:0.6cm;width:0.6cm;\" "
 "alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. Kurzor myši sa zmení na "
@@ -3129,11 +3129,12 @@ msgid ""
 msgstr "Otvorte v <span class=\"productname\">%productName</span> prezentáciu"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:650
+#, fuzzy
 msgid ""
 "Either choose <span class=\"ui\">Slide Show</span> → <span class=\"ui\">Full "
 "Screen Presentation</span> or click on the left-most icon in the bottom of "
 "the slide panel: <img style=\"height:0.6cm;width:0.6cm;\" alt=\"\" src=\""
-"images/lc_dia.svg\">"
+"images/cmd/dia.svg\">"
 msgstr ""
 "Zvoľte <span class=\"ui\">Prezentácia</span> → <span class=\"ui\">"
 "Prezentácia na celú obrazovku</span> alebo kliknite v dolnej časti panela "
@@ -3161,6 +3162,13 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p:659
 msgid "Set the properties of the element of the object."
 msgstr "Nastavte vlastnosti objektu."
+
+#~ msgid ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
+#~ msgstr ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
 
 #, fuzzy
 #~ msgid ""

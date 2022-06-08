@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-08 14:12+0800\n"
-"PO-Revision-Date: 2021-10-25 15:01+0000\n"
-"Last-Translator: Lars Kirschmann <lars.kirschmann@icloud.com>\n"
+"POT-Creation-Date: 2022-06-07 17:06+0800\n"
+"PO-Revision-Date: 2022-03-15 16:50+0000\n"
+"Last-Translator: Marc Rodrigues <marc.rodrigues@collabora.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/collabora-"
 "online/help/de/>\n"
 "Language: de\n"
@@ -16,11 +16,11 @@ msgstr ""
 
 #: html/loleaflet-help.html+div.h1:19
 msgid "Keyboard Shortcuts"
-msgstr "Tastenkombinationen"
+msgstr "Tastaturkürzel"
 
 #: html/loleaflet-help.html+div.div.h2:21
 msgid "General Keyboard Shortcuts"
-msgstr "Allgemeine Tastenkombinationen"
+msgstr "Allgemeine Tastaturkürzel"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:23
 msgid "Undo"
@@ -83,12 +83,13 @@ msgid "Display the Keyboard shortcuts help"
 msgstr "Zeigt die Hilfe für Tastenkombinationen an"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:29
+#, fuzzy
 msgid ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>?"
 msgstr ""
-"Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Umschalt</kbd><span class=\""
-"kbd--plus\">+</span><kbd>?"
+"Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>V"
 
 #: html/loleaflet-help.html+div.div.h2:33
 #: html/loleaflet-help.html+div.div.h2:179
@@ -1073,9 +1074,10 @@ msgid ""
 "Selects cells from the current cell up to one page in the current column or "
 "extends the existing selection one page up."
 msgstr ""
+"Wählt Zellen ab der aktuellen Zelle bis zu einer Seite in der aktuellen "
+"Spalte aus oder erweitert die bestehende Auswahl um eine Seite nach oben."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:138
-#, fuzzy
 msgid "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Page Up"
 msgstr "Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>Bild nach oben"
 
@@ -1084,14 +1086,14 @@ msgid ""
 "Selects cells from the current cell down to one page in the current column "
 "or extends the existing selection one page down."
 msgstr ""
+"Wählt Zellen ab der aktuellen Zelle bis zu einer Seite in der aktuellen "
+"Spalte aus oder erweitert die bestehende Auswahl um eine Seite nach unten."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:139
-#, fuzzy
 msgid "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Page Down"
 msgstr "Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>Bild nach unten"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:140
-#, fuzzy
 msgid ""
 "Moves the cursor to the left edge of the current data range. If the column "
 "to the left of the cell that contains the cursor is empty, the cursor moves "
@@ -1099,7 +1101,7 @@ msgid ""
 msgstr ""
 "Bewegt den Cursor zum rechten Rand des aktuellen Datenbereichs. Wenn die "
 "Spalte rechts von der Zelle, die den Cursor enthält, leer ist, springt der "
-"Cursor nach rechts in die nächste Spalte, die Daten enthält."
+"Cursor nach rechts in die nächste Spalte, die Daten enthält"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:140
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Left Arrow"
@@ -1116,9 +1118,8 @@ msgstr ""
 "Cursor nach rechts in die nächste Spalte, die Daten enthält."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:141
-#, fuzzy
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Right Arrow"
-msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Eingabetaste"
+msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Pfeil nach links"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:142
 msgid ""
@@ -1131,12 +1132,10 @@ msgstr ""
 "nach oben in die nächste Zeile, die Daten enthält."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:142
-#, fuzzy
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Up Arrow"
 msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Pfeil nach oben"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:143
-#, fuzzy
 msgid ""
 "Moves the cursor to the bottom edge of the current data range. If the row "
 "below the cell that contains the cursor is empty, the cursor moves down to "
@@ -1157,9 +1156,12 @@ msgid ""
 "used to select rows and columns together, a rectangular cell range is "
 "selected."
 msgstr ""
+"Wählt alle Zellen aus, die Daten von der aktuellen Zelle bis zum Ende des "
+"zusammenhängenden Bereichs von Datenzellen in der Richtung des gedrückten "
+"Pfeils enthalten. Wenn Sie Zeilen und Spalten gemeinsam auswählen, wird ein "
+"rechteckiger Zellbereich ausgewählt."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:144
-#, fuzzy
 msgid ""
 "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
 "--plus\">+</span><kbd>Arrow"
@@ -1169,19 +1171,17 @@ msgstr ""
 
 #: html/loleaflet-help.html+div.div.table.tr.td:145
 msgid "Moves one sheet to the left."
-msgstr ""
+msgstr "Verschiebt ein Tabellenblatt nach links."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:145
-#, fuzzy
 msgid "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Page Up"
 msgstr "Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>Bild nach oben"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:146
 msgid "Moves one screen page to the right."
-msgstr ""
+msgstr "Verschiebt ein Tabellenblatt nach rechts."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:146
-#, fuzzy
 msgid "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Page Down"
 msgstr "Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>Bild nach unten"
 
@@ -1191,15 +1191,18 @@ msgid ""
 "sheets in a spreadsheet are selected, this shortcut key combination only "
 "selects the previous sheet. Makes the previous sheet the current sheet."
 msgstr ""
+"Fügt das vorhergehende Tabellenblatt zur aktuellen Auswahl von Blättern "
+"hinzu. Wenn alle Tabellenblätter ausgewählt sind, wird mit dieser "
+"Tastenkombination nur das vorherige Blatt ausgewählt. Macht das vorherige "
+"Tabellenblatt zum aktuellen Blatt."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:147
-#, fuzzy
 msgid ""
 "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Ctrl</kbd><span class=\"kbd"
 "--plus\">+</span><kbd>Page Up"
 msgstr ""
 "Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>Strg</kbd><span class=\""
-"kbd--plus\">+</span><kbd>Entf"
+"kbd--plus\">+</span><kbd>Bild nach oben"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:148
 msgid ""
@@ -1207,15 +1210,18 @@ msgid ""
 "a spreadsheet are selected, this shortcut key combination only selects the "
 "next sheet. Makes the next sheet the current sheet."
 msgstr ""
+"Fügt das nächste Blatt zur aktuellen Auswahl von Blättern hinzu. Wenn alle "
+"Blätter eines Arbeitsblatts ausgewählt sind, wird mit dieser "
+"Tastenkombination nur das nächste Blatt ausgewählt. Macht das nächste Blatt "
+"zum aktuellen Blatt."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:148
-#, fuzzy
 msgid ""
 "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Ctrl</kbd><span class=\"kbd"
 "--plus\">+</span><kbd>Page Down"
 msgstr ""
 "Umschalt</kbd><span class=\"kbd--plus\">+</span><kbd>Strg</kbd><span class=\""
-"kbd--plus\">+</span><kbd>Entf"
+"kbd--plus\">+</span><kbd>Bild nach unten"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:149
 msgid ""
@@ -1223,40 +1229,42 @@ msgid ""
 "data range that contains the cursor. A range is a contiguous cell range that "
 "contains data and is bounded by empty row and columns."
 msgstr ""
+"wobei (*) das Multiplikationszeichen auf dem numerischen Tastenfeld ist. "
+"Wählt den Datenbereich aus, der den Cursor enthält. Ein Bereich ist ein "
+"zusammenhängender Zellbereich, der Daten enthält und durch leere Zeilen und "
+"Spalten begrenzt ist."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:149
-#, fuzzy
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>*"
-msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Z"
+msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>*"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:150
 msgid ""
 "where (/) is the division sign on the numeric key pad. Selects the matrix "
 "formula range that contains the cursor."
 msgstr ""
+"wobei (/) das Divisionszeichen auf dem numerischen Tastenfeld ist. Wählt den "
+"Bereich der Matrixformel aus, der den Cursor enthält."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:150
-#, fuzzy
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>/"
-msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Z"
+msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>/"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:151
 msgid "Insert cells (as in menu Insert - Cells)"
-msgstr ""
+msgstr "Zellen einfügen (wie im Menü Einfügen - Zellen)"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:151
-#, fuzzy
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Plus key"
-msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>P"
+msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>+"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:152
 msgid "Delete cells (as in menu Edit - Delete Cells)"
-msgstr ""
+msgstr "Zellen löschen (wie im Menü Bearbeiten - Zellen löschen)"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:152
-#, fuzzy
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Minus key"
-msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Eingabetaste"
+msgstr "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>-"
 
 #: html/loleaflet-help.html+div.div.h2:154
 msgid "Cell formatting"
@@ -2150,7 +2158,6 @@ msgstr ""
 "Es können alle Tabellenfunktionen und mathematischen Regeln verwendet werden."
 
 #: html/loleaflet-help.html+div.div.p:428
-#, fuzzy
 msgid ""
 "The formula language should be extremely familiar to any spreadsheet user, "
 "and is specified in great detail in the <a href=\"https://www.oasis-"
@@ -2160,8 +2167,9 @@ msgid ""
 msgstr ""
 "Die Formelsprache sollte jedem Tabellenbenutzer sehr vertraut sein und wird "
 "in der <a href=\"https://www.oasis-open.org/committees/download.php/16826"
-"/openformula-spec-20060221.html\">OASIS OpenFormula-Spezifikation "
-"(englisch)</a> ausführlich beschrieben."
+"/openformula-spec-20060221.html\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">OASIS OpenFormula-Spezifikation (englisch)</a> ausführlich "
+"beschrieben."
 
 #: html/loleaflet-help.html+div.div.p:431
 msgid ""
@@ -2996,7 +3004,7 @@ msgstr "Legen Sie die Seitenränder im Dialog fest."
 
 #: html/loleaflet-help.html+div.div.h4:592
 msgid "How do I change the page orientation to landscape inside my document"
-msgstr "Wie ändere ich die Seitenausrichtung in Querformat in meinem Dokument?"
+msgstr "Wie ändere ich die Seitenausrichtung in Querformat in meinem Dokument"
 
 #: html/loleaflet-help.html+div.div.ol.li.p:594
 msgid ""
@@ -3054,10 +3062,11 @@ msgstr "Wählen Sie den Text mit dem vorhandenen Format aus"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:605
 #: html/loleaflet-help.html+div.div.ol.li.p.img:636
+#, fuzzy
 msgid ""
 "Click on the clone formatting icon <img style=\"height:0.6cm;width:0.6cm;\" "
-"alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. The mouse pointer turns to "
-"a paint bucket."
+"alt=\"\" src=\"images/cmd/formatpaintbrush.svg\">. The mouse pointer turns "
+"to a paint bucket."
 msgstr ""
 "Klicken Sie auf das Symbol Formatierung übertragen <img style=\""
 "height:0.6cm;width:0.6cm;\" alt=\"\" src=\"images/lc_formatpaintbrush.svg\">"
@@ -3235,11 +3244,12 @@ msgstr ""
 ">%productName</span>"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:650
+#, fuzzy
 msgid ""
 "Either choose <span class=\"ui\">Slide Show</span> → <span class=\"ui\">Full "
 "Screen Presentation</span> or click on the left-most icon in the bottom of "
 "the slide panel: <img style=\"height:0.6cm;width:0.6cm;\" alt=\"\" src=\""
-"images/lc_dia.svg\">"
+"images/cmd/dia.svg\">"
 msgstr ""
 "Wählen Sie entweder <span class=\"ui\">Bildschirmpräsentation</span> – <span "
 "class=\"ui\">Vollbild-Präsentation</span> oder klicken Sie auf das Symbol "
@@ -3271,6 +3281,13 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p:659
 msgid "Set the properties of the element of the object."
 msgstr "Legen Sie die Eigenschaften des Elements des Objekts fest."
+
+#~ msgid ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
+#~ msgstr ""
+#~ "Strg</kbd><span class=\"kbd--plus\">+</span><kbd>Umschalt</kbd><span class=\""
+#~ "kbd--plus\">+</span><kbd>?"
 
 #, fuzzy
 #~ msgid ""

@@ -8,32 +8,36 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-07 17:06+0800\n"
-"PO-Revision-Date: 2022-04-12 07:41+0000\n"
-"Last-Translator: Andras Timar <andras.timar@collabora.com>\n"
-"Language-Team: Venetian <https://hosted.weblate.org/projects/collabora-"
-"online/ui/vec/>\n"
+"PO-Revision-Date: 2022-02-02 21:48+0000\n"
+"Last-Translator: Linda 'linigrhf' Ayasing <linigrhf@gmail.com>\n"
+"Language-Team: Breton <https://hosted.weblate.org/projects/collabora-"
+"online/ui/br/>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"Plural-Forms: nplurals=5; plural=(n % 10 == 1 && n % 100 != 11 && n % 100 != "
+"71 && n % 100 != 91) ? 0 : ((n % 10 == 2 && n % 100 != 12 && n % 100 != 72 "
+"&& n % 100 != 92) ? 1 : ((((n % 10 == 3 || n % 10 == 4) || n % 10 == 9) && ("
+"n % 100 < 10 || n % 100 > 19) && (n % 100 < 70 || n % 100 > 79) && (n % 100 <"
+" 90 || n % 100 > 99)) ? 2 : ((n != 0 && n % 1000000 == 0) ? 3 : 4)));\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: admin/admin.strings.js:56
 msgid "Admin console"
-msgstr "Console de aministrasion"
+msgstr ""
 
 #: admin/admin.strings.js:57
 msgid "Overview"
-msgstr "Panoràmega"
+msgstr ""
 
 #: admin/admin.strings.js:58
 msgid "Analytics"
-msgstr "Anałìtega"
+msgstr ""
 
 #: admin/admin.strings.js:59
 msgid "Log"
-msgstr ""
+msgstr "Marilh"
 
 #: admin/admin.strings.js:60
 msgid "SSL certificate manager"
@@ -81,11 +85,11 @@ msgstr ""
 
 #: admin/src/AdminSocketAnalytics.js:211
 msgid "Received"
-msgstr ""
+msgstr "Resevet"
 
 #: admin/src/AdminSocketAnalytics.js:215
 msgid "Sent"
-msgstr ""
+msgstr "Kaset"
 
 #: admin/src/AdminSocketBase.js:61
 msgid "Server has been shut down; Waiting to be back online."
@@ -93,7 +97,7 @@ msgstr ""
 
 #: admin/src/AdminSocketBase.js:76
 msgid "Connection error"
-msgstr "Eror de conesion"
+msgstr ""
 
 #: admin/src/AdminSocketBase.js:84
 msgid "Try to reconnect..."
@@ -247,7 +251,7 @@ msgstr ""
 #: src/control/Control.JSDialogBuilder.js:1298
 #: uiconfig/dialogs/BindingLineDialog.js:33
 msgid "Color"
-msgstr ""
+msgstr "Liv"
 
 #: admin/src/AdminSocketConfigSettings.js:52
 msgid "Enable client console output"
@@ -269,7 +273,7 @@ msgstr ""
 #: src/control/Control.JSDialogBuilder.js:404
 #: src/control/Control.StatusBar.js:358 src/control/Control.TopToolbar.js:953
 msgid "None"
-msgstr "Nesun"
+msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:57
 msgid "Fatal"
@@ -515,7 +519,7 @@ msgstr ""
 #: admin/src/AdminSocketConfigSettings.js:119 src/control/Toolbar.js:45
 #: uiconfig/dialogs/BindingLineDialog.js:36
 msgid "Font"
-msgstr "Caràtare"
+msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:121
 msgid "Bold"
@@ -546,7 +550,7 @@ msgstr ""
 #: admin/src/AdminSocketGlobalFunction.js:51
 #: src/control/Control.DocumentRepair.js:50
 msgid "User name"
-msgstr "Nome utente"
+msgstr "Anv an implijer"
 
 #: admin/src/AdminSocketConfigSettings.js:129
 msgid "User IP"
@@ -626,13 +630,13 @@ msgstr ""
 #: admin/src/AdminSocketConfigSettings.js:481
 #: src/control/Control.StatusBar.js:546
 msgid "Edit"
-msgstr "Modìfega"
+msgstr ""
 
 #: admin/src/AdminSocketConfigSettings.js:490
 #: admin/src/AdminSocketFontManager.js:302
 #: src/control/Control.ContextMenu.js:204
 msgid "Delete"
-msgstr ""
+msgstr "Dilemel"
 
 #: admin/src/AdminSocketConfigSettings.js:560
 msgid "Edit source"
@@ -658,7 +662,7 @@ msgstr ""
 #: src/control/Control.JSDialogBuilder.js:1536
 #: src/control/Control.TopToolbar.js:902
 msgid "Style"
-msgstr "Stiłe"
+msgstr "Stil"
 
 #: admin/src/AdminSocketFontManager.js:16
 msgid "Color font"
@@ -711,7 +715,7 @@ msgstr ""
 #: uiconfig/dialogs/OXSaveAs.js:39 uiconfig/dialogs/PdfWatermarkText.js:76
 #: uiconfig/dialogs/SetTabBgColor.js:38 uiconfig/dialogs/ShowTable.js:46
 msgid "OK"
-msgstr ""
+msgstr "A-du"
 
 #: admin/src/AdminSocketGlobalFunction.js:13
 #: admin/src/AdminSocketGlobalFunction.js:33
@@ -731,7 +735,7 @@ msgstr ""
 #: uiconfig/dialogs/OXSaveAs.js:54 uiconfig/dialogs/PdfWatermarkText.js:101
 #: uiconfig/dialogs/SetTabBgColor.js:57 uiconfig/dialogs/ShowTable.js:55
 msgid "Cancel"
-msgstr "Anuła"
+msgstr "Nullañ"
 
 #: admin/src/AdminSocketGlobalFunction.js:26
 msgid ""
@@ -796,9 +800,8 @@ msgid "Channel Filter:"
 msgstr ""
 
 #: admin/src/AdminSocketLog.js:12
-#, fuzzy
 msgid "Refresh Log"
-msgstr "Ajorna"
+msgstr ""
 
 #: admin/src/AdminSocketLog.js:13
 msgid "Set Log Levels"
@@ -901,24 +904,23 @@ msgstr ""
 
 #: admin/src/AdminSocketOverview.js:12
 msgid "Users online"
-msgstr "Utenti cołegài"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:13
-#, fuzzy
 msgid "Documents opened"
-msgstr "Documenti verti"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:14
 msgid "Memory consumed"
-msgstr "Memoria consumà"
+msgstr "Memor implijet"
 
 #: admin/src/AdminSocketOverview.js:15
 msgid "Bytes sent"
-msgstr ""
+msgstr "Bytoù kaset"
 
 #: admin/src/AdminSocketOverview.js:16
 msgid "Bytes received"
-msgstr ""
+msgstr "Bytoù resevet"
 
 #: admin/src/AdminSocketOverview.js:17
 msgid "Server uptime"
@@ -934,15 +936,15 @@ msgstr "PID"
 
 #: admin/src/AdminSocketOverview.js:20
 msgid "Document"
-msgstr "Documento"
+msgstr "Restr"
 
 #: admin/src/AdminSocketOverview.js:21
 msgid "Elapsed time"
-msgstr "Tenpo pasà"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:22
 msgid "Idle time"
-msgstr "Tenpo de inatività"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:23
 msgid "Modified"
@@ -950,7 +952,7 @@ msgstr ""
 
 #: admin/src/AdminSocketOverview.js:24
 msgid "Number of Documents"
-msgstr ""
+msgstr "Niver a Restroù"
 
 #: admin/src/AdminSocketOverview.js:194
 msgid "Failed to set jwt authentication cookie over insecure connection"
@@ -966,17 +968,17 @@ msgstr ""
 
 #: admin/src/AdminSocketOverview.js:254
 msgid "Are you sure you want to terminate this session?"
-msgstr "Sito seguro de vołer terminar 'sta sesion?"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:307
 #, fuzzy
 msgid "user(s)."
-msgstr "0 utenti"
+msgstr " implijer(ienn)."
 
 #: admin/src/AdminSocketOverview.js:354
 #, fuzzy
 msgid "document(s) open."
-msgstr "Documenti verti"
+msgstr " restr(où) digoret."
 
 #: admin/src/AdminSocketSoftwareUpgrade.js:12
 msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
@@ -1083,7 +1085,7 @@ msgstr ""
 
 #: admin/src/Util.js:14
 msgid "kB"
-msgstr "KB"
+msgstr "kB"
 
 #: admin/src/Util.js:14
 msgid "MB"
@@ -1099,31 +1101,31 @@ msgstr "TB"
 
 #: admin/src/Util.js:14
 msgid "PB"
-msgstr ""
+msgstr "PB"
 
 #: admin/src/Util.js:14
 msgid "EB"
-msgstr ""
+msgstr "EB"
 
 #: admin/src/Util.js:14
 msgid "ZB"
-msgstr ""
+msgstr "ZB"
 
 #: admin/src/Util.js:14
 msgid "YB"
-msgstr ""
+msgstr "YB"
 
 #: admin/src/Util.js:14
 msgid "BB"
-msgstr ""
+msgstr "BB"
 
 #: admin/src/Util.js:43 admin/src/Util.js:45
 msgid " hrs"
-msgstr " ore"
+msgstr " eurioù"
 
 #: admin/src/Util.js:49 admin/src/Util.js:51
 msgid " mins"
-msgstr " men"
+msgstr " munutennoù"
 
 #: admin/src/Util.js:54
 msgid " s"
@@ -1171,15 +1173,15 @@ msgstr ""
 
 #: src/control/Control.DocumentRepair.js:33
 msgid "Repair Document"
-msgstr "Justa el documento"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:44
 msgid "Type"
-msgstr "Tipo"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:46
 msgid "Index"
-msgstr "Ìndeze"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:48
 #: src/control/Control.JSDialogBuilder.js:2222
@@ -1187,20 +1189,20 @@ msgstr "Ìndeze"
 #: src/layer/tile/CanvasTileLayer.js:5049
 #: src/layer/tile/CommentListSection.ts:856
 msgid "Comment"
-msgstr "Comento"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:52
 msgid "Timestamp"
-msgstr "Data e ora"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:56
 msgid "Jump to state"
-msgstr "Pasa a'l stato"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:95
 #: src/control/Control.UserList.js:288
 msgid "You"
-msgstr "Ti"
+msgstr "C'hwi"
 
 #: src/control/Control.DownloadProgress.js:47
 msgid "Start download"
@@ -1211,9 +1213,8 @@ msgid "Confirm copy to clipboard"
 msgstr ""
 
 #: src/control/Control.FormulaBar.js:34
-#, fuzzy
 msgid "Function Wizard"
-msgstr "Funsion"
+msgstr ""
 
 #: src/control/Control.FormulaBar.js:46
 msgid "cell address"
@@ -1253,32 +1254,28 @@ msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1292
 msgid "From"
-msgstr ""
+msgstr "Eus"
 
 #: src/control/Control.JSDialogBuilder.js:1295
 msgid "To"
-msgstr ""
+msgstr "Da"
 
 #: src/control/Control.JSDialogBuilder.js:1486
-#, fuzzy
 msgid "Select range"
-msgstr "Intervało de cełe sełesionà"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1532
 #: src/control/Control.NotebookbarBuilder.js:239
-#, fuzzy
 msgid "Font Name"
-msgstr "Caràtare"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1534 src/control/Toolbar.js:133
-#, fuzzy
 msgid "Font Size"
-msgstr "Caràtare"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:2208
-#, fuzzy
 msgid "reply"
-msgstr "Respondi"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:2211
 msgid "replies"
@@ -1301,9 +1298,8 @@ msgid "Columns"
 msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:2969
-#, fuzzy
 msgid "Insert Table"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.LanguageDialog.js:69 src/control/Control.Menubar.js:780
 #: src/control/Control.NotebookbarBuilder.js:936
@@ -1317,9 +1313,8 @@ msgstr ""
 #: src/control/Control.Menubar.js:11 src/control/Control.Menubar.js:65
 #: src/control/Control.Menubar.js:121 src/control/Control.Menubar.js:167
 #: src/control/Control.StatusBar.js:140
-#, fuzzy
 msgid "Search"
-msgstr "Serca:"
+msgstr "Klask"
 
 #: src/control/Control.Menubar.js:15 src/control/Control.Menubar.js:69
 #: src/control/Control.Menubar.js:125 src/control/Control.Menubar.js:171
@@ -1331,18 +1326,18 @@ msgstr ""
 #: src/control/Control.Menubar.js:127 src/control/Control.Menubar.js:172
 #: src/othermessages.js:7
 msgid "See revision history"
-msgstr "Varda el stòrego de łe revizion"
+msgstr ""
 
 #: src/control/Control.Menubar.js:17
 #: src/control/Control.NotebookbarWriter.js:244 src/control/Signing.js:604
 msgid "Sign document"
-msgstr ""
+msgstr "Sinañ ar restr"
 
 #: src/control/Control.Menubar.js:21 src/control/Control.Menubar.js:74
 #: src/control/Control.Menubar.js:129 src/control/Control.Menubar.js:176
 #: src/othermessages.js:8
 msgid "Download as"
-msgstr "Descarga cofà"
+msgstr ""
 
 #: src/control/Control.Menubar.js:21 src/control/Control.Menubar.js:74
 #: src/control/Control.Menubar.js:129 src/control/Control.Menubar.js:176
@@ -1362,39 +1357,39 @@ msgstr ""
 #: src/control/Toolbar.Extensions.js:145 src/control/Toolbar.Extensions.js:152
 #: src/othermessages.js:9
 msgid "PDF Document (.pdf)"
-msgstr "Documento PDF (.pdf)"
+msgstr "Restr PDF (.pdf)"
 
 #: src/control/Control.Menubar.js:23
 #: src/control/Control.NotebookbarBuilder.js:461
 #: src/control/Toolbar.Extensions.js:130 src/othermessages.js:12
 msgid "ODF text document (.odt)"
-msgstr "Documento de testo ODF (.odt)"
+msgstr "Restr text ODF (.odt)"
 
 #: src/control/Control.Menubar.js:24
 #: src/control/Control.NotebookbarBuilder.js:473
 #: src/control/Control.NotebookbarWriter.js:186
 #: src/control/Toolbar.Extensions.js:131 src/othermessages.js:15
 msgid "Word 2003 Document (.doc)"
-msgstr ""
+msgstr "Restr Word 2003 (.doc)"
 
 #: src/control/Control.Menubar.js:25
 #: src/control/Control.NotebookbarBuilder.js:469
 #: src/control/Control.NotebookbarWriter.js:192
 #: src/control/Toolbar.Extensions.js:132 src/othermessages.js:18
 msgid "Word Document (.docx)"
-msgstr ""
+msgstr "Restr Word (.docx)"
 
 #: src/control/Control.Menubar.js:26
 #: src/control/Control.NotebookbarBuilder.js:465
 #: src/control/Control.NotebookbarWriter.js:174
 #: src/control/Toolbar.Extensions.js:133 src/othermessages.js:21
 msgid "Rich Text (.rtf)"
-msgstr ""
+msgstr "Rich Text (.rtf)"
 
 #: src/control/Control.Menubar.js:27
 #: src/control/Control.NotebookbarBuilder.js:477
 msgid "EPUB (.epub)"
-msgstr ""
+msgstr "EPUB (.epub)"
 
 #: src/control/Control.Menubar.js:32 src/control/Control.Menubar.js:84
 #: src/control/Control.Menubar.js:136 src/control/Control.Menubar.js:185
@@ -1413,7 +1408,7 @@ msgstr ""
 #: src/control/Control.NotebookbarWriter.js:238
 #: src/control/Control.NotebookbarWriter.js:239 src/othermessages.js:24
 msgid "Repair"
-msgstr "Justa"
+msgstr ""
 
 #: src/control/Control.Menubar.js:56
 msgid "Page Setup"
@@ -1435,7 +1430,7 @@ msgstr ""
 #: src/control/Control.Menubar.js:163 src/control/Control.Menubar.js:233
 #: src/control/Control.NotebookbarWriter.js:339 src/othermessages.js:31
 msgid "About"
-msgstr ""
+msgstr "Diwar-benn"
 
 #: src/control/Control.Menubar.js:76
 #: src/control/Control.NotebookbarBuilder.js:511
@@ -1463,12 +1458,12 @@ msgstr ""
 #: src/control/Control.NotebookbarImpress.js:237
 #: src/control/Toolbar.Extensions.js:153
 msgid "ODF Drawing (.odg)"
-msgstr ""
+msgstr "Tresadenn ODF (.odg)"
 
 #: src/control/Control.Menubar.js:113
 #: src/control/Control.PresentationBar.js:57 src/othermessages.js:26
 msgid "Fullscreen presentation"
-msgstr "Prezentasion a schermo pien"
+msgstr ""
 
 #: src/control/Control.Menubar.js:178
 #: src/control/Control.NotebookbarBuilder.js:488
@@ -1498,35 +1493,32 @@ msgstr ""
 #: src/control/Control.Menubar.js:256 src/control/Control.Menubar.js:258
 #: src/othermessages.js:28
 msgid "All"
-msgstr ""
+msgstr "Holl"
 
 #: src/control/Control.Menubar.js:786 src/control/Control.StatusBar.js:560
 msgid "Reset to Default Language"
 msgstr ""
 
 #: src/control/Control.Menubar.js:823
-#, fuzzy
 msgid "Insert Shape"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.Menubar.js:913
 #: src/control/Control.PresentationBar.js:101 uiconfig/dialogs/Action.js:95
-#, fuzzy
 msgid "Are you sure you want to delete this slide?"
-msgstr "Sito securo de vołer ełiminar 'sta pàjina?"
+msgstr ""
 
 #: src/control/Control.Menubar.js:1000
 msgid "file type icon"
 msgstr ""
 
 #: src/control/Control.MobileBottomBar.js:34
-#, fuzzy
 msgid "Show the search bar"
-msgstr "Canseła el serca"
+msgstr ""
 
 #: src/control/Control.MobileTopBar.js:45
 msgid "Accept"
-msgstr "Aceta"
+msgstr ""
 
 #: src/control/Control.MobileWizardBuilder.js:503
 msgid "Background Color"
@@ -1550,12 +1542,13 @@ msgstr ""
 #: src/layer/tile/CommentListSection.ts:398
 #: src/layer/tile/CommentSection.ts:126
 msgid "Save"
-msgstr "Salva"
+msgstr "Enrollañ"
 
 #: src/control/Control.NotebookbarBuilder.js:500
 #: src/control/Control.NotebookbarCalc.js:181
+#, fuzzy
 msgid "CSV File (.csv)"
-msgstr ""
+msgstr "Restr CSV (.csv)"
 
 #: src/control/Control.NotebookbarBuilder.js:725
 msgid "Insert Local Image"
@@ -1599,9 +1592,8 @@ msgstr ""
 #: src/control/Control.NotebookbarDraw.js:66
 #: src/control/Control.NotebookbarImpress.js:78
 #: src/control/Control.NotebookbarWriter.js:23
-#, fuzzy
 msgid "~Insert"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:28
 #: src/control/Control.NotebookbarDraw.js:71
@@ -1618,9 +1610,8 @@ msgstr ""
 #: src/control/Control.NotebookbarDraw.js:76
 #: src/control/Control.NotebookbarImpress.js:88
 #: src/control/Control.NotebookbarWriter.js:38
-#, fuzzy
 msgid "~Review"
-msgstr "Panoràmega"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:43
 #: src/control/Control.NotebookbarDraw.js:81
@@ -1737,28 +1728,24 @@ msgid "Column Width"
 msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:737
-#, fuzzy
 msgid "Insert Rows Above"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:742
-#, fuzzy
 msgid "Insert Columns Before"
-msgstr "Inserisi fojo prima de cuesto"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:747
-#, fuzzy
 msgid "Delete Rows"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:757
 msgid "Insert Rows Below"
 msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:762
-#, fuzzy
 msgid "Insert Columns After"
-msgstr "Inserisi fojo dopo de cuesto"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:767
 msgid "Delete Columns"
@@ -1774,7 +1761,7 @@ msgstr ""
 #: src/control/Control.NotebookbarWriter.js:966
 #: src/control/Control.StatusBar.js:155
 msgid "Reset zoom"
-msgstr "Rezeta el zoom"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:954
 #: src/control/Control.NotebookbarDraw.js:272
@@ -1835,7 +1822,7 @@ msgstr ""
 #: src/control/Control.NotebookbarWriter.js:168
 #, fuzzy
 msgid "ODF Text Document (.odt)"
-msgstr "Documento de testo ODF (.odt)"
+msgstr "Restr text ODF (.odt)"
 
 #: src/control/Control.NotebookbarWriter.js:210
 #: src/control/Toolbar.Extensions.js:134 src/othermessages.js:23
@@ -1844,7 +1831,7 @@ msgstr ""
 
 #: src/control/Control.NotebookbarWriter.js:270
 msgid "Forum"
-msgstr ""
+msgstr "Forum"
 
 #: src/control/Control.NotebookbarWriter.js:281
 #: uiconfig/dialogs/ShowHelp.js:41
@@ -1874,7 +1861,7 @@ msgstr ""
 
 #: src/control/Control.PresentationBar.js:104
 msgid "Are you sure you want to delete this page?"
-msgstr "Sito securo de vołer ełiminar 'sta pàjina?"
+msgstr ""
 
 #: src/control/Control.Scroll.Annotation.js:10
 msgid "Scroll up annotations"
@@ -1885,14 +1872,12 @@ msgid "Scroll down annotations"
 msgstr ""
 
 #: src/control/Control.SearchBar.js:20
-#, fuzzy
 msgid "Hide the search bar"
-msgstr "Canseła el serca"
+msgstr ""
 
 #: src/control/Control.SearchBar.js:31
-#, fuzzy
 msgid "Clear the search field"
-msgstr "Canseła el serca"
+msgstr ""
 
 #: src/control/Control.SheetsBar.js:27
 msgid "Scroll to the first sheet"
@@ -1911,19 +1896,17 @@ msgid "Scroll to the last sheet"
 msgstr ""
 
 #: src/control/Control.SheetsBar.js:31
-#, fuzzy
 msgid "Insert sheet"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:146
 msgid "Cancel the search"
-msgstr "Canseła el serca"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:263
 #: uiconfig/dialogs/BindingLineDialog.js:39
-#, fuzzy
 msgid "Insert"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:263 src/core/Socket.js:867
 msgid "Overwrite"
@@ -1931,11 +1914,11 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:264
 msgid "Entering text mode"
-msgstr "Ativasion de ła modałità testo"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:282
 msgid "Number of Sheets"
-msgstr "Nùmaro de foji"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:282
 msgid "Click to go to the specified worksheet"
@@ -1943,7 +1926,7 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:299
 msgid "Selected range of cells"
-msgstr "Intervało de cełe sełesionà"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:318 src/control/Control.StatusBar.js:321
 msgid "Standard selection"
@@ -1959,39 +1942,39 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:344
 msgid "Choice of functions"
-msgstr "Sielta de łe funsion"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:351
 msgid "Average"
-msgstr "Media"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:352
 msgid "CountA"
-msgstr "ContaVałori"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:353
 msgid "Count"
-msgstr "Contejo"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:354
 msgid "Maximum"
-msgstr "Màsimo"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:355
 msgid "Minimum"
-msgstr "Mìnemo"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:356
 msgid "Sum"
-msgstr "Sóma"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:357
 msgid "Selection count"
-msgstr "Contejo de ła sełesion"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:389 src/control/Control.StatusBar.js:477
 msgid "Number of Pages"
-msgstr "Nùmaro de pàjine"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:389
 msgid "Click to go to the specified page"
@@ -1999,7 +1982,7 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:401
 msgid "Word Counter"
-msgstr "Contejo de łe parołe"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:401
 msgid "Click to open the Detailed Word Count dialog"
@@ -2015,24 +1998,23 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:454
 msgid "Number of Slides"
-msgstr "Nùmaro de diapozitive"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:545 src/control/Control.StatusBar.js:546
 msgid "Permission Mode"
 msgstr ""
 
 #: src/control/Control.StatusBar.js:545
-#, fuzzy
 msgid "Read-only"
-msgstr "Soła łetura"
+msgstr ""
 
 #: src/control/Control.Tabs.js:56 src/control/Control.Tabs.js:99
 msgid "Insert sheet before this"
-msgstr "Inserisi fojo prima de cuesto"
+msgstr ""
 
 #: src/control/Control.Tabs.js:59 src/control/Control.Tabs.js:105
 msgid "Insert sheet after this"
-msgstr "Inserisi fojo dopo de cuesto"
+msgstr ""
 
 #: src/control/Control.Tabs.js:78
 msgid "Move Sheet Left"
@@ -2051,12 +2033,10 @@ msgid ""
 "Conflict Undo/Redo with multiple users. Please use document repair to "
 "resolve"
 msgstr ""
-"Conflito Desfa/Refà tra pì utenti. Dòpara el strumento par justar el "
-"documento par resòlvare el problema"
 
 #: src/control/Control.Toolbar.js:1090
 msgid "Close document"
-msgstr "Sara su el documento"
+msgstr "Serriñ ar restr"
 
 #: src/control/Control.TopToolbar.js:135
 msgid "Clone Formatting (double click and Ctrl or Cmd to alter behavior)"
@@ -2075,9 +2055,8 @@ msgid "Remote image"
 msgstr ""
 
 #: src/control/Control.TopToolbar.js:634
-#, fuzzy
 msgid "Insert shapes"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Control.TopToolbar.js:642
 msgid "Insert connectors"
@@ -2145,23 +2124,23 @@ msgstr ""
 
 #: src/control/Control.UserList.js:10
 msgid "%user has joined"
-msgstr "%user el se ga cołegà"
+msgstr ""
 
 #: src/control/Control.UserList.js:11
 msgid "%user has left"
-msgstr "%user el se ga scołegà"
+msgstr ""
 
 #: src/control/Control.UserList.js:34
 msgid "%n users"
-msgstr "%n utenti"
+msgstr ""
 
 #: src/control/Control.UserList.js:35
 msgid "1 user"
-msgstr "1 utente"
+msgstr ""
 
 #: src/control/Control.UserList.js:36
 msgid "0 users"
-msgstr "0 utenti"
+msgstr ""
 
 #: src/control/Control.UserList.js:180 src/control/Control.UserList.js:346
 msgid "Always follow the editor"
@@ -2169,7 +2148,7 @@ msgstr ""
 
 #: src/control/Control.UserList.js:294
 msgid "Readonly"
-msgstr "Soła łetura"
+msgstr ""
 
 #: src/control/Control.UserList.js:349
 msgid "Current"
@@ -2180,14 +2159,13 @@ msgid "Stop tracking changes, will lose information about the changes."
 msgstr ""
 
 #: src/control/Control.AlternativeCommand.js:188
-#, fuzzy
 msgid "Are you sure you want to delete sheet, %sheet% ?"
-msgstr "Sito seguro de vołer ełiminar el fojo %sheet% ?"
+msgstr ""
 
 #: src/control/Control.AlternativeCommand.js:210
 #: uiconfig/dialogs/AddTableAtEnd.js:20
 msgid "Enter new sheet name"
-msgstr "Inserisi un nome novo par el fojo"
+msgstr ""
 
 #: src/control/Control.AlternativeCommand.js:220
 #: uiconfig/dialogs/AddTableAtEnd.js:60 uiconfig/dialogs/InsertTable.js:92
@@ -2245,14 +2223,12 @@ msgid "Right Margin"
 msgstr ""
 
 #: src/control/Ruler.js:656
-#, fuzzy
 msgid "Insert tabstop"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Ruler.js:663
-#, fuzzy
 msgid "Delete tabstop"
-msgstr "Insarisi tabeła"
+msgstr ""
 
 #: src/control/Signing.js:196
 msgid "Please enter the PIN Code"
@@ -2291,9 +2267,8 @@ msgid "Select document type to upload"
 msgstr ""
 
 #: src/control/Signing.js:333
-#, fuzzy
 msgid "Type:"
-msgstr "Tipo"
+msgstr ""
 
 #: src/control/Signing.js:364 src/control/Signing.js:673
 msgid "Document uploaded."
@@ -2458,7 +2433,7 @@ msgstr ""
 
 #: src/core/Socket.js:551
 msgid "Unsupported server version."
-msgstr "Version de'l server mìa suportà."
+msgstr ""
 
 #: src/core/Socket.js:555
 msgid "LOKit version:"
@@ -2524,20 +2499,19 @@ msgstr ""
 
 #: src/core/Socket.js:980
 msgid "Document requires password to view."
-msgstr "Ghe vol na password par verzar el documento."
+msgstr ""
 
 #: src/core/Socket.js:983
 msgid "Document requires password to modify."
-msgstr "Ghe vol na password par modifegar el documento."
+msgstr ""
 
 #: src/core/Socket.js:985
-#, fuzzy
 msgid "Hit Cancel to open in view-only mode."
-msgstr "Struca so Anuła par verzar in soła łetura."
+msgstr ""
 
 #: src/core/Socket.js:989
 msgid "Wrong password provided. Please try again."
-msgstr "Ła password ła ze zbajà. Inserìsiła da novo."
+msgstr ""
 
 #: src/core/Socket.js:1099
 msgid "Someone"
@@ -2568,8 +2542,6 @@ msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
 msgstr ""
-"Ben, A ze inbarasante, no podemo mìa conétarte a'l to documento. Prova da "
-"novo."
 
 #: src/core/Socket.js:1533
 msgid "Reconnecting..."
@@ -2584,17 +2556,12 @@ msgid ""
 "No disk space left on server, please contact the server administrator to "
 "continue."
 msgstr ""
-"No ghe ze mìa spasio desponìbiłe so'l server, contata l'aministrador de'l "
-"server par continuar."
 
 #: src/errormessages.js:14
-#, fuzzy
 msgid ""
 "The host URL is empty. The oxoolwsd server is probably misconfigured, "
 "please contact the administrator."
 msgstr ""
-"L'URL de'l host el ze vodo. El server coolwsd probabilmente el ze configurà "
-"małe, contata l'aministrador."
 
 #: src/errormessages.js:15
 msgid ""
@@ -2613,24 +2580,18 @@ msgid ""
 "This service is limited to %0 documents, and %1 connections total by the "
 "admin. This limit has been reached. Please try again later."
 msgstr ""
-"'Sto servisio cuà el ze łimità a %0 documenti e %1 conesion totałi da "
-"l'aministrador. Se ze rivà a 'sto łimite. Prova da novo pì tardi."
 
 #: src/errormessages.js:18
 msgid ""
 "Service is unavailable. Please try again later and report to your "
 "administrator if the issue persists."
 msgstr ""
-"Servisio mìa desponìbiłe. Prova da novo pì tardi e contata el to "
-"aministrador se el problema parsiste."
 
 #: src/errormessages.js:19
 msgid ""
 "Unauthorized WOPI host. Please try again later and report to your "
 "administrator if the issue persists."
 msgstr ""
-"Host WOPI mìa autorizà. Prova da novo pì tardi e se el problema el dovese "
-"parsìstare senjàłagheło a l'aministrador."
 
 #: src/errormessages.js:20
 msgid "Wrong or missing WOPISrc parameter, please contact support."
@@ -2641,24 +2602,18 @@ msgid ""
 "Your session will expire in %time. Please save your work and refresh the "
 "session (or webpage) to continue."
 msgstr ""
-"Ła sesion ła scadarà in %time. Par continuar, salva el to łavoro e ajorna ła "
-"sesion (o ła pàjina web)."
 
 #: src/errormessages.js:22
 msgid ""
 "Your session has been expired. Further changes to document might not be "
 "saved. Please refresh the session (or webpage) to continue."
 msgstr ""
-"Ła sesion ła ze scadùa. Łe ultariori modìfeghe a'l documento łe podarìa non "
-"èsar mìa salvàe. Par continuar, ajorna ła sesion (o ła pàjina web)."
 
 #: src/errormessages.js:23
 msgid ""
 "Failed to load the document. Please ensure the file type is supported and "
 "not corrupted, and try again."
 msgstr ""
-"Cargamento de'l documento mìa reusìo. Segùrate che el tipo de file el sipia "
-"suportà e che no'l sipia danejà, e prova da novo."
 
 #: src/errormessages.js:24
 msgid "Invalid link: '%url'"
@@ -2715,33 +2670,23 @@ msgstr ""
 
 #: src/errormessages.js:41
 #, javascript-format
-#, fuzzy, javascript-format
 msgid ""
 "Save failed due to no disk space left on storage server. Document will now "
 "be read-only. Please contact the server (%storageserver) administrator to "
 "continue editing."
 msgstr ""
-"El salvatajo no'l ze mìa reusìo par colpa de ła mancansa de spasio inte'l "
-"server. El documento deso el sarà desponìbiłe in soła łetura. Contata "
-"l'aministrador de'l server par continuar łe modìfeghe."
 
 #: src/errormessages.js:43
-#, fuzzy
 msgid ""
 "Document cannot be saved. Check your permissions or contact the storage "
 "server administrator."
 msgstr ""
-"Inposìbiłe salvar el documento. Verìfega i to parmesi o contata "
-"l'aministrador de'l server de memorizasion."
 
 #: src/errormessages.js:44
-#, fuzzy
 msgid ""
 "Document cannot be renamed. Check your permissions or contact the storage "
 "server administrator."
 msgstr ""
-"Inposìbiłe salvar el documento. Verìfega i to parmesi o contata "
-"l'aministrador de'l server de memorizasion."
 
 #: src/errormessages.js:45
 msgid ""
@@ -2825,9 +2770,8 @@ msgid "Hand-drawn diagram"
 msgstr ""
 
 #: src/layer/tile/CanvasTileLayer.js:1838
-#, fuzzy
 msgid "Functions"
-msgstr "Funsion"
+msgstr ""
 
 #: src/layer/tile/CanvasTileLayer.js:2064
 msgid "This type of picture editing is not yet supported."
@@ -2848,7 +2792,7 @@ msgstr ""
 #: src/layer/tile/CommentListSection.ts:809
 #: src/layer/tile/CommentSection.ts:129
 msgid "Reply"
-msgstr "Respondi"
+msgstr ""
 
 #: src/layer/tile/CommentListSection.ts:815
 msgid "Remove"
@@ -2859,9 +2803,8 @@ msgid "Remove Thread"
 msgstr ""
 
 #: src/layer/tile/CommentListSection.ts:827
-#, fuzzy
 msgid "Resolve"
-msgstr "Resolvesto"
+msgstr ""
 
 #: src/layer/tile/CommentListSection.ts:827
 msgid "Unresolve"
@@ -2889,7 +2832,7 @@ msgstr ""
 
 #: src/layer/tile/CommentSection.ts:306
 msgid "Resolved"
-msgstr "Resolvesto"
+msgstr ""
 
 #: src/main.js:94
 msgid "Warning! The browser you are using is not supported."
@@ -3087,9 +3030,8 @@ msgid "Formulas"
 msgstr ""
 
 #: uiconfig/dialogs/DeleteCell.js:32
-#, fuzzy
 msgid "Comments"
-msgstr "Comento"
+msgstr ""
 
 #: uiconfig/dialogs/DeleteCell.js:33
 msgid "Formats"
@@ -3229,95 +3171,23 @@ msgid ""
 msgstr ""
 
 #~ msgid "Settings"
-#~ msgstr "Inpostasion"
-
-#~ msgid "(current)"
-#~ msgstr "(corente)"
-
-#~ msgid "History"
-#~ msgstr "Stòrego"
-
-#~ msgid "Dashboard"
-#~ msgstr "Cruscoto"
+#~ msgstr "Arventennoù"
 
 #, fuzzy
 #~ msgid "User Name"
-#~ msgstr "Nome utente"
+#~ msgstr "Anv an implijer"
 
 #~ msgid "Kill"
-#~ msgstr "Intaronpi"
+#~ msgstr "Lazhañ"
 
-#~ msgid "Graphs"
-#~ msgstr "Gràfeghi"
-
-#~ msgid "Cache size of memory statistics"
-#~ msgstr "Grandesa cache de łe statìsteghe de ła memoria"
-
-#~ msgid "Time interval of memory statistics (in ms)"
-#~ msgstr "Intarvało de tenpo de łe statìsteghe de ła memoria (in ms)"
-
-#~ msgid "Cache size of CPU statistics"
-#~ msgstr "Grandesa cache de łe statìsteghe de ła CPU"
-
-#~ msgid "Time interval of CPU statistics (in ms)"
-#~ msgstr "Intarvało de tenpo de łe statìsteghe de ła CPU (in ms)"
-
-#, fuzzy
 #~ msgid "Documents:"
-#~ msgstr "Documento"
+#~ msgstr "Restroù :"
 
-#~ msgid "Refresh"
-#~ msgstr "Ajorna"
+#~ msgid "CSV file (.csv)"
+#~ msgstr "Restr CSV (.csv)"
 
-#, fuzzy
-#~ msgid "Are you sure you want to shut down the server?"
-#~ msgstr "Sito seguro de vołer dezmorsar el server?"
+#~ msgid "Undo"
+#~ msgstr "Dizober"
 
-#~ msgid "Paste Special"
-#~ msgstr "Incoła spesiałe"
-
-#, fuzzy
-#~ msgid "Save Comments"
-#~ msgstr "Comento"
-
-#~ msgid "Selection Mode"
-#~ msgstr "Modałità sełesion"
-
-#~ msgid "Previous slide"
-#~ msgstr "Diapozitiva presedente"
-
-#~ msgid "Next slide"
-#~ msgstr "Diapozitiva drioman"
-
-#~ msgid "Insert table"
-#~ msgstr "Insarisi tabeła"
-
-#, fuzzy
-#~ msgid "Start Presentation"
-#~ msgstr "Prezentasion a schermo pien"
-
-#, fuzzy
-#~ msgid "Reset Zoom"
-#~ msgstr "Rezeta el zoom"
-
-#~ msgid "Oops, there is a problem connecting to Collabora Online : "
-#~ msgstr "A ghe ze un problema inte ła conesion a Collabora Online:"
-
-#~ msgid "Number of views"
-#~ msgstr "Nùmaro de vizuałizasion"
-
-#, fuzzy
-#~ msgid "Documents"
-#~ msgstr "Documento"
-
-#~ msgid "First sheet"
-#~ msgstr "Primo fojo"
-
-#~ msgid "Previous sheet"
-#~ msgstr "Fojo presedente"
-
-#~ msgid "Next sheet"
-#~ msgstr "Fojo seguente"
-
-#~ msgid "Last sheet"
-#~ msgstr "Ùltemo fojo"
+#~ msgid "Redo"
+#~ msgstr "Adober"

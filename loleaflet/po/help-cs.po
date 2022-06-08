@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-08 14:12+0800\n"
-"PO-Revision-Date: 2021-11-03 11:43+0000\n"
-"Last-Translator: Andras Timar <andras.timar@collabora.com>\n"
+"POT-Creation-Date: 2022-06-07 17:06+0800\n"
+"PO-Revision-Date: 2022-02-24 20:26+0000\n"
+"Last-Translator: Stanislav Horáček <stanislav.horacek@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/collabora-"
 "online/help/cs/>\n"
 "Language: cs\n"
@@ -83,12 +83,13 @@ msgid "Display the Keyboard shortcuts help"
 msgstr "Zobrazit nápovědu pro klávesové zkratky"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:29
+#, fuzzy
 msgid ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>?"
 msgstr ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>V"
 
 #: html/loleaflet-help.html+div.div.h2:33
 #: html/loleaflet-help.html+div.div.h2:179
@@ -756,8 +757,8 @@ msgid ""
 "If the active cell is empty: selects the whole table. Otherwise: selects the "
 "contents of the active cell. Pressing again selects the entire table."
 msgstr ""
-"Je-li aktuální buňka prázdná: vybere celou tabulku. Pokud prázdná není: "
-"vybere obsah aktuální buňky. Opětovné stisknutí těchto kláves vybere celou "
+"Pokud je aktivní buňka prázdná: vybere celou tabulku. Pokud prázdná není: "
+"vybere obsah této buňky. Opětovné stisknutí těchto kláves vybere celou "
 "tabulku."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:98
@@ -766,10 +767,10 @@ msgid ""
 "first press goes to beginning of the active cell, second press goes to "
 "beginning of the current table, third press goes to beginning of document."
 msgstr ""
-"Je-li aktuální buňka prázdná: přemístí kurzor na začátek tabulky. Pokud "
-"prázdná není: prvním stisknutí těchto kláves přemístí kurzor na začátek "
-"aktuální buňky, druhé jej přemístí na začátek aktuální tabulky a třetí jej "
-"přemístí na začátek dokumentu."
+"Pokud je aktivní buňka prázdná: přemístí kurzor na začátek tabulky. Pokud "
+"prázdná není: první stisknutí těchto kláves přemístí kurzor na začátek této "
+"buňky, druhé jej přemístí na začátek aktuální tabulky a třetí jej přemístí "
+"na začátek dokumentu."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:99
 msgid ""
@@ -777,10 +778,10 @@ msgid ""
 "press goes to the end of the active cell, second press goes to the end of "
 "the current table, third press goes to the end of the document."
 msgstr ""
-"Je-li aktuální buňka prázdná: přemístí kurzor na konec tabulky. Pokud "
-"prázdná není: prvním stisknutí těchto kláves přemístí kurzor na konec "
-"aktuální buňky, druhé jej přemístí na konec aktuální tabulky a třetí jej "
-"přemístí na konec dokumentu."
+"Pokud je aktivní buňka prázdná: přemístí kurzor na konec tabulky. Pokud "
+"prázdná není: první stisknutí těchto kláves přemístí kurzor na konec této "
+"buňky, druhé jej přemístí na konec aktuální tabulky a třetí jej přemístí na "
+"konec dokumentu."
 
 #: html/loleaflet-help.html+div.div.table.tr.td:100
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Tab"
@@ -880,9 +881,9 @@ msgid ""
 "current sentence is deleted. If the cursor is at the end of a cell, and no "
 "whole cell is selected, the contents of the next cell are deleted."
 msgstr ""
-"Není-li vybrána celá buňka, smaže se text od kurzoru do konce aktuální věty. "
-"Pokud je kurzor na konci buňky a není označena celá buňka, smaže se obsah "
-"následující buňky."
+"Pokud není vybrána celá buňka, smaže se text od pozice kurzoru do konce dané "
+"věty. Pokud je kurzor na konci buňky a není označena celá buňka, smaže se "
+"obsah následující buňky."
 
 #: html/loleaflet-help.html+div.div.table.tr.td.p:108
 msgid ""
@@ -890,8 +891,8 @@ msgid ""
 "paragraph following the table will be deleted, unless it is the last "
 "paragraph in the document."
 msgstr ""
-"Není-li vybrána celá buňka a kurzor je na konci tabulky, smaže se odstavec "
-"následující za tabulkou, pokud se nebude jednat o poslední odstavec "
+"Pokud není vybrána celá buňka a kurzor je na konci tabulky, smaže se "
+"odstavec následující za tabulkou, pokud se nebude jednat o poslední odstavec "
 "dokumentu."
 
 #: html/loleaflet-help.html+div.div.table.tr.td.p:109
@@ -2970,10 +2971,11 @@ msgstr "Vyberte text se stávajícím formátem"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:605
 #: html/loleaflet-help.html+div.div.ol.li.p.img:636
+#, fuzzy
 msgid ""
 "Click on the clone formatting icon <img style=\"height:0.6cm;width:0.6cm;\" "
-"alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. The mouse pointer turns to "
-"a paint bucket."
+"alt=\"\" src=\"images/cmd/formatpaintbrush.svg\">. The mouse pointer turns "
+"to a paint bucket."
 msgstr ""
 "Klepněte na ikonu štětečku formátu <img style=\"height:0.6cm;width:0.6cm;\" "
 "alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. Ukazatel myši se změní na "
@@ -3134,11 +3136,12 @@ msgid ""
 msgstr "Otevřete v <span class=\"productname\">%productName</span> prezentaci"
 
 #: html/loleaflet-help.html+div.div.ol.li.p.img:650
+#, fuzzy
 msgid ""
 "Either choose <span class=\"ui\">Slide Show</span> → <span class=\"ui\">Full "
 "Screen Presentation</span> or click on the left-most icon in the bottom of "
 "the slide panel: <img style=\"height:0.6cm;width:0.6cm;\" alt=\"\" src=\""
-"images/lc_dia.svg\">"
+"images/cmd/dia.svg\">"
 msgstr ""
 "Zvolte <span class=\"ui\">Prezentace</span> → <span class=\"ui\">Prezentace "
 "na celou obrazovku</span> nebo klepněte v dolní části panelu snímků na ikonu "
@@ -3166,6 +3169,13 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p:659
 msgid "Set the properties of the element of the object."
 msgstr "Nastavte dané vlastnosti objektu."
+
+#~ msgid ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
+#~ msgstr ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
 
 #, fuzzy
 #~ msgid ""

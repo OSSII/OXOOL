@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-08 14:12+0800\n"
+"POT-Creation-Date: 2022-06-07 17:06+0800\n"
 "PO-Revision-Date: 2022-02-10 14:25+0000\n"
 "Last-Translator: Jeff Huang <jeff@mail.ossii.com.tw>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects"
@@ -84,11 +84,11 @@ msgstr "顯示鍵盤快捷鍵說明"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:29
 msgid ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>?"
 msgstr ""
-"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
-"--plus\">+</span><kbd>?"
+"Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Alt</kbd><span class=\"kbd--"
+"plus\">+</span><kbd>Shift</kbd><span class=\"kbd--plus\">+</span><kbd>V"
 
 #: html/loleaflet-help.html+div.div.h2:33
 #: html/loleaflet-help.html+div.div.h2:179
@@ -781,8 +781,8 @@ msgid ""
 "<kbd>Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Tab</kbd> may be used "
 "instead."
 msgstr ""
-"插入定位落點（僅在表格之中）。取決於使用的視窗管理程式而定，有可能需要改用 "
-"<kbd>Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Tab</kbd>。"
+"插入定位落點（僅在表格之中）。取決於使用的視窗管理程式而定，有可能需要改用 <kbd>Alt</kbd><span class=\"kbd--plus\""
+">+</span><kbd>Tab</kbd>。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:101
 msgid "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Arrow Keys"
@@ -836,8 +836,8 @@ msgid ""
 "3 seconds in Insert mode, Arrow Key inserts row/column, <kbd>Ctrl</kbd><span "
 "class=\"kbd--plus\">+</span><kbd>Arrow Key</kbd> inserts cell"
 msgstr ""
-"插入模式下三秒，箭頭方向鍵插入列/欄，<kbd>Ctrl</kbd><span class=\"kbd--plus\">+</span>"
-"<kbd>箭頭方向鍵</kbd>插入儲存格"
+"插入模式下三秒，箭頭方向鍵插入列/欄，<kbd>Ctrl</kbd><span class=\"kbd--plus\""
+">+</span><kbd>箭頭方向鍵</kbd>插入儲存格"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:106
 msgid "Alt</kbd><span class=\"kbd--plus\">+</span><kbd>Del"
@@ -849,8 +849,8 @@ msgid ""
 "class=\"kbd--plus\">+</span><kbd>Arrow key</kbd> merges cell with "
 "neighboring cell"
 msgstr ""
-"刪除模式下三秒，箭頭方向鍵刪除列/欄，<kbd>Ctrl</kbd><span class=\"kbd--plus\">+</span>"
-"<kbd>箭頭方向鍵</kbd>與相鄰儲存格合併"
+"刪除模式下三秒，箭頭方向鍵刪除列/欄，<kbd>Ctrl</kbd><span class=\"kbd--plus\""
+">+</span><kbd>箭頭方向鍵</kbd>與相鄰儲存格合併"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:107
 msgid ""
@@ -1024,21 +1024,18 @@ msgstr "將游標移動至目前列的最後一個儲存格。"
 #: html/loleaflet-help.html+div.div.table.tr.td:136
 msgid ""
 "Selects cells from the current cell to the first cell of the current row."
-msgstr ""
-"選取儲存格，範圍自目前儲存格至目前列的第一個儲存格。"
+msgstr "選取儲存格，範圍自目前儲存格至目前列的第一個儲存格。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:137
 msgid ""
 "Selects cells from the current cell to the last cell of the current row."
-msgstr ""
-"選取儲存格，範圍自目前儲存格至目前列的最後一個儲存格。"
+msgstr "選取儲存格，範圍自目前儲存格至目前列的最後一個儲存格。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:138
 msgid ""
 "Selects cells from the current cell up to one page in the current column or "
 "extends the existing selection one page up."
-msgstr ""
-"選取儲存格，範圍自目前儲存格至目前欄往上最多一頁的儲存格，或是將既有的選取範圍再往上多選取一頁。"
+msgstr "選取儲存格，範圍自目前儲存格至目前欄往上最多一頁的儲存格，或是將既有的選取範圍再往上多選取一頁。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:138
 msgid "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Page Up"
@@ -1048,8 +1045,7 @@ msgstr "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Page Up"
 msgid ""
 "Selects cells from the current cell down to one page in the current column "
 "or extends the existing selection one page down."
-msgstr ""
-"選取儲存格，範圍自目前儲存格至目前欄往下最多一頁的儲存格，或是將既有的選取範圍再往下多選取一頁。"
+msgstr "選取儲存格，範圍自目前儲存格至目前欄往下最多一頁的儲存格，或是將既有的選取範圍再往下多選取一頁。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:139
 msgid "Shift</kbd><span class=\"kbd--plus\">+</span><kbd>Page Down"
@@ -1060,8 +1056,7 @@ msgid ""
 "Moves the cursor to the left edge of the current data range. If the column "
 "to the left of the cell that contains the cursor is empty, the cursor moves "
 "to the next column to the left that contains data"
-msgstr ""
-"將游標移動至目前資料範圍的左側邊緣。如果有游標的儲存格左側欄是空的，則會將游標移動到左側包含資料的下ㄧ欄"
+msgstr "將游標移動至目前資料範圍的左側邊緣。如果有游標的儲存格左側欄是空的，則會將游標移動到左側包含資料的下ㄧ欄"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:140
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Left Arrow"
@@ -1072,8 +1067,7 @@ msgid ""
 "Moves the cursor to the right edge of the current data range. If the column "
 "to the right of the cell that contains the cursor is empty, the cursor moves "
 "to the next column to the right that contains data."
-msgstr ""
-"將游標移動至目前資料範圍的右側邊緣。如果有游標的儲存格右側欄是空的，則會將游標移動到右側包含資料的下ㄧ欄"
+msgstr "將游標移動至目前資料範圍的右側邊緣。如果有游標的儲存格右側欄是空的，則會將游標移動到右側包含資料的下ㄧ欄"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:141
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Right Arrow"
@@ -1084,9 +1078,7 @@ msgid ""
 "Moves the cursor to the top edge of the current data range. If the row above "
 "the cell that contains the cursor is empty, the cursor moves up to the next "
 "row that contains data."
-msgstr ""
-"將游標移動至目前資料範圍的頂部邊緣。如果有游標的儲存格上面的列是空的，則會將游標移動到上面包含資料的下ㄧ"
-"列"
+msgstr "將游標移動至目前資料範圍的頂部邊緣。如果有游標的儲存格上面的列是空的，則會將游標移動到上面包含資料的下ㄧ列"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:142
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Up Arrow"
@@ -1097,9 +1089,7 @@ msgid ""
 "Moves the cursor to the bottom edge of the current data range. If the row "
 "below the cell that contains the cursor is empty, the cursor moves down to "
 "the next row that contains data."
-msgstr ""
-"將游標移動至目前資料範圍的底部邊緣。如果有游標的儲存格下面的列是空的，則會將游標移動到下面包含資料的下ㄧ"
-"列"
+msgstr "將游標移動至目前資料範圍的底部邊緣。如果有游標的儲存格下面的列是空的，則會將游標移動到下面包含資料的下ㄧ列"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:143
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Down Arrow"
@@ -1111,9 +1101,7 @@ msgid ""
 "continuous range of data cells, in the direction of the arrow pressed. If "
 "used to select rows and columns together, a rectangular cell range is "
 "selected."
-msgstr ""
-"選取包含資料的儲存格，範圍自目前儲存格至連續資料儲存格範圍的結尾，方向則根據所按下的方向鍵不同。若用於同"
-"時選取欄列，則會選取矩形儲存格範圍。"
+msgstr "選取包含資料的儲存格，範圍自目前儲存格至連續資料儲存格範圍的結尾，方向則根據所按下的方向鍵不同。若用於同時選取欄列，則會選取矩形儲存格範圍。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:144
 msgid ""
@@ -1144,9 +1132,7 @@ msgid ""
 "Adds the previous sheet to the current selection of sheets. If all the "
 "sheets in a spreadsheet are selected, this shortcut key combination only "
 "selects the previous sheet. Makes the previous sheet the current sheet."
-msgstr ""
-"將前一個工作表新增至目前選取的工作表。若試算表中所有的工作表都被選取，此組合鍵就僅會選取前一個工作表。"
-"讓前一個工作表變為目前的工作表。"
+msgstr "將前一個工作表新增至目前選取的工作表。若試算表中所有的工作表都被選取，此組合鍵就僅會選取前一個工作表。讓前一個工作表變為目前的工作表。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:147
 msgid ""
@@ -1161,9 +1147,7 @@ msgid ""
 "Adds the next sheet to the current selection of sheets. If all the sheets in "
 "a spreadsheet are selected, this shortcut key combination only selects the "
 "next sheet. Makes the next sheet the current sheet."
-msgstr ""
-"將下一個工作表新增至目前選取的工作表。若試算表中所有的工作表都被選取，此組合鍵就僅會選取下一個工作表。"
-"讓下一個工作表變為目前的工作表。"
+msgstr "將下一個工作表新增至目前選取的工作表。若試算表中所有的工作表都被選取，此組合鍵就僅會選取下一個工作表。讓下一個工作表變為目前的工作表。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:148
 msgid ""
@@ -1178,8 +1162,7 @@ msgid ""
 "where (*) is the multiplication sign on the numeric key pad. Selects the "
 "data range that contains the cursor. A range is a contiguous cell range that "
 "contains data and is bounded by empty row and columns."
-msgstr ""
-"(*) 為數字鍵盤上的乘號。選取包含游標的資料範圍。範圍為包含資料並以空列與空欄為界的連續儲存格範圍。"
+msgstr "(*) 為數字鍵盤上的乘號。選取包含游標的資料範圍。範圍為包含資料並以空列與空欄為界的連續儲存格範圍。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:149
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>*"
@@ -1189,8 +1172,7 @@ msgstr "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>*"
 msgid ""
 "where (/) is the division sign on the numeric key pad. Selects the matrix "
 "formula range that contains the cursor."
-msgstr ""
-"(/) 為數字鍵盤上的除號。選取包含游標的矩陣公式範圍。"
+msgstr "(/) 為數字鍵盤上的除號。選取包含游標的矩陣公式範圍。"
 
 #: html/loleaflet-help.html+div.div.table.tr.td:150
 msgid "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>/"
@@ -1516,8 +1498,8 @@ msgid ""
 "directly in your browser, in a simple and straight-forward way. You can work "
 "alone on a document, or collaboratively as part of a team."
 msgstr ""
-"<span class=\"productname\">%productName</span> 讓您可以直接在瀏覽器中以簡單直觀的方式製"
-"作與編輯辦公室文件，如文字文件、試算表與簡報。您可以單獨製作文件，或是與團隊協作。"
+"<span class=\"productname\">%productName</span> "
+"讓您可以直接在瀏覽器中以簡單直觀的方式製作與編輯辦公室文件，如文字文件、試算表與簡報。您可以單獨製作文件，或是與團隊協作。"
 
 #: html/loleaflet-help.html+div.ul.li.p:335
 msgid ""
@@ -1525,23 +1507,20 @@ msgid ""
 "the assigned color. Note: you will see your cursor as black, blinking "
 "cursor, although others will see you with a different color."
 msgstr ""
-"每個使用者都會被分配到一個顏色。每個使用者的游標都將會以被分配到的顏色顯示。請注意：您將會看到自己的游標"
-"是黑色的閃爍游標，但其他人會看到您被分配到的顏色。"
+"每個使用者都會被分配到一個顏色。每個使用者的游標都將會以被分配到的顏色顯示。請注意：您將會看到自己的游標是黑色的閃爍游標，但其他人會看到您被分配到的顏色。"
 
 #: html/loleaflet-help.html+div.ul.li.p:336
 msgid ""
 "You can jump to the cursor of a user by clicking on the name (or avatar) of "
 "the user. It is possible to follow the editor."
-msgstr ""
-"您可以透過點擊使用者的名稱（或大頭照）來跳到某個使用者游標的所在位置。如此就可以追蹤對方的編輯位置。"
+msgstr "您可以透過點擊使用者的名稱（或大頭照）來跳到某個使用者游標的所在位置。如此就可以追蹤對方的編輯位置。"
 
 #: html/loleaflet-help.html+div.ul.li.p:337
 msgid ""
 "<span class=\"productname\">%productName</span> notifies you with a small "
 "notification in the footer when a new user enters or when a user leaves."
 msgstr ""
-"<span class=\"productname\">%productName</span> 會在頁尾以小型通知來通知您有新使用者進入"
-"或離開。"
+"<span class=\"productname\">%productName</span> 會在頁尾以小型通知來通知您有新使用者進入或離開。"
 
 #: html/loleaflet-help.html+div.p:341
 msgid ""
@@ -2564,8 +2543,8 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p.img:636
 msgid ""
 "Click on the clone formatting icon <img style=\"height:0.6cm;width:0.6cm;\" "
-"alt=\"\" src=\"images/lc_formatpaintbrush.svg\">. The mouse pointer turns to "
-"a paint bucket."
+"alt=\"\" src=\"images/cmd/formatpaintbrush.svg\">. The mouse pointer turns "
+"to a paint bucket."
 msgstr ""
 
 #: html/loleaflet-help.html+div.div.ol.li.p:606
@@ -2701,7 +2680,7 @@ msgid ""
 "Either choose <span class=\"ui\">Slide Show</span> → <span class=\"ui\">Full "
 "Screen Presentation</span> or click on the left-most icon in the bottom of "
 "the slide panel: <img style=\"height:0.6cm;width:0.6cm;\" alt=\"\" src=\""
-"images/lc_dia.svg\">"
+"images/cmd/dia.svg\">"
 msgstr ""
 
 #: html/loleaflet-help.html+div.div.h4:652
@@ -2722,6 +2701,13 @@ msgstr ""
 #: html/loleaflet-help.html+div.div.ol.li.p:659
 msgid "Set the properties of the element of the object."
 msgstr ""
+
+#~ msgid ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
+#~ msgstr ""
+#~ "Ctrl</kbd><span class=\"kbd--plus\">+</span><kbd>Shift</kbd><span class=\"kbd"
+#~ "--plus\">+</span><kbd>?"
 
 #, fuzzy
 #~ msgid ""
