@@ -16,7 +16,7 @@ window.app = {
 	// 預設產品相關資訊
 	global.brandProductName = 'OxOffice Online';
 	global.brandProductURL = 'https://www.ossii.com.tw/product';
-	global.brandProductFAQURL = 'https://www.ossii.com.tw/';
+	global.brandProductFAQURL = 'https://www.facebook.com/OSSIITW/';
 	//------------------------------------------------------
 
 	global.logServer = function (log) {
