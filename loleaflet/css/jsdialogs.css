@@ -431,7 +431,6 @@ input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:chec
 	padding: 4px 0 4px 4px;
 	height: 28px;
 	box-sizing: border-box;
-	margin-right: 1px;
 }
 
 .spinfieldunit {

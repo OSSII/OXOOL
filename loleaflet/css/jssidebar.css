@@ -121,13 +121,12 @@
 .sidebar #FIELD_TRANSPARENCY {
 	height: 0;
 	position: relative;
-	bottom: 10px;
-	right: 17px;
+	bottom: 20px;
 }
 
 .sidebar #transparency_label {
 	position: relative;
-	top: 12px;
+	top: 8px;
 }
 
 .sidebar #table-indentfieldbox {
@@ -142,11 +141,9 @@
 
 .sidebar #orientationdegrees {
 	position: relative;
-	right: 21px;
 }
 #textorientbox {
 	position: relative;
-	left: 15px;
 	display: flex;
 	justify-content: space-between;
 }
@@ -197,7 +194,6 @@ div#thousandseparator.checkbutton.jsdialog.sidebar {
 #NumberFormatPropertyPanel #table-box2,
 #NumberFormatPropertyPanel #leadingzeroes {
 	position: relative;
-	left: 9px;
 }
 #NumberFormatPropertyPanel #leadingzeroeslabel {
 	margin-left: 2px;
@@ -328,7 +324,6 @@ td.jsdialog .jsdialog.cell.sidebar {
 #fillattrhb {
 	margin-left: 4px;
 	position: relative;
-	left: 38px;
 }
 
 
@@ -372,13 +367,11 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 
 .sidebar #linetransparency {
 	position: relative;
-	margin-inline-end: 18px;
 }
 
 .sidebar #horizontalpos,
 .sidebar #verticalpos {
 	position: relative;
-	margin-inline-end: 24px;
 }
 
 .sidebar #fillgrad1 {
@@ -388,7 +381,6 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 .sidebar #fillgrad2,
 .sidebar #LB_SHADOW_COLOR {
 	position: relative;
-	left: 5px;
 }
 #LB_SHADOW_COLOR {
 	border: 1px solid var(--color-border-lighter);
@@ -398,11 +390,9 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 .sidebar #LB_GLOW_RADIUS,
 .sidebar #SB_SOFTEDGE_RADIUS {
 	position: relative;
-	right: 20px;
 }
 .sidebar #LB_GLOW_COLOR {
 	position: relative;
-	left: 4px;
 }
 
 .sidebar #leftindent,
@@ -410,7 +400,6 @@ button#button2.ui-pushbutton.jsdialog.sidebar {
 .sidebar #LB_DISTANCE,
 .sidebar #LB_SHADOW_BLUR {
 	position: relative;
-	right: 18px;
 }
 
 .sidebar #leftindent {
