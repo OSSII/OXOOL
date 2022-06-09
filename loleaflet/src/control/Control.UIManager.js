@@ -574,12 +574,6 @@ L.Control.UIManager = L.Control.extend({
 	// Event handlers
 
 	onUpdatePermission: function(e) {
-		// Added By Firefly <firefly@ossii.com.tw>
-		// 重要！！！
-		// 載入該類編輯類型的選單資料，以及設定系統的指令白名單
-		this.map.loadMenubarData();
-		//-----------------------------------------------------
-
 		if (window.mode.isMobile()) {
 			if (e.perm === 'edit') {
 				history.pushState({context: 'app-started'}, 'edit-mode');

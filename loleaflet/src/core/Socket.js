@@ -1336,6 +1336,8 @@ app.definitions.Socket = L.Class.extend({
 		}
 
 		if (!this._map._docLayer) {
+			// 載入該類編輯類型的選單資料，以及設定系統的指令白名單
+			this._map.loadMenubarData(command.type);
 			// first status message, we need to create the document layer
 			var tileWidthTwips = this._map.options.tileWidthTwips;
 			var tileHeightTwips = this._map.options.tileHeightTwips;
