@@ -203,7 +203,7 @@ m4_ifelse(MOBILEAPP,[true],
       </div>
      </nav>
 
-     <table id="toolbar-wrapper" class="readonly">
+     <table id="toolbar-wrapper">
      <tr>
        <td id="toolbar-logo"></td>
        <td id="toolbar-mobile-back" class="editmode-off"></td>

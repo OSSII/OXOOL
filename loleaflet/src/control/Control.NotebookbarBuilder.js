@@ -528,7 +528,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 				}
 			];
 		}
-	
+
 		submenuOpts.forEach(function mapIconToItem(menuItem) {
 			menuItem.icon = menuItem.id + '-submenu-icon';
 		});
@@ -760,8 +760,8 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		if (builder.map._clip) {
 			if (isPaste) {
 				var menu = [
-					{text: _UNO('.uno:Paste', 'text'), uno: 'Paste', hint: L.Control.MenubarShortcuts.shortcuts.PASTE},
-					{text: _UNO('.uno:PasteSpecial', 'text'), uno: 'PasteSpecial', hint: L.Control.MenubarShortcuts.shortcuts.PASTE_SPECIAL},
+					{text: _UNO('.uno:Paste', 'text'), uno: 'Paste', hint: builder.map.getCommandHotkey('.uno:Paste')},
+					{text: _UNO('.uno:PasteSpecial', 'text'), uno: 'PasteSpecial', hint: builder.map.getCommandHotkey('.uno:PasteSpecial')},
 				];
 
 				$(control.container).unbind('click.toolbutton');
