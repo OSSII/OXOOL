@@ -246,7 +246,7 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	background-color: var(--color-background-lighter);
 }
 #toolbar-wrapper:not(.mobile) {
-	padding: 3px 0;
+	padding: 0;
 }
 
 #toolbar-logo {
