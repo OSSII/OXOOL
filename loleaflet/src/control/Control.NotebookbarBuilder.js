@@ -399,7 +399,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 				return false;
 		}
 
-		data.command = data.id;
+		// 未指定 command 的話，就用 id 替代
+		if (data.command === undefined || data.command === '')
+			data.command = data.id;
 
 		var isDownloadAsGroup = data.id === 'downloadas';
 		var options = {};
@@ -407,7 +409,8 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			options.hasDropdownArrow = true;
 		}
 
-		var control = builder._unoToolButton(parentContainer, data, builder, options);
+		builder._unoToolButton(parentContainer, data, builder, options);
+		/* var control = builder._unoToolButton(parentContainer, data, builder, options);
 
 		$(control.container).unbind('click.toolbutton');
 		if (!builder.map.isLockedItem(data)) {
@@ -426,7 +429,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 					}
 				});
 			});
-		}
+		} */
 	},
 
 	_inlineMenubarToolItemHandler: function(parentContainer, data, builder) {

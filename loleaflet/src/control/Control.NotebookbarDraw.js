@@ -157,14 +157,14 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 							'id': 'ShareAs',
 							'type': 'menubartoolitem',
 							'text': _('Share'),
-							'command': '.uno:shareas'
+							'command': '.uno:ShareDocument'
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
 							'type': 'menubartoolitem',
 							'text': _('See history'),
-							'command': '.uno:rev-history'
+							'command': 'rev-history'
 						} : {},
 				],
 				'vertical': 'true'
@@ -183,14 +183,14 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 					{
 						'id': 'downloadas-odg',
 						'type': 'menubartoolitem',
-						'text': _('ODF Drawing (.odg)'),
-						'command': ''
+						'icon': 'res:downloadas-odg',
+						'text': _('ODF Drawing (.odg)')
 					},
 					{
 						'id': 'downloadas-png',
 						'type': 'menubartoolitem',
-						'text': _('Image (.png)'),
-						'command': ''
+						'icon': 'res:downloadas-png',
+						'text': _('Image (.png)')
 					},
 				],
 				'vertical': 'true'
@@ -202,14 +202,14 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 					{
 						'id': 'downloadas-pdf',
 						'type': 'menubartoolitem',
-						'text': _('PDF Document (.pdf)'),
-						'command': ''
+						'icon': 'res:downloadas-pdf',
+						'text': _('PDF Document (.pdf)')
 					},
 					{
 						'id': 'repair',
 						'type': 'menubartoolitem',
-						'text': _('Repair'),
-						'command': _('Repair')
+						'icon': 'res:repair',
+						'text': _('Repair')
 					}
 				],
 				'vertical': 'true'
@@ -231,7 +231,7 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 				'id': 'zoomreset',
 				'type': 'menubartoolitem',
 				'text': _('Reset zoom'),
-				'command': _('Reset zoom')
+				'command': '.uno:Zoom100Percent'
 			},
 			{
 				'type': 'container',
@@ -270,13 +270,13 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 				'id': 'toggleuimode',
 				'type': 'bigmenubartoolitem',
 				'text': _('Compact view'),
-				'command': _('Toggle UI Mode')
+				'command': '.uno:ToolbarModeUI'
 			},
 			{
 				'id': 'showstatusbar',
 				'type': 'menubartoolitem',
 				'text': _('Status Bar'),
-				'command': _('Show Status Bar')
+				'command': '.uno:StatusBarVisible'
 			}
 		];
 
@@ -728,7 +728,7 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 								'id': 'selectbackground',
 								'type': 'menubartoolitem',
 								'text': _UNO('.uno:SelectBackground', 'presentation'),
-								'command': ''
+								'command': '.uno:SelectBackground'
 							}
 						]
 					}

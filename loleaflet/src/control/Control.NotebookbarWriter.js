@@ -121,14 +121,14 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							'id': 'ShareAs',
 							'type': 'menubartoolitem',
 							'text': _('Share'),
-							'command': '.uno:shareas'
+							'command': '.uno:ShareDocument'
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
 							'type': 'menubartoolitem',
-							'text': _('See history'),
-							'command': '.uno:rev-history'
+							'icon': 'res:rev-history',
+							'text': _('See history')
 						} : {},
 				],
 				'vertical': 'true'
@@ -165,14 +165,14 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						{
 							'id': 'downloadas-odt',
 							'type': 'menubartoolitem',
-							'text': _('ODF Text Document (.odt)'),
-							'command': ''
+							'icon': 'res:downloadas-odt',
+							'text': _('ODF Text Document (.odt)')
 						},
 						{
 							'id': 'downloadas-rtf',
 							'type': 'menubartoolitem',
-							'text': _('Rich Text (.rtf)'),
-							'command': ''
+							'icon': 'res:downloadas-rtf',
+							'text': _('Rich Text (.rtf)')
 						},
 					],
 					'vertical': 'true'
@@ -183,14 +183,14 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						{
 							'id': 'downloadas-doc',
 							'type': 'menubartoolitem',
-							'text': _('Word 2003 Document (.doc)'),
-							'command': ''
+							'icon': 'res:downloadas-doc',
+							'text': _('Word 2003 Document (.doc)')
 						},
 						{
 							'id': 'downloadas-docx',
 							'type': 'menubartoolitem',
-							'text': _('Word Document (.docx)'),
-							'command': ''
+							'icon': 'res:downloadas-docx',
+							'text': _('Word Document (.docx)')
 						},
 					],
 					'vertical': 'true'
@@ -201,14 +201,14 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						{
 							'id': 'downloadas-pdf',
 							'type': 'menubartoolitem',
-							'text': _('PDF Document (.pdf)'),
-							'command': ''
+							'icon': 'res:downloadas-pdf',
+							'text': _('PDF Document (.pdf)')
 						},
 						{
 							'id': 'downloadas-epub',
 							'type': 'menubartoolitem',
-							'text': _('EPUB Document (.epub)'),
-							'command': ''
+							'icon': 'res:downloadas-epub',
+							'text': _('EPUB Document (.epub)')
 						},
 					],
 					'vertical': 'true'
@@ -223,8 +223,8 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 					{
 						'id': 'repair',
 						'type': 'bigmenubartoolitem',
-						'text': _('Repair'),
-						'command': _('Repair')
+						'icon': 'res:repair',
+						'text': _('Repair')
 					}
 				]
 			});
@@ -235,14 +235,14 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 					{
 						'id': 'repair',
 						'type': 'menubartoolitem',
-						'text': _('Repair'),
-						'command': _('Repair')
+						'icon': 'res:repair',
+						'text': _('Repair')
 					},
 					{
 						'id': 'signdocument',
 						'type': 'menubartoolitem',
-						'text': _('Sign document'),
-						'command': ''
+						'icon': 'res:signdocument',
+						'text': _('Sign document')
 					}
 				],
 				'vertical': 'true'
@@ -267,6 +267,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							{
 								'id': 'forum',
 								'type': 'bigtoolitem',
+								'icon': 'res:forumhelp',
 								'text': _('Forum'),
 								'command': '.uno:ForumHelp'
 							}
@@ -289,6 +290,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							{
 								'id': 'keyboard-shortcuts',
 								'type': 'bigtoolitem',
+								'icon': 'res:keyboardshortcuts',
 								'text': _('Keyboard shortcuts'),
 								'command': '.uno:KeyboardShortcuts'
 							}
@@ -336,6 +338,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 								{
 									'id': 'about',
 									'type': 'bigtoolitem',
+									'icon': 'res:about',
 									'text': _('About'),
 									'command': '.uno:About'
 								}
@@ -703,6 +706,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 			},
 			{
 				'type': 'bigtoolitem',
+				'icon': 'res:editregion',
 				'text': _UNO('.uno:EditRegion', 'text'),
 				'command': '.uno:EditRegion'
 			},
@@ -912,6 +916,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 			{
 				'id': 'FormattingMarkMenu:FormattingMarkMenu',
 				'type': 'menubutton',
+				'icon': 'res:formattingmarkmenu',
 				'text': _UNO('.uno:FormattingMarkMenu', 'text'),
 				'command': '.uno:FormattingMarkMenu'
 			},
@@ -963,7 +968,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 				'id': 'zoomreset',
 				'type': 'menubartoolitem',
 				'text': _('Reset zoom'),
-				'command': _('Reset zoom')
+				'command': '.uno:Zoom100Percent'
 			},
 			{
 				'type': 'container',
@@ -1002,7 +1007,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 				'id': 'toggleuimode',
 				'type': 'bigmenubartoolitem',
 				'text': _('Compact view'),
-				'command': _('Toggle UI Mode')
+				'command': '.uno:ToolbarModeUI'
 			},
 			{
 				'type': 'container',
@@ -1013,8 +1018,8 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							{
 								'id': 'showruler',
 								'type': 'menubartoolitem',
-								'text': _('Ruler'),
-								'command': _('Show Ruler')
+								'text': _UNO('.uno:Ruler'),
+								'command': '.uno:Ruler'
 							}
 						]
 					},
@@ -1024,8 +1029,8 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							{
 								'id': 'showstatusbar',
 								'type': 'menubartoolitem',
-								'text': _('Status Bar'),
-								'command': _('Show Status Bar')
+								'text': _UNO('.uno:StatusBarVisible'),
+								'command': '.uno:StatusBarVisible'
 							}
 						]
 					}
@@ -1488,6 +1493,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 			},
 			{
 				'type': 'bigtoolitem',
+				'icon': 'res:showresolvedannotations',
 				'text': _UNO('.uno:ShowResolvedAnnotations', 'text'),
 				'command': '.uno:ShowResolvedAnnotations'
 			},
@@ -1636,6 +1642,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 			},
 			{
 				'type': 'bigtoolitem',
+				'icon': 'res:accessibilitycheck',
 				'text': _UNO('.uno:AccessibilityCheck', 'text'),
 				'command': '.uno:AccessibilityCheck'
 			}

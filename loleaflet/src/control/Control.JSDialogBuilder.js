@@ -262,10 +262,11 @@ L.Control.JSDialogBuilder = L.Control.extend({
 		if (builder.wizard.setCurrentScrollPosition)
 			builder.wizard.setCurrentScrollPosition();
 
-		if (objectType == 'toolbutton' && eventType == 'click' && data.indexOf('.uno:') >= 0) {
+		if (objectType == 'toolbutton' && eventType == 'click') {
 			// encode spaces
 			var encodedCommand = data.replace(' ', '%20');
-			builder.map.sendUnoCommand(encodedCommand);
+			//builder.map.sendUnoCommand(encodedCommand);
+			builder.map.executeAllowedCommand(encodedCommand);
 		} else if (object) {
 			// CSV and Macro Security Warning Dialogs are shown before the document load
 			// In that state the document is not really loaded and closing or cancelling it
@@ -913,7 +914,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 		if (data.command) {
 			var iconParent = expander.children('.ui-expander').get(0);
 			var icon = L.DomUtil.create('div', 'ui-expander-icon-right ' + builder.options.cssClass, iconParent);
-			builder._controlHandlers['toolitem'](icon, {type: 'toolitem', command: data.command, icon: builder._createIconURL('morebutton')}, builder);
+			builder._controlHandlers['toolitem'](icon, {type: 'toolitem', command: data.command, icon: 'res:morebutton'}, builder);
 		}
 
 		return false;
@@ -2340,8 +2341,8 @@ L.Control.JSDialogBuilder = L.Control.extend({
 		var isRealUnoCommand = true;
 
 		if (data.command || data.postmessage === true) {
-			var id = data.id ? data.id : (data.text && data.text !== '') ? data.text : data.command;
-			var isUnoCommand = data.command && data.command.indexOf('.uno:') >= 0;
+			var id = data.id ? data.id : data.command;
+			var isUnoCommand = builder.map.isUnoCommand(data.command);
 			if (isUnoCommand)
 				id = encodeURIComponent(data.command.substr('.uno:'.length));
 			else
@@ -2360,7 +2361,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			div.id = id;
 			data.id = id; // change in input data for postprocess
 
-			var icon = data.icon ? data.icon : builder._createIconURL(data.command);
+			var icon = builder._createIconURL(data.icon ? data.icon : data.command);
 			var buttonId = id + 'img';
 
 			button = L.DomUtil.create('img', 'ui-content unobutton', div);

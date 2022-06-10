@@ -114,14 +114,14 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 							'id': 'ShareAs',
 							'type': 'menubartoolitem',
 							'text': _('Share'),
-							'command': '.uno:shareas'
+							'command': '.uno:ShareDocument'
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
 							'type': 'menubartoolitem',
-							'text': _('See history'),
-							'command': '.uno:rev-history'
+							'icon': 'res:rev-history',
+							'text': _('See history')
 						} : {},
 				],
 				'vertical': 'true'
@@ -157,8 +157,8 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 					{
 						'id': 'repair',
 						'type': 'menubartoolitem',
-						'text': _('Repair'),
-						'command': _('Repair')
+						'icon': 'res:repair',
+						'text': _('Repair')
 					}
 				],
 				'vertical': 'true'
@@ -172,14 +172,14 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-ods',
 							'type': 'menubartoolitem',
-							'text': _('ODF Spreadsheet (.ods)'),
-							'command': ''
+							'icon': 'res:downloadas-ods',
+							'text': _('ODF Spreadsheet (.ods)')
 						},
 						{
 							'id': 'downloadas-csv',
 							'type': 'menubartoolitem',
-							'text': _('CSV File (.csv)'),
-							'command': ''
+							'icon': 'res:downloadas-csv',
+							'text': _('CSV File (.csv)')
 						},
 					],
 					'vertical': 'true'
@@ -191,14 +191,14 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-xls',
 							'type': 'menubartoolitem',
-							'text': _('Excel 2003 Spreadsheet (.xls)'),
-							'command': ''
+							'icon': 'res:downloadas-xls',
+							'text': _('Excel 2003 Spreadsheet (.xls)')
 						},
 						{
 							'id': 'downloadas-xlsx',
 							'type': 'menubartoolitem',
-							'text': _('Excel Spreadsheet (.xlsx)'),
-							'command': ''
+							'icon': 'res:downloadas-xlsx',
+							'text': _('Excel Spreadsheet (.xlsx)')
 						},
 					],
 					'vertical': 'true'
@@ -210,14 +210,14 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-pdf',
 							'type': 'menubartoolitem',
-							'text': _('PDF Document (.pdf)'),
-							'command': ''
+							'icon': 'res:downloadas-pdf',
+							'text': _('PDF Document (.pdf)')
 						},
 						{
 							'id': 'repair',
 							'type': 'menubartoolitem',
-							'text': _('Repair'),
-							'command': _('Repair')
+							'icon': 'res:repair',
+							'text': _('Repair')
 						}
 					],
 					'vertical': 'true'
@@ -913,7 +913,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'id': 'zoomreset',
 				'type': 'menubartoolitem',
 				'text': _('Reset zoom'),
-				'command': _('Reset zoom')
+				'command': '.uno:Zoom100Percent'
 			},
 			{
 				'type': 'container',
@@ -952,13 +952,13 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'id': 'toggleuimode',
 				'type': 'bigmenubartoolitem',
 				'text': _('Compact view'),
-				'command': _('Toggle UI Mode')
+				'command': '.uno:ToolbarModeUI'
 			},
 			{
 				'id': 'showstatusbar',
 				'type': 'menubartoolitem',
 				'text': _('Status Bar'),
-				'command': _('Show Status Bar')
+				'command': '.uno:StatusBarVisible'
 			}
 		];
 
@@ -1351,6 +1351,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'id': 'Data-StatisticsMenu:Menu Statistic',
 				'type': 'menubutton',
 				'text': _UNO('.uno:StatisticsMenu', 'spreadsheet'),
+				'command': '.uno:StatisticsMenu',
 				'enabled': 'true'
 			},
 		];

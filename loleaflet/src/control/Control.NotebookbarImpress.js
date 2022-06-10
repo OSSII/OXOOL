@@ -170,14 +170,14 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 							'id': 'ShareAs',
 							'type': 'menubartoolitem',
 							'text': _('Share'),
-							'command': '.uno:shareas'
+							'command': '.uno:ShareDocument'
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
 							'type': 'menubartoolitem',
-							'text': _('See history'),
-							'command': '.uno:rev-history'
+							'icon': 'res:rev-history',
+							'text': _('See history')
 						} : {},
 				],
 				'vertical': 'true'
@@ -213,8 +213,8 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 					{
 						'id': 'repair',
 						'type': 'menubartoolitem',
-						'text': _('Repair'),
-						'command': _('Repair')
+						'icon': 'res:repair',
+						'text': _('Repair')
 					}
 				],
 				'vertical': 'true'
@@ -228,14 +228,14 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-odp',
 							'type': 'menubartoolitem',
-							'text': _('ODF Presentation (.odp)'),
-							'command': ''
+							'icon': 'res:downloadas-odp',
+							'text': _('ODF Presentation (.odp)')
 						},
 						{
 							'id': 'downloadas-odg',
 							'type': 'menubartoolitem',
-							'text': _('ODF Drawing (.odg)'),
-							'command': ''
+							'icon': 'res:downloadas-odg',
+							'text': _('ODF Drawing (.odg)')
 						},
 					],
 					'vertical': 'true'
@@ -247,14 +247,14 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-ppt',
 							'type': 'menubartoolitem',
-							'text': _('PowerPoint 2003 Presentation (.ppt)'),
-							'command': ''
+							'icon': 'res:downloadas-ppt',
+							'text': _('PowerPoint 2003 Presentation (.ppt)')
 						},
 						{
 							'id': 'downloadas-pptx',
 							'type': 'menubartoolitem',
-							'text': _('PowerPoint Presentation (.pptx)'),
-							'command': ''
+							'icon': 'res:downloadas-pptx',
+							'text': _('PowerPoint Presentation (.pptx)')
 						},
 					],
 					'vertical': 'true'
@@ -266,14 +266,14 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-pdf',
 							'type': 'menubartoolitem',
-							'text': _('PDF Document (.pdf)'),
-							'command': ''
+							'icon': 'res:downloadas-pdf',
+							'text': _('PDF Document (.pdf)')
 						},
 						{
 							'id': 'repair',
 							'type': 'menubartoolitem',
-							'text': _('Repair'),
-							'command': _('Repair')
+							'icon': 'res:repair',
+							'text': _('Repair')
 						}
 					],
 					'vertical': 'true'
@@ -301,7 +301,7 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 				'id': 'zoomreset',
 				'type': 'menubartoolitem',
 				'text': _('Reset zoom'),
-				'command': _('Reset zoom')
+				'command': '.uno:Zoom100Percent'
 			},
 			{
 				'type': 'container',
@@ -340,13 +340,13 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 				'id': 'toggleuimode',
 				'type': 'bigmenubartoolitem',
 				'text': _('Compact view'),
-				'command': _('Toggle UI Mode')
+				'command': '.uno:ToolbarModeUI'
 			},
 			{
 				'id': 'showstatusbar',
 				'type': 'menubartoolitem',
 				'text': _('Status Bar'),
-				'command': _('Show Status Bar')
+				'command': '.uno:StatusBarVisible'
 			}
 		];
 
@@ -1058,7 +1058,7 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 								'id': 'selectbackground',
 								'type': 'menubartoolitem',
 								'text': _UNO('.uno:SelectBackground', 'presentation'),
-								'command': ''
+								'command': '.uno:SelectBackground'
 							}
 						]
 					}
