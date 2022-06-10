@@ -280,6 +280,7 @@ L.Map.include({
 		'mailmergenextentry': 'nextrecord',
 		'mailmergepreventry': 'prevrecord',
 		'margins': 'pagemargin',
+		'masterslidespanel': 'slidemasterpage',
 		'measureattributes': 'measureline',
 		'mergecellsmenu': 'togglemergecells',
 		'mergedocument': 'mergedocuments',
