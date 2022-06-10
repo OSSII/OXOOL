@@ -1479,7 +1479,7 @@ msgstr "PowerPoint 簡報 (.pptx)"
 #: src/control/Control.NotebookbarImpress.js:237
 #: src/control/Toolbar.Extensions.js:153
 msgid "ODF Drawing (.odg)"
-msgstr "ODF 簡報 (.odp)"
+msgstr "ODF 繪圖 (.odg)"
 
 #: src/control/Control.Menubar.js:113
 #: src/control/Control.PresentationBar.js:57 src/othermessages.js:26
@@ -1631,7 +1631,7 @@ msgstr "資料"
 #: src/control/Control.NotebookbarImpress.js:88
 #: src/control/Control.NotebookbarWriter.js:38
 msgid "~Review"
-msgstr "概覽"
+msgstr "校閱"
 
 #: src/control/Control.NotebookbarCalc.js:43
 #: src/control/Control.NotebookbarDraw.js:81
@@ -1794,8 +1794,8 @@ msgstr "精簡介面"
 #: src/control/Control.NotebookbarDraw.js:273
 #: src/control/Control.NotebookbarImpress.js:343
 #: src/control/Control.NotebookbarWriter.js:1005
-msgid "Toggle UI Mode"
-msgstr "切換操作界面"
+msgid "Tabbed view"
+msgstr "分頁式界面"
 
 #: src/control/Control.NotebookbarCalc.js:960
 #: src/control/Control.NotebookbarDraw.js:278

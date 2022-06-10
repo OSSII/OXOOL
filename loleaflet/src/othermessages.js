@@ -36,5 +36,6 @@ L.OtherMessages = {
 		_('Insert on the bottom side of page'), // 插入頁面底部
 		_('Customize'), // 自訂
 		_('Hand-drawn diagram'), // 手繪圖表
+		_('Tabbed view'), // 分頁式界面
 	],
 };
