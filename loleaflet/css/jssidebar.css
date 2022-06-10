@@ -15,6 +15,7 @@
 	padding: 0;
 	margin-top: 0 !important;
 	box-sizing: border-box;
+	background-color: var(--color-main-background);
 }
 
 [data-userinterfacemode='classic'] #document-container:not(.mobile) + #sidebar-dock-wrapper,
