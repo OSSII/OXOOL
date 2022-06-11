@@ -1193,13 +1193,11 @@ L.Control.Menubar = L.Control.extend({
 							this._executeReadonly = (self.options.allowedViewModeActions.indexOf(id) >= 0);
 						}
 					}
-					// 若同時又指定 name，則選項名稱以 name 為準
-					var text = (this._data.name ? this._data.name : id);
 
 					// 選項圖示
 					var iconItem = L.DomUtil.create('i', 'menuicon img-icon');
 					var iconURL = 'url("' + this._map.getIconURL(
-						this._data.icon ? this._data.icon : text
+						this._data.icon ? this._data.icon : (this._map.isUnoCommand(this._data.name) ? this._data.name : id)
 					) + '")';
 					iconItem.style.backgroundImage = iconURL;
 					this._aItem.appendChild(iconItem);
