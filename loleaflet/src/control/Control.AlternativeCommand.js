@@ -27,16 +27,11 @@ L.Control.AlternativeCommand = L.Control.extend({
 	},
 
 	run: function(orignalCommand, json) {
-		var event = {
-			commandName: orignalCommand,
-			json: json
-		};
 		if (this.has(orignalCommand)) {
-			if (orignalCommand === '.uno:InsertAnnotation') {
-				this._map.insertComment();
-			} else {
-				this._commands[orignalCommand](event);
-			}
+			this._commands[orignalCommand]({
+				commandName: orignalCommand,
+				json: json
+			});
 			window.app.console.debug('Alternative command(%s), target:', orignalCommand, this._commands[orignalCommand]);
 			return true;
 		}
@@ -63,6 +58,24 @@ L.Control.AlternativeCommand = L.Control.extend({
 		 */
 		'.uno:SaveAs': function() {
 			this._map.openSaveAs();
+		},
+		/**
+		 * 分享
+		 */
+		'ShareAs': function() {
+			this._map.openShare();
+		},
+		/**
+		 * 檢視修訂紀錄
+		 */
+		'rev-history': function() {
+			this._map.openRevisionHistory();
+		},
+		/**
+		 * 修復
+		 */
+		'Repair': function() {
+			app.socket.sendMessage('commandvalues command=.uno:DocumentRepair');
 		},
 		/**
 		 * 列印
@@ -137,7 +150,6 @@ L.Control.AlternativeCommand = L.Control.extend({
 		},
 		/**
 		 * 插入註解
-		 * TODO: Calc 執行這裡後，沒有反應，原因待查
 		 */
 		'.uno:InsertAnnotation': function() {
 			this._map.insertComment();
