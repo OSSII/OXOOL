@@ -13,8 +13,9 @@
 			},
 			{
 				"icon": ".uno:ShareDocument",
-				"name": "Share...",
-				"id": "shareas"
+				"name": "Share",
+				"comment": "替代指令",
+				"id": "ShareAs"
 			},
 			{
 				"id": ".uno:Print",
@@ -23,6 +24,7 @@
 			},
 			{
 				"name": "See revision history",
+				"comment": "替代指令",
 				"id": "rev-history"
 			},
 			{
@@ -84,8 +86,10 @@
 				"hotkey": "Ctrl+Y"
 			},
 			{
+				"icon": "res:repair",
 				"name": "Repair",
-				"id": "repair"
+				"comment": "替代指令",
+				"id": "Repair"
 			},
 			{
 				"type": "--"
@@ -199,6 +203,7 @@
 			},
 			{
 				"id": ".uno:ToolbarModeUI",
+				"name": "Tabbed view",
 				"comment": "替代指令"
 			},
 			{
