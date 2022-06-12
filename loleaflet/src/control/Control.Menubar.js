@@ -975,14 +975,18 @@ L.Control.Menubar = L.Control.extend({
 
 	_onItemSelected: function(e, item) {
 		var mgr = item.mgr;
+		var itemId = '';
 		if (mgr) {
 			mgr.execute();
+			itemId = mgr.getId();
 		} else {
+			itemId = $(item).data('id');
 			window.app.console.debug('Warning! item manager object not found.', item);
 		}
 
-		if (!window.mode.isMobile() && mgr.getId() !== 'insertcomment' && this && this._map)
+		if (!window.mode.isMobile() && !(itemId === '.uno:InsertAnnotation' || itemId === 'insertcomment') && this && this._map) {
 			this._map.focus();
+		}
 	},
 
 	_createFileIcon: function() {
