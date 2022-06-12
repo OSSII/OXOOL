@@ -14,7 +14,7 @@
 			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share...",
-				"id": "shareas"
+				"id": "ShareAs"
 			},
 			{
 				"id": ".uno:Print",
@@ -23,6 +23,7 @@
 			},
 			{
 				"name": "See revision history",
+				"comment": "替代指令",
 				"id": "rev-history"
 			},
 			{
@@ -94,7 +95,8 @@
 			},
 			{
 				"name": "Repair",
-				"id": "repair"
+				"comment": "替代指令",
+				"id": "Repair"
 			},
 			{
 				"type": "--"
@@ -235,6 +237,7 @@
 			},
 			{
 				"id": ".uno:ToolbarModeUI",
+				"name": "Tabbed view",
 				"comment": "替代指令"
 			},
 			{
@@ -794,9 +797,8 @@
 				"id": ".uno:VerticalText"
 			},
 			{
-				"name": ".uno:InsertAnnotation",
-				"id": "insertcomment",
-				"commend": "TODO: 將 id 改為 \".uno:InsertAnnotation\", 然後取消 \"name\"",
+				"id": ".uno:InsertAnnotation",
+				"comment": "替代指令",
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
