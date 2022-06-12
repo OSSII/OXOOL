@@ -13,8 +13,8 @@
 			},
 			{
 				"icon": ".uno:ShareDocument",
-				"name": "Share...",
-				"id": "shareas"
+				"name": "Share",
+				"id": "ShareAs"
 			},
 			{
 				"id": ".uno:Print",
@@ -22,7 +22,8 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"name": "See revision history",
+				"icon": "res:rev-history",
+				"name": "See history",
 				"id": "rev-history"
 			},
 			{
@@ -103,8 +104,9 @@
 				"hotkey": "Ctrl+Shift+Y"
 			},
 			{
+				"icon": "res:repair",
 				"name": "Repair",
-				"id": "repair"
+				"id": "Repair"
 			},
 			{
 				"type": "--"
@@ -288,6 +290,7 @@
 			},
 			{
 				"id": ".uno:ToolbarModeUI",
+				"name": "Tabbed view",
 				"commit": "替代指令"
 			},
 			{
@@ -885,9 +888,8 @@
 				"id": ".uno:VerticalText"
 			},
 			{
-				"name": ".uno:InsertAnnotation",
-				"id": "insertcomment",
-				"commend": "TODO: 將 id 改為 \".uno:InsertAnnotation\", 然後取消 \"name\"",
+				"id": ".uno:InsertAnnotation",
+				"comment": "替代指令",
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
