@@ -11,6 +11,15 @@ L.Map.include({
 	_allowedCommands: {
 		menubarData: null, // 來自系統的選單設定檔
 		menuPermissions: {}, // 來自系統的選單權限檔
+		// 特性命令
+		featureCommand: {
+			'.uno:ToolbarModeUI': !window.app.dontUseNotebookbar, // 使用者界面(精簡/分頁式))切換
+			'.uno:Sidebar': !window.app.dontUseSidebar, // 側邊欄
+			'.uno:ModifyPage': !window.app.dontUseSidebar, // 側邊欄-投影片版面配置
+			'.uno:SlideChangeWindow': !window.app.dontUseSidebar, // 側邊欄-投影片轉場
+			'.uno:CustomAnimation': !window.app.dontUseSidebar, // 側邊欄-動畫
+			'.uno:MasterSlidesPanel': !window.app.dontUseSidebar, // 側邊欄-投影片母片
+		},
 		// 右鍵選單白名單
 		contextMenu: {
 			general: [
@@ -162,17 +171,10 @@ L.Map.include({
 		// 必須是陣列
 		if (L.Util.isArray(menu)) {
 			menu.forEach(function(item) {
-				var id = item.id;
-				if (id) {
-					// 被禁用就設定隱藏屬性
-					if (this._allowedCommands.menuPermissions[id] === false) {
-						item.hide = true;
-					}
-					this.addAllowCommand(item, true);
-					// 有子選單就遞迴呼叫自己
-					if (L.Util.isArray(item.menu) && item.menu.length > 0) {
-						this.createAllowCommand(item.menu);
-					}
+				this.addAllowCommand(item, true);
+				// 有子選單就遞迴呼叫自己
+				if (L.Util.isArray(item.menu) && item.menu.length > 0) {
+					this.createAllowCommand(item.menu);
 				}
 			}.bind(this));
 		}
@@ -335,6 +337,7 @@ L.Map.include({
 			dontInitStatus = false;
 		}
 		var id = command.id; // id 是必要項目
+
 		// 有 id 且沒有被隱藏
 		if (id && command.hide !== true) {
 			var obj = {};
@@ -343,6 +346,18 @@ L.Map.include({
 			if (queryIndex > 0) {
 				obj.queryString = id.substring(queryIndex);
 				id = id.substring(0, queryIndex);
+			}
+
+			// 被選單設定禁用
+			if (this._allowedCommands.menuPermissions[id] === false) {
+				console.debug('Command "%s" Disabled by menu!', id);
+				return false;
+			}
+
+			// 在特性名單中禁用
+			if (this._allowedCommands.featureCommand[id] === false) {
+				console.debug('Command "%s" Disabled by feature!', id);
+				return false;
 			}
 
 			// 重複的話就不處理
