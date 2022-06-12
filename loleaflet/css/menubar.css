@@ -67,7 +67,7 @@
 	background: var(--doc-identify-color);
 	padding: 0;
 	white-space: nowrap;
-	/*z-index: 12;*/
+	z-index: 12;
 	display: flex;
 	align-items: center;
 }
@@ -138,7 +138,7 @@
 	padding-left: 12px;
 	padding-right: 12px;
 	padding-top: 5px;
-	/* z-index: 400; */
+	z-index: 400;
 	border: 1px solid transparent;
 }
 

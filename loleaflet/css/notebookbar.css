@@ -7,7 +7,7 @@
 
 .ui-tabs.notebookbar {
 	display: inline-flex;
-	/* z-index: 999; */
+	z-index: 999;
 	padding: 0px;
 	height: 100%;
 }
@@ -62,7 +62,7 @@
 .notebookbar-shortcuts-bar {
 	display: inline-block;
 	position: relative;
-	/* z-index: 1000; */
+	z-index: 1000;
 	box-sizing: border-box;
 }
 
@@ -176,7 +176,7 @@
 #toolbar-wrapper.hasnotebookbar {
 	background: var(--color-background-lighter);
 	position: relative;
-	/* z-index: 11; */
+	z-index: 11;
 }
 
 .cell.notebookbar {
