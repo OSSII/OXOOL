@@ -176,7 +176,8 @@ L.Control.ContextMenu = L.Control.extend({
 								if (spellingContextMenu)
 									map._docLayer._clearSelections();
 								// Give the stolen focus back to map
-								map.focus();
+								if (!window.mode.isMobile() && key !== '.uno:InsertAnnotation')
+									this._map.focus();
 							}
 						},
 						items: contextMenu
