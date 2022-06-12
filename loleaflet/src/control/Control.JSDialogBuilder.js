@@ -2458,7 +2458,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 				builder.refreshSidebar = true;
 				if (data.postmessage)
 					builder.map.fire('postMessage', {msgId: 'Clicked_Button', args: {Id: data.id} });
-				else if (isRealUnoCommand && data.dropdown !== true)
+				else if (data.dropdown !== true)
 					builder.callback('toolbutton', 'click', button, data.command, builder);
 				else
 					builder.callback('toolbox', 'click', parentContainer, data.command, builder);
