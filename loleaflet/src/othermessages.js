@@ -3,9 +3,7 @@
 L.OtherMessages = {
 	// control/Control.Menubar.js 之 ajax 載入的 json
 	fromMenubar: [
-		_('Share...'), // 分享
-		_('See revision history'),
-		_('Download as'),
+		_('Download as'), // 下載為
 		_('PDF Document (.pdf)'), // PDF 文件(.pdf)
 		_('TEXT Document (.txt)'), // 純文字文件(.txt)
 		_('HTML Document (.html)'), // HTML 文件(.html)
