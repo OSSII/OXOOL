@@ -1,3 +1,9 @@
+oxool (4.2.0-1.master) unstable; urgency=low
+
+  * Bump package version to 4.2.0-1
+
+ -- Firefly <firefly@ossii.com.tw>  Mon, 13 Jun 2022 14:50:40 +0800
+
 oxool (4.1.2-1.ossii) unstable; urgency=low
 
   * Bump package version to 4.1.2-1
