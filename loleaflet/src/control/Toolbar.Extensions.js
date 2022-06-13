@@ -203,8 +203,6 @@ L.Map.include({
 			'closedocument': L.Params.closeButtonEnabled, // 關閉文件
 			'latestupdates': window.enableWelcomeMessage, // 檢查更新
 			'changesmenu': !wopi.HideChangeTrackingControls,
-			'signdocument': L.DomUtil.get('document-signing-bar') === null,
-			'about': L.DomUtil.get('about-dialog') === null, // 關於
 
 			'.uno:Presentation': !wopi.HideExportOption, // 從第一張投影片開始播放
 			'.uno:PresentationCurrentSlide': !wopi.HideExportOption, // 從目前投影片開始播放
