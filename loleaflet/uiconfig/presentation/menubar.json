@@ -23,7 +23,8 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"name": "See revision history",
+				"icon": "res:rev-history",
+				"name": "See history",
 				"comment": "替代指令",
 				"id": "rev-history"
 			},
@@ -33,27 +34,32 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:pdf",
+						"icon": "res:downloadas-pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
 					{
-						"icon": "res:html",
+						"icon": ".uno:NewHtmlDoc",
 						"name": "HTML Document (.html)",
 						"id": "downloadas-html"
 					},
 					{
-						"icon": "res:odp",
+						"icon": "res:downloadas-odp",
 						"name": "ODF presentation (.odp)",
 						"id": "downloadas-odp"
 					},
 					{
-						"icon": "res:ppt",
+						"icon": "res:downloadas-odg",
+						"name": "ODF Drawing (.odg)",
+						"id": "downloadas-odg"
+					},
+					{
+						"icon": "res:downloadas-ppt",
 						"name": "PowerPoint 2003 Presentation (.ppt)",
 						"id": "downloadas-ppt"
 					},
 					{
-						"icon": "res:pptx",
+						"icon": "res:downloadas-pptx",
 						"name": "PowerPoint Presentation (.pptx)",
 						"id": "downloadas-pptx"
 					}
@@ -150,23 +156,23 @@
 		"id": ".uno:ViewMenu",
 		"menu": [
 			{
-				"name": ".uno:FullScreen",
-				"id": "fullscreen"
+				"id": ".uno:FullScreen",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"
 			},
 			{
-				"name": ".uno:ZoomPlus",
-				"id": "zoomin"
+				"id": ".uno:ZoomPlus",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:ZoomMinus",
-				"id": "zoomout"
+				"id": ".uno:ZoomMinus",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:Zoom100Percent",
-				"id": "zoomreset"
+				"id": ".uno:Zoom100Percent",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"
@@ -285,7 +291,7 @@
 				"comment": "替代指令"
 			},
 			{
-				"icon": "graphicdialog",
+				"icon": "res:insertgraphicremote",
 				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
@@ -1597,18 +1603,20 @@
 				"iosapp": false
 			},
 			{
+				"icon": "res:keyboardshortcuts",
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",
 				"hotkey": "Ctrl+Alt+Shift+?",
 				"iosapp": false
 			},
 			{
+				"icon": ".uno:ReportIssue",
 				"name": "Report an issue",
 				"id": "report-an-issue",
 				"iosapp": false
 			},
 			{
-				"icon": ".uno:About",
+				"icon": "res:about",
 				"name": "About",
 				"id": "about"
 			}
