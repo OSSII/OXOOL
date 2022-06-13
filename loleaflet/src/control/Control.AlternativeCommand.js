@@ -141,6 +141,31 @@ L.Control.AlternativeCommand = L.Control.extend({
 			}
 			this._map.sendUnoCommand('.uno:EditDoc');
 		},
+		'.uno:FullScreen': function() {
+			L.toggleFullScreen();
+		},
+		/**
+		 * 拉遠
+		 */
+		'.uno:ZoomMinus': function() {
+			if (this._map.getZoom() > this._map.getMinZoom()) {
+				this._map.zoomOut(1, null, true /* animate? */);
+			}
+		},
+		/**
+		 * 拉近
+		 */
+		'.uno:ZoomPlus': function() {
+			if (this._map.getZoom() < this._map.getMaxZoom()) {
+				this._map.zoomIn(1, null, true /* animate? */);
+			}
+		},
+		/**
+		 * 重設遠近
+		 */
+		'.uno:Zoom100Percent': function() {
+			this._map.setZoom(this._map.options.zoom);
+		},
 		/**
 		 * 插入電腦(本地)圖片
 		 */
