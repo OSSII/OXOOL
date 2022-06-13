@@ -1021,6 +1021,11 @@ L.Control.Menubar = L.Control.extend({
 	 * @returns {boolean} true:yes, false:no
 	 */
 	_checkItemVisibility: function(menuItem) {
+		// 禁用不在系統白名單的指令
+		if (menuItem.id && !this._map.isAllowedCommand(menuItem.id)) {
+			return false;
+		}
+
 		// iOS 裝置禁用
 		if (window.ThisIsTheiOSApp && menuItem.iosapp === false) {
 			return false;
@@ -1033,12 +1038,12 @@ L.Control.Menubar = L.Control.extend({
 		if (menuItem.hide === true || menuItem.hidden === true) {
 			return false;
 		}
-		if (menuItem.id === 'about' && (L.DomUtil.get('about-dialog') === null)) {
+		/* if (menuItem.id === 'about' && (L.DomUtil.get('about-dialog') === null)) {
 			return false;
-		}
-		if (menuItem.id === 'signdocument' && (L.DomUtil.get('document-signing-bar') === null)) {
+		} */
+		/* if (menuItem.id === 'signdocument' && (L.DomUtil.get('document-signing-bar') === null)) {
 			return false;
-		}
+		} */
 		// TODO: 若 OxOOL 專屬 preview/readonly 模式完成後，該段程式碼可廢棄不用
 		// (包含 this.options.allowedReadonlyMenus)
 		// 唯讀模式且該選項是子選單
@@ -1076,56 +1081,49 @@ L.Control.Menubar = L.Control.extend({
 			}
 		}
 
-		if (menuItem.id === 'runmacro' && window.enableMacrosExecution === 'false')
-			return false;
+		/* if (menuItem.id === 'runmacro' && window.enableMacrosExecution === 'false')
+			return false; */
 
-		if (menuItem.type === 'action') {
+		/* if (menuItem.type === 'action') {
 			if (((menuItem.id === 'rev-history' || menuItem.id === 'Rev-History') && !L.Params.revHistoryEnabled) ||
 				(menuItem.id === 'closedocument' && !L.Params.closeButtonEnabled) ||
 				(menuItem.id === 'latestupdates' && !window.enableWelcomeMessage)) {
 				return false;
 			}
-		}
+		} */
 
-		if (menuItem.id === '.uno:Print' && this._map['wopi'].HidePrintOption)
-			return false;
+		/* if (menuItem.id === '.uno:Print' && this._map['wopi'].HidePrintOption)
+			return false; */
 
-		if (menuItem.id === '.uno:Save' && this._map['wopi'].HideSaveOption)
-			return false;
+		/* if (menuItem.id === '.uno:Save' && this._map['wopi'].HideSaveOption)
+			return false; */
 
-		if (menuItem.id === '.uno:SaveAs' && this._map['wopi'].UserCanNotWriteRelative)
-			return false;
+		/* if (menuItem.id === '.uno:SaveAs' && this._map['wopi'].UserCanNotWriteRelative)
+			return false; */
 
-		if ((menuItem.id === 'shareas' || menuItem.id === 'ShareAs') && !this._map['wopi'].EnableShare)
-			return false;
+		/* if ((menuItem.id === 'shareas' || menuItem.id === 'ShareAs') && !this._map['wopi'].EnableShare)
+			return false; */
 
-		if (menuItem.id === 'insertgraphicremote' && !this._map['wopi'].EnableInsertRemoteImage)
-			return false;
+		/* if (menuItem.id === 'insertgraphicremote' && !this._map['wopi'].EnableInsertRemoteImage)
+			return false; */
 
-		if (menuItem.id && menuItem.id.startsWith('fullscreen-presentation') && this._map['wopi'].HideExportOption)
-			return false;
+		/* if (menuItem.id && menuItem.id.startsWith('fullscreen-presentation') && this._map['wopi'].HideExportOption)
+			return false; */
 
-		if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
-			return false;
-
-		if (menuItem.id === '.uno:ToolbarModeUI' && window.app.dontUseNotebookbar)
-			return false;
-
-		if ((menuItem.id === '.uno:Sidebar' || menuItem.id === '.uno:ModifyPage' || menuItem.id === '.uno:SlideChangeWindow' ||
-			menuItem.id === '.uno:CustomAnimation' || menuItem.id === '.uno:MasterSlidesPanel') && window.app.dontUseSidebar)
-			return false;
+		/* if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
+			return false; */
 
 		// Keep track of all 'downloadas-' options and register them as
 		// export formats with docLayer which can then be publicly accessed unlike
 		// this Menubar control for which there doesn't seem to be any easy way
 		// to get access to.
-		if (menuItem.id && menuItem.id.startsWith('downloadas-')) {
+		/* if (menuItem.id && menuItem.id.startsWith('downloadas-')) {
 			var format = menuItem.id.substring('downloadas-'.length);
 			this._map._docLayer.registerExportFormat(menuItem.name, format);
 
 			if (this._map['wopi'].HideExportOption)
 				return false;
-		}
+		} */
 
 		if (this._hiddenItems &&
 		    $.inArray(menuItem.id, this._hiddenItems) !== -1)

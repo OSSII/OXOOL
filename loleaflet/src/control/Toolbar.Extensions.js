@@ -11,15 +11,7 @@ L.Map.include({
 	_allowedCommands: {
 		menubarData: null, // 來自系統的選單設定檔
 		menuPermissions: {}, // 來自系統的選單權限檔
-		// 特性命令
-		featureCommand: {
-			'.uno:ToolbarModeUI': !window.app.dontUseNotebookbar, // 使用者界面(精簡/分頁式))切換
-			'.uno:Sidebar': !window.app.dontUseSidebar, // 側邊欄
-			'.uno:ModifyPage': !window.app.dontUseSidebar, // 側邊欄-投影片版面配置
-			'.uno:SlideChangeWindow': !window.app.dontUseSidebar, // 側邊欄-投影片轉場
-			'.uno:CustomAnimation': !window.app.dontUseSidebar, // 側邊欄-動畫
-			'.uno:MasterSlidesPanel': !window.app.dontUseSidebar, // 側邊欄-投影片母片
-		},
+		featureCommand: {}, // 特性命令
 		// 右鍵選單白名單
 		contextMenu: {
 			general: [
@@ -160,6 +152,7 @@ L.Map.include({
 		drawing: [
 			{format: 'pdf', label: _('PDF Document (.pdf)')},
 			{format: 'odg', label: _('ODF Drawing (.odg)')},
+			{format: 'png', label: _('Image (.png)')},
 		],
 	},
 
@@ -195,6 +188,40 @@ L.Map.include({
 		if (docType === undefined) {
 			docType = this.getDocType();
 		}
+
+		// 處理特性指令(這些指令會依據不同狀況有不同結果)
+		var wopi = this.wopi;
+		this._allowedCommands.featureCommand = {
+			'.uno:Print': !wopi.HidePrintOption, // 列印
+			'.uno:Save': !wopi.HideSaveOption, // 存檔
+			'.uno:SaveAs': !wopi.UserCanNotWriteRelative, // 另存新檔
+			'ShareAs': wopi.EnableShare, // 分享
+			'insertgraphicremote': wopi.EnableInsertRemoteImage, // 插入雲端圖片
+			'runmacro': window.enableMacrosExecution === 'true', // 執行巨集
+			'rev-history': L.Params.revHistoryEnabled, // 修訂紀錄
+			'Rev-History': L.Params.revHistoryEnabled, // 修訂紀錄
+			'closedocument': L.Params.closeButtonEnabled, // 關閉文件
+			'latestupdates': window.enableWelcomeMessage, // 檢查更新
+			'changesmenu': !wopi.HideChangeTrackingControls,
+			'signdocument': L.DomUtil.get('document-signing-bar') === null,
+			'about': L.DomUtil.get('about-dialog') === null, // 關於
+
+			'.uno:Presentation': !wopi.HideExportOption, // 從第一張投影片開始播放
+			'.uno:PresentationCurrentSlide': !wopi.HideExportOption, // 從目前投影片開始播放
+			'.uno:ToolbarModeUI': !window.app.dontUseNotebookbar, // 使用者界面(精簡/分頁式))切換
+			'.uno:Sidebar': !window.app.dontUseSidebar, // 側邊欄
+			'.uno:ModifyPage': !window.app.dontUseSidebar, // 側邊欄-投影片版面配置
+			'.uno:SlideChangeWindow': !window.app.dontUseSidebar, // 側邊欄-投影片轉場
+			'.uno:CustomAnimation': !window.app.dontUseSidebar, // 側邊欄-動畫
+			'.uno:MasterSlidesPanel': !window.app.dontUseSidebar, // 側邊欄-投影片母片
+		};
+
+		// 把該文件類別能夠匯出的類別指令，放入特性命令中
+		this._exportFormats[docType].forEach(function(item) {
+			var cmdName = 'downloadas-' + item.format;
+			this._allowedCommands.featureCommand[cmdName] = !wopi.HideExportOption;
+		}.bind(this));
+		//-------------------------------------------------------------------------
 
 		var docMenubarURL = L.LOUtil.getURL('uiconfig/' + docType + '/');
 
