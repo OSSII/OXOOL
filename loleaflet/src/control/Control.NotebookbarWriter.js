@@ -120,15 +120,17 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						{
 							'id': 'ShareAs',
 							'type': 'menubartoolitem',
+							'icon': '.uno:ShareDocument',
 							'text': _('Share'),
-							'command': '.uno:ShareDocument'
+							'command': 'ShareAs'
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
 							'type': 'menubartoolitem',
 							'icon': 'res:rev-history',
-							'text': _('See history')
+							'text': _('See history'),
+							'command': 'rev-history'
 						} : {},
 				],
 				'vertical': 'true'
@@ -166,13 +168,15 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							'id': 'downloadas-odt',
 							'type': 'menubartoolitem',
 							'icon': 'res:downloadas-odt',
-							'text': _('ODF Text Document (.odt)')
+							'text': _('ODF Text Document (.odt)'),
+							'command': 'downloadas-odt'
 						},
 						{
 							'id': 'downloadas-rtf',
 							'type': 'menubartoolitem',
 							'icon': 'res:downloadas-rtf',
-							'text': _('Rich Text (.rtf)')
+							'text': _('Rich Text (.rtf)'),
+							'command': 'downloadas-rtf'
 						},
 					],
 					'vertical': 'true'
@@ -184,13 +188,15 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							'id': 'downloadas-doc',
 							'type': 'menubartoolitem',
 							'icon': 'res:downloadas-doc',
-							'text': _('Word 2003 Document (.doc)')
+							'text': _('Word 2003 Document (.doc)'),
+							'command': 'downloadas-doc'
 						},
 						{
 							'id': 'downloadas-docx',
 							'type': 'menubartoolitem',
 							'icon': 'res:downloadas-docx',
-							'text': _('Word Document (.docx)')
+							'text': _('Word Document (.docx)'),
+							'command': 'downloadas-docx'
 						},
 					],
 					'vertical': 'true'
@@ -202,13 +208,15 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							'id': 'downloadas-pdf',
 							'type': 'menubartoolitem',
 							'icon': 'res:downloadas-pdf',
-							'text': _('PDF Document (.pdf)')
+							'text': _('PDF Document (.pdf)'),
+							'command': 'downloadas-pdf'
 						},
 						{
 							'id': 'downloadas-epub',
 							'type': 'menubartoolitem',
 							'icon': 'res:downloadas-epub',
-							'text': _('EPUB Document (.epub)')
+							'text': _('EPUB Document (.epub)'),
+							'command': 'downloadas-epub'
 						},
 					],
 					'vertical': 'true'
@@ -224,7 +232,8 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						'id': 'repair',
 						'type': 'bigmenubartoolitem',
 						'icon': 'res:repair',
-						'text': _('Repair')
+						'text': _('Repair'),
+						'command': 'Repair'
 					}
 				]
 			});
@@ -292,7 +301,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 								'type': 'bigtoolitem',
 								'icon': 'res:keyboardshortcuts',
 								'text': _('Keyboard shortcuts'),
-								'command': '.uno:KeyboardShortcuts'
+								'command': 'keyboard-shortcuts'
 							}
 						]
 					},
