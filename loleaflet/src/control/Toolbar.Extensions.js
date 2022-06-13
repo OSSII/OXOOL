@@ -220,6 +220,14 @@ L.Map.include({
 		this._exportFormats[docType].forEach(function(item) {
 			var cmdName = 'downloadas-' + item.format;
 			this._allowedCommands.featureCommand[cmdName] = !wopi.HideExportOption;
+			// 也放入替代指令中
+			this.alternativeCommand.add(cmdName, function(e) {
+				var format = e.commandName.substring('downloadas-'.length);
+				var fileName = this._map['wopi'].BaseFileName;
+				fileName = fileName.substr(0, fileName.lastIndexOf('.'));
+				fileName = fileName === '' ? _('noname') : fileName;
+				this._map.downloadAs(fileName + '.' + format, format);
+			});
 		}.bind(this));
 		//-------------------------------------------------------------------------
 
