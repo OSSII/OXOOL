@@ -32,7 +32,7 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:pdf",
+						"icon": "res:downloadas-pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
@@ -42,32 +42,32 @@
 						"id": "downloadas-txt"
 					},
 					{
-						"icon": "res:html",
+						"icon": ".uno:NewHtmlDoc",
 						"name": "HTML Document (.html)",
 						"id": "downloadas-html"
 					},
 					{
-						"icon": "res:odt",
+						"icon": "res:downloadas-odt",
 						"name": "ODF text document (.odt)",
 						"id": "downloadas-odt"
 					},
 					{
-						"icon": "res:doc",
+						"icon": "res:downloadas-doc",
 						"name": "Word 2003 Document (.doc)",
 						"id": "downloadas-doc"
 					},
 					{
-						"icon": "res:docx",
+						"icon": "res:downloadas-docx",
 						"name": "Word Document (.docx)",
 						"id": "downloadas-docx"
 					},
 					{
-						"icon": "res:rtf",
+						"icon": "res:downloadas-rtf",
 						"name": "Rich Text (.rtf)",
 						"id": "downloadas-rtf"
 					},
 					{
-						"icon": "res:epub",
+						"icon": "res:downloadas-epub",
 						"name": "EPUB Document (.epub)",
 						"id": "downloadas-epub"
 					}
@@ -404,7 +404,7 @@
 				"comment": "替代指令"
 			},
 			{
-				"icon": "graphicdialog",
+				"icon": "res:insertgraphicremote",
 				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
@@ -1951,6 +1951,7 @@
 				"iosapp": false
 			},
 			{
+				"icon": ".uno:ReportIssue",
 				"name": "Report an issue",
 				"id": "report-an-issue",
 				"iosapp": false
