@@ -2,8 +2,8 @@
 /**
  * L.Control.AlternativeCommand
  *
- * uno 指令替代機制
- * 有些 uno 指令無法直接執行，需要替代程序模擬出相同功能
+ * 指令替代機制
+ * 有些指令無法直接執行，需要替代程序模擬出相同功能
  *
  * @author Firefly <firefly@ossii.com.tw>
  */
@@ -16,16 +16,32 @@ L.Control.AlternativeCommand = L.Control.extend({
 		this._commands._map = map;
 	},
 
+	/**
+	 * 查詢有無指定的替代指令
+	 * @param {string} orignalCommand: 指令名稱
+	 * @returns {boolean} true:有, false: 無
+	 */
 	has: function(orignalCommand) {
 		return typeof(this._commands[orignalCommand]) === 'function';
 	},
 
+	/**
+	 *	取得替代指令
+	 * @param {string} orignalCommand: 指令名稱
+	 * @returns {function} 替代指令的函數
+	 */
 	get: function(orignalCommand) {
 		if (this.has(orignalCommand)) {
 			return this._commands[orignalCommand];
 		}
 	},
 
+	/**
+	 * 執行替代指令
+	 * @param {string} orignalCommand: 指令名稱
+	 * @param {object} json: 物件
+	 * @returns {boolean} true: 已執行, false: 未執行
+	 */
 	run: function(orignalCommand, json) {
 		if (this.has(orignalCommand)) {
 			this._commands[orignalCommand]({
@@ -36,6 +52,32 @@ L.Control.AlternativeCommand = L.Control.extend({
 			return true;
 		}
 		return false;
+	},
+
+	/**
+	 * 新增替代指令
+	 * @param {string} cmd: 指令名稱
+	 * @param {*} func: 函數
+	 * @returns {boolean} true: success, false: fail
+	 */
+	add: function(cmd, func) {
+		// 已存在或格式不符
+		if (this.has(cmd) || typeof cmd !== 'string' || typeof func !== 'function') {
+			return false;
+		}
+
+		this._commands[cmd] = func;
+		return true;
+	},
+
+	/**
+	 * 移除替代指令
+	 * @param {string} cmd: 指令名稱
+	 */
+	remove: function(cmd) {
+		if (this.has(cmd)) {
+			delete this._command[cmd];
+		}
 	},
 
 	_commands: {
