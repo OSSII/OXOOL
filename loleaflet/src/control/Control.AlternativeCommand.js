@@ -222,29 +222,6 @@ L.Control.AlternativeCommand = L.Control.extend({
 			this._map.insertComment();
 		},
 		/**
-		 * calc: 啟用或取消追蹤修訂功能
-		 */
-		'.uno:TraceChangeMode': function() {
-			var constCmd = '.uno:TraceChangeMode';
-			var state = this._map.stateChangeHandler.getItemProperty(constCmd);
-
-			// 非追蹤修訂模式就直接啟用
-			if (!state.checked()) {
-				this._map.sendUnoCommand(constCmd + '?TraceChangeMode:bool=true');
-				return;
-			}
-
-			L.dialog.confirm({
-				icon: 'warning',
-				message: _('Stop tracking changes, will lose information about the changes.'),
-				callback: function(ans) {
-					if (ans) {
-						this._map.sendUnoCommand(constCmd + '?TraceChangeMode:bool=false');
-					}
-				}.bind(this)
-			});
-		},
-		/**
 		 * calc: 插入工作表
 		 */
 		'.uno:Insert': function() {
