@@ -265,25 +265,23 @@
 		"id": ".uno:ViewMenu",
 		"menu": [
 			{
-				"name": ".uno:FullScreen",
-				"id": "fullscreen"
+				"id": ".uno:FullScreen",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"
 			},
 			{
-				"icon": ".uno:ZoomPlus",
-				"name": "Zoom In",
-				"id": "zoomin"
+				"id": ".uno:ZoomPlus",
+				"comment": "替代指令"
 			},
 			{
-				"icon": ".uno:ZoomMinus",
-				"name": "Zoom Out",
-				"id": "zoomout"
+				"id": ".uno:ZoomMinus",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:Zoom100Percent",
-				"id": "zoomreset"
+				"id": ".uno:Zoom100Percent",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"
@@ -1946,6 +1944,7 @@
 				"iosapp": false
 			},
 			{
+				"icon": "res:keyboardshortcuts",
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",
 				"hotkey": "Ctrl+Alt+Shift+?",
@@ -1957,7 +1956,7 @@
 				"iosapp": false
 			},
 			{
-				"icon": ".uno:About",
+				"icon": "res:about",
 				"name": "About",
 				"id": "about"
 			}
