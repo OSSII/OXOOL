@@ -22,7 +22,8 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"name": "See revision history",
+				"icon": "res:rev-history",
+				"name": "See history",
 				"comment": "替代指令",
 				"id": "rev-history"
 			},
@@ -32,32 +33,32 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:pdf",
+						"icon": "res:downloadas-pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
 					{
-						"icon": "res:html",
+						"icon": ".uno:NewHtmlDoc",
 						"name": "HTML Document (.html)",
 						"id": "downloadas-html"
 					},
 					{
-						"icon": "res:ods",
+						"icon": "res:downloadas-ods",
 						"name": "ODF spreadsheet (.ods)",
 						"id": "downloadas-ods"
 					},
 					{
-						"icon": "res:xls",
+						"icon": "res:downloadas-xls",
 						"name": "Excel 2003 Spreadsheet (.xls)",
 						"id": "downloadas-xls"
 					},
 					{
-						"icon": "res:xlsx",
+						"icon": "res:downloadas-xlsx",
 						"name": "Excel Spreadsheet (.xlsx)",
 						"id": "downloadas-xlsx"
 					},
 					{
-						"icon": "res:csv",
+						"icon": "res:downloadas-csv",
 						"name": "CSV (.csv)",
 						"id": "downloadas-csv"
 					}
@@ -94,6 +95,7 @@
 				"hotkey": "Ctrl+Shift+Y"
 			},
 			{
+				"icon": "res:repair",
 				"name": "Repair",
 				"comment": "替代指令",
 				"id": "Repair"
@@ -163,8 +165,7 @@
 				"menu": [
 					{
 						"id": ".uno:TraceChangeMode",
-						"hotkey": "Ctrl+Shift+C",
-						"comment": "替代指令"
+						"hotkey": "Ctrl+Shift+C"
 					},
 					{
 						"id": ".uno:ShowChanges"
@@ -205,23 +206,23 @@
 		"id": ".uno:ViewMenu",
 		"menu": [
 			{
-				"name": ".uno:FullScreen",
-				"id": "fullscreen"
+				"id": ".uno:FullScreen",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"
 			},
 			{
-				"name": ".uno:ZoomPlus",
-				"id": "zoomin"
+				"id": ".uno:ZoomPlus",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:ZoomMinus",
-				"id": "zoomout"
+				"id": ".uno:ZoomMinus",
+				"comment": "替代指令"
 			},
 			{
-				"name": ".uno:Zoom100Percent",
-				"id": "zoomreset"
+				"id": ".uno:Zoom100Percent",
+				"comment": "替代指令"
 			},
 			{
 				"type": "--"
@@ -308,7 +309,7 @@
 				"comment": "替代指令"
 			},
 			{
-				"icon": "graphicdialog",
+				"icon": "res:insertgraphicremote",
 				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
@@ -1853,18 +1854,20 @@
 				"iosapp": false
 			},
 			{
+				"icon": "res:keyboardshortcuts",
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",
 				"hotkey": "Ctrl+Alt+Shift+?",
 				"iosapp": false
 			},
 			{
+				"icon": ".uno:ReportIssue",
 				"name": "Report an issue",
 				"id": "report-an-issue",
 				"iosapp": false
 			},
 			{
-				"icon": ".uno:About",
+				"icon": "res:about",
 				"name": "About",
 				"id": "about"
 			}
