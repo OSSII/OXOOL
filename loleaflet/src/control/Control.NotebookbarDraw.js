@@ -262,11 +262,6 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 				'vertical': 'true'
 			},
 			{
-				'type': 'bigtoolitem',
-				'text': _UNO('.uno:Sidebar'),
-				'command': '.uno:Sidebar'
-			},
-			{
 				'id': 'toggleuimode',
 				'type': 'bigmenubartoolitem',
 				'text': _('Compact view'),
@@ -277,7 +272,12 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 				'type': 'menubartoolitem',
 				'text': _('Status Bar'),
 				'command': '.uno:StatusBarVisible'
-			}
+			},
+			{
+				'type': 'bigtoolitem',
+				'text': _UNO('.uno:Sidebar'),
+				'command': '.uno:Sidebar'
+			},
 		];
 
 		return this.getTabPage('View', content);
