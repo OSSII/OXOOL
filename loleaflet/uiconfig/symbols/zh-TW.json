@@ -3,6 +3,7 @@
 		"Type": "標點 \/ 常用符號",
 		"Symbols":
 		[
+			{"Text": "　", "Font":"", "Desc":"全形空白"},
 			{"Text": "，", "Font":"", "Desc":"逗號"},
 			{"Text": "。", "Font":"", "Desc":"句號"},
 			{"Text": "、", "Font":"", "Desc":"頓號"},
@@ -34,8 +35,8 @@
 			{"Text": "■", "Font":"", "Desc":"實心方形"},
 			{"Text": "○", "Font":"", "Desc":"空心圓形"},
 			{"Text": "●", "Font":"", "Desc":"實心圓形"},
-			{"Text": "☑", "Font":"", "Desc":"有框打勾"},
-			{"Text": "☒", "Font":"", "Desc":"有框打叉"},
+			{"Text": "☑", "Font":"OpenSymbol", "Desc":"有框打勾"},
+			{"Text": "☒", "Font":"OpenSymbol", "Desc":"有框打叉"},
 			{"Text": "✓", "Font":"", "Desc":"無框打勾"},
 			{"Text": "✗", "Font":"", "Desc":"無框打叉"},
 			{"Text": "＋", "Font":"", "Desc":"加號"},

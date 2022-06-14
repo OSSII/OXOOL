@@ -1014,3 +1014,21 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 #about-dialog-info {
 	flex-direction: column;
 }
+
+.oxool-symbol {
+	border: 1px dotted #4297d7;
+	color: #000000;
+	margin: 4px;
+	min-width: 20px;
+	height: 20px;
+	font-size: var(--default-font-size);
+	line-height: var(--default-height);
+	text-align: center;
+	display: inline-block;
+}
+
+.oxool-symbol:hover {
+	background-color: #000000;
+	color: #ffffff;
+	cursor: pointer;
+}
