@@ -891,7 +891,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						'children': [
 							{
 								'type': 'toolitem',
-								'text': _UNO('.uno:BasicShapes'),
+								'text': _UNO('.uno:ShapesMenu'),
 								'command': '.uno:BasicShapes'
 							}
 						]
@@ -2162,7 +2162,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						'children': [
 							{
 								'type': 'toolitem',
-								'text': _UNO('.uno:BasicShapes'),
+								'text': _UNO('.uno:ShapesMenu'),
 								'command': '.uno:BasicShapes'
 							}
 						]
