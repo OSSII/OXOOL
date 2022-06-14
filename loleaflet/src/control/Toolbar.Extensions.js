@@ -11,11 +11,12 @@ L.Map.include({
 	_allowedCommands: {
 		menubarData: null, // 來自系統的選單設定檔
 		menuPermissions: {}, // 來自系統的選單權限檔
+		commonSymbolsData: null, // 編輯
 		featureCommand: {}, // 特性命令
 		// 右鍵選單白名單
 		contextMenu: {
 			general: [
-				{id: '.uno:EditQrCode'}, // 編輯 QR 碼...
+				{id: '.uno:EditQrCode'}, // 編輯 QR 碼
 				{id: '.uno:ObjectMenue'}, // 物件
 				{id: '.uno:Backward'}, // 下移一層
 				{id: '.uno:ObjectAlignLeft'}, // 左
@@ -174,10 +175,10 @@ L.Map.include({
 	},
 
 	/**
-	 *
-	 * @param {string} [docType] - 編輯器類別
+	 *	初始化文件預設值
+	 * @param {string} [docType] - 文件類型
 	 */
-	loadMenubarData: function(docType) {
+	initializeDocumentPresets: function(docType) {
 		// 已經載入過，不要再載入一次
 		if (L.Util.isArray(this._allowedCommands.menubarData)) {
 			return;
@@ -188,6 +189,9 @@ L.Map.include({
 		if (docType === undefined) {
 			docType = this.getDocType();
 		}
+
+		// 取得語系
+		var locale = String.locale ? String.locale : navigator.language;
 
 		// 處理特性指令(這些指令會依據不同狀況有不同結果)
 		var wopi = this.wopi;
@@ -253,6 +257,7 @@ L.Map.include({
 			});
 		}
 
+		// 載入該文件類別的 menubar.json
 		$.ajax({
 			type: 'GET',
 			url: docMenubarURL + 'menubar.json',
@@ -278,6 +283,21 @@ L.Map.include({
 			},
 			error: function(/*xhr, ajaxOptions, thrownError*/) {
 				window.app.console.error('An error occurred while processing menubar JSON file.');
+			}
+		});
+
+		// 讀取該語系常用符號表
+		$.ajax({
+			url: L.LOUtil.getURL('uiconfig/symbols/') + locale + '.json',
+			type: 'GET',
+			cache: false,
+			async: true,
+			dataType: 'json',
+			success: function(data) {
+				that._allowedCommands.commonSymbolsData = data;
+			},
+			error: function() {
+				/* that.stateChangeHandler.setItemProperty('dialog:CommonSymbols', 'disabled'); */
 			}
 		});
 	},
