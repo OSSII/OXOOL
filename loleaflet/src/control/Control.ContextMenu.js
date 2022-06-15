@@ -265,7 +265,7 @@ L.Control.ContextMenu = L.Control.extend({
 					itemName = itemName.replace(' ', '\u00a0');
 				} else {
 					// Get the translated text associated with the command
-					itemName = _UNO(item.command, docType, true);
+					itemName = _UNO(item.command, docType, 'popup');
 					// 沒有翻譯
 					if (itemName === commandName) {
 						itemName = window.removeAccessKey(item.text);
@@ -296,7 +296,7 @@ L.Control.ContextMenu = L.Control.extend({
 				isLastItemText = true;
 			} else if (item.type === 'menu') {
 				// Get the translated text associated with the command
-				itemName = _UNO(item.command, docType, true);
+				itemName = _UNO(item.command, docType, false);
 				// 沒有翻譯
 				if (itemName === commandName) {
 					itemName = window.removeAccessKey(item.text);
@@ -391,7 +391,7 @@ L.installContextMenu = function(options) {
 			if (items[key].name === undefined) {
 				// key 是 uno 指令，就以指令名稱作為選項名稱
 				if (map.isUnoCommand(key)) {
-					items[key].name = _UNO(key, docType, false);
+					items[key].name = _UNO(key, docType, 'popup');
 				 } else {
 					continue;
 				 }
