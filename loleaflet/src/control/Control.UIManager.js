@@ -178,7 +178,11 @@ L.Control.UIManager = L.Control.extend({
 		}
 
 		if (this.map.isPresentationOrDrawing()) {
-			docIdentifyColor = '#bc472a';
+			if (docType === 'drawing') {
+				docIdentifyColor = '#876900';
+			} else {
+				docIdentifyColor = '#bc472a';
+			}
 			// remove unused elements
 			L.DomUtil.remove(L.DomUtil.get('spreadsheet-toolbar'));
 			$('#presentation-controls-wrapper').show();
@@ -592,6 +596,7 @@ L.Control.UIManager = L.Control.extend({
 					this.map.removeControl(this.map.menubar);
 					this.map.menubar = null;
 				}
+				console.debug('initializeDocumentPresets: 顯示 Notebookbar', Date.now());
 				this.makeSpaceForNotebookbar();
 			} else if (e.perm === 'readonly') {
 				if (!this.map.menubar) {
