@@ -12827,7 +12827,11 @@ window._UNO = function(string, component, isContext) {
         }
 	}
 
-	var priority = isContext === true ? ['context', 'menu'] : ['menu', 'context'];
+	var priority = isContext === true ? ['context', 'menu', 'tooltip', 'popup'] :
+        isContext === 'popup' ? ['popup', 'context', 'menu', 'tooltip'] :
+        isContext === 'tooltip' ? ['tooltip', 'context', 'menu', 'popup'] :
+        ['menu', 'context', 'popup', 'tooltip'];
+
 	var text = undefined;
 	for (var i = 0 ; text === undefined && i < priority.length ; i++) {
 		text = componentEntry[priority[i]];
@@ -12835,7 +12839,7 @@ window._UNO = function(string, component, isContext) {
 
 	if (text === undefined ) return command;
 
-	return this.removeAccessKey(_(text) );
+	return this.removeAccessKey(_(text));
 }
 
 window._UNOTARGET = function(string, component) {
