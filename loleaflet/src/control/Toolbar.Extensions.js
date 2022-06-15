@@ -262,7 +262,7 @@ L.Map.include({
 			type: 'GET',
 			url: docMenubarURL + 'menubar.json',
 			cache: false,
-			async: true, // 非同步載入，這裡要特別注意
+			async: false,
 			dataType: 'json',
 			success: function(data) {
 				that._allowedCommands.menubarData = data;
