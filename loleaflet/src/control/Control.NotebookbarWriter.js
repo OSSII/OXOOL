@@ -89,24 +89,12 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 	getFileTab: function() {
 		var hasSigning = L.DomUtil.get('document-signing-bar') !== null;
 		var hasRevisionHistory = L.Params.revHistoryEnabled;
-		var hasPrint = !this._map['wopi'].HidePrintOption;
 		var hasSaveAs = !this._map['wopi'].UserCanNotWriteRelative;
 		var hasShare = this._map['wopi'].EnableShare;
 		var hasGroupedDownloadAs = !!window.groupDownloadAsForNb;
 		var hasRunMacro = !(window.enableMacrosExecution  === 'false');
 
 		var content = [
-			{
-				'type': 'toolbox',
-				'children': [
-					{
-						'id': 'file-save',
-						'type': 'bigtoolitem',
-						'text': _('Save'),
-						'command': '.uno:Save'
-					}
-				]
-			},
 			hasSaveAs ?
 				{
 					'id': 'file-saveas',
@@ -136,13 +124,6 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 				],
 				'vertical': 'true'
 			},
-			hasPrint ?
-				{
-					'id': 'print',
-					'type': 'bigtoolitem',
-					'text': _UNO('.uno:Print', 'text'),
-					'command': '.uno:Print'
-				} : {},
 			hasRunMacro ?
 				{
 					'type': 'toolbox',
@@ -375,23 +356,6 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 
 	getHomeTab: function() {
 		var content = [
-			{
-				'id': 'home-undo-redo',
-				'type': 'container',
-				'children': [
-					{
-						'type': 'toolitem',
-						'text': _UNO('.uno:Undo'),
-						'command': '.uno:Undo'
-					},
-					{
-						'type': 'toolitem',
-						'text': _UNO('.uno:Redo'),
-						'command': '.uno:Redo'
-					},
-				],
-				'vertical': 'true'
-			},
 			{
 				'type': 'bigtoolitem',
 				'text': _UNO('.uno:Paste'),

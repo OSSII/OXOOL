@@ -6,23 +6,6 @@
 /* global _ _UNO */
 L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 
-	getShortcutsBarData: function() {
-		return [
-			{
-				'id': 'shortcutstoolbox',
-				'type': 'toolbox',
-				'children': [
-					{
-						'id': 'save',
-						'type': 'toolitem',
-						'text': _('Save'),
-						'command': '.uno:Save'
-					}
-				]
-			}
-		];
-	},
-
 	getOptionsSectionData: function() {
 		return [
 			{
@@ -125,22 +108,10 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 
 	getFileTab: function() {
 		var hasRevisionHistory = L.Params.revHistoryEnabled;
-		var hasPrint = !this._map['wopi'].HidePrintOption;
 		var hasSaveAs = !this._map['wopi'].UserCanNotWriteRelative;
 		var hasShare = this._map['wopi'].EnableShare;
 
 		var content = [
-			{
-				'type': 'toolbox',
-				'children': [
-					{
-						'id': 'file-save',
-						'type': 'bigtoolitem',
-						'text': _('Save'),
-						'command': '.uno:Save'
-					}
-				]
-			},
 			hasSaveAs ?
 				{
 					'id': 'file-saveas',
@@ -169,13 +140,6 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 				],
 				'vertical': 'true'
 			},
-			hasPrint ?
-				{
-					'id': 'print',
-					'type': 'bigtoolitem',
-					'text': _UNO('.uno:Print', 'presentation'),
-					'command': '.uno:Print'
-				} : {},
 			{
 				'id': 'file-downloadas-odg-downloadas-png',
 				'type': 'container',
@@ -285,23 +249,6 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 
 	getHomeTab: function() {
 		var content = [
-			{
-				'id': 'home-undo-redo',
-				'type': 'container',
-				'children': [
-					{
-						'type': 'toolitem',
-						'text': _UNO('.uno:Undo'),
-						'command': '.uno:Undo'
-					},
-					{
-						'type': 'toolitem',
-						'text': _UNO('.uno:Redo'),
-						'command': '.uno:Redo'
-					},
-				],
-				'vertical': 'true'
-			},
 			{
 				'type': 'bigtoolitem',
 				'text': _UNO('.uno:Paste'),

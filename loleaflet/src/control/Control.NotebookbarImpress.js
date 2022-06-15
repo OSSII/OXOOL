@@ -6,23 +6,6 @@
 /* global _ _UNO */
 L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 
-	getShortcutsBarData: function() {
-		return [
-			{
-				'id': 'shortcutstoolbox',
-				'type': 'toolbox',
-				'children': [
-					{
-						'id': 'save',
-						'type': 'toolitem',
-						'text': _('Save'),
-						'command': '.uno:Save'
-					}
-				]
-			}
-		];
-	},
-
 	getOptionsSectionData: function() {
 		return [
 			{
@@ -101,7 +84,7 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 				'context': 'Table'
 			},
 			{
-				'text': '~Draw',
+				'text': _('~Draw'),
 				'id': '-11',
 				'name': 'Draw',
 				'context': 'Draw|DrawLine|3DObject|MultiObject|Graphic|DrawFontwork'
@@ -137,24 +120,12 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 
 	getFileTab: function() {
 		var hasRevisionHistory = L.Params.revHistoryEnabled;
-		var hasPrint = !this._map['wopi'].HidePrintOption;
 		var hasSaveAs = !this._map['wopi'].UserCanNotWriteRelative;
 		var hasShare = this._map['wopi'].EnableShare;
 		var hasGroupedDownloadAs = !!window.groupDownloadAsForNb;
 		var hasRunMacro = !(window.enableMacrosExecution  === 'false');
 
 		var content = [
-			{
-				'type': 'toolbox',
-				'children': [
-					{
-						'id': 'file-save',
-						'type': 'bigtoolitem',
-						'text': _('Save'),
-						'command': '.uno:Save'
-					}
-				]
-			},
 			hasSaveAs ?
 				{
 					'id': 'file-saveas',
@@ -183,13 +154,6 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 				],
 				'vertical': 'true'
 			},
-			hasPrint ?
-				{
-					'id': 'print',
-					'type': 'bigtoolitem',
-					'text': _UNO('.uno:Print', 'presentation'),
-					'command': '.uno:Print'
-				} : {},
 			hasRunMacro ?
 				{
 					'type': 'toolbox',
@@ -368,23 +332,6 @@ L.Control.NotebookbarImpress = L.Control.NotebookbarWriter.extend({
 
 	getHomeTab: function() {
 		var content = [
-			{
-				'id': 'home-undo-redo',
-				'type': 'container',
-				'children': [
-					{
-						'type': 'toolitem',
-						'text': _UNO('.uno:Undo'),
-						'command': '.uno:Undo'
-					},
-					{
-						'type': 'toolitem',
-						'text': _UNO('.uno:Redo'),
-						'command': '.uno:Redo'
-					},
-				],
-				'vertical': 'true'
-			},
 			{
 				'type': 'bigtoolitem',
 				'text': _UNO('.uno:Paste'),

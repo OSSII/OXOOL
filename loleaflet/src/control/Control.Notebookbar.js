@@ -242,6 +242,7 @@ L.Control.Notebookbar = L.Control.extend({
 	},
 
 	getShortcutsBarData: function() {
+		var hasPrint = !this._map['wopi'].HidePrintOption;
 		return [
 			{
 				'id': 'shortcutstoolbox',
@@ -252,7 +253,26 @@ L.Control.Notebookbar = L.Control.extend({
 						'type': 'toolitem',
 						'text': _('Save'),
 						'command': '.uno:Save'
-					}
+					},
+					{
+						'id': 'undo',
+						'type': 'toolitem',
+						'text': _UNO('.uno:Undo'),
+						'command': '.uno:Undo'
+					},
+					{
+						'id': 'redo',
+						'type': 'toolitem',
+						'text': _UNO('.uno:Redo'),
+						'command': '.uno:Redo'
+					},
+					hasPrint ?
+						{
+							'id': 'print',
+							'type': 'toolitem',
+							'text': _UNO('.uno:Print'),
+							'command': '.uno:Print'
+						} : {}
 				]
 			}
 		];
