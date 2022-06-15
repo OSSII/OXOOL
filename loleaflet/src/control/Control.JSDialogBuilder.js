@@ -2346,6 +2346,17 @@ L.Control.JSDialogBuilder = L.Control.extend({
 		return id;
 	},
 
+	/**
+	 * 取得某指令的快捷鍵
+	 * @param {object} data
+	 * @returns {string} hotkey
+	 */
+	_getHotkeyTip: function(data) {
+		var cmd = (data.command ? data.command : (data.id ? data.id : ''));
+		var hotkey = this.map.getCommandHotkey(cmd);
+		return (hotkey ? '(' + hotkey + ')' : '');
+	},
+
 	_unoToolButton: function(parentContainer, data, builder, options) {
 		var button = null;
 
@@ -2404,7 +2415,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			} else if (builder.options.useInLineLabelsForUnoButtons === true) {
 				$(div).addClass('no-label');
 			} else {
-				div.title = data.text;
+				div.title = (isRealUnoCommand ? _UNO(data.command, builder.map.getDocType(), 'tooltip') : data.text) + this._getHotkeyTip(data);
 				builder.map.uiManager.enableTooltip(div);
 				$(div).addClass('no-label');
 			}
