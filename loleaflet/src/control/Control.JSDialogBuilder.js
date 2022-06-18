@@ -919,9 +919,12 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			expander.hide();
 
 		if (data.command) {
+			var noLabels = builder.options.noLabelsForUnoButtons;
+			builder.options.noLabelsForUnoButtons = true;
 			var iconParent = expander.children('.ui-expander').get(0);
 			var icon = L.DomUtil.create('div', 'ui-expander-icon-right ' + builder.options.cssClass, iconParent);
 			builder._controlHandlers['toolitem'](icon, {type: 'toolitem', command: data.command, icon: 'res:morebutton'}, builder);
+			builder.options.noLabelsForUnoButtons = noLabels;
 		}
 
 		return false;
@@ -2012,7 +2015,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 		// don't create new control, style current parent
 
 		L.DomUtil.addClass(parentContainer, 'ui-separator');
-		if (data.orientation && data.orientation === 'vertical') {
+		if (data.orientation && (data.orientation === 'vertical' || data.orientation === '|')) {
 			L.DomUtil.addClass(parentContainer, 'vertical');
 		} else {
 			L.DomUtil.addClass(parentContainer, 'horizontal');
@@ -2408,7 +2411,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			if (builder.options.noLabelsForUnoButtons !== true) {
 				var label = L.DomUtil.create('span', 'ui-content unolabel', div);
 				label.for = buttonId;
-				label.textContent = builder._cleanText(data.text);
+				label.textContent = (isRealUnoCommand ? _UNO(data.command, builder.map.getDocType()) : builder._cleanText(data.text));
 
 				controls['label'] = label;
 				$(div).addClass('has-label');
@@ -2424,7 +2427,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 				$(div).addClass('inline');
 				label = L.DomUtil.create('span', 'ui-content unolabel', div);
 				label.for = buttonId;
-				label.textContent = builder._cleanText(data.text);
+				label.textContent = (isRealUnoCommand ? _UNO(data.command, builder.map.getDocType()) : builder._cleanText(data.text));//builder._cleanText(data.text);
 
 				controls['label'] = label;
 			}
