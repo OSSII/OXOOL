@@ -2408,28 +2408,26 @@ L.Control.JSDialogBuilder = L.Control.extend({
 
 			controls['button'] = button;
 
-			if (builder.options.noLabelsForUnoButtons !== true) {
+			// 標籤文字:若是 uno 指令且未指定顯示文字，就以 _UNO() 翻譯該指令
+			var labelText = ((isRealUnoCommand && data.text == undefined) ? _UNO(data.command, builder.map.getDocType(), 'popup') : builder._cleanText(data.text));
+
+			// 元件有指定顯示標籤
+			if (builder.options.noLabelsForUnoButtons !== true || builder.options.useInLineLabelsForUnoButtons === true) {
 				var label = L.DomUtil.create('span', 'ui-content unolabel', div);
 				label.for = buttonId;
-				label.textContent = (isRealUnoCommand ? _UNO(data.command, builder.map.getDocType()) : builder._cleanText(data.text));
+				label.textContent = labelText;
 
 				controls['label'] = label;
-				$(div).addClass('has-label');
-			} else if (builder.options.useInLineLabelsForUnoButtons === true) {
-				$(div).addClass('no-label');
+				// 顯示在圖示下方
+				if (builder.options.noLabelsForUnoButtons !== true) {
+					$(div).addClass('has-label');
+				} else { // 和圖示同一行
+					$(div).addClass('inline no-label');
+				}
 			} else {
-				div.title = (isRealUnoCommand ? _UNO(data.command, builder.map.getDocType(), 'tooltip') : data.text) + this._getHotkeyTip(data);
+				div.title = labelText + this._getHotkeyTip(data);
 				builder.map.uiManager.enableTooltip(div);
 				$(div).addClass('no-label');
-			}
-
-			if (builder.options.useInLineLabelsForUnoButtons === true) {
-				$(div).addClass('inline');
-				label = L.DomUtil.create('span', 'ui-content unolabel', div);
-				label.for = buttonId;
-				label.textContent = (isRealUnoCommand ? _UNO(data.command, builder.map.getDocType()) : builder._cleanText(data.text));//builder._cleanText(data.text);
-
-				controls['label'] = label;
 			}
 
 			if (data.command) {
