@@ -98,6 +98,14 @@ L.Map.include({
 		// use this feature for only integration.
 		if (!fileName) return false;
 		var extension = this._getFileExtension(fileName);
+
+		// 如果該檔案只能以 ODF 格式編輯的話
+		if (this.isOnlySaveAsODF() && this.readonlyStartingFormats[extension] === undefined) {
+			var odfFormat = this.wopi.UserExtraInfo.SaveToOdf;
+			// 將該檔案類別設成不能編輯，只能唯讀
+			this.readonlyStartingFormats[extension] = {canEdit: false, odfFormat: odfFormat};
+		}
+
 		if (!Object.prototype.hasOwnProperty.call(this.readonlyStartingFormats, extension))
 			return false;
 		return true;
@@ -131,10 +139,14 @@ L.Map.include({
 		var extension = this._getFileExtension(fileName);
 		var extensionInfo = this.readonlyStartingFormats[extension];
 		var saveAsFormat = extensionInfo.odfFormat;
+		var buttonList = [];
+		buttonList.push($.extend({}, vex.dialog.buttons.YES, {text: _('OK')}));
+		buttonList.push($.extend({}, vex.dialog.buttons.NO, {text: _('Cancel')}));
 		vex.dialog.prompt({
 			message: _('Enter a file name'),
 			placeholder: _('filename'),
 			value: fileName.substring(0, fileName.lastIndexOf('.')) + '.' + saveAsFormat,
+			buttons: buttonList,
 			callback: function (value) {
 				if (!value) return;
 				if (value.substring(value.lastIndexOf('.') + 1) !== saveAsFormat)
@@ -154,7 +166,8 @@ L.Map.include({
 			var extensionInfo = this.readonlyStartingFormats[extension];
 
 			var buttonList = [];
-			if (!this['wopi'].UserCanNotWriteRelative) {
+			// 如果是檔案擁有者，而且沒有禁止另存新檔的話，才能存成 ODF 格式
+			if (!this['wopi'].UserCanNotWriteRelative && this['wopi'].DocumentOwner) {
 				buttonList.push($.extend({}, vex.dialog.buttons.YES, { text: _('Save as ODF format') }));
 			}
 			buttonList.push($.extend({}, vex.dialog.buttons.NO, { text: extensionInfo.canEdit ? _('Continue editing') : _('Continue read only')}));
