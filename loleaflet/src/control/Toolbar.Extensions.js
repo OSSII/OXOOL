@@ -130,25 +130,25 @@ L.Map.include({
 			{format: 'txt', label: _('TEXT Document (.txt)')},
 			{format: 'html', label: _('HTML Document (.html)')},
 			{format: 'odt', label: _('ODF text document (.odt)')},
-			{format: 'doc', label: _('Word 2003 Document (.doc)')},
-			{format: 'docx', label: _('Word Document (.docx)')},
-			{format: 'rtf', label: _('Rich Text (.rtf)')},
+			{format: 'doc', label: _('Word 2003 Document (.doc)'), notODF: true},
+			{format: 'docx', label: _('Word Document (.docx)'), notODF: true},
+			{format: 'rtf', label: _('Rich Text (.rtf)'), notODF: true},
 			{format: 'epub', label: _('EPUB Document (.epub)')},
 		],
 		spreadsheet: [
 			{format: 'pdf', label: _('PDF Document (.pdf)')},
 			{format: 'html', label: _('HTML Document (.html)')},
 			{format: 'ods', label: _('ODF spreadsheet (.ods)')},
-			{format: 'xls', label: _('Excel 2003 Spreadsheet (.xls)')},
-			{format: 'xlsx', label: _('Excel Spreadsheet (.xlsx)')},
+			{format: 'xls', label: _('Excel 2003 Spreadsheet (.xls)'), notODF: true},
+			{format: 'xlsx', label: _('Excel Spreadsheet (.xlsx)'), notODF: true},
 			{format: 'csv', label: _('CSV (.csv)')},
 		],
 		presentation: [
 			{format: 'pdf', label: _('PDF Document (.pdf)')},
 			{format: 'html', label: _('HTML Document (.html)')},
 			{format: 'odp', label: _('ODF presentation (.odp)')},
-			{format: 'ppt', label: _('PowerPoint 2003 Presentation (.ppt)')},
-			{format: 'pptx', label: _('PowerPoint Presentation (.pptx)')},
+			{format: 'ppt', label: _('PowerPoint 2003 Presentation (.ppt)'), notODF: true},
+			{format: 'pptx', label: _('PowerPoint Presentation (.pptx)'), notODF: true},
 		],
 		drawing: [
 			{format: 'pdf', label: _('PDF Document (.pdf)')},
@@ -216,20 +216,25 @@ L.Map.include({
 			'.uno:SlideChangeWindow': !window.app.dontUseSidebar, // 側邊欄-投影片轉場
 			'.uno:CustomAnimation': !window.app.dontUseSidebar, // 側邊欄-動畫
 			'.uno:MasterSlidesPanel': !window.app.dontUseSidebar, // 側邊欄-投影片母片
+
+			'.uno:Protect': wopi.DocumentOwner == true, // 檔案擁有者，才可以保護/解除飽和工作表
 		};
 
 		// 把該文件類別能夠匯出的類別指令，放入特性命令中
 		this._exportFormats[docType].forEach(function(item) {
+			var allowed = (wopi.HideExportOption !== true);
 			var cmdName = 'downloadas-' + item.format;
-			this._allowedCommands.featureCommand[cmdName] = !wopi.HideExportOption;
+			this._allowedCommands.featureCommand[cmdName] = allowed;
 			// 也放入替代指令中
-			this.alternativeCommand.add(cmdName, function(e) {
-				var format = e.commandName.substring('downloadas-'.length);
-				var fileName = this._map['wopi'].BaseFileName;
-				fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-				fileName = fileName === '' ? _('noname') : fileName;
-				this._map.downloadAs(fileName + '.' + format, format);
-			});
+			if (allowed) {
+				this.alternativeCommand.add(cmdName, function(e) {
+					var format = e.commandName.substring('downloadas-'.length);
+					var fileName = this._map['wopi'].BaseFileName;
+					fileName = fileName.substr(0, fileName.lastIndexOf('.'));
+					fileName = fileName === '' ? _('noname') : fileName;
+					this._map.downloadAs(fileName + '.' + format, format);
+				});
+			}
 		}.bind(this));
 		//-------------------------------------------------------------------------
 
@@ -274,7 +279,7 @@ L.Map.include({
 				that.createAllowCommand(that._allowedCommands.contextMenu[docType]);
 				// 4. 把工具列須執行的 uno 指令加入系統白名單
 				that.createAllowCommand(that._allowedCommands.toolbarHolding);
-				// 4. 把暫存未初始狀態的指令，一次送給 server
+				// 5. 把暫存未初始狀態的指令，一次送給 server
 				if (that._isOxOffice && that._allowedCommands.pausedInitCmd !== '') {
 					app.socket.sendMessage('initunostatus ' + that._allowedCommands.pausedInitCmd);
 				}
@@ -403,7 +408,7 @@ L.Map.include({
 
 			// 被選單設定禁用
 			if (this._allowedCommands.menuPermissions[id] === false) {
-				console.debug('Command "%s" Disabled by menu!', id);
+				console.debug('Command "%s" Disabled by menu permission!', id);
 				return false;
 			}
 
