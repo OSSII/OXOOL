@@ -343,7 +343,6 @@ L.installContextMenu = function(options) {
 	// 沒有預設的 callback 就用自己的
 	if (options.callback === undefined) {
 		options.callback = function(itemKey/*, opt*/) {
-			window.app.console.debug('haha execute allowed command: %s', itemKey);
 			// 執行白名單命令(如果有的話)
 			map.executeAllowedCommand(itemKey);
 		};
