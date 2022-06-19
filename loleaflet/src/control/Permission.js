@@ -251,5 +251,20 @@ L.Map.include({
 
 	isPermissionEdit: function() {
 		return this._permission === 'edit';
+	},
+
+	isPermissionPreview: function() {
+		return this._permission === 'preview';
+	},
+
+	/**
+	 * 是否只能存成 ODF 格式
+	 * @returns {boolean} true: Yes, false: No
+	 */
+	isOnlySaveAsODF: function () {
+		if (this.wopi.UserExtraInfo && this.wopi.UserExtraInfo.SaveToOdf) {
+			return (['odt', 'ods', 'odp'].indexOf(this.wopi.UserExtraInfo.SaveToOdf) >= 0);
+		}
+		return false;
 	}
 });
