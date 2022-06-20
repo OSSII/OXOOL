@@ -139,7 +139,8 @@ L.Control.DocumentNameInput = L.Control.extend({
 
 		$(this._nameInput).val(this._getFileName()); // 文件名稱
 
-		if (this._hasWopi) {
+		// 如果非唯讀，再考慮 WOPI 是否禁止另存新檔或是改檔名
+		if (!readonly && this._hasWopi) {
 			// WOPI 指定不能另存新檔的話，或是不能改名的話，文件名稱就禁止輸入
 			readonly = (this.map['wopi'].UserCanNotWriteRelative === true || this.map['wopi'].UserCanRename !== true);
 		}
