@@ -280,55 +280,39 @@ w2ui-toolbar {
 		box-shadow: inset 0 0 2px 1px #f0f0f0, 0 0 0.1px 1px #bbb, 0 0 4px rgba(var(--green0-txt-primary-color), 0.1);
 	}
 }
-.text-color-indicator #document-name-input.editable:focus{
+.text-color-indicator #document-name-input:focus{
 	animation: textPulse 1.5s infinite ease-in-out;
 }
-.presentation-color-indicator #document-name-input.editable:focus{
+.presentation-color-indicator #document-name-input:focus{
 	animation: presentationPulse 1.5s infinite ease-in-out;
 }
-.spreadsheet-color-indicator #document-name-input.editable:focus{
+.spreadsheet-color-indicator #document-name-input:focus{
 	animation: spreadsheetPulse 1.5s infinite ease-in-out;
 }
 
 #document-name-input {
-	color: var(--color-text-darker);
-	font-size: var(--header-font-size);
-	border: 1px solid transparent;
-	background-color: transparent;
-	border-radius: var(--border-radius);
-	padding: 0px 2px;
-	transition: 0.5s;
-}
-
-#document-name-input.editable {
-	border: none;
+	width: auto;
 	max-width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
 	height: 18px;
 	text-align: center;
-	font-size: var(--default-font-size) !important;
-	padding: 0px 4px;
-	width: auto !important;
-	border-radius: 20px;
-	box-shadow: inset 0 0 2px 0 var(--color-border-dark);
+	color: var(--color-main-text);
+	font-size: var(--default-font-size);
+	border: none;
 	background-color: var(--color-background-lighter);
+	box-shadow: inset 0 0 2px 0 var(--color-border-dark);
+	border-radius: 20px;
+	padding: 0px 4px;
+	transition: 0.5s;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-#document-name-input:disabled {
-	border: 1px solid #fff;
-	color: var(--doc-identify-color);
-	border-radius: 5px;
-	font-size: 13px !important;
-	background-color: white;
-}
-
-.main-nav:not(.hasnotebookbar) #document-name-input.editable {
+.main-nav:not(.hasnotebookbar) #document-name-input {
 	font-size: var(--default-font-size) !important;
 	padding-bottom: 2px;
 }
 
-#document-name-input.editable:focus {
+#document-name-input:focus {
 	border: none;
 	box-shadow: inset 0 0 2px 1px #f0f0f0, 0 0 0.1px 1px #bbb;
 	background-color: var(--color-main-background);
@@ -338,12 +322,12 @@ w2ui-toolbar {
 	text-align: left;
 }
 
-.readonly #document-name-input.editable:focus {
+.readonly #document-name-input:focus {
 	flex: 1;
 	text-align: center;
 }
 
-#document-name-input.editable:hover:not(:focus) {
+#document-name-input:hover:not(:focus) {
 	border: none;
 	box-shadow: 0 0 0.1px 1px #d7d7d7, 0 0 3px 2px #f0f0f0;
 	background-color: var(--color-main-background);
@@ -365,11 +349,8 @@ td[id^='tb_editbar_item_sidebar']{
 }
 
 #closebuttonwrapper {
-	order: 99;
-	flex-shrink: 0;
-	width: 37px;
+	width: 32px;
 	height: 32px;
-	background-color: transparent;
 }
 
 .main-nav:not(.hasnotebookbar) ~ #closebuttonwrapper {
