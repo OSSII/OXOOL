@@ -36,6 +36,7 @@ L.Control.Notebookbar = L.Control.extend({
 		$('#toolbar-logo').after(this.map.toolbarUpTemplate.cloneNode(true));
 		toolbar = $('#toolbar-up');
 
+		this.map.createFileIcon();
 		this.loadTab(this.getFullJSON(this.HOME_TAB_ID));
 
 		this.createScrollButtons();
@@ -55,24 +56,6 @@ L.Control.Notebookbar = L.Control.extend({
 		$('.main-nav').addClass('hasnotebookbar');
 		$('.main-nav').addClass(this._map.getDocType() + '-color-indicator');
 		document.getElementById('document-container').classList.add('notebookbar-active');
-
-		var docLogoHeader = L.DomUtil.create('div', '');
-		docLogoHeader.id = 'document-header';
-
-		var iconClass = 'document-logo';
-		if (this.map._docLayer._docType === 'text') {
-			iconClass += ' writer-icon-img';
-		} else if (this.map._docLayer._docType === 'spreadsheet') {
-			iconClass += ' calc-icon-img';
-		} else if (this.map._docLayer._docType === 'presentation') {
-			iconClass += ' impress-icon-img';
-		} else if (this.map._docLayer._docType === 'drawing') {
-			iconClass += ' draw-icon-img';
-		}
-		var docLogo = L.DomUtil.create('div', iconClass, docLogoHeader);
-		$(docLogo).data('id', 'document-logo');
-		$(docLogo).data('type', 'action');
-		$('.main-nav').prepend(docLogoHeader);
 
 		var that = this;
 		var retryNotebookbarInit = function() {

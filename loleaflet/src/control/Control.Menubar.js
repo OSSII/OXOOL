@@ -484,6 +484,8 @@ L.Control.Menubar = L.Control.extend({
 			return;
 		}
 
+		this._map.createFileIcon();
+
 		// clear initial menu
 		L.DomUtil.removeChildNodes(this._menubarCont);
 
@@ -521,7 +523,6 @@ L.Control.Menubar = L.Control.extend({
 
 		document.getElementById('main-menu').setAttribute('role', 'menubar');
 		this._addTabIndexPropsToMainMenu();
-		this._createFileIcon();
 		this._menubarInitialized = true;
 	},
 
@@ -987,32 +988,6 @@ L.Control.Menubar = L.Control.extend({
 		if (!window.mode.isMobile() && !(itemId === '.uno:InsertAnnotation' || itemId === 'insertcomment') && this && this._map) {
 			this._map.focus();
 		}
-	},
-
-	_createFileIcon: function() {
-		var iconClass = 'document-logo';
-		var docType = this._map.getDocType();
-		if (docType === 'text') {
-			iconClass += ' writer-icon-img';
-		} else if (docType === 'spreadsheet') {
-			iconClass += ' calc-icon-img';
-		} else if (docType === 'presentation') {
-			iconClass += ' impress-icon-img';
-		} else if (docType === 'drawing') {
-			iconClass += ' draw-icon-img';
-		}
-
-		var liItem = L.DomUtil.create('li', '');
-		liItem.id = 'document-header';
-		liItem.setAttribute('role', 'menuitem');
-		var aItem = L.DomUtil.create('div', iconClass, liItem);
-		aItem.setAttribute('role', 'img');
-		aItem.setAttribute('aria-label', _('file type icon'));
-
-		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
-
-		var $docLogo = $(aItem);
-		$docLogo.bind('click', {self: this}, this._createDocument);
 	},
 
 	/**

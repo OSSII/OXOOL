@@ -695,7 +695,7 @@ L.Map.include({
 	 * 令 OxOOL 重新取得文件狀態
 	 * @author Firefly <firefly@ossii.com.tw>
 	 */
-	 getDocumentStatus: function() {
+	getDocumentStatus: function() {
 		// 指令稍微延遲再送出
 		setTimeout(function() {app.socket.sendMessage('status');}, 100);
 	},
@@ -703,6 +703,40 @@ L.Map.include({
 	rgbToHex: function(color) {
 		var sColor = parseInt(color).toString(16);
 		return '#' + '0'.repeat(6 - sColor.length) + sColor; // 不足六碼前面補0
+	},
+
+	/**
+	 * 建立檔案類別圖示
+	 */
+	createFileIcon: function() {
+		// 如果已經有檔案類別圖示，就算了
+		var docLogoHeader = L.DomUtil.get('document-header');
+		if (docLogoHeader) {
+			return;
+		}
+		// 依據檔案類別建立圖示
+		var iconClass = 'document-logo';
+		switch (this.getDocType()) {
+		case 'text':
+			iconClass += ' writer-icon-img';
+			break;
+		case 'spreadsheet':
+			iconClass += ' calc-icon-img';
+			break;
+		case 'presentation':
+			iconClass += ' impress-icon-img';
+			break;
+		case 'drawing':
+			iconClass += ' impress-icon-img';
+			break;
+		}
+
+		docLogoHeader = L.DomUtil.createWithId('div', 'document-header');
+
+		var docLogo = L.DomUtil.create('div', iconClass, docLogoHeader);
+		$(docLogo).data('id', 'document-logo');
+		$(docLogo).data('type', 'action');
+		$('.main-nav').prepend(docLogoHeader);
 	},
 
 	/**
