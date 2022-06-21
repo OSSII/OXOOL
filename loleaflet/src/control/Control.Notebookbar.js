@@ -84,7 +84,6 @@ L.Control.Notebookbar = L.Control.extend({
 		$('.main-nav').removeClass('hasnotebookbar');
 		$('#toolbar-wrapper').removeClass('hasnotebookbar');
 		$('.main-nav').removeClass(this._map.getDocType() + '-color-indicator');
-		$('.main-nav #document-header').remove();
 		this.clearNotebookbar();
 	},
 
