@@ -197,20 +197,21 @@ L.Map = L.Evented.extend({
 				this._fireInitComplete('updatepermission');
 			}
 
-			if (e.perm === 'readonly') {
-				L.DomUtil.addClass(this._container.parentElement, 'readonly');
-				if (window.mode.isDesktop() || window.mode.isTablet()) {
-					L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
-				}
-				L.DomUtil.addClass(L.DomUtil.get('main-menu'), 'readonly');
-				L.DomUtil.addClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
-			} else {
+			// 不是編輯權限的話，一律設為 readonly 狀態
+			if (e.perm === 'edit') {
 				L.DomUtil.removeClass(this._container.parentElement, 'readonly');
 				if (window.mode.isDesktop() || window.mode.isTablet()) {
 					L.DomUtil.removeClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
 				}
 				L.DomUtil.removeClass(L.DomUtil.get('main-menu'), 'readonly');
 				L.DomUtil.removeClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
+			} else {
+				L.DomUtil.addClass(this._container.parentElement, 'readonly');
+				if (window.mode.isDesktop() || window.mode.isTablet()) {
+					L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
+				}
+				L.DomUtil.addClass(L.DomUtil.get('main-menu'), 'readonly');
+				L.DomUtil.addClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
 			}
 		}, this);
 		this.on('doclayerinit', function() {
