@@ -266,8 +266,8 @@ L.Map.include({
 		return this._permission === 'edit';
 	},
 
-	isPermissionPreview: function() {
-		return this._permission === 'preview';
+	isPermissionView: function() {
+		return this._permission === 'view';
 	},
 
 	/**
