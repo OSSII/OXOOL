@@ -727,7 +727,7 @@ L.Map.include({
 			iconClass += ' impress-icon-img';
 			break;
 		case 'drawing':
-			iconClass += ' impress-icon-img';
+			iconClass += ' draw-icon-img';
 			break;
 		}
 
