@@ -6,6 +6,7 @@ case "$1" in
     configure)
 	setcap cap_net_bind_service=+ep /usr/bin/@PACKAGE_NAME@wsd || true
 	setcap cap_fowner,cap_mknod,cap_sys_chroot=ep /usr/bin/@PACKAGE_NAME@forkit || true
+	setcap cap_sys_admin=ep /usr/bin/@PACKAGE_NAME@mount || true
 
 	fc-cache -f
 
@@ -33,7 +34,7 @@ case "$1" in
 	# rm -f /etc/systemd/system/@PACKAGE_NAME@wsd.service || true
 	# ln -fs /lib/systemd/system/@PACKAGE_NAME@wsd.service /etc/systemd/system || true
 
-	su lool --shell=/bin/sh -c "@PACKAGE_NAME@wsd-systemplate-setup /opt/@PACKAGE_NAME@/systemplate @LO_PATH@ /usr/share/@PACKAGE_NAME@/extensions >/dev/null 2>&1"
+	su lool --shell=/bin/sh -c "@PACKAGE_NAME@wsd-systemplate-setup /opt/@PACKAGE_NAME@/systemplate @LO_PATH@ >/dev/null 2>&1"
 	;;
 
 esac
