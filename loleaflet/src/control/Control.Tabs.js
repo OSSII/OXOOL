@@ -259,7 +259,7 @@ L.Control.Tabs = L.Control.extend({
 									if (!this._map.isPermissionReadOnly()) this._map.fire('mobilewizard', {data: menuData});
 								};
 							}(i).bind(this));
-					} else {
+					} else if (this._map.isPermissionEdit()) {
 						L.DomEvent.on(tab, 'dblclick', function(j) {
 							return function() {
 								// window.app.console.err('Double clicked ' + j);
