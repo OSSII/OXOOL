@@ -389,8 +389,11 @@ L.Control.Header = L.Class.extend({
 	},
 
 	onMouseEnter: function () {
-		L.DomUtil.setStyle(this.containerObject.canvas, 'cursor', this._cursor);
-		this._bindContextMenu();
+		// 可編輯狀態才能有右鍵選單
+		if (this._map.isPermissionEdit()) {
+			L.DomUtil.setStyle(this.containerObject.canvas, 'cursor', this._cursor);
+			this._bindContextMenu();
+		}
 	},
 
 	onMouseLeave: function (point) {
