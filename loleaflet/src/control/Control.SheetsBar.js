@@ -106,6 +106,7 @@ L.Control.SheetsBar = L.Control.extend({
 			if (toolbar) {
 				spreadsheetButtons.forEach(function(id) {
 					toolbar.enable(id);
+					toolbar.show(id);
 				});
 			}
 		} else {
@@ -113,6 +114,7 @@ L.Control.SheetsBar = L.Control.extend({
 			if (toolbar) {
 				spreadsheetButtons.forEach(function(id) {
 					toolbar.disable(id);
+					toolbar.hide(id);
 				});
 			}
 		}
