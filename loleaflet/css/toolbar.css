@@ -50,8 +50,17 @@
 }
 #InsertMode.insert-mode-false,
 #PermissionMode.status-readonly-mode {
+	padding: 5px 10px;
 	background-color: var(--color-warning);
 	color: var(--color-primary-text);
+	border: 1px solid var(--color-border-lighter);
+	border-radius: var(--border-radius);
+}
+#PermissionMode.status-edit-mode {
+	padding: 5px 10px;
+	background-color: transparent;
+	color: var(--color-main-text);
+	border: 1px solid var(--color-border-darker);
 	border-radius: var(--border-radius);
 }
 #tb_actionbar_item_zoom .w2ui-tb-caption{

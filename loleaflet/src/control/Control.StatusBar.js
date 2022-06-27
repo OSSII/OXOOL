@@ -130,7 +130,7 @@ L.Control.StatusBar = L.Control.extend({
 		var toolbar = $('#toolbar-down');
 		var that = this;
 
-		if (!window.mode.isMobile()) {
+		{
 			this._bar = toolbar.w2toolbar({
 				name: 'actionbar',
 				items: [
@@ -237,7 +237,7 @@ L.Control.StatusBar = L.Control.extend({
 		var map = this.map;
 		var statusbar = this._bar;
 		var docType = this.map.getDocType();
-		var isReadOnly = this.map.isPermissionReadOnly();
+		var isReadOnly = !map.isPermissionEdit();
 
 		var languageStatus = function(e) {
 			var id = 'LanguageStatus';
@@ -275,7 +275,7 @@ L.Control.StatusBar = L.Control.extend({
 
 		switch (docType) {
 		case 'spreadsheet':
-			if (!window.mode.isMobile()) {
+			{
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
@@ -382,7 +382,7 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 
 		case 'text':
-			if (!window.mode.isMobile()) {
+			{
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
@@ -443,7 +443,7 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 
 		case 'presentation':
-			if (!window.mode.isMobile()) {
+			{
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
@@ -469,7 +469,7 @@ L.Control.StatusBar = L.Control.extend({
 			}
 			break;
 		case 'drawing':
-			if (!window.mode.isMobile()) {
+			{
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
@@ -490,8 +490,7 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 		}
 
-		if (isReadOnly)
-			statusbar.disable('LanguageStatus');
+		this._checkStatusPermission();
 
 		this.map.fire('updateuserlistcount');
 
@@ -514,41 +513,77 @@ L.Control.StatusBar = L.Control.extend({
 
 		// 監控狀態列顯示與否
 		this.map.stateChangeHandler.on('.uno:StatusBarVisible', function(e) {
-			if (e.checked()) {
-				this.map.uiManager.showStatusBar();
-			} else {
-				this.map.uiManager.hideStatusBar();
+			// 編輯模式才可以顯示/隱藏狀態列
+			if (this.map.isPermissionEdit()) {
+				if (e.checked()) {
+					this.map.uiManager.showStatusBar();
+				} else {
+					this.map.uiManager.hideStatusBar();
+				}
 			}
 		}, this);
 	},
 
 	_cancelSearch: function() {
-		var toolbar = window.mode.isMobile() ? w2ui['searchbar'] : w2ui['actionbar'];
+		var toolbar = w2ui['actionbar'];
 		var searchInput = L.DomUtil.get('search-input');
 		this.map.resetSelection();
 		toolbar.hide('cancelsearch');
 		toolbar.disable('searchprev');
 		toolbar.disable('searchnext');
 		searchInput.value = '';
-		if (window.mode.isMobile()) {
-			searchInput.focus();
-			// odd, but on mobile we need to invoke it twice
-			toolbar.hide('cancelsearch');
-		}
 
 		this.map._onGotFocus();
 	},
 
 	_getPermissionModeHtml: function(isReadOnly) {
-		return '<div id="PermissionMode" class="oxool-font ' +
+		return '<div id="PermissionMode" class="' +
 			(isReadOnly
-				? ' status-readonly-mode" title="' + _('Permission Mode') + '" style="padding: 5px 5px;"> ' + _('Read-only') + ' </div>'
-				: ' status-edit-mode" title="' + _('Permission Mode') + '" style="padding: 5px 5px;"> ' + _('Edit') + ' </div>');
+				? 'status-readonly-mode" title="' + _('Permission Mode') + '">' + _('Read-only') + '</div>'
+				: 'status-edit-mode" title="' + _('Permission Mode') + '">' + _('Edit') + '</div>');
 	},
 
-	onPermissionChanged: function(event) {
-		var isReadOnly = event.perm === 'readonly';
+	onPermissionChanged: function(/* event */) {
+		this._checkStatusPermission();
+	},
+
+	_checkStatusPermission: function() {
+		var isReadOnly = !this._map.isPermissionEdit();
+		var docType = this._map.getDocType();
+		// 更新編輯權限顯示
 		$('#PermissionMode').parent().html(this._getPermissionModeHtml(isReadOnly));
+		// 依據權限顯示或隱藏某些狀態
+		if (isReadOnly) {
+			switch (docType) {
+			case 'spreadsheet':
+				this._bar.hide('break2', 'RowColSelCount', 'break3', 'InsertMode', 'break4', 'LanguageStatus',
+					'break5', 'StatusSelectionMode', 'break8', 'StateTableCell', 'StatusBarFunc');
+				break;
+			case 'text':
+				this._bar.hide('pagestylebreak', 'PageStyle', 'break5', 'InsertMode', 'break6', 'LanguageStatus');
+				break;
+			case 'presentation':
+			case 'drawing':
+				this._bar.hide('break2', 'LanguageStatus');
+				break;
+			}
+			// 唯讀模式狀態列強制顯示
+			$('#toolbar-down').show();
+		} else {
+			switch (docType) {
+			case 'spreadsheet':
+				this._barshow('break2', 'RowColSelCount', 'break3', 'InsertMode', 'break4', 'LanguageStatus',
+					'break5', 'StatusSelectionMode', 'break8', 'StateTableCell', 'StatusBarFunc');
+				break;
+			case 'text':
+				this._bar.show('pagestylebreak', 'PageStyle', 'break5', 'InsertMode', 'break6', 'LanguageStatus');
+				break;
+			case 'presentation':
+			case 'drawing':
+				this._bar.show('break2', 'LanguageStatus');
+				break;
+			}
+		}
 	},
 
 	onCommandValues: function(e) {
