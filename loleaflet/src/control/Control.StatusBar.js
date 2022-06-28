@@ -572,7 +572,7 @@ L.Control.StatusBar = L.Control.extend({
 		} else {
 			switch (docType) {
 			case 'spreadsheet':
-				this._barshow('break2', 'RowColSelCount', 'break3', 'InsertMode', 'break4', 'LanguageStatus',
+				this._bar.show('break2', 'RowColSelCount', 'break3', 'InsertMode', 'break4', 'LanguageStatus',
 					'break5', 'StatusSelectionMode', 'break8', 'StateTableCell', 'StatusBarFunc');
 				break;
 			case 'text':
