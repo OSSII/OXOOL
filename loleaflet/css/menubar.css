@@ -533,3 +533,68 @@ li .disabled .keyboard {
 .restricted-item {
 	display: none !important;
 }
+
+#oxool-readonlybar {
+	display: flex;
+	height: 48px;
+	width: auto;
+	background: var(--doc-identify-color);
+	padding: 0;
+	white-space: nowrap;
+	z-index: 12;
+	align-items: center;
+	justify-content: space-between;
+	-webkit-box-shadow: 0 8px 6px -6px rgba(0,0,0,0.5);
+	-moz-box-shadow: 0 8px 6px -6px rgba(0,0,0,0.5);
+	box-shadow: 0 8px 6px -6px rgba(0,0,0,0.5);
+}
+
+#oxool-readonlybar .document-shortcuts-bar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--header-height);
+	padding-left: 10px;
+	padding-right: 10px;
+	box-sizing: border-box;
+	border: 1px solid var(--color-border-dark);
+	border-radius: 20px;
+	background: var(--color-background-lighter);
+	margin-left: 10px;
+}
+
+.document-shortcuts-bar .unotoolbutton.notebookbar {
+	margin-inline-end: 0px !important;
+	border: 1px solid transparent;
+}
+
+#oxool-readonlybar .document-name-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 200px;
+	max-width: 450px;
+	height: var(--header-height);
+	padding-left: 10px;
+	padding-right: 10px;
+	overflow: hidden;
+	background-color: var(--color-background-lighter);
+	border-radius: 20px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+#oxool-readonlybar .document-name {
+	font-family: var(--oxool-font);
+	font-size: var(--header-font-size);
+	font-weight: bold;
+	color: var(--color-main-text);
+}
+
+#oxool-readonlybar .closebuttonimage {
+	width: 32px;
+	height: 32px;
+	background: url('images/closedoc.svg') no-repeat center/32px;
+	margin-right: 10px;	
+	cursor: pointer;
+}

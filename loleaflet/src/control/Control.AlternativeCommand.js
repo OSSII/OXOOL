@@ -332,6 +332,12 @@ L.Control.AlternativeCommand = L.Control.extend({
 		'keyboard-shortcuts': function() {
 			L.dialog.run('ShowHelp', {id: 'keyboard-shortcuts'});
 		},
+		/**
+		 * 顯示「關於」對話框
+		 */
+		'about': function() {
+			this._map.showLOAboutDialog();
+		}
 	},
 });
 

@@ -10,6 +10,8 @@ L.Map.include({
 		'xlsb': { canEdit: false, odfFormat: 'ods' }
 	},
 
+	readonlyBar: null,
+
 	setPermission: function (perm) {
 		var button = $('#mobile-edit-button');
 		button.off('click');
@@ -201,6 +203,14 @@ L.Map.include({
 	_enterEditMode: function (perm) {
 		this._permission = perm;
 
+		// 非手機設備且位於唯讀專用模式
+		if (!window.mode.isMobile()) {
+			if (this.readonlyBar !== null) {
+				this.removeControl(this.readonlyBar);
+				this.readonlyBar = null;
+			}
+		}
+
 		app.socket.sendMessage('requestloksession');
 		if (!L.Browser.touch) {
 			this.dragging.disable();
@@ -221,6 +231,14 @@ L.Map.include({
 
 	_enterReadOnlyMode: function (perm) {
 		this._permission = perm;
+
+		// 非手機設備的話，要使用唯讀專用模式
+		if (!window.mode.isMobile()) {
+			if (this.readonlyBar === null) {
+				this.readonlyBar = L.control.readonlyBar();
+				this.addControl(this.readonlyBar);
+			}
+		}
 
 		this.dragging.enable();
 		// disable all user interaction, will need to add keyboard too

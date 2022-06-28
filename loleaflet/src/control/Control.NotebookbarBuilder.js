@@ -55,6 +55,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		//this._toolitemHandlers['.uno:shareas'] = this._shareAsControl;
 		//this._toolitemHandlers['.uno:Print'] = this._printControl;
 		//this._toolitemHandlers['.uno:rev-history'] = this._revHistoryControl;
+		this._toolitemHandlers['downloadas'] = this._downloadAsControl;
 		this._toolitemHandlers['.uno:InsertPageHeader'] = this._headerFooterControl;
 		this._toolitemHandlers['.uno:InsertPageFooter'] = this._headerFooterControl;
 		this._toolitemHandlers['.uno:Text'] = this._insertTextBoxControl;
@@ -118,7 +119,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:EditDoc'] = function() {};
 		this._toolitemHandlers['.uno:AssignLayout'] = function() {};
 		this._toolitemHandlers['.uno:ConnectorToolbox'] = this._shapesControl;
-		this._toolitemHandlers['.uno:PresentationCurrentSlide'] = function() {};
+		//this._toolitemHandlers['.uno:PresentationCurrentSlide'] = function() {};
 		this._toolitemHandlers['.uno:PresentationLayout'] = function() {};
 		this._toolitemHandlers['.uno:CapturePoint'] = function() {};
 		this._toolitemHandlers['.uno:Objects3DToolbox'] = function() {};
@@ -453,7 +454,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		return false;
 	},
 
-	_getDownloadAsSubmenuOpts: function(docType) {
+	/* _getDownloadAsSubmenuOpts: function(docType) {
 		var submenuOpts = [];
 
 		if (docType === 'text') {
@@ -536,7 +537,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		});
 
 		return submenuOpts;
-	},
+	}, */
 
 	_insertHyperlinkControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
@@ -742,7 +743,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	_insertAnnotationControl: function(parentContainer, data, builder) {
+	/* _insertAnnotationControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
 		$(control.container).unbind('click.toolbutton');
 		$(control.container).click(function () {
@@ -752,7 +753,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			}
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
+	}, */
 
 	_clipboardButtonControl: function(parentContainer, data, builder) {
 		var isPaste = data.command === '.uno:Paste';
@@ -853,6 +854,33 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
+	_downloadAsControl: function(parentContainer, data, builder) {
+		console.debug('haha  data',  data);
+		var options = {hasDropdownArrow: true};
+		var control = builder._unoToolButton(parentContainer, data, builder, options);
+
+		$(control.container).unbind('click.toolbutton');
+		var formats = builder.map.getExportFormats();
+		var menuItems = {};
+		formats.forEach(function(item) {
+			var id = 'downloadas-' + item.format;
+			menuItems[id] = {
+				icon: 'res:' + id,
+				name: item.label
+			};
+		});
+		L.installContextMenu({
+			selector: '#downloadasmenu',
+			className: 'oxool-font',
+			trigger: 'left',
+			items: menuItems,
+			callback: function(key/* , options */) {
+				builder.map.executeAllowedCommand(key);
+			}
+		});
+		builder._preventDocumentLosingFocusOnClick(control.container);
+	},
+
 	_symbolControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
@@ -873,7 +901,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	_saveControl: function(parentContainer, data, builder) {
+	/* _saveControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
 		$(control.container).unbind('click.toolbutton');
@@ -887,9 +915,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			}
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
+	}, */
 
-	_saveAsControl: function(parentContainer, data, builder) {
+	/* _saveAsControl: function(parentContainer, data, builder) {
 		data.text = data.text.replace('...', '');
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
@@ -898,7 +926,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			builder.map.openSaveAs();
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
+	}, */
 
 	_shareAsControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
@@ -910,7 +938,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	_printControl: function(parentContainer, data, builder) {
+	/* _printControl: function(parentContainer, data, builder) {
 		data.text = data.text.replace('...', '');
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
@@ -919,9 +947,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			builder.map.print();
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
+	}, */
 
-	_revHistoryControl: function(parentContainer, data, builder) {
+	/* _revHistoryControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
 		$(control.container).unbind('click.toolbutton');
@@ -929,7 +957,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			builder.map.openRevisionHistory();
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
+	}, */
 
 	_languageMenu: function(parentContainer, data, builder) {
 		var menu = [

@@ -326,6 +326,7 @@ OXOOL_JS_LST =\
 	src/control/Control.DownloadProgress.js \
 	src/control/Control.ContextMenu.js \
 	src/control/Control.Menubar.js \
+	src/control/Control.ReadonlyBar.js \
 	src/control/Control.Tabs.js \
 	src/control/Control.Permission.js \
 	src/control/Control.Selection.js \
@@ -687,6 +688,7 @@ pot:
 		src/control/Control.JSDialogBuilder.js \
 		src/control/Control.LanguageDialog.js \
 		src/control/Control.Menubar.js \
+		src/control/Control.ReadonlyBar.js \
 		src/control/Control.MobileBottomBar.js \
 		src/control/Control.MobileTopBar.js \
 		src/control/Control.MobileWizardBuilder.js \
