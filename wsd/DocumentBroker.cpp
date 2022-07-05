@@ -43,7 +43,6 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <Freemium.hpp>
 
 #define TILES_ON_FLY_MIN_UPPER_LIMIT 10.0f
 
@@ -858,24 +857,6 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
             session->sendFileMode(session->isReadOnly(), session->isAllowChangeComments());
         }
     }
-#ifdef ENABLE_FREEMIUM
-    Object::Ptr freemiumInfo = new Object();
-    freemiumInfo->set("IsFreemiumUser", Freemium::FreemiumManager::isFreemiumUser());
-    freemiumInfo->set("FreemiumDenyList", Freemium::FreemiumManager::getFreemiumDenyList());
-    freemiumInfo->set("FreemiumPurchaseTitle", Freemium::FreemiumManager::getFreemiumPurchaseTitle());
-    freemiumInfo->set("FreemiumPurchaseLink", Freemium::FreemiumManager::getFreemiumPurchaseLink());
-    freemiumInfo->set("FreemiumPurchaseDescription", Freemium::FreemiumManager::getFreemiumPurchaseDescription());
-    freemiumInfo->set("WriterHighlights", Freemium::FreemiumManager::getWriterHighlights());
-    freemiumInfo->set("CalcHighlights", Freemium::FreemiumManager::getCalcHighlights());
-    freemiumInfo->set("ImpressHighlights", Freemium::FreemiumManager::getImpressHighlights());
-    freemiumInfo->set("DrawHighlights", Freemium::FreemiumManager::getDrawHighlights());
-
-    std::ostringstream ossFreemiumInfo;
-    freemiumInfo->stringify(ossFreemiumInfo);
-    const std::string freemiumInfoString = ossFreemiumInfo.str();
-    LOG_TRC("Sending freemium info to client: " << freemiumInfoString);
-    session->sendMessage("freemium: " + freemiumInfoString);
-#endif
 
 #if ENABLE_OSSII_PRODUCT
     {
