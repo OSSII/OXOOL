@@ -2865,22 +2865,14 @@ private:
         std::string loVersion, hash, branch;
         Util::getVersionInfo(loVersion, hash, branch);
         std::string version;
-        if ((std::string)LOOLWSD_BRANCH == "asus")
-        {
-            version = "{\"OxOOL\":\""  LOOLWSD_VERSION  "\"";
-            version += ",\"OSSII\":\"" LOOLWSD_VERSION "\"}";
-        }
-        else
-        {
-            std::string versionStr =
-                "{ \"Version\": \"" + loVersion + "\", " +
-                "\"Hash\": \"" + hash + "\", " +
-                "\"Branch\": \"" + branch + "\" }";
+        std::string versionStr =
+            "{ \"Version\": \"" + loVersion + "\", " +
+            "\"Hash\": \"" + hash + "\", " +
+            "\"Branch\": \"" + branch + "\" }";
 
-            version = "{\"loolserver\":" +  versionStr;
-            version += ",\"lokitversion\":" + LOOLWSD::LOKitVersion;
-            version += "}";
-        }
+        version = "{\"loolserver\":" +  versionStr;
+        version += ",\"lokitversion\":" + LOOLWSD::LOKitVersion;
+        version += "}";
 
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
