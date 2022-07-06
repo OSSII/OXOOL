@@ -3,7 +3,7 @@
 	Menu editor.
 */
 
-/* global _ _UNO $ L AdminSocketBase Admin Uint8Array */
+/* global _ _UNO $ L AdminSocketBase Admin */
 var AdminSocketMenuEditor = AdminSocketBase.extend({
 	constructor: function(host) {
 		this.base(host);
@@ -567,13 +567,7 @@ var AdminSocketMenuEditor = AdminSocketBase.extend({
 		$('#downloadJson').click(function() {
 			var jsonContent = document.getElementById('jsonContent');
 			var isDisabled = jsonContent.getAttribute('disabledItem') === 'true';
-			// 轉換資料到 byte array
-			var contentLen = jsonContent.innerText.length;
-			var byteArray = new Uint8Array(contentLen);
-			for (var i = 0; i < contentLen ; i++) {
-				byteArray[i] = jsonContent.innerText.charCodeAt(i);
-			}
-			var blob = new Blob([byteArray], {type: 'octet/stream'});
+			var blob = new Blob([jsonContent.innerText], {type: 'octet/stream'});
 			var link = L.DomUtil.create('a', '', document.body);
 			link.style = 'display: none';
 			link.href = window.URL.createObjectURL(blob);
