@@ -393,7 +393,7 @@ AC_SUBST(LOOLWSD_LOGLEVEL)
 AC_SUBST(LOOLWSD_LOG_TO_FILE)
 AC_SUBST(LOLEAFLET_LOGGING)
 
-LOOLWSD_BRANCH=`( cat dist_git_branch 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null )`
+LOOLWSD_BRANCH=`( cat dist_git_branch 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null ) | cut -d '-' -f 1`
 
 # 是否為專案
 PROJECT_NAME=`cat dist_project 2>/dev/null`
