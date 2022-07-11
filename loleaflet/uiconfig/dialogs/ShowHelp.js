@@ -44,7 +44,7 @@ L.dialog.ShowHelp = {
 		if (window.ThisIsAMobileApp) {
 			productName = window.MobileAppName;
 		} else {
-			productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'OxOffice Online';
+			productName = brandProductName;
 		}
 
 		var map = this._map;

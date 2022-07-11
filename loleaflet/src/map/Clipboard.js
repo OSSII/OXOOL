@@ -861,7 +861,7 @@ L.Clipboard = L.Class.extend({
 	},
 
 	_substProductName: function (msg) {
-		var productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'OxOffice Online Development Edition';
+		var productName = brandProductName;
 		return msg.replace('%productName', productName);
 	},
 
