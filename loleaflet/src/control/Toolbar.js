@@ -424,21 +424,11 @@ L.Map.include({
 	},
 
 	showLOAboutDialog: function() {
-
-		// Just as a test to exercise the Async Trace Event functionality, uncomment this
-		// line and the asyncTraceEvent.finish() below.
-		// var asyncTraceEvent = app.socket.createAsyncTraceEvent('oxool-showLOAboutDialog');
-
 		// Move the div sitting in 'body' as vex-content and make it visible
 		var content = $('#about-dialog').clone().css({display: 'block'});
 		// fill product-name and product-string
-		var productName;
-		if (window.ThisIsAMobileApp) {
-			productName = window.MobileAppName;
-		} else {
-			productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'OxOffice Online Development Edition';
-		}
-		var productURL = (typeof brandProductURL !== 'undefined') ? brandProductURL : 'https://collaboraonline.github.io/';
+		var productName = brandProductName;
+		var productURL = brandProductURL;
 		content.find('#product-name').text(productName).addClass('product-' + productName.split(/[ ()]+/).join('-').toLowerCase());
 		var productString = _('This version of %productName is powered by');
 		var productNameWithURL;
@@ -464,38 +454,6 @@ L.Map.include({
 			w = iw / 5 + 590;
 		}
 		var map = this;
-		/* var handler = function(event) {
-			if (event.key === 'd') {
-				map._docLayer.toggleTileDebugMode();
-			} else if (event.key === 'l') {
-				// L toggges the Online logging level between the default (whatever
-				// is set in oxoolwsd.xml or on the oxoolwsd command line) and the
-				// most verbose a client is allowed to set (which also can be set in
-				// oxoolwsd.xml or on the oxoolwsd command line).
-				//
-				// In a typical developer "make run" setup, the default is "trace"
-				// so there is nothing more verbose. But presumably it is different
-				// in production setups.
-
-				app.socket.threadLocalLoggingLevelToggle = !app.socket.threadLocalLoggingLevelToggle;
-
-				var newLogLevel = (app.socket.threadLocalLoggingLevelToggle ? 'verbose' : 'default');
-
-				app.socket.sendMessage('loggingleveloverride ' + newLogLevel);
-
-				var logLevelInformation = newLogLevel;
-				if (newLogLevel === 'default')
-					logLevelInformation = 'default (from oxoolwsd.xml)';
-				else if (newLogLevel === 'verbose')
-					logLevelInformation = 'most verbose (from oxoolwsd.xml)';
-				else if (newLogLevel === 'terse')
-					logLevelInformation = 'least verbose (from oxoolwsd.xml)';
-				else
-					logLevelInformation = newLogLevel;
-
-				$(app.ExpertlyTrickForLOAbout.contentEl).find('#log-level-state').html('Log level: ' + logLevelInformation);
-			}
-		}; */
 		vex.open({
 			unsafeContent: content[0].outerHTML,
 			showCloseButton: true,
@@ -504,42 +462,11 @@ L.Map.include({
 			overlayClosesOnClick: true,
 			buttons: {},
 			afterOpen: function() {
-
-				/* var touchGesture = map['touchGesture'];
-				if (touchGesture && touchGesture._hammer) {
-					touchGesture._hammer.off('tripletap', L.bind(touchGesture._onTripleTap, touchGesture));
-				}
-
-				var $vexContent = $(this.contentEl);
-				var hammer = new Hammer.Manager($vexContent.get(0));
-				hammer.add(new Hammer.Tap({ taps: 3 }));
-				hammer.on('tap', function() {
-					map._docLayer.toggleTileDebugMode();
-				}); */
-
 				this.contentEl.style.width = w + 'px';
-
-				// FIXME: When we remove vex this needs to be cleaned up.
-
-				// It is hard to access the value of "this" in this afterOpen
-				// function in the handler function. Use a global variable until
-				// somebody figures out a better way.
-				app.ExpertlyTrickForLOAbout = this;
-				//$(window).bind('keyup.vex', handler);
-				// workaround for https://github.com/HubSpot/vex/issues/43
 				$('.vex-overlay').css({ 'pointer-events': 'none'});
 			},
 			beforeClose: function () {
-				/* $(window).unbind('keyup.vex', handler);
-				var touchGesture = map['touchGesture'];
-				if (touchGesture && touchGesture._hammer) {
-					touchGesture._hammer.on('tripletap', L.bind(touchGesture._onTripleTap, touchGesture));
-				} */
 				map.focus();
-
-				// Unset the global variable, see comment above.
-				app.ExpertlyTrickForLOAbout = undefined;
-				// asyncTraceEvent.finish();
 			}
 		});
 	},

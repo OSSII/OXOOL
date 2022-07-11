@@ -556,8 +556,7 @@ app.definitions.Socket = L.Class.extend({
 			var lokitVersionObj = JSON.parse(textMsg.substring(textMsg.indexOf('{')));
 			h = lokitVersionObj.BuildId.substring(0, 7);
 			$('#lokit-version').html(lokitVersionObj.ProductName + ' ' +
-			                         lokitVersionObj.ProductVersion + lokitVersionObj.ProductExtension +
-			                         '<span> git hash:&nbsp;' + h + '<span>');
+			                         lokitVersionObj.ProductVersion + '(' + lokitVersionObj.ProductExtension + ' )');
 			this.TunnelledDialogImageCacheSize = lokitVersionObj.tunnelled_dialog_image_cache_size;
 			// Added by Firefly <firefly@ossii.com.tw>
 			this._map.setOfficeVersion(lokitVersionObj);
