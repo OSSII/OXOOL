@@ -84,7 +84,16 @@ L.dialog.CommonSymbols = {
 			close: function(/*e, ui*/) {
 				map.stateChangeHandler.setItemProperty(that._commandName, 'false');
 				map.focus();
-			}
+			},
+			buttons: [
+				{
+					text: _('More symbols'),
+					click: function() {
+						$(this).dialog('close');
+						map.sendUnoCommand('.uno:InsertSymbol');
+					}
+				}
+			]
 		});
 	},
 
@@ -93,10 +102,8 @@ L.dialog.CommonSymbols = {
 		// 常用符號表在 Toolbar.Extensions.js 中，initializeDocumentPresets() 載入
 		// 檢查有無該語系的常用符號表，請參考 uiconfig/symbols/zh-TW.json
 		if (this._map._allowedCommands.commonSymbolsData === null) {
-			L.dialog.alert({icon: 'error',
-				message: _('There is no common symbol table for your language.') +
-				'(' + (String.locale ? String.locale : navigator.language) + ')'
-			});
+			// 沒有載入的話，直接執行 '.uno:InsertSymbol'
+			this._map.sendUnoCommand('.uno:InsertSymbol');
 			return;
 		}
 		var isOpen = $(this._dialog).dialog('isOpen'); // 是否已開啟

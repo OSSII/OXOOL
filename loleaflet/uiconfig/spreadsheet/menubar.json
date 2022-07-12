@@ -814,11 +814,6 @@
 				"hotkey": "Ctrl+K"
 			},
 			{
-				"icon": "res:commonsymbols",
-				"name": "Common symbols",
-				"id": "dialog:CommonSymbols"
-			},
-			{
 				"id": ".uno:InsertSymbol"
 			},
 			{

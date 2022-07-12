@@ -185,6 +185,12 @@ L.Control.AlternativeCommand = L.Control.extend({
 			app.socket.sendMessage('getgraphicselection id=export');
 		},
 		/**
+		 * 插入特殊符號
+		 */
+		'.uno:InsertSymbol': function() {
+			L.dialog.run('CommonSymbols');
+		},
+		/**
 		 * 插入/修改超連結
 		 */
 		'.uno:HyperlinkDialog': function(e) {
