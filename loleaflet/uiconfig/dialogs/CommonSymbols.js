@@ -8,7 +8,7 @@
 /* global $ _ UNOKey */
 L.dialog.CommonSymbols = {
 	_dialog: L.DomUtil.create('div', 'lokdialog', document.body),
-	_commandName: 'dialog:CommonSymbols', // 指令名稱
+	_commandName: '.uno:InsertSymbol', // 指令名稱
 
 	// initialize 只會在載入的第一次執行
 	initialize: function() {
@@ -90,7 +90,7 @@ L.dialog.CommonSymbols = {
 					text: _('More symbols'),
 					click: function() {
 						$(this).dialog('close');
-						map.sendUnoCommand('.uno:InsertSymbol');
+						map.sendUnoCommand(that._commandName);
 					}
 				}
 			]
@@ -103,7 +103,7 @@ L.dialog.CommonSymbols = {
 		// 檢查有無該語系的常用符號表，請參考 uiconfig/symbols/zh-TW.json
 		if (this._map._allowedCommands.commonSymbolsData === null) {
 			// 沒有載入的話，直接執行 '.uno:InsertSymbol'
-			this._map.sendUnoCommand('.uno:InsertSymbol');
+			this._map.sendUnoCommand(this._commandName);
 			return;
 		}
 		var isOpen = $(this._dialog).dialog('isOpen'); // 是否已開啟
