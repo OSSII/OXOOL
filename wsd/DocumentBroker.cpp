@@ -1248,6 +1248,7 @@ bool DocumentBroker::saveToStorageInternal(const std::string& sessionId, bool su
             std::ostringstream oss;
             oss << "renamefile: " << "filename=" << encodedName << " url=" << url;
             broadcastMessage(oss.str());
+            broadcastMessage("close: reloadafterrename");
         }
         else
         {
