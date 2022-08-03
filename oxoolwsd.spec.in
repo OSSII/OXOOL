@@ -107,8 +107,6 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) /etc/%{name}/*.pem
 %config %attr(440, root, root) /etc/sudoers.d/lool
 
-%doc README
-
 %files devel
 %{_includedir}/*
 %{_libdir}/*.so
