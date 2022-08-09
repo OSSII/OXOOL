@@ -87,11 +87,19 @@ L.Control.AlternativeCommand = L.Control.extend({
 		 * 存檔
 		 */
 		'.uno:Save': function() {
-			// Save only when not read-only.
-			if (!this._map.isPermissionReadOnly()) {
-				this._map.fire('postMessage', {msgId: 'UI_Save'});
-				if (!this._map._disableDefaultAction['UI_Save']) {
-					this._map.save(false, false);
+			// 只有編輯模式且內容以變更才可以存檔
+			if (this._map.isPermissionEdit() && this._map._everModified) {
+				// 共編狀態不能手動存檔
+				if (this._map.getViewCount() > 1) {
+					L.dialog.alert({
+						icon: 'information',
+						message: _('When co-editing, the file is automatically saved.')
+					});
+				} else { //
+					this._map.fire('postMessage', {msgId: 'UI_Save'});
+					if (!this._map._disableDefaultAction['UI_Save']) {
+						this._map.save(false, false);
+					}
 				}
 			}
 		},
