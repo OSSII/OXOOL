@@ -24,6 +24,7 @@ L.Control.Notebookbar = L.Control.extend({
 		// log and test window.ThisIsTheiOSApp = true;
 		this.map = map;
 		this._currentScrollPosition = 0;
+		var docType = this._map.getDocType();
 
 		if (document.documentElement.dir === 'rtl')
 			this._RTL = true;
@@ -54,12 +55,13 @@ L.Control.Notebookbar = L.Control.extend({
 
 		$('#toolbar-wrapper').addClass('hasnotebookbar');
 		$('.main-nav').addClass('hasnotebookbar');
-		$('.main-nav').addClass(this._map.getDocType() + '-color-indicator');
+		$('.main-nav').addClass(docType + '-color-indicator');
 		document.getElementById('document-container').classList.add('notebookbar-active');
 
 		var that = this;
+		var usesNotebookbarWidgetsInCore = docType === 'text' || docType === 'spreadsheet';
 		var retryNotebookbarInit = function() {
-			if (!that.map._isNotebookbarLoadedOnCore) {
+			if (!that.map._isNotebookbarLoadedOnCore && usesNotebookbarWidgetsInCore) {
 				// if notebookbar doesn't have any welded controls it can trigger false alarm here
 				window.app.console.warn('notebookbar might be not initialized, retrying');
 				that.map.sendUnoCommand('.uno:ToolbarMode?Mode:string=notebookbar_online.ui');
