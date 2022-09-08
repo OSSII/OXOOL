@@ -48,7 +48,6 @@
 #include <Protocol.hpp>
 #include <Util.hpp>
 
-#include <src/include/oxoolmodule.h>
 using Poco::Net::HTMLForm;
 using Poco::Net::HTTPBasicCredentials;
 using Poco::Net::HTTPRequest;
@@ -307,7 +306,7 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
         const auto& config = Application::instance().config();
         // Do we have an extension.
         const std::size_t extPoint = endPoint.find_last_of('.');
-        if ((extPoint == std::string::npos) && (apilist.find(endPoint) == apilist.end()))
+        if (extPoint == std::string::npos)
             throw Poco::FileNotFoundException("Invalid file.");
         const std::string fileType = endPoint.substr(extPoint + 1);
 
@@ -357,14 +356,6 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
         }
 
         // Is this a file we read at startup - if not; its not for serving.
-        std::string moduleName = "";
-        bool isModule = false;
-        if (apilist.find(requestDetails[3]) != apilist.end())
-        {
-            isModule = true;
-            moduleName = requestDetails[3];
-        }
-        Poco::Net::HTMLForm form(request);
         if (FileHash.find(relPath) == FileHash.end())
         {
             // Modified by Firefly <firefly@ossii.com.tw>
@@ -372,21 +363,8 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
             // 避免 404 not found.
             if (fileType == "svg" || fileType == "png" || fileType == "gif")
             {
-                if (!isModule)
-                {
-                    LOG_DBG("\"" + relPath + "\" does not exists, use empty.png instead.");
-                    relPath = "/loleaflet/dist/images/empty.png";
-                }
-            }
-            // for /loleaflet/dist/admin/[module_name]
-            else if (requestDetails.size() >= 3)
-            {
-                moduleName = requestDetails[3];
-                if (apilist.find(moduleName) == apilist.end())
-                {
-                    moduleName = "";
-                    throw Poco::FileNotFoundException("Invalid URI request: [" + requestUri.toString() + "].");
-                }
+                LOG_DBG("\"" + relPath + "\" does not exists, use empty.png instead.");
+                relPath = "/loleaflet/dist/images/empty.png";
             }
             else
             {
@@ -429,7 +407,7 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
             // Added by Firefly <firefly@ossii.com.tw>
             // 只要是符合 admin*.html 的頁面，一律當成後台管理界面
             const bool isAdmin = (endPoint.substr(0, 5) == "admin" && fileType == "html");
-            if (isAdmin || (moduleName != "" && requestSegments.size()==4 ))
+            if (isAdmin)
             {
                 preprocessAdminFile(request, requestDetails, socket);
                 return;
@@ -450,25 +428,6 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
                 mimeType = "text/xml";
             else
                 mimeType = "text/plain";
-
-            // send module resource
-            if ( moduleName != "admin" && moduleName != "" )
-            {
-                if(apilist.find(moduleName) != apilist.end())
-                {
-                    if (!LOOLWSD::AdminEnabled)
-                        throw Poco::FileAccessDeniedException("Admin console disabled");
-
-                    if (!FileServerRequestHandler::isAdminLoggedIn(request, response))
-                        throw Poco::Net::NotAuthenticatedException("Invalid admin login");
-                    auto apiHandler = apilist.find(moduleName)->second();
-                    std::size_t target_pos = request.getURI().find(moduleName);
-                    std::string targetFile = request.getURI().substr(target_pos + moduleName.size() + 1);
-                    std::string filePath = apiHandler->getHTMLFile(targetFile);
-                    HttpHelper::sendFileAndShutdown(socket, filePath, mimeType, &response, noCache);
-                    return;
-                }
-            }
 
             auto it = request.find("If-None-Match");
             if (it != request.end())
@@ -1071,30 +1030,6 @@ void FileServerRequestHandler::preprocessAdminFile(const HTTPRequest& request,
     if (!FileServerRequestHandler::isAdminLoggedIn(request, response))
         throw Poco::Net::NotAuthenticatedException("Invalid admin login");
 
-    Poco::Net::HTMLForm form(request);
-    Poco::URI requestUri(request.getURI());
-    std::vector<std::string> requestSegments;
-    requestUri.getPathSegments(requestSegments);
-    std::string moduleName = "";
-    std::string admin_content = "";
-    auto dso = apilist.find(requestDetails[3]);
-    if(dso != apilist.end())
-    {
-        moduleName = requestDetails[3];
-        auto apiHandler = dso->second();
-        const std::string endPoint = "admin.html";
-        std::cout << "admin endpoint: " <<endPoint <<std::endl;
-        std::string admin_file = apiHandler->getHTMLFile(endPoint);
-        std::ifstream file(admin_file, std::ios::binary);
-        std::string file_content((std::istreambuf_iterator<char>(file)),
-                std::istreambuf_iterator<char>());
-        if (admin_file == "")
-        {
-            file_content = "<h1> 請聯絡原廠～謝謝 </h1>";
-        }
-        admin_content = file_content;
-    }
-
     ServerURL cnxDetails(requestDetails);
     std::string responseRoot = cnxDetails.getResponseRoot();
 
@@ -1103,13 +1038,7 @@ void FileServerRequestHandler::preprocessAdminFile(const HTTPRequest& request,
 
     const std::string relPath = getRequestPathname(request);
     LOG_DBG("Preprocessing file: " << relPath);
-    std::string adminFile = "";
-    if (apilist.find(moduleName) != apilist.end())
-    {
-        adminFile = admin_content;
-    }
-    else
-        adminFile = *getUncompressedFile(relPath);
+    std::string adminFile = *getUncompressedFile(relPath);
     std::vector<std::string> templatePath_vec = Util::splitStringToVector(relPath, '/');
     std::string templatePath = "";
     for (unsigned int i = 0; i < templatePath_vec.size() - 1; i++)

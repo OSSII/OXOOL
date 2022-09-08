@@ -94,7 +94,6 @@ using Poco::Net::PartHandler;
 #include <Poco/Path.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/StreamCopier.h>
-#include <Poco/StringTokenizer.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/URI.h>
 #include <Poco/Zip/Decompress.h>
@@ -158,9 +157,6 @@ using Poco::Net::PartHandler;
 #include "OssiiProduct.hpp"
 #endif
 
-#include <src/include/oxoolmodule.h>
-std::map<std::string, maker_t *, std::less<std::string> > apilist;
-
 using namespace LOOLProtocol;
 
 using Poco::DirectoryIterator;
@@ -172,7 +168,6 @@ using Poco::Net::MessageHeader;
 using Poco::Net::NameValueCollection;
 using Poco::Path;
 using Poco::StreamCopier;
-using Poco::StringTokenizer;
 using Poco::TemporaryFile;
 using Poco::URI;
 using Poco::Util::Application;
@@ -2544,9 +2539,6 @@ private:
             // re-write ServiceRoot and cache.
             RequestDetails requestDetails(request, LOOLWSD::ServiceRoot);
             // LOG_TRC("Request details " << requestDetails.toString());
-            Poco::URI requestUri(request.getURI());
-            std::vector<std::string> reqPathSegs;
-            requestUri.getPathSegments(reqPathSegs);
 
             // Config & security ...
             if (requestDetails.isProxy())
@@ -2659,29 +2651,10 @@ private:
 //              Util::dumpHex(std::cerr, "clipboard:\n", "", socket->getInBuffer()); // lots of data ...
                 handleClipboardRequest(request, message, disposition, socket);
             }
+
             else if (requestDetails.isProxy() && requestDetails.equals(2, "ws"))
                 handleClientProxyRequest(request, requestDetails, message, disposition);
 
-            // module api
-            else if (requestDetails.equals(RequestDetails::Field::Type, "lool")
-                    && apilist.find(reqPathSegs[1]) != apilist.end())
-            {
-                std::cout << "API : " << reqPathSegs[1] << "\n";
-                std::cout << "[LOOLWSD] DocBrokers map address : " << &DocBrokers << "\n";
-                std::cout << "[LOOLWSD] DocBrokersMutex address : " << &DocBrokersMutex << "\n";
-                auto dso = apilist.find(reqPathSegs[1]);
-                if(dso != apilist.end())
-                {
-                    std::string pdecoded;
-                    Poco::URI::decode(request.getURI(), pdecoded);
-                    request.setURI(pdecoded);
-                    RequestDetails modulerequestDetails(request, "");
-                    oxoolmodule *apiHandler = dso->second();
-                    apiHandler->setMutex(&DocBrokersMutex, DocBrokers, _id);
-                    apiHandler->handleRequest(_socket, message, request, disposition, modulerequestDetails);
-                    _module_exit_application = apiHandler->exit_application;
-                }
-            }
             else if (requestDetails.equals(RequestDetails::Field::Type, "lool") &&
                      requestDetails.equals(2, "ws") && requestDetails.isWebSocket())
                 handleClientWsUpgrade(request, requestDetails, disposition, socket);
@@ -2693,38 +2666,18 @@ private:
             }
             else
             {
-                StringTokenizer reqPathTokens(request.getURI(), "/?", StringTokenizer::TOK_IGNORE_EMPTY | StringTokenizer::TOK_TRIM);
-                if (!(request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0) &&
-                    reqPathTokens.count() > 0 && reqPathTokens[0] == "lool")
-                {
-                    std::cout << "else  handlePostRequest " << "\n";
-                    // All post requests have url prefix 'lool'.
-                    handlePostRequest(requestDetails, request, message, disposition, socket);
-                }
-                else if (reqPathTokens.count() > 2 && reqPathTokens[0] == "lool" && reqPathTokens[2] == "ws" &&
-                         request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
-                {
-                    std::cout << "else  handleClientWsUpgrade " << "\n";
-                    std::string decodedUri;
-                    Poco::URI::decode(reqPathTokens[1], decodedUri);
-                    handleClientWsUpgrade(request, requestDetails, disposition, socket);
-                }
-                else
-                {
-                    std::cout << "else  Unknown resource" << "\n";
-                    LOG_ERR("Unknown resource: " << requestDetails.toString());
+                LOG_ERR("Unknown resource: " << requestDetails.toString());
 
-                    // Bad request.
-                    std::ostringstream oss;
-                    oss << "HTTP/1.1 400\r\n"
-                        "Date: " << Util::getHttpTimeNow() << "\r\n"
-                        "User-Agent: " WOPI_AGENT_STRING "\r\n"
-                        "Content-Length: 0\r\n"
-                        "\r\n";
-                    socket->send(oss.str());
-                    socket->shutdown();
-                    return;
-                }
+                // Bad request.
+                std::ostringstream oss;
+                oss << "HTTP/1.1 400\r\n"
+                    "Date: " << Util::getHttpTimeNow() << "\r\n"
+                    "User-Agent: " WOPI_AGENT_STRING "\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n";
+                socket->send(oss.str());
+                socket->shutdown();
+                return;
             }
         }
         catch (const std::exception& exc)
@@ -2792,17 +2745,6 @@ private:
 
     void performWrites() override
     {
-    }
-
-    void onDisconnect() override
-    {
-        if (_module_exit_application)
-        {
-            std::cout << "close fork process" << std::endl;
-            auto socket = _socket.lock();
-            socket->closeConnection();
-            _exit(Application::EXIT_SOFTWARE);
-        }
     }
 
 #if !MOBILEAPP
@@ -3869,9 +3811,6 @@ private:
 
     /// Cache for static files, to avoid reading and processing from disk.
     static std::map<std::string, std::string> StaticFileContentCache;
-
-    /// This is for module application exit the fork process
-    bool _module_exit_application = false;
 };
 
 std::map<std::string, std::string> ClientRequestDispatcher::StaticFileContentCache;
@@ -4472,47 +4411,12 @@ void LOOLWSD::cleanup()
     DocBrokers.clear();
 }
 
-// OXOOLMODULE Init
-#include <Poco/Glob.h>
-#include <dlfcn.h>
-#include <string>
-#include <set>
-void initModule(){
-#if ENABLE_DEBUG
-    std::string modDir = "./*.so";
-#else
-    std::string modDir = "/usr/lib64/oxool/*.so";
-#endif
-
-    std::set<std::string> files;
-    Poco::Glob::glob(modDir, files);
-
-    std::cout << "[Module list] -- " << modDir << std::endl;
-    for (auto it = files.begin() ; it != files.end(); ++ it)
-    {
-        auto afile = *it;
-        auto libpath = std::string(Poco::Path(afile).toString());
-#if ENABLE_DEBUG
-        libpath = "./" + libpath;
-#endif
-        std::cout << libpath <<"\n";
-        void *handle;
-        handle = dlopen(libpath.c_str(), RTLD_NOW);
-        if(!handle)
-        {
-            std::cout << "Error Loading : " << dlerror() << std::endl;
-        }
-    }
-    std::cout << std::endl;
-}
-
 int LOOLWSD::main(const std::vector<std::string>& /*args*/)
 {
 #if MOBILEAPP && !defined IOS
     SigUtil::resetTerminationFlag();
 #endif
 
-    initModule();
     int returnValue;
 
     try {

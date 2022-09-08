@@ -46,7 +46,6 @@
 
 #include <common/SigUtil.hpp>
 
-#include <src/include/oxoolmodule.h>
 using namespace LOOLProtocol;
 
 using Poco::Net::HTTPResponse;
@@ -1199,20 +1198,6 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         {
             Poco::File(caFile).moveTo(caFile + ".bak"); // 原檔改為副檔名 .bak
             Poco::File(caFile + ".new").moveTo(caFile); // 新檔改為原檔名
-        }
-    }
-    else if (tokens.equals(0, "module"))
-    {
-        std::string moduleName = tokens[1];
-        if (apilist.find(moduleName) != apilist.end())
-        {
-            auto apiHandler = apilist.find(moduleName)->second();
-            std::string result = apiHandler->handleAdmin(firstLine);
-            sendTextFrame(result);
-        }
-        else
-        {
-            sendTextFrame("No such module");
         }
     }
     else
