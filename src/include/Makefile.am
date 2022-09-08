@@ -1,7 +1,10 @@
 
 
-oxool_includedir = $(includedir)/oxool
+OxOOL_includedir = $(includedir)/OxOOL
+OxOOL_include_HEADERS = \
+	OxOOL/ENV.h
 
-oxool_include_HEADERS = \
-		oxoolmodule.h
+OxOOL_Module_includedir = $(includedir)/OxOOL/Module
+OxOOL_Module_include_HEADERS = \
+	OxOOL/Module/Base.h
 

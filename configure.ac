@@ -1286,7 +1286,7 @@ AC_CONFIG_FILES([Makefile
                  loleaflet/Makefile
                  loleaflet/npm-shrinkwrap.json
                  extensions/Makefile
-                 bundled/include/LibreOfficeKit/Makefile
+                 src/Makefile
                  src/include/Makefile
                  src/lib/Makefile
                  fonts/Makefile

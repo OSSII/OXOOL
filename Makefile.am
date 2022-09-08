@@ -12,7 +12,7 @@ endif
 
 else
 
-SUBDIRS = . loleaflet bundled/include/LibreOfficeKit src/include src/lib extensions fonts support
+SUBDIRS = src . loleaflet extensions fonts support
 
 export ENABLE_DEBUG
 
