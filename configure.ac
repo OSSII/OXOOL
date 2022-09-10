@@ -654,7 +654,7 @@ AC_DEFINE_UNQUOTED([CORE_VERSION_HASH],[["$CORE_VERSION_HASH"]],[OxOffice core g
 LIBPNG_INCLUDES="$with_libpng_includes"
 LIBPNG_LIBS="$with_libpng_libs"
 
-LOKIT_PATH="bundled/include"
+LOKIT_PATH="`/bin/pwd`/bundled/include"
 if test -z $with_lokit_path; then
     with_lokit_path="$LOKIT_PATH"
 fi
