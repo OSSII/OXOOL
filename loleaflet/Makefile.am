@@ -665,7 +665,8 @@ $(DIST_FOLDER)/admin/%: $(srcdir)/admin/%
 
 install-data-hook:
 	mkdir -p $(DESTDIR)$(pkgdatadir)/loleaflet; \
-	cp -a dist/ $(DESTDIR)$(pkgdatadir)/loleaflet/;
+	cp -a dist/ $(DESTDIR)$(pkgdatadir)/loleaflet/; \
+	rm -fr $(DESTDIR)$(pkgdatadir)/loleaflet/dist/src;
 
 libs:
 	@mkdir -p $(abs_srcdir)/libs
