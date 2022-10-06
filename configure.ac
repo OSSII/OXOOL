@@ -1188,17 +1188,22 @@ AS_IF([test -n "$with_compiler_plugins"],
 LOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(LOOLWSD_CONFIGDIR)
 
-LOOLWSD_MODULES_DIR=${libdir}/${PACKAGE}
-AC_SUBST(LOOLWSD_MODULES_DIR)
-
-LOOLWSD_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
-AC_SUBST(LOOLWSD_MODULE_CONFIG_DIR)
-
-LOOLWSD_MODULE_DATA_DIR=/var/lib/${PACKAGE}
-AC_SUBST(LOOLWSD_MODULE_DATA_DIR)
-
 LOOLWSD_DATADIR=${prefix}/share/${PACKAGE}
 AC_SUBST(LOOLWSD_DATADIR)
+
+if test "$enable_debug" = "yes"; then
+modules_dir="`pwd`/src/modules"
+LOOLWSD_MODULE_DIR="${modules_dir}"
+LOOLWSD_MODULE_CONFIG_DIR="${modules_dir}"
+LOOLWSD_MODULE_DATA_DIR="${modules_dir}"
+else
+LOOLWSD_MODULE_DIR=${libdir}/${PACKAGE}
+LOOLWSD_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
+LOOLWSD_MODULE_DATA_DIR=${prefix}/share/${PACKAGE}/modules
+fi
+AC_SUBST(LOOLWSD_MODULE_DIR)
+AC_SUBST(LOOLWSD_MODULE_CONFIG_DIR)
+AC_SUBST(LOOLWSD_MODULE_DATA_DIR)
 
 AM_CONDITIONAL([ENABLE_SETCAP], [test "$enable_setcap" != "no"])
 
@@ -1281,14 +1286,27 @@ else
 fi
 AM_CONDITIONAL([ENABLE_CYPRESS], [$ENABLE_CYPRESS])
 
+
+# The src directory is the OxOOL common object and development kit,
+# Search all Makefile.am and *.in files under it,
+# Avoid recording one by one.
+AC_CONFIG_FILES(m4_esyscmd_s([
+find src/ -type f -name "Makefile.am" -or -name "OxOOL.h.in" |
+while read file
+do
+    DIRNAME=`dirname "$file"`
+    FILENAME=$(basename -- "$file")
+    EXTENSION="${FILENAME##*.}"
+    FILENAME="${FILENAME%.*}"
+    echo "${DIRNAME}/${FILENAME}"
+done
+                            ]))
+
 AC_CONFIG_FILES([Makefile
                  gtk/Makefile
                  loleaflet/Makefile
                  loleaflet/npm-shrinkwrap.json
                  extensions/Makefile
-                 src/Makefile
-                 src/include/Makefile
-                 src/lib/Makefile
                  fonts/Makefile
                  fonts/00-oxool.conf
                  support/Makefile
