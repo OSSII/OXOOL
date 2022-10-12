@@ -174,6 +174,11 @@ L.Control.AlternativeCommand = L.Control.extend({
 		'.uno:Zoom100Percent': function() {
 			this._map.setZoom(this._map.options.zoom, null, true);
 		},
+		'.uno:ShapesMenu': function() {
+			if (window.mode.isMobile()) {
+				this._map.menubar._openInsertShapesWizard();
+			}
+		},
 		/**
 		 * 插入電腦(本地)圖片
 		 */
@@ -359,6 +364,12 @@ L.Control.AlternativeCommand = L.Control.extend({
 			} else {
 				this._map.uiManager.onChangeUIMode({mode: 'notebookbar', force: true});
 			}
+		},
+		/**
+		 * 插入雲端圖片
+		 */
+		'insertgraphicremote': function() {
+			this._map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
 		},
 		/**
 		 * 顯示線上說明
