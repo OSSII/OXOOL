@@ -364,6 +364,12 @@ L.Map.include({
 		// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
 		command = encodeURI(command);
 
+		if (command.startsWith('.uno:Sidebar') || command.startsWith('.uno:SlideMasterPage') ||
+			command.startsWith('.uno:ModifyPage') || command.startsWith('.uno:SlideChangeWindow') ||
+			command.startsWith('.uno:CustomAnimation') || command.startsWith('.uno:MasterSlidesPanel')) {
+			window.initSidebarState = true;
+		}
+
 		// To exercise the Trace Event functionality, uncomment this
 		// app.socket.emitInstantTraceEvent('oxool-unocommand:' + command);
 

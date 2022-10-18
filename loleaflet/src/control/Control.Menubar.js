@@ -1366,12 +1366,6 @@ L.Control.Menubar = L.Control.extend({
 						return;
 					}
 
-					if (id.startsWith('.uno:Sidebar') || id.startsWith('.uno:SlideMasterPage') ||
-						id.startsWith('.uno:ModifyPage') || id.startsWith('.uno:SlideChangeWindow') ||
-						id.startsWith('.uno:CustomAnimation') || id.startsWith('.uno:MasterSlidesPanel')) {
-						window.initSidebarState = true;
-					}
-
 					if (!self._map.executeAllowedCommand(id)) {
 						self._executeAction(undefined, {id: id});
 					}
