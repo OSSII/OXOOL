@@ -364,9 +364,13 @@ L.Map.include({
 		// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
 		command = encodeURI(command);
 
-		if (command.startsWith('.uno:Sidebar') || command.startsWith('.uno:SlideMasterPage') ||
+		if ((command.startsWith('.uno:Sidebar') && !command.startsWith('.uno:SidebarShow')) ||
+			command.startsWith('.uno:SlideMasterPage') ||
 			command.startsWith('.uno:ModifyPage') || command.startsWith('.uno:SlideChangeWindow') ||
 			command.startsWith('.uno:CustomAnimation') || command.startsWith('.uno:MasterSlidesPanel')) {
+			if (!this.uiManager.getSavedStateOrDefault('ShowSidebar', false))
+				this.sendUnoCommand('.uno:SidebarShow');
+
 			window.initSidebarState = true;
 		}
 
