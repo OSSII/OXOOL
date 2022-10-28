@@ -25,7 +25,7 @@ var AdminSocketSSLCertManager = AdminSocketBase.extend({
 
 	_file: null, // 準備上傳的檔案資訊
 	_type: '', // 準備上傳的檔案類別(cert:數位憑證, key:私鑰, ca:CA 憑證)
-	_privateKeyPasswor: '', // 私鑰密碼
+	_privateKeyPassword: '', // 私鑰密碼
 
 	// 上傳檔案
 	_uploadFile: function() {
