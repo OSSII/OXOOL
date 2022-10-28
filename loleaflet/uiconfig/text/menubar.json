@@ -132,8 +132,7 @@
 					},
 					{
 						"id": ".uno:PasteSpecial",
-						"hotkey": "Ctrl+Shift-V",
-						"hide": true
+						"hotkey": "Ctrl+Shift+V"
 					}
 				]
 			},
