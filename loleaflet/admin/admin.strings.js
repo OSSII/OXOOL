@@ -128,10 +128,6 @@ var l10nstrings = {
 		_('System configuration'), // 系統配置設定
 		_('Software upgrade'), // 軟體升級
 		_('Font manager'), // 字型管理
-		_('Table conversion'), // 表格轉試算表
-		_('Template Repo'), // 範本中心
-		_('ODF report template'), // ODF 報表管理
-		_('Module list'), // 模組列表
 	],
 };
 
