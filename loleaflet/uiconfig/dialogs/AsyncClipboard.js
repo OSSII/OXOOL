@@ -225,13 +225,6 @@ L.dialog.AsyncClipboard = {
 	 * @param {string} specialPasteCmd - 特殊貼上指令，如:.uno:PasteUnformatted
 	 */
 	pasteFromOutside: async function(specialPasteCmd) {
-		if (document.execCommand('paste')) {
-			console.debug('document.execCommand("paste") sucess.');
-			return;
-		} else {
-			console.debug('document.execCommand("paste") failure.\nTry async clipboard-read api.');
-		}
-
 		let that = this;
 		try {
 			const clipboardItems = await navigator.clipboard.read();
