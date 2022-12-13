@@ -175,11 +175,6 @@ L.dialog.AsyncClipboard = {
 		// granted - 已由使用者授權
 		// denied - 被使用者封鎖
 		//return this._clipboardState.read !== 'denied';
-
-		// 手機的話就走原來的貼上流程
-		if (window.mode.isMobile())
-			return false;
-
 		return true;
 	},
 
