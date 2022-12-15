@@ -1057,6 +1057,9 @@ void LOOLWSD::initialize(Application& self)
     // Allow UT to manipulate before using configuration values.
     UnitWSD::get().configure(config());
 
+    // Experimental features.
+    EnableExperimental = getConfigValue<bool>(conf, "experimental_features", false);
+
     // Setup user interface mode
     UserInterface = getConfigValue<std::string>(conf, "user_interface.mode", "classic");
 
@@ -1144,7 +1147,8 @@ void LOOLWSD::initialize(Application& self)
     }
 
     ServerName = config().getString("server_name");
-    LOG_INF("Initializing oxoolwsd server [" << ServerName << "].");
+    LOG_INF("Initializing oxoolwsd server [" << ServerName << "]. Experimental features are "
+                                             << (EnableExperimental ? "enabled." : "disabled."));
 
     ClientPortNumber = config().getUInt("client_port_number", DEFAULT_CLIENT_PORT_NUMBER);
     LOG_INF("Initializing oxoolwsd client port : " << ClientPortNumber);

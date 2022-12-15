@@ -353,6 +353,10 @@ AC_ARG_ENABLE([cypress],
             AS_HELP_STRING([--enable-cypress],
                            [Enable cypress tests.]))
 
+AC_ARG_ENABLE([experimental],
+              AS_HELP_STRING([--enable-experimental],
+                             [Enable experimental features and behavior]))
+
 # Handle options
 AS_IF([test "$enable_debug" = yes -a -n "$with_poco_libs"],
       [POCO_DEBUG_SUFFIX=d],
@@ -369,6 +373,8 @@ LOOLWSD_ANONYMIZE_USER_DATA=false
 LOLEAFLET_LOGGING="false"
 debug_msg="secure mode: product build"
 anonym_msg=""
+ENABLE_EXPERIMENTAL=false
+experimental_msg="disabled by default"
 if test "$enable_debug" = "yes"; then
    AC_DEFINE([ENABLE_DEBUG],1,[Whether to compile in some extra debugging support code and disable some security pieces])
    ENABLE_DEBUG=true
@@ -455,6 +461,12 @@ AC_SUBST(LOOLWSD_ANONYMIZE_USER_DATA)
 if test -z "$anonym_msg";  then
   anonym_msg="anonymization of user-data is disabled"
 fi
+
+if test "$enable_experimental" = "yes" ; then
+  ENABLE_EXPERIMENTAL=true
+  experimental_msg="enabled by default"
+fi
+AC_SUBST(ENABLE_EXPERIMENTAL)
 
 # macOS: When configuring for building the app itself, on macOS, we need these.
 # But not when just configuring for building the JS on Linux, for copying over
@@ -1394,6 +1406,7 @@ Configuration:
     LO integration tests    ${lo_msg}
     SSL support             $ssl_msg
     Debug & low security    $debug_msg
+    Experimental features   $experimental_msg
     Anonymization           $anonym_msg
     Set capabilities        $setcap_msg
     Browsersync             $browsersync_msg
