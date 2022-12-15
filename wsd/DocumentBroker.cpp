@@ -302,7 +302,7 @@ void DocumentBroker::pollThread()
     auto lastClipboardHashUpdateTime = std::chrono::steady_clock::now();
 
     const int limit_load_secs =
-#ifdef ENABLE_DEBUG
+#if ENABLE_DEBUG
         // paused waiting for a debugger to attach
         // ignore load time out
         std::getenv("PAUSEFORDEBUGGER") ? -1 :
@@ -1047,7 +1047,8 @@ bool DocumentBroker::load(const std::shared_ptr<ClientSession>& session, const s
         dontUseCache = true;
 #endif
 
-        _tileCache.reset(new TileCache(_storage->getUriString(), _lastFileModifiedTime, dontUseCache));
+        _tileCache = Util::make_unique<TileCache>(_storage->getUri().toString(),
+                                                  _lastFileModifiedTime, dontUseCache);
         _tileCache->setThreadOwner(std::this_thread::get_id());
     }
 
@@ -1798,7 +1799,7 @@ void DocumentBroker::finalRemoveSession(const std::string& id)
                 for (const auto& pair : _sessions)
                     logger << pair.second->getId() << ' ';
 
-                LOG_END(logger, true);
+                LOG_END(logger);
             }
 
             return;
@@ -1956,11 +1957,14 @@ size_t DocumentBroker::getMemorySize() const
 }
 
 // Expected to be legacy, ~all new requests are tilecombinedRequests
-void DocumentBroker::handleTileRequest(TileDesc& tile,
+void DocumentBroker::handleTileRequest(const StringVector &tokens,
                                        const std::shared_ptr<ClientSession>& session)
 {
     assertCorrectThread();
     std::unique_lock<std::mutex> lock(_mutex);
+
+    TileDesc tile = TileDesc::parse(tokens);
+    tile.setNormalizedViewId(session->getCanonicalViewId());
 
     tile.setVersion(++_tileVersion);
     const std::string tileMsg = tile.serialize();
@@ -1986,7 +1990,10 @@ void DocumentBroker::handleTileRequest(TileDesc& tile,
         for (auto& it: _sessions)
         {
             if (!it.second->inWaitDisconnected())
+            {
+                tile.setNormalizedViewId(it.second->getCanonicalViewId());
                 tileCache().subscribeToTileRendering(tile, it.second, now);
+            }
         }
     }
     else
@@ -2008,19 +2015,26 @@ void DocumentBroker::handleTileCombinedRequest(TileCombined& tileCombined,
     std::unique_lock<std::mutex> lock(_mutex);
 
     LOG_TRC("TileCombined request for " << tileCombined.serialize());
+    if (!hasTileCache())
+    {
+        LOG_WRN("Combined tile request without a loaded document?");
+        return;
+    }
 
     // Check which newly requested tiles need rendering.
+    const auto now = std::chrono::steady_clock::now();
     std::vector<TileDesc> tilesNeedsRendering;
     for (auto& tile : tileCombined.getTiles())
     {
         tile.setVersion(++_tileVersion);
+
         TileCache::Tile cachedTile = _tileCache->lookupTile(tile);
         if(!cachedTile)
         {
             // Not cached, needs rendering.
             tilesNeedsRendering.push_back(tile);
             _debugRenderedTileCount++;
-            tileCache().registerTileBeingRendered(tile);
+            tileCache().subscribeToTileRendering(tile, session, now);
         }
     }
 
