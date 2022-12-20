@@ -134,7 +134,6 @@ using Poco::Net::PartHandler;
 #include "Storage.hpp"
 #include "TraceFile.hpp"
 #include <Unit.hpp>
-#include <UnitHTTP.hpp>
 #include "UserMessages.hpp"
 #include <Util.hpp>
 
@@ -214,7 +213,7 @@ static std::mutex DocBrokersMutex;
 extern "C" { void dump_state(void); /* easy for gdb */ }
 
 #if ENABLE_DEBUG
-static int careerSpanMs = 0;
+static std::chrono::milliseconds careerSpanMs(std::chrono::milliseconds::zero());
 #endif
 
 /// The timeout for a child to spawn, initially high, then reset to the default.
@@ -1597,11 +1596,15 @@ void LOOLWSD::initializeSSL()
     LOG_INF("SSL Cipher list: " << ssl_cipher_list);
 
     // Initialize the non-blocking socket SSL.
-    SslContext::initialize(ssl_cert_file_path,
-                           ssl_key_file_path,
-                           ssl_ca_file_path,
-                           ssl_cipher_list,
-                           LOOLWSD::SSLPrivateKeyPassword);
+    ssl::Manager::initializeServerContext(ssl_cert_file_path, ssl_key_file_path, ssl_ca_file_path,
+                                          ssl_cipher_list, ssl::CertificateVerification::Disabled);
+
+    if (!ssl::Manager::isServerContextInitialized())
+        LOG_ERR("Failed to initialize Server SSL.");
+    else
+        LOG_INF("Initialized Server SSL.");
+#else
+    LOG_INF("SSL is unavailable in this build.");
 #endif
 }
 
@@ -1787,7 +1790,7 @@ void LOOLWSD::handleOption(const std::string& optionName,
     else if (optionName == "unitlib")
         UnitTestLibrary = value;
     else if (optionName == "careerspan")
-        careerSpanMs = std::stoi(value) * 1000; // Convert second to ms
+        careerSpanMs = std::chrono::seconds(std::stoi(value)); // Convert second to ms
     else if (optionName == "singlekit")
     {
         SingleKit = true;
@@ -2207,6 +2210,7 @@ class PrisonerRequestDispatcher : public WebSocketHandler
     std::weak_ptr<ChildProcess> _childProcess;
 public:
     PrisonerRequestDispatcher()
+        : WebSocketHandler(/* isClient = */ false, /* isMasking = */ true)
     {
     }
     ~PrisonerRequestDispatcher()
@@ -2387,9 +2391,7 @@ private:
         return POLLIN;
     }
 
-    void performWrites() override
-    {
-    }
+    void performWrites(std::size_t /*capacity*/) override {}
 };
 
 #if !MOBILEAPP
@@ -2636,10 +2638,7 @@ private:
                 catch (const Poco::Net::NotAuthenticatedException& exc)
                 {
                     //LOG_ERR("FileServerRequestHandler::NotAuthenticated: " << exc.displayText());
-                    Poco::Net::HTTPResponse httpResponse;
-                    Poco::Net::HTTPResponse::HTTPStatus statusCode = Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED;
-                    httpResponse.setStatus(statusCode);
-                    httpResponse.setReason(Poco::Net::HTTPResponse::getReasonForStatus(statusCode));
+                    http::Response httpResponse(http::StatusLine(401));
                     httpResponse.set("Content-Type", "text/html charset=UTF-8");
                     httpResponse.set("WWW-authenticate", "Basic realm=\"online\"");
                     socket->sendAndShutdown(httpResponse);
@@ -2716,10 +2715,7 @@ private:
 
             // Bad request.
             // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
-            Poco::Net::HTTPResponse httpResponse;
-            Poco::Net::HTTPResponse::HTTPStatus statusCode = Poco::Net::HTTPResponse::HTTP_BAD_REQUEST;
-            httpResponse.setStatus(statusCode);
-            httpResponse.setReason(Poco::Net::HTTPResponse::getReasonForStatus(statusCode));
+            http::Response httpResponse(http::StatusLine(400));
             httpResponse.set("Content-Length", "0");
             socket->sendAndShutdown(httpResponse);
             socket->ignoreInput();
@@ -2771,9 +2767,7 @@ private:
         return POLLIN;
     }
 
-    void performWrites() override
-    {
-    }
+    void performWrites(std::size_t /*capacity*/) override {}
 
 #if !MOBILEAPP
     void handleRootRequest(const RequestDetails& requestDetails,
@@ -3419,7 +3413,7 @@ private:
         LOG_TRC("Client WS request: " << requestDetails.getURI() << ", url: " << url << ", socket #" << socket->getFD());
 
         // First Upgrade.
-        auto ws = std::make_shared<WebSocketHandler>(_socket, request);
+        auto ws = std::make_shared<WebSocketHandler>(socket, request);
 
         // Response to clients beyond this point is done via WebSocket.
         try
@@ -3712,11 +3706,8 @@ class PlainSocketFactory final : public SocketFactory
         if (SimulatedLatencyMs > 0)
             fd = Delay::create(SimulatedLatencyMs, physicalFd);
 #endif
-        std::shared_ptr<Socket> socket =
-            StreamSocket::create<StreamSocket>(
-                fd, false, std::make_shared<ClientRequestDispatcher>());
-
-        return socket;
+        return StreamSocket::create<StreamSocket>(std::string(), fd, false,
+                                                  std::make_shared<ClientRequestDispatcher>());
     }
 };
 
@@ -3732,8 +3723,8 @@ class SslSocketFactory final : public SocketFactory
             fd = Delay::create(SimulatedLatencyMs, physicalFd);
 #endif
 
-        return StreamSocket::create<SslStreamSocket>(
-            fd, false, std::make_shared<ClientRequestDispatcher>());
+        return StreamSocket::create<SslStreamSocket>(std::string(), fd, false,
+                                                     std::make_shared<ClientRequestDispatcher>());
     }
 };
 #endif
@@ -3743,7 +3734,8 @@ class PrisonerSocketFactory final : public SocketFactory
     std::shared_ptr<Socket> create(const int fd) override
     {
         // No local delay.
-        return StreamSocket::create<StreamSocket>(fd, false, std::make_shared<PrisonerRequestDispatcher>(),
+        return StreamSocket::create<StreamSocket>(std::string(), fd, false,
+                                                  std::make_shared<PrisonerRequestDispatcher>(),
                                                   StreamSocket::ReadType::UseRecvmsgExpectFD);
     }
 };
@@ -4153,23 +4145,22 @@ int LOOLWSD::innerMain()
         UnitWSD::get().invokeTest();
 
         // This timeout affects the recovery time of prespawned children.
-        const long waitMicroS = UnitWSD::isUnitTesting() ?
-            static_cast<long>(UnitWSD::get().getTimeoutMilliSeconds()) * 1000 / 4 :
-            SocketPoll::DefaultPollTimeoutMicroS * 4;
+        std::chrono::microseconds waitMicroS = SocketPoll::DefaultPollTimeoutMicroS * 4;
         mainWait.poll(waitMicroS);
 
         // Wake the prisoner poll to spawn some children, if necessary.
         PrisonerPoll.wakeup();
 
-        const std::chrono::milliseconds::rep timeSinceStartMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                            std::chrono::steady_clock::now() - startStamp).count();
+        const auto timeNow = std::chrono::steady_clock::now();
+        const std::chrono::milliseconds timeSinceStartMs
+            = std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - startStamp);
 
         // Unit test timeout
         if (timeSinceStartMs > UnitWSD::get().getTimeoutMilliSeconds())
             UnitWSD::get().timeout();
 
 #if ENABLE_DEBUG && !MOBILEAPP
-        if (careerSpanMs > 0 && timeSinceStartMs > careerSpanMs)
+        if (careerSpanMs > std::chrono::milliseconds::zero() && timeSinceStartMs > careerSpanMs)
         {
             LOG_INF(timeSinceStartMs << " milliseconds gone, finishing as requested. Setting ShutdownRequestFlag.");
             SigUtil::requestShutdown();
@@ -4288,7 +4279,8 @@ void LOOLWSD::cleanup()
     {
         Poco::Net::uninitializeSSL();
         Poco::Crypto::uninitializeCrypto();
-        SslContext::uninitialize();
+        ssl::Manager::uninitializeClientContext();
+        ssl::Manager::uninitializeServerContext();
     }
 #endif
 #endif
@@ -4328,18 +4320,6 @@ int LOOLWSD::main(const std::vector<std::string>& /*args*/)
 }
 
 #if !MOBILEAPP
-
-void UnitWSD::testHandleRequest(TestRequest type, UnitHTTPServerRequest& /* request */, UnitHTTPServerResponse& /* response */)
-{
-    switch (type)
-    {
-    case TestRequest::Client:
-        break;
-    default:
-        assert(false);
-        break;
-    }
-}
 
 std::vector<std::shared_ptr<DocumentBroker>> LOOLWSD::getBrokersTestOnly()
 {

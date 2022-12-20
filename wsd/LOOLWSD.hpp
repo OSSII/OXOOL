@@ -190,7 +190,7 @@ class ForKitProcWSHandler: public WebSocketHandler
 public:
 
     ForKitProcWSHandler(const std::weak_ptr<StreamSocket>& socket, const Poco::Net::HTTPRequest& request)
-    : WebSocketHandler(socket, request)
+    : WebSocketHandler(socket.lock(), request)
     {
     }
 
