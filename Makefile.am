@@ -263,8 +263,7 @@ wsd_headers = wsd/Admin.hpp \
               wsd/TileDesc.hpp \
               wsd/TraceFile.hpp \
               wsd/UserMessages.hpp \
-              wsd/HostUtil.hpp \
-              wsd/OxOOLPrivateKeyHandler.hpp
+              wsd/HostUtil.hpp
 
 if ENABLE_OSSII_PRODUCT
 wsd_headers += wsd/OssiiProduct.hpp
