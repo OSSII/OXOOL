@@ -113,7 +113,6 @@ shared_sources = common/FileUtil.cpp \
                  common/MessageQueue.cpp \
                  common/MobileApp.cpp \
                  common/TraceEvent.cpp \
-		 common/DummyTraceEventEmitter.cpp \
                  common/SigUtil.cpp \
                  common/SpookyV2.cpp \
                  common/Unit.cpp \
@@ -237,12 +236,14 @@ oxoolconvert_SOURCES = tools/Tool.cpp
 #		     common/Util.cpp
 
 oxoolconfig_SOURCES = tools/Config.cpp \
+             common/DummyTraceEventEmitter.cpp \
 		     common/Crypto.cpp \
 		     common/Log.cpp \
 		     common/StringVector.cpp \
 		     common/Util.cpp
 
 #oxoolsocketdump_SOURCES = tools/WebSocketDump.cpp \
+#             common/DummyTraceEventEmitter.cpp \
 #			 $(shared_sources)
 
 wsd_headers = wsd/Admin.hpp \
