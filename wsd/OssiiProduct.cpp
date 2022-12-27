@@ -153,7 +153,7 @@ void OssiiProduct::handleRequest(const Poco::Net::HTTPRequest& request,
         // Bad request.
         oss << "HTTP/1.1 400\r\n"
             "Date: " << Util::getHttpTimeNow() << "\r\n"
-            "User-Agent: " WOPI_AGENT_STRING "\r\n"
+            "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
             "Content-Length: 0\r\n"
             "\r\n";
         socket->send(oss.str());
