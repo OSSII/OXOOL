@@ -120,7 +120,6 @@ shared_sources = common/FileUtil.cpp \
                  common/Common.cpp \
                  common/ConfigUtil.cpp \
                  common/Authorization.cpp \
-                 common/CommandControl.cpp \
                  net/DelaySocket.cpp \
                  net/HttpRequest.cpp \
                  net/HttpHelper.cpp \
@@ -298,7 +297,6 @@ shared_headers = common/Common.hpp \
                  common/SigUtil.hpp \
                  common/security.h \
                  common/SpookyV2.h \
-                 common/CommandControl.hpp \
                  net/Buffer.hpp \
                  net/DelaySocket.hpp \
                  net/FakeSocket.hpp \
