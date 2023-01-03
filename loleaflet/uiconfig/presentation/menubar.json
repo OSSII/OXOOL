@@ -1591,6 +1591,12 @@
 			{
 				"id": ".uno:PresentationMinimizer",
 				"hide": true
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:RunMacro"
 			}
 		]
 	},

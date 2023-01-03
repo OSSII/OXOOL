@@ -1929,6 +1929,12 @@
 						"id": ".uno:UpdateCharts"
 					}
 				]
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:RunMacro"
 			}
 		]
 	},

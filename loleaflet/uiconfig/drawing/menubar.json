@@ -328,6 +328,12 @@
 						"id": ".uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE"
 					}
 				]
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:RunMacro"
 			}
 		]
 	},

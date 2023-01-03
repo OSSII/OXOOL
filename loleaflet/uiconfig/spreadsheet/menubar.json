@@ -1840,6 +1840,12 @@
 			},
 			{
 				"id": ".uno:ToolProtectionDocument"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:RunMacro"
 			}
 		]
 	},
