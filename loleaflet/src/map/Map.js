@@ -258,6 +258,7 @@ L.Map = L.Evented.extend({
 		// View info (user names and view ids)
 		this._viewInfo = {};
 		this._viewInfoByUserName = {};
+		this._viewCount = 0;
 
 		// View color map
 		this._viewColors = {};
@@ -348,6 +349,7 @@ L.Map = L.Evented.extend({
 
 	addView: function(viewInfo) {
 		this._viewInfo[viewInfo.id] = viewInfo;
+		this._viewCount++;
 		if (viewInfo.userextrainfo !== undefined && viewInfo.userextrainfo.avatar !== undefined) {
 			this._viewInfoByUserName[viewInfo.username] = viewInfo;
 		}
@@ -363,6 +365,7 @@ L.Map = L.Evented.extend({
 		var username = this._viewInfo[viewid].username;
 		delete this._viewInfoByUserName[this._viewInfo[viewid].username];
 		delete this._viewInfo[viewid];
+		this._viewCount--;
 		this.fire('postMessage', {msgId: 'View_Removed', args: {Deprecated: true, ViewId: viewid}});
 
 		// Fire last, otherwise not all events are handled correctly.
@@ -869,7 +872,7 @@ L.Map = L.Evented.extend({
 	},
 
 	getViewCount: function() {
-		return Object.keys(this._viewInfo).length;
+		return this._viewCount;
 	},
 
 	isViewReadOnly: function(viewid) {
