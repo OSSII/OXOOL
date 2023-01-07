@@ -839,7 +839,7 @@ L.Control.Menubar = L.Control.extend({
 
 		if (id === 'save') {
 			// Save only when not read-only.
-			if (!this._map.isPermissionReadOnly()) {
+			if (!this._map.isReadOnlyMode()) {
 				this._map.fire('postMessage', {msgId: 'UI_Save', args: { source: 'filemenu' }});
 
 				if (!this._map._disableDefaultAction['UI_Save']) {
@@ -849,7 +849,7 @@ L.Control.Menubar = L.Control.extend({
 		} else if (id === 'saveas') {
 			this._map.openSaveAs();
 		} else if (id === 'savecomments') {
-			if (this._map.isPermissionEditForComments()) {
+			if (this._map.isEditModeForComments()) {
 				this._map.fire('postMessage', {msgId: 'UI_Save'});
 				if (!this._map._disableDefaultAction['UI_Save']) {
 					this._map.save(false, false);
@@ -932,7 +932,7 @@ L.Control.Menubar = L.Control.extend({
 		} else if (id === 'repair') {
 			app.socket.sendMessage('commandvalues command=.uno:DocumentRepair');
 		} else if (id === 'searchdialog') {
-			if (this._map.isPermissionReadOnly()) {
+			if (this._map.isReadOnlyMode()) {
 				$('#toolbar-down').hide();
 				$('#toolbar-search').show();
 				$('#mobile-edit-button').hide();
@@ -1009,7 +1009,7 @@ L.Control.Menubar = L.Control.extend({
 		// TODO: 若 OxOOL 專屬 preview/readonly 模式完成後，該段程式碼可廢棄不用
 		// (包含 this.options.allowedReadonlyMenus)
 		// 唯讀模式且該選項是子選單
-		if (this._map.isPermissionReadOnly() && menuItem.type === 'menu') {
+		if (this._map.isReadOnlyMode() && menuItem.type === 'menu') {
 			var found = false;
 			for (var j in this.options.allowedReadonlyMenus) {
 				if (this.options.allowedReadonlyMenus[j] === menuItem.id) {
@@ -1020,7 +1020,7 @@ L.Control.Menubar = L.Control.extend({
 			if (!found)
 				return false;
 		}
-		if (this._map.isPermissionReadOnly()) {
+		if (this._map.isReadOnlyMode()) {
 			switch (menuItem.id) {
 			case 'last-mod':
 			case 'save':
@@ -1030,13 +1030,13 @@ L.Control.Menubar = L.Control.extend({
 				return false;
 			case 'insertcomment':
 			case 'savecomments':
-				if (!this._map.isPermissionEditForComments()) {
+				if (!this._map.isEditModeForComments()) {
 					return false;
 				}
 			}
 		}
 
-		if (this._map.isPermissionEdit()) {
+		if (this._map.isEditMode()) {
 			switch (menuItem.id) {
 			case 'savecomments':
 				return false;
@@ -1117,7 +1117,7 @@ L.Control.Menubar = L.Control.extend({
 
 				// 建立 <li> Html element
 				this._liItem = L.DomUtil.create('li',
-					(this._map.isPermissionReadOnly() ? 'readonly' : ''));
+					(this._map.isReadOnlyMode() ? 'readonly' : ''));
 				// 賦予 <li> mgr 物件，指向自己
 				this._liItem.mgr = this;
 
@@ -1287,7 +1287,7 @@ L.Control.Menubar = L.Control.extend({
 					// 原先沒有 disabled
 					if (!L.DomUtil.hasClass(aItem, constDisabled)) {
 						// 編輯模式，不要關閉貼上指令
-						if (this._data.id === '.uno:Paste' && this._map.isPermissionEdit()) {
+						if (this._data.id === '.uno:Paste' && this._map.isEditMode()) {
 							window.app.console.debug('Do not disable paste based on server side data.');
 						} else {
 							L.DomUtil.addClass(aItem, constDisabled);
@@ -1320,7 +1320,7 @@ L.Control.Menubar = L.Control.extend({
 				// 否則以 id 作為命令查詢，不管 id 是否有 .uno: 開頭
 				var command = this._map.isUnoCommand(this._data.name) ? this._data.name : id;
 				var state = self._map['stateChangeHandler'].getItemProperty(command);
-				if (this._map.isPermissionEdit()) {
+				if (this._map.isEditMode()) {
 					this.setDisabled(state.disabled()); // 是否禁用
 					this.setChecked(state.checked()); // 是否勾選
 
