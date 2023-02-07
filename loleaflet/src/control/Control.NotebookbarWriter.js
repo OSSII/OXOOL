@@ -237,9 +237,10 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 				'children': [
 					{
 						'id': 'repair',
-						'type': 'menubartoolitem',
+						'type': 'bigmenubartoolitem',
 						'icon': 'res:repair',
-						'text': _('Repair')
+						'text': _('Repair'),
+						'command': 'Repair'
 					},
 					{
 						'id': 'signdocument',
