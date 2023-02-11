@@ -82,6 +82,9 @@ L.Control.Notebookbar = L.Control.extend({
 		this.map.off('notebookbar');
 		this.map.off('jsdialogupdate', this.onJSUpdate, this);
 		this.map.off('jsdialogaction', this.onJSAction, this);
+		// Added by Firefly <firefly@ossii.com.tw>
+		// 移除狀態回報
+		this.map.stateChangeHandler.classOff('notebookbar');
 		$('.main-nav #document-header').remove();
 		$('.main-nav.hasnotebookbar').css('overflow', 'visible');
 		$('.main-nav').removeClass('hasnotebookbar');
