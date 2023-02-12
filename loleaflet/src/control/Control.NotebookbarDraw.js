@@ -127,13 +127,15 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 						{
 							'id': 'ShareAs',
 							'type': 'menubartoolitem',
+							'icon': '.uno:ShareDocument',
 							'text': _('Share'),
-							'command': '.uno:ShareDocument'
+							'command': 'ShareAs'
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
 							'type': 'menubartoolitem',
+							'icon': 'res:rev-history',
 							'text': _('See history'),
 							'command': 'rev-history'
 						} : {},
@@ -173,7 +175,8 @@ L.Control.NotebookbarDraw = L.Control.NotebookbarImpress.extend({
 						'id': 'repair',
 						'type': 'menubartoolitem',
 						'icon': 'res:repair',
-						'text': _('Repair')
+						'text': _('Repair'),
+						'command': 'Repair'
 					}
 				],
 				'vertical': 'true'

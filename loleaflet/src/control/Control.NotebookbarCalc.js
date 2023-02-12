@@ -604,18 +604,15 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'children': [
 							{
 								'type': 'toolitem',
-								'text': _('Default'),
-								'command': '.uno:StyleApply?Style:string=Default&FamilyName:string=CellStyles'
+								'command': '.uno:DefaultCellStyles'
 							},
 							{
 								'type': 'toolitem',
-								'text': _('Heading 1'),
-								'command': '.uno:StyleApply?Style:string=Heading 1&FamilyName:string=CellStyles'
+								'command': '.uno:Heading1CellStyles'
 							},
 							{
 								'type': 'toolitem',
-								'text': _('Heading 2'),
-								'command': '.uno:StyleApply?Style:string=Heading 2&FamilyName:string=CellStyles'
+								'command': '.uno:Heading2CellStyles'
 							}
 						]
 					},
@@ -625,18 +622,15 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'children': [
 							{
 								'type': 'toolitem',
-								'text': _('Good'),
-								'command': '.uno:StyleApply?Style:string=Good&FamilyName:string=CellStyles'
+								'command': '.uno:GoodCellStyles'
 							},
 							{
 								'type': 'toolitem',
-								'text': _('Neutral'),
-								'command': '.uno:StyleApply?Style:string=Neutral&FamilyName:string=CellStyles'
+								'command': '.uno:NeutralCellStyles'
 							},
 							{
 								'type': 'toolitem',
-								'text': _('Bad'),
-								'command': '.uno:StyleApply?Style:string=Bad&FamilyName:string=CellStyles'
+								'command': '.uno:BadCellStyles'
 							}
 						]
 					}

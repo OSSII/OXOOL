@@ -257,10 +257,6 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 	},
 
 	getHelpTab: function() {
-		var hasLatestUpdates = window.enableWelcomeMessage;
-		var hasFeedback = this._map.feedback;
-		var hasAbout = L.DomUtil.get('about-dialog') !== null;
-
 		var content = [
 			{
 				'type': 'container',
@@ -269,22 +265,11 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						'type': 'toolbox',
 						'children': [
 							{
-								'id': 'forum',
+								'id': 'Online-help',
 								'type': 'bigtoolitem',
-								'icon': 'res:forumhelp',
-								'text': _('Forum'),
-								'command': '.uno:ForumHelp'
-							}
-						]
-					},
-					{
-						'type': 'toolbox',
-						'children': [
-							{
-								'id': 'online-help',
-								'type': 'bigtoolitem',
+								'icon': '.uno:HelpIndex',
 								'text': _('Online Help'),
-								'command': '.uno:OnlineHelp'
+								'command': 'online-help'
 							}
 						]
 					},
@@ -292,7 +277,7 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 						'type': 'toolbox',
 						'children': [
 							{
-								'id': 'keyboard-shortcuts',
+								'id': 'Keyboard-shortcuts',
 								'type': 'bigtoolitem',
 								'icon': 'res:keyboardshortcuts',
 								'text': _('Keyboard shortcuts'),
@@ -306,48 +291,24 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 							{
 								'id': 'report-an-issue',
 								'type': 'bigtoolitem',
+								'icon': '.uno:ReportIssue',
 								'text': _('Report an issue'),
-								'command': '.uno:ReportIssue'
+								'command': 'report-an-issue'
 							}
 						]
 					},
-					hasLatestUpdates ?
-						{
-							'type': 'toolbox',
-							'children': [
-								{
-									'id': 'latestupdates',
-									'type': 'bigtoolitem',
-									'text': _('Latest Updates'),
-									'command': '.uno:LatestUpdates'
-								}
-							]
-						} : {},
-					hasFeedback ?
-						{
-							'type': 'toolbox',
-							'children': [
-								{
-									'id': 'feedback',
-									'type': 'bigtoolitem',
-									'text': _('Send Feedback'),
-									'command': '.uno:Feedback'
-								}
-							]
-						} : {},
-					hasAbout ?
-						{
-							'type': 'toolbox',
-							'children': [
-								{
-									'id': 'about',
-									'type': 'bigtoolitem',
-									'icon': 'res:about',
-									'text': _('About'),
-									'command': '.uno:About'
-								}
-							]
-						} : {}
+					{
+						'type': 'toolbox',
+						'children': [
+							{
+								'id': 'about',
+								'type': 'bigtoolitem',
+								'icon': 'res:about',
+								'text': _('About'),
+								'command': 'about'
+							}
+						]
+					}
 				]
 			}
 		];
