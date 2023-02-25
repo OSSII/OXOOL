@@ -378,7 +378,7 @@ EXTRA_DIST = discovery.xml \
              scripts/unocommands.py \
              $(man_MANS)
 
-if ENABLE_LIBFUZZER
+if !ENABLE_DEBUG
 CLEANUP_COMMAND=true
 else
 CLEANUP_COMMAND=if test -s .libs/oxoolwsd; then echo "Cleaning up..." && .libs/oxoolwsd --disable-lool-user-checking --cleanup --o:logging.file[@enable]=false --o:logging.level=trace; fi
