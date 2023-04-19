@@ -1,34 +1,27 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <config.h>
+
+#include <chrono>
 #include <memory>
 #include <ostream>
-#include <set>
 #include <string>
 
 #include <Poco/Exception.h>
-#include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
 #include <test/lokassert.hpp>
 
-#include <Png.hpp>
 #include <Unit.hpp>
 #include <helpers.hpp>
 
-// Include config.h last, so the test server URI is still HTTP, even in SSL builds.
-#include <config.h>
-
-class LOOLWebSocket;
-
 namespace
 {
-std::string getFontList(const std::string& message)
+std::string getFontList(const std::string& message, const std::string& testname)
 {
     Poco::JSON::Parser parser;
     const Poco::Dynamic::Var result = parser.parse(message);
@@ -50,56 +43,33 @@ class UnitClose : public UnitWSD
 
 public:
     UnitClose();
-    void invokeTest() override;
+    void invokeWSDTest() override;
 };
 
 UnitBase::TestResult UnitClose::testCloseAfterClose()
 {
-    const char* testname = "closeAfterClose ";
     try
     {
         TST_LOG("Connecting and loading.");
         Poco::URI uri(helpers::getTestServerURI());
-        std::shared_ptr<LOOLWebSocket> socket
-            = helpers::loadDocAndGetSocket("hello.odt", uri, testname);
+
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("ClosePoll");
+        socketPoll->startThread();
+
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, "hello.odt", uri, testname);
 
         // send normal socket shutdown
-        TST_LOG("Disconnecting.");
-        socket->shutdown();
+        TST_LOG("Disconnecting gracefully.");
+        socket->asyncShutdown();
 
         // 5 seconds timeout
-        socket->setReceiveTimeout(5000000);
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                           socket->waitForDisconnection(std::chrono::seconds(5)));
 
-        // receive close frame handshake
-        int bytes;
-        int flags;
-        char buffer[READ_BUFFER_SIZE];
-        do
-        {
-            bytes = socket->receiveFrame(buffer, sizeof(buffer), flags);
-            TST_LOG("Received [" << std::string(buffer, bytes) << "], flags: " << std::hex << flags
-                                 << std::dec);
-        } while (bytes > 0
-                 && (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
-                        != Poco::Net::WebSocket::FRAME_OP_CLOSE);
-
-        TST_LOG("Received " << bytes << " bytes, flags: " << std::hex << flags << std::dec);
-
-        try
-        {
-            // no more messages is received.
-            bytes = socket->receiveFrame(buffer, sizeof(buffer), flags);
-            TST_LOG("Received " << bytes << " bytes, flags: " << std::hex << flags << std::dec);
-            LOK_ASSERT_EQUAL(0, bytes);
-            LOK_ASSERT_EQUAL(0, flags);
-        }
-        catch (const Poco::Exception& exc)
-        {
-            // This is not unexpected, since WSD will close the socket after
-            // echoing back the shutdown status code. However, if it doesn't
-            // we assert above that it doesn't send any more data.
-            TST_LOG("Error: " << exc.displayText());
-        }
+        // Verify that we get back a close frame.
+        LOK_ASSERT_EQUAL(static_cast<int>(Poco::Net::WebSocket::FRAME_OP_CLOSE),
+                         (socket->lastFlags() & Poco::Net::WebSocket::FRAME_OP_BITMASK));
     }
     catch (const Poco::Exception& exc)
     {
@@ -110,13 +80,16 @@ UnitBase::TestResult UnitClose::testCloseAfterClose()
 
 UnitBase::TestResult UnitClose::testFontList()
 {
-    const char* testname = "fontList ";
     try
     {
         // Load a document
         Poco::URI uri(helpers::getTestServerURI());
-        std::shared_ptr<LOOLWebSocket> socket
-            = helpers::loadDocAndGetSocket("setclientpart.odp", uri, testname);
+
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("ClosePoll");
+        socketPoll->startThread();
+
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, "setclientpart.odp", uri, testname);
 
         helpers::sendTextFrame(socket, "commandvalues command=.uno:CharFontName", testname);
         const std::vector<char> response
@@ -127,7 +100,7 @@ UnitBase::TestResult UnitClose::testFontList()
         std::stringstream streamResponse;
         std::copy(response.begin() + std::string("commandvalues:").length() + 1, response.end(),
                   std::ostream_iterator<char>(streamResponse));
-        LOK_ASSERT(!getFontList(streamResponse.str()).empty());
+        LOK_ASSERT(!getFontList(streamResponse.str(), testname).empty());
     }
     catch (const Poco::Exception& exc)
     {
@@ -138,13 +111,16 @@ UnitBase::TestResult UnitClose::testFontList()
 
 UnitBase::TestResult UnitClose::testGraphicInvalidate()
 {
-    const char* testname = "graphicInvalidate ";
     try
     {
         // Load a document.
         Poco::URI uri(helpers::getTestServerURI());
-        std::shared_ptr<LOOLWebSocket> socket
-            = helpers::loadDocAndGetSocket("shape.ods", uri, testname);
+
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("ClosePoll");
+        socketPoll->startThread();
+
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, "shape.ods", uri, testname);
 
         // Send click message
         helpers::sendTextFrame(
@@ -177,14 +153,17 @@ UnitBase::TestResult UnitClose::testAlertAllUsers()
     // Load two documents, each in two sessions. Tell one session to fake a disk full
     // situation. Expect to get the corresponding error back in all sessions.
     static_assert(MAX_DOCUMENTS >= 2, "MAX_DOCUMENTS must be at least 2");
-    const char* testname = "alertAllUsers ";
     try
     {
-        std::shared_ptr<LOOLWebSocket> socket[4];
 
         Poco::URI uri(helpers::getTestServerURI());
-        socket[0] = helpers::loadDocAndGetSocket("hello.odt", uri, testname);
-        socket[1] = helpers::loadDocAndGetSocket("Example.odt", uri, testname);
+
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("ClosePoll");
+        socketPoll->startThread();
+
+        std::shared_ptr<http::WebSocketSession> socket[4];
+        socket[0] = helpers::loadDocAndGetSession(socketPoll, "hello.odt", uri, testname);
+        socket[1] = helpers::loadDocAndGetSession(socketPoll, "Example.odt", uri, testname);
 
         // Simulate disk full.
         helpers::sendTextFrame(socket[0], "uno .uno:fakeDiskFull", testname);
@@ -196,10 +175,10 @@ UnitBase::TestResult UnitClose::testAlertAllUsers()
                 = helpers::assertResponseString(socket[i], "error:", testname);
             StringVector tokens(StringVector::tokenize(response.substr(6), ' '));
             std::string cmd;
-            LOOLProtocol::getTokenString(tokens, "cmd", cmd);
+            COOLProtocol::getTokenString(tokens, "cmd", cmd);
             LOK_ASSERT_EQUAL(std::string("internal"), cmd);
             std::string kind;
-            LOOLProtocol::getTokenString(tokens, "kind", kind);
+            COOLProtocol::getTokenString(tokens, "kind", kind);
             LOK_ASSERT_EQUAL(std::string("diskfull"), kind);
         }
     }
@@ -211,12 +190,13 @@ UnitBase::TestResult UnitClose::testAlertAllUsers()
 }
 
 UnitClose::UnitClose()
+    : UnitWSD("UnitClose")
 {
-    int timeout_minutes = 2;
-    setTimeout(timeout_minutes * 60 * 1000);
+    constexpr std::chrono::minutes timeout_minutes(2);
+    setTimeout(timeout_minutes);
 }
 
-void UnitClose::invokeTest()
+void UnitClose::invokeWSDTest()
 {
     UnitBase::TestResult result = testCloseAfterClose();
     if (result != TestResult::Ok)

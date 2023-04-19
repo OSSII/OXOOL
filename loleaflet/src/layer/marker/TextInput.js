@@ -8,7 +8,7 @@
  * text area itself.
  */
 
-/* global app isAnyVexDialogActive */
+/* global app */
 
 L.TextInput = L.Layer.extend({
 	initialize: function() {
@@ -79,6 +79,21 @@ L.TextInput = L.Layer.extend({
 			'?':  [ 63, 0,      0, 4287 ],
 			'_':  [ 95, 0,      0, 5384 ]
 		};
+
+		// unoKeyCode values of the digits.
+		this._unoKeyMap = {
+			'48': 96,   // 0
+			'49': 97,   // 1
+			'50': 98,   // 2
+			'51': 99,   // 3
+			'52': 100,  // 4
+			'53': 101,  // 5
+			'54': 102,  // 6
+			'55': 103,  // 7
+			'56': 104,  // 8
+			'57': 105   // 9
+		};
+
 	},
 
 	onAdd: function() {
@@ -185,7 +200,7 @@ L.TextInput = L.Layer.extend({
 		onoff(this._textArea, 'keyup', this._onKeyUp, this);
 		onoff(this._textArea, 'copy cut paste', this._map._handleDOMEvent, this._map);
 
-		this._map.notifyActive();
+		app.idleHandler.notifyActive();
 
 		if (ev.type === 'blur' && this._isComposing) {
 			this._abortComposition(ev);
@@ -196,10 +211,6 @@ L.TextInput = L.Layer.extend({
 	// @acceptInput (only on "mobile" (= mobile phone) or on iOS and Android in general) true if we want to
 	// accept key input, and show the virtual keyboard.
 	focus: function(acceptInput) {
-		if (isAnyVexDialogActive())
-			return;
-		// window.app.console.trace('L.TextInput.focus(' + acceptInput + ')');
-
 		// Note that the acceptInput parameter intentionally
 		// is a tri-state boolean: undefined, false, or true.
 
@@ -279,6 +290,8 @@ L.TextInput = L.Layer.extend({
 
 	getValue: function() {
 		var value = this._textArea.value;
+		if (this._map.formulabar && this._map.formulabar.hasFocus())
+			value = this._map.formulabar.getValue();
 		return value;
 	},
 
@@ -416,7 +429,7 @@ L.TextInput = L.Layer.extend({
 			// Display caret
 			this._map._docLayer._cursorMarker.add();
 		}
-		this._map._docLayer._cursorMarker.setMouseCursor();
+		this._map._docLayer._cursorMarker.setMouseCursorForTextBox();
 
 		// Move and display under-caret marker
 		if (L.Browser.touch) {
@@ -432,7 +445,7 @@ L.TextInput = L.Layer.extend({
 		this.update();
 		// shape handlers hidden (if selected)
 		this._map.fire('handlerstatus', {hidden: true});
-		if (window.mode.isMobile() && this._map._docLoaded && this._map.getDocType() === 'spreadsheet')
+		if (this._map._docLoaded && this._map.getDocType() === 'spreadsheet')
 			this._map.onFormulaBarFocus();
 	},
 
@@ -557,12 +570,22 @@ L.TextInput = L.Layer.extend({
 		}
 	},
 
+	setupLastContent: function(oldContent) {
+		this._lastContent = oldContent;
+	},
+
+	_isDigit: function(asciiChar) {
+		if (asciiChar >= 48 && asciiChar <= 57)
+			return true;
+		return false;
+	},
+
 	// Fired when text has been inputed, *during* and after composing/spellchecking
 	_onInput: function(ev) {
 		if (this._map.uiManager.isUIBlocked())
 			return;
 
-		this._map.notifyActive();
+		app.idleHandler.notifyActive();
 
 		if (this._ignoreInputCount > 0) {
 			window.app.console.log('ignoring synthetic input ' + this._ignoreInputCount);
@@ -658,25 +681,73 @@ L.TextInput = L.Layer.extend({
 		if (removeBefore > 0 || removeAfter > 0)
 			this._removeTextContent(removeBefore, removeAfter);
 
+		var docLayer = this._map._docLayer;
+		if (removeBefore > 0 && docLayer._typingMention) {
+			var ch = docLayer._mentionText.pop();
+			if (ch === '@')
+				this._map.fire('closementionpopup', { 'typingMention': false });
+			else
+				this._map.fire('sendmentiontext', {data: docLayer._mentionText});
+		}
+
 		var newText = content;
 		if (matchTo > 0)
 			newText = newText.slice(matchTo);
 
 		this._lastContent = content;
 
-		if (this._linebreakHint && this._map.dialog._calcInputBar &&
-			this._map.getWinId() === this._map.dialog._calcInputBar.id) {
-			this._sendKeyEvent(13, 5376);
-		} else if (newText.length > 0) {
-			this._sendText(this.codePointsToString(newText));
+		if (newText.length > 0) {
+			// When the cell formatted as percent, to trig percentage sign addition
+			// automatically we send the first digit character as KeyEvent.
+			if (this._map.getDocType() === 'spreadsheet' &&
+			    content.length === 1 && ev.inputType === 'insertText' &&
+				this._isDigit(newText) && window.mode.isDesktop()) {
+				this._sendKeyEvent(newText, this._unoKeyMap[newText], 'input');
+			}
+			else
+				this._sendText(this.codePointsToString(newText));
 		}
 
 		// was a 'delete' and we need to reset world.
 		if (removeAfter > 0)
 			this._emptyArea();
+
+		// special handling for formulabar
+		if (content.length) {
+			var contentString = this.codePointsToString(content);
+			if (contentString[matchTo] === '\n' || contentString.charCodeAt(matchTo) === 13)
+				this._finishFormulabarEditing();
+		}
+
+		// special handling for mentions
+		if (docLayer._typingMention)  {
+			if (removeBefore === 0) {
+				docLayer._mentionText.push(ev.data);
+				var regEx = /^[0-9a-zA-Z ]+$/;
+				if (ev.data && ev.data.match(regEx))
+					this._map.fire('sendmentiontext', {data: docLayer._mentionText});
+				else {
+					this._map.fire('closementionpopup', { 'typingMention': false });
+				}
+			}
+		}
+
+		if (ev.data === '@' && this._map.getDocType() === 'text') {
+			docLayer._mentionText.push(ev.data);
+			docLayer._typingMention = true;
+		}
 	},
 
-	// Sends the given (UTF-8) string of text to oxoolwsd, as IME (text composition)
+	_finishFormulabarEditing: function() {
+		// now we use that only on touch devices
+		if (window.mode.isDesktop())
+			return;
+
+		if (this._map && this._map.formulabar && this._map.formulabar.hasFocus())
+			this._map.dispatch('acceptformula');
+	},
+
+	// Sends the given (UTF-8) string of text to coolwsd, as IME (text composition)
 	// messages
 	_sendText: function(text) {
 		if (false) {
@@ -689,7 +760,7 @@ L.TextInput = L.Layer.extend({
 			s = s + ']';
 			window.app.console.log('L.TextInput._sendText: ' + s);
 		}
-		this._fancyLog('send-text-to-oxoolwsd', text);
+		this._fancyLog('send-text-to-coolwsd', text);
 
 		// MSIE/Edge cannot compare a string to "\n" for whatever reason,
 		// so compare charcode as well
@@ -739,6 +810,8 @@ L.TextInput = L.Layer.extend({
 		this._lastContent = [];
 
 		this._textArea.value = this._preSpaceChar + this._postSpaceChar;
+		if (this._map && this._map.formulabar && this._map.formulabar.hasFocus())
+			this._map.formulabar.setValue('');
 
 		// avoid setting the focus keyboard
 		if (!noSelect) {
@@ -760,7 +833,7 @@ L.TextInput = L.Layer.extend({
 	// Handled only in legacy situations ('input' events with an inputType
 	// property are preferred).
 	_onCompositionUpdate: function(ev) {
-		this._map.notifyActive();
+		app.idleHandler.notifyActive();
 		this._onInput(ev);
 	},
 
@@ -770,7 +843,7 @@ L.TextInput = L.Layer.extend({
 	// The approach here is to use "compositionend" events *only in Chrome* to mark
 	// the composing text as committed to the text area.
 	_onCompositionEnd: function(ev) {
-		this._map.notifyActive();
+		app.idleHandler.notifyActive();
 		this._isComposing = false;
 		this._onInput(ev);
 	},
@@ -783,7 +856,8 @@ L.TextInput = L.Layer.extend({
 		this._fancyLog('abort-composition', ev.type);
 		if (this._isComposing)
 			this._isComposing = false;
-		this._emptyArea(document.activeElement !== this._textArea);
+		this._emptyArea((document.activeElement !== this._textArea)
+			&& (!this._map.formulabar || !this._map.formulabar.hasFocus()));
 	},
 
 	_onKeyDown: function(ev) {
@@ -798,6 +872,36 @@ L.TextInput = L.Layer.extend({
 			this._deleteHint = '';
 			this._linebreakHint = ev.keyCode === 13 && ev.shiftKey;
 		}
+
+		// We want to open drowdown menu when cursor is above a dropdown content control.
+		if (ev.code === 'Space' || ev.code === 'Enter') {
+			if (this._map['stateChangeHandler'].getItemValue('.uno:ContentControlProperties') === 'enabled') {
+				if (app.sectionContainer.doesSectionExist(L.CSections.ContentControl.name)) {
+					var section = app.sectionContainer.getSectionWithName(L.CSections.ContentControl.name);
+					section.onClickDropdown(ev);
+				}
+			}
+		}
+
+		var mentionPopup = L.DomUtil.get('mentionPopup');
+		if (mentionPopup) {
+			if (ev.key === 'ArrowDown') {
+				var initialFocusElement =
+					document.querySelector('#mentionPopup span[tabIndex="0"]');
+				if (initialFocusElement) {
+					initialFocusElement.focus();
+					ev.preventDefault();
+					ev.stopPropagation();
+				}
+			} else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' ||
+				ev.key === 'ArrowUp' || ev.key === 'Home' ||
+				ev.key === 'End' || ev.key === 'PageUp' ||
+				ev.key === 'PageDown' || ev.key === 'Enter' ||
+				ev.key === 'Escape' || ev.key === 'Control' ||
+				ev.key === 'Tab') {
+				this._map.fire('closementionpopup', { 'typingMention': false });
+			}
+		}
 	},
 
 	// Check arrow keys on 'keyup' event; using 'ArrowLeft' or 'ArrowRight'
@@ -806,14 +910,18 @@ L.TextInput = L.Layer.extend({
 	// Across browsers, arrow up/down / home / end would move the caret to
 	// the beginning/end of the textarea/contenteditable.
 	_onKeyUp: function(ev) {
+		// We also add this handler here because keyup event is not fired for page when map is active.
+		document.body.classList.remove('activate-underlines');
+
 		if (this._map.uiManager.isUIBlocked())
 			return;
 
-		this._map.notifyActive();
+		app.idleHandler.notifyActive();
 		if (!this._isComposing && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' ||
 			ev.key === 'ArrowUp' || ev.key === 'ArrowDown' ||
 			ev.key === 'Home' || ev.key === 'End' ||
-			ev.key === 'PageUp' || ev.key === 'PageDown'))
+			ev.key === 'PageUp' || ev.key === 'PageDown' ||
+			ev.key === 'Escape'))
 			this._emptyArea();
 	},
 
@@ -823,7 +931,7 @@ L.TextInput = L.Layer.extend({
 	_removeTextContent: function(before, after) {
 		window.app.console.log('Remove ' + before + ' before, and ' + after + ' after');
 
-		/// TODO: rename the event to 'removetextcontent' as soon as oxoolwsd supports it
+		/// TODO: rename the event to 'removetextcontent' as soon as coolwsd supports it
 		/// TODO: Ask Marco about it
 		app.socket.sendMessage(
 			'removetextcontext id=' +

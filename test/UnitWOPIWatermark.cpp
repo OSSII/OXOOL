@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,16 +17,13 @@
 
 class UnitWOPIWatermark : public WopiTestServer
 {
-    enum class Phase
-    {
-        Load,
-        TileRequest,
-        Polling
-    } _phase;
+    STATE_ENUM(Phase, Load, TileRequest, Done)
+    _phase;
 
 public:
-    UnitWOPIWatermark() :
-        _phase(Phase::Load)
+    UnitWOPIWatermark()
+        : WopiTestServer("UnitWOPIWatermark")
+        , _phase(Phase::Load)
     {
     }
 
@@ -37,16 +32,15 @@ public:
         Poco::URI uriReq(request.getURI());
         Poco::RegularExpression regInfo("/wopi/files/[0-9]");
         Poco::RegularExpression regContent("/wopi/files/[0-9]/contents");
-        LOG_INF("Fake wopi host request: " << uriReq.toString());
+        LOG_INF("FakeWOPIHost: Request: " << uriReq.toString());
 
         // CheckFileInfo
         if (request.getMethod() == "GET" && regInfo.match(uriReq.getPath()))
         {
-            LOG_INF("Fake wopi host request, handling CheckFileInfo: " << uriReq.getPath());
+            LOG_INF("FakeWOPIHost: Handling CheckFileInfo: " << uriReq.getPath());
 
             assertCheckFileInfoRequest(request);
 
-            Poco::LocalDateTime now;
             const std::string fileName(uriReq.getPath() == "/wopi/files/3" ? "he%llo.txt" : "hello.txt");
             Poco::JSON::Object::Ptr fileInfo = new Poco::JSON::Object();
             fileInfo->set("BaseFileName", fileName);
@@ -63,44 +57,25 @@ public:
 
             std::ostringstream jsonStream;
             fileInfo->stringify(jsonStream);
-            std::string responseString = jsonStream.str();
 
-            const std::string mimeType = "application/json; charset=utf-8";
-
-            std::ostringstream oss;
-            oss << "HTTP/1.1 200 OK\r\n"
-                "Last-Modified: " << Util::getHttpTime(getFileLastModifiedTime()) << "\r\n"
-                "User-Agent: " WOPI_AGENT_STRING "\r\n"
-                "Content-Length: " << responseString.size() << "\r\n"
-                "Content-Type: " << mimeType << "\r\n"
-                "\r\n"
-                << responseString;
-
-            socket->send(oss.str());
-            socket->shutdown();
+            http::Response httpResponse(http::StatusCode::OK);
+            httpResponse.set("Last-Modified", Util::getHttpTime(getFileLastModifiedTime()));
+            httpResponse.setBody(jsonStream.str(), "application/json; charset=utf-8");
+            socket->sendAndShutdown(httpResponse);
 
             return true;
         }
         // GetFile
         else if (request.getMethod() == "GET" && regContent.match(uriReq.getPath()))
         {
-            LOG_INF("Fake wopi host request, handling GetFile: " << uriReq.getPath());
+            LOG_INF("FakeWOPIHost: Handling GetFile: " << uriReq.getPath());
 
             assertGetFileRequest(request);
 
-            const std::string mimeType = "text/plain; charset=utf-8";
-
-            std::ostringstream oss;
-            oss << "HTTP/1.1 200 OK\r\n"
-                "Last-Modified: " << Util::getHttpTime(getFileLastModifiedTime()) << "\r\n"
-                "User-Agent: " WOPI_AGENT_STRING "\r\n"
-                "Content-Length: " << getFileContent().size() << "\r\n"
-                "Content-Type: " << mimeType << "\r\n"
-                "\r\n"
-                << getFileContent();
-
-            socket->send(oss.str());
-            socket->shutdown();
+            http::Response httpResponse(http::StatusCode::OK);
+            httpResponse.set("Last-Modified", Util::getHttpTime(getFileLastModifiedTime()));
+            httpResponse.setBody(getFileContent(), "text/plain; charset=utf-8");
+            socket->sendAndShutdown(httpResponse);
 
             return true;
         }
@@ -108,7 +83,7 @@ public:
         return false;
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
         constexpr char testName[] = "UnitWOPIWatermark";
 
@@ -116,23 +91,24 @@ public:
         {
             case Phase::Load:
             {
+                TRANSITION_STATE(_phase, Phase::TileRequest);
+
                 initWebsocket("/wopi/files/5?access_token=anything");
 
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
-                SocketPoll::wakeupWorld();
-
-                _phase = Phase::TileRequest;
+                WSD_CMD("load url=" + getWopiSrc());
                 break;
             }
-            case Phase::Polling:
+            case Phase::Done:
             {
                 exitTest(TestResult::Ok);
                 break;
             }
             case Phase::TileRequest:
             {
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 tileposy=0,0 tilewidth=3840 tileheight=3840", testName);
-                std::string tile = helpers::getResponseString(*getWs()->getLOOLWebSocket(), "tile:", testName);
+                WSD_CMD("tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 "
+                        "tileposy=0,0 tilewidth=3840 tileheight=3840");
+                std::string tile =
+                    helpers::getResponseString(getWs()->getWebSocket(), "tile:", testName);
 
                 if(!tile.empty())
                 {
@@ -141,7 +117,7 @@ public:
                     if (!nviewid.empty() && nviewid != "0")
                     {
                         LOG_INF("Watermark is hashed into integer successfully nviewid=" << nviewid);
-                        _phase = Phase::Polling;
+                        TRANSITION_STATE(_phase, Phase::Done);
                     }
                 }
                 break;

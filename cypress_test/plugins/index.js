@@ -1,6 +1,8 @@
 /* global require */
 
 var process = require('process');
+var uuid = require('uuid');
+
 var tasks = require('./tasks');
 var blacklists = require('./blacklists');
 var selectTests = require('cypress-select-tests');
@@ -10,7 +12,8 @@ function plugin(on, config) {
 		require('@cypress/code-coverage/task')(on, config);
 	on('task', {
 		copyFile: tasks.copyFile,
-		failed: require('cypress-failed-log/src/failed')()
+		failed: require('cypress-failed-log/src/failed')(),
+		getSelectors: tasks.getSelectors,
 	});
 
 	if (process.env.ENABLE_VIDEO_REC) {
@@ -41,21 +44,22 @@ function plugin(on, config) {
 		config.defaultCommandTimeout = 10000;
 	}
 
-	on('file:preprocessor', selectTests(config, pickTests));
+	if (process.env.USER_INTERFACE === 'notebookbar') {
+		config.env.USER_INTERFACE = 'notebookbar';
+	}
+
+	on('file:preprocessor', (file) => {
+		if (file.outputPath.endsWith('support/index.js')) {
+			var runUuid = uuid.v4();
+			var truncLength = file.outputPath.length - ('index.js').length;
+			file.outputPath = file.outputPath.substring(0, truncLength);
+			file.outputPath += runUuid + 'index.js';
+		}
+
+		return selectTests(config, pickTests)(file);
+	});
 
 	return config;
-}
-
-function getLOVersion(config) {
-	var versionString = config.env.LO_CORE_VERSION;
-	if (versionString.includes('Collabora')) {
-		if (versionString.includes('_6.2.')) {
-			return 'cp-6-2';
-		} else if (versionString.includes('_6.4.')) {
-			return 'cp-6-4';
-		}
-	}
-	return 'master';
 }
 
 function removeBlacklistedTest(filename, testsToRun, blackList) {
@@ -69,14 +73,16 @@ function removeBlacklistedTest(filename, testsToRun, blackList) {
 	return testsToRun;
 }
 
-function pickTests(filename, foundTests, config) {
-	var coreVersion = getLOVersion(config);
-	var testsToRun = foundTests;
-	if (!(coreVersion in blacklists.coreBlackLists))
-		return testsToRun;
+function isNotebookbarTest(filename, notebookbarOnlyList) {
+	for (var i =0 ; i < notebookbarOnlyList.length; i++) {
+		if (filename.endsWith(notebookbarOnlyList[i])) {
+			return true;
+		}
+	}
+}
 
-	var coreblackList = blacklists.coreBlackLists[coreVersion];
-	testsToRun = removeBlacklistedTest(filename, testsToRun, coreblackList);
+function pickTests(filename, foundTests) {
+	var testsToRun = foundTests;
 
 	if (process.env.CYPRESS_INTEGRATION === 'nextcloud') {
 		testsToRun = removeBlacklistedTest(filename, testsToRun, blacklists.nextcloudBlackList);
@@ -87,6 +93,16 @@ function pickTests(filename, foundTests, config) {
 	if (process.env.CYPRESS_INTEGRATION === 'php-proxy') {
 		var ProxyblackList = blacklists.phpProxyBlackList;
 		testsToRun = removeBlacklistedTest(filename, testsToRun, ProxyblackList);
+	}
+
+	if (process.env.USER_INTERFACE === 'notebookbar') {
+		if (!isNotebookbarTest(filename,blacklists.notebookbarOnlyList)) {
+			testsToRun = [];
+		}
+	}
+
+	if (!process.env.UPDATE_SCREENSHOT) {
+		testsToRun = removeBlacklistedTest(filename, testsToRun, blacklists.updateScreenshotList);
 	}
 
 	return testsToRun;

@@ -24,8 +24,8 @@ html[dir='rtl'] .sub-menu-arrow {
 	padding: 12px 5px;
 }
 input#follow-checkbox {
-	width: 24px;
-	height: 24px;
+	width: var(--btn-size);
+	height: var(--btn-size);
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	-o-appearance: none;
@@ -77,7 +77,7 @@ div#w2ui-overlay-actionbar.w2ui-overlay{
 	margin-left: -7px;
 }
 
-/* Related to oxool.css */
+/* Related to cool.css */
 #toolbar-hamburger {
 	width: 36px;
 	height: 36px;
@@ -118,7 +118,7 @@ div#w2ui-overlay-actionbar.w2ui-overlay{
 
 
 /* No ruler on mobile phones. */
-.oxool-ruler {
+.cool-ruler {
 	height: 0px;
 	display: none;
 }
@@ -182,10 +182,6 @@ div#w2ui-overlay-actionbar.w2ui-overlay{
 #document-name-input {
 	display: none;
 }
-
-#tb_formulabar_item_address, #tb_formulabar_item_item_2, #tb_formulabar_item_functiondialog {
-	vertical-align: middle;
-}
 /* Related to selectionMarkers.css */
 .inputbar_multiline #tb_formulabar_item_formula > div,
 .inputbar_multiline #tb_formulabar_item_address > div {
@@ -239,160 +235,38 @@ div#w2ui-overlay-actionbar.w2ui-overlay{
 	background-color: var(--color-background-dark);
 	border-radius: 0;
 }
-/* Related to vex.css */
-.vex-open .oxool-user-idle {
-	background: rgba(0, 0, 0, 0) !important;
-	font-size: xx-large !important;
-	color: #fff !important;
-	text-align: center !important;
-}
-.vex.vex-theme-plain .vex-dialog-form .vex-dialog-input select, .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input textarea, .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='date'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='datetime'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='datetime-local'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='email'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='month'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='number'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='password'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='search'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='tel'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='text'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='time'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='url'], .vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='week']{
-	padding: 0 !important
-}
-.vex-content .oxool-annotation-img {
-	box-sizing: content-box !important;
-}
-.vex-dialog-input > textarea.oxool-annotation-textarea {
-	height: 150px;
-	border: 1px solid var(--color-border);
-	box-shadow: 0 0 1px 1px var(--color-box-shadow);
-	border-radius: var(--border-radius);
-}
-.vex-dialog-input > textarea.oxool-annotation-textarea:focus {
-	height: 150px;
-	border: 1px solid var(--color-border);
-	box-shadow: 0 0 1px 1px var(--color-primary);
-}
-#mobile-wizard-popup .oxool-annotation-content,
-#mobile-wizard .oxool-annotation-content {
+
+#mobile-wizard-popup .cool-annotation-content,
+#mobile-wizard .cool-annotation-content {
 	margin: 3px 3px 3px 38px;
 	padding: 0px 10px;
 }
-.vex-dialog-message {
-	text-align: center;
-	font-family: var(--vex-font) !important;
-	font-size: 1em !important;
-	font-weight: 600 !important;
-}
-.vex-dialog-message > div {
-	text-align: left;
-	font-family: var(--vex-font) !important;
-	font-size: 1em !important;
-	font-weight: 600 !important;
-}
-.vex-dialog-message label {
-	width: 84%;
-	padding-left: 4%;
-	display: inline-block;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	vertical-align: text-bottom;
-}
-.vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='text'] {
-	border-radius: var(--border-radius) !important;
-	background-color: #fff !important;
-	width: 100%;
-	width: -moz-available !important;
-	width: -webkit-fill-available !important;
-	width: fill-available !important;
-	border: 4px solid #fff !important;
-	box-shadow: 0 0 1px 1px #dfdfdf;
-}
-.vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='text']:focus {
-	border: 4px solid #fff !important;
-	box-shadow: 0 0 1px 1px #0b87e7 !important;
-	color: #0b87e7 !important;
-}
-.vex.vex-theme-plain .vex-dialog-form .vex-dialog-input input[type='text']:focus input{
-	color: #000 !important;
-}
-.vex-dialog-input {
-	font-family: var(--vex-font) !important;
-	font-size: 0.8em;
-}
-.vex.vex-theme-plain .vex-content {
-	height: 100% !important;
-	max-width: 100% !important;
-	width: auto !important;
-	border: none;
-	box-shadow: none;
-	border-radius: none;
-	display: flex;
-	flex-direction: column;
-}
-.vex.vex-theme-plain .vex-content:not(.vex-has-inputs) .vex-dialog-form {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	flex: 1;
-}
 
-.vex.vex-theme-plain {
-	padding: 0px !important;
-}
-.vex-open .vex-overlay {
-	z-index: 2000;
-	min-height: 100%;
-	position: absolute;
-	width: 100%;
-	width: -moz-available !important;
-	width: -webkit-fill-available !important;
-	width: fill-available !important;
-	top: 0;
-	background-color: var(--color-main-background);
-}
-.vex.vex-theme-plain input {
-	font-size: 1.1em !important;
-}
-textarea.oxool-annotation-textarea {
+textarea.cool-annotation-textarea {
 	min-width: -moz-available !important;
 	min-width: -webkit-fill-available !important;
 	min-width: fill-available !important;
 }
-button.vex-dialog-button-primary.vex-dialog-button.vex-first {
-	border: 1px solid var(--color-primary) !important;
-	border-radius: var(--border-radius) !important;
-	background-color: var(--color-primary-lighter) !important;
-	color: var(--color-primary-text) !important;
-}
-button.vex-dialog-button-secondary.vex-dialog-button.vex-last {
-	border-radius: var(--border-radius);
-	background-color: var(--color-background-lighter) !important;
-	border: 1px solid var(--color-border-lighter) !important;
-}
-.vex.vex-theme-plain .vex-dialog-button{
-	line-height: 1em !important;
-	height: auto !important;
-}
-.vex-overlay.oxool-user-idle-overlay {
-	background-color: #05396180;
-}
-.vex-content.oxool-user-idle{
-	padding-top: 160px !important;
-	padding-bottom: 160px !important;
-}
-/* Vex: Welcome dialog */
-.vex-welcome-mobile .vex-dialog-form .vex-content {
-	padding: 0;
-}
-
-.vex-welcome-mobile .vex-dialog-button-primary {
-	width: 100%;
-}
-/* Vex: Document document conflict */
-.vex.vex-theme-plain .vex-dialog-button-spacer {
-	min-height: 24px !important;
-}
-
-.vex-dialog-buttons {
-	flex-direction: column !important;
-}
-
-.vex-close:not(.vex-close-m) {
-	display: none;
-}
 
 /* Related to toolbar.css */
+@-moz-document url-prefix() {
+	#formulabar #formulaInput, #formulabar #addressInput{
+		color: var(--color-main-text);
+		border: 1px solid var(--color-border) !important;
+		border-radius: 0px;
+	}
+	#toolbar-up{
+		top: -1px;
+	}
+}
+#tb_actionbar_item_redo.disabled, #tb_actionbar_item_undo.disabled, #tb_actionbar_item_mobile_wizard.disabled, #tb_actionbar_item_insertion_mobile_wizard.disabled {
+	display: none;
+}
+#toolbar-wrapper.mobile{
+	border-top: none;
+	z-index: auto !important;
+}
+
 .insertshape-grid {
 	box-sizing: content-box;
 	position: static;
@@ -409,6 +283,23 @@ button.vex-dialog-button-secondary.vex-dialog-button.vex-last {
 }
 nav:not(.spreadsheet-color-indicator) ~ #toolbar-wrapper #toolbar-up.w2ui-toolbar {
 	border-color: transparent;
+}
+.formulabar.unotoolbutton {
+	margin: 0 !important;
+}
+#expand.formulabar {
+	margin-inline-start: -8px !important
+}
+.formulabar.toolbox {
+	grid-column-gap: 8px;
+	/* fx = inputfield expander */
+	grid-template-columns: 24px auto 16px 0;
+	display: grid;
+	grid-auto-flow: column;
+	align-items: center;
+}
+.expanded .formulabar.toolbox {
+	align-items: flex-start;
 }
 #formulabar {
 	padding: 0px !important;
@@ -447,6 +338,7 @@ nav:not(.spreadsheet-color-indicator) ~ #toolbar-wrapper #toolbar-up.w2ui-toolba
 	transform: rotate(180deg);
 }
 #addressInput{
+	margin-inline-start: 8px;
 	width: 50px;
 	height: 23px;
 	text-align: center;
@@ -501,6 +393,22 @@ nav:not(.spreadsheet-color-indicator) ~ #toolbar-wrapper #toolbar-up.w2ui-toolba
 }
 #toolbar-down table.w2ui-button .w2ui-tb-image {
 	margin: 5px 9px !important;
+}
+#toolbar-down table.w2ui-button .textcolor {
+	margin-bottom: 0px !important;
+}
+#toolbar-down table.w2ui-button .backcolor {
+	margin-bottom: 0px !important;
+}
+#toolbar-down table.w2ui-button .selected-color-classic {
+	height: 5px;
+	width: 26px;
+	margin: auto;
+	position: relative;
+	top: -6px;
+	border: 1px solid var(--color-border-dark);
+	border-radius: 7px;
+	outline: 1px solid var(--color-background-lighter);
 }
 .w2ui-toolbar .w2ui-break{
 	background-image: none;
@@ -715,16 +623,16 @@ td[id^='tb_spreadsheet-toolbar_item']:focus table.w2ui-button div.w2ui-icon, td[
 	padding-left: 38px;
 }
 .context-menu-list .context-menu-item:nth-child(1) span {
-	background: url('images/cmd/editannotation.svg') no-repeat left center /24px;
+	background: url('images/lc_editannotation.svg') no-repeat left center /24px;
 }
 .context-menu-list .context-menu-item:nth-child(2) span {
-	background: url('images/cmd/replycomment.svg') no-repeat left center /24px;
+	background: url('images/lc_replycomment.svg') no-repeat left center /24px;
 }
 .context-menu-list .context-menu-item:nth-child(3) span {
-	background: url('images/cmd/deleteannotation.svg') no-repeat left center /24px;
+	background: url('images/lc_deletenote.svg') no-repeat left center /24px;
 }
 .context-menu-list .context-menu-item:nth-child(4) span {
-	background: url('images/cmd/ok.svg') no-repeat left center /24px;
+	background: url('images/lc_ok.svg') no-repeat left center /24px;
 }
 
 /* Related to jsdialogs.css */
@@ -737,9 +645,9 @@ td[id^='tb_spreadsheet-toolbar_item']:focus table.w2ui-button div.w2ui-icon, td[
 }
 #mobile-wizard-content #MacroWarnMedium p:first-child::after {
 	content: ' ';
-	background: url('images/cmd/runmacro.svg') no-repeat left -2px / 24px;
-	width: 24px;
-	height: 24px;
+	background: url('images/lc_runmacro.svg') no-repeat left -2px / 24px;
+	width: var(--btn-size);
+	height: var(--btn-size);
 	float: left;
 	padding-left: 8px;
 }
@@ -787,7 +695,7 @@ td[id^='tb_spreadsheet-toolbar_item']:focus table.w2ui-button div.w2ui-icon, td[
 
 /* busy popup */
 
-#mobile-wizard.popup {
+#mobile-wizard.popup:not(.snackbar) {
 	border-radius: 16px 16px 0 0;
 }
 #mobile-wizard.popup #mobile-wizard-content {
@@ -819,6 +727,13 @@ td[id^='tb_spreadsheet-toolbar_item']:focus table.w2ui-button div.w2ui-icon, td[
 	margin: 16px 5% !important;
 	width: 90%;
 	position: absolute;
+	border-radius: var(--border-radius);
+}
+#mobile-wizard.popup.snackbar #label {
+	font-size: var(--default-font-size) !important;
+}
+#mobile-wizard.popup.snackbar #button {
+	font-size: 14px !important;
 }
 /*   - Import text */
 #mobile-wizard-content #separatoroptions {
@@ -864,7 +779,7 @@ td[id^='tb_spreadsheet-toolbar_item']:focus table.w2ui-button div.w2ui-icon, td[
 	content: '';
 	width: 18px;
 	height: 18px;
-	background: url('images/lc_freeemiumlock.svg') no-repeat center -15px /16px white;
+	background: url('images/lc_lock.svg') no-repeat center -15px /16px white;
 	box-shadow: 0 0 1px 0 #0b87e7,0 0 3px 0 #00000075;
 	border-radius: 18px;
 	position: relative;
@@ -872,7 +787,7 @@ td[id^='tb_spreadsheet-toolbar_item']:focus table.w2ui-button div.w2ui-icon, td[
 	margin-top: -5px;
 }
 
-#oxoolwsd-version, #lokit-version {
+#coolwsd-version, #lokit-version {
 	flex-direction: column;
 }
 
@@ -902,4 +817,23 @@ div#fontstyletoolbox + div#style.mobile-wizard {
 #product-name {
 	margin: 2px;
 	font-size: 29px;
+}
+
+/* Mobile specific buttons */
+.mobile-wizard-titlebar-btn {
+	height: 24px !important;
+	display: block;
+	text-align: center;
+	margin: 0 8px 0 0 !important;
+	padding: 0 !important;
+	min-width: 24px !important;
+	width: 24px !important;
+	border-radius: 50% !important;
+	background-color: var(--color-primary) !important;
+}
+
+.mobile-wizard-titlebar-btn-container{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }

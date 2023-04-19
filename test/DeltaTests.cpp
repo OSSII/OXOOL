@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,13 +13,17 @@
 #include <Util.hpp>
 #include <Png.hpp>
 
+#include <cppunit/extensions/HelperMacros.h>
+
 /// Delta unit-tests.
 class DeltaTests : public CPPUNIT_NS::TestFixture
 {
     CPPUNIT_TEST_SUITE(DeltaTests);
 
+#if ENABLE_DELTAS
     CPPUNIT_TEST(testDeltaSequence);
     CPPUNIT_TEST(testRandomDeltas);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -53,21 +55,33 @@ class DeltaTests : public CPPUNIT_NS::TestFixture
     std::vector<char> applyDelta(
         const std::vector<char> &pixmap,
         png_uint_32 width, png_uint_32 height,
-        const std::vector<char> &delta);
+        const std::vector<char> &delta,
+        const std::string& testname);
 
     void assertEqual(const std::vector<char> &a,
                      const std::vector<char> &b,
-                     int width, int height);
+                     int width, int height,
+                     const std::string& testname);
 };
 
 // Quick hack for debugging
 std::vector<char> DeltaTests::applyDelta(
     const std::vector<char> &pixmap,
     png_uint_32 width, png_uint_32 height,
-    const std::vector<char> &delta)
+    const std::vector<char> &zDelta,
+    const std::string& testname)
 {
-    LOK_ASSERT(delta.size() >= 4);
-    LOK_ASSERT(delta[0] == 'D');
+    LOK_ASSERT(zDelta.size() >= 4);
+    LOK_ASSERT(zDelta[0] == 'D');
+
+    std::vector<char> delta;
+    delta.resize(1024*1024*4); // lots of extra space.
+
+    size_t compSize = ZSTD_decompress( delta.data(), delta.size(),
+                                       zDelta.data() + 1, zDelta.size() - 1);
+    LOK_ASSERT_EQUAL(ZSTD_isError(compSize), (unsigned)false);
+
+    delta.resize(compSize);
 
     // start with the same state.
     std::vector<char> output = pixmap;
@@ -75,7 +89,7 @@ std::vector<char> DeltaTests::applyDelta(
     LOK_ASSERT_EQUAL(output.size(), size_t(width * height * 4));
 
     size_t offset = 0, i;
-    for (i = 1; i < delta.size() && offset < output.size();)
+    for (i = 0; i < delta.size() && offset < output.size();)
     {
         switch (delta[i])
         {
@@ -111,6 +125,10 @@ std::vector<char> DeltaTests::applyDelta(
                 *dest++ = delta[i++];
             break;
         }
+        case 't': // termination
+            LOK_ASSERT(i == delta.size() - 1);
+            i++;
+            break;
         default:
             std::cout << "Unknown delta code " << delta[i] << '\n';
             LOK_ASSERT(false);
@@ -123,7 +141,8 @@ std::vector<char> DeltaTests::applyDelta(
 
 void DeltaTests::assertEqual(const std::vector<char> &a,
                              const std::vector<char> &b,
-                             int width, int /* height */)
+                             int width, int /* height */,
+                             const std::string& testname)
 {
     LOK_ASSERT_EQUAL(a.size(), b.size());
     for (size_t i = 0; i < a.size(); ++i)
@@ -148,6 +167,8 @@ void DeltaTests::assertEqual(const std::vector<char> &a,
 
 void DeltaTests::testDeltaSequence()
 {
+    constexpr auto testname = __func__;
+
     DeltaGenerator gen;
 
     png_uint_32 height, width, rowBytes;
@@ -170,31 +191,31 @@ void DeltaTests::testDeltaSequence()
     LOK_ASSERT(gen.createDelta(
                        reinterpret_cast<unsigned char *>(&text[0]),
                        0, 0, width, height, width, height,
-                       delta, textWid, 0) == false);
-    LOK_ASSERT(delta.size() == 0);
+                       TileLocation(1, 2, 3, 0, 1), delta, textWid, false) == false);
+    LOK_ASSERT(delta.empty());
 
     // Build a delta between text2 & textWid
     LOK_ASSERT(gen.createDelta(
                        reinterpret_cast<unsigned char *>(&text2[0]),
                        0, 0, width, height, width, height,
-                       delta, text2Wid, textWid) == true);
+                       TileLocation(1, 2, 3, 0, 1), delta, text2Wid, false) == true);
     LOK_ASSERT(delta.size() > 0);
 
     // Apply it to move to the second frame
-    std::vector<char> reText2 = applyDelta(text, width, height, delta);
-    assertEqual(reText2, text2, width, height);
+    std::vector<char> reText2 = applyDelta(text, width, height, delta, testname);
+    assertEqual(reText2, text2, width, height, testname);
 
     // Build a delta between text & text2Wid
     std::vector<char> two2one;
     LOK_ASSERT(gen.createDelta(
                        reinterpret_cast<unsigned char *>(&text[0]),
                        0, 0, width, height, width, height,
-                       two2one, textWid, text2Wid) == true);
+                       TileLocation(1, 2, 3, 0, 1), two2one, textWid, false) == true);
     LOK_ASSERT(two2one.size() > 0);
 
     // Apply it to get back to where we started
-    std::vector<char> reText = applyDelta(text2, width, height, two2one);
-    assertEqual(reText, text, width, height);
+    std::vector<char> reText = applyDelta(text2, width, height, two2one, testname);
+    assertEqual(reText, text, width, height, testname);
 }
 
 void DeltaTests::testRandomDeltas()

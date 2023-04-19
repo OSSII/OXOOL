@@ -24,9 +24,9 @@
 	padding: 6px 9px 4px !important;
 	text-decoration: none;
 
-	font: 13px var(--oxool-font);
+	font: var(--default-font-size)/1.5 var(--cool-font);
 	display: inline-block;
-	border: 1px solid var(--color-border-dark);
+	border: 1px solid transparent;
 	border-radius: var(--border-radius);
 	background: var(--color-main-background);
 	color: var(--color-main-text);
@@ -36,16 +36,12 @@
 	background: var(--color-background-dark) !important;
 	color: var(--color-text-dark) !important;
 	border: 1px solid var(--color-border-dark);
-	border-bottom: 4px solid #444444;
 }
 
-.spreadsheet-tab-protected {
-	display: inline-block;
-	pointer-events: none;
-	vertical-align: text-bottom;
-	width: 16px;
-	height: 16px;
-	background: url('images/cmd/protect.svg') no-repeat center/contain;
+.spreadsheet-tab:hover {
+	border: 1px solid var(--color-border-darker);
+	background: var(--color-background-darker) !important;
+	color: var(--color-text-darker) !important;
 }
 
 #first-tab-drop-site {
@@ -97,7 +93,7 @@
 .spreadsheet-header-corner-styles {
 	border: 1px solid var(--color-border-dark);
 	background-color: var(--colo-background-dark);
-	font: var(--default-font-size)/1.5 var(--oxool-font);
+	font: var(--default-font-size)/1.5 var(--cool-font);
 	color: var(--color-text-dark);
 	cursor: pointer;
 }
@@ -144,7 +140,7 @@
 .spreadsheet-header-column {
 	border: 1px solid var(--color-border-dark);
 	background-color: var(--colo-background-dark);
-	font: var(--default-font-size)/1.5 var(--oxool-font);
+	font: var(--default-font-size)/1.5 var(--cool-font);
 	color: var(--color-text-dark);
 	cursor: pointer;
 }
@@ -193,9 +189,9 @@
 	width: 18px;
 	height: 17px;
 	background: url('images/drop-down-button.svg') center top/16px var(--color-background-lighter) no-repeat;
-	border: 1px solid var(--color-border-lighter);
+	border: 1px solid var(--color-border);
 	box-sizing: border-box;
-	box-shadow: 0 0 1px 1px #00000015
+	box-shadow: 0 0 1px 0 var(--color-box-shadow);
 }
 
 .spreadsheet-drop-down-marker:hover {

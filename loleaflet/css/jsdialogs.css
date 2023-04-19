@@ -2,27 +2,29 @@
 .jsdialog-overlay {
 	-webkit-animation: vex-fadein .5s;
 	animation: vex-fadein .5s;
-	position: fixed;
-	background: #1c5fa814;
+	position: absolute;
+	background: transparent;
 	top: 0;
 	right: 0;
 	bottom: 0;
 	left: 0;
+	max-width: 100%;
+	max-height: 100%;
 	z-index: 2000;
+	display: flex;
 }
 
 .jsdialog-overlay.cancellable {
 	-webkit-animation: none;
 	animation: none;
-	background: transparent;
+}
+
+.jsdialog-overlay.dimmed {
+	background: #1c5fa814;
 }
 
 .lokdialog_container.ui-dialog.ui-widget-content.modalpopup {
 	z-index: 2001;
-}
-
-.lokdialog > .jsdialog.root-container:not(.autofilter) {
-	margin: .5em 1em; /*same as in .ui-dialog */
 }
 
 .jsdialog-container {
@@ -30,26 +32,42 @@
 	z-index: 1105;
 }
 
+.jsdialog.one-child-popup {
+	border: 0;
+	margin: 0 !important;
+}
+
 .jsdialog-container.modalpopup {
+	min-width: 198px;
+	max-width: 498px;
 	border: 1px solid #a4a4a4 !important;
 	border-radius: var(--border-radius);
 	box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.15), 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+	overflow: auto;
+	position: relative;
+	margin: auto;
+	max-height: calc(100% - 30px);
+}
+
+.jsdialog-container .ui-dialog-titlebar {
+	background-color: var(--color-background-lighter);
 }
 
 .jsdialog-container .ui-dialog-content {
 	background-color: var(--color-background-lighter) !important;
-	font-family: var(--oxool-font);
+	font-family: var(--jquery-ui-font);
 	line-height: 1.5;
 }
 
-.jsdialog.vertical p, .ui-frame-label {
-	margin: 0px;
+.jsdialog.vertical label, .ui-frame-label {
+	margin: auto 0px;
 	color: var(--color-main-text);
 	font-size: var(--default-font-size);
 	line-height: var(--default-height);
+	padding-left: inherit;
 }
-#glowframe > div.ui-frame.jsdialog.sidebar > span,
-#softedgeframe > div.ui-frame.jsdialog.sidebar > span {
+#glowframe > div.ui-frame.jsdialog.sidebar > label,
+#softedgeframe > div.ui-frame.jsdialog.sidebar > label {
 	color: var(--color-main-text);
 	font-size: var(--header-font-size);
 	line-height: var(--header-height);
@@ -68,28 +86,23 @@
 	border: 1px solid var(--color-border-dark);
 	-webkit-box-shadow: 0 0 3px var(--color-border);
 	box-shadow: 0 0 3px var(--color-box-shadow);
-	border-radius: calc(var(--border-radius)/2);
+	border-radius: var(--border-radius);
 	background: var(--color-background-darker);
 }
 
 .jsdialog.ui-separator.vertical {
 	height: 100%;
-	padding-left: 6px;
-	/* border-left: 1px dashed #888; */
+	padding-right: 6px;
+	/* border-right: 1px dashed #888; */
 	background-image: linear-gradient(#888 22%, rgba(255,255,255,0) 0%);
-	background-position: left center;
+	background-position: right center;
 	background-size: 1px 14px;
 	background-repeat: repeat-y;
 	box-shadow: inset 0 34px 0 0 white;
 }
 
 .jsdialog.ui-separator.horizontal {
-	padding-top: 6px;
-}
-
-td.jsdialog:hover *,
-#table-box3:hover p {
-	color: var(--color-text-darker);
+	padding-bottom: 6px;
 }
 
 .jsdialog.row {
@@ -103,6 +116,14 @@ td.jsdialog:hover *,
 
 .jsdialog.vertical:not(.sidebar) {
 	width: 100%;
+}
+
+th.jsdialog:not(:first-child) {
+	padding-inline-end: 24px;
+}
+
+th.jsdialog {
+	text-align: start;
 }
 
 .jsdialog.vertical:not([id^='table-dialog-action_area']) > .jsdialog.row,
@@ -119,11 +140,40 @@ td.jsdialog > [id^='table-box']:not(.sidebar) {
 .jsdialog.ui-grid {
 	border-spacing: 0px;
 	width: 100%;
+	display: grid;
+	grid-gap: 4px;
+}
+
+/* Find and replace dialog */
+#search_grid, #replace_grid {
+	grid-template-columns: minmax(100px, min-content) auto !important;
+}
+#searchframe input[type='checkbox'] {
+	margin-inline-start: 0;
+}
+
+/* keep structure with hidden elements correct */
+.ui-grid {
+	/* don't show scroll for hidden objects */
+	overflow: hidden;
+}
+
+.ui-grid > .hidden {
+	visibility: hidden;
+	display: initial !important;
+	/* don't occupy space showing empty area */
+	width: 0px;
+	height: 0px;
+}
+
+/* vertical alignment in the grid */
+.ui-grid-cell {
+	margin: auto 0px;
 }
 
 /* Scrollwindow - used eg. in accessibility check in writer */
-.jsdialog.ui-scrollwindow {
-	overflow: scroll;
+.jsdialog.ui-scrollwindow:not(.formulabar) {
+	overflow: auto;
 	max-height: 500px;
 	max-width: 700px;
 }
@@ -135,45 +185,50 @@ td.jsdialog > [id^='table-box']:not(.sidebar) {
 
 /* Tabs */
 .jsdialog-tabs {
-	display: inline-flex;
+	display: flex;
 	width: 100%;
-	background: var(--color-main-background);
+	background: var(--color-background-lighter);
 }
 
 .jsdialog-tabs:empty {
 	display: none;
 }
 
-.jsdialog-tabs .ui-tabs.jsdialog {
-	display: inline-block;
+.ui-tab.jsdialog {
+	float: left !important;
+	font-size: var(--default-font-size) !important;
+	font-family: var(--cool-font) !important;
+	line-height: normal !important;
+	color: dimgray !important;
+	color: var(--color-text-dark) !important;
+	height: 24px !important;
+	display: flex !important;
+	align-items: center !important;
+	padding: 0px 1em !important;
+	border: solid 1px transparent !important;
+	border-radius: var(--border-radius) !important;
+	background-color: var(--color-main-background) !important;
+	margin-inline-end: 12px !important;
 }
 
-.ui-tab.jsdialog {
-	float: left;
-	font-size: var(--default-font-size);
-	font-family: var(--oxool-font);
-	line-height: normal;
-	color: dimgray;
-	color: var(--color-text-lighter);
-	height: 32px;
-	display: flex;
-	align-items: center;
-	padding: 0px 1em;
+.ui-tab.jsdialog:first-child {
+	margin-inline-start: 12px !important;
 }
 
 .ui-tab.hidden.jsdialog {
-	display: none;
+	visibility: hidden !important;
 }
 
 .ui-tab.selected.jsdialog {
-	background-color: var(--color-background-lighter);
-	color: var(--color-text-lighter);
+	background-color: var(--color-background-lighter) !important;
+	color: var(--color-text-darker) !important;
+	box-shadow: 0 0 2px 1px #cfcfcf !important;
 }
 
-.ui-tab.jsdialog:hover {
-	cursor: pointer;
-	background-color: var(--color-background-darker);
-	color: var(--color-text-darker);
+.ui-tab.jsdialog:not(.selected):hover {
+	cursor: pointer !important;
+	background-color: var(--color-background-darker) !important;
+	color: var(--color-text-darker) !important;
 }
 
 /* Expander */
@@ -216,6 +271,26 @@ td.jsdialog > [id^='table-box']:not(.sidebar) {
 	position: relative !important;
 }
 
+.ui-treeview-header-sort-icon::after {
+	content: '\25BC';
+	margin-inline-start: 7px;
+	display: none;
+}
+
+.ui-treeview-header-sort-icon.up::after {
+	transform: rotate(180deg);
+	display: inline-block;
+}
+
+.ui-treeview-header-sort-icon.down::after {
+	display: inline-block;
+}
+
+.ui-listview-icon {
+	height: 24px;
+	margin-inline-end: 8px;
+}
+
 .ui-expander-label.expanded {
 	padding-left: 14px; /*adding extra padding to account for image absolute position*/
 	color: #444;
@@ -248,11 +323,12 @@ td.jsdialog > [id^='table-box']:not(.sidebar) {
 }
 
 .ui-treeview.disabled {
-	background-color: var(--color-background-lighter);
+	background-color: var(--color-background-dark) !important;
 	color: var(--color-text-lighter) !important;
 }
 
-.ui-treeview-body {
+.ui-treeview-body,
+#custom_animation_label_parent {
 	color: var(--color-main-text);
 	font-size: var(--default-font-size);
 	line-height: var(--default-height);
@@ -290,6 +366,10 @@ td.jsdialog > [id^='table-box']:not(.sidebar) {
 	background-color: var(--color-background-lighter);
 }
 
+.ui-treeview.disabled .ui-treeview-entry:not(.autofilter) {
+	background-color: var(--color-background-dark);
+}
+
 input[type='checkbox'].autofilter, .jsdialog input[type='checkbox'] {
 	-webkit-appearance: none;
 	-moz-appearance: none;
@@ -297,14 +377,13 @@ input[type='checkbox'].autofilter, .jsdialog input[type='checkbox'] {
 	appearance: none;
 	width: 20px;
 	height: 20px;
-	border-color: transparent;
-	background: url('images/res/uncheckbox.svg') no-repeat center;
+	background: url('images/lc_checkboxoff.svg') no-repeat center;
 	margin: 1px 8px;
 }
 
 input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:checked {
 	border-color: transparent;
-	background-image: url('images/res/checkbox.svg');
+	background-image: url('images/lc_checkbox.svg');
 }
 
 .ui-textarea.jsdialog {
@@ -317,13 +396,19 @@ input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:chec
 
 .ui-treeview-entry.mobile-wizard {
 	line-height: 40px;
-	padding-left: 20px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 .ui-treeview-entry.selected,
 .ui-listview-entry.selected {
 	background-color: var(--color-background-dark);
 	color: var(--color-text-dark);
+}
+
+.ui-treeview.disabled .ui-treeview-entry.selected,
+.ui-treeview.disabled .ui-listview-entry.selected {
+	background-color: var(--color-background-darker) !important;
 }
 
 .ui-treeview-entry:hover,
@@ -367,14 +452,16 @@ input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:chec
 }
 /* input text */
 
-.jsdialog.ui-edit {
+.jsdialog.ui-edit, #hyperlink-text-box:not(.mobile-wizard) {
 	color: var(--color-text-dark);
 	background-color: var(--color-background-dark);
 	line-height: 28px;
 	max-height: 32px;
-	width: 100%;
+	width: auto;
+	width: -webkit-fill-available;
 	border: 1px solid var(--color-border-dark);
 	border-radius: var(--border-radius);
+	overflow: hidden;
 }
 
 #search_edit.ui-edit.autofilter {
@@ -406,21 +493,31 @@ input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:chec
 }
 /* Radio button */
 
+.radiobutton.jsdialog {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+
 .jsdialog input[type='radio'] {
-	vertical-align: middle;
-	margin: 0px 3px 0px 2px;
+	margin: 0;
 	border: none;
 }
 
 .jsdialog .radiobutton > label {
-	font-size: var(--default-font-size);
 	vertical-align: middle;
 }
 
 .jsdialog input[type='radio'][disabled='disabled'] ~ label {
 	color: var(--color-text-lighter);
 }
+
 /* spinfield */
+
+.spinfieldcontainer input {
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius);
+}
 
 .spinfieldcontainer input:hover {
 	border: 1px solid var(--color-border-darker);
@@ -432,13 +529,15 @@ input[type='checkbox']:checked.autofilter, .jsdialog input[type='checkbox']:chec
 	padding: 4px 0 4px 4px;
 	height: 28px;
 	box-sizing: border-box;
+	margin-right: 1px;
+	min-width: 70px;
+	width: 100%;
 }
 
 .spinfieldunit {
 	font-size: var(--default-font-size);
 	color: var(--color-text-dark);
 	margin: 5px;
-	position: absolute;
 	margin-inline-start: calc(-40px);
 }
 /* spinfield (number) */
@@ -460,19 +559,25 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	cursor: pointer;
 }
 /* listbox */
+.jsdialog.ui-listbox-container {
+	display: flex;
+	margin: auto 0;
+}
+
 .jsdialog.ui-listbox {
 	box-sizing: border-box;
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
 	min-width: 100px;
+	width: 100%;
 	height: 28px;
 	line-height: normal;
 	font-size: var(--default-font-size);
-	font-family: var(--oxool-font);
+	font-family: var(--jquery-ui-font);
 	border: 1px solid #CCC;
 	border-radius: var(--border-radius);
-	padding: 0 4px;
+	padding: 0 14px 0 4px;
 	background-color: #F1F1F1;
 }
 
@@ -487,19 +592,24 @@ input[type='number']:hover::-webkit-outer-spin-button {
 .ui-listbox::-ms-expand {
 	display: none;
 }
-
+@media (prefers-color-scheme: dark) {
+	.ui-listbox-arrow {
+		background: url('images/jquery-ui-lightness/ui-icons_ffffff_256x240.png') no-repeat transparent !important;
+	}
+}
 .ui-listbox-arrow {
 	content: '';
 	background: url('images/jquery-ui-lightness/ui-icons_222222_256x240.png') no-repeat transparent;
-	background-position: -67px -18px;
+	background-position: -67px -18px !important;
 	display: inline-block;
-	position: absolute;
+	position: relative;
 	width: 11px;
 	height: 11px;
 	cursor: pointer;
 	pointer-events: none;
 	margin-block-start: 8px;
 	margin-inline-start: -16px;
+	margin-inline-end: 4px;
 }
 
 .ui-listbox[disabled='disabled'] ~ .ui-listbox-arrow {
@@ -551,6 +661,10 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	background-color: var(--color-background-darker);
 }
 
+.ui-iconview-separator {
+	flex: 0 0 99%;
+}
+
 /* Autofilter dropdown */
 
 .autofilter.row {
@@ -569,7 +683,7 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	position: absolute;
 	z-index: 1105;
 	padding: 0;
-	font-family: var(--oxool-font);
+	font-family: var(--jquery-ui-font);
 }
 
 .autofilter-container > .root-container,
@@ -598,7 +712,7 @@ input[type='number']:hover::-webkit-outer-spin-button {
 
 #mobile-wizard #toggle_all.checkbutton + #select_current,
 .autofilter-container #select_current {
-	background: url('images/res/checkbox.svg') no-repeat center;
+	background: url('images/lc_checkbox.svg') no-repeat center;
 }
 
 .autofilter-container #select_current {
@@ -611,7 +725,7 @@ input[type='number']:hover::-webkit-outer-spin-button {
 
 #mobile-wizard #toggle_all.checkbutton + #select_current + #unselect_current,
 .autofilter-container #unselect_current {
-	background: url('images/res/uncheckbox.svg') no-repeat center;
+	background: url('images/lc_checkboxoff.svg') no-repeat center;
 }
 
 .autofilter-container #unselect_current {
@@ -638,6 +752,10 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	width: 100%;
 	min-width: 200px;
 	max-height: 150px;
+}
+
+#ZoteroDialog .ui-treeview-body {
+	max-height: 500px;
 }
 
 .autofilter-container-submenu > .autofilter-container {
@@ -719,7 +837,7 @@ input[type='number']:hover::-webkit-outer-spin-button {
 
 /* Macros dialos */
 
-#MacroWarnMedium p {
+#MacroWarnMedium label {
 	max-width: 400px;
 	color: var(--color-main-text);
 	text-transform: none;
@@ -743,35 +861,13 @@ input[type='number']:hover::-webkit-outer-spin-button {
 #MacroSelectorDialog #categories {
 	box-sizing: border-box;
 	border-color: transparent;
-	padding-right: 12px
 }
 
-#MacroSelectorDialog #categories .ui-treeview-entry.selected {
-	color: var(--color-text-dark);
+#MacroSelectorDialog #categories .ui-treeview-entry.selected, #MacroSelectorDialog #categories .ui-listview-entry, #MacroSelectorDialog #categories .ui-listview-entry.selected {
 	background-color: var(--color-background-dark);
+	color: var(--color-text-dark);
 }
-
-#MacroSelectorDialog #categories .ui-treeview-entry.selected::after {
-	margin-right: -6px;
-	margin-right: -11px;
-	color: var(--color-border-darker);
-	content: '\23F5';
-	font-size: var(--header-font-size);
-}
-
-#MacroSelectorDialog #categories .ui-treeview-entry {
-	color: var(--color-main-text);
-}
-
-#MacroSelectorDialog #categories .ui-treeview-entry:hover {
-	box-shadow: inset -6px 0 0 var(--color-border-darker);
-}
-
-#MacroSelectorDialog #categories > tbody > ul > li > ul .ui-treeview-expandable.selected > .ui-treeview::before {
-	/* visibility: hidden; hide when javascript sets properly expanders*/
-}
-
-#MacroSelectorDialog #categories .ui-treeview-entry:hover, .ui-treeview-entry.selected:hover, .ui-listview-entry:hover, .ui-listview-entry.selected:hover {
+#MacroSelectorDialog #categories .ui-treeview-entry:hover, #MacroSelectorDialog #categories .ui-treeview-entry.selected:hover, #MacroSelectorDialog #categories .ui-listview-entry:hover, #MacroSelectorDialog #categories .ui-listview-entry.selected:hover, #MacroSelectorDialog #categories .ui-treeview-entry.selected {
 	background-color: var(--color-background-darker);
 	color: var(--color-text-darker);
 }
@@ -789,7 +885,7 @@ input[type='number']:hover::-webkit-outer-spin-button {
 
 /* dropdown arrow */
 .unoarrow, .menubutton .arrow {
-	width: 0px;
+	width: auto !important;
 	height: 0px;
 	font-size: 0;
 	line-height: 0;
@@ -825,7 +921,7 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	box-sizing: border-box;
 	line-height: normal;
 	font-size: calc(var(--default-font-size)*1.2);
-	font-family: var(--oxool-font);
+	font-family: var(--jquery-ui-font);
 	border: 1px solid var(--color-border-dark);
 	border-radius: var(--border-radius);
 	padding: 8px 10px;
@@ -845,6 +941,12 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	display: table-cell !important;
 	float: right;
 	margin: 5px 0px 5px 5px;
+}
+
+/* sum button in formulabar */
+.formulabar.menubutton {
+	padding: 0px !important;
+	margin: 0 4px 0 0 !important;
 }
 
 /* toolbox */
@@ -1068,15 +1170,13 @@ input[type='number']:hover::-webkit-outer-spin-button {
 }
 
 /* snackbar */
+#snackbar {
+	border: none !important;
+}
 #mobile-wizard.popup.snackbar,
 .snackbar.jsdialog-container .ui-dialog-content {
 	min-width: 200px;
-	background-color: #565f77 !important;
-	border-radius: var(--border-radius) !important;
-}
-
-.snackbar.jsdialog-container .lokdialog.ui-dialog-content.ui-widget-content {
-	border-radius: 0 !important;
+	background-color: #323232 !important;
 }
 
 #mobile-wizard.popup.snackbar #label,
@@ -1118,19 +1218,30 @@ input[type='number']:hover::-webkit-outer-spin-button {
 	padding-right: 0;
 }
 
-#mobile-wizard.popup.snackbar #button span,
-.snackbar.jsdialog-container #button span {
-	color: #c8e7f9ff;
-	font-weight: bold;
+#mobile-wizard.popup.snackbar #button,
+#snackbar.jsdialog-container #button {
+	color: #469cff !important;
+	font-weight: 600;
+	font-size: var(--header-font-size) !important;
+	padding: 8px;
+}
+#snackbar.jsdialog-container #button:hover {
+	background-color: #ffffff15 !important;
 }
 
 /* toolbuttons */
 
 .jsdialog .ui-content.unobutton {
-	width: 24px;
-	height: 24px;
-	margin-right: 5px;
+	width: var(--btn-size);
+	height: var(--btn-size);
+	margin-inline-end: 5px;
 	vertical-align: middle;
+	background-color: transparent;
+	border: none;
+}
+
+.unotoolbutton.jsdialog.sidebar.ui-content > .arrowbackground {
+	width: auto;
 }
 
 /* handling show/hide state */
@@ -1159,4 +1270,96 @@ input[type='number']:hover::-webkit-outer-spin-button {
 @-webkit-keyframes fade {
 	from { opacity: 1 }
 	to { opacity: 0 }
+}
+
+/* images */
+
+.ui-image {
+	margin: auto;
+}
+
+.ui-drawing-area-container {
+	margin: auto;
+}
+
+/* formulabar */
+#sc_input_window.formulabar {
+	height: 28px;
+	border: 1px solid var(--color-border);
+	flex-grow: 1;
+	resize: none !important;
+	max-width: unset !important;
+	font-size: calc(var(--default-font-size)*1.2) !important;
+	line-height: 1.2;
+	color: var(--color-main-text);
+	background-color: var(--color-background-lighter);
+	border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+#sc_input_window.formulabar:focus {
+	outline-offset: -1px;
+}
+
+#sc_input_window.formulabar.expanded {
+	height: 72px !important;
+	border-radius: var(--border-radius) 0 var(--border-radius) var(--border-radius) !important;
+}
+
+.formulabar.unotoolbutton {
+	margin-inline-end: 4px !important;
+	opacity: 0.8;
+}
+
+#acceptformula {
+	margin-inline-start: 3px;
+}
+
+.formulabar.unotoolbutton:hover {
+	opacity: 1;
+}
+
+.formulabar.unotoolbutton img, .formulabar.ui-pushbutton {
+	height: 24px !important;
+	width: 24px !important;
+	min-width: unset !important;
+}
+
+#expand.formulabar {
+	height: 28px !important;
+	margin: 0 !important;
+	border-radius: 0 var(--border-radius) var(--border-radius) 0 !important;
+	border-inline-start: none !important;
+	background-color: var(--color-main-background) !important;
+}
+
+/* Zotero dialog*/
+
+#ZoteroDialog-mainbox.jsdialog .ui-treeview {
+	height: 400px;
+}
+
+#ZoteroDialog-search-container.jsdialog, #ZoteroDialog-locale-container.jsdialog {
+	margin-block: 7px;
+}
+
+#ZoteroDialog-locale-container.jsdialog {
+	width: fit-content;
+}
+
+#zoterocategory.jsdialog {
+	margin-inline-end: 7px;
+	min-width: 150px !important;
+	overflow-x: scroll;
+}
+
+#zoterolist.jsdialog {
+	width: 800px;
+}
+
+.jsdialog[id^='zotero'][id$='-label'] {
+	margin-inline-end: 7px;
+}
+
+.jsdialog[id^='zotero'][id$='-label']:not(:first-child) {
+	margin-inline-start: 24px;
 }

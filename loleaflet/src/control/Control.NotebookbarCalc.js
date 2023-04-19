@@ -14,7 +14,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'name': 'File',
 			},
 			{
-				'text': _('~Home'),
+				'text': _('Hom~e'),
 				'id': this.HOME_TAB_ID,
 				'name': 'Home',
 				'context': 'default|Cell|Text|DrawText'
@@ -40,12 +40,12 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'name': 'Review'
 			},
 			{
-				'text': _('Format'),
+				'text': _('F~ormat'),
 				'id': '-7',
 				'name': 'Format'
 			},
 			{
-				'text': _('~Draw'),
+				'text': _('Dra~w'),
 				'id': '-9',
 				'name': 'Draw',
 				'context': 'Draw|DrawLine|3DObject|MultiObject|Graphic|DrawFontwork'
@@ -81,19 +81,57 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 
 	getFileTab: function() {
 		var hasRevisionHistory = L.Params.revHistoryEnabled;
+		var hasPrint = !this._map['wopi'].HidePrintOption;
+		var hasRepair = !this._map['wopi'].HideRepairOption;
 		var hasSaveAs = !this._map['wopi'].UserCanNotWriteRelative;
+		var hideDownload = this._map['wopi'].HideExportOption;
 		var hasShare = this._map['wopi'].EnableShare;
 		var hasGroupedDownloadAs = !!window.groupDownloadAsForNb;
+		var hasGroupedSaveAs = window.uiDefaults && window.uiDefaults.saveAsMode === 'group';
 		var hasRunMacro = !(window.enableMacrosExecution  === 'false');
+		var hasSave = !this._map['wopi'].HideSaveOption;
+		var content = [];
 
-		var content = [
-			hasSaveAs ?
-				{
+		if (hasSave) {
+			content.push({
+				'type': 'toolbox',
+				'children': [
+					{
+						'id': 'file-save',
+						'type': 'bigtoolitem',
+						'text': _('Save'),
+						'command': '.uno:Save'
+					}
+				]
+			});
+		}
+
+		if (hasSaveAs) {
+			if (hasGroupedSaveAs) {
+				content.push({
+					'id': 'saveas',
+					'type': 'bigmenubartoolitem',
+					'text': _('Save As'),
+				});
+			} else {
+				content.push({
 					'id': 'file-saveas',
 					'type': 'bigtoolitem',
 					'text': _UNO('.uno:SaveAs', 'spreadsheet'),
 					'command': '.uno:SaveAs'
-				} : {},
+				});
+			}
+		}
+
+		if (hasSaveAs) {
+			content.push({
+				'id': 'exportas',
+				'type': 'bigmenubartoolitem',
+				'text': _('Export As'),
+			});
+		}
+
+		content = content.concat([
 			{
 				'id': 'file-shareas-rev-history',
 				'type': 'container',
@@ -101,22 +139,29 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 					hasShare ?
 						{
 							'id': 'ShareAs',
-							'type': 'menubartoolitem',
+							'type': 'customtoolitem',
 							'text': _('Share'),
-							'icon': '.uno:ShareDocument',
-							'command': 'ShareAs'
+							'command': 'shareas',
+							'inlineLabel': true
 						} : {},
 					hasRevisionHistory ?
 						{
 							'id': 'Rev-History',
-							'type': 'menubartoolitem',
-							'icon': 'res:rev-history',
+							'type': 'customtoolitem',
 							'text': _('See history'),
-							'command': 'rev-history'
+							'command': 'rev-history',
+							'inlineLabel': true
 						} : {},
 				],
 				'vertical': 'true'
 			},
+			hasPrint ?
+				{
+					'id': 'print',
+					'type': 'bigtoolitem',
+					'text': _UNO('.uno:Print', 'spreadsheet'),
+					'command': '.uno:Print'
+				} : {},
 			hasRunMacro ?
 				{
 					'type': 'toolbox',
@@ -129,38 +174,30 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						}
 					]
 				} : {}
-		];
+		]);
 
-		if (hasGroupedDownloadAs) {
+		if (hasGroupedDownloadAs && !hideDownload) {
 			content.push({
-				'id': 'downloadas-container',
-				'type': 'container',
-				'text': '',
-				'enabled': 'true',
-				'children': [
-					{
-						'id': 'downloadas',
-						'type': 'menubartoolitem',
-						'text': _('Download'),
-						'command': '.uno:InsertGraphic'
-					}
-				]
+				'id': 'downloadas',
+				'type': 'bigmenubartoolitem',
+				'text': _('Download')
 			});
 
-			content.push({
-				'type': 'container',
-				'children': [
-					{
-						'id': 'repair',
-						'type': 'menubartoolitem',
-						'icon': 'res:repair',
-						'text': _('Repair'),
-						'command': 'Repair'
-					}
-				],
-				'vertical': 'true'
-			});
-		} else {
+			if (hasRepair) {
+				content.push({
+					'type': 'container',
+					'children': [
+						{
+							'id': 'repair',
+							'type': 'bigmenubartoolitem',
+							'text': _('Repair'),
+							'command': _('Repair')
+						}
+					],
+					'vertical': 'true'
+				});
+			}
+		} else if (!hideDownload) {
 			content = content.concat([
 				{
 					'id': 'file-downloadas-ods-downloadas-csv',
@@ -169,14 +206,14 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-ods',
 							'type': 'menubartoolitem',
-							'icon': 'res:downloadas-ods',
-							'text': _('ODF Spreadsheet (.ods)')
+							'text': _('ODF Spreadsheet (.ods)'),
+							'command': ''
 						},
 						{
 							'id': 'downloadas-csv',
 							'type': 'menubartoolitem',
-							'icon': 'res:downloadas-csv',
-							'text': _('CSV File (.csv)')
+							'text': _('CSV File (.csv)'),
+							'command': ''
 						},
 					],
 					'vertical': 'true'
@@ -188,46 +225,88 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						{
 							'id': 'downloadas-xls',
 							'type': 'menubartoolitem',
-							'icon': 'res:downloadas-xls',
-							'text': _('Excel 2003 Spreadsheet (.xls)')
+							'text': _('Excel 2003 Spreadsheet (.xls)'),
+							'command': ''
 						},
 						{
 							'id': 'downloadas-xlsx',
 							'type': 'menubartoolitem',
-							'icon': 'res:downloadas-xlsx',
-							'text': _('Excel Spreadsheet (.xlsx)')
+							'text': _('Excel Spreadsheet (.xlsx)'),
+							'command': ''
 						},
 					],
 					'vertical': 'true'
 				},
 				{
-					'id': 'file-downloadas-pdf',
+					'id': 'file-exportpdf',
 					'type': 'container',
 					'children': [
 						{
-							'id': 'downloadas-pdf',
-							'type': 'menubartoolitem',
-							'icon': 'res:downloadas-pdf',
-							'text': _('PDF Document (.pdf)')
+							'id': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf',
+							'type': 'customtoolitem',
+							'text': _('PDF Document (.pdf)'),
+							'command': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf',
+							'inlineLabel': true
 						},
-						{
+						hasRepair? {
 							'id': 'repair',
 							'type': 'menubartoolitem',
-							'icon': 'res:repair',
 							'text': _('Repair'),
-							'command': 'Repair'
-						}
+							'command': _('Repair')
+						} : {}
 					],
 					'vertical': 'true'
 				}
 			]);
+		} else if (hasRepair) {
+			content.push({
+				'type': 'container',
+				'children': [
+					{
+						'id': 'repair',
+						'type': 'bigmenubartoolitem',
+						'text': _('Repair'),
+						'command': _('Repair')
+					}
+				],
+				'vertical': 'true'
+			});
 		}
+
+		content.push({
+			'type': 'container',
+			'children': [
+				{
+					'id': 'properties',
+					'type': 'bigtoolitem',
+					'text': _('Properties'),
+					'command': '.uno:SetDocumentProperties'
+				}
+			]
+		});
 
 		return this.getTabPage('File', content);
 	},
 
 	getHomeTab: function() {
 		var content = [
+			{
+				'id': 'home-undo-redo',
+				'type': 'container',
+				'children': [
+					{
+						'type': 'toolitem',
+						'text': _UNO('.uno:Undo'),
+						'command': '.uno:Undo'
+					},
+					{
+						'type': 'toolitem',
+						'text': _UNO('.uno:Redo'),
+						'command': '.uno:Redo'
+					},
+				],
+				'vertical': 'true'
+			},
 			{
 				'type': 'bigtoolitem',
 				'text': _UNO('.uno:Paste'),
@@ -407,6 +486,11 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 										'type': 'toolitem',
 										'text': _UNO('.uno:DecrementIndent'),
 										'command': '.uno:DecrementIndent'
+									},
+									{
+										'type': 'toolitem',
+										'text': _UNO('.uno:ParaLeftToRight'),
+										'command': '.uno:ParaLeftToRight'
 									}
 								]
 							}
@@ -445,6 +529,11 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 										'type': 'toolitem',
 										'text': _UNO('.uno:WrapText', 'spreadsheet'),
 										'command': '.uno:WrapText'
+									},
+									{
+										'type': 'toolitem',
+										'text': _UNO('.uno:ParaRightToLeft'),
+										'command': '.uno:ParaRightToLeft'
 									}
 								]
 							}
@@ -603,16 +692,22 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'type': 'toolbox',
 						'children': [
 							{
+								'id': 'StyleApplyDefault',
 								'type': 'toolitem',
-								'command': '.uno:DefaultCellStyles'
+								'text': _('Default'),
+								'command': '.uno:StyleApply?Style:string=Default&FamilyName:string=CellStyles'
 							},
 							{
+								'id': 'StyleApplyHeading1',
 								'type': 'toolitem',
-								'command': '.uno:Heading1CellStyles'
+								'text': _('Heading 1'),
+								'command': '.uno:StyleApply?Style:string=Heading 1&FamilyName:string=CellStyles'
 							},
 							{
+								'id': 'StyleApplyHeading2',
 								'type': 'toolitem',
-								'command': '.uno:Heading2CellStyles'
+								'text': _('Heading 2'),
+								'command': '.uno:StyleApply?Style:string=Heading 2&FamilyName:string=CellStyles'
 							}
 						]
 					},
@@ -621,16 +716,22 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'type': 'toolbox',
 						'children': [
 							{
+								'id': 'StyleApplyGood',
 								'type': 'toolitem',
-								'command': '.uno:GoodCellStyles'
+								'text': _('Good'),
+								'command': '.uno:StyleApply?Style:string=Good&FamilyName:string=CellStyles'
 							},
 							{
+								'id': 'StyleApplyNeutral',
 								'type': 'toolitem',
-								'command': '.uno:NeutralCellStyles'
+								'text': _('Neutral'),
+								'command': '.uno:StyleApply?Style:string=Neutral&FamilyName:string=CellStyles'
 							},
 							{
+								'id': 'StyleApplyBad',
 								'type': 'toolitem',
-								'command': '.uno:BadCellStyles'
+								'text': _('Bad'),
+								'command': '.uno:StyleApply?Style:string=Bad&FamilyName:string=CellStyles'
 							}
 						]
 					}
@@ -684,19 +785,24 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'command': '.uno:PageFormatDialog'
 			},
 			{
+				'type': 'bigtoolitem',
+				'text': _UNO('.uno:SheetRightToLeft', 'spreadsheet'),
+				'command': '.uno:SheetRightToLeft'
+			},
+			{
 				'id': 'Data-PrintRangesMenu:MenuPrintRanges',
 				'type': 'menubutton',
 				'text': _UNO('.uno:PrintRangesMenu', 'spreadsheet'),
 				'enabled': 'true'
 			},
 			{
-				'id': 'Data-RowMenu:MenuRowHeight',
+				'id': 'Data-RowMenuHeight:MenuRowHeight',
 				'type': 'menubutton',
-				'text': _('Row Width'),
+				'text': _('Row Height'),
 				'enabled': 'true'
 			},
 			{
-				'id': 'Data-RowMenu:MenuColumnWidth',
+				'id': 'Data-ColumnMenuWidth:MenuColumnWidth',
 				'type': 'menubutton',
 				'text': _('Column Width'),
 				'enabled': 'true'
@@ -877,7 +983,15 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 	},
 
 	getViewTab: function() {
+		var isTablet = window.mode.isTablet();
 		var content = [
+			isTablet ?
+				{
+					'id': 'closemobile',
+					'type': 'bigcustomtoolitem',
+					'text': _('Read mode'),
+					'command': 'closetablet',
+				} : {},
 			{
 				'id': 'fullscreen',
 				'type': 'bigtoolitem',
@@ -888,7 +1002,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'id': 'zoomreset',
 				'type': 'menubartoolitem',
 				'text': _('Reset zoom'),
-				'command': '.uno:Zoom100Percent'
+				'command': _('Reset zoom')
 			},
 			{
 				'type': 'container',
@@ -922,25 +1036,31 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'id': 'toggleuimode',
 				'type': 'bigmenubartoolitem',
 				'text': _('Compact view'),
-				'command': '.uno:ToolbarModeUI'
+				'command': _('Toggle UI Mode')
 			},
 			{
 				'id': 'showstatusbar',
 				'type': 'menubartoolitem',
 				'text': _('Status Bar'),
-				'command': '.uno:StatusBarVisible'
+				'command': _('Show Status Bar')
+			},
+			{
+				'id':'toggledarktheme',
+				'type': 'bigmenubartoolitem',
+				'text': _('Dark Mode')
 			},
 			{
 				'type': 'bigtoolitem',
 				'text': _UNO('.uno:Sidebar'),
 				'command': '.uno:Sidebar'
-			},
+			}
 		];
 
 		return this.getTabPage('View', content);
 	},
 
 	getInsertTab: function() {
+		var isODF = L.LOUtil.isFileODF(this._map);
 		var content = [
 			{
 				'type': 'bigtoolitem',
@@ -982,6 +1102,11 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'command': '.uno:InsertObjectChart'
 			},
 			{
+				'type': 'bigtoolitem',
+				'text': _('Sparkline'),
+				'command': '.uno:InsertSparkline'
+			},
+			{
 				'id': 'Insert-Section-PivotTable-Ext',
 				'type': 'container',
 				'children': [
@@ -1011,10 +1136,16 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'vertical': 'true'
 			},
 			{
-				'type': 'bigtoolitem',
+				'id': 'HyperlinkDialog',
+				'type': 'bigcustomtoolitem',
 				'text': _UNO('.uno:HyperlinkDialog'),
-				'command': '.uno:HyperlinkDialog'
+				'command': 'hyperlinkdialog'
 			},
+			(this._map['wopi'].EnableRemoteLinkPicker) ? {
+				'type': 'bigcustomtoolitem',
+				'text': _('Smart Picker'),
+				'command': 'remotelink'
+			} : {},
 			{
 				'id': 'Insert-Section-NameRangesTable-Ext',
 				'type': 'container',
@@ -1057,7 +1188,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'children': [
 							{
 								'type': 'toolitem',
-								'text': _UNO('.uno:ShapesMenu'),
+								'text': _('Shapes'),
 								'command': '.uno:BasicShapes'
 							}
 						]
@@ -1087,7 +1218,9 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 							{
 								'type': 'toolitem',
 								'text': _UNO('.uno:FontworkGalleryFloater'),
-								'command': '.uno:FontworkGalleryFloater'
+								'command': '.uno:FontworkGalleryFloater',
+								// Fontwork export/import not supported in other formats.
+								'visible': isODF ? 'true' : 'false',
 							}
 						]
 					},
@@ -1119,9 +1252,10 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'type': 'toolbox',
 						'children': [
 							{
-								'type': 'toolitem',
+								'id': 'CharmapControl',
+								'type': 'customtoolitem',
 								'text': _UNO('.uno:CharmapControl'),
-								'command': '.uno:CharmapControl'
+								'command': 'charmapcontrol'
 							}
 						]
 					},
@@ -1326,7 +1460,6 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'id': 'Data-StatisticsMenu:Menu Statistic',
 				'type': 'menubutton',
 				'text': _UNO('.uno:StatisticsMenu', 'spreadsheet'),
-				'command': '.uno:StatisticsMenu',
 				'enabled': 'true'
 			},
 		];
@@ -1461,13 +1594,20 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 				'type': 'bigtoolitem',
 				'text': _UNO('.uno:TransformDialog'),
 				'command': '.uno:TransformDialog'
-			}
+			},
+			{
+				'id': 'Format-SparklineMenu:FormatSparklineMenu',
+				'type': 'menubutton',
+				'text': _UNO('.uno:FormatSparklineMenu', 'spreadsheet'),
+				'enabled': 'true'
+			},
 		];
 
 		return this.getTabPage('Format', content);
 	},
 
 	getDrawTab: function() {
+		var isODF = L.LOUtil.isFileODF(this._map);
 		var content = [
 			{
 				'type': 'bigtoolitem',
@@ -1699,7 +1839,7 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 						'children': [
 							{
 								'type': 'toolitem',
-								'text': _UNO('.uno:ShapesMenu'),
+								'text': _('Shapes'),
 								'command': '.uno:BasicShapes'
 							}
 						]
@@ -1729,7 +1869,9 @@ L.Control.NotebookbarCalc = L.Control.NotebookbarWriter.extend({
 							{
 								'type': 'toolitem',
 								'text': _UNO('.uno:FontworkGalleryFloater'),
-								'command': '.uno:FontworkGalleryFloater'
+								'command': '.uno:FontworkGalleryFloater',
+								// Fontwork export/import not supported in other formats.
+								'visible': isODF ? 'true' : 'false',
 							}
 						]
 					},

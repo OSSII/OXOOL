@@ -28,7 +28,6 @@ L.Control.Ruler = L.Control.extend({
 		map.on('scrolllimits', this._updatePaintTimer, this);
 		map.on('moveend', this._fixOffset, this);
 		map.on('updatepermission', this._changeInteractions, this);
-		map.on('doclayerinit', this._onDocLayerInit, this);
 		L.DomUtil.addClass(map.getContainer(), 'hasruler');
 		this._map = map;
 
@@ -63,55 +62,27 @@ L.Control.Ruler = L.Control.extend({
 		}
 	},
 
-	/**
-	 * 尺規須依據使用者自訂決定顯示與否
-	 *
-	 * @author Firefly <firefly@ossii.com.tw>
-	 */
-	_onDocLayerInit: function() {
-		// 使用者自訂存放於 localstorage
-		var showRuler = this._map.uiManager.getSavedStateOrDefault('ShowRuler');
-		this._map.sendUnoCommand('.uno:Ruler', {
-			Ruler: {
-				type: 'boolean',
-				value: showRuler
-			}
-		});
-
-		// 切換尺規顯示與否
-		this._map.stateChangeHandler.on('.uno:Ruler', function(e) {
-			if (e.checked()) {
-				this._map.uiManager.showRuler();
-			} else if (e.state === 'false') {
-				this._map.uiManager.hideRuler();
-			}
-			// 尺規是否可用
-			this._changeInteractions({perm: (e.disabled() ? 'readonly' : 'edit')});
-
-		}, this);
-	},
-
 	_initiateIndentationMarkers: function() {
 		// First line indentation..
 		this._firstLineMarker = document.createElement('div');
 		this._firstLineMarker.id = 'lo-fline-marker';
-		this._firstLineMarker.classList.add('oxool-ruler-indentation-marker-down');
+		this._firstLineMarker.classList.add('cool-ruler-indentation-marker-down');
 		this._rFace.appendChild(this._firstLineMarker);
 
 		// Paragraph indentation..
 		this._pStartMarker = document.createElement('div');
 		this._pStartMarker.id = 'lo-pstart-marker';
-		this._pStartMarker.classList.add('oxool-ruler-indentation-marker-up');
+		this._pStartMarker.classList.add('cool-ruler-indentation-marker-up');
 		this._rFace.appendChild(this._pStartMarker);
 
 		// Paragraph end..
 		this._pEndMarker = document.createElement('div');
 		this._pEndMarker.id = 'lo-pend-marker';
-		this._pEndMarker.classList.add('oxool-ruler-indentation-marker-up');
+		this._pEndMarker.classList.add('cool-ruler-indentation-marker-up');
 		this._rFace.appendChild(this._pEndMarker);
 
 		// While one of the markers is being dragged, a vertical line should be visible in order to indicate the new position of the marker..
-		this._markerVerticalLine = L.DomUtil.create('div', 'oxool-ruler-indentation-marker-center');
+		this._markerVerticalLine = L.DomUtil.create('div', 'cool-ruler-indentation-marker-center');
 		this._rFace.appendChild(this._markerVerticalLine);
 
 		var self = this;
@@ -175,7 +146,7 @@ L.Control.Ruler = L.Control.extend({
 	},
 
 	_initLayout: function() {
-		this._rWrapper = L.DomUtil.create('div', 'oxool-ruler leaflet-bar leaflet-control leaflet-control-custom');
+		this._rWrapper = L.DomUtil.create('div', 'cool-ruler leaflet-bar leaflet-control leaflet-control-custom');
 		this._rWrapper.style.visibility = 'hidden';
 
 		// We start it hidden rather than not initialzing at all.
@@ -184,14 +155,14 @@ L.Control.Ruler = L.Control.extend({
 		if (!this.options.showruler) {
 			L.DomUtil.setStyle(this._rWrapper, 'display', 'none');
 		}
-		this._rFace = L.DomUtil.create('div', 'oxool-ruler-face', this._rWrapper);
-		this._rMarginWrapper = L.DomUtil.create('div', 'oxool-ruler-marginwrapper', this._rFace);
+		this._rFace = L.DomUtil.create('div', 'cool-ruler-face', this._rWrapper);
+		this._rMarginWrapper = L.DomUtil.create('div', 'cool-ruler-marginwrapper', this._rFace);
 		// BP => Break Points
-		this._rBPWrapper = L.DomUtil.create('div', 'oxool-ruler-breakwrapper', this._rFace);
-		this._rBPContainer = L.DomUtil.create('div', 'oxool-ruler-breakcontainer', this._rBPWrapper);
+		this._rBPWrapper = L.DomUtil.create('div', 'cool-ruler-breakwrapper', this._rFace);
+		this._rBPContainer = L.DomUtil.create('div', 'cool-ruler-breakcontainer', this._rBPWrapper);
 
 		// Tab stops
-		this._rTSContainer = L.DomUtil.create('div', 'oxool-ruler-tabstopcontainer', this._rMarginWrapper);
+		this._rTSContainer = L.DomUtil.create('div', 'cool-ruler-tabstopcontainer', this._rMarginWrapper);
 		L.DomEvent.on(this._rTSContainer, 'mousedown', this._initiateTabstopDrag, this);
 
 		var self = this;
@@ -245,12 +216,11 @@ L.Control.Ruler = L.Control.extend({
 	},
 
 	_updateParagraphIndentations: function() {
-		var property = this._map.stateChangeHandler.getItemProperty('.uno:LeftRightParaMargin');
-		if (!property.hasValue()) {
-			return;
-		}
+		var items = this._map['stateChangeHandler'];
+		var state = items.getItemValue('.uno:LeftRightParaMargin');
 
-		var state = property.value();
+		if (!state)
+			return;
 
 		this.options.firstLineIndent = parseFloat(state.firstline.replace(',', '.'));
 		this.options.leftParagraphIndent = parseFloat(state.left.replace(',', '.'));
@@ -335,9 +305,9 @@ L.Control.Ruler = L.Control.extend({
 		// least in the US. (The ruler unit to use doesn't seem to be stored in the document
 		// at least for .odt?)
 		for (var num = 0; num <= (this.options.pageWidth / 1000) + 1; num++) {
-			var marker = L.DomUtil.create('div', 'oxool-ruler-maj', this._rBPContainer);
+			var marker = L.DomUtil.create('div', 'cool-ruler-maj', this._rBPContainer);
 			// The - 1 is to compensate for the left and right .5px borders of
-			// oxool-ruler-maj in leaflet.css.
+			// cool-ruler-maj in leaflet.css.
 			marker.style.width = this.options.DraggableConvertRatio*1000 - 1 + 'px';
 			if (this.options.displayNumber) {
 				if (numCounter !== 0)
@@ -358,16 +328,16 @@ L.Control.Ruler = L.Control.extend({
 			var currentTabstop = this.options.tabs[tabstopIndex];
 			switch (currentTabstop.style) {
 			case 0:
-				markerClass = 'oxool-ruler-tabstop-left';
+				markerClass = 'cool-ruler-tabstop-left';
 				break;
 			case 1:
-				markerClass = 'oxool-ruler-tabstop-right';
+				markerClass = 'cool-ruler-tabstop-right';
 				break;
 			case 2:
-				markerClass = 'oxool-ruler-tabstop-center';
+				markerClass = 'cool-ruler-tabstop-center';
 				break;
 			case 3:
-				markerClass = 'oxool-ruler-tabstop-decimal';
+				markerClass = 'cool-ruler-tabstop-decimal';
 				break;
 			}
 			if (markerClass != null) {
@@ -385,12 +355,12 @@ L.Control.Ruler = L.Control.extend({
 
 		if (!this.options.marginSet) {
 			this.options.marginSet = true;
-			this._lMarginMarker = L.DomUtil.create('div', 'oxool-ruler-margin oxool-ruler-left', this._rFace);
-			this._rMarginMarker =  L.DomUtil.create('div', 'oxool-ruler-margin oxool-ruler-right', this._rFace);
-			this._lMarginDrag = L.DomUtil.create('div', 'oxool-ruler-drag oxool-ruler-left', this._rMarginWrapper);
-			this._lToolTip = L.DomUtil.create('div', 'oxool-ruler-ltooltip', this._lMarginDrag);
-			this._rMarginDrag = L.DomUtil.create('div', 'oxool-ruler-drag oxool-ruler-right', this._rMarginWrapper);
-			this._rToolTip = L.DomUtil.create('div', 'oxool-ruler-rtooltip', this._rMarginDrag);
+			this._lMarginMarker = L.DomUtil.create('div', 'cool-ruler-margin cool-ruler-left', this._rFace);
+			this._rMarginMarker =  L.DomUtil.create('div', 'cool-ruler-margin cool-ruler-right', this._rFace);
+			this._lMarginDrag = L.DomUtil.create('div', 'cool-ruler-drag cool-ruler-left', this._rMarginWrapper);
+			this._lToolTip = L.DomUtil.create('div', 'cool-ruler-ltooltip', this._lMarginDrag);
+			this._rMarginDrag = L.DomUtil.create('div', 'cool-ruler-drag cool-ruler-right', this._rMarginWrapper);
+			this._rToolTip = L.DomUtil.create('div', 'cool-ruler-rtooltip', this._rMarginDrag);
 			var lMarginTooltipText = _('Left Margin');
 			var rMarginTooltipText = _('Right Margin');
 
@@ -557,7 +527,7 @@ L.Control.Ruler = L.Control.extend({
 		this._initialposition = e.clientX;
 		this._lastposition = this._initialposition;
 
-		if (L.DomUtil.hasClass(dragableElem, 'oxool-ruler-right')) {
+		if (L.DomUtil.hasClass(dragableElem, 'cool-ruler-right')) {
 			L.DomUtil.addClass(this._rMarginDrag, 'leaflet-drag-moving');
 			this._rFace.style.cursor = 'w-resize';
 		}
@@ -649,8 +619,8 @@ L.Control.Ruler = L.Control.extend({
 		this.currentPositionInTwips = position;
 		this.currentTabStopIndex = tabstopNumber;
 		$.contextMenu({
-			selector: '.oxool-ruler-tabstopcontainer',
-			className: 'oxool-font',
+			selector: '.cool-ruler-tabstopcontainer',
+			className: 'cool-font',
 			items: {
 				inserttabstop: {
 					name: _('Insert tabstop'),

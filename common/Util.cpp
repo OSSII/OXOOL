@@ -1,18 +1,26 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 #include <config.h>
+#include <config_version.h>
+
+#ifndef COOLWSD_BUILDCONFIG
+#define COOLWSD_BUILDCONFIG
+#endif
 
 #include "Util.hpp"
 
 #include <csignal>
-#include <sys/poll.h>
+#include <poll.h>
+
+#ifdef HAVE_SYS_RANDOM_H
+#  include <sys/random.h>
+#endif
+
 #ifdef __linux__
 #  include <sys/prctl.h>
 #  include <sys/syscall.h>
@@ -60,6 +68,7 @@
 #include <Poco/RandomStream.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/Util/Application.h>
+#include <Poco/URI.h>
 
 #include "Common.hpp"
 #include "Log.hpp"
@@ -121,15 +130,23 @@ namespace Util
 
             // a poor fallback but something.
             std::vector<char> random = getBytes(length);
-            int fd = open("/dev/urandom", O_RDONLY);
             int len = 0;
-            if (fd < 0 ||
-                (len = read(fd, random.data(), length)) < 0 ||
-                std::size_t(len) < length)
+#ifdef HAVE_SYS_RANDOM_H
+            len = getrandom(random.data(), length, GRND_NONBLOCK);
+
+            // if getrandom() fails, we fall back to "/dev/[u]random" approach.
+            if (len != length)
+#endif
             {
-                LOG_ERR("failed to read " << length << " hard random bytes, got " << len << " for hash: " << errno);
+                const int fd = open("/dev/urandom", O_RDONLY);
+                if (fd < 0 ||
+                    (len = read(fd, random.data(), length)) < 0 ||
+                    std::size_t(len) < length)
+                {
+                    LOG_ERR("failed to read " << length << " hard random bytes, got " << len << " for hash: " << errno);
+                }
+                close(fd);
             }
-            close(fd);
 
             hex.rdbuf()->setLineLength(0); // Don't insert line breaks.
             hex.write(random.data(), length);
@@ -273,8 +290,7 @@ namespace Util
             int ret = execvp(params[0], &params[0]);
             if (ret < 0)
                 LOG_SFL("Failed to exec command '" << cmd << '\'');
-            Log::shutdown();
-            _exit(42);
+            Util::forcedExit(42);
         }
         // else spawning process still
         if (stdInput)
@@ -310,9 +326,11 @@ namespace Util
 
 #if !MOBILEAPP
 
-    static const char *startsWith(const char *line, const char *tag)
+    static const char *startsWith(const char *line, const char *tag, std::size_t tagLen)
     {
-        std::size_t len = std::strlen(tag);
+        assert(strlen(tag) == tagLen);
+
+        std::size_t len = tagLen;
         if (!strncmp(line, tag, len))
         {
             while (!isdigit(line[len]) && line[len] != '\0')
@@ -360,7 +378,7 @@ namespace Util
             while (fgets(line, sizeof(line), file))
             {
                 const char* value;
-                if ((value = startsWith(line, "MemTotal:")))
+                if ((value = startsWith(line, "MemTotal:", 9)))
                 {
                     totalMemKb = atoi(value);
                     break;
@@ -381,13 +399,17 @@ namespace Util
             char line[4096] = { 0 };
             while (fgets(line, sizeof (line), file))
             {
+                if (line[0] != 'P')
+                    continue;
+
                 const char *value;
+
                 // Shared_Dirty is accounted for by forkit's RSS
-                if ((value = startsWith(line, "Private_Dirty:")))
+                if ((value = startsWith(line, "Private_Dirty:", 14)))
                 {
                     numDirtyKb += atoi(value);
                 }
-                else if ((value = startsWith(line, "Pss:")))
+                else if ((value = startsWith(line, "Pss:", 4)))
                 {
                     numPSSKb += atoi(value);
                 }
@@ -614,16 +636,9 @@ namespace Util
 
     void getVersionInfo(std::string& version, std::string& hash)
     {
-        version = std::string(LOOLWSD_VERSION);
-        hash = std::string(LOOLWSD_VERSION_HASH);
+        version = std::string(COOLWSD_VERSION);
+        hash = std::string(COOLWSD_VERSION_HASH);
         hash.resize(std::min(8, (int)hash.length()));
-    }
-
-    // Added by Firefly <firefly@ossii.com.tw>
-    void getVersionInfo(std::string& version, std::string& hash, std::string& branch)
-    {
-        getVersionInfo(version, hash);
-        branch = std::string(LOOLWSD_BRANCH);
     }
 
     std::string getProcessIdentifier()
@@ -633,16 +648,17 @@ namespace Util
         return id;
     }
 
-    std::string getVersionJSON()
+    std::string getVersionJSON(bool enableExperimental)
     {
         std::string version, hash;
         Util::getVersionInfo(version, hash);
         return
-            "{ \"Version\":  \"" + version + "\", "
-            "\"Hash\":     \"" + hash + "\", "
-            "\"Branch\": \"" + LOOLWSD_BRANCH + "\", "
-            "\"Protocol\": \"" + LOOLProtocol::GetProtocolVersion() + "\", "
-            "\"Id\":  \"" + Util::getProcessIdentifier() + "\" }";
+            "{ \"Version\":     \"" + version + "\", "
+              "\"Hash\":        \"" + hash + "\", "
+              "\"BuildConfig\": \"" + std::string(COOLWSD_BUILDCONFIG) + "\", "
+              "\"Protocol\":    \"" + COOLProtocol::GetProtocolVersion() + "\", "
+              "\"Id\":          \"" + Util::getProcessIdentifier() + "\", "
+              "\"Options\":     \"" + std::string(enableExperimental ? " (E)" : "") + "\" }";
     }
 
     std::string UniqueId()
@@ -698,6 +714,20 @@ namespace Util
         }
 
         return true;
+    }
+
+    std::string encodeURIComponent(const std::string& uri, const std::string& reserved)
+    {
+        std::string encoded;
+        Poco::URI::encode(uri, reserved, encoded);
+        return encoded;
+    }
+
+    std::string decodeURIComponent(const std::string& uri)
+    {
+        std::string decoded;
+        Poco::URI::decode(uri, decoded);
+        return decoded;
     }
 
     /// Split a string in two at the delimiter and give the delimiter to the first.
@@ -819,8 +849,14 @@ namespace Util
 
     std::string getHttpTimeNow()
     {
-        return Poco::DateTimeFormatter::format(
-                Poco::Timestamp(), Poco::DateTimeFormat::HTTP_FORMAT);
+        char time_now[64];
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+        std::tm now_tm;
+        gmtime_r(&now_c, &now_tm);
+        strftime(time_now, sizeof(time_now), "%a, %d %b %Y %T", &now_tm);
+
+        return time_now;
     }
 
     std::string getHttpTime(std::chrono::system_clock::time_point time)
@@ -1091,7 +1127,16 @@ namespace Util
 
     void forcedExit(int code)
     {
+        if (code)
+            LOG_FTL("Forced Exit with code: " << code);
+        else
+            LOG_INF("Forced Exit with code: " << code);
         Log::shutdown();
+
+#if CODE_COVERAGE
+        __gcov_dump();
+#endif
+
         std::_Exit(code);
     }
 

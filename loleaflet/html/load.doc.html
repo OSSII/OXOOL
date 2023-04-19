@@ -33,7 +33,7 @@
 
       <h4>Example</h4>
       <p>
-        http://localhost:9980/loleaflet/dist/load.doc.html
+        http://localhost:9980/browser/dist/load.doc.html
       </p>
     </div>
 
@@ -44,7 +44,7 @@
       }
 
       function submitform() {
-        var path = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'loleaflet.html';
+        var path = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'cool.html';
         var query = '?access_token=' + document.getElementById("access_token").value;
         query += '&file_path=' + document.getElementById("file_path").value;
         query += '&NotWOPIButIframe=true';
@@ -56,16 +56,16 @@
       }
     </script>
 
-    <h3>Load OxOffice Online page via a Post request</h3>
+    <h3>Load Collabora Online page via a Post request</h3>
     <form id="request" onsubmit="submitform()" action="" method="post" target="online" style="font-size: large;">
 
       <input id="access_token" name="access_token" value="zzzzzzzzz" type="hidden" />
       <input name="NotWOPIButIframe" value="true" type="hidden" />
 
       <label for="file_path">Document Path:</label>
-      <input id="file_path" name="file_path" value="file:///home/oxool/online/test/data/hello-world.odt" type="text" size="80" /></br>
+      <input id="file_path" name="file_path" value="file:///home/cool/online/test/data/hello-world.odt" type="text" size="80" /></br>
       </br>
-      <input type="submit" value="Load OxOffice Online" />
+      <input type="submit" value="Load Collabora Online" />
     </form>
 
   </body>

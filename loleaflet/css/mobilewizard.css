@@ -1,3 +1,8 @@
+label.mobile-wizard {
+	display: block;
+	float: left;
+}
+
 .menuwizard .menu-entry-icon{
 	padding-left: 4%;
 }
@@ -31,9 +36,6 @@ span#main-menu-btn-icon {
 #fontnamecombobox {
 	padding-right: 0px;
 }
-#fontheight {
-	display: none;
-}
 
 #style {
 	display: flex;
@@ -43,7 +45,7 @@ span#main-menu-btn-icon {
 	width: 100%;
 }
 
-.ui-header.level-1.mobile-wizard.ui-widget img[src='images/lc_downloadas-pdf.svg']{
+.ui-header.level-1.mobile-wizard.ui-widget img[src='images/lc_exportpdf.svg']{
 	visibility: visible;
 }
 
@@ -56,7 +58,7 @@ span#main-menu-btn-icon {
 	border: 1px solid #fff;
 }
 
-.layout.oxool-context-down {
+.layout.cool-context-down {
 	background-color: #dddddd;
 	box-shadow: inset 0px -1px 2px 5px #eee;
 	border-color: #dddddd;
@@ -118,7 +120,8 @@ span#main-menu-btn-icon {
 
 .colors-container-no-color-row, .colors-container-auto-color-row{
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-start;
+	align-items: center;
 	height: 50px;
 }
 
@@ -131,9 +134,11 @@ span#main-menu-btn-icon {
 }
 
 .no-color-control-label, .auto-color-control-label {
-	display: table-cell;
-	padding-left: 4px;
+	display: table-cell !important;
+	padding-left: 8px;
 	vertical-align: middle;
+	white-space: nowrap;
+	float: initial !important;
 }
 
 .no-color-control-mark, .auto-color-control-mark {
@@ -143,7 +148,7 @@ span#main-menu-btn-icon {
 }
 
 .no-color-control-icon, .auto-color-control-icon {
-	display: table-cell;
+	display: table-cell !important;
 	height: 32px !important;
 	width: 32px !important;
 	text-align: center;
@@ -151,7 +156,8 @@ span#main-menu-btn-icon {
 	line-height: 28px;
 	font-weight: 300;
 	color: #ff0000 !important;
-	background: url('images/cmd/square_rounded_unfilled.svg') no-repeat center;
+	background: url('images/lc_square_rounded_unfilled.svg') no-repeat center;
+	float: initial !important;
 }
 
 .colors-container-basic-color-mark {
@@ -186,7 +192,7 @@ p.mobile-wizard.ui-combobox-text {
 	padding-left: 2% !important;
 	width: 100%;
 }
-.menu-entry-icon.inserttable, .menu-entry-icon.insertfield, .menu-entry-icon.insertheaderfooter, .menu-entry-icon.formattingmark {
+.menu-entry-icon.inserttable, .menu-entry-icon.insertfield, .menu-entry-icon.insertheaderfooter, .menu-entry-icon.formattingmark, .menu-entry-icon.formatformmenu {
 	padding-left: 2% !important;
 }
 #BackgroundColor > .ui-header-left {
@@ -235,8 +241,11 @@ p.mobile-wizard.ui-combobox-text.selected {
 	flex-wrap: wrap !important;
 	margin-top: 25px;
 }
-#rotationlabel, #cellbackgroundlabel, #NumberFormatCurrency > .unolabel, #NumberFormatPercent > .unolabel, #NumberFormatDecimal > .unolabel{
+#mobile-wizard #rotationlabel, #cellbackgroundlabel, #NumberFormatCurrency > .unolabel, #NumberFormatPercent > .unolabel, #NumberFormatDecimal > .unolabel{
 	display: none;
+}
+#rotationlabel:not(#mobile-wizard) {
+	visibility: hidden;
 }
 #mobile-wizard #NumberFormatDecimal, #mobile-wizard #NumberFormatPercent{
 	margin-left: 20%;
@@ -323,7 +332,7 @@ p.mobile-wizard.ui-combobox-text.selected {
 .ui-header.mobile-wizard {
 	width: 100%;
 	height: 56px !important;
-	font-size: 14pt !important;
+	font-size: var(--default-font-size) !important;
 	margin: 0px;
 	padding: 0px;
 	border: solid 1px transparent;
@@ -391,7 +400,6 @@ p.mobile-wizard.ui-combobox-text.selected {
 	padding-left: 4%;
 }
 .ui-content.unolabel {
-	display: table-cell;
 	vertical-align: middle;
 }
 
@@ -429,7 +437,7 @@ p.mobile-wizard.ui-combobox-text.selected {
 
 .func-info-icon {
 	display: block;
-	background: url('images/cmd/helpindex.svg') no-repeat center;
+	background: url('images/lc_helpindex.svg') no-repeat center;
 	min-width: 28px;
 	min-height: 28px;
 }
@@ -593,16 +601,18 @@ input.spinfield:disabled ~ .spinfieldcontrols *:active, input.spinfield:disabled
 	font-weight: normal;
 }
 
-input.ui-edit.mobile-wizard {
+input.ui-edit.mobile-wizard,
+#hyperlink-text-box.mobile-wizard {
 	background-color: var(--color-background-lighter);
 	color: var(--color-text-lighter);
 	border: 1px solid var(--color-border-dark);
 	border-radius: var(--border-radius);
 	height: 32px;
+	resize: none;
 }
 
 /*insert table special layout*/
-.inserttablecontrols p.ui-text{
+.inserttablecontrols label.ui-text{
 	margin-left: 14%;
 	width: 50%;
 	border: none;
@@ -666,7 +676,7 @@ a.leaflet-control-zoom-in {
 	background-size: 20px !important;
 }
 .ui-content label{
-	line-height: 44px;
+	line-height: 25px;
 	vertical-align: top;
 	padding-left: 4%;
 }
@@ -677,11 +687,7 @@ a.leaflet-control-zoom-in {
 	border-radius: 100px;
 	background-color: var(--color-background);
 }
-#mobile-wizard .unoSendToBack > span, #mobile-wizard .unoObjectBackOne > span, #mobile-wizard  .unoObjectForwardOne > span, #mobile-wizard .unoBringToFront > span, #mobile-wizard .unoSetObjectToBackground > span, #mobile-wizard .unoSetObjectToForeground > #mobile-wizard span, #mobile-wizard .unoFlipVertical > span, #mobile-wizard .unoFlipHorizontal > span, #mobile-wizard .unoBold > span, #mobile-wizard .unoItalic > span, #mobile-wizard .unoUnderline > span, #mobile-wizard .unoStrikeout > span, #mobile-wizard .unoStyleApply > span, #mobile-wizard .unoStyleUpdateByExample > span, #mobile-wizard .unoStyleNewByExample > span, #mobile-wizard .unoShadowed > span, #mobile-wizard .unoGrow > span, #mobile-wizard .unoShrink > span, #mobile-wizard .unoColor > span, #mobile-wizard .unoSpacing > span, #mobile-wizard .unoSuperScript > span, #mobile-wizard .unoSubScript > span, #mobile-wizard .unoAlignLeft > span, #mobile-wizard .unoAlignRight > span, #mobile-wizard .unoAlignHorizontalCenter > span, #mobile-wizard .unoAlignBlock > span, #mobile-wizard .unoParaLeftToRight > span, #mobile-wizard .unoParaRightToLeft > span, #mobile-wizard .unoAlignTop > span, #mobile-wizard .unoAlignVCenter > span, #mobile-wizard .unoAlignBottom > span, #mobile-wizard .unoIncrementIndent > span, #mobile-wizard .unoDecrementIndent > span, #mobile-wizard .unoLeftPara > span, #mobile-wizard .unoRightPara > span, #mobile-wizard .unoCenterPara > span, #mobile-wizard .unoJustifyPara > span, #mobile-wizard .unoDefaultBullet > span, #mobile-wizard .unoDefaultNumbering > span, #mobile-wizard .unoParaspaceIncrease > span, #mobile-wizard .unoParaspaceDecrease > span, #mobile-wizard #LineSpacing > span, #mobile-wizard .unoHangingIndent > span, #mobile-wizard .unoCellVertTop > span, #mobile-wizard #CellVertCenter > span, #mobile-wizard .unoCellVertBottom > span, #mobile-wizard div[id*='Table'] > span, #mobile-wizard div[id*='Row'] > span,  #mobile-wizard div[id*='Column'] > span, #mobile-wizard div[id*='Cell'] > span, #mobile-wizard div[id^='Outline'] > span, #mobile-wizard #nolines > img, #mobile-wizard .unoSetObjectToForeground > span, .aligntoolbar {
-	display: none !important;
-}
-.unotoolbutton.mobile-wizard.ui-content.unospan-wrapoptions.has-label, #aligntoolbar, #aligntoolbar2, #mobile-wizard .unoSendToBack, #mobile-wizard .unoObjectBackOne, #mobile-wizard .unoObjectForwardOne, #mobile-wizard .unoBringToFront, #mobile-wizard .unoSetObjectToBackground, #mobile-wizard #SetObjectToForeground, #mobile-wizard .unoFlipVertical, #mobile-wizard .unoFlipHorizontal, #mobile-wizard .unoBold, #mobile-wizard .unoItalic, #mobile-wizard .unoUnderline, #mobile-wizard .unoStrikeout, #mobile-wizard .unoStyleApply, #mobile-wizard .unoStyleUpdateByExample, #mobile-wizard .unoStyleNewByExample, #mobile-wizard .unoShadowed, #mobile-wizard .unoGrow, #mobile-wizard .unoShrink, #mobile-wizard .unoSpacing, #mobile-wizard .unoSuperScript, #mobile-wizard .unoSubScript, #mobile-wizard .unoAlignLeft, #mobile-wizard .unoAlignRight, #mobile-wizard .unoAlignHorizontalCenter, #mobile-wizard .unoAlignBlock, #mobile-wizard .unoParaRightToLeft, #mobile-wizard .unoParaLeftToRight, #mobile-wizard .unoAlignTop, #mobile-wizard .unoAlignVCenter, #mobile-wizard .unoAlignBottom, #mobile-wizard .unoIncrementIndent, #mobile-wizard .unoDecrementIndent, #mobile-wizard .unoLeftPara, #mobile-wizard .unoRightPara, #mobile-wizard .unoCenterPara, #mobile-wizard .unoJustifyPara, #mobile-wizard .unoDefaultBullet, #mobile-wizard .unoDefaultNumbering, #mobile-wizard .unoParaspaceIncrease, #mobile-wizard .unoParaspaceDecrease, #mobile-wizard .unoLineSpacing, #mobile-wizard .unoHangingIndent, #mobile-wizard .unoCellVertTop, #mobile-wizard .unoCellVertCenter, #mobile-wizard .unoCellVertBottom, #mobile-wizard div[id*='Row'], #mobile-wizard div[id*='Column'], #mobile-wizard .unoDeleteTable, #mobile-wizard .unoMergeCells, #mobile-wizard div[id^='Outline'], #mobile-wizard .unoEntireCell, #mobile-wizard .unoSelectTable, #mobile-wizard .unoEntireColumn, #mobile-wizard .unoEntireRow, #mobile-wizard .unoSplitCell, #mobile-wizard .unoSplitTable, .aligntoolbar, .unospan-borderstyle, #mobile-wizard .unospan-numberformat,
-.unotoolbutton.mobile-wizard.ui-content.unospan-fontworkshape {
+.unotoolbutton.mobile-wizard {
 	padding: 4% !important;
 	margin: 0px !important;
 	float: left;
@@ -732,13 +738,13 @@ a.leaflet-control-zoom-in {
 }
 
 #mobile-wizard #StyleNewByExample + div, #mobile-wizard #AlignTop,
-#mobile-wizard #AlignBottom + p, #mobile-wizard #mergecells, #mobile-wizard #BackgroundColor + p,
+#mobile-wizard #AlignBottom + label, #mobile-wizard #mergecells, #mobile-wizard #BackgroundColor + label,
 #mobile-wizard #LineSpacing, #mobile-wizard #indentlabel, #mobile-wizard #spacinglabel,
 #mobile-wizard #sizelabel {
 	clear: both;
 }
 
-#mobile-wizard #BackgroundColor + p, #mobile-wizard #LineSpacing + p,
+#mobile-wizard #BackgroundColor + label, #mobile-wizard #LineSpacing + label,
 #mobile-wizard #denominatorplaceslabel, #mobile-wizard #decimalplaceslabel,
 #mobile-wizard #leadingzeroeslabel, #mobile-wizard #leftindentlabel,
 #mobile-wizard #orientationlabel, #mobile-wizard #cellbackgroundlabel,
@@ -750,6 +756,20 @@ a.leaflet-control-zoom-in {
 	font-size: var(--default-font-size);
 	font-weight: bold;
 	clear: both;
+}
+
+#mobile-wizard [id^='info-modal-label'].mobile-wizard.ui-text {
+	border: none;
+	color: var(--color-text-dark) !important;
+}
+
+#mobile-wizard [id^='info-modal-label'].mobile-wizard.ui-text:first-child {
+	font-size: 1em;
+	color: var(--color-text-lighter) !important;
+}
+
+#mobile-wizard [id^='mobile-wizard-content-modal-dialog-'] {
+	width: 100%;
 }
 
 #DecrementIndent + input:disabled{display: none;}
@@ -841,8 +861,8 @@ div#mobile-wizard-content .spinfieldcontainer .spinfieldimage.disabled {
 	box-shadow: 0px 0px 2px 1px var(--color-border-lighter);
 }
 #mobile-wizard input[type='checkbox']{
-	width: 24px;
-	height: 24px;
+	width: var(--btn-size);
+	height: var(--btn-size);
 	margin: 10px 20px 10px 0px !important;
 	float: right;
 	-webkit-appearance: none;
@@ -877,8 +897,8 @@ div#mobile-wizard-content .spinfieldcontainer .spinfieldimage.disabled {
 }
 #mobile-wizard input[type='radio']{
 	border-radius: 50%;
-	width: 24px;
-	height: 24px;
+	width: var(--btn-size);
+	height: var(--btn-size);
 	margin: 10px 20px 10px 0px !important;
 	float: right;
 	-webkit-appearance: none;
@@ -967,10 +987,10 @@ input[type='checkbox']#UseBandingColumnStyle, input[type='checkbox']#UseLastColu
 	float: right;
 	margin: 24px 0px;
 }
-div#enablecontour + p, #arrangelabel, #SetMinimalRowHeight {clear: both;}
+div#enablecontour + label, #arrangelabel, #SetMinimalRowHeight {clear: both;}
 
 label.disabled {
-	color: var(--color-text-disabled) !important;
+	color: var(--color-text-lighter) !important;
 }
 
 .ui-checkbox.mobile-wizard {
@@ -990,9 +1010,10 @@ label.disabled {
 }
 
 .ui-edit.mobile-wizard,
-.ui-textarea.mobile-wizard {
+.ui-textarea.mobile-wizard,
+#hyperlink-link-box-label.mobile-wizard {
 	/*
-	, textarea was also here assign but it was messing up with all textareas (annotations on desktop and vex on mobile):
+	, textarea was also here assign but it was messing up with all textareas (annotations on desktop and mobile):
 	- added 93038: jsdialog: style dialogs; a5016d547c6242f6f9b28748b5724b0bc10cdb67
 	*/
 	width: -moz-available;
@@ -1053,27 +1074,19 @@ label.disabled {
 
 /* Annotations - comments */
 
-#insert_comment {
-	right: 0px;
-	position: absolute;
-	top: 20%;
-	height: initial !important;
-	width: initial !important;
-}
-
-#mobile-wizard-popup .oxool-annotation-content-author,
-#mobile-wizard .oxool-annotation-content-author {
+#mobile-wizard-popup .cool-annotation-content-author,
+#mobile-wizard .cool-annotation-content-author {
 	font-weight: bold;
 }
 
-#mobile-wizard-popup .oxool-annotation-author *,
-#mobile-wizard .oxool-annotation-author * {
+#mobile-wizard-popup .cool-annotation-author *,
+#mobile-wizard .cool-annotation-author * {
 	color: var(--color-text-lighter) !important;
 	font-size: var(--default-font-size);
 }
 
-#mobile-wizard-popup .oxool-annotation-reply-count,
-#mobile-wizard .oxool-annotation-reply-count {
+#mobile-wizard-popup .cool-annotation-reply-count,
+#mobile-wizard .cool-annotation-reply-count {
 	grid-column: 2;
 	grid-row: 1;
 	margin-right: 32px;
@@ -1083,26 +1096,26 @@ label.disabled {
 	color: #636363;
 }
 
-#mobile-wizard-popup .oxool-annotation-table,
-#mobile-wizard .oxool-annotation-table {
+#mobile-wizard-popup .cool-annotation-table,
+#mobile-wizard .cool-annotation-table {
 	grid-column: 1 / 2;
 	grid-row: 1;
 }
 
-#mobile-wizard-popup .oxool-dont-break,
-#mobile-wizard .oxool-dont-break {
+#mobile-wizard-popup .cool-dont-break,
+#mobile-wizard .cool-dont-break {
 	grid-column: 1 / 2;
 	grid-row: 2;
 }
 
-#mobile-wizard-popup .oxool-annotation-content-wrapper,
-#mobile-wizard-popup .oxool-annotation-redline-content-wrapper,
-#mobile-wizard .oxool-annotation-content-wrapper,
-#mobile-wizard .oxool-annotation-redline-content-wrapper {
+#mobile-wizard-popup .cool-annotation-content-wrapper,
+#mobile-wizard-popup .cool-annotation-redline-content-wrapper,
+#mobile-wizard .cool-annotation-content-wrapper,
+#mobile-wizard .cool-annotation-redline-content-wrapper {
 	display: grid !important;
 }
 
-#mobile-wizard-popup .oxool-annotation-content-wrapper {
+#mobile-wizard-popup .cool-annotation-content-wrapper {
 	width: 100% !important;
 	width: -webkit-fill-available !important;
 	width: -moz-available !important;
@@ -1161,14 +1174,14 @@ label.disabled {
 	text-decoration: none;
 }
 
-#mobile-wizard-popup .oxool-annotation,
-#mobile-wizard .oxool-annotation,
-.ui-explorable-entry .oxool-annotation {
+#mobile-wizard-popup .cool-annotation,
+#mobile-wizard .cool-annotation,
+.ui-explorable-entry .cool-annotation {
 	position: relative !important;
 	z-index: auto;
 }
 
-.ui-explorable-entry .oxool-annotation-header {
+.ui-explorable-entry .cool-annotation-header {
 	height: auto !important;
 }
 
@@ -1243,4 +1256,20 @@ label.disabled {
 /* Mobile wizard popup */
 #mobile-wizard-popup .lokdialog.ui-dialog-content {
 	overflow-x: hidden;
+}
+
+[id$='contentControlModalpopup'].mobile-wizard {
+	display: flex;
+	flex: 1;
+	align-self: stretch;
+}
+
+#contentControlList.mobile-wizard {
+	margin: 0;
+	border-color: transparent;
+	width: 100%;
+}
+
+#contentControlList.mobile-wizard li:not(:last-child) {
+	border-bottom: 1px solid var(--color-border-lighter);
 }

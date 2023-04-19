@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -61,14 +59,14 @@ struct ClipboardData
     void dumpState(std::ostream& os)
     {
         os << "Clipboard with " << size() << " entries:\n";
-        for (std::size_t i = 0; i < size(); ++i)
+        for (size_t i = 0; i < size(); ++i)
             os << "\t[" << i << "] - size " << _content[i].size() <<
                 " type: '" << _mimeTypes[i] << "'\n";
     }
 
     bool findType(const std::string &mime, std::string &value)
     {
-        for (std::size_t i = 0; i < _mimeTypes.size(); ++i)
+        for (size_t i = 0; i < _mimeTypes.size(); ++i)
         {
             if (_mimeTypes[i] == mime)
             {

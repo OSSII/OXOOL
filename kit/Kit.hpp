@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -32,7 +30,6 @@ void lokit_main(
                 const std::string& jailId,
                 const std::string& sysTemplate,
                 const std::string& loTemplate,
-                const std::string& loSubPath,
                 bool noCapabilities,
                 bool noSeccomp,
                 bool queryVersionInfo,
@@ -92,10 +89,12 @@ struct UserInfo
     UserInfo(const std::string& userId,
              const std::string& userName,
              const std::string& userExtraInfo,
+             const std::string& userPrivateInfo,
              bool readOnly) :
         _userId(userId),
         _userName(userName),
         _userExtraInfo(userExtraInfo),
+        _userPrivateInfo(userPrivateInfo),
         _readOnly(readOnly)
     {
     }
@@ -115,6 +114,11 @@ struct UserInfo
         return _userExtraInfo;
     }
 
+    const std::string& getUserPrivateInfo() const
+    {
+        return _userPrivateInfo;
+    }
+
     bool isReadOnly() const
     {
         return _readOnly;
@@ -124,6 +128,7 @@ private:
     std::string _userId;
     std::string _userName;
     std::string _userExtraInfo;
+    std::string _userPrivateInfo;
     bool _readOnly;
 };
 
@@ -132,7 +137,6 @@ private:
 void forkLibreOfficeKit(const std::string& childRoot,
                         const std::string& sysTemplate,
                         const std::string& loTemplate,
-                        const std::string& loSubPath,
                         int limit = 0);
 
 /// Anonymize the basename of filenames, preserving the path and extension.

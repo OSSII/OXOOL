@@ -3,7 +3,7 @@
  * L.Map.Mouse is handling mouse interaction with the document
  */
 
-/* global UNOModifier */
+/* global UNOModifier app */
 
 L.Map.mergeOptions({
 	mouse: true
@@ -43,7 +43,7 @@ L.Map.Mouse = L.Handler.extend({
 		if (this._map.uiManager.isUIBlocked())
 			return;
 
-		this._map.notifyActive();
+		app.idleHandler.notifyActive();
 		var docLayer = this._map._docLayer;
 		if (!docLayer || (this._map.slideShow && this._map.slideShow.fullscreen) || this._map.rulerActive) {
 			return;
@@ -92,10 +92,6 @@ L.Map.Mouse = L.Handler.extend({
 		buttons |= e.originalEvent.button === this.JSButtons.middle ? this.LOButtons.middle : 0;
 		buttons |= e.originalEvent.button === this.JSButtons.right ? this.LOButtons.right : 0;
 
-		var mousePos = docLayer._latLngToTwips(e.latlng);
-		mousePos.x = Math.trunc(mousePos.x);
-		mousePos.y = Math.trunc(mousePos.y);
-
 		// Turn ctrl-left-click into right-click for browsers on macOS
 		if (navigator.appVersion.indexOf('Mac') != -1 || navigator.userAgent.indexOf('Mac') != -1) {
 			if (modifier == UNOModifier.CTRL && buttons == this.LOButtons.left) {
@@ -120,6 +116,7 @@ L.Map.Mouse = L.Handler.extend({
 			if (this._holdMouseEvent) {
 				clearTimeout(this._holdMouseEvent);
 			}
+			var mousePos = docLayer._latLngToTwips(e.latlng);
 			this._mouseEventsQueue.push(L.bind(function() {
 				this._postMouseEvent('buttondown', mousePos.x, mousePos.y, 1, buttons, modifier);
 			}, docLayer));
@@ -156,8 +153,6 @@ L.Map.Mouse = L.Handler.extend({
 				this._clickTime = Date.now();
 				this._clickCount = 1;
 				mousePos = docLayer._latLngToTwips(e.latlng);
-				mousePos.x = Math.trunc(mousePos.x);
-				mousePos.y = Math.trunc(mousePos.y);
 				var timeOut = 250;
 				if (this._map.isEditMode()) {
 					timeOut = 0;
@@ -198,7 +193,7 @@ L.Map.Mouse = L.Handler.extend({
 			}
 			if (!this._map.dragging.enabled()) {
 				mousePos = docLayer._latLngToTwips(e.latlng);
-				docLayer._postMouseEvent('move', Math.trunc(mousePos.x), Math.trunc(mousePos.y), 1, buttons, modifier);
+				docLayer._postMouseEvent('move', mousePos.x, mousePos.y, 1, buttons, modifier);
 
 				for (key in docLayer._selectionHandles) {
 					handle = docLayer._selectionHandles[key];
@@ -212,12 +207,14 @@ L.Map.Mouse = L.Handler.extend({
 		}
 		else if (e.type === 'mousemove' && !this._mouseDown) {
 			clearTimeout(this._mouseOverTimeout);
+			mousePos = docLayer._latLngToTwips(e.latlng);
 			this._mouseOverTimeout = setTimeout(L.bind(function() {
-				docLayer._postMouseEvent('move', Math.trunc(mousePos.x), Math.trunc(mousePos.y), 1, 0, modifier);
+				docLayer._postMouseEvent('move', mousePos.x, mousePos.y, 1, 0, modifier);
 			  }, this),
-			100);
+			  100);
 		}
 		else if (e.type === 'dblclick' || e.type === 'trplclick' || e.type === 'qdrplclick') {
+			mousePos = docLayer._latLngToTwips(e.latlng);
 			var clicks = {
 				dblclick: 2,
 				trplclick: 3,

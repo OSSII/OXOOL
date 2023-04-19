@@ -105,4 +105,12 @@
     <string name="app_version_and_hash">Útgáfa: %1$s
 \nonline git-hash: %2$s
 \ncore git-hash: %3$s</string>
+    <string name="theme_system_default">Sjálfgefið í kerfinu</string>
+    <string name="theme_light">Ljóst</string>
+    <string name="theme_dark">Dökkt</string>
+    <string name="choose_theme">Veldu þemu</string>
+    <string name="theme">Þema</string>
+    <string name="pref_user_name_guest">Gestanotandi</string>
+    <string name="pref_user_name_info">Notað þegar bætt er við athugasemd</string>
+    <string name="pref_user_name">Notandanafn</string>
 </resources>

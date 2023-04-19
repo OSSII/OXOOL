@@ -13,232 +13,12 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
+#include <common/SpookyV2.h>
 
 #include "Png.hpp"
+#include "Delta.hpp"
 #include "Rectangle.hpp"
 #include "TileDesc.hpp"
-
-#if ENABLE_DEBUG
-#  define ADD_DEBUG_RENDERID (" renderid=" + Util::UniqueId() + '\n')
-#else
-#  define ADD_DEBUG_RENDERID ("\n")
-#endif
-
-/// A quick & dirty cache of the last few PNGs
-/// and their hashes to avoid re-compression
-/// wherever possible.
-class PngCache
-{
-public:
-    typedef std::shared_ptr< std::vector< char > > CacheData;
-private:
-    struct CacheEntry {
-    private:
-        size_t    _hitCount;
-        TileWireId _wireId;
-        CacheData _data;
-    public:
-        CacheEntry(const CacheData &data, TileWireId id) :
-            _hitCount(1),   // Every entry is used at least once; prevent removal at birth.
-            _wireId(id),
-            _data(data)
-        {
-        }
-
-        size_t getHitCount() const
-        {
-            return _hitCount;
-        }
-
-        void incrementHitCount()
-        {
-            ++_hitCount;
-        }
-
-        void decrementHitCount()
-        {
-            --_hitCount;
-        }
-
-        const CacheData& getData() const
-        {
-            return _data;
-        }
-
-        TileWireId getWireId() const
-        {
-            return _wireId;
-        }
-    } ;
-    size_t _cacheSize;
-    static const size_t CacheSizeSoftLimit = (1024 * 4 * 32); // 128k of cache
-    static const size_t CacheSizeHardLimit = CacheSizeSoftLimit * 2;
-    static const size_t CacheWidHardLimit = 4096;
-    size_t _cacheHits;
-    size_t _cacheTests;
-    TileWireId _nextId;
-
-    std::unordered_map< TileBinaryHash, CacheEntry > _cache;
-    // This uses little storage so can be much larger
-    std::unordered_map< TileBinaryHash, TileWireId > _hashToWireId;
-
-    void clearCache(bool logStats = false)
-    {
-        if (logStats)
-            LOG_DBG("cache clear " << _cache.size() << " items total size " <<
-                    _cacheSize << " current hits " << _cacheHits);
-        _cache.clear();
-        _hashToWireId.clear();
-        _cacheSize = 0;
-        _cacheHits = 0;
-        _cacheTests = 0;
-        _nextId = 1;
-    }
-
-    // Keep these ids small and wrap them.
-    TileWireId createNewWireId()
-    {
-        TileWireId id = ++_nextId;
-        // FIXME: if we wrap - we should flush the clients too really ...
-        if (id < 1)
-            clearCache(true);
-        return id;
-    }
-
-public:
-    // Performed only after a complete combinetiles
-    void balanceCache()
-    {
-        // A normalish PNG image size for text in a writer document is
-        // around 4k for a content tile, and sub 1k for a background one.
-        if (_cacheSize > CacheSizeHardLimit)
-        {
-            size_t avgHits = 0;
-            for (auto it = _cache.begin(); it != _cache.end(); ++it)
-                avgHits += it->second.getHitCount();
-
-            LOG_DBG("PNG cache has " << _cache.size() << " items, total size " <<
-                    _cacheSize << ", current hits " << avgHits << ", total hit rate " <<
-                    (_cacheHits * 100. / _cacheTests) << "% at balance start.");
-            avgHits /= _cache.size();
-
-            for (auto it = _cache.begin(); it != _cache.end();)
-            {
-                if ((_cacheSize > CacheSizeSoftLimit && it->second.getHitCount() == 0) ||
-                    (_cacheSize > CacheSizeHardLimit && it->second.getHitCount() > 0 && it->second.getHitCount() <= avgHits))
-                {
-                    // Shrink cache when we exceed the size to maximize
-                    // the chance of hitting these entries in the future.
-                    _cacheSize -= it->second.getData()->size();
-                    it = _cache.erase(it);
-                }
-                else
-                {
-                    if (it->second.getHitCount() > 0)
-                        it->second.decrementHitCount();
-                    ++it;
-                }
-            }
-
-            LOG_DBG("PNG cache has " << _cache.size() << " items with total size of " <<
-                    _cacheSize << " bytes after balance.");
-        }
-
-        if (_hashToWireId.size() > CacheWidHardLimit)
-        {
-            LOG_DBG("Clear half of wid cache of size " << _hashToWireId.size());
-            TileWireId max = _nextId - CacheWidHardLimit/2;
-            for (auto it = _hashToWireId.begin(); it != _hashToWireId.end();)
-            {
-                if (it->second < max)
-                    it = _hashToWireId.erase(it);
-                else
-                    ++it;
-            }
-            LOG_DBG("Wid cache is now size " << _hashToWireId.size());
-        }
-    }
-
-    /// Lookup an entry in the cache and store the data in output.
-    /// Returns true on success, otherwise false.
-    bool copyFromCache(const TileBinaryHash hash, std::vector<char>& output, size_t &imgSize)
-    {
-        if (hash)
-        {
-            ++_cacheTests;
-            auto it = _cache.find(hash);
-            if (it != _cache.end())
-            {
-                ++_cacheHits;
-                LOG_TRC("PNG cache with hash " << hash << " hit.");
-                output.insert(output.end(),
-                              it->second.getData()->begin(),
-                              it->second.getData()->end());
-                it->second.incrementHitCount();
-                imgSize = it->second.getData()->size();
-
-                return true;
-            }
-        }
-
-        LOG_TRC("PNG cache with hash " << hash << " missed.");
-        return false;
-    }
-
-    void addToCache(const CacheData &data, TileWireId wid, const TileBinaryHash hash)
-    {
-        CacheEntry newEntry(data, wid);
-
-        if (hash)
-        {
-            // Adding duplicates causes grim wid mixups
-            assert(hashToWireId(hash) == wid);
-            assert(_cache.find(hash) == _cache.end());
-
-            data->shrink_to_fit();
-            _cache.emplace(hash, newEntry);
-            _cacheSize += data->size();
-        }
-    }
-
-    PngCache()
-    {
-        clearCache();
-    }
-
-    TileWireId hashToWireId(TileBinaryHash hash)
-    {
-        TileWireId wid;
-        if (hash == 0)
-            return 0;
-        auto it = _hashToWireId.find(hash);
-        if (it != _hashToWireId.end())
-            wid = it->second;
-        else
-        {
-            wid = createNewWireId();
-            _hashToWireId.emplace(hash, wid);
-        }
-        return wid;
-    }
-
-    void dumpState(std::ostream& oss)
-    {
-        oss << "\tpngCache:"
-            << "\n\t\tcacheSize: " << _cacheSize
-            << "\n\t\tcacheHits: " << _cacheHits
-            << "\n\t\tcacheTests: " << _cacheTests
-            << "\n\t\tnextId: " << _nextId
-            << "\n\t\tcache entry count: "<< _cache.size();
-        for (const auto &it : _cache)
-        {
-            oss << "\n\t\t\thash: " << it.first
-                << " hitCount: " << it.second.getHitCount()
-                << " wireId: " << it.second.getWireId();
-        }
-        oss << '\n';
-    }
-};
 
 class ThreadPool {
     std::mutex _mutex;
@@ -255,7 +35,9 @@ public:
           _shutdown(false)
     {
         int maxConcurrency = 2;
-#if MOBILEAPP && !defined(GTKAPP)
+#ifdef __EMSCRIPTEN__
+        // Leave it at that.
+#elif MOBILEAPP && !defined(GTKAPP)
         maxConcurrency = std::max<int>(std::thread::hardware_concurrency(), 2);
 #else
         const char *max = getenv("MAX_CONCURRENCY");
@@ -388,8 +170,8 @@ namespace RenderTiles
     }
 
     bool doRender(std::shared_ptr<lok::Document> document,
+                  DeltaGenerator &deltaGen,
                   TileCombined &tileCombined,
-                  PngCache &pngCache,
                   ThreadPool &pngPool,
                   bool combined,
                   const std::function<void (unsigned char *data,
@@ -398,9 +180,14 @@ namespace RenderTiles
                                             int pixelWidth, int pixelHeight,
                                             LibreOfficeKitTileMode mode)>& blendWatermark,
                   const std::function<void (const char *buffer, size_t length)>& outputMessage,
-                  unsigned mobileAppDocId)
+                  unsigned mobileAppDocId,
+                  int canonicalViewId)
     {
         const auto& tiles = tileCombined.getTiles();
+
+        // Otherwise our delta-building & threading goes badly wrong
+        // external sources of tilecombine are checked at the perimeter
+        assert(!tileCombined.hasDuplicates());
 
         // Calculate the area we cover
         Util::Rectangle renderArea;
@@ -430,6 +217,7 @@ namespace RenderTiles
         const size_t tilesByY = renderArea.getHeight() / tileCombined.getTileHeight();
         const int pixelWidth = tileCombined.getWidth();
         const int pixelHeight = tileCombined.getHeight();
+        assert (pixelWidth > 0 && pixelHeight > 0);
         const size_t pixmapWidth = tilesByX * pixelWidth;
         const size_t pixmapHeight = tilesByY * pixelHeight;
 
@@ -444,6 +232,7 @@ namespace RenderTiles
         LOG_TRC("Calling paintPartTile(" << (void*)pixmap.data() << ')');
         document->paintPartTile(pixmap.data(),
                                 tileCombined.getPart(),
+                                tileCombined.getEditMode(),
                                 pixmapWidth, pixmapHeight,
                                 renderArea.getLeft(), renderArea.getTop(),
                                 renderArea.getWidth(), renderArea.getHeight());
@@ -465,8 +254,6 @@ namespace RenderTiles
 
         // Compress the area as tiles
         std::vector<TileDesc> renderedTiles;
-        std::vector<TileDesc> duplicateTiles;
-        std::vector<TileBinaryHash> duplicateHashes;
         std::vector<TileWireId> renderingIds;
 
         size_t tileIndex = 0;
@@ -480,117 +267,76 @@ namespace RenderTiles
 
             const int offsetX = positionX * pixelWidth;
             const int offsetY = positionY * pixelHeight;
+
+            // FIXME: should this be in the delta / compression thread ?
             blendWatermark(pixmap.data(), offsetX, offsetY,
                            pixmapWidth, pixmapHeight,
                            pixelWidth, pixelHeight,
                            mode);
 
-            const uint64_t hash = Png::hashSubBuffer(pixmap.data(), offsetX, offsetY,
-                                                     pixelWidth, pixelHeight, pixmapWidth, pixmapHeight);
+            // FIXME: prettify this.
+            bool forceKeyframe = tiles[tileIndex].getOldWireId() == 0;
 
-            TileWireId wireId = pngCache.hashToWireId(hash);
-            TileWireId oldWireId = tiles[tileIndex].getOldWireId();
-            if (hash != 0 && oldWireId == wireId)
-            {
-                // The tile content is identical to what the client already has, so skip it
-                LOG_TRC("Match for tile #" << tileIndex << " at (" << positionX << ',' <<
-                        positionY << ") oldhash==hash (" << hash << "), wireId: " << wireId << " skipping");
-                // Push a zero byte image to inform WSD we didn't need that.
-                // This allows WSD side TileCache to free up waiting subscribers.
-                pushRendered(renderedTiles, tiles[tileIndex], wireId, 0);
-                tileIndex++;
-                continue;
-            }
+            // FIXME: we should perhaps increment only on a plausible edit
+            static TileWireId nextId = 0;
+            TileWireId wireId = ++nextId;
 
             bool skipCompress = false;
-            size_t imgSize = -1;
-            if (pngCache.copyFromCache(hash, output, imgSize))
-            {
-                pushRendered(renderedTiles, tiles[tileIndex], wireId, imgSize);
-                skipCompress = true;
-            }
-            else
-            {
-                LOG_TRC("PNG cache with hash " << hash << " missed.");
-
-                // Don't re-compress the same thing multiple times.
-                for (const auto& id : renderingIds)
-                {
-                    if (wireId == id)
-                    {
-                        pushRendered(duplicateTiles, tiles[tileIndex], wireId, 0);
-                        duplicateHashes.push_back(hash);
-                        skipCompress = true;
-                        LOG_TRC("Rendering duplicate tile #" << tileIndex << " at (" << positionX << ',' <<
-                                positionY << ") oldhash==hash (" << hash << "), wireId: " << wireId << " skipping");
-                        break;
-                    }
-                }
-            }
-
             if (!skipCompress)
             {
                 renderingIds.push_back(wireId);
 
+                LOG_TRC("Queued encoding of tile #" << tileIndex << " at (" << positionX << ',' << positionY << ") with " <<
+                        (forceKeyframe?"force keyframe" : "allow delta") << ", wireId: " << wireId);
+
                 // Queue to be executed later in parallel inside 'run'
-                pngPool.pushWork([=,&output,&pixmap,&tiles,&renderedTiles,&pngCache,&pngMutex](){
+                pngPool.pushWork([=,&output,&pixmap,&tiles,&renderedTiles,
+                                  &pngMutex,&deltaGen]()
+                    {
+                        std::vector< char > data;
+                        data.reserve(pixmapWidth * pixmapHeight * 1);
 
-                        PngCache::CacheData data(new std::vector< char >() );
-                        data->reserve(pixmapWidth * pixmapHeight * 1);
-
-                        LOG_TRC("Encode a new png for tile #" << tileIndex);
-                        if (!Png::encodeSubBufferToPNG(pixmap.data(), offsetX, offsetY, pixelWidth, pixelHeight,
-                                                       pixmapWidth, pixmapHeight, *data, mode))
+                        // FIXME: don't try to store & create deltas for read-only documents.
+                        if (tiles[tileIndex].getId() < 0) // not a preview
                         {
-                            // FIXME: Return error.
-                            // sendTextFrameAndLogError("error: cmd=tile kind=failure");
-                            LOG_ERR("Failed to encode tile into PNG.");
-                            return;
+                            // Can we create a delta ?
+                            LOG_TRC("Compress new tile #" << tileIndex);
+                            deltaGen.compressOrDelta(pixmap.data(), offsetX, offsetY,
+                                                     pixelWidth, pixelHeight,
+                                                     pixmapWidth, pixmapHeight,
+                                                     TileLocation(
+                                                         tileRect.getLeft(),
+                                                         tileRect.getTop(),
+                                                         tileRect.getWidth(),
+                                                         tileCombined.getPart(),
+                                                         canonicalViewId
+                                                         ),
+                                                     data, wireId, forceKeyframe);
+                        }
+                        else
+                        {
+                            // FIXME: write our own trivial PNG encoding code using deflate.
+                            LOG_TRC("Encode a new png for tile #" << tileIndex);
+                            if (!Png::encodeSubBufferToPNG(pixmap.data(), offsetX, offsetY, pixelWidth, pixelHeight,
+                                                           pixmapWidth, pixmapHeight, data, mode))
+                            {
+                                // FIXME: Return error.
+                                // sendTextFrameAndLogError("error: cmd=tile kind=failure");
+                                LOG_ERR("Failed to encode tile into PNG.");
+                                return;
+                            }
                         }
 
-                        LOG_TRC("Tile " << tileIndex << " is " << data->size() << " bytes.");
+                        LOG_TRC("Tile " << tileIndex << " is " << data.size() << " bytes.");
                         std::unique_lock<std::mutex> pngLock(pngMutex);
-                        output.insert(output.end(), data->begin(), data->end());
-                        pngCache.addToCache(data, wireId, hash);
-                        pushRendered(renderedTiles, tiles[tileIndex], wireId, data->size());
+                        output.insert(output.end(), data.begin(), data.end());
+                        pushRendered(renderedTiles, tiles[tileIndex], wireId, data.size());
                     });
             }
-
-            LOG_TRC("Encoded tile #" << tileIndex << " at (" << positionX << ',' << positionY << ") with oldWireId=" <<
-                    tiles[tileIndex].getOldWireId() << ", hash=" << hash << " wireId: " << wireId << " in " << imgSize << " bytes.");
             tileIndex++;
         }
 
-        // empty ones come first
-        size_t zeroCheckStart = renderedTiles.size();
-
         pngPool.run();
-
-        for (size_t i = zeroCheckStart; i < renderedTiles.size(); ++i)
-        {
-            if (renderedTiles[i].getImgSize() == 0)
-            {
-                LOG_TRC("Encoded 0-sized tile in slot !" << i);
-                assert(!"0-sized tile enocded!");
-            }
-        }
-
-        // FIXME: append duplicates - tragically for now as real duplicates
-        // we should append these as
-        {
-            size_t imgSize = -1;
-            assert(duplicateTiles.size() == duplicateHashes.size());
-            for (size_t i = 0; i < duplicateTiles.size(); ++i)
-            {
-                if (pngCache.copyFromCache(duplicateHashes[i], output, imgSize))
-                    pushRendered(renderedTiles, duplicateTiles[i],
-                                 duplicateTiles[i].getWireId(), imgSize);
-                else
-                    LOG_ERR("Horror - tile disappeared while rendering! " << duplicateHashes[i]);
-            }
-        }
-
-        pngCache.balanceCache();
 
         duration = std::chrono::steady_clock::now() - start;
         const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
@@ -605,7 +351,7 @@ namespace RenderTiles
         std::string tileMsg;
         if (combined)
         {
-            tileMsg = tileCombined.serialize("tilecombine:", ADD_DEBUG_RENDERID, renderedTiles);
+            tileMsg = tileCombined.serialize("tilecombine:", "\n", renderedTiles);
 
             LOG_TRC("Sending back painted tiles for " << tileMsg << " of size " << output.size() << " bytes) for: " << tileMsg);
 
@@ -621,7 +367,7 @@ namespace RenderTiles
             size_t outputOffset = 0;
             for (auto &i : renderedTiles)
             {
-                tileMsg = i.serialize("tile:", ADD_DEBUG_RENDERID);
+                tileMsg = i.serialize("tile:", "\n");
                 const size_t responseSize = tileMsg.size() + i.getImgSize();
                 std::unique_ptr<char[]> response;
                 response.reset(new char[responseSize]);
@@ -631,6 +377,9 @@ namespace RenderTiles
                 outputOffset += i.getImgSize();
             }
         }
+
+        // Should we do this more frequently? and/orshould we defer it?
+        deltaGen.rebalanceDeltas();
         return true;
     }
 }

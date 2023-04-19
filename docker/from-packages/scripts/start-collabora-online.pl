@@ -13,11 +13,14 @@ use strict;
 # create the part of the config that contains aliases based on the aliasgroupN envvars
 sub generate_aliases() {
     my $output = '';
+    if ($ENV{'domain'} && $ENV{'aliasgroup1'}) {
+        print "WARNING: Both aliasgroupX and domain are provided, aliasgroupX takes the precedence where X=1,2,3...\n";
+    }
+
     foreach (sort keys(%ENV)) {
         if (/^aliasgroup/) {
             my $value = $ENV{$_};
             my @aliases = split(',', $value);
-
             if (@aliases) {
                 $output .= "                <group>\n";
 
@@ -31,12 +34,58 @@ sub generate_aliases() {
                         $output .= "                    <alias desc=\"regex pattern of aliasname\">$_</alias>\n";
                     }
                 }
-
                 $output .= "                </group>\n";
             }
         }
     }
+    if ($output ne "") {
+        return $output;
+    }
 
+    my $message = '';
+    my $domain = $ENV{'domain'};
+    my $extra_params = $ENV{'extra_params'};
+    my $scheme = "https";
+    my $port = "443";
+    if (index($extra_params, "ssl.enable=false") != -1) {
+        $scheme = "http";
+        $port = "80";
+    }
+
+    if ($domain) {
+        $message .= "WARNING: The 'domain=$domain' is deprecated.\n Use alias_groupX instead, for your convenience, we interpret it as the following:\n";
+        my @hosts = split('\|', $domain);
+        if (@hosts) {
+            my $i = 0;
+            foreach (@hosts) {
+                $i++;
+                $message .= "   aliasgroup$i=$scheme://$_:$port\n";
+                $output .= "                <group>\n";
+                $output .= "                    <host desc=\"hostname to allow or deny.\" allow=\"true\">$scheme://$_:$port</host>\n";
+                $output .= "                </group>\n";
+            }
+            if (@hosts >= 2) {
+                $message .= "This means that people from $hosts[0] will not be able to access documents from ";
+                for ($b = 1; $b < @hosts; $b = $b + 1)
+                {
+                    $message .= "$hosts[$b], ";
+                }
+                $message .= " and vice versa";
+                $message .= ". If you want to allow the access instead, use this configuration instead:\n     aliasgroup1=";
+                $i = 0;
+                foreach(@hosts) {
+                    $i++;
+                    $message .= "$scheme://$_:$port";
+                    if ($i != @hosts)
+                    {
+                        $message .= ",";
+                    }
+                }
+            }
+        }
+        $message .= "\nPlease update your Docker configuration to stop seeing this message.\nMore information:\n    https://sdk.collaboraonline.com/docs/installation/CODE_Docker_image.html\n" ;
+    }
+    print $message;
     return $output;
 }
 
@@ -49,7 +98,17 @@ sub rewrite_config($) {
 
     my $in_aliases = 0;
     while (<CONFIG>) {
-        if (/<alias_groups/) {
+        if (/<remote_url (.*)>.*<\/remote_url>/) {
+            my $remoteurl = $ENV{'remoteconfigurl'};
+            if ($remoteurl) {
+                s/<remote_url (.*)>.*<\/remote_url>/<remote_url $1>$remoteurl<\/remote_url>/;
+                $output .= $_;
+            }
+            else {
+                $output .= $_;
+            }
+        }
+        elsif (/<alias_groups/) {
             $in_aliases = 1;
 
             my $groups = generate_aliases();

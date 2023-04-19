@@ -20,7 +20,7 @@
 			<key>Key</key>
 			<string>onlineVersion</string>
 			<key>DefaultValue</key>
-			<string>@LOOLWSD_VERSION_HASH@</string>
+			<string>@COOLWSD_VERSION_HASH@</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -42,9 +42,9 @@
 			<key>Type</key>
 			<string>PSTextFieldSpecifier</string>
 			<key>Title</key>
-			<string>Template list URL</string>
+			<string>Your name</string>
 			<key>Key</key>
-			<string>templateListURL</string>
+			<string>userName</string>
 		</dict>
 	</array>
 </dict>

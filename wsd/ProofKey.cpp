@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,7 +8,7 @@
 #include <config.h>
 
 #include "ProofKey.hpp"
-#include "LOOLWSD.hpp"
+#include "COOLWSD.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -142,10 +140,10 @@ Proof::Proof()
             std::string msg = e.displayText() +
                 "\nNo proof-key will be present in discovery."
                 "\nIf you need to use WOPI security, generate an RSA key using this command:"
-                "\n    oxoolwsd-generate-proof-key"
+                "\n    coolwsd-generate-proof-key"
                 "\nor if your config dir is not /etc, you can run ssh-keygen manually:"
                 "\n    ssh-keygen -t rsa -N \"\" -m PEM -f \"" + keyPath + "\""
-                "\nNote: the proof_key file must be readable by the oxoolwsd process.";
+                "\nNote: the proof_key file must be readable by the coolwsd process.";
             LOG_WRN(msg);
         }
         catch (const Poco::Exception& e)
@@ -172,7 +170,7 @@ std::string Proof::ProofKeyPath()
 #if ENABLE_DEBUG
         DEBUG_ABSSRCDIR
 #else
-        LOOLWSD_CONFIGDIR
+        COOLWSD_CONFIGDIR
 #endif
         "/proof_key";
     return keyPath;
@@ -186,7 +184,11 @@ std::vector<unsigned char> Proof::RSA2CapiBlob(const std::vector<unsigned char>&
     if (exponent.size() > 4)
         throw ParseError("Proof key public exponent is longer than 4 bytes.");
     // make sure exponent length is correct; assume we are passed big-endian vectors
-    std::vector<unsigned char> exponent32LE(4);
+    // GCC 12 doesn't like it when the capacity of exponent is > ours.
+    // std::copy gives the following compile-time error:
+    // error: writing 16 bytes into a region of size 4
+    std::vector<unsigned char> exponent32LE(exponent.capacity());
+    exponent32LE.resize(4);
     std::copy(exponent.rbegin(), exponent.rend(), exponent32LE.begin());
 
     std::vector<unsigned char> capiBlob = {

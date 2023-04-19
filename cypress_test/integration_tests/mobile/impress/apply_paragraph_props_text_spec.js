@@ -2,26 +2,27 @@
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var impressMobileHelper = require('./impress_mobile_helper');
+var impressHelper = require('../../common/impress_helper');
 
 describe('Apply paragraph properties on selected text.', function() {
-	var testFileName = 'apply_paragraph_props_text.odp';
+	var origTestFileName = 'apply_paragraph_props_text.odp';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'impress');
+		testFileName = helper.beforeAll(origTestFileName, 'impress');
 
 		mobileHelper.enableEditingMobile();
 
-		impressMobileHelper.selectTextShapeInTheCenter();
+		impressHelper.selectTextShapeInTheCenter();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function triggerNewSVG() {
 		mobileHelper.closeMobileWizard();
-		impressMobileHelper.triggerNewSVGForShapeInTheCenter();
+		impressHelper.triggerNewSVGForShapeInTheCenter();
 	}
 
 	function openParagraphPropertiesPanel() {
@@ -29,7 +30,7 @@ describe('Apply paragraph properties on selected text.', function() {
 
 		helper.clickOnIdle('#ParaPropertyPanel');
 
-		cy.get('#ParaLeftToRight')
+		cy.get('.unoParaLeftToRight')
 			.should('be.visible');
 	}
 
@@ -38,21 +39,20 @@ describe('Apply paragraph properties on selected text.', function() {
 
 		helper.clickOnIdle('#ListsPropertyPanel');
 
-		cy.get('#DefaultBullet')
+		cy.get('.unoDefaultBullet')
 			.should('be.visible');
 	}
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply left/right alignment on selected text.', function() {
+	it('Apply left/right alignment on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'x', '1400');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Set right alignment first
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#RightPara');
+		helper.clickOnIdle('.unoRightPara');
 
 		triggerNewSVG();
 
@@ -60,11 +60,11 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'x', '23586');
 
 		// Set left alignment
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#LeftPara');
+		helper.clickOnIdle('.unoLeftPara');
 
 		triggerNewSVG();
 
@@ -72,16 +72,15 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'x', '1400');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply center alignment on selected text.', function() {
+	it('Apply center alignment on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'x', '1400');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CenterPara');
+		helper.clickOnIdle('.unoCenterPara');
 
 		triggerNewSVG();
 
@@ -89,29 +88,28 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'x', '12493');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply justified alignment on selected text.', function() {
+	it('Apply justified alignment on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'x', '1400');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Set right alignment first
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#RightPara');
+		helper.clickOnIdle('.unoRightPara');
 
 		triggerNewSVG();
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'x', '23586');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Then set justified alignment
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#JustifyPara');
+		helper.clickOnIdle('.unoJustifyPara');
 
 		triggerNewSVG();
 
@@ -119,29 +117,28 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'x', '1400');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Set top/bottom alignment on selected text.', function() {
+	it('Set top/bottom alignment on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'y', '4834');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Set bottom alignment first
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CellVertBottom');
+		helper.clickOnIdle('.unoCellVertBottom');
 
 		triggerNewSVG();
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'y', '10811');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Then set top alignment
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CellVertTop');
+		helper.clickOnIdle('.unoCellVertTop');
 
 		triggerNewSVG();
 
@@ -149,34 +146,32 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'y', '4834');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply center vertical alignment on selected text.', function() {
+	it('Apply center vertical alignment on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'y', '4834');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#CellVertCenter');
+		helper.clickOnIdle('.unoCellVertCenter');
 
 		triggerNewSVG();
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
-			.should('have.attr', 'y', '7823');
+			.should('have.attr', 'y', '7822');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply default bulleting on selected text.', function() {
+	it('Apply default bulleting on selected text.', function() {
 		// We have no bulleting by default
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .BulletChars')
 			.should('not.exist');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#DefaultBullet');
+		helper.clickOnIdle('#ListsPropertyPanel .unoDefaultBullet');
 
 		triggerNewSVG();
 
@@ -184,39 +179,32 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('exist');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply default numbering on selected text.', function() {
+	it('Apply default numbering on selected text.', function() {
 		// We have no bulleting by default
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextShape tspan')
+		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .SVGTextShape tspan')
 			.should('not.have.attr', 'ooo:numbering-type');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#DefaultNumbering');
+		helper.clickOnIdle('#ListsPropertyPanel .unoDefaultNumbering');
 
 		triggerNewSVG();
 
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextShape tspan')
+		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .SVGTextShape tspan')
 			.should('have.attr', 'ooo:numbering-type', 'number-style');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply spacing above on selected text.', function() {
+	it('Apply spacing above on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph:nth-of-type(2) tspan')
 			.should('have.attr', 'y', '6600');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		cy.get('#aboveparaspacing input')
-			.clear()
-			.type('2{enter}');
-
-		cy.get('#aboveparaspacing input')
-			.should('have.attr', 'value', '2');
+		helper.typeIntoInputField('#aboveparaspacing input', '2', true, false);
 
 		triggerNewSVG();
 
@@ -224,21 +212,15 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'y', '11180');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply spacing below on selected text.', function() {
+	it('Apply spacing below on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph:nth-of-type(2) tspan')
 			.should('have.attr', 'y', '6600');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		cy.get('#belowparaspacing input')
-			.clear()
-			.type('2{enter}');
-
-		cy.get('#belowparaspacing input')
-			.should('have.attr', 'value', '2');
+		helper.typeIntoInputField('#belowparaspacing input', '2', true, false);
 
 		triggerNewSVG();
 
@@ -246,27 +228,26 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'y', '11180');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Increase/decrease spacing of selected text.', function() {
+	it('Increase/decrease spacing of selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph:nth-of-type(2) tspan')
 			.should('have.attr', 'y', '6600');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#ParaspaceIncrease');
+		helper.clickOnIdle('.unoParaspaceIncrease');
 
 		triggerNewSVG();
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph:nth-of-type(2) tspan')
 			.should('have.attr', 'y', '6700');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#ParaspaceDecrease');
+		helper.clickOnIdle('.unoParaspaceDecrease');
 
 		triggerNewSVG();
 
@@ -274,17 +255,16 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'y', '6600');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Change writing direction of selected text.', function() {
+	it('Change writing direction of selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph .TextPosition')
 			.should('have.attr', 'x', '1400');
 
 		// Change right-to-left first
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#ParaRightToLeft');
+		helper.clickOnIdle('.unoParaRightToLeft');
 
 		triggerNewSVG();
 
@@ -292,11 +272,11 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'x', '23586');
 
 		// Change back to the default left-to-right
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openParagraphPropertiesPanel();
 
-		helper.clickOnIdle('#ParaLeftToRight');
+		helper.clickOnIdle('.unoParaLeftToRight');
 
 		triggerNewSVG();
 
@@ -304,18 +284,17 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'x', '1400');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Change bulleting level of selected text.', function() {
+	it('Change bulleting level of selected text.', function() {
 		// We have no bulleting by default
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .BulletChars')
 			.should('not.exist');
 
 		// Apply bulleting first
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#DefaultBullet');
+		helper.clickOnIdle('#ListsPropertyPanel .unoDefaultBullet');
 
 		triggerNewSVG();
 
@@ -325,11 +304,11 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'transform', 'translate(1700,4563)');
 
 		// Change bulleting level
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#OutlineRight');
+		helper.clickOnIdle('.unoOutlineRight');
 
 		triggerNewSVG();
 
@@ -337,11 +316,11 @@ describe('Apply paragraph properties on selected text.', function() {
 			.should('have.attr', 'transform', 'translate(2900,4536)');
 
 		// Change bulleting level back to default
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		openListsPropertiesPanel();
 
-		helper.clickOnIdle('#OutlineLeft');
+		helper.clickOnIdle('.unoOutlineLeft');
 
 		triggerNewSVG();
 

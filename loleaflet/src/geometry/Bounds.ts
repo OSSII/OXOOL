@@ -1,6 +1,6 @@
 declare var L: any;
 
-namespace oxool {
+namespace cool {
 
 function PointConstruct(x: number, y: number, round?: boolean): Point {
 	return new L.Point(x, y, round);
@@ -30,13 +30,13 @@ export class Bounds {
 	public static parse(rectString: string): Bounds {
 
 		if (typeof rectString !== 'string') {
-			window.app.console.error('invalid input type, expected string');
+			console.error('invalid input type, expected string');
 			return undefined;
 		}
 
 		var rectParts = rectString.match(/\d+/g);
 		if (rectParts === null || rectParts.length < 4) {
-			window.app.console.error('incomplete rectangle');
+			console.error('incomplete rectangle');
 			return undefined;
 		}
 
@@ -50,7 +50,7 @@ export class Bounds {
 	public static parseArray(rectListString: string): Bounds[] {
 
 		if (typeof rectListString !== 'string') {
-			window.app.console.error('invalid input type, expected string');
+			console.error('invalid input type, expected string');
 			return undefined;
 		}
 
@@ -229,7 +229,7 @@ export class Bounds {
 			);
 		}
 
-		window.app.console.error('invalid argument type');
+		console.error('invalid argument type');
 	}
 
 	public equals(bounds: Bounds): boolean {
@@ -259,5 +259,5 @@ export class Bounds {
 
 }
 
-L.Bounds = oxool.Bounds;
-L.bounds = oxool.Bounds.toBounds;
+L.Bounds = cool.Bounds;
+L.bounds = cool.Bounds.toBounds;

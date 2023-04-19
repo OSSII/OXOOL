@@ -1,7 +1,5 @@
 // -*- Mode: objc; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*-
 //
-// This file is part of the LibreOffice project.
-//
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -27,11 +25,14 @@
 #import "FakeSocket.hpp"
 #import "Kit.hpp"
 #import "Log.hpp"
-#import "LOOLWSD.hpp"
+#import "COOLWSD.hpp"
 #import "SetupKitEnvironment.hpp"
 #import "Util.hpp"
 
+#import <common/LangUtil.hpp>
+
 NSString *app_locale;
+NSString *app_text_direction;
 
 static void download(NSURL *source, NSURL *destination) {
     [[[NSURLSession sharedSession] downloadTaskWithURL:source
@@ -182,11 +183,14 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    auto trace = std::getenv("LOOL_LOGLEVEL");
+    auto trace = std::getenv("COOL_LOGLEVEL");
     if (!trace)
         trace = strdup("warning");
 
-    setupKitEnvironment("");
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
+        setupKitEnvironment("notebookbar");
+    else
+        setupKitEnvironment("");
 
     Log::initialize("Mobile", trace, false, false, {});
     Util::setThreadName("main");
@@ -197,18 +201,18 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
     NSString *cacheDirectory = [userDirectory stringByAppendingPathComponent:@"cache"];
 
     NSString *coreVersionHashFile = [cacheDirectory stringByAppendingPathComponent:@"core_version_hash"];
-    NSString *loolwsdVersionHashFile = [cacheDirectory stringByAppendingPathComponent:@"loolwsd_version_hash"];
+    NSString *coolwsdVersionHashFile = [cacheDirectory stringByAppendingPathComponent:@"coolwsd_version_hash"];
 
     NSData *oldCoreVersionHash = [NSData dataWithContentsOfFile:coreVersionHashFile];
-    NSData *oldLoolwsdVersionHash = [NSData dataWithContentsOfFile:loolwsdVersionHashFile];
+    NSData *oldCoolwsdVersionHash = [NSData dataWithContentsOfFile:coolwsdVersionHashFile];
 
     NSData *coreVersionHash = [NSData dataWithBytes:CORE_VERSION_HASH length:strlen(CORE_VERSION_HASH)];
-    NSData *loolwsdVersionHash = [NSData dataWithBytes:LOOLWSD_VERSION_HASH length:strlen(LOOLWSD_VERSION_HASH)];
+    NSData *coolwsdVersionHash = [NSData dataWithBytes:COOLWSD_VERSION_HASH length:strlen(COOLWSD_VERSION_HASH)];
 
     if (oldCoreVersionHash == nil
         || ![oldCoreVersionHash isEqualToData:coreVersionHash]
-        || oldLoolwsdVersionHash == nil
-        || ![oldLoolwsdVersionHash isEqualToData:loolwsdVersionHash]) {
+        || oldCoolwsdVersionHash == nil
+        || ![oldCoolwsdVersionHash isEqualToData:coolwsdVersionHash]) {
 
         [[NSFileManager defaultManager] removeItemAtPath:cacheDirectory error:nil];
 
@@ -218,8 +222,8 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
         if (![[NSFileManager defaultManager] createFileAtPath:coreVersionHashFile contents:coreVersionHash attributes:nil])
             NSLog(@"Could not create %@", coreVersionHashFile);
 
-        if (![[NSFileManager defaultManager] createFileAtPath:loolwsdVersionHashFile contents:loolwsdVersionHash attributes:nil])
-            NSLog(@"Could not create %@", loolwsdVersionHashFile);
+        if (![[NSFileManager defaultManager] createFileAtPath:coolwsdVersionHashFile contents:coolwsdVersionHash attributes:nil])
+            NSLog(@"Could not create %@", coolwsdVersionHashFile);
     }
 
     // Having LANG in the environment is expected to happen only when debugging from Xcode. When
@@ -232,6 +236,11 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
     else
         app_locale = [[NSLocale preferredLanguages] firstObject];
 
+    if (LangUtil::isRtlLanguage(std::string([app_locale UTF8String])))
+        app_text_direction = @"rtl";
+    else
+        app_text_direction = @"";
+
     lo_kit = lok_init_2(nullptr, nullptr);
 
     comphelper::LibreOfficeKit::setLanguageTag(LanguageTag(OUString::fromUtf8(OString([app_locale UTF8String])), true));
@@ -243,39 +252,30 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
     // documents to download. If set, start a task to download it, and then to download the listed
     // templates.
 
-    NSString *templateListURL = nil;
-
     // First check managed configuration, if present
     NSDictionary *managedConfig = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"com.apple.configuration.managed"];
+
+    // Look for managed configuration setting of the user name.
+
     if (managedConfig != nil) {
-        templateListURL = managedConfig[@"templateListURL"];
-        if (templateListURL != nil && ![templateListURL isKindOfClass:[NSString class]])
-            templateListURL = nil;
+        NSString *userName = managedConfig[@"userName"];
+        if (userName != nil && [userName isKindOfClass:[NSString class]])
+            user_name = [userName UTF8String];
     }
 
-    if (templateListURL == nil)
-        templateListURL = [[NSUserDefaults standardUserDefaults] stringForKey:@"templateListURL"];
+    if (user_name == nullptr)
+        user_name = [[[NSUserDefaults standardUserDefaults] stringForKey:@"userName"] UTF8String];
 
-    if (templateListURL != nil) {
-        NSURL *url = [NSURL URLWithString:templateListURL];
-        if (url != nil) {
-            [[[NSURLSession sharedSession] dataTaskWithURL:url
-                                         completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                        if (error == nil && [response isKindOfClass:[NSHTTPURLResponse class]] && [(NSHTTPURLResponse*)response statusCode] == 200)
-                            updateTemplates(data, response);
-                        else if (error == nil && [response isKindOfClass:[NSHTTPURLResponse class]])
-                            LOG_ERR("Failed to download " <<
-                                    [[url absoluteString] UTF8String] <<
-                                    ": response code " << [(NSHTTPURLResponse*)response statusCode]);
-                        else if (error != nil)
-                            LOG_ERR("Failed to download " <<
-                                    [[url absoluteString] UTF8String] <<
-                                    ": " << [[error description] UTF8String]);
-                        else
-                            LOG_ERR("Failed to download " <<
-                                    [[url absoluteString] UTF8String]);
-                    }] resume];
-        }
+    // Remove any leftover allegedly temporary folders with copies of documents left behind from
+    // previous instances of the app that were killed while editing, various random files that for
+    // instance NSS seems to love to create, etc, by removing the whole tmp folder.
+    NSURL *tempFolderURL = [[NSFileManager defaultManager] temporaryDirectory];
+    if (![[NSFileManager defaultManager] removeItemAtURL:tempFolderURL error:nil]) {
+        NSLog(@"Could not remove tmp folder %@", tempFolderURL);
+    }
+
+    if (![[NSFileManager defaultManager] createDirectoryAtURL:tempFolderURL withIntermediateDirectories:YES attributes:nil error:nil]) {
+        NSLog(@"Could not create tmp folder %@", tempFolderURL);
     }
 
     fakeSocketSetLoggingCallback([](const std::string& line)
@@ -289,8 +289,8 @@ static void updateTemplates(NSData *data, NSURLResponse *response)
                        argv[0] = strdup([[NSBundle mainBundle].executablePath UTF8String]);
                        argv[1] = nullptr;
                        Util::setThreadName("app");
-                       auto loolwsd = new LOOLWSD();
-                       loolwsd->run(1, argv);
+                       auto coolwsd = new COOLWSD();
+                       coolwsd->run(1, argv);
 
                        // Should never return
                        assert(false);

@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -63,7 +61,7 @@ protected:
 };
 
 
-using namespace LOOLProtocol;
+using namespace COOLProtocol;
 
 using Poco::Net::HTTPClientSession;
 using Poco::Net::HTTPRequest;
@@ -100,7 +98,7 @@ public:
         else
             session = new Poco::Net::HTTPClientSession(uri.getHost(), uri.getPort());
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to");
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
 
         try {
             Poco::Net::HTMLForm form;
@@ -109,7 +107,7 @@ public:
             form.addPart("data", new Poco::Net::FilePartSource(document));
             form.prepareSubmit(request);
 
-            // If this results in a Poco::Net::ConnectionRefusedException, oxoolwsd is not running.
+            // If this results in a Poco::Net::ConnectionRefusedException, coolwsd is not running.
             form.write(session->sendRequest(request));
         }
         catch (const Poco::Exception &e)
@@ -155,14 +153,14 @@ Tool::Tool() :
 
 void Tool::displayHelp()
 {
-    std::cout << "LibreOffice Online document converter tool.\n"
+    std::cout << "Collabora Online document converter tool.\n"
               << "Usage: " << commandName() << " [options] file...\n"
               << "Options are:\n"
               << "  --help                      Show this text\n"
               << "  --extension=format          File format to convert to\n"
               << "  --outdir=directory          Output directory for converted files\n"
               << "  --parallelism=threads       Number of simultaneous threads to use\n"
-              << "  --server=uri                URI of LOOL server\n"
+              << "  --server=uri                URI of COOL server\n"
               << "  --no-check-certificate      Disable checking of SSL certificate\n"
               << "In addition, the options taken by the libreoffice command for its --convert-to\n"
               << "functionality can be used (but are ignored if irrelevant to this command)." << std::endl;
@@ -262,7 +260,7 @@ int Tool::main(const std::vector<std::string>& origArgs)
             std::vector< std::string > files( toCopy );
             std::copy( args.begin() + offset, args.begin() + offset + toCopy, files.begin() );
             offset += toCopy;
-            clients.emplace_back([this, &files]{Worker(*this, files).run();});
+            clients.emplace_back([this, files]{Worker(*this, files).run();});
         }
     }
 

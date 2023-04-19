@@ -3,7 +3,7 @@
  * L.Control.NotebookbarBuilder
  */
 
-/* global app $ _ _UNO */
+/* global $ _ _UNO JSDialog */
 L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 
 	_customizeOptions: function() {
@@ -35,13 +35,11 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:Color'] = this._colorControl;
 		this._toolitemHandlers['.uno:FillColor'] = this._colorControl;
 
-		this._toolitemHandlers['.uno:HyperlinkDialog'] = this._insertHyperlinkControl;
 		this._toolitemHandlers['.uno:InsertTable'] = this._insertTableControl;
 		this._toolitemHandlers['.uno:InsertGraphic'] = this._insertGraphicControl;
-		//this._toolitemHandlers['.uno:InsertAnnotation'] = this._insertAnnotationControl;
+		this._toolitemHandlers['.uno:InsertAnnotation'] = this._insertAnnotationControl;
 		this._toolitemHandlers['.uno:LineSpacing'] = this._lineSpacingControl;
 		this._toolitemHandlers['.uno:CharSpacing'] = this._CharSpacing;
-		this._toolitemHandlers['.uno:CharmapControl'] = this._symbolControl;
 		this._toolitemHandlers['.uno:Cut'] = this._clipboardButtonControl;
 		this._toolitemHandlers['.uno:Copy'] = this._clipboardButtonControl;
 		this._toolitemHandlers['.uno:Paste'] = this._clipboardButtonControl;
@@ -49,20 +47,23 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:ConditionalFormatMenu'] = this._conditionalFormatControl;
 		this._toolitemHandlers['.uno:SetBorderStyle'] = this._borderStyleControl;
 		this._toolitemHandlers['.uno:SetDefault'] = this._formattingControl;
-		this._toolitemHandlers['.uno:Presentation'] = this._startPresentationControl;
-		//this._toolitemHandlers['.uno:Save'] = this._saveControl;
-		//this._toolitemHandlers['.uno:SaveAs'] = this._saveAsControl;
-		//this._toolitemHandlers['.uno:shareas'] = this._shareAsControl;
-		//this._toolitemHandlers['.uno:Print'] = this._printControl;
-		//this._toolitemHandlers['.uno:rev-history'] = this._revHistoryControl;
-		this._toolitemHandlers['downloadas'] = this._downloadAsControl;
+		this._toolitemHandlers['.uno:Save'] = this._saveControl;
+		this._toolitemHandlers['.uno:SaveAs'] = this._saveAsControl;
+		this._toolitemHandlers['.uno:Print'] = this._printControl;
 		this._toolitemHandlers['.uno:InsertPageHeader'] = this._headerFooterControl;
 		this._toolitemHandlers['.uno:InsertPageFooter'] = this._headerFooterControl;
 		this._toolitemHandlers['.uno:Text'] = this._insertTextBoxControl;
 		this._toolitemHandlers['.uno:DrawText'] = this._insertTextBoxControl;
 		this._toolitemHandlers['.uno:VerticalText'] = this._insertTextBoxControl;
-		this._toolitemHandlers['.uno:ShowResolvedAnnotations'] = this._showResolvedAnnotationsControl;
-		this._toolitemHandlers['.uno:LanguageMenu'] = this._languageMenu;
+		this._toolitemHandlers['.uno:OnlineHelp'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:ForumHelp'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:KeyboardShortcuts'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:ReportIssue'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:LatestUpdates'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:Feedback'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:About'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:FullScreen'] = this._onlineHelpControl;
+		this._toolitemHandlers['.uno:LanguageMenu'] = JSDialog.notebookbarLanguageSelector;
 
 		this._toolitemHandlers['.uno:SelectWidth'] = function() {};
 		this._toolitemHandlers['.uno:SetOutline'] = function() {};
@@ -85,7 +86,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:StarShapes'] = function() {};
 		this._toolitemHandlers['.uno:CalloutShapes'] = function() {};
 		this._toolitemHandlers['.uno:FlowChartShapes'] = function() {};
-		this._toolitemHandlers['.uno:InsertObjectStarMath'] = function() {};
 		this._toolitemHandlers['.uno:EmojiControl'] = function() {};
 		this._toolitemHandlers['.uno:InsertDraw'] = function() {};
 		this._toolitemHandlers['.uno:EditGlossary'] = function() {};
@@ -111,7 +111,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		this._toolitemHandlers['.uno:EditDoc'] = function() {};
 		this._toolitemHandlers['.uno:AssignLayout'] = function() {};
 		this._toolitemHandlers['.uno:ConnectorToolbox'] = this._shapesControl;
-		//this._toolitemHandlers['.uno:PresentationCurrentSlide'] = function() {};
+		this._toolitemHandlers['.uno:PresentationCurrentSlide'] = function() {};
 		this._toolitemHandlers['.uno:PresentationLayout'] = function() {};
 		this._toolitemHandlers['.uno:CapturePoint'] = function() {};
 		this._toolitemHandlers['.uno:Objects3DToolbox'] = function() {};
@@ -228,9 +228,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		if (commandName === '.uno:CharFontName') {
 			if (window.ThisIsTheiOSApp) {
 				if (state === '')
-					$('#fontnamecombobox').html(_('Font Name'));
+					$('#fontnamecomboboxios').html(_('Font Name'));
 				else
-					$('#fontnamecombobox').html(state);
+					$('#fontnamecomboboxios').html(state);
 				window.LastSetiOSFontNameButtonFont = state;
 			}
 		} else if (commandName === '.uno:StyleApply') {
@@ -249,12 +249,14 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 	},
 
 	_createiOsFontButton: function(parentContainer, data, builder) {
-		var table = L.DomUtil.createWithId('div', 'fontnamecombobox', parentContainer);
+		// Fix issue #5838 Use unique IDs for font name combobox elements
+		var table = L.DomUtil.createWithId('div', data.id, parentContainer);
 		var row = L.DomUtil.create('div', 'notebookbar row', table);
-		var button = L.DomUtil.createWithId('button', data.id, row);
+		var button = L.DomUtil.createWithId('button', data.id + 'ios', row);
 
 		$(table).addClass('select2 select2-container select2-container--default');
-		$(row).addClass('select2-selection select2-selection--single');
+		// Fix issue #5838 Don't add the "select2-selection--single" class
+		$(row).addClass('select2-selection');
 		$(button).addClass('select2-selection__rendered');
 
 		if (data.selectedEntries.length && data.entries[data.selectedEntries[0]])
@@ -356,9 +358,13 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			}
 
 			$(tabs[t]).addClass('selected');
+			tabs[t].setAttribute('aria-selected', 'true');
+			tabs[t].removeAttribute('tabindex');
 			for (var i = 0; i < tabs.length; i++) {
 				if (i !== t) {
 					$(tabs[i]).removeClass('selected');
+					tabs[i].setAttribute('aria-selected', 'false');
+					tabs[i].tabIndex = -1;
 					$(tabs[i]).prop('title', '');
 					$(contentDivs[i]).hide();
 				}
@@ -367,9 +373,13 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			$(window).resize();
 			builder.wizard.selectedTab(tabIds[t]);
 
-			// don't lose focus on tab change
-			event.preventDefault();
-			builder.map.focus();
+			// Keep focus if user is navigating via keyboard.
+			if (!tabs[t].enterPressed) {
+				// don't lose focus on tab change
+				event.preventDefault();
+				builder.map.focus();
+				t.enterPressed = false;
+			}
 		};
 	},
 
@@ -397,37 +407,49 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 				return false;
 		}
 
-		// 未指定 command 的話，就用 id 替代
-		if (data.command === undefined || data.command === '')
-			data.command = data.id;
+		data.command = data.id;
 
 		var isDownloadAsGroup = data.id === 'downloadas';
+		var isSaveAsGroup = data.id === 'saveas';
+		var isExportAsGroup = data.id === 'exportas';
 		var options = {};
-		if (isDownloadAsGroup) {
+		var hasCustomMenu = isDownloadAsGroup || isSaveAsGroup || isExportAsGroup;
+		if (hasCustomMenu) {
 			options.hasDropdownArrow = true;
 		}
 
-		builder._unoToolButton(parentContainer, data, builder, options);
-		/* var control = builder._unoToolButton(parentContainer, data, builder, options);
+		var control = builder._unoToolButton(parentContainer, data, builder, options);
+		var submenuOpts = builder._getSubmenuOpts(builder.options.map._docLayer._docType, data.id, builder);
 
 		$(control.container).unbind('click.toolbutton');
 		if (!builder.map.isLockedItem(data)) {
 			$(control.container).click(function () {
-				if (!isDownloadAsGroup) {
+				if (!hasCustomMenu) {
 					L.control.menubar()._executeAction.bind({_map: builder.options.map})(undefined, {id: data.id});
 					return;
 				}
 
-				var downloadasSubmenuOpts = builder._getDownloadAsSubmenuOpts(builder.options.map._docLayer._docType);
-
 				$(control.container).w2menu({
-					items: downloadasSubmenuOpts,
+					items: submenuOpts,
 					onSelect: function (event) {
-						L.control.menubar()._executeAction.bind({_map: builder.options.map})(undefined, {id: event.item.id});
+						builder.map.dispatch(event.item.id);
 					}
 				});
 			});
-		} */
+		}
+
+		for (var i in submenuOpts) {
+			var item = submenuOpts[i];
+
+			if (item.id.startsWith('export')) {
+				var format = item.id.substring('export'.length);
+				builder.map._docLayer.registerExportFormat(item.text, format);
+			}
+			else if (item.id.startsWith('downloadas-')) {
+				var format = item.id.substring('downloadas-'.length);
+				builder.map._docLayer.registerExportFormat(item.text, format);
+			}
+		}
 	},
 
 	_inlineMenubarToolItemHandler: function(parentContainer, data, builder) {
@@ -452,7 +474,19 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		return false;
 	},
 
-	/* _getDownloadAsSubmenuOpts: function(docType) {
+	_getSubmenuOpts: function(docType, id, builder) {
+		switch (id) {
+		case 'downloadas':
+			return builder._getDownloadAsSubmenuOpts(docType);
+		case 'saveas':
+			return builder._getSaveAsSubmenuOpts(docType);
+		case 'exportas':
+			return builder._getExportAsSubmenuOpts(docType);
+		}
+		return [];
+	},
+
+	_getDownloadAsSubmenuOpts: function(docType) {
 		var submenuOpts = [];
 
 		if (docType === 'text') {
@@ -474,12 +508,14 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 					'text': _('Word 2003 Document (.doc)')
 				},
 				{
-					'id': 'downloadas-epub',
-					'text': _('EPUB (.epub)')
+					'id': !window.ThisIsAMobileApp ? 'exportepub' : 'downloadas-epub',
+					'text': _('EPUB (.epub)'),
+					'command': !window.ThisIsAMobileApp ? 'exportepub' : 'downloadas-epub'
 				},
 				{
-					'id': 'downloadas-pdf',
-					'text': _('PDF Document (.pdf)')
+					'id': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf',
+					'text': _('PDF Document (.pdf)'),
+					'command': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf'
 				}
 			];
 		} else if (docType === 'spreadsheet') {
@@ -501,8 +537,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 					'text': _('CSV File (.csv)')
 				},
 				{
-					'id': 'downloadas-pdf',
-					'text': _('PDF Document (.pdf)')
+					'id': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf',
+					'text': _('PDF Document (.pdf)'),
+					'command': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf'
 				}
 			];
 		} else if (docType === 'presentation') {
@@ -524,7 +561,113 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 					'text': _('PowerPoint 2003 Presentation (.ppt)')
 				},
 				{
-					'id': 'downloadas-pdf',
+					'id': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf',
+					'text': _('PDF Document (.pdf)'),
+					'command': !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf'
+				}
+			];
+		}
+
+		submenuOpts.forEach(function mapIconToItem(menuItem) {
+			menuItem.icon = menuItem.id + '-submenu-icon';
+		});
+
+		return submenuOpts;
+	},
+
+	_getSaveAsSubmenuOpts: function(docType) {
+		var submenuOpts = [];
+
+		if (docType === 'text') {
+			submenuOpts = [
+				{
+					'id': 'saveas-odt',
+					'text': _('ODF text document (.odt)')
+				},
+				{
+					'id': 'saveas-rtf',
+					'text': _('Rich Text (.rtf)')
+				},
+				{
+					'id': 'saveas-docx',
+					'text': _('Word Document (.docx)')
+				},
+				{
+					'id': 'saveas-doc',
+					'text': _('Word 2003 Document (.doc)')
+				}
+			];
+		} else if (docType === 'spreadsheet') {
+			submenuOpts = [
+				{
+					'id': 'saveas-ods',
+					'text': _('ODF spreadsheet (.ods)')
+				},
+				{
+					'id': 'saveas-xlsx',
+					'text': _('Excel Spreadsheet (.xlsx)')
+				},
+				{
+					'id': 'saveas-xls',
+					'text': _('Excel 2003 Spreadsheet (.xls)')
+				}
+			];
+		} else if (docType === 'presentation') {
+			submenuOpts = [
+				{
+					'id': 'saveas-odp',
+					'text': _('ODF presentation (.odp)')
+				},
+				{
+					'id': 'saveas-pptx',
+					'text': _('PowerPoint Presentation (.pptx)')
+				},
+				{
+					'id': 'saveas-ppt',
+					'text': _('PowerPoint 2003 Presentation (.ppt)')
+				}
+			];
+		}
+
+		submenuOpts.forEach(function mapIconToItem(menuItem) {
+			menuItem.icon = menuItem.id + '-submenu-icon';
+		});
+
+		return submenuOpts;
+	},
+
+	_getExportAsSubmenuOpts: function(docType) {
+		var submenuOpts = [];
+
+		if (docType === 'text') {
+			submenuOpts = [
+				{
+					'id': 'exportas-pdf',
+					'text': _('PDF Document (.pdf)')
+				},
+				{
+					'id': 'exportas-epub',
+					'text': _('EPUB (.epub)')
+				}
+			];
+		} else if (docType === 'spreadsheet') {
+			submenuOpts = [
+				{
+					'id': 'exportas-pdf',
+					'text': _('PDF Document (.pdf)')
+				}
+			];
+		} else if (docType === 'presentation') {
+			submenuOpts = [
+				{
+					'id': 'exportas-pdf',
+					'text': _('PDF Document (.pdf)')
+				}
+			];
+		} else if (docType === 'drawing') {
+			submenuOpts = [
+				{
+					'id': 'exportas-pdf',
 					'text': _('PDF Document (.pdf)')
 				}
 			];
@@ -535,16 +678,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		});
 
 		return submenuOpts;
-	}, */
-
-	_insertHyperlinkControl: function(parentContainer, data, builder) {
-		var control = builder._unoToolButton(parentContainer, data, builder);
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).click(function () {
-			builder.map.showHyperlinkDialog();
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
 	_headerFooterControl: function(parentContainer, data, builder) {
@@ -571,15 +704,13 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	_showResolvedAnnotationsControl: function(parentContainer, data, builder) {
+	_onlineHelpControl: function(parentContainer, data, builder) {
+		var originalDataId = data.id; // builder can change this
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
 		$(control.container).unbind('click.toolbutton');
 		$(control.container).click(function () {
-			var items = builder.map['stateChangeHandler'];
-			var val = items.getItemValue('.uno:ShowResolvedAnnotations');
-			val = (val === 'true' || val === true);
-			builder.map.showResolvedComments(!val);
+			L.control.menubar()._executeAction.bind({_map: builder.options.map})(undefined, {id: originalDataId});
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
@@ -730,7 +861,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	/* _insertAnnotationControl: function(parentContainer, data, builder) {
+	_insertAnnotationControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
 		$(control.container).unbind('click.toolbutton');
 		$(control.container).click(function () {
@@ -740,7 +871,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			}
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	}, */
+	},
 
 	_clipboardButtonControl: function(parentContainer, data, builder) {
 		var isPaste = data.command === '.uno:Paste';
@@ -750,8 +881,8 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		if (builder.map._clip) {
 			if (isPaste) {
 				var menu = [
-					{text: _UNO('.uno:Paste', 'text'), uno: 'Paste', hint: builder.map.getCommandHotkey('.uno:Paste')},
-					{text: _UNO('.uno:PasteSpecial', 'text'), uno: 'PasteSpecial', hint: builder.map.getCommandHotkey('.uno:PasteSpecial')},
+					{text: _UNO('.uno:Paste', 'text'), uno: 'Paste', hint: L.Control.MenubarShortcuts.shortcuts.PASTE},
+					{text: _UNO('.uno:PasteSpecial', 'text'), uno: 'PasteSpecial', hint: L.Control.MenubarShortcuts.shortcuts.PASTE_SPECIAL},
 				];
 
 				$(control.container).unbind('click.toolbutton');
@@ -841,53 +972,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	_downloadAsControl: function(parentContainer, data, builder) {
-		var options = {hasDropdownArrow: true};
-		var control = builder._unoToolButton(parentContainer, data, builder, options);
-
-		$(control.container).unbind('click.toolbutton');
-		var formats = builder.map.getExportFormats();
-		var menuItems = {};
-		formats.forEach(function(item) {
-			var id = 'downloadas-' + item.format;
-			menuItems[id] = {
-				icon: 'res:' + id,
-				name: item.label
-			};
-		});
-		L.installContextMenu({
-			selector: '#downloadasmenu',
-			className: 'oxool-font',
-			trigger: 'left',
-			items: menuItems,
-			callback: function(key/* , options */) {
-				builder.map.executeAllowedCommand(key);
-			}
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
-
-	_symbolControl: function(parentContainer, data, builder) {
-		var control = builder._unoToolButton(parentContainer, data, builder);
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).click(function () {
-			builder.map.sendUnoCommand('.uno:InsertSymbol');
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
-
-	_startPresentationControl: function(parentContainer, data, builder) {
-		var control = builder._unoToolButton(parentContainer, data, builder);
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).click(function () {
-			builder.map.fire('fullscreen');
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
-	},
-
-	/* _saveControl: function(parentContainer, data, builder) {
+	_saveControl: function(parentContainer, data, builder) {
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
 		$(control.container).unbind('click.toolbutton');
@@ -901,9 +986,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			}
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	}, */
+	},
 
-	/* _saveAsControl: function(parentContainer, data, builder) {
+	_saveAsControl: function(parentContainer, data, builder) {
 		data.text = data.text.replace('...', '');
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
@@ -912,19 +997,9 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			builder.map.openSaveAs();
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	}, */
-
-	_shareAsControl: function(parentContainer, data, builder) {
-		var control = builder._unoToolButton(parentContainer, data, builder);
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).click(function () {
-			builder.map.openShare();
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
-	/* _printControl: function(parentContainer, data, builder) {
+	_printControl: function(parentContainer, data, builder) {
 		data.text = data.text.replace('...', '');
 		var control = builder._unoToolButton(parentContainer, data, builder);
 
@@ -933,93 +1008,6 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 			builder.map.print();
 		});
 		builder._preventDocumentLosingFocusOnClick(control.container);
-	}, */
-
-	/* _revHistoryControl: function(parentContainer, data, builder) {
-		var control = builder._unoToolButton(parentContainer, data, builder);
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).click(function () {
-			builder.map.openRevisionHistory();
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
-	}, */
-
-	_languageMenu: function(parentContainer, data, builder) {
-		var menu = [
-			{id: 'nb-LanguageMenu', name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
-				{name: _UNO('.uno:SetLanguageSelectionMenu', 'text'), type: 'menu', menu: [
-					{name: _('None (Do not check spelling)'), id: 'noneselection', uno: '.uno:LanguageStatus?Language:string=Current_LANGUAGE_NONE'}]},
-				{name: _UNO('.uno:SetLanguageParagraphMenu', 'text'), type: 'menu', menu: [
-					{name: _('None (Do not check spelling)'), id: 'noneparagraph', uno: '.uno:LanguageStatus?Language:string=Paragraph_LANGUAGE_NONE'}]},
-				{name: _UNO('.uno:SetLanguageAllTextMenu', 'text'), type: 'menu', menu: [
-					{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]},
-			]}
-		];
-
-		if (builder.map.getDocType() !== 'text') {
-			menu = [
-				{id: 'nb-LanguageMenu', name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
-					{name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
-						{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]}
-				]}
-			];
-		}
-
-		var noLabels = builder.options.noLabelsForUnoButtons;
-		builder.options.noLabelsForUnoButtons = false;
-
-		var options = {hasDropdownArrow: true};
-		var control = builder._unoToolButton(parentContainer, data, builder, options);
-
-		$(control.container).tooltip({disabled: true});
-		$(control.container).unbind('click');
-
-		builder.options.noLabelsForUnoButtons = noLabels;
-
-		$(control.container).unbind('click.toolbutton');
-		$(control.container).tooltip({disabled: true});
-		$(control.container).addClass('sm sm-simple lo-menu');
-
-		var menubar = L.control.menubar({allowedReadonlyMenus: ['nb-hamburger']});
-		menubar._map = builder.map;
-		var menuHtml = menubar._createMenu(menu);
-		document.getElementById(data.id).setAttribute('role', 'menu');
-
-		var oldContent = $(control.container).children().detach();
-		$(control.container).append(menuHtml);
-
-		$(control.container).smartmenus({
-			hideOnClick: true,
-			showOnClick: true,
-			hideTimeout: 0,
-			hideDuration: 0,
-			hideFunction: null,
-			showDuration: 0,
-			showFunction: null,
-			showTimeout: 0,
-			collapsibleHideDuration: 0,
-			collapsibleHideFunction: null,
-			subIndicatorsPos: 'append',
-			subIndicatorsText: '&#8250;'
-		});
-
-		$(menuHtml[0]).children('a').empty();
-		$(menuHtml[0]).children('a').append(oldContent);
-		$(menuHtml[0]).children('a').click(function () {
-			$(control.container).smartmenus('menuHideAll');
-		});
-
-		$(control.container).bind('beforeshow.smapi', {self: menubar}, menubar._beforeShow);
-		$(control.container).bind('click.smapi', {self: menubar}, menubar._onClicked);
-		$(control.container).bind('select.smapi', {self: menubar}, menubar._onItemSelected);
-		$(control.container).bind('keydown', {self: menubar}, menubar._onKeyDown);
-		$(control.container).bind('hideAll.smapi', {self: menubar}, menubar._onMouseOut);
-
-		builder.map.on('commandvalues', menubar._onInitLanguagesMenu, menubar);
-		app.socket.sendMessage('commandvalues command=.uno:LanguageStatus');
-
-		return false;
 	},
 
 	buildControl: function(parent, data) {
@@ -1086,6 +1074,7 @@ L.Control.NotebookbarBuilder = L.Control.JSDialogBuilder.extend({
 				$(table).addClass(this.options.cssClass);
 				$(table).addClass('vertical');
 				var childObject = L.DomUtil.create('div', 'row ' + this.options.cssClass, table);
+				childObject.id = tableId ? tableId + '-row' : '';
 			} else {
 				childObject = td;
 			}

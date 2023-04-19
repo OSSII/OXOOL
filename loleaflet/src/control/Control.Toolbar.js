@@ -1,9 +1,9 @@
 /* -*- js-indent-level: 8; fill-column: 100 -*- */
 /*
- * OxOffice Online toolbar
+ * Collabora Online toolbar
  */
 
-/* global app $ w2ui _ _UNO */
+/* global app $ w2ui _ */
 /*eslint indent: [error, "tab", { "outerIIFEBody": 0 }]*/
 (function(global) {
 
@@ -93,7 +93,24 @@ function onClick(e, id, item) {
 		if (id === 'save') {
 			map.fire('postMessage', {msgId: 'UI_Save', args: { source: 'toolbar' }});
 		}
-		map.toggleCommandState(getUNOCommand(item.uno));
+		if (item.unosheet && map.getDocType() === 'spreadsheet') {
+			map.toggleCommandState(item.unosheet);
+		}
+		else {
+			map.toggleCommandState(getUNOCommand(item.uno));
+		}
+	}
+	else if (id === 'print') {
+		map.print();
+	}
+	else if (id === 'save') {
+		// Save only when not read-only.
+		if (!map.isReadOnlyMode()) {
+			map.fire('postMessage', {msgId: 'UI_Save', args: { source: 'toolbar' }});
+			if (!map._disableDefaultAction['UI_Save']) {
+				map.save(false /* An explicit save should terminate cell edit */, false /* An explicit save should save it again */);
+			}
+		}
 	}
 	else if (id === 'repair') {
 		app.socket.sendMessage('commandvalues command=.uno:DocumentRepair');
@@ -109,6 +126,9 @@ function onClick(e, id, item) {
 	}
 	else if (id === 'insertannotation') {
 		map.insertComment();
+	}
+	else if (id === 'insertgraphic' || item.id === 'localgraphic') {
+		L.DomUtil.get('insertgraphic').click();
 	}
 	else if (item.id === 'remotegraphic') {
 		map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
@@ -136,9 +156,6 @@ function onClick(e, id, item) {
 	}
 	else if (id === 'link') {
 		map.showHyperlinkDialog();
-	}
-	else if (id === 'languagecode') {
-		map.fire('languagedialog');
 	}
 }
 
@@ -261,7 +278,7 @@ function getInsertTablePopupHtml() {
 	return '<div id="inserttable-wrapper">\
 					<div id="inserttable-popup" class="inserttable-pop ui-widget ui-corner-all">\
 						<div class="inserttable-grid"></div>\
-						<div id="inserttable-status" class="oxool-font" style="padding: 5px;"><br/></div>\
+						<div id="inserttable-status" class="cool-font" style="padding: 5px;"><br/></div>\
 					</div>\
 				</div>';
 }
@@ -313,175 +330,164 @@ function insertTable() {
 
 var shapes = {
 	'insertshapes': {
-		'Line': [
-			{uno: 'SelectObject'},
-			{uno: 'LineArrowEnd'},
-			{uno: 'LineCircleArrow'},
-			{uno: 'LineSquareArrow'},
-			{uno: 'LineArrows'},
-			{uno: 'LineArrowStart'},
-			{uno: 'LineArrowCircle'},
-			{uno: 'LineArrowSquare'},
-			{uno: 'Line'},
-		],
 		'Basic Shapes': [
-			{uno: 'BasicShapes.rectangle'},
-			{uno: 'BasicShapes.round-rectangle'},
-			{uno: 'BasicShapes.quadrat'},
-			{uno: 'BasicShapes.round-quadrat'},
-			{uno: 'BasicShapes.circle'},
-			{uno: 'BasicShapes.ellipse'},
+			{img: 'basicshapes_rectangle', uno: 'BasicShapes.rectangle'},
+			{img: 'basicshapes_round-rectangle', uno: 'BasicShapes.round-rectangle'},
+			{img: 'basicshapes_quadrat', uno: 'BasicShapes.quadrat'},
+			{img: 'basicshapes_round-quadrat', uno: 'BasicShapes.round-quadrat'},
+			{img: 'basicshapes_circle', uno: 'BasicShapes.circle'},
+			{img: 'basicshapes_ellipse', uno: 'BasicShapes.ellipse'},
 
-			{uno: 'BasicShapes.circle-pie'},
-			{uno: 'BasicShapes.isosceles-triangle'},
-			{uno: 'BasicShapes.right-triangle'},
-			{uno: 'BasicShapes.trapezoid'},
-			{uno: 'BasicShapes.diamond'},
-			{uno: 'BasicShapes.parallelogram'},
+			{img: 'basicshapes_circle-pie', uno: 'BasicShapes.circle-pie'},
+			{img: 'basicshapes_isosceles-triangle', uno: 'BasicShapes.isosceles-triangle'},
+			{img: 'basicshapes_right-triangle', uno: 'BasicShapes.right-triangle'},
+			{img: 'basicshapes_trapezoid', uno: 'BasicShapes.trapezoid'},
+			{img: 'basicshapes_diamond', uno: 'BasicShapes.diamond'},
+			{img: 'basicshapes_parallelogram', uno: 'BasicShapes.parallelogram'},
 
-			{uno: 'BasicShapes.pentagon'},
-			{uno: 'BasicShapes.hexagon'},
-			{uno: 'BasicShapes.octagon'},
-			{uno: 'BasicShapes.cross'},
-			{uno: 'BasicShapes.ring'},
-			{uno: 'BasicShapes.block-arc'},
+			{img: 'basicshapes_pentagon', uno: 'BasicShapes.pentagon'},
+			{img: 'basicshapes_hexagon', uno: 'BasicShapes.hexagon'},
+			{img: 'basicshapes_octagon', uno: 'BasicShapes.octagon'},
+			{img: 'basicshapes_cross', uno: 'BasicShapes.cross'},
+			{img: 'basicshapes_ring', uno: 'BasicShapes.ring'},
+			{img: 'basicshapes_block-arc', uno: 'BasicShapes.block-arc'},
 
-			{uno: 'BasicShapes.can'},
-			{uno: 'BasicShapes.cube'},
-			{uno: 'BasicShapes.paper'},
-			{uno: 'BasicShapes.frame'}
+			{img: 'basicshapes_can', uno: 'BasicShapes.can'},
+			{img: 'basicshapes_cube', uno: 'BasicShapes.cube'},
+			{img: 'basicshapes_paper', uno: 'BasicShapes.paper'},
+			{img: 'basicshapes_frame', uno: 'BasicShapes.frame'}
 		],
 
 		'Symbol Shapes':  [
-			{uno: 'SymbolShapes.smiley'},
-			{uno: 'SymbolShapes.sun'},
-			{uno: 'SymbolShapes.moon'},
-			{uno: 'SymbolShapes.lightning'},
-			{uno: 'SymbolShapes.heart'},
-			{uno: 'SymbolShapes.flower'},
+			{img: 'symbolshapes', uno: 'SymbolShapes.smiley'},
+			{img: 'symbolshapes_sun', uno: 'SymbolShapes.sun'},
+			{img: 'symbolshapes_moon', uno: 'SymbolShapes.moon'},
+			{img: 'symbolshapes_lightning', uno: 'SymbolShapes.lightning'},
+			{img: 'symbolshapes_heart', uno: 'SymbolShapes.heart'},
+			{img: 'symbolshapes_flower', uno: 'SymbolShapes.flower'},
 
-			{uno: 'SymbolShapes.cloud'},
-			{uno: 'SymbolShapes.forbidden'},
-			{uno: 'SymbolShapes.puzzle'},
-			{uno: 'SymbolShapes.bracket-pair'},
-			{uno: 'SymbolShapes.left-bracket'},
-			{uno: 'SymbolShapes.right-bracket'},
+			{img: 'symbolshapes_cloud', uno: 'SymbolShapes.cloud'},
+			{img: 'symbolshapes_forbidden', uno: 'SymbolShapes.forbidden'},
+			{img: 'symbolshapes_puzzle', uno: 'SymbolShapes.puzzle'},
+			{img: 'symbolshapes_bracket-pair', uno: 'SymbolShapes.bracket-pair'},
+			{img: 'symbolshapes_left-bracket', uno: 'SymbolShapes.left-bracket'},
+			{img: 'symbolshapes_right-bracket', uno: 'SymbolShapes.right-bracket'},
 
-			{uno: 'SymbolShapes.brace-pair'},
-			{uno: 'SymbolShapes.left-brace'},
-			{uno: 'SymbolShapes.right-brace'},
-			{uno: 'SymbolShapes.quad-bevel'},
-			{uno: 'SymbolShapes.octagon-bevel'},
-			{uno: 'SymbolShapes.diamond-bevel'}
+			{img: 'symbolshapes_brace-pair', uno: 'SymbolShapes.brace-pair'},
+			{img: 'symbolshapes_left-brace', uno: 'SymbolShapes.left-brace'},
+			{img: 'symbolshapes_right-brace', uno: 'SymbolShapes.right-brace'},
+			{img: 'symbolshapes_quad-bevel', uno: 'SymbolShapes.quad-bevel'},
+			{img: 'symbolshapes_octagon-bevel', uno: 'SymbolShapes.octagon-bevel'},
+			{img: 'symbolshapes_diamond-bevel', uno: 'SymbolShapes.diamond-bevel'}
 		],
 
 		'Block Arrows': [
-			{uno: 'ArrowShapes.left-arrow'},
-			{uno: 'ArrowShapes.right-arrow'},
-			{uno: 'ArrowShapes.up-arrow'},
-			{uno: 'ArrowShapes.down-arrow'},
-			{uno: 'ArrowShapes.left-right-arrow'},
-			{uno: 'ArrowShapes.up-down-arrow'},
+			{img: 'arrowshapes_left-arrow', uno: 'ArrowShapes.left-arrow'},
+			{img: 'arrowshapes_right-arrow', uno: 'ArrowShapes.right-arrow'},
+			{img: 'arrowshapes_up-arrow', uno: 'ArrowShapes.up-arrow'},
+			{img: 'arrowshapes_down-arrow', uno: 'ArrowShapes.down-arrow'},
+			{img: 'arrowshapes_left-right-arrow', uno: 'ArrowShapes.left-right-arrow'},
+			{img: 'arrowshapes_up-down-arrow', uno: 'ArrowShapes.up-down-arrow'},
 
-			{uno: 'ArrowShapes.up-right-arrow'},
-			{uno: 'ArrowShapes.up-right-down-arrow'},
-			{uno: 'ArrowShapes.quad-arrow'},
-			{uno: 'ArrowShapes.corner-right-arrow'},
-			{uno: 'ArrowShapes.split-arrow'},
-			{uno: 'ArrowShapes.striped-right-arrow'},
+			{img: 'arrowshapes_up-right-arrow', uno: 'ArrowShapes.up-right-arrow'},
+			{img: 'arrowshapes_up-right-down-arrow', uno: 'ArrowShapes.up-right-down-arrow'},
+			{img: 'arrowshapes_quad-arrow', uno: 'ArrowShapes.quad-arrow'},
+			{img: 'arrowshapes_corner-right-arrow', uno: 'ArrowShapes.corner-right-arrow'},
+			{img: 'arrowshapes_split-arrow', uno: 'ArrowShapes.split-arrow'},
+			{img: 'arrowshapes_striped-right-arrow', uno: 'ArrowShapes.striped-right-arrow'},
 
-			{uno: 'ArrowShapes.notched-right-arrow'},
-			{uno: 'ArrowShapes.pentagon-right'},
-			{uno: 'ArrowShapes.chevron'},
-			{uno: 'ArrowShapes.right-arrow-callout'},
-			{uno: 'ArrowShapes.left-arrow-callout'},
-			{uno: 'ArrowShapes.up-arrow-callout'},
+			{img: 'arrowshapes_notched-right-arrow', uno: 'ArrowShapes.notched-right-arrow'},
+			{img: 'arrowshapes_pentagon-right', uno: 'ArrowShapes.pentagon-right'},
+			{img: 'arrowshapes_chevron', uno: 'ArrowShapes.chevron'},
+			{img: 'arrowshapes_right-arrow-callout', uno: 'ArrowShapes.right-arrow-callout'},
+			{img: 'arrowshapes_left-arrow-callout', uno: 'ArrowShapes.left-arrow-callout'},
+			{img: 'arrowshapes_up-arrow-callout', uno: 'ArrowShapes.up-arrow-callout'},
 
-			{uno: 'ArrowShapes.down-arrow-callout'},
-			{uno: 'ArrowShapes.left-right-arrow-callout'},
-			{uno: 'ArrowShapes.up-down-arrow-callout'},
-			{uno: 'ArrowShapes.up-right-arrow-callout'},
-			{uno: 'ArrowShapes.quad-arrow-callout'},
-			{uno: 'ArrowShapes.circular-arrow'},
+			{img: 'arrowshapes_down-arrow-callout', uno: 'ArrowShapes.down-arrow-callout'},
+			{img: 'arrowshapes_left-right-arrow-callout', uno: 'ArrowShapes.left-right-arrow-callout'},
+			{img: 'arrowshapes_up-down-arrow-callout', uno: 'ArrowShapes.up-down-arrow-callout'},
+			{img: 'arrowshapes_up-right-arrow-callout', uno: 'ArrowShapes.up-right-arrow-callout'},
+			{img: 'arrowshapes_quad-arrow-callout', uno: 'ArrowShapes.quad-arrow-callout'},
+			{img: 'arrowshapes_circular-arrow', uno: 'ArrowShapes.circular-arrow'},
 
-			{uno: 'ArrowShapes.split-round-arrow'},
-			{uno: 'ArrowShapes.s-sharped-arrow'}
+			{img: 'arrowshapes_split-round-arrow', uno: 'ArrowShapes.split-round-arrow'},
+			{img: 'arrowshapes_s-sharped-arrow', uno: 'ArrowShapes.s-sharped-arrow'}
 		],
 
 		'Stars and Banners': [
-			{uno: 'StarShapes.bang'},
-			{uno: 'StarShapes.star4'},
-			{uno: 'StarShapes.star5'},
-			{uno: 'StarShapes.star6'},
-			{uno: 'StarShapes.star8'},
-			{uno: 'StarShapes.star12'},
+			{img: 'starshapes_bang', uno: 'StarShapes.bang'},
+			{img: 'starshapes_star4', uno: 'StarShapes.star4'},
+			{img: 'starshapes_star5', uno: 'StarShapes.star5'},
+			{img: 'starshapes_star6', uno: 'StarShapes.star6'},
+			{img: 'starshapes_star8', uno: 'StarShapes.star8'},
+			{img: 'starshapes_star12', uno: 'StarShapes.star12'},
 
-			{uno: 'StarShapes.star24'},
-			{uno: 'StarShapes.concave-star6'},
-			{uno: 'StarShapes.vertical-scroll'},
-			{uno: 'StarShapes.horizontal-scroll'},
-			{uno: 'StarShapes.signet'},
-			{uno: 'StarShapes.doorplate'}
+			{img: 'starshapes_star24', uno: 'StarShapes.star24'},
+			{img: 'starshapes_concave-star6', uno: 'StarShapes.concave-star6'},
+			{img: 'starshapes_vertical-scroll', uno: 'StarShapes.vertical-scroll'},
+			{img: 'starshapes_horizontal-scroll', uno: 'StarShapes.horizontal-scroll'},
+			{img: 'starshapes_signet', uno: 'StarShapes.signet'},
+			{img: 'starshapes_doorplate', uno: 'StarShapes.doorplate'}
 		],
 
 		'Callouts': [
-			{uno: 'CalloutShapes.rectangular-callout'},
-			{uno: 'CalloutShapes.round-rectangular-callout'},
-			{uno: 'CalloutShapes.round-callout'},
-			{uno: 'CalloutShapes.cloud-callout'},
-			{uno: 'CalloutShapes.line-callout-1'},
-			{uno: 'CalloutShapes.line-callout-2'},
-			{uno: 'CalloutShapes.line-callout-3'}
+			{img: 'calloutshapes_rectangular-callout', uno: 'CalloutShapes.rectangular-callout'},
+			{img: 'calloutshapes_round-rectangular-callout', uno: 'CalloutShapes.round-rectangular-callout'},
+			{img: 'calloutshapes_round-callout', uno: 'CalloutShapes.round-callout'},
+			{img: 'calloutshapes_cloud-callout', uno: 'CalloutShapes.cloud-callout'},
+			{img: 'calloutshapes_line-callout-1', uno: 'CalloutShapes.line-callout-1'},
+			{img: 'calloutshapes_line-callout-2', uno: 'CalloutShapes.line-callout-2'},
+			{img: 'calloutshapes_line-callout-3', uno: 'CalloutShapes.line-callout-3'}
 		],
 
 		'Flowchart': [
-			{uno: 'FlowChartShapes.flowchart-process'},
-			{uno: 'FlowChartShapes.flowchart-alternate-process'},
-			{uno: 'FlowChartShapes.flowchart-decision'},
-			{uno: 'FlowChartShapes.flowchart-data'},
-			{uno: 'FlowChartShapes.flowchart-predefined-process'},
-			{uno: 'FlowChartShapes.flowchart-internal-storage'},
+			{img: 'flowchartshapes_flowchart-process', uno: 'FlowchartShapes.flowchart-process'},
+			{img: 'flowchartshapes_flowchart-alternate-process', uno: 'FlowchartShapes.flowchart-alternate-process'},
+			{img: 'flowchartshapes_flowchart-decision', uno: 'FlowchartShapes.flowchart-decision'},
+			{img: 'flowchartshapes_flowchart-data', uno: 'FlowchartShapes.flowchart-data'},
+			{img: 'flowchartshapes_flowchart-predefined-process', uno: 'FlowchartShapes.flowchart-predefined-process'},
+			{img: 'flowchartshapes_flowchart-internal-storage', uno: 'FlowchartShapes.flowchart-internal-storage'},
 
-			{uno: 'FlowChartShapes.flowchart-document'},
-			{uno: 'FlowChartShapes.flowchart-multidocument'},
-			{uno: 'FlowChartShapes.flowchart-terminator'},
-			{uno: 'FlowChartShapes.flowchart-preparation'},
-			{uno: 'FlowChartShapes.flowchart-manual-input'},
-			{uno: 'FlowChartShapes.flowchart-manual-operation'},
+			{img: 'flowchartshapes_flowchart-document', uno: 'FlowchartShapes.flowchart-document'},
+			{img: 'flowchartshapes_flowchart-multidocument', uno: 'FlowchartShapes.flowchart-multidocument'},
+			{img: 'flowchartshapes_flowchart-terminator', uno: 'FlowchartShapes.flowchart-terminator'},
+			{img: 'flowchartshapes_flowchart-preparation', uno: 'FlowchartShapes.flowchart-preparation'},
+			{img: 'flowchartshapes_flowchart-manual-input', uno: 'FlowchartShapes.flowchart-manual-input'},
+			{img: 'flowchartshapes_flowchart-manual-operation', uno: 'FlowchartShapes.flowchart-manual-operation'},
 
-			{uno: 'FlowChartShapes.flowchart-connector'},
-			{uno: 'FlowChartShapes.flowchart-off-page-connector'},
-			{uno: 'FlowChartShapes.flowchart-card'},
-			{uno: 'FlowChartShapes.flowchart-punched-tape'},
-			{uno: 'FlowChartShapes.flowchart-summing-junction'},
-			{uno: 'FlowChartShapes.flowchart-or'},
+			{img: 'flowchartshapes_flowchart-connector', uno: 'FlowchartShapes.flowchart-connector'},
+			{img: 'flowchartshapes_flowchart-off-page-connector', uno: 'FlowchartShapes.flowchart-off-page-connector'},
+			{img: 'flowchartshapes_flowchart-card', uno: 'FlowchartShapes.flowchart-card'},
+			{img: 'flowchartshapes_flowchart-punched-tape', uno: 'FlowchartShapes.flowchart-punched-tape'},
+			{img: 'flowchartshapes_flowchart-summing-junction', uno: 'FlowchartShapes.flowchart-summing-junction'},
+			{img: 'flowchartshapes_flowchart-or', uno: 'FlowchartShapes.flowchart-or'},
 
-			{uno: 'FlowChartShapes.flowchart-collate'},
-			{uno: 'FlowChartShapes.flowchart-sort'},
-			{uno: 'FlowChartShapes.flowchart-extract'},
-			{uno: 'FlowChartShapes.flowchart-merge'},
-			{uno: 'FlowChartShapes.flowchart-stored-data'},
-			{uno: 'FlowChartShapes.flowchart-delay'},
+			{img: 'flowchartshapes_flowchart-collate', uno: 'FlowchartShapes.flowchart-collate'},
+			{img: 'flowchartshapes_flowchart-sort', uno: 'FlowchartShapes.flowchart-sort'},
+			{img: 'flowchartshapes_flowchart-extract', uno: 'FlowchartShapes.flowchart-extract'},
+			{img: 'flowchartshapes_flowchart-merge', uno: 'FlowchartShapes.flowchart-merge'},
+			{img: 'flowchartshapes_flowchart-stored-data', uno: 'FlowchartShapes.flowchart-stored-data'},
+			{img: 'flowchartshapes_flowchart-delay', uno: 'FlowchartShapes.flowchart-delay'},
 
-			{uno: 'FlowChartShapes.flowchart-sequential-access'},
-			{uno: 'FlowChartShapes.flowchart-magnetic-disk'},
-			{uno: 'FlowChartShapes.flowchart-direct-access-storage'},
-			{uno: 'FlowChartShapes.flowchart-display'}
+			{img: 'flowchartshapes_flowchart-sequential-access', uno: 'FlowchartShapes.flowchart-sequential-access'},
+			{img: 'flowchartshapes_flowchart-magnetic-disk', uno: 'FlowchartShapes.flowchart-magnetic-disk'},
+			{img: 'flowchartshapes_flowchart-direct-access-storage', uno: 'FlowchartShapes.flowchart-direct-access-storage'},
+			{img: 'flowchartshapes_flowchart-display', uno: 'FlowchartShapes.flowchart-display'}
 		]
 	},
 	'insertconnectors': {
 		'Connectors': [
-			{uno: 'Connector'},
-			{uno: 'ConnectorArrows'},
-			{uno: 'ConnectorArrowEnd'},
-			{uno: 'ConnectorLineArrowEnd'},
-			{uno: 'ConnectorCurveArrowEnd'},
-			{uno: 'ConnectorLinesArrowEnd'},
-			{uno: 'ConnectorLine'},
-			{uno: 'ConnectorCurve'},
-			{uno: 'ConnectorLines'},
-			{uno: 'ConnectorLineArrows'},
-			{uno: 'ConnectorCurveArrows'}
+			{img: 'connectors_connector', uno: 'Connector'},
+			{img: 'connectors_connectorarrows', uno: 'ConnectorArrows'},
+			{img: 'connectors_connectorarrowend', uno: 'ConnectorArrowEnd'},
+			{img: 'connectors_connectorlinearrowend', uno: 'ConnectorLineArrowEnd'},
+			{img: 'connectors_connectorcurvearrowend', uno: 'ConnectorCurveArrowEnd'},
+			{img: 'connectors_connectorlinesarrowend', uno: 'ConnectorLinesArrowEnd'},
+			{img: 'connectors_connectorline', uno: 'ConnectorLine'},
+			{img: 'connectors_connectorcurve', uno: 'ConnectorCurve'},
+			{img: 'connectors_connectorlines', uno: 'ConnectorLines'},
+			{img: 'connectors_connectorlinearrows', uno: 'ConnectorLineArrows'},
+			{img: 'connectors_connectorcurvearrows', uno: 'ConnectorCurvearrows'}
 		]
 	}
 };
@@ -491,15 +497,14 @@ function createShapesPanel(shapeType) {
 	var collection = shapes[shapeType];
 
 	for (var s in collection) {
-		var $rowHeader = $('<div/>').addClass('row-header oxool-font').append(_(s));
+		var $rowHeader = $('<div/>').addClass('row-header cool-font').append(_(s));
 		$grid.append($rowHeader);
 		var $row = $('<div/>').addClass('row');
 		$grid.append($row);
 		for (var idx = 0; idx < collection[s].length; ++idx) {
 			var shape = collection[s][idx];
-			var $col = $('<div/>').addClass('col w2ui-icon');
-			var iconURL = 'url("' + map.getIconURL('.uno:' + shape.uno) + '")';
-			$col.css('background-image', iconURL).data('uno', shape.uno);
+			var $col = $('<div/>').addClass('col w2ui-icon').addClass(shape.img);
+			$col.data('uno', shape.uno);
 			$row.append($col);
 		}
 	}
@@ -517,6 +522,7 @@ function createShapesPanel(shapeType) {
 function insertShapes(shapeType) {
 	var width = 10;
 	var $grid = $('.insertshape-grid');
+	$grid.addClass(shapeType);
 
 	if (window.mode.isDesktop() || window.mode.isTablet())
 		$grid.css('margin-botttom', '0px');
@@ -524,11 +530,10 @@ function insertShapes(shapeType) {
 	if ($grid.children().length > 0)
 		return;
 
-	var docType = map.getDocType();
 	var collection = shapes[shapeType];
 
 	for (var s in collection) {
-		var $rowHeader = $('<div/>').addClass('row-header oxool-font').append(_(s));
+		var $rowHeader = $('<div/>').addClass('row-header cool-font').append(_(s));
 		$grid.append($rowHeader);
 
 		var rows = Math.ceil(collection[s].length / width);
@@ -541,12 +546,8 @@ function insertShapes(shapeType) {
 					break;
 				}
 				var shape = collection[s][idx++];
-				var $col = $('<div/>').addClass('col w2ui-icon');
-				var unocmd = '.uno:' + shape.uno;
-				var iconURL = 'url("' + map.getIconURL(unocmd) + '")';
-				$col.css('background-image', iconURL)
-					.attr('title', _UNO(unocmd, docType))
-					.data('uno', shape.uno);
+				var $col = $('<div/>').addClass('col w2ui-icon').addClass(shape.img);
+				$col.data('uno', shape.uno);
 				$row.append($col);
 			}
 
@@ -627,54 +628,42 @@ function onColorPick(id, color) {
 	if (!map.isEditMode()) {
 		return;
 	}
-
-	// 空字串表示預設，以 -1 表示
+	// no fill or automatic color is -1
 	if (color === '') {
 		color = -1;
-	} else { // 把 CSS #FFFFFF 轉成數值
+	}
+	// transform from #FFFFFF to an Int
+	else {
 		color = parseInt(color.replace('#', ''), 16);
 	}
-
-	var docType = map.getDocType();
 	var command = {};
-	var backgroundcolor, uno;
-
-	// 設定文字顏色
-	// Writer, Calc, Impress 不管是在編輯文件，或是圖案內文字
-	// 改變字元顏色指令都是 .uno:Color
+	var fontcolor, backcolor;
 	if (id === 'fontcolor') {
-		command['Color'] = {
-			type: 'long',
-			value: color
-		};
-		uno = '.uno:Color';
+		fontcolor = {'text': 'FontColor',
+			     'spreadsheet': 'Color',
+			     'presentation': 'Color'}[map.getDocType()];
+		command[fontcolor] = {};
+		command[fontcolor].type = 'long';
+		command[fontcolor].value = color;
+		var uno = '.uno:' + fontcolor;
 	}
-	// 設定字元背景顏色
-	else if (id === 'charbackcolor') {
-		// Writer 的文件字元背景未 disabled，表示設定文件字元背景
-		if (docType === 'text' && !map.stateChangeHandler.getItemProperty('.uno:BackColor').disabled()) {
-			command['BackColor'] = {
-				type: 'long',
-				value: color
-			};
-			uno = '.uno:BackColor';
-		// Writer 文件字元背景(圖案內或物件內文字)、Calc 和 Impress 都是 .uno:CharBackColor
-		} else {
-			command['CharBackColor'] = {
-				type: 'long',
-				value: color
-			};
-			uno = '.uno:CharBackColor';
-		}
+	// "backcolor" can be used in Writer and Impress and translates to "Highlighting" while
+	// "backgroundcolor" can be used in Writer and Calc and translates to "Background color".
+	else if (id === 'backcolor') {
+		backcolor = {'text': 'BackColor',
+			     'presentation': 'CharBackColor'}[map.getDocType()];
+		command[backcolor] = {};
+		command[backcolor].type = 'long';
+		command[backcolor].value = color;
+		uno = '.uno:' + backcolor;
 	}
-	// 設定試算表儲存格或表格儲存格背景顏色
 	else if (id === 'backgroundcolor') {
-		backgroundcolor = {'text': 'BackgroundColor',
+		backcolor = {'text': 'BackgroundColor',
 			     'spreadsheet': 'BackgroundColor'}[map.getDocType()];
-		command[backgroundcolor] = {};
-		command[backgroundcolor].type = 'long';
-		command[backgroundcolor].value = color;
-		uno = '.uno:' + backgroundcolor;
+		command[backcolor] = {};
+		command[backcolor].type = 'long';
+		command[backcolor].value = color;
+		uno = '.uno:' + backcolor;
 	}
 	map.sendUnoCommand(uno, command);
 	map.focus();
@@ -845,17 +834,74 @@ function onWopiProps(e) {
 
 function processStateChangedCommand(commandName, state) {
 	var toolbar = w2ui['editbar'];
+	var color, div;
 
 	if (!commandName)
 		return;
 
-	if (commandName === '.uno:LanguageStatus') {
-		var code = state;
-		var split = code.split(';');
-		if (split.length > 1) {
-			code = split[1];
+	if (commandName === '.uno:AssignLayout') {
+		$('.styles-select').val(state).trigger('change');
+	}
+	else if (commandName === '.uno:FontColor' || commandName === '.uno:Color') {
+		// confusingly, the .uno: command is named differently in Writer, Calc and Impress
+		color = parseInt(state);
+		if (color === -1) {
+			color = 'transparent';
 		}
-		w2ui['editbar'].set('languagecode', {text: code});
+		else {
+			color = color.toString(16);
+			color = '#' + Array(7 - color.length).join('0') + color;
+		}
+		$('#tb_editbar_item_fontcolor table.w2ui-button .selected-color-classic').css('background-color', color);
+		$('#tb_editbar_item_fontcolor .w2ui-tb-caption').css('display', 'none');
+
+		div = L.DomUtil.get('fontcolorindicator');
+		if (div) {
+			L.DomUtil.setStyle(div, 'background', color);
+		}
+	}
+	else if (commandName === '.uno:BackColor' || commandName === '.uno:BackgroundColor' || commandName === '.uno:CharBackColor') {
+		// confusingly, the .uno: command is named differently in Writer, Calc and Impress
+		color = parseInt(state);
+		if (color === -1) {
+			color = 'transparent';
+		}
+		else {
+			color = color.toString(16);
+			color = '#' + Array(7 - color.length).join('0') + color;
+		}
+		//writer
+		$('#tb_editbar_item_backcolor table.w2ui-button .selected-color-classic').css('background-color', color);
+		$('#tb_editbar_item_backcolor .w2ui-tb-caption').css('display', 'none');
+
+		//calc?
+		$('#tb_editbar_item_backgroundcolor table.w2ui-button .selected-color-classic').css('background-color', color);
+		$('#tb_editbar_item_backgroundcolor .w2ui-tb-caption').css('display', 'none');
+
+		div = L.DomUtil.get('backcolorindicator');
+		if (div) {
+			L.DomUtil.setStyle(div, 'background', color);
+		}
+	}
+	else if (commandName === '.uno:ModifiedStatus') {
+		if (state === 'true') {
+			w2ui['editbar'].set('save', {img:'savemodified'});
+		}
+		else {
+			w2ui['editbar'].set('save', {img:'save'});
+		}
+	}
+	else if (commandName === '.uno:DocumentRepair') {
+		if (state === 'true') {
+			toolbar.enable('repair');
+		} else {
+			toolbar.disable('repair');
+		}
+	}
+
+	if (commandName === '.uno:SpacePara1' || commandName === '.uno:SpacePara15'
+		|| commandName === '.uno:SpacePara2') {
+		toolbar.refresh();
 	}
 
 	var id = unoCmdToToolbarId(commandName);
@@ -863,23 +909,28 @@ function processStateChangedCommand(commandName, state) {
 	if (id === '')
 		return;
 
-	// 直接找有沒有這個 item
-	var item = toolbar.get(id);
-	// 有這個 item
-	if (item) {
-		// 而且這個 item 沒有自訂處理狀態
-		if (item.stateChange === undefined) {
-			window.app.console.debug('toolbar id:%s has no statechange', id);
-			var editMode = map.isEditMode(); // 編輯模式
-			toolbar.set(id, {
-				disabled: editMode ? (state === 'disabled') : true,
-				checked: editMode ? (state === 'true') : false
-			});
-		} else { // 有自訂的狀態處理
-			window.app.console.debug('toolbar id:%s have defined statechange', id, item.stateChange);
+	if (state === 'true') {
+		if (map.isEditMode()) {
+			toolbar.enable(id);
 		}
-	} else {
-		window.app.console.debug('toolbar id:%s is useless!', id);
+		toolbar.check(id);
+	}
+	else if (state === 'false') {
+		if (map.isEditMode()) {
+			toolbar.enable(id);
+		}
+		toolbar.uncheck(id);
+	}
+	// Change the toolbar button states if we are in editmode
+	// If in non-edit mode, will be taken care of when permission is changed to 'edit'
+	else if (map.isEditMode() && (state === 'enabled' || state === 'disabled')) {
+		var toolbarUp = toolbar;
+		if (state === 'enabled') {
+			toolbarUp.enable(id);
+		} else {
+			toolbarUp.uncheck(id);
+			toolbarUp.disable(id);
+		}
 	}
 }
 
@@ -892,7 +943,8 @@ function onUpdateParts(e) {
 	if (e.docType === 'text') {
 		var current = e.currentPage;
 		var count = e.pages;
-	} else {
+	}
+	else {
 		current = e.selectedPart;
 		count = e.parts;
 	}
@@ -902,25 +954,39 @@ function onUpdateParts(e) {
 		return;
 	}
 
+	if (!window.mode.isMobile()) {
+		if (e.docType === 'presentation') {
+			toolbar.set('prev', {hint: _('Previous slide')});
+			toolbar.set('next', {hint: _('Next slide')});
+		}
+		else {
+			toolbar.hide('presentation');
+			toolbar.hide('insertpage');
+			toolbar.hide('duplicatepage');
+			toolbar.hide('deletepage');
+		}
+	}
+
 	if (app.file.fileBasedView) {
 		toolbar.enable('prev');
 		toolbar.enable('next');
 		return;
 	}
 
+	if (e.docType !== 'spreadsheet') {
+		if (current === 0) {
+			toolbar.disable('prev');
+		}
+		else {
+			toolbar.enable('prev');
+		}
 
-	if (current === 0) {
-		toolbar.disable('prev');
-	}
-	else {
-		toolbar.enable('prev');
-	}
-
-	if (current === count - 1) {
-		toolbar.disable('next');
-	}
-	else {
-		toolbar.enable('next');
+		if (current === count - 1) {
+			toolbar.disable('next');
+		}
+		else {
+			toolbar.enable('next');
+		}
 	}
 }
 
@@ -953,12 +1019,25 @@ function onCommandResult(e) {
 		e.success === true && e.result.value && !isNaN(e.result.value)) { /*UNDO_CONFLICT*/
 		$('#tb_editbar_item_repair').w2overlay({ html: '<div style="padding: 10px; line-height: 150%">' +
 		_('Conflict Undo/Redo with multiple users. Please use document repair to resolve') + '</div>'});
+	} else if (map.zotero &&
+		((commandName === '.uno:DeleteTextFormField' && e.result.DeleteTextFormField.startsWith('ADDIN ZOTERO_')) ||
+		(commandName === '.uno:DeleteField' && e.result.DeleteField.startsWith('ZOTERO_')) ||
+		(commandName === '.uno:DeleteSection' && e.result.DeleteSection.startsWith('ZOTERO_BIBL')))) {
+		if (commandName === '.uno:DeleteSection')
+			map.zotero.markBibliographyStyleHasBeenSet(true);
+		map.zotero.handleRefreshCitationsAndBib(false);
+	} else if (map.zotero && commandName === '.uno:DeleteBookmark' && e.result.DeleteBookmark.startsWith('ZOTERO_BREF_')) {
+		map.zotero.setCustomProperty(e.result.DeleteBookmark, '');
+		map.zotero.handleRefreshCitationsAndBib(false);
+	} else if (commandName === '.uno:OpenHyperlink') {
+		// allow to process other incoming messages first
+		setTimeout(function () {
+			map._docLayer.scrollToPos(map._docLayer._visibleCursor.getNorthWest());
+		}, 0);
 	}
 }
 
 function onUpdatePermission(e) {
-	if (!window.mode.isMobile()) {return;}
-
 	var toolbar = w2ui['editbar'];
 	if (toolbar) {
 		// always enabled items
@@ -971,7 +1050,7 @@ function onUpdatePermission(e) {
 			var alwaysEnable = found.length !== 0;
 
 			if (e.perm === 'edit') {
-				var unoCmd = getUNOCommand(items[idx].uno);
+				var unoCmd = map.getDocType() === 'spreadsheet' ? items[idx].unosheet : getUNOCommand(items[idx].uno);
 				var keepDisabled = map['stateChangeHandler'].getItemValue(unoCmd) === 'disabled';
 				if (!keepDisabled || alwaysEnable) {
 					toolbar.enable(items[idx].id);
@@ -1091,10 +1170,7 @@ function setupToolbar(e) {
 		$('#closebuttonwrapper').css('display', 'block');
 	}
 
-	// 關閉文件按鈕
-	$('#closebutton').click(function() {
-		map.closeDocument();
-	});
+	$('#closebutton').click(onClose);
 }
 
 function updateVisibilityForToolbar(toolbar, context) {
@@ -1135,80 +1211,6 @@ function updateVisibilityForToolbar(toolbar, context) {
 	toShow.forEach(function(item) { toolbar.show(item); });
 }
 
-/**
- * 設定 toolbar(w2ui) 分割下拉按鈕，可分為主按鈕核下拉按鈕不同行為
- * 下拉按鈕執行原來設定功能，主按鈕則執行另外功能
- * @param {object} options
- */
-function setupSplitDropdownButton(options) {
-	var toolbar = options.toolbar || false;
-	var item = options.item || false;
-	// 有 item._splitDropdownData 物件，表示已經設定過了
-	if (item._splitDropdownData) {
-		return;
-	}
-	// options 必須有 toolbar 和 item 兩個屬性
-	if (!toolbar || !item) {
-		window.app.console.debug('Error! setupSplitDropdownButton() options must have "toolbar" and  item');
-		return;
-	}
-
-	// 附加自己的 _splitDropdownData 到 item 去
-	item._splitDropdownData = {
-		savedHtml: item.html, // 保留原來的 item.html
-		savedOnClick: item.onClick, // 保留原來的 onClick，保存起來
-		onMainButtonClick: options.onMainButtonClick, // 如果有指定主按鈕點擊程序
-		onArrowButtonClick: options.onArrowButtonClick, // 如果有指定箭頭按鈕點擊程序
-	};
-	//  dropdown 自己的 DOM Element
-	var dropdown = L.DomUtil.get('tb_'+ toolbar.name +'_item_'+ item.id);
-	var ARROWSELECTOR = '.w2ui-tb-down'; // 箭頭的 class name
-	// 監督滑鼠進入事件
-	dropdown.onmouseenter = function() {
-		if (L.DomUtil.hasClass(dropdown, 'disabled')) {return;}
-
-		var arrow = dropdown.querySelector(ARROWSELECTOR);
-		// 設定箭頭 style 底色加深，視覺上整個下拉按鈕會區隔主按鈕與箭頭
-		if (arrow) {
-			arrow.style.setProperty('background-color', '#ccc', 'important');
-			arrow.style.setProperty('cursor', 'pointer'); // 滑鼠指標變成手的形狀
-		}
-	};
-	// 監督滑鼠移出事件
-	dropdown.onmouseleave = function() {
-		if (L.DomUtil.hasClass(dropdown, 'disabled')) {return;}
-
-		var arrow = dropdown.querySelector(ARROWSELECTOR);
-		// 移除所有 styles
-		if (arrow) {
-			arrow.removeAttribute('style');
-		}
-	};
-	// 原來的 item.onClick 換成自己的
-	item.onClick = function(id, e) {
-		// 是否主按鈕被點擊
-		var isMainButtonClicked = L.DomUtil.hasClass(e.originalEvent.target, 'w2ui-icon');
-		// 點擊箭頭按鈕
-		if (!isMainButtonClicked) {
-			e.item.html = e.item._splitDropdownData.savedHtml; // 放回原來的 html 內容
-			if (typeof(e.item._splitDropdownData.onArrowButtonClick)=== 'function') {
-				e.item._splitDropdownData.onArrowButtonClick.call(item, e);
-			}
-		} else { // 點擊主按鈕
-			e.item.html = ''; // 清除原來的 html 內容，原 drop overlay 就不會起作用
-			e.item.checked = true; // 設定已選取，按鈕狀態才會復原
-			if (typeof(e.item._splitDropdownData.onMainButtonClick) === 'function') {
-				e.item._splitDropdownData.onMainButtonClick.call(item, e);
-			}
-		}
-
-		// 執行原來的 onClick 事件
-		if (typeof(e.item._splitDropdownData.savedOnClick) === 'function') {
-			e.item._splitDropdownData.savedOnClick.call(item, id, e);
-		}
-	};
-}
-
 global.onClose = onClose;
 global.setupToolbar = setupToolbar;
 global.onClick = onClick;
@@ -1218,6 +1220,7 @@ global.getInsertTablePopupHtml = getInsertTablePopupHtml;
 global.getShapesPopupHtml = getShapesPopupHtml;
 global.insertShapes = insertShapes;
 global.createShapesPanel = createShapesPanel;
+global.onUpdatePermission = onUpdatePermission;
 global.setupSearchInput = setupSearchInput;
 global.getUNOCommand = getUNOCommand;
 global.unoCmdToToolbarId = unoCmdToToolbarId;
@@ -1227,6 +1230,4 @@ global.showColorPicker = showColorPicker;
 global.getColorPickerHTML = getColorPickerHTML;
 global.updateVisibilityForToolbar = updateVisibilityForToolbar;
 global.onUpdateParts = onUpdateParts;
-global.setupSplitDropdownButton = setupSplitDropdownButton;
-global.onColorPick = onColorPick;
 }(window));

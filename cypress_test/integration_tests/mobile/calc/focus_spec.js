@@ -5,17 +5,18 @@ var mobileHelper = require('../../common/mobile_helper');
 var calcHelper = require('../../common/calc_helper');
 
 describe('Calc focus tests', function() {
-	var testFileName = 'focus.ods';
+	var origTestFileName = 'focus.ods';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(origTestFileName, 'calc');
 
 		// Wait until the Formula-Bar is loaded.
 		cy.get('.inputbar_container', {timeout : 10000});
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Basic document focus.', function() {
@@ -23,18 +24,13 @@ describe('Calc focus tests', function() {
 		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
-		// One tap on an other cell -> no focus on the document
+		// One tap on another cell -> no focus on the document
 		calcHelper.clickOnFirstCell();
 
-		cy.get('.leaflet-marker-icon')
-			.should('be.visible');
-
 		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		// Double tap on another cell gives the focus to the document
 		cy.get('.spreadsheet-cell-resize-marker')
@@ -47,8 +43,7 @@ describe('Calc focus tests', function() {
 			});
 
 		// Document has the focus
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
+		helper.assertFocus('className', 'clipboard');
 	});
 
 	it('Focus on second tap.', function() {
@@ -56,25 +51,19 @@ describe('Calc focus tests', function() {
 		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		// One tap on a cell -> no document focus
 		calcHelper.clickOnFirstCell();
 
-		cy.get('.leaflet-marker-icon')
-			.should('be.visible');
-
 		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		// Second tap on the same cell
 		calcHelper.clickOnFirstCell(false);
 
 		// Document has the focus
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
+		helper.assertFocus('className', 'clipboard');
 	});
 
 	it.skip('Formula-bar focus', function() {
@@ -82,8 +71,7 @@ describe('Calc focus tests', function() {
 		mobileHelper.enableEditingMobile();
 
 		// Body has the focus -> can't type in the document
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		helper.assertNoKeyboardInput();
 
@@ -91,8 +79,7 @@ describe('Calc focus tests', function() {
 		calcHelper.clickOnFirstCell();
 
 		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		// Click in the formula-bar.
 		calcHelper.clickFormulaBar();
@@ -100,9 +87,9 @@ describe('Calc focus tests', function() {
 
 		// Type some text.
 		var text1 = 'Hello from Calc';
-		helper.typeIntoDocument(text1);
-		helper.typeIntoDocument('{enter}');
-
+		calcHelper.typeIntoFormulabar(text1);
+		cy.get('#tb_actionbar_item_acceptformula')
+			.click();
 		helper.assertNoKeyboardInput();
 
 		// Select the first cell to edit the same one.
@@ -111,11 +98,12 @@ describe('Calc focus tests', function() {
 		// Check the text we typed.
 		calcHelper.clickFormulaBar();
 		helper.assertCursorAndFocus();
-		helper.typeIntoDocument('{ctrl}a');
+		calcHelper.typeIntoFormulabar('{ctrl}a');
 		helper.expectTextForClipboard(text1);
 
 		// Accept changes.
-		helper.typeIntoDocument('{enter}');
+		cy.get('#tb_actionbar_item_acceptformula')
+			.click();
 		helper.assertNoKeyboardInput();
 
 		// Type some more text, at the end.
@@ -124,32 +112,13 @@ describe('Calc focus tests', function() {
 		calcHelper.clickFormulaBar();
 		helper.assertCursorAndFocus();
 		var text2 = ', this is a test.';
-		helper.typeIntoDocument(text2);
+		calcHelper.typeIntoFormulabar(text2);
 		// Validate.
-		helper.typeIntoDocument('{ctrl}a');
+		calcHelper.typeIntoFormulabar('{ctrl}a');
 		helper.expectTextForClipboard(text1 + text2);
 		// End editing.
-		helper.typeIntoDocument('{enter}');
-		helper.assertNoKeyboardInput();
-
-		// Type some more text, in the middle.
-		cy.log('Inserting text in the middle.');
-		calcHelper.clickOnFirstCell();
-		calcHelper.clickFormulaBar();
-		helper.assertCursorAndFocus();
-
-		// Move cursor before text2
-		helper.typeIntoDocument('{end}');
-		for (var i = 0; i < text2.length; i++)
-			helper.moveCursor('left');
-
-		var text3 = ', BAZINGA';
-		helper.typeText('textarea.clipboard', text3);
-		// Validate.
-		helper.typeIntoDocument('{ctrl}a');
-		helper.expectTextForClipboard(text1 + text3 + text2);
-		// End editing.
-		helper.typeIntoDocument('{enter}');
+		cy.get('#tb_actionbar_item_acceptformula')
+			.click();
 		helper.assertNoKeyboardInput();
 	});
 });

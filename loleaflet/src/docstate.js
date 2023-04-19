@@ -1,8 +1,6 @@
 /* global Proxy */
 
 window.app = { // Shouldn't have any functions defined.
-	dontUseNotebookbar: false,
-	dontUseSidebar: false,
 	definitions: {}, // Class instances are created using definitions under this variable.
 	dpiScale: window.devicePixelRatio,
 	roundedDpiScale: Math.round(window.devicePixelRatio),
@@ -11,6 +9,7 @@ window.app = { // Shouldn't have any functions defined.
 	file: {
 		editComment: false,
 		readOnly: true,
+		permission: 'readonly',
 		disableSidebar: false,
 		size: {
 			pixels: [0, 0], // This can change according to the zoom level and document's size.
@@ -46,6 +45,8 @@ window.app = { // Shouldn't have any functions defined.
 	},
 	socket: window.app.socket,
 	console: window.app.console,
+	languages: [], // all available languages, fetched from core
+	favouriteLanguages: ['de-DE', 'en-US', 'en-GB', 'es-ES', 'fr-FR', 'it', 'nl-NL', 'pt-BR', 'pt-PT', 'ru'],
 };
 
 var activateValidation = false;
@@ -80,4 +81,18 @@ if (activateValidation) {
 	};
 
 	window.app = new Proxy(window.app, validator);
+	window.app.file = new Proxy(window.app.file, validator);
+
 }
+
+window.JSDialog = {}; // initialize jsdialog module
+
+// Add a global listener for "alt" key. We will activate and deactivate a css rule when "alt" key is pressed and released.
+window.addEventListener('keydown', function(event) {
+	if (event.altKey || event.code === 'AltLeft')
+		document.body.classList.add('activate-underlines');
+});
+window.addEventListener('keyup', function(event) {
+	if (event.altKey || event.code === 'AltLeft')
+		document.body.classList.remove('activate-underlines');
+});

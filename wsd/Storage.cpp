@@ -8,6 +8,7 @@
 #include <chrono>
 #include <config.h>
 
+#include "HttpRequest.hpp"
 #include "Storage.hpp"
 
 #include <algorithm>
@@ -51,14 +52,17 @@
 #include <common/JsonUtil.hpp>
 #include <common/TraceEvent.hpp>
 #include <NetUtil.hpp>
+#include <CommandControl.hpp>
 #include "HostUtil.hpp"
-#include <OxOOL/Util.h>
-#include <OxOOL/Net/PrivateKeyHandler.h>
 
 #ifdef IOS
 #include <ios.h>
 #elif defined(__ANDROID__)
 #include "androidapp.hpp"
+#elif defined(GTKAPP)
+#include "gtk.hpp"
+#elif defined(__EMSCRIPTEN__)
+#include "wasmapp.hpp"
 #endif
 
 bool StorageBase::FilesystemEnabled;
@@ -90,7 +94,16 @@ void StorageBase::initialize()
     const auto& app = Poco::Util::Application::instance();
     FilesystemEnabled = app.config().getBool("storage.filesystem[@allow]", false);
 
-    HostUtil::parseWopiHost(app.config());
+    //parse wopi.storage.host only when there is no storage.wopi.alias_groups entry in config
+    if (!app.config().has("storage.wopi.alias_groups"))
+    {
+        HostUtil::parseWopiHost(app.config());
+    }
+
+#if ENABLE_FEATURE_LOCK
+    CommandControl::LockManager::parseLockedHost(app.config());
+#endif
+
     HostUtil::parseAliases(app.config());
 
 #if ENABLE_SSL
@@ -103,11 +116,11 @@ void StorageBase::initialize()
 
     // false default for upgrade to preserve legacy configuration
     // in-config-file defaults are true.
-    SSLAsScheme = LOOLWSD::getConfigValue<bool>("storage.ssl.as_scheme", false);
+    SSLAsScheme = COOLWSD::getConfigValue<bool>("storage.ssl.as_scheme", false);
 
     // Fallback to ssl.enable if not set - for back compatibility & simplicity.
-    SSLEnabled = LOOLWSD::getConfigValue<bool>(
-        "storage.ssl.enable", LOOLWSD::getConfigValue<bool>("ssl.enable", true));
+    SSLEnabled = COOLWSD::getConfigValue<bool>(
+        "storage.ssl.enable", COOLWSD::getConfigValue<bool>("ssl.enable", true));
 
 #if ENABLE_DEBUG
     char *StorageSSLEnabled = getenv("STORAGE_SSL_ENABLE");
@@ -120,58 +133,34 @@ void StorageBase::initialize()
     }
 #endif
 
-    std::string sslPrivateKeyPassword;
     if (SSLEnabled)
     {
-        sslClientParams.certificateFile = LOOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
-        sslClientParams.privateKeyFile = LOOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
-        sslClientParams.caLocation = LOOLWSD::getPathFromConfigWithFallback("storage.ssl.ca_file_path", "ssl.ca_file_path");
-        sslClientParams.cipherList = LOOLWSD::getPathFromConfigWithFallback("storage.ssl.cipher_list", "ssl.cipher_list");
+        sslClientParams.certificateFile = COOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
+        sslClientParams.privateKeyFile = COOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
+        sslClientParams.caLocation = COOLWSD::getPathFromConfigWithFallback("storage.ssl.ca_file_path", "ssl.ca_file_path");
+        sslClientParams.cipherList = COOLWSD::getPathFromConfigWithFallback("storage.ssl.cipher_list", "ssl.cipher_list");
 
-        //sslClientParams.verificationMode = (sslClientParams.caLocation.empty() ? Poco::Net::Context::VERIFY_NONE : Poco::Net::Context::VERIFY_STRICT);
-        sslClientParams.verificationMode = Poco::Net::Context::VERIFY_NONE;
+        sslClientParams.verificationMode = (sslClientParams.caLocation.empty() ? Poco::Net::Context::VERIFY_NONE : Poco::Net::Context::VERIFY_STRICT);
         sslClientParams.loadDefaultCAs = true;
-
-        std::string secure_password_key = app.config().has("storage.ssl.secure_password")
-                                        ? "storage.ssl.secure_password" : "ssl.secure_password";
-        std::string password_key = app.config().has("storage.ssl.password")
-                                 ? "storage.ssl.password" : "ssl.password";
-        // Added By Firefly <firefly@ossii.com.tw>
-        // 取得 SSL 私鑰密碼
-        if (app.config().has(secure_password_key)) // AES 256 編碼
-        {
-            LOG_INF("Storage SSL Private key use secure password.");
-            std::string encryptedKey = app.config().getString(secure_password_key, "");
-            // 如果安全密碼非空白，解密後再放到 sslPrivateKeyPassword
-            if (!encryptedKey.empty())
-            {
-                sslPrivateKeyPassword = OxOOL::Util::decryptAES256(encryptedKey);
-            }
-        }
-        else if (app.config().has(password_key)) // 明碼儲存
-        {
-            LOG_INF("Use Storage SSL Private use plaintext.");
-            sslPrivateKeyPassword = app.config().getString(password_key, "");
-        }
     }
     else
         sslClientParams.verificationMode = Poco::Net::Context::VERIFY_NONE;
 
-    Poco::SharedPtr<Poco::Net::PrivateKeyPassphraseHandler> privateKeyHandler = new OxOOL::Net::PrivateKeyHandler(false, sslPrivateKeyPassword);
+    Poco::SharedPtr<Poco::Net::PrivateKeyPassphraseHandler> consoleClientHandler = new Poco::Net::KeyConsoleHandler(false);
     Poco::SharedPtr<Poco::Net::InvalidCertificateHandler> invalidClientCertHandler = new Poco::Net::AcceptCertificateHandler(false);
 
     Poco::Net::Context::Ptr sslClientContext = new Poco::Net::Context(Poco::Net::Context::CLIENT_USE, sslClientParams);
     sslClientContext->disableProtocols(Poco::Net::Context::Protocols::PROTO_SSLV2 |
                                        Poco::Net::Context::Protocols::PROTO_SSLV3 |
                                        Poco::Net::Context::Protocols::PROTO_TLSV1);
-    Poco::Net::SSLManager::instance().initializeClient(privateKeyHandler, invalidClientCertHandler, sslClientContext);
+    Poco::Net::SSLManager::instance().initializeClient(consoleClientHandler, invalidClientCertHandler, sslClientContext);
 
     // Initialize our client SSL context.
     ssl::Manager::initializeClientContext(
         sslClientParams.certificateFile, sslClientParams.privateKeyFile, sslClientParams.caLocation,
         sslClientParams.cipherList,
-        ssl::CertificateVerification::Disabled,
-        sslPrivateKeyPassword);
+        sslClientParams.caLocation.empty() ? ssl::CertificateVerification::Disabled
+                                           : ssl::CertificateVerification::Required);
     if (!ssl::Manager::isClientContextInitialized())
         LOG_ERR("Failed to initialize Client SSL.");
     else
@@ -192,8 +181,8 @@ bool isLocalhost(const std::string& targetHost)
     {
         LOG_INF("WOPI host [" << targetHost << "] is on the same host as the WOPI client: \""
                               << targetAddress << "\". Connection is allowed.");
-            return true;
-        }
+        return true;
+    }
 
     LOG_INF("WOPI host [" << targetHost << "] is not on the same host as the WOPI client: \""
                           << targetAddress << "\". Connection is not allowed.");
@@ -223,7 +212,7 @@ std::unique_ptr<StorageBase> StorageBase::create(const Poco::URI& uri, const std
 
     if (UnitWSD::get().createStorage(uri, jailRoot, jailPath, storage))
     {
-        LOG_INF("Storage create hooked.");
+        LOG_INF("Storage create hooked");
         if (storage)
         {
             return storage;
@@ -231,13 +220,14 @@ std::unique_ptr<StorageBase> StorageBase::create(const Poco::URI& uri, const std
     }
     else if (uri.isRelative() || uri.getScheme() == "file")
     {
-        LOG_INF("Public URI [" << LOOLWSD::anonymizeUrl(uri.toString()) << "] is a file.");
+        LOG_INF("Public URI [" << COOLWSD::anonymizeUrl(uri.toString()) << "] is a file");
 
 #if ENABLE_DEBUG
         if (std::getenv("FAKE_UNAUTHORIZED"))
         {
             LOG_FTL("Faking an UnauthorizedRequestException");
-            throw UnauthorizedRequestException("No acceptable WOPI hosts found matching the target host in config.");
+            throw UnauthorizedRequestException(
+                "No acceptable WOPI hosts found matching the target host in config");
         }
 #endif
         if (FilesystemEnabled || takeOwnership)
@@ -246,12 +236,13 @@ std::unique_ptr<StorageBase> StorageBase::create(const Poco::URI& uri, const std
                 new LocalStorage(uri, jailRoot, jailPath, takeOwnership));
         }
 
-        LOG_ERR("Local Storage is disabled by default. Enable in the config file or on the command-line to enable.");
+        LOG_ERR("Local Storage is disabled by default. Enable in the config file or on the "
+                "command-line to enable");
     }
 #if !MOBILEAPP
     else if (HostUtil::isWopiEnabled())
     {
-        LOG_INF("Public URI [" << LOOLWSD::anonymizeUrl(uri.toString()) << "] considered WOPI.");
+        LOG_INF("Public URI [" << COOLWSD::anonymizeUrl(uri.toString()) << "] considered WOPI");
         const auto& targetHost = uri.getHost();
         bool allowed(false);
         HostUtil::setFirstHost(uri);
@@ -267,7 +258,7 @@ std::unique_ptr<StorageBase> StorageBase::create(const Poco::URI& uri, const std
             for (auto &address : hostAddresses.addresses())
             {
                 if (HostUtil::allowedWopiHost(address.toString()))
-        {
+                {
                     allowed = true;
                     break;
                 }
@@ -275,11 +266,17 @@ std::unique_ptr<StorageBase> StorageBase::create(const Poco::URI& uri, const std
         }
         if (allowed)
             return std::unique_ptr<StorageBase>(new WopiStorage(uri, jailRoot, jailPath));
-        LOG_ERR("No acceptable WOPI hosts found matching the target host [" << targetHost << "] in config.");
-        throw UnauthorizedRequestException("No acceptable WOPI hosts found matching the target host [" + targetHost + "] in config.");
+
+        LOG_ERR("No acceptable WOPI hosts found matching the target host [" << targetHost
+                                                                            << "] in config");
+        throw UnauthorizedRequestException(
+            "No acceptable WOPI hosts found matching the target host [" + targetHost +
+            "] in config");
     }
 #endif
-    throw BadRequestException("No Storage configured or invalid URI.");
+
+    throw BadRequestException("No Storage configured or invalid URI " +
+                              COOLWSD::anonymizeUrl(uri.toString()) + ']');
 }
 
 std::atomic<unsigned> LocalStorage::LastLocalStorageId;
@@ -287,7 +284,7 @@ std::atomic<unsigned> LocalStorage::LastLocalStorageId;
 std::unique_ptr<LocalStorage::LocalFileInfo> LocalStorage::getLocalFileInfo()
 {
     const Poco::Path path = getUri().getPath();
-    LOG_DBG("Getting info for local uri [" << LOOLWSD::anonymizeUrl(getUri().toString()) << "], path [" << LOOLWSD::anonymizeUrl(path.toString()) << "].");
+    LOG_DBG("Getting info for local uri [" << COOLWSD::anonymizeUrl(getUri().toString()) << "], path [" << COOLWSD::anonymizeUrl(path.toString()) << "].");
 
     const FileUtil::Stat stat(path.toString());
     const std::chrono::system_clock::time_point lastModified = stat.modifiedTimepoint();
@@ -303,7 +300,7 @@ std::unique_ptr<LocalStorage::LocalFileInfo> LocalStorage::getLocalFileInfo()
     if (user_name != nullptr)
         userNameString = std::string(user_name);
 #endif
-    if (userNameString.size() == 0)
+    if (userNameString.empty())
         userNameString = "LocalUser#" + userId;
 
     return std::unique_ptr<LocalStorage::LocalFileInfo>(
@@ -311,15 +308,15 @@ std::unique_ptr<LocalStorage::LocalFileInfo> LocalStorage::getLocalFileInfo()
 }
 
 std::string LocalStorage::downloadStorageFileToLocal(const Authorization& /*auth*/,
-                                                 LockContext& /*lockCtx*/,
-                                                 const std::string& /*templateUri*/)
+                                                     LockContext& /*lockCtx*/,
+                                                     const std::string& /*templateUri*/)
 {
 #if !MOBILEAPP
     // /chroot/jailId/user/doc/childId/file.ext
     const std::string filename = Poco::Path(getUri().getPath()).getFileName();
     setRootFilePath(Poco::Path(getLocalRootPath(), filename).toString());
-    setRootFilePathAnonym(LOOLWSD::anonymizeUrl(getRootFilePath()));
-    LOG_INF("Public URI [" << LOOLWSD::anonymizeUrl(getUri().getPath()) <<
+    setRootFilePathAnonym(COOLWSD::anonymizeUrl(getRootFilePath()));
+    LOG_INF("Public URI [" << COOLWSD::anonymizeUrl(getUri().getPath()) <<
             "] jailed to [" << getRootFilePathAnonym() << "].");
 
     // Despite the talk about URIs it seems that _uri is actually just a pathname here
@@ -349,7 +346,7 @@ std::string LocalStorage::downloadStorageFileToLocal(const Authorization& /*auth
         }
         catch (const Poco::Exception& exc)
         {
-            LOG_ERR("Failed to move [" << LOOLWSD::anonymizeUrl(publicFilePath) << "] to ["
+            LOG_ERR("Failed to move [" << COOLWSD::anonymizeUrl(publicFilePath) << "] to ["
                                        << getRootFilePathAnonym() << "]: " << exc.displayText());
         }
     }
@@ -357,13 +354,13 @@ std::string LocalStorage::downloadStorageFileToLocal(const Authorization& /*auth
     if (!FileUtil::Stat(getRootFilePath()).exists())
     {
         // Try to link.
-        LOG_INF("Linking " << LOOLWSD::anonymizeUrl(publicFilePath) << " to "
+        LOG_INF("Linking " << COOLWSD::anonymizeUrl(publicFilePath) << " to "
                            << getRootFilePathAnonym());
         if (!Poco::File(getRootFilePath()).exists()
             && link(publicFilePath.c_str(), getRootFilePath().c_str()) == -1)
-    {
-        // Failed
-            LOG_INF("link(\"" << LOOLWSD::anonymizeUrl(publicFilePath) << "\", \""
+        {
+            // Failed
+            LOG_INF("link(\"" << COOLWSD::anonymizeUrl(publicFilePath) << "\", \""
                               << getRootFilePathAnonym() << "\") failed. Will copy. Linking error: "
                               << Util::symbolicErrno(errno) << ' ' << strerror(errno));
         }
@@ -380,7 +377,7 @@ std::string LocalStorage::downloadStorageFileToLocal(const Authorization& /*auth
     }
     catch (const Poco::Exception& exc)
     {
-        LOG_ERR("copyTo(\"" << LOOLWSD::anonymizeUrl(publicFilePath) << "\", \""
+        LOG_ERR("copyTo(\"" << COOLWSD::anonymizeUrl(publicFilePath) << "\", \""
                             << getRootFilePathAnonym() << "\") failed: " << exc.displayText());
         throw;
     }
@@ -389,7 +386,7 @@ std::string LocalStorage::downloadStorageFileToLocal(const Authorization& /*auth
 
     // Now return the jailed path.
 #ifndef KIT_IN_PROCESS
-    if (LOOLWSD::NoCapsForKit)
+    if (COOLWSD::NoCapsForKit)
         return getRootFilePath();
     else
         return Poco::Path(getJailPath(), filename).toString();
@@ -435,7 +432,7 @@ void LocalStorage::uploadLocalFileToStorageAsync(const Authorization& /*auth*/,
     }
     catch (const Poco::Exception& exc)
     {
-        LOG_ERR("copyTo(\"" << getRootFilePathAnonym() << "\", \"" << LOOLWSD::anonymizeUrl(path)
+        LOG_ERR("copyTo(\"" << getRootFilePathAnonym() << "\", \"" << COOLWSD::anonymizeUrl(path)
                             << "\") failed: " << exc.displayText());
         // Default UploadResult is failure.
     }
@@ -460,7 +457,7 @@ Poco::Net::HTTPClientSession* StorageBase::getHTTPClientSession(const Poco::URI&
         // We decoupled the Wopi communication from client communication because
         // the Wopi communication must have an independent policy.
         // So, we will use here only Storage settings.
-        useSSL = SSLEnabled || LOOLWSD::isSSLTermination();
+        useSSL = SSLEnabled || COOLWSD::isSSLTermination();
     }
     // We decoupled the Wopi communication from client communication because
     // the Wopi communication must have an independent policy.
@@ -471,7 +468,7 @@ Poco::Net::HTTPClientSession* StorageBase::getHTTPClientSession(const Poco::URI&
         : new Poco::Net::HTTPClientSession(uri.getHost(), uri.getPort());
 
     // Set the timeout to the configured value.
-    static int timeoutSec = LOOLWSD::getConfigValue<int>("net.connection_timeout_secs", 30);
+    static int timeoutSec = COOLWSD::getConfigValue<int>("net.connection_timeout_secs", 30);
     session->setTimeout(Poco::Timespan(timeoutSec, 0));
 
     return session;
@@ -491,7 +488,7 @@ std::shared_ptr<http::Session> StorageBase::getHttpSession(const Poco::URI& uri)
         // We decoupled the Wopi communication from client communication because
         // the Wopi communication must have an independent policy.
         // So, we will use here only Storage settings.
-        useSSL = SSLEnabled || LOOLWSD::isSSLTermination();
+        useSSL = SSLEnabled || COOLWSD::isSSLTermination();
     }
 
     const auto protocol
@@ -500,7 +497,7 @@ std::shared_ptr<http::Session> StorageBase::getHttpSession(const Poco::URI& uri)
     // Create the session.
     auto httpSession = http::Session::create(uri.getHost(), protocol, uri.getPort());
 
-    static int timeoutSec = LOOLWSD::getConfigValue<int>("net.connection_timeout_secs", 30);
+    static int timeoutSec = COOLWSD::getConfigValue<int>("net.connection_timeout_secs", 30);
     httpSession->setTimeout(std::chrono::seconds(timeoutSec));
 
     return httpSession;
@@ -513,10 +510,10 @@ static void addStorageDebugCookie(Poco::Net::HTTPRequest& request)
 {
     (void) request;
 #if ENABLE_DEBUG
-    if (std::getenv("LOOL_STORAGE_COOKIE"))
+    if (std::getenv("COOL_STORAGE_COOKIE"))
     {
         Poco::Net::NameValueCollection nvcCookies;
-        StringVector cookieTokens = StringVector::tokenize(std::string(std::getenv("LOOL_STORAGE_COOKIE")), ':');
+        StringVector cookieTokens = StringVector::tokenize(std::string(std::getenv("COOL_STORAGE_COOKIE")), ':');
         if (cookieTokens.size() == 2)
         {
             nvcCookies.add(cookieTokens[0], cookieTokens[1]);
@@ -558,16 +555,14 @@ void LockContext::initSupportsLocks()
 
     // first time token setup
     _supportsLocks = true;
-    _lockToken = "oxool-lock" + Util::rng::getHexString(8);
+    _lockToken = "cool-lock" + Util::rng::getHexString(8);
 #endif
 }
 
 bool LockContext::needsRefresh(const std::chrono::steady_clock::time_point &now) const
 {
-    static int refreshSeconds = LOOLWSD::getConfigValue<int>("storage.wopi.locking.refresh", 900);
-    return _supportsLocks && _isLocked && refreshSeconds > 0 &&
-        std::chrono::duration_cast<std::chrono::seconds>
-        (now - _lastLockTime).count() >= refreshSeconds;
+    return _supportsLocks && _isLocked && _refreshSeconds > std::chrono::seconds::zero() &&
+           (now - _lastLockTime) >= _refreshSeconds;
 }
 
 void LockContext::dumpState(std::ostream& os) const
@@ -599,7 +594,7 @@ void WopiStorage::initHttpRequest(Poco::Net::HTTPRequest& request, const Poco::U
         addWopiProof(request, uri, it->second);
 
     // Helps wrt. debugging cluster cases from the logs
-    request.set("X-LOOL-WOPI-ServerId", Util::getProcessIdentifier());
+    request.set("X-COOL-WOPI-ServerId", Util::getProcessIdentifier());
 }
 
 http::Request WopiStorage::initHttpRequest(const Poco::URI& uri, const Authorization& auth) const
@@ -627,7 +622,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
 
     // update the access_token to the one matching to the session
     auth.authorizeURI(uriObject);
-    const std::string uriAnonym = LOOLWSD::anonymizeUrl(uriObject.toString());
+    const std::string uriAnonym = COOLWSD::anonymizeUrl(uriObject.toString());
 
     LOG_DBG("Getting info for wopi uri [" << uriAnonym << "].");
 
@@ -649,7 +644,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
                 logger << '\t' << pair.first << ": " << pair.second << " / ";
             }
 
-            LOG_END(logger);
+            LOG_END_FLUSH(logger);
         }
 
         const std::shared_ptr<const http::Response> httpResponse
@@ -666,7 +661,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
             if (redirectLimit)
             {
                 const std::string& location = httpResponse->get("Location");
-                LOG_TRC("WOPI::CheckFileInfo redirect to URI [" << LOOLWSD::anonymizeUrl(location) << "]");
+                LOG_TRC("WOPI::CheckFileInfo redirect to URI [" << COOLWSD::anonymizeUrl(location) << "]");
 
                 Poco::URI redirectUriObject(location);
                 setUri(redirectUriObject);
@@ -697,7 +692,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
             if (failed)
                 logRes << "\tBody: [" << wopiResponse << "]";
 
-            LOG_END(logRes);
+            LOG_END_FLUSH(logRes);
         }
 
         if (failed)
@@ -723,7 +718,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
     Poco::JSON::Object::Ptr object;
     if (JsonUtil::parseJSON(wopiResponse, object))
     {
-        if (LOOLWSD::AnonymizeUserData)
+        if (COOLWSD::AnonymizeUserData)
             LOG_DBG("WOPI::CheckFileInfo (" << callDurationMs << "): anonymizing...");
         else
             LOG_DBG("WOPI::CheckFileInfo (" << callDurationMs << "): " << wopiResponse);
@@ -739,7 +734,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
         FileInfo fileInfo = FileInfo({filename, ownerId, lastModifiedTime});
         setFileInfo(fileInfo);
 
-        if (LOOLWSD::AnonymizeUserData)
+        if (COOLWSD::AnonymizeUserData)
             Util::mapAnonymized(Util::getFilenameFromURL(filename), Util::getFilenameFromURL(getUri().toString()));
 
         auto wopiInfo = Util::make_unique<WopiStorage::WOPIFileInfo>(fileInfo, callDurationMs, object, uriObject);
@@ -753,7 +748,7 @@ WopiStorage::getWOPIFileInfoForUri(Poco::URI uriObject, const Authorization& aut
     }
     else
     {
-        if (LOOLWSD::AnonymizeUserData)
+        if (COOLWSD::AnonymizeUserData)
             wopiResponse = "obfuscated";
 
         LOG_ERR("WOPI::CheckFileInfo ("
@@ -779,6 +774,7 @@ void WopiStorage::WOPIFileInfo::init()
     _hidePrintOption = false;
     _hideSaveOption = false;
     _hideExportOption = false;
+    _hideRepairOption = false;
     _disablePrint = false;
     _disableExport = false;
     _disableCopy = false;
@@ -786,6 +782,7 @@ void WopiStorage::WOPIFileInfo::init()
     _downloadAsPostMessage = false;
     _userCanNotWriteRelative = true;
     _enableInsertRemoteImage = false;
+    _enableRemoteLinkPicker = false;
     _enableShare = false;
     _supportsLocks = false;
     _supportsRename = false;
@@ -827,7 +824,7 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
     std::ostringstream wopiResponse;
 
     // Anonymize key values.
-    if (LOOLWSD::AnonymizeUserData)
+    if (COOLWSD::AnonymizeUserData)
     {
         JsonUtil::findJSONValue(object, "ObfuscatedUserId", _obfuscatedUserId, false);
         if (!_obfuscatedUserId.empty())
@@ -841,15 +838,15 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
 
         // Set anonymized version of the above fields before logging.
         // Note: anonymization caches the result, so we don't need to store here.
-        if (LOOLWSD::AnonymizeUserData)
-            anonObject->set("BaseFileName", LOOLWSD::anonymizeUrl(filename));
+        if (COOLWSD::AnonymizeUserData)
+            anonObject->set("BaseFileName", COOLWSD::anonymizeUrl(filename));
 
         // If obfuscatedUserId is provided, then don't log the originals and use it.
-        if (LOOLWSD::AnonymizeUserData && _obfuscatedUserId.empty())
+        if (COOLWSD::AnonymizeUserData && _obfuscatedUserId.empty())
         {
-            anonObject->set("OwnerId", LOOLWSD::anonymizeUsername(ownerId));
-            anonObject->set("UserId", LOOLWSD::anonymizeUsername(_userId));
-            anonObject->set("UserFriendlyName", LOOLWSD::anonymizeUsername(_username));
+            anonObject->set("OwnerId", COOLWSD::anonymizeUsername(ownerId));
+            anonObject->set("UserId", COOLWSD::anonymizeUsername(_userId));
+            anonObject->set("UserFriendlyName", COOLWSD::anonymizeUsername(_username));
         }
         anonObject->stringify(wopiResponse);
     }
@@ -859,12 +856,14 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
     LOG_DBG("WOPI::CheckFileInfo (" << callDurationMs << "): " << wopiResponse.str());
 
     JsonUtil::findJSONValue(object, "UserExtraInfo", _userExtraInfo);
+    JsonUtil::findJSONValue(object, "UserPrivateInfo", _userPrivateInfo);
     JsonUtil::findJSONValue(object, "WatermarkText", _watermarkText);
     JsonUtil::findJSONValue(object, "UserCanWrite", _userCanWrite);
     JsonUtil::findJSONValue(object, "PostMessageOrigin", _postMessageOrigin);
     JsonUtil::findJSONValue(object, "HidePrintOption", _hidePrintOption);
     JsonUtil::findJSONValue(object, "HideSaveOption", _hideSaveOption);
     JsonUtil::findJSONValue(object, "HideExportOption", _hideExportOption);
+    JsonUtil::findJSONValue(object, "HideRepairOption", _hideRepairOption);
     JsonUtil::findJSONValue(object, "EnableOwnerTermination", _enableOwnerTermination);
     JsonUtil::findJSONValue(object, "DisablePrint", _disablePrint);
     JsonUtil::findJSONValue(object, "DisableExport", _disableExport);
@@ -873,6 +872,7 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
     JsonUtil::findJSONValue(object, "DownloadAsPostMessage", _downloadAsPostMessage);
     JsonUtil::findJSONValue(object, "UserCanNotWriteRelative", _userCanNotWriteRelative);
     JsonUtil::findJSONValue(object, "EnableInsertRemoteImage", _enableInsertRemoteImage);
+    JsonUtil::findJSONValue(object, "EnableRemoteLinkPicker", _enableRemoteLinkPicker);
     JsonUtil::findJSONValue(object, "EnableShare", _enableShare);
     JsonUtil::findJSONValue(object, "HideUserList", _hideUserList);
     JsonUtil::findJSONValue(object, "SupportsLocks", _supportsLocks);
@@ -881,9 +881,48 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
     JsonUtil::findJSONValue(object, "BreadcrumbDocName", _breadcrumbDocName);
     JsonUtil::findJSONValue(object, "FileUrl", _fileUrl);
 
+#if ENABLE_FEATURE_LOCK
+    bool isUserLocked = false;
+    JsonUtil::findJSONValue(object, "IsUserLocked", isUserLocked);
+
+    if (config::getBool("feature_lock.locked_hosts[@allow]", false))
+    {
+        bool isReadOnly = false;
+        isUserLocked = false;
+        CommandControl::LockManager::setUnlockLink(uriObject.getHost());
+        Poco::URI newUri(HostUtil::getNewLockedUri(uriObject));
+        const std::string host = newUri.getHost();
+
+        if (CommandControl::LockManager::hostExist(host))
+        {
+            isReadOnly = CommandControl::LockManager::isHostReadOnly(host);
+            isUserLocked = CommandControl::LockManager::isHostCommandDisabled(host);
+        }
+        else
+        {
+            LOG_INF("Could not find matching locked_host: " << host << ",applying fallback settings");
+            isReadOnly = config::getBool("feature_lock.locked_hosts.fallback[@read_only]", false);
+            isUserLocked =
+                config::getBool("feature_lock.locked_hosts.fallback[@disabled_commands]", false);
+        }
+
+        if (isReadOnly)
+        {
+            isUserLocked = true;
+            _userCanWrite = false;
+            LOG_DBG("Feature lock is enabled and " << host << " is in the list of read-only members. Therefore, document is set to read-only.");
+        }
+        CommandControl::LockManager::setHostReadOnly(isReadOnly);
+    }
+    CommandControl::LockManager::setLockedUser(isUserLocked);
+#else
     (void)uriObject;
+#endif
 
     bool booleanFlag = false;
+    JsonUtil::findJSONValue(object, "IsUserRestricted", booleanFlag);
+    CommandControl::RestrictionManager::setRestrictedUser(booleanFlag);
+
     if (JsonUtil::findJSONValue(object, "DisableChangeTrackingRecord", booleanFlag))
         _disableChangeTrackingRecord = (booleanFlag ? WOPIFileInfo::TriState::True : WOPIFileInfo::TriState::False);
     if (JsonUtil::findJSONValue(object, "DisableChangeTrackingShow", booleanFlag))
@@ -891,22 +930,27 @@ WopiStorage::WOPIFileInfo::WOPIFileInfo(const FileInfo &fileInfo,
     if (JsonUtil::findJSONValue(object, "HideChangeTrackingControls", booleanFlag))
         _hideChangeTrackingControls = (booleanFlag ? WOPIFileInfo::TriState::True : WOPIFileInfo::TriState::False);
 
+    static const std::string overrideWatermarks
+        = COOLWSD::getConfigValue<std::string>("watermark.text", "");
+    if (!overrideWatermarks.empty())
+        _watermarkText = overrideWatermarks;
     if (isTemplate(filename))
         _disableExport = true;
 }
 
-bool WopiStorage::updateLockState(const Authorization& auth, LockContext& lockCtx, bool lock,
-                                  const Attributes& attribs)
+StorageBase::LockUpdateResult WopiStorage::updateLockState(const Authorization& auth,
+                                                           LockContext& lockCtx, bool lock,
+                                                           const Attributes& attribs)
 {
     lockCtx._lockFailureReason.clear();
     if (!lockCtx._supportsLocks)
-        return true;
+        return LockUpdateResult::UNSUPPORTED;
 
     Poco::URI uriObject(getUri());
     auth.authorizeURI(uriObject);
 
     Poco::URI uriObjectAnonym(getUri());
-    uriObjectAnonym.setPath(LOOLWSD::anonymizeUrl(uriObjectAnonym.getPath()));
+    uriObjectAnonym.setPath(COOLWSD::anonymizeUrl(uriObjectAnonym.getPath()));
     const std::string uriAnonym = uriObjectAnonym.toString();
 
     const std::string wopiLog(lock ? "WOPI::Lock" : "WOPI::Unlock");
@@ -925,7 +969,7 @@ bool WopiStorage::updateLockState(const Authorization& auth, LockContext& lockCt
         request.set("X-WOPI-Lock", lockCtx._lockToken);
         if (!attribs.getExtendedData().empty())
         {
-            request.set("X-LOOL-WOPI-ExtendedData", attribs.getExtendedData());
+            request.set("X-COOL-WOPI-ExtendedData", attribs.getExtendedData());
             request.set("X-LOOL-WOPI-ExtendedData", attribs.getExtendedData());
         }
 
@@ -946,8 +990,8 @@ bool WopiStorage::updateLockState(const Authorization& auth, LockContext& lockCt
         if (response.getStatus() == Poco::Net::HTTPResponse::HTTP_OK)
         {
             lockCtx._isLocked = lock;
-            lockCtx._lastLockTime = std::chrono::steady_clock::now();
-            return true;
+            lockCtx.bumpTimer();
+            return LockUpdateResult::OK;
         }
         else
         {
@@ -957,8 +1001,21 @@ bool WopiStorage::updateLockState(const Authorization& auth, LockContext& lockCt
                 lockCtx._lockFailureReason = sMoreInfo;
                 sMoreInfo = ", failure reason: \"" + sMoreInfo + "\"";
             }
-            LOG_ERR("Un-successful " << wopiLog << " with status " << response.getStatus() <<
-                    sMoreInfo << " and response: " << responseString);
+
+            if (response.getStatus() == Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED ||
+                response.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+                response.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND)
+            {
+                LOG_ERR("Un-successful " << wopiLog << " with expired token, HTTP status "
+                                         << response.getStatus() << sMoreInfo
+                                         << " and response: " << responseString);
+
+                return LockUpdateResult::UNAUTHORIZED;
+            }
+
+            LOG_ERR("Un-successful " << wopiLog << " with HTTP status " << response.getStatus()
+                                     << sMoreInfo << " and response: " << responseString);
+            return LockUpdateResult::FAILED;
         }
     }
     catch (const Poco::Exception& pexc)
@@ -970,13 +1027,15 @@ bool WopiStorage::updateLockState(const Authorization& auth, LockContext& lockCt
     {
         LOG_ERR("Cannot " << wopiLog << " uri [" << uriAnonym << "]. Error: " << exc.what());
     }
-    return false;
+
+    lockCtx._lockFailureReason = "Request failed";
+    return LockUpdateResult::FAILED;
 }
 
 /// uri format: http://server/<...>/wopi*/files/<id>/content
 std::string WopiStorage::downloadStorageFileToLocal(const Authorization& auth,
-                                                LockContext& /*lockCtx*/,
-                                                const std::string& templateUri)
+                                                    LockContext& /*lockCtx*/,
+                                                    const std::string& templateUri)
 {
     ProfileZone profileZone("WopiStorage::downloadStorageFileToLocal", { {"url", _fileUrl} });
 
@@ -984,7 +1043,7 @@ std::string WopiStorage::downloadStorageFileToLocal(const Authorization& auth,
     {
         // Download the template file and load it normally.
         // The document will get saved once loading in Core is complete.
-        const std::string templateUriAnonym = LOOLWSD::anonymizeUrl(templateUri);
+        const std::string templateUriAnonym = COOLWSD::anonymizeUrl(templateUri);
         try
         {
             LOG_INF("WOPI::GetFile template source: " << templateUriAnonym);
@@ -1004,7 +1063,7 @@ std::string WopiStorage::downloadStorageFileToLocal(const Authorization& auth,
     // First try the FileUrl, if provided.
     if (!_fileUrl.empty())
     {
-        const std::string fileUrlAnonym = LOOLWSD::anonymizeUrl(_fileUrl);
+        const std::string fileUrlAnonym = COOLWSD::anonymizeUrl(_fileUrl);
         try
         {
             LOG_INF("WOPI::GetFile using FileUrl: " << fileUrlAnonym);
@@ -1030,7 +1089,7 @@ std::string WopiStorage::downloadStorageFileToLocal(const Authorization& auth,
     auth.authorizeURI(uriObject);
 
     Poco::URI uriObjectAnonym(getUri());
-    uriObjectAnonym.setPath(LOOLWSD::anonymizeUrl(uriObjectAnonym.getPath()) + "/contents");
+    uriObjectAnonym.setPath(COOLWSD::anonymizeUrl(uriObjectAnonym.getPath()) + "/contents");
     const std::string uriAnonym = uriObjectAnonym.toString();
 
     try
@@ -1057,7 +1116,7 @@ std::string WopiStorage::downloadDocument(const Poco::URI& uriObject, const std:
     http::Request httpRequest = initHttpRequest(uriObject, auth);
 
     setRootFilePath(Poco::Path(getLocalRootPath(), getFileInfo().getFilename()).toString());
-    setRootFilePathAnonym(LOOLWSD::anonymizeUrl(getRootFilePath()));
+    setRootFilePathAnonym(COOLWSD::anonymizeUrl(getRootFilePath()));
 
     if (!FileUtil::checkDiskSpace(getRootFilePath()))
     {
@@ -1084,7 +1143,7 @@ std::string WopiStorage::downloadDocument(const Poco::URI& uriObject, const std:
                 logger << '\t' << pair.first << ": " << pair.second << " / ";
             }
 
-            LOG_END(logger);
+            LOG_END_FLUSH(logger);
         }
     }
     else if (httpResponse->statusLine().statusCode() == Poco::Net::HTTPResponse::HTTP_FOUND ||
@@ -1095,7 +1154,7 @@ std::string WopiStorage::downloadDocument(const Poco::URI& uriObject, const std:
         if (redirectLimit)
         {
             const std::string& location = httpResponse->get("Location");
-            LOG_TRC("WOPI::GetFile redirect to URI [" << LOOLWSD::anonymizeUrl(location) << "]");
+            LOG_TRC("WOPI::GetFile redirect to URI [" << COOLWSD::anonymizeUrl(location) << "]");
 
             Poco::URI redirectUriObject(location);
             return downloadDocument(redirectUriObject, uriAnonym, auth, redirectLimit - 1);
@@ -1107,7 +1166,7 @@ std::string WopiStorage::downloadDocument(const Poco::URI& uriObject, const std:
         }
     }
     else
-        {
+    {
         const std::string responseString = httpResponse->getBody();
         LOG_ERR("WOPI::GetFile [" << uriAnonym << "] failed with Status Code: "
                                   << httpResponse->statusLine().statusCode());
@@ -1122,18 +1181,18 @@ std::string WopiStorage::downloadDocument(const Poco::URI& uriObject, const std:
                                         << getRootFilePathAnonym() << " in " << diff);
     setDownloaded(true);
 
-            // Now return the jailed path.
-            if (LOOLWSD::NoCapsForKit)
-                return getRootFilePath();
-            else
-                return Poco::Path(getJailPath(), getFileInfo().getFilename()).toString();
-        }
+    // Now return the jailed path.
+    if (COOLWSD::NoCapsForKit)
+        return getRootFilePath();
+    else
+        return Poco::Path(getJailPath(), getFileInfo().getFilename()).toString();
+}
 
 /// A helper class to invoke the AsyncUploadCallback
 /// when it exits its scope.
 /// By default it invokes the callback with a failure state.
 class ScopedInvokeAsyncUploadCallback
-    {
+{
 public:
     ScopedInvokeAsyncUploadCallback(StorageBase::AsyncUploadCallback asyncUploadCallback)
         : _asyncUploadCallback(std::move(asyncUploadCallback))
@@ -1147,7 +1206,7 @@ public:
     {
         if (_asyncUploadCallback)
             _asyncUploadCallback(_arg);
-}
+    }
 
     /// Set a new callback argument.
     void setArg(StorageBase::AsyncUpload arg) { _arg = std::move(arg); }
@@ -1180,7 +1239,7 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
 
     const bool isSaveAs = !saveAsPath.empty() && !saveAsFilename.empty();
     const std::string filePath(isSaveAs ? saveAsPath : getRootFilePathUploading());
-    const std::string filePathAnonym = LOOLWSD::anonymizeUrl(filePath);
+    const std::string filePathAnonym = COOLWSD::anonymizeUrl(filePath);
 
     const FileUtil::Stat fileStat(filePath);
     if (!fileStat.good())
@@ -1199,10 +1258,12 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
                                            : uriObject.getPath() + "/contents");
     auth.authorizeURI(uriObject);
 
-    const std::string uriAnonym = LOOLWSD::anonymizeUrl(uriObject.toString());
+    const std::string uriAnonym = COOLWSD::anonymizeUrl(uriObject.toString());
 
-    LOG_INF("Uploading " << size << " bytes from [" << filePathAnonym << "] to URI via WOPI ["
-                         << uriAnonym << "].");
+    const std::string wopiLog(isSaveAs ? "WOPI::PutRelativeFile"
+                                       : (isRename ? "WOPI::RenameFile" : "WOPI::PutFile"));
+    LOG_INF(wopiLog << " uploading " << size << " bytes from [" << filePathAnonym
+                    << "] to URI via WOPI [" << uriAnonym << ']');
 
     const auto startTime = std::chrono::steady_clock::now();
     try
@@ -1223,24 +1284,24 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
         {
             // normal save
             httpHeader.set("X-WOPI-Override", "PUT");
+            httpHeader.set("X-COOL-WOPI-IsModifiedByUser", attribs.isUserModified() ? "true" : "false");
             httpHeader.set("X-LOOL-WOPI-IsModifiedByUser", attribs.isUserModified() ? "true" : "false");
-            httpHeader.set("X-LOOL-WOPI-IsModifiedByUser", attribs.isUserModified() ? "true" : "false");
+            httpHeader.set("X-COOL-WOPI-IsAutosave", attribs.isAutosave() ? "true" : "false");
             httpHeader.set("X-LOOL-WOPI-IsAutosave", attribs.isAutosave() ? "true" : "false");
-            httpHeader.set("X-LOOL-WOPI-IsAutosave", attribs.isAutosave() ? "true" : "false");
-            httpHeader.set("X-LOOL-WOPI-IsExitSave", attribs.isExitSave() ? "true" : "false");
+            httpHeader.set("X-COOL-WOPI-IsExitSave", attribs.isExitSave() ? "true" : "false");
             httpHeader.set("X-LOOL-WOPI-IsExitSave", attribs.isExitSave() ? "true" : "false");
             if (attribs.isExitSave())
                 httpHeader.set("Connection", "close"); // Don't maintain the socket if we are exiting.
             if (!attribs.getExtendedData().empty())
             {
-                httpHeader.set("X-LOOL-WOPI-ExtendedData", attribs.getExtendedData());
+                httpHeader.set("X-COOL-WOPI-ExtendedData", attribs.getExtendedData());
                 httpHeader.set("X-LOOL-WOPI-ExtendedData", attribs.getExtendedData());
             }
 
             if (!attribs.isForced())
             {
                 // Request WOPI host to not overwrite if timestamps mismatch
-                httpHeader.set("X-LOOL-WOPI-Timestamp", getFileInfo().getLastModifiedTime());
+                httpHeader.set("X-COOL-WOPI-Timestamp", getFileInfo().getLastModifiedTime());
                 httpHeader.set("X-LOOL-WOPI-Timestamp", getFileInfo().getLastModifiedTime());
             }
         }
@@ -1251,9 +1312,10 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
             std::string suggestedTarget = '.' + Poco::Path(saveAsFilename).getExtension();
 
             //TODO: Perhaps we should cache this descriptor and reuse, as iconv_open might be expensive.
-            const iconv_t cd = iconv_open("UTF-7", "UTF-8");
+            iconv_t cd = iconv_open("UTF-7", "UTF-8");
             if (cd == (iconv_t) -1)
-                LOG_ERR("Failed to initialize iconv for UTF-7 conversion, using '" << suggestedTarget << "'.");
+                LOG_ERR(wopiLog << " failed to initialize iconv for UTF-7 conversion, using ["
+                                << suggestedTarget << ']');
             else
             {
                 std::vector<char> input(saveAsFilename.begin(), saveAsFilename.end());
@@ -1265,12 +1327,14 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
                 std::size_t out_left = buffer.size();
 
                 if (iconv(cd, &in, &in_left, &out, &out_left) == (size_t) -1)
-                    LOG_ERR("Failed to convert '" << saveAsFilename << "' to UTF-7, using '" << suggestedTarget << "'.");
+                    LOG_ERR(wopiLog << " failed to convert [" << saveAsFilename
+                                    << "] to UTF-7, using [" << suggestedTarget << ']');
                 else
                 {
                     // conversion succeeded
                     suggestedTarget = std::string(&buffer[0], buffer.size() - out_left);
-                    LOG_TRC("Converted '" << saveAsFilename << "' to UTF-7 as '" << suggestedTarget << "'.");
+                    LOG_TRC(wopiLog << " converted [" << saveAsFilename << "] to UTF-7 as ["
+                                    << suggestedTarget << ']');
                 }
 
                 iconv_close(cd);
@@ -1308,7 +1372,7 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
 
             _wopiSaveDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - startTime);
-            LOG_TRC("Finished async uploading in " << _wopiSaveDuration);
+            LOG_TRC(wopiLog << " finished async uploading in " << _wopiSaveDuration);
 
             WopiUploadDetails details = { filePathAnonym,
                                           uriAnonym,
@@ -1328,7 +1392,7 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
 
         _uploadHttpSession->setFinishedHandler(finishedCallback);
 
-        LOG_DBG("Async upload request: " << httpRequest.header().toString());
+        LOG_DBG(wopiLog << " async upload request: " << httpRequest.header().toString());
 
         // Make the request.
         _uploadHttpSession->asyncRequest(httpRequest, socketPoll);
@@ -1339,13 +1403,14 @@ void WopiStorage::uploadLocalFileToStorageAsync(const Authorization& auth, LockC
     }
     catch (const Poco::Exception& ex)
     {
-        LOG_ERR("Cannot upload file to WOPI storage uri ["
-                << uriAnonym << "]. Error: " << ex.displayText()
-                << (ex.nested() ? " (" + ex.nested()->displayText() + ')' : ""));
+        LOG_ERR(wopiLog << " cannot upload file to WOPI storage uri [" << uriAnonym
+                        << "]. Error: " << ex.displayText()
+                        << (ex.nested() ? " (" + ex.nested()->displayText() + ')' : ""));
     }
     catch (const std::exception& ex)
     {
-        LOG_ERR("Cannot upload file to WOPI storage uri [" + uriAnonym + "]. Error: " << ex.what());
+        LOG_ERR(wopiLog << " cannot upload file to WOPI storage uri [" + uriAnonym + "]. Error: "
+                        << ex.what());
     }
 
     scopedInvokeCallback.setArg(AsyncUpload(
@@ -1369,7 +1434,7 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
 
         if (Log::infoEnabled())
         {
-            if (LOOLWSD::AnonymizeUserData)
+            if (COOLWSD::AnonymizeUserData)
             {
                 Poco::JSON::Object::Ptr object;
                 if (JsonUtil::parseJSON(responseString, object))
@@ -1389,7 +1454,7 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
 
                         const std::string filenameOnly = Util::getFilenameFromURL(filename);
                         Util::mapAnonymized(filenameOnly, obfuscatedFileId);
-                        object->set("Name", LOOLWSD::anonymizeUrl(filename));
+                        object->set("Name", COOLWSD::anonymizeUrl(filename));
                     }
 
                     // Stringify to log.
@@ -1419,10 +1484,10 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
                 if (details.isSaveAs || details.isRename)
                 {
                     const std::string name = JsonUtil::getJSONValue<std::string>(object, "Name");
-                    LOG_TRC(wopiLog << " returns Name [" << LOOLWSD::anonymizeUrl(name) << "].");
+                    LOG_TRC(wopiLog << " returns Name [" << COOLWSD::anonymizeUrl(name) << "].");
 
                     const std::string url = JsonUtil::getJSONValue<std::string>(object, "Url");
-                    LOG_TRC(wopiLog << " returns Url [" << LOOLWSD::anonymizeUrl(url) << "].");
+                    LOG_TRC(wopiLog << " returns Url [" << COOLWSD::anonymizeUrl(url) << "].");
 
                     result.setSaveAsResult(name, url);
                 }
@@ -1432,24 +1497,18 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
                 LOG_ERR("Invalid or missing JSON in " << wopiLog << " HTTP_OK response.");
             }
         }
-        // 自訂錯誤碼 413
         else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_REQUEST_ENTITY_TOO_LARGE)
         {
-            result.setResult(StorageBase::UploadResult::Result::REQUEST_ENTITY_TOO_LARGE);
+            result.setResult(StorageBase::UploadResult::Result::TOO_LARGE);
         }
-        else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED)
+        else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED ||
+                 details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+                 details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND)
         {
+            // The ms-wopi specs recognizes 401 and 404 for invalid token
+            // and file unknown/user unauthorized, respectively.
+            // We also handle 403 that some implementation use.
             result.setResult(StorageBase::UploadResult::Result::UNAUTHORIZED);
-        }
-        // 自訂錯誤碼 403
-        else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_FORBIDDEN)
-        {
-            result.setResult(StorageBase::UploadResult::Result::FORBIDDEN);
-        }
-        // 自訂錯誤碼 404
-        else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND)
-        {
-            result.setResult(StorageBase::UploadResult::Result::NOT_FOUND);
         }
         else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_CONFLICT)
         {
@@ -1457,11 +1516,11 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
             Poco::JSON::Object::Ptr object;
             if (JsonUtil::parseJSON(origResponseString, object))
             {
-                const unsigned loolStatusCode
-                    = JsonUtil::getJSONValue<unsigned>(object, "LOOLStatusCode");
-                if (loolStatusCode == static_cast<unsigned>(LOOLStatusCode::DOC_CHANGED) ||
+                const unsigned coolStatusCode
+                    = JsonUtil::getJSONValue<unsigned>(object, "COOLStatusCode");
+                if (coolStatusCode == static_cast<unsigned>(COOLStatusCode::DOC_CHANGED) ||
                     JsonUtil::getJSONValue<unsigned>(object, "LOOLStatusCode") ==
-                        static_cast<unsigned>(LOOLStatusCode::DOC_CHANGED))
+                        static_cast<unsigned>(COOLStatusCode::DOC_CHANGED))
                 {
                     result.setResult(StorageBase::UploadResult::Result::DOC_CHANGED);
                 }
@@ -1470,21 +1529,6 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
             {
                 LOG_ERR("Invalid or missing JSON in " << wopiLog << " HTTP_CONFLICT response.");
             }
-        }
-        // 自訂錯誤碼 500
-        else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR)
-        {
-            result.setResult(StorageBase::UploadResult::Result::INTERNAL_SERVER_ERROR);
-        }
-        // 自訂錯誤碼 501
-        else if (details.httpResponseCode == Poco::Net::HTTPResponse::HTTP_NOT_IMPLEMENTED)
-        {
-            result.setResult(StorageBase::UploadResult::Result::NOT_IMPLEMENTED);
-        }
-        // 自訂錯誤碼 499
-        else if (details.httpResponseCode == 499)
-        {
-            result.setResult(StorageBase::UploadResult::Result::STATUS_CODE_499);
         }
         else
         {
@@ -1513,7 +1557,7 @@ WopiStorage::handleUploadToStorageResponse(const WopiUploadDetails& details,
         LOG_ERR("Cannot upload file to WOPI storage uri [" + details.uriAnonym + "]. Error: "
                 << exc.what());
         result.setResult(StorageBase::UploadResult::Result::FAILED);
-}
+    }
 
     return result;
 }

@@ -1,12 +1,13 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <config.h>
+
+#include <sysexits.h>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -21,16 +22,20 @@
 
 #include "FakeSocket.hpp"
 #include "Log.hpp"
-#include "LOOLWSD.hpp"
+#include "COOLWSD.hpp"
 #include "Protocol.hpp"
 #include "Util.hpp"
 
-const int SHOW_JS_MAXLEN = 70;
+#include "gtk.hpp"
 
-int loolwsd_server_socket_fd = -1;
+const char *user_name = "Dummy";
+
+const int SHOW_JS_MAXLEN = 300;
+
+int coolwsd_server_socket_fd = -1;
 
 static std::string fileURL;
-static LOOLWSD *loolwsd = nullptr;
+static COOLWSD *coolwsd = nullptr;
 static int fakeClientFd;
 static int closeNotificationPipeForForwardingThread[2];
 static WebKitWebView *webView;
@@ -44,7 +49,7 @@ static void send2JS_ready_callback(GObject      *source_object,
 
 static void send2JS(const std::vector<char>& buffer)
 {
-    LOG_TRC_NOFILE("Send to JS: " << LOOLProtocol::getAbbreviatedMessage(buffer.data(), buffer.size()));
+    LOG_TRC_NOFILE("Send to JS: " << COOLProtocol::getAbbreviatedMessage(buffer.data(), buffer.size()));
 
     std::string js;
 
@@ -70,7 +75,7 @@ static void send2JS(const std::vector<char>& buffer)
         std::vector<char> data;
         for (int i = 0; i < buffer.size(); i++)
         {
-            if (ubufp[i] < ' ' || ubufp[i] == '\'' || ubufp[i] == '\\')
+            if (ubufp[i] < ' ' || ubufp[i] >= 0x80 || ubufp[i] == '\'' || ubufp[i] == '\\')
             {
                 data.push_back('\\');
                 data.push_back('x');
@@ -82,10 +87,9 @@ static void send2JS(const std::vector<char>& buffer)
                 data.push_back(ubufp[i]);
             }
         }
-        data.push_back(0);
 
         js = "window.TheFakeWebSocket.onmessage({'data': '";
-        js = js + std::string(buffer.data(), buffer.size());
+        js = js + std::string(data.data(), data.size());
         js = js + "'});";
     }
 
@@ -145,7 +149,7 @@ static void handle_message(const char * type, WebKitJavascriptResult *js_result)
     g_free(string_value);
 }
 
-static void handle_lool_message(WebKitUserContentManager *manager,
+static void handle_cool_message(WebKitUserContentManager *manager,
                                 WebKitJavascriptResult   *js_result,
                                 gpointer                  user_data)
 {
@@ -153,16 +157,16 @@ static void handle_lool_message(WebKitUserContentManager *manager,
 
     if (string_value)
     {
-        LOG_TRC_NOFILE("From JS: lool: " << string_value);
+        LOG_TRC_NOFILE("From JS: cool: " << string_value);
 
         if (strcmp(string_value, "HULLO") == 0)
         {
             // Now we know that the JS has started completely
 
-            // Contact the permanently (during app lifetime) listening LOOLWSD server
+            // Contact the permanently (during app lifetime) listening COOLWSD server
             // "public" socket
-            assert(loolwsd_server_socket_fd != -1);
-            int rc = fakeSocketConnect(fakeClientFd, loolwsd_server_socket_fd);
+            assert(coolwsd_server_socket_fd != -1);
+            int rc = fakeSocketConnect(fakeClientFd, coolwsd_server_socket_fd);
             assert(rc != -1);
 
             // Create a socket pair to notify the below thread when the document has been closed
@@ -253,7 +257,7 @@ static void handle_lool_message(WebKitUserContentManager *manager,
         g_free(string_value);
     }
     else
-        LOG_TRC_NOFILE("From JS: lool: some object");
+        LOG_TRC_NOFILE("From JS: cool: some object");
 }
 
 static void handle_debug_message(WebKitUserContentManager *manager,
@@ -288,17 +292,17 @@ int main(int argc, char* argv[])
 
     std::thread([]
                 {
-                    assert(loolwsd == nullptr);
+                    assert(coolwsd == nullptr);
                     char *argv[2];
                     argv[0] = strdup("mobile");
                     argv[1] = nullptr;
                     Util::setThreadName("app");
                     while (true)
                     {
-                        loolwsd = new LOOLWSD();
-                        loolwsd->run(1, argv);
-                        delete loolwsd;
-                        LOG_TRC("One run of LOOLWSD completed");
+                        coolwsd = new COOLWSD();
+                        coolwsd->run(1, argv);
+                        delete coolwsd;
+                        LOG_TRC("One run of COOLWSD completed");
                     }
                 }).detach();
 
@@ -313,11 +317,11 @@ int main(int argc, char* argv[])
     WebKitUserContentManager *userContentManager = WEBKIT_USER_CONTENT_MANAGER(webkit_user_content_manager_new());
 
     g_signal_connect(userContentManager, "script-message-received::debug", G_CALLBACK(handle_debug_message), nullptr);
-    g_signal_connect(userContentManager, "script-message-received::lool",  G_CALLBACK(handle_lool_message), nullptr);
+    g_signal_connect(userContentManager, "script-message-received::cool",  G_CALLBACK(handle_cool_message), nullptr);
     g_signal_connect(userContentManager, "script-message-received::error", G_CALLBACK(handle_error_message), nullptr);
 
     webkit_user_content_manager_register_script_message_handler(userContentManager, "debug");
-    webkit_user_content_manager_register_script_message_handler(userContentManager, "lool");
+    webkit_user_content_manager_register_script_message_handler(userContentManager, "cool");
     webkit_user_content_manager_register_script_message_handler(userContentManager, "error");
 
     webView = WEBKIT_WEB_VIEW(webkit_web_view_new_with_user_content_manager(userContentManager));
@@ -327,13 +331,25 @@ int main(int argc, char* argv[])
     fileURL = "file://" + FileUtil::realpath(argv[1]);
 
     std::string urlAndQuery =
-        "file://" TOPSRCDIR "/loleaflet/dist/loleaflet.html"
+        "file://" TOPSRCDIR "/browser/dist/cool.html"
         "?file_path=" + fileURL +
         "&closebutton=1"
         "&permission=edit"
-        "&debug=true";
+        "&lang=en"
+        "&userinterfacemode=notebookbar";
 
     webkit_web_view_load_uri(webView, urlAndQuery.c_str());
+
+    if (true) // Set this to false to disable developer console.
+    {
+        // Enable the developer extras
+        WebKitSettings *settings = webkit_web_view_get_settings (WEBKIT_WEB_VIEW(webView));
+        g_object_set (G_OBJECT(settings), "enable-developer-extras", TRUE, NULL);
+
+        // Show the inspector
+        WebKitWebInspector *inspector = webkit_web_view_get_inspector (WEBKIT_WEB_VIEW(webView));
+        webkit_web_inspector_show (WEBKIT_WEB_INSPECTOR(inspector));
+    }
 
     gtk_widget_grab_focus(GTK_WIDGET(webView));
     gtk_widget_show_all(mainWindow);

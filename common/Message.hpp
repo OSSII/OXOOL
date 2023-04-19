@@ -96,19 +96,20 @@ public:
 
     bool getTokenInteger(const std::string& name, int& value)
     {
-        return LOOLProtocol::getTokenInteger(_tokens, name, value);
+        return COOLProtocol::getTokenInteger(_tokens, name, value);
     }
 
     /// Return the abbreviated message for logging purposes.
     std::string abbr() const {
-        return _id + ' ' + LOOLProtocol::getAbbreviatedMessage(_data.data(), _data.size());
+        return _id + ' ' + COOLProtocol::getAbbreviatedMessage(_data.data(), _data.size());
     }
     const std::string& id() const { return _id; }
 
     /// Returns the json part of the message, if any.
     std::string jsonString() const
     {
-        if (_tokens.size() > 1 && _tokens[1].size() && _tokens[1][0] == '{')
+        if (_tokens.size() > 1 && _tokens[1].size() >= 1 &&
+            (_tokens[1][0] == '{' || _tokens[1][0] == '['))
         {
             const size_t firstTokenSize = _tokens[0].size();
             return std::string(_data.data() + firstTokenSize, _data.size() - firstTokenSize);
@@ -136,7 +137,7 @@ public:
         if (func(_data))
         {
             // Check - just the body.
-            assert(_firstLine == LOOLProtocol::getFirstLine(_data.data(), _data.size()));
+            assert(_firstLine == COOLProtocol::getFirstLine(_data.data(), _data.size()));
             assert(_type == detectType());
         }
     }
@@ -154,7 +155,7 @@ private:
     {
         if(_firstLine.empty())
         {
-            _firstLine = LOOLProtocol::getFirstLine(_data.data(), _data.size());
+            _firstLine = COOLProtocol::getFirstLine(_data.data(), _data.size());
         }
     }
 
@@ -162,13 +163,15 @@ private:
     {
         if (_tokens.equals(0, "tile:") ||
             _tokens.equals(0, "tilecombine:") ||
+            _tokens.equals(0, "delta:") ||
             _tokens.equals(0, "renderfont:") ||
+            _tokens.equals(0, "rendersearchresult:") ||
             _tokens.equals(0, "windowpaint:"))
         {
             return Type::Binary;
         }
 
-        if (_data.size() > 0 && _data[_data.size() - 1] == '}')
+        if (_data.size() > 0 && (_data[_data.size() - 1] == '}' || _data[_data.size() - 1] == ']'))
         {
             return Type::JSON;
         }
@@ -179,7 +182,7 @@ private:
 
     std::string getForwardToken(const char* buffer, int length)
     {
-        std::string forward = LOOLProtocol::getFirstToken(buffer, length);
+        std::string forward = COOLProtocol::getFirstToken(buffer, length);
         return (forward.find('-') != std::string::npos ? forward : std::string());
     }
 

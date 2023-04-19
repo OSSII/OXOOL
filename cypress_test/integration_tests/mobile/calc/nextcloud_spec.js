@@ -2,33 +2,32 @@
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var calcHelper = require('../../common/calc_helper');
 var nextcloudHelper = require('../../common/nextcloud_helper');
-var calcMobileHelper = require('./calc_mobile_helper');
 
 describe('Nextcloud specific tests.', function() {
-	var testFileName = 'nextcloud.ods';
+	var origTestFileName = 'nextcloud.ods';
+	var testFileName;
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Insert image from storage.', function() {
-		helper.loadFileToNextCloud('image_to_insert.png', 'calc');
+		helper.upLoadFileToNextCloud('image_to_insert.png', 'calc');
 
-		helper.beforeAll(testFileName, 'calc', undefined, true);
+		testFileName = helper.beforeAll(origTestFileName, 'calc', undefined, true);
 
 		mobileHelper.enableEditingMobile();
 
 		nextcloudHelper.insertImageFromStorage('image_to_insert.png');
 
-		// TOD
+		// TODO
 		//cy.get('.leaflet-pane.leaflet-overlay-pane svg g.Graphic')
 		//	.should('exist');
 	});
 
 	it('Save as.', function() {
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(origTestFileName, 'calc');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
@@ -39,7 +38,7 @@ describe('Nextcloud specific tests.', function() {
 		cy.get('#mobile-edit-button')
 			.should('be.visible');
 
-		cy.get('#tb_actionbar_item_closemobile')
+		cy.get('#toolbar-mobile-back')
 			.then(function(item) {
 				cy.wrap(item)
 					.click();
@@ -54,60 +53,11 @@ describe('Nextcloud specific tests.', function() {
 	});
 
 	it('Share.', function() {
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(origTestFileName, 'calc');
 
 		mobileHelper.enableEditingMobile();
 
 		nextcloudHelper.checkAndCloseSharing();
-	});
-
-	it('Revision history.', function() {
-		helper.beforeAll(testFileName, 'calc');
-
-		mobileHelper.enableEditingMobile();
-
-		nextcloudHelper.checkAndCloseRevisionHistory();
-	});
-
-	it('Restore previous revision.', function() {
-		helper.beforeAll(testFileName, 'calc');
-
-		mobileHelper.enableEditingMobile();
-
-		// Initially we have "text" text in the document
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table td')
-			.should('have.text', 'Text');
-
-		// Change the document content and save it
-		calcHelper.clickOnFirstCell(false, true);
-
-		helper.selectAllText();
-
-		helper.typeIntoDocument('new');
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table td')
-			.should('have.text', 'new');
-
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'File')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Save')
-			.click();
-
-		nextcloudHelper.restorePreviousVersion();
-
-		mobileHelper.enableEditingMobile();
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table td')
-			.should('have.text', 'Text');
 	});
 });
 

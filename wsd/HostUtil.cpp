@@ -8,6 +8,7 @@
 #include "HostUtil.hpp"
 #include <common/ConfigUtil.hpp>
 #include <common/Log.hpp>
+#include <common/CommandControl.hpp>
 #include <config.h>
 
 Util::RegexListMatcher HostUtil::WopiHosts;
@@ -60,6 +61,8 @@ bool HostUtil::allowedWopiHost(const std::string& host)
 
 void HostUtil::parseAliases(Poco::Util::LayeredConfiguration& conf)
 {
+    WopiEnabled = conf.getBool("storage.wopi[@allow]", false);
+
     //set alias_groups mode to compat
     if (!conf.has("storage.wopi.alias_groups"))
     {
@@ -72,7 +75,7 @@ void HostUtil::parseAliases(Poco::Util::LayeredConfiguration& conf)
         // group defined in alias_groups
         if (Util::iequal(config::getString("storage.wopi.alias_groups[@mode]", "first"), "first"))
         {
-            LOG_ERR("Admins didnot set the alias_groups mode to 'groups'");
+            LOG_ERR("Admins did not set the alias_groups mode to 'groups'");
             AliasHosts.clear();
             return;
         }
@@ -103,7 +106,7 @@ void HostUtil::parseAliases(Poco::Util::LayeredConfiguration& conf)
         try
         {
             const Poco::URI realUri(uri);
-#ifdef ENABLE_FEATURE_LOCK
+#if ENABLE_FEATURE_LOCK
             CommandControl::LockManager::mapUnlockLink(realUri.getHost(), path);
 #endif
             HostUtil::hostList.insert(realUri.getHost());
@@ -138,7 +141,7 @@ void HostUtil::parseAliases(Poco::Util::LayeredConfiguration& conf)
                     const Poco::URI aUri(aliasUri.getScheme() + "://" + x + ':' +
                                          std::to_string(aliasUri.getPort()));
                     AliasHosts.insert({ aUri.getAuthority(), realUri.getAuthority() });
-#ifdef ENABLE_FEATURE_LOCK
+#if ENABLE_FEATURE_LOCK
                     CommandControl::LockManager::mapUnlockLink(aUri.getHost(), path);
 #endif
                     HostUtil::addWopiHost(aUri.getHost(), allow);

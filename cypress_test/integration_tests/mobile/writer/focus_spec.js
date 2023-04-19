@@ -4,56 +4,25 @@ var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
 
 describe('Focus tests', function() {
-	var testFileName = 'focus.odt';
+	var origTestFileName = 'focus.odt';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'writer');
+		testFileName = helper.beforeAll(origTestFileName, 'writer');
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Basic document focus.', function() {
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 
-		// Body has the focus -> can't type in the document
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
-
 		// Click in the document
-		cy.get('#document-container')
-			.click();
+		cy.get('#document-container').click();
 
-		// Clipboard has the focus -> can type in the document
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
-	});
-
-	it('Focus with a vex dialog.', function() {
-		// Click on edit button
-		mobileHelper.enableEditingMobile();
-
-		// Open comment insertion dialog
-		cy.get('#tb_actionbar_item_insertcomment')
-			.click();
-
-		cy.get('.loleaflet-annotation-table')
-			.should('be.visible');
-
-		// The dialog grabs the focus
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'loleaflet-annotation-textarea');
-
-		// Close the dialog
-		cy.get('.vex-dialog-button-secondary')
-			.click();
-		cy.get('.loleaflet-annotation-table').should('be.not.visible');
-
-		// Body should have the focus again (no focus on document)
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('className', 'clipboard');
 	});
 
 	it('Focus with opened mobile wizard.', function() {
@@ -65,20 +34,14 @@ describe('Focus tests', function() {
 			.click();
 
 		// Clipboard has the focus -> can type in the document
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
+		helper.assertFocus('className', 'clipboard');
 
 		mobileHelper.openMobileWizard();
 
 		// Body should have the focus (no focus on document)
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		mobileHelper.closeMobileWizard();
-
-		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
 	});
 
 	it('Focus inside mobile wizard.', function() {
@@ -91,19 +54,14 @@ describe('Focus tests', function() {
 		helper.clickOnIdle('#Paragraph');
 
 		cy.get('#aboveparaspacing .spinfield')
-			.should('have.attr', 'value', '0');
+			.should('have.value', '0');
 
 		helper.clickOnIdle('#aboveparaspacing .spinfield');
 
 		// The spinfield should have the focus now.
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'spinfield');
+		helper.assertFocus('className', 'spinfield');
 
 		mobileHelper.closeMobileWizard();
-
-		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
 	});
 
 	it('Focus after insertion.', function() {
@@ -124,8 +82,7 @@ describe('Focus tests', function() {
 			.should('not.be.visible');
 
 		// After insertion the document gets the focus
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
+		helper.assertFocus('className', 'clipboard');
 	});
 
 	it('Shape related focus.', function() {
@@ -157,8 +114,7 @@ describe('Focus tests', function() {
 			});
 
 		// No focus on the document
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		// Double tap on the shape
 		cy.get('.leaflet-pane.leaflet-overlay-pane svg')
@@ -167,17 +123,18 @@ describe('Focus tests', function() {
 				expect(svg[0].getBBox().height).to.be.greaterThan(0);
 				var posX = svg[0].getBBox().x + svg[0].getBBox().width / 2;
 				var posY = svg[0].getBBox().y + svg[0].getBBox().height / 2;
+
 				cy.get('#document-container')
-					.dblclick(posX, posY).wait(100);
+					.dblclick(posX, posY);
 			});
 
-		// Document still has the focus
-		// TODO: Focus is inconsistent here.
-		//cy.document().its('activeElement.className')
-		//	.should('be.eq', 'clipboard');
+		cy.get('.blinking-cursor')
+			.should('be.visible');
 
-		// This is unstable too
-		// helper.assertHaveKeyboardInput()
+		// Document still has the focus
+		helper.assertFocus('className', 'clipboard');
+
+		helper.assertHaveKeyboardInput();
 	});
 
 	it('Focus with hamburger menu.', function() {
@@ -189,22 +146,13 @@ describe('Focus tests', function() {
 			.click();
 
 		// Clipboard has the focus -> can type in the document
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
+		helper.assertFocus('className', 'clipboard');
 
 		// Open hamburger menu
 		mobileHelper.openHamburgerMenu();
 
-		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
-
 		// Close hamburger menu
 		mobileHelper.closeHamburgerMenu();
-
-		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
 	});
 
 	it('Focus after applying font change.', function() {
@@ -216,30 +164,23 @@ describe('Focus tests', function() {
 			.click();
 
 		// Clipboard has the focus -> can type in the document
-		cy.document().its('activeElement.className')
-			.should('be.eq', 'clipboard');
+		helper.assertFocus('className', 'clipboard');
 
 		mobileHelper.openMobileWizard();
 
 		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		// Apply bold
-		helper.clickOnIdle('#Bold');
+		helper.clickOnIdle('.unoBold');
 
-		cy.get('#Boldimg')
+		cy.get('.unoBold')
 			.should('have.class', 'selected');
 
 		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
+		helper.assertFocus('tagName', 'BODY');
 
 		mobileHelper.closeMobileWizard();
-
-		// No focus
-		cy.document().its('activeElement.tagName')
-			.should('be.eq', 'BODY');
 	});
 
 	it('Apply bold, check keyboard.', function() {

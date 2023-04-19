@@ -1,10 +1,13 @@
 #include <iostream>
 
+#include "config.h"
+
 #include "ClientSession.hpp"
 
 bool DoInitialization()
 {
-    LOOLWSD::ChildRoot = "/fuzz/child-root";
+    COOLWSD::ChildRoot = "/fuzz/child-root";
+    UnitBase::init(UnitBase::UnitType::Wsd, std::string());
     return true;
 }
 
@@ -38,8 +41,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         session->handleMessage(lineVector);
     }
 
+    // The DocumentBroker dtor grows SocketPoll::_newCallbacks.
+    docBroker.reset();
+
     // Make sure SocketPoll::_newCallbacks does not grow forever, leading to OOM.
-    Admin::instance().poll(0);
+    Admin::instance().poll(std::chrono::microseconds(0));
+
+    // Make sure the anon map does not grow forever, leading to OOM.
+    Util::clearAnonymized();
     return 0;
 }
 

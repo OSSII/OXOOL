@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -16,6 +14,8 @@
 #include <set>
 #include <string>
 #include <utility>
+
+#include <Poco/URI.h>
 
 #include <common/Log.hpp>
 #include "Util.hpp"
@@ -136,12 +136,12 @@ class Document
     Document& operator = (const Document &) = delete;
 
 public:
-    Document(std::string docKey, pid_t pid, std::string filename, std::string wopiHost)
+    Document(std::string docKey, pid_t pid, std::string filename, Poco::URI wopiSrc)
         : _docKey(std::move(docKey))
         , _pid(pid)
         , _activeViews(0)
         , _filename(std::move(filename))
-        , _wopiHost(std::move(wopiHost))
+        , _wopiSrc(std::move(wopiSrc))
         , _memoryDirty(0)
         , _lastJiffy(0)
         , _lastCpuPercentage(0)
@@ -173,7 +173,9 @@ public:
 
     std::string getFilename() const { return _filename; }
 
-    std::string getHostName() const { return _wopiHost; }
+    std::string getHostName() const { return _wopiSrc.getHost(); }
+
+    std::string getWopiSrc() const { return _wopiSrc.toString(); }
 
     bool isExpired() const { return _end != 0 && std::time(nullptr) >= _end; }
 
@@ -187,7 +189,7 @@ public:
 
     unsigned getActiveViews() const { return _activeViews; }
 
-    unsigned getLastJiffies() const { return _lastJiffy; }
+    size_t getLastJiffies() const { return _lastJiffy; }
     void setLastJiffies(size_t newJ);
     unsigned getLastCpuPercentage(){ return _lastCpuPercentage; }
 
@@ -238,11 +240,11 @@ private:
     /// Hosted filename
     std::string _filename;
 
-    std::string _wopiHost;
+    Poco::URI _wopiSrc;
     /// The dirty (ie. un-shared) memory of the document's Kit process.
     size_t _memoryDirty;
     /// Last noted Jiffy count
-    unsigned _lastJiffy;
+    size_t _lastJiffy;
     std::chrono::steady_clock::time_point _lastJiffyTime;
     unsigned _lastCpuPercentage;
 
@@ -329,7 +331,7 @@ public:
     std::string query(const std::string& command);
     std::string getAllHistory() const;
 
-    /// Returns memory consumed by all active oxoolkit processes
+    /// Returns memory consumed by all active coolkit processes
     unsigned getKitsMemoryUsage();
     size_t getKitsJiffies();
 
@@ -360,7 +362,7 @@ public:
 
     void addDocument(const std::string& docKey, pid_t pid, const std::string& filename,
                      const std::string& sessionId, const std::string& userName, const std::string& userId,
-                     const int smapsFD, const std::string& URI);
+                     const int smapsFD, const Poco::URI& wopiSrc);
 
     void removeDocument(const std::string& docKey, const std::string& sessionId);
     void removeDocument(const std::string& docKey);
@@ -398,8 +400,6 @@ public:
     static int getAssignedKitPids(std::vector<int> *pids);
     static int getUnassignedKitPids(std::vector<int> *pids);
     static int getKitPidsFromSystem(std::vector<int> *pids);
-
-    std::vector<std::string> getDocumentTokens() const;
 
 private:
     void doRemove(std::map<std::string, std::unique_ptr<Document>>::iterator &docIt);

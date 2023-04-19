@@ -2,35 +2,35 @@
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var impressMobileHelper = require('./impress_mobile_helper');
+var impressHelper = require('../../common/impress_helper');
 
 describe('Apply font on selected text.', function() {
-	var testFileName = 'apply_font_text.odp';
+	var origTestFileName = 'apply_font_text.odp';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'impress');
+		testFileName = helper.beforeAll(origTestFileName, 'impress');
 
 		mobileHelper.enableEditingMobile();
 
-		impressMobileHelper.selectTextShapeInTheCenter();
+		impressHelper.selectTextShapeInTheCenter();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function triggerNewSVG() {
 		mobileHelper.closeMobileWizard();
-		impressMobileHelper.triggerNewSVGForShapeInTheCenter();
+		impressHelper.triggerNewSVGForShapeInTheCenter();
 	}
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply bold on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply bold on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#Bold');
+		helper.clickOnIdle('.unoBold');
 
 		triggerNewSVG();
 
@@ -38,13 +38,12 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'font-weight', '700');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply italic on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply italic on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#Italic');
+		helper.clickOnIdle('.unoItalic');
 
 		triggerNewSVG();
 
@@ -52,13 +51,12 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'font-style', 'italic');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply underline on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply underline on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#Underline');
+		helper.clickOnIdle('.unoUnderline');
 
 		triggerNewSVG();
 
@@ -66,13 +64,12 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'text-decoration', 'underline');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply strikeout on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply strikeout on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#Strikeout');
+		helper.clickOnIdle('.unoStrikeout');
 
 		triggerNewSVG();
 
@@ -80,13 +77,12 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'text-decoration', 'line-through');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply shadowed on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply shadowed on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#Shadowed');
+		helper.clickOnIdle('.unoShadowed');
 
 		triggerNewSVG();
 
@@ -94,20 +90,12 @@ describe('Apply font on selected text.', function() {
 		// TODO: shadowed property is not in the SVG
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Change font name of selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Change font name of selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#fontnamecombobox');
-
-		helper.clickOnIdle('.ui-combobox-text', 'Linux Libertine G');
-
-		helper.clickOnIdle('#mobile-wizard-back');
-
-		cy.get('#fontnamecombobox .ui-header-right .entry-value')
-			.should('have.text', 'Linux Libertine G');
+		mobileHelper.selectListBoxItem('#fontnamecombobox', 'Linux Libertine G');
 
 		triggerNewSVG();
 
@@ -115,23 +103,15 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'font-family', 'Linux Libertine G');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Change font size of selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Change font size of selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
 			.should('have.attr', 'font-size', '635px');
 
-		helper.clickOnIdle('#fontsizecombobox');
-
-		helper.clickOnIdle('.mobile-wizard.ui-combobox-text', '24');
-
-		helper.clickOnIdle('#mobile-wizard-back');
-
-		cy.get('#fontsizecombobox .ui-header-right .entry-value')
-			.should('have.text', '24');
+		mobileHelper.selectListBoxItem('#fontsizecombobox', '24 pt');
 
 		triggerNewSVG();
 
@@ -139,55 +119,17 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'font-size', '847px');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Grow font size of selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
-
-		mobileHelper.openTextPropertiesPanel();
-
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
-			.should('have.attr', 'font-size', '635px');
-
-		helper.clickOnIdle('#Grow');
-
-		triggerNewSVG();
-
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
-			.should('have.attr', 'font-size', '705px');
-	});
-
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Shrink font size of selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
-
-		mobileHelper.openTextPropertiesPanel();
-
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
-			.should('have.attr', 'font-size', '635px');
-
-		helper.clickOnIdle('#Shrink');
-
-		triggerNewSVG();
-
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
-			.should('have.attr', 'font-size', '564px');
-	});
-
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply text color on selected text.', function() {
+	it('Apply text color on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextPosition tspan')
 			.should('have.attr', 'fill', 'rgb(0,0,0)');
 
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
-			.should('not.have.attr', 'font-color');
+		helper.clickOnIdle('#Color .ui-header');
 
-		helper.clickOnIdle('#Color');
-
-		mobileHelper.selectFromColorPalette(0, 5, 2);
+		mobileHelper.selectFromColorPicker('#Color', 5, 2);
 
 		triggerNewSVG();
 
@@ -195,15 +137,14 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'fill', 'rgb(106,168,79)');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply highlight on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply highlight on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
-		helper.clickOnIdle('#CharBackColor');
+		helper.clickOnIdle('#CharBackColor .ui-header');
 
-		mobileHelper.selectFromColorPalette(1, 2, 2);
+		mobileHelper.selectFromColorPicker('#CharBackColor', 2, 2);
 
 		cy.get('#CharBackColor .color-sample-selected')
 			.should('have.attr', 'style', 'background-color: rgb(204, 0, 0);');
@@ -213,7 +154,7 @@ describe('Apply font on selected text.', function() {
 		// TODO: highlight color is not in the SVG
 		// At least check the mobile wizard's state
 		cy.wait(400);
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
@@ -221,9 +162,8 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'style', 'background-color: rgb(204, 0, 0);');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply superscript on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply superscript on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
@@ -232,7 +172,7 @@ describe('Apply font on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
 			.should('have.attr', 'font-size', '635px');
 
-		helper.clickOnIdle('#SuperScript');
+		helper.clickOnIdle('.unoSuperScript');
 
 		triggerNewSVG();
 
@@ -242,9 +182,8 @@ describe('Apply font on selected text.', function() {
 			.should('have.attr', 'font-size', '368px');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Apply subscript on selected text.', function() {
-		impressMobileHelper.selectTextOfShape();
+	it('Apply subscript on selected text.', function() {
+		impressHelper.selectTextOfShape();
 
 		mobileHelper.openTextPropertiesPanel();
 
@@ -253,12 +192,12 @@ describe('Apply font on selected text.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
 			.should('have.attr', 'font-size', '635px');
 
-		helper.clickOnIdle('#SubScript');
+		helper.clickOnIdle('.unoSubScript');
 
 		triggerNewSVG();
 
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextPosition')
-			.should('have.attr', 'y', '3705');
+			.should('have.attr', 'y', '3546');
 		cy.get('.leaflet-pane.leaflet-overlay-pane g.Page .TextParagraph')
 			.should('have.attr', 'font-size', '368px');
 	});

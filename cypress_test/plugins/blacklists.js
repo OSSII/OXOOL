@@ -1,61 +1,3 @@
-var coreBlackLists = {
-	'master': [
-		['mobile/writer/table_properties_spec.js',
-			[]
-		],
-		['mobile/writer/shape_properties_spec.js',
-			[
-				'Change size with keep ratio enabled.',
-				'Change line color',
-				'Change line style',
-				'Change line width',
-				'Change line transparency',
-				'Arrow style items are hidden.'
-			]
-		],
-		['mobile/writer/apply_paragraph_properties_spec.js',
-			[
-				'Apply default bulleting.',
-				'Apply default numbering.',
-				'Apply background color.'
-			]
-		],
-		['mobile/writer/insert_object_spec.js',
-			[
-				'Insert default table.',
-				'Insert custom table.'
-			]
-		],
-		['mobile/writer/apply_font_spec.js',
-			[
-				'Insert default table.',
-				'Insert custom table.'
-			]
-		],
-		['mobile/calc/number_format_spec.js',
-			[
-				'Select percent format from list.',
-				'Push percent button.',
-				'Select currency format from list.',
-				'Push currency button.',
-				'Push number button.'
-			]
-		],
-	],
-
-	'cp-6-4': [
-	],
-
-	'cp-6-2': [
-		['mobile/impress/apply_font_spec.js',
-			[]
-		],
-		['mobile/impress/apply_paragraph_props_spec.js',
-			[]
-		],
-	]
-};
-
 var nextcloudBlackList = [
 	['mobile/writer/focus_spec.js', []],
 	['mobile/calc/focus_spec.js', []],
@@ -64,18 +6,51 @@ var nextcloudBlackList = [
 	['desktop/calc/focus_spec.js', []],
 	['mobile/calc/hamburger_menu_spec.js',
 		[
-			'Print'
+			'Print',
+			'Save'
 		]
 	],
 	['mobile/writer/hamburger_menu_spec.js',
 		[
-			'Print'
+			'Print',
+			'Save',
+			'Automatic spell checking.'
 		]
+	],
+	['mobile/writer/spellchecking_spec.js',
+		[]
 	],
 	['mobile/impress/hamburger_menu_spec.js',
 		[
+			'Print',
+			'Save'
+		]
+	],
+	['mobile/writer/annotation_spec.js',
+		[
+			'Saving comment.'
+		]
+	],
+	['mobile/impress/annotation_spec.js',
+		[
+			'Saving comment.'
+		]
+	],
+	['desktop/writer/top_toolbar_spec.js',
+		[
+			'Insert image.',
+			'Save.',
 			'Print'
 		]
+	],
+	['desktop/calc/top_toolbar_spec.js',
+		[
+			'Save.',
+			'Print'
+		]
+	],
+	['desktop/calc/macro_spec.js',
+		[]
 	],
 	['multiuser/calc/sheet_operations_user1_spec.js',
 		[]
@@ -105,6 +80,12 @@ var nextcloudBlackList = [
 		[]
 	],
 	['multiuser/writer/simultaneous_typing_user2_spec.js',
+		[]
+	],
+	['multiuser/writer/top_toolbar_interfer_user1_spec.js',
+		[]
+	],
+	['multiuser/writer/top_toolbar_interfer_user2_spec.js',
 		[]
 	],
 ];
@@ -125,11 +106,52 @@ var phpProxyBlackList = [
 			'Insert local image.'
 		]
 	],
-	['mobile/writer/table_properties_spec.js',
+	['mobile/calc/hamburger_menu_spec.js',
+		[
+			'Save'
+		]
+	],
+	['mobile/calc/focus_spec.js',
+		[
+			'Formula-bar focus'
+		]
+	],
+	['mobile/calc/formulabar_spec.js',
 		[]
+	],
+	['mobile/writer/hamburger_menu_spec.js',
+		[
+			'Save'
+		]
+	],
+	['mobile/impress/hamburger_menu_spec.js',
+		[
+			'Save'
+		]
+	],
+	['mobile/writer/annotation_spec.js',
+		[
+			'Saving comment.'
+		]
+	],
+	['mobile/impress/annotation_spec.js',
+		[
+			'Saving comment.'
+		]
 	],
 	['desktop/calc/focus_spec.js',
 		[]
+	],
+	['desktop/writer/top_toolbar_spec.js',
+		[
+			'Insert image.',
+			'Save.'
+		]
+	],
+	['desktop/calc/top_toolbar_spec.js',
+		[
+			'Save.'
+		]
 	],
 	['multiuser/calc/sheet_operations_user1_spec.js',
 		[]
@@ -161,6 +183,12 @@ var phpProxyBlackList = [
 	['multiuser/writer/simultaneous_typing_user2_spec.js',
 		[]
 	],
+	['multiuser/writer/top_toolbar_interfer_user1_spec.js',
+		[]
+	],
+	['multiuser/writer/top_toolbar_interfer_user2_spec.js',
+		[]
+	],
 ];
 
 var nextcloudOnlyList = [
@@ -169,7 +197,27 @@ var nextcloudOnlyList = [
 	['mobile/impress/nextcloud_spec.js', []],
 ];
 
-module.exports.coreBlackLists = coreBlackLists;
+var updateScreenshotList = [
+	['desktop/writer/help_dialog_update_spec.js', []],
+	['desktop/calc/help_dialog_update_spec.js', []],
+];
+
+var notebookbarOnlyList = [
+	'desktop/writer/top_toolbar_spec.js',
+	'desktop/calc/cell_appearance_spec.js',
+	'desktop/writer/table_operation_spec.js',
+	'desktop/impress/table_operation_spec.js',
+	'desktop/writer/annotation_spec.js',
+	'desktop/calc/annotation_spec.js',
+	'desktop/impress/annotation_spec.js',
+	'desktop/calc/row_column_operation_spec.js',
+	'desktop/impress/image_operation_spec.js',
+	'desktop/calc/image_operation_spec.js',
+	'desktop/writer/image_operation_spec.js',
+];
+
 module.exports.nextcloudBlackList = nextcloudBlackList;
 module.exports.nextcloudOnlyList = nextcloudOnlyList;
 module.exports.phpProxyBlackList = phpProxyBlackList;
+module.exports.updateScreenshotList = updateScreenshotList;
+module.exports.notebookbarOnlyList = notebookbarOnlyList;

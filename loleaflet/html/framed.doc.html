@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<!-- Proof of concept of running loleaflet.html in an iframe. Also
+<!-- Proof of concept of running cool.html in an iframe. Also
      shows how to, from outside the iframe, invoke Python scripting in
      the underlying LibreOffice instance that manipulates the document
      being edited.
@@ -30,6 +30,30 @@
         window.frames[0].postMessage(JSON.stringify(msg), '*');
       }
 
+      function sendBoldUNOCommand() {
+        post({'MessageId': 'Send_UNO_Command',
+              'Values': { 'Command': '.uno:Bold' }
+            });
+      }
+
+      function sendInsertBookMarkUNOCommand() {
+        post({'MessageId': 'Send_UNO_Command',
+              'Values': {
+                'Command': '.uno:InsertBookmark',
+                'Args': {
+                  Bookmark: {
+                    type: 'string',
+                    value: 'Test Insert BookMark'
+                  },
+                  BookmarkText: {
+                    type: 'string',
+                    value: 'Text of the Test Insert BookMark'
+                  }
+                }
+              }
+            });
+      }
+
       function insertText(text) {
         post({'MessageId': 'CallPythonScript',
               'SendTime': Date.now(),
@@ -57,6 +81,12 @@
       function closeDocument() {
         post({'MessageId': 'Action_Close',
               'Values': null
+            });
+      }
+
+      function exportAsHtml() {
+        post({'MessageId': 'Action_Export',
+              'Values': { 'Format': 'html', }
             });
       }
 
@@ -140,6 +170,101 @@
               document.getElementById("ModifiedStatus").innerHTML = "Error during save";
             }
           }
+        } else if (msg.MessageId === 'UI_Mention') {
+          var dummyUserDatabase = [ {
+                                      username:'Abigail', 
+                                      profile: 'Abigail profile link'
+                                    }, 
+                                    {
+                                      username: 'Alexandra',
+                                      profile: 'Alexandra profile link'
+                                    },
+                                    {
+                                      username: 'Alison',
+                                      profile: 'Alison profile link'
+                                    },
+                                    {
+                                      username: 'Amanda',
+                                      profile: 'Amanda profile link'
+                                    },
+                                    {
+                                      username: 'Amelia',
+                                      profile: 'Amelia profile link'
+                                    },
+                                    {
+                                      username: 'Amy',
+                                      profile: 'Amy profile link'
+                                    },
+                                    {
+                                      username: 'Andrea',
+                                      profile: 'Andrea profile link'
+                                    },
+                                    {
+                                      username: 'Angela',
+                                      profile: 'Angela profile link'
+                                    },
+                                    {
+                                      username: 'Anna',
+                                      profile: 'Anna profile link'
+                                    },
+                                    {
+                                      username: 'Anne',
+                                      profile: 'Anne profile link'
+                                    },
+                                    {
+                                      username: 'Audrey',
+                                      profile: 'Audrey profile link'
+                                    },
+                                    {
+                                      username: 'Ava',
+                                      profile: 'Ava profile link'
+                                    },
+                                    {
+                                      username: 'Bella',
+                                      profile: 'Bella profile link'
+                                    },
+                                    {
+                                      username: 'Bernadette',
+                                      profile: 'Bernadette profile link'
+                                    },
+                                    {
+                                      username: 'Carol',
+                                      profile: 'Carol profile link'
+                                    },
+                                    {
+                                      username: 'Caroline',
+                                      profile: 'Caroline profile link'
+                                    },
+                                    {
+                                      username: 'Carolyn',
+                                      profile: 'Carolyn profile link'
+                                    },
+                                    {
+                                      username: 'xyz abc',
+                                      profile: 'xyz abc profile link'
+                                    } ]; 
+          if (msg.Values) {
+            var type = msg.Values.type;
+            var text = msg.Values.text;
+
+            var users = [];
+            dummyUserDatabase.forEach(element => {
+              if (element.username.includes(text))
+                users.push(element);
+            });      
+            
+            if (type === 'autocomplete')
+            {
+              setTimeout(post, 0,
+                {
+                  'MessageId': 'Action_Mention',
+                  'SendTime': Date.now(),
+                  'Values': {
+                    'list': users,
+                  }
+                });
+            }
+          }
         }
       }
 
@@ -163,7 +288,7 @@
 
       <h4>Example</h4>
       <p>
-        http://localhost:9980/loleaflet/dist/framed.doc.html?file_path=file:///path/to/document/hello-world.odt
+        http://localhost:9980/browser/dist/framed.doc.html?file_path=file:///path/to/document/hello-world.odt
       </p>
     </div>
 
@@ -185,6 +310,7 @@
     <form>
       <button onclick="save(); return false;">Save</button>
       <button onclick="closeDocument(); return false;">Close</button></br></br>
+      <button onclick="exportAsHtml(); return false;">Export as HTML</button></br></br>
       <button onclick="hide_commands('save'); return false;">Hide Save Commands</button>
       <button onclick="show_commands('save'); return false;">Show Save Commands</button></br>
       <button onclick="hide_commands('print'); return false;">Hide Print Commands</button>
@@ -208,9 +334,15 @@
       <button onclick="ShowNotebookbar(true); return false;">Tabbed Toolbar</button>
     </form>
 
+    <h3>Send UNO Commands</h3>
+    <form id="menubar-toggle">
+      <button onclick="sendBoldUNOCommand(); return false;">Send Bold UNO Command (and example without args)</button>
+      <button onclick="sendInsertBookMarkUNOCommand(); return false;">Send InsertBookmark UNO Command (an example with args)</button>
+    </form>
+
     <h3>Document frame</h3>
     <h4>If the frame fails to load click <a id="link">here and accept security bits</a></h4>
-    <h4>If the frame still fails to load ensure you have <code>localhost:*</code> included in your <code>net.frame_ancestors</code> in oxoolwsd.xml</h4>
+    <h4>If the frame still fails to load ensure you have <code>localhost:*</code> included in your <code>net.frame_ancestors</code> in coolwsd.xml</h4>
     <iframe id="frame" height="1000" width="1000"></iframe>
 
     <script>
@@ -224,7 +356,7 @@
         query = window.location.search + '&';
       query += 'NotWOPIButIframe=true';
 
-      var path = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'loleaflet.html';
+      var path = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'cool.html';
       var uriBase = window.location.protocol + '//' + window.location.host + path + query;
       var iframe = document.getElementById("frame");
       iframe.src = uriBase;

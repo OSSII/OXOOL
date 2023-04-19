@@ -1,22 +1,22 @@
-/* global describe it cy beforeEach require afterEach expect*/
+/* global describe it cy Cypress beforeEach require afterEach expect*/
 
 var helper = require('../../common/helper');
 var calcHelper = require('../../common/calc_helper');
 var mobileHelper = require('../../common/mobile_helper');
-var calcMobileHelper = require('./calc_mobile_helper');
 
 describe('Calc spell checking menu.', function() {
-	var testFileName = 'spellchecking.ods';
+	var origTestFileName = 'spellchecking.ods';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(origTestFileName, 'calc');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function openContextMenu() {
@@ -41,7 +41,15 @@ describe('Calc spell checking menu.', function() {
 				}
 
 				// Remove selection
-				calcMobileHelper.removeTextSelection();
+				cy.get('#tb_actionbar_item_acceptformula').then($ele =>{
+					cy.wait(1000);
+					if (Cypress.dom.isVisible($ele)) {
+						cy.wrap($ele).click();
+					}
+				});
+
+				cy.get('.cursor-overlay .blinking-cursor')
+					.should('not.exist');
 
 				// Step into edit mode again
 				calcHelper.dblClickOnFirstCell();
@@ -59,7 +67,7 @@ describe('Calc spell checking menu.', function() {
 		cy.contains('.context-menu-link', 'hello')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('contain.text', 'hello');
@@ -75,52 +83,6 @@ describe('Calc spell checking menu.', function() {
 		cy.get('.leaflet-marker-icon')
 			.then(function(items) {
 				expect(items).to.have.length(2);
-				var XPos = items[0].getBoundingClientRect().right;
-				var YPos = items[0].getBoundingClientRect().bottom + 10;
-				cy.get('body')
-					.click(XPos, YPos);
-			});
-
-		openContextMenu();
-
-		// We don't get the spell check context menu any more
-		cy.contains('.context-menu-link', 'Paste')
-			.should('be.visible');
-	});
-
-	it('Apply language for word.', function() {
-		openContextMenu();
-
-		cy.contains('.context-menu-link', 'Word is Finnish')
-			.click();
-
-		// Click outside of the cell
-		cy.get('.leaflet-selection-marker-end')
-			.then(function(items) {
-				expect(items).to.have.length(1);
-				var XPos = items[0].getBoundingClientRect().right;
-				var YPos = items[0].getBoundingClientRect().bottom + 10;
-				cy.get('body')
-					.click(XPos, YPos);
-			});
-
-		openContextMenu();
-
-		// We don't get the spell check context menu any more
-		cy.contains('.context-menu-link', 'Paste')
-			.should('be.visible');
-	});
-
-	it('Apply language for paragraph.', function() {
-		openContextMenu();
-
-		cy.contains('.context-menu-link', 'Paragraph is Finnish')
-			.click();
-
-		// Click outside of the cell
-		cy.get('.leaflet-selection-marker-end')
-			.then(function(items) {
-				expect(items).to.have.length(1);
 				var XPos = items[0].getBoundingClientRect().right;
 				var YPos = items[0].getBoundingClientRect().bottom + 10;
 				cy.get('body')

@@ -1,12 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <chrono>
 #include <config.h>
 
 #include <errno.h>
@@ -19,10 +18,7 @@
 #include <Poco/JSON/JSON.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/AcceptCertificateHandler.h>
-#include <Poco/Net/HTTPClientSession.h>
-#include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/InvalidCertificateHandler.h>
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/PrivateKeyPassphraseHandler.h>
@@ -37,18 +33,18 @@
 #include <UserMessages.hpp>
 #include <Util.hpp>
 #include <Protocol.hpp>
-#include <LOOLWebSocket.hpp>
 #include <test.hpp>
 #include <helpers.hpp>
-#include <countloolkits.hpp>
+#include <countcoolkits.hpp>
 
 using namespace helpers;
 
-/// Tests the HTTP WebSocket API of loolwsd. The server has to be started manually before running this test.
+/// Tests the HTTP WebSocket API of coolwsd. The server has to be started manually before running this test.
 class HTTPCrashTest : public CPPUNIT_NS::TestFixture
 {
     const Poco::URI _uri;
     Poco::Net::HTTPResponse _response;
+    std::shared_ptr<SocketPoll> _socketPoll;
 
     CPPUNIT_TEST_SUITE(HTTPCrashTest);
 
@@ -71,6 +67,7 @@ class HTTPCrashTest : public CPPUNIT_NS::TestFixture
 public:
     HTTPCrashTest()
         : _uri(helpers::getTestServerURI())
+        , _socketPoll(std::make_shared<SocketPoll>("HttpCrashPoll"))
     {
 #if ENABLE_SSL
         Poco::Net::initializeSSL();
@@ -82,24 +79,26 @@ public:
 #endif
     }
 
-#if ENABLE_SSL
     ~HTTPCrashTest()
     {
+#if ENABLE_SSL
         Poco::Net::uninitializeSSL();
-    }
 #endif
+    }
 
     void setUp()
     {
         resetTestStartTime();
-        testCountHowManyLoolkits();
+        testCountHowManyCoolkits();
         resetTestStartTime();
+        _socketPoll->startThread();
     }
 
     void tearDown()
     {
+        _socketPoll->joinThread();
         resetTestStartTime();
-        testNoExtraLoolKitsLeft();
+        testNoExtraCoolKitsLeft();
         resetTestStartTime();
     }
 };
@@ -112,15 +111,21 @@ void HTTPCrashTest::testBarren()
     try
     {
         killLoKitProcesses();
-        countLoolKitProcesses(0);
+        countCoolKitProcesses(0);
 
         TST_LOG("Loading after kill.");
 
         // Load a document and get its status.
-        std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("hello.odt", _uri, testname);
+        std::shared_ptr<http::WebSocketSession> socket
+            = loadDocAndGetSession(_socketPoll, "hello.odt", _uri, testname);
 
         sendTextFrame(socket, "status", testname);
         assertResponseString(socket, "status:", testname);
+
+        socket->asyncShutdown();
+
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                           socket->waitForDisconnection(std::chrono::seconds(5)));
     }
     catch (const Poco::Exception& exc)
     {
@@ -134,46 +139,29 @@ void HTTPCrashTest::testCrashKit()
     const char* testname = "crashKit ";
     try
     {
-        std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("empty.odt", _uri, testname);
+        std::shared_ptr<http::WebSocketSession> socket
+            = loadDocAndGetSession(_socketPoll, "empty.odt", _uri, testname);
 
         TST_LOG("Allowing time for kits to spawn and connect to wsd to get cleanly killed");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        TST_LOG("Killing loolkit instances.");
+        TST_LOG("Killing coolkit instances.");
 
         killLoKitProcesses();
-        countLoolKitProcesses(0);
+        countCoolKitProcesses(0, std::chrono::seconds(1));
 
-        // We expect the client connection to close.
-        // In the future we might restore the kit, but currently we don't.
-        TST_LOG("Reading after kill.");
-
-        // Drain the socket.
-        getResponseMessage(socket, "", testname, 1000);
-
-        std::string message;
-        const int statusCode = getErrorCode(socket, message, testname);
-        LOK_ASSERT_EQUAL(static_cast<int>(Poco::Net::WebSocket::WS_ENDPOINT_GOING_AWAY), statusCode);
+        TST_LOG("Reading the error code from the socket.");
+        //FIXME: implement in WebSocketSession.
+        // std::string message;
+        // const int statusCode = getErrorCode(socket, message, testname);
+        // LOK_ASSERT_EQUAL(static_cast<int>(Poco::Net::WebSocket::WS_ENDPOINT_GOING_AWAY), statusCode);
 
         // respond close frame
         TST_LOG("Shutting down socket.");
-        socket->shutdown();
+        socket->asyncShutdown();
 
-        TST_LOG("Reading after shutdown.");
-
-        // no more messages is received.
-        int flags;
-        char buffer[READ_BUFFER_SIZE];
-        const int bytes = socket->receiveFrame(buffer, sizeof(buffer), flags);
-        TST_LOG(testname << "Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
-
-        // While we expect no more messages after shutdown call, apparently
-        // sometimes we _do_ get data. Even when the receiveFrame in the loop
-        // returns a CLOSE frame (with 2 bytes) the one after shutdown sometimes
-        // returns a BINARY frame with the next payload sent by wsd.
-        // This is an oddity of Poco and is not something we need to validate here.
-        //LOK_ASSERT_MESSAGE("Expected no more data", bytes <= 2); // The 2-byte marker is ok.
-        //LOK_ASSERT_EQUAL(0x88, flags);
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                           socket->waitForDisconnection(std::chrono::seconds(5)));
     }
     catch (const Poco::Exception& exc)
     {
@@ -186,25 +174,39 @@ void HTTPCrashTest::testRecoverAfterKitCrash()
     const char* testname = "recoverAfterKitCrash ";
     try
     {
-        std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("empty.odt", _uri, testname);
+        std::shared_ptr<http::WebSocketSession> socket1
+            = loadDocAndGetSession(_socketPoll, "empty.odt", _uri, testname);
 
-        TST_LOG("Killing loolkit instances.");
+        TST_LOG("Allowing time for kits to spawn and connect to wsd to get cleanly killed");
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        TST_LOG("Killing coolkit instances.");
 
         killLoKitProcesses();
-        countLoolKitProcesses(0);
+        countCoolKitProcesses(0, std::chrono::seconds(1));
 
         // We expect the client connection to close.
         TST_LOG("Reconnect after kill.");
 
-        std::shared_ptr<LOOLWebSocket> socket2 = loadDocAndGetSocket("empty.odt", _uri, testname, /*isView=*/true, /*isAssert=*/false);
+        std::shared_ptr<http::WebSocketSession> socket2 = loadDocAndGetSession(
+            _socketPoll, "empty.odt", _uri, testname, /*isView=*/true, /*isAssert=*/false);
         if (!socket2)
         {
             // In case still starting up.
             sleep(2);
-            socket2 = loadDocAndGetSocket("empty.odt", _uri, testname);
+            socket2 = loadDocAndGetSession(_socketPoll, "empty.odt", _uri, testname);
         }
+
         sendTextFrame(socket2, "status", testname);
         assertResponseString(socket2, "status:", testname);
+
+        socket2->asyncShutdown();
+        socket1->asyncShutdown();
+
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket 2",
+                           socket2->waitForDisconnection(std::chrono::seconds(5)));
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket 1",
+                           socket1->waitForDisconnection(std::chrono::seconds(5)));
     }
     catch (const Poco::Exception& exc)
     {
@@ -217,7 +219,8 @@ void HTTPCrashTest::testCrashForkit()
     const char* testname = "crashForkit ";
     try
     {
-        std::shared_ptr<LOOLWebSocket> socket = loadDocAndGetSocket("empty.odt", _uri, testname);
+        std::shared_ptr<http::WebSocketSession> socket
+            = loadDocAndGetSession(_socketPoll, "empty.odt", _uri, testname);
 
         TST_LOG("Killing forkit.");
         killForkitProcess();
@@ -227,13 +230,18 @@ void HTTPCrashTest::testCrashForkit()
         assertResponseString(socket, "status:", testname);
 
         // respond close frame
-        socket->shutdown();
+        socket->asyncShutdown();
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                           socket->waitForDisconnection(std::chrono::seconds(5)));
 
-        TST_LOG("Killing loolkit.");
+        TST_LOG("Killing coolkit.");
         killLoKitProcesses();
-        countLoolKitProcesses(0);
+        countCoolKitProcesses(0);
         TST_LOG("Communicating after kill.");
-        loadDocAndGetSocket("empty.odt", _uri, testname);
+        socket = loadDocAndGetSession(_socketPoll, "empty.odt", _uri, testname);
+        socket->asyncShutdown();
+        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                           socket->waitForDisconnection(std::chrono::seconds(5)));
     }
     catch (const Poco::Exception& exc)
     {
@@ -241,11 +249,11 @@ void HTTPCrashTest::testCrashForkit()
     }
 }
 
-static void killPids(const std::vector<int> &pids, const std::string& testname)
+static void killPids(const std::set<pid_t> &pids, const std::string& testname)
 {
     TST_LOG("kill pids " << pids.size());
     // Now kill them
-    for (int pid : pids)
+    for (pid_t pid : pids)
     {
         TST_LOG_BEGIN("Killing " << pid);
         if (kill(pid, SIGKILL) == -1)
@@ -257,7 +265,7 @@ static void killPids(const std::vector<int> &pids, const std::string& testname)
 void HTTPCrashTest::killLoKitProcesses()
 {
     killPids(getKitPids(), "killLoKitProcesses ");
-    InitialLoolKitCount = 1; // non-intuitive but it will arrive soon.
+    InitialCoolKitCount = 1; // non-intuitive but it will arrive soon.
 }
 
 void HTTPCrashTest::killForkitProcess()

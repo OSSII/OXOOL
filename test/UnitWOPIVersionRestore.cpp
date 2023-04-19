@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,9 +12,9 @@
 #include "Unit.hpp"
 #include "UnitHTTP.hpp"
 #include "helpers.hpp"
+#include "lokassert.hpp"
 
 #include <Poco/Net/HTTPRequest.h>
-#include <Poco/Timestamp.h>
 #include <Poco/Util/LayeredConfiguration.h>
 
 
@@ -28,85 +26,85 @@
  */
 class UnitWOPIVersionRestore : public WopiTestServer
 {
-    enum class Phase
-    {
-        Load,
-        Modify,
-        VersionRestoreRequest,
-        VersionRestoreAck,
-        Polling
-    } _phase;
+    STATE_ENUM(Phase, Load, WaitLoadStatus, WaitPutFile) _phase;
 
     bool _isDocumentSaved = false;
 
 public:
-    UnitWOPIVersionRestore() :
-        _phase(Phase::Load)
+    UnitWOPIVersionRestore()
+        : WopiTestServer("UnitWOPIVersionRestore")
+        , _phase(Phase::Load)
+        , _isDocumentSaved(false)
     {
     }
 
-    void assertPutFileRequest(const Poco::Net::HTTPRequest& /*request*/) override
+    std::unique_ptr<http::Response>
+    assertPutFileRequest(const Poco::Net::HTTPRequest& /*request*/) override
     {
-        if (_phase == Phase::Polling)
-        {
-            _isDocumentSaved = true;
-        }
+        LOK_ASSERT_STATE(_phase, Phase::WaitPutFile);
+
+        LOG_TST("Document uploaded.");
+        _isDocumentSaved = true;
+
+        return nullptr;
     }
 
-    bool filterSendMessage(const char* data, const size_t len, const WSOpCode /* code */, const bool /* flush */, int& /*unitReturn*/) override
+    bool onDocumentLoaded(const std::string& message) override
+    {
+        LOG_TST("Got [" << message << ']');
+        LOK_ASSERT_STATE(_phase, Phase::WaitLoadStatus);
+
+        TRANSITION_STATE(_phase, Phase::WaitPutFile);
+
+        // Modify the document.
+        WSD_CMD("key type=input char=97 key=0");
+        WSD_CMD("key type=up char=0 key=512");
+
+        // tell wsd that we are about to restore
+        WSD_CMD("versionrestore prerestore");
+
+        return true;
+    }
+
+    bool onFilterSendWebSocketMessage(const char* data, const size_t len, const WSOpCode /* code */,
+                                      const bool /* flush */, int& /*unitReturn*/) override
     {
         std::string message(data, len);
         if (message == "close: versionrestore: prerestore_ack")
         {
-            _phase = Phase::VersionRestoreAck;
+            LOK_ASSERT_STATE(_phase, Phase::WaitPutFile);
+            LOK_ASSERT_MESSAGE("Must have already saved the file", _isDocumentSaved);
+
+            if (_isDocumentSaved)
+                passTest("Document saved on version restore as expected.");
+            else
+                failTest("Document failed to save on version restore.");
         }
 
         return false;
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
-        constexpr char testName[] = "UnitWOPIVersionRestore";
-
-        LOG_TRC("invokeTest " << (int)_phase);
         switch (_phase)
         {
             case Phase::Load:
             {
+                TRANSITION_STATE(_phase, Phase::WaitLoadStatus);
+
+                LOG_TST("Load: initWebsocket.");
                 initWebsocket("/wopi/files/0?access_token=anything");
 
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
-
-                _phase = Phase::Modify;
+                WSD_CMD("load url=" + getWopiSrc());
                 break;
             }
-            case Phase::Modify:
+            case Phase::WaitLoadStatus:
             {
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "key type=input char=97 key=0", testName);
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "key type=up char=0 key=512", testName);
-
-                _phase = Phase::VersionRestoreRequest;
-                SocketPoll::wakeupWorld();
-                break;
+                break; // Nothing to do.
             }
-	        case Phase::VersionRestoreRequest:
+            case Phase::WaitPutFile:
             {
-                // tell wsd that we are about to restore
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "versionrestore prerestore", testName);
-                _phase = Phase::Polling;
-                break;
-            }
-	        case Phase::VersionRestoreAck:
-            {
-                if (_isDocumentSaved)
-                    exitTest(TestResult::Ok);
-
-                break;
-            }
-            case Phase::Polling:
-            {
-                // just wait for the results
-                break;
+                break; // Nothing to do.
             }
         }
     }

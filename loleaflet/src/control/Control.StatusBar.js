@@ -3,10 +3,8 @@
  * L.Control.StatusBar
  */
 
-/* global $ w2ui _ _UNO */
+/* global $ app w2ui _ _UNO */
 L.Control.StatusBar = L.Control.extend({
-
-	_bar: null, // 紀錄自己的 toolbar
 
 	initialize: function () {
 	},
@@ -14,7 +12,9 @@ L.Control.StatusBar = L.Control.extend({
 	onAdd: function (map) {
 		this.map = map;
 		map.on('doclayerinit', this.onDocLayerInit, this);
-		map.on('commandvalues', this.onCommandValues, this);
+		map.on('languagesupdated', this.onLanguagesUpdated, this);
+		map.on('commandstatechanged', this.onCommandStateChanged, this);
+		map.on('contextchange', this.onContextChange, this);
 		map.on('updatepermission', this.onPermissionChanged, this);
 		this.create();
 
@@ -26,15 +26,6 @@ L.Control.StatusBar = L.Control.extend({
 		});
 	},
 
-	onRemove: function() {
-		// 移除 toolbar item state change 註冊
-		this.map.setupStateChangesForToolbar({toolbar: this._bar, remove: true});
-
-		this.map.off('doclayerinit', this.onDocLayerInit, this);
-		this.map.off('commandvalues', this.onCommandValues, this);
-		this.map.off('updatepermission', this.onPermissionChanged, this);
-	},
-
 	hideTooltip: function(toolbar, id) {
 		if (toolbar.touchStarted) {
 			setTimeout(function() {
@@ -42,6 +33,58 @@ L.Control.StatusBar = L.Control.extend({
 			}, 5000);
 			toolbar.touchStarted = false;
 		}
+	},
+
+	updateToolbarItem: function(toolbar, id, html) {
+		var item = toolbar.get(id);
+		if (item) {
+			item.html = html;
+		}
+	},
+
+	localizeStateTableCell: function(text) {
+		var stateArray = text.split(';');
+		var stateArrayLength = stateArray.length;
+		var localizedText = '';
+		for (var i = 0; i < stateArrayLength; i++) {
+			var labelValuePair = stateArray[i].split(':');
+			localizedText += _(labelValuePair[0].trim()) + ':' + labelValuePair[1];
+			if (stateArrayLength > 1 && i < stateArrayLength - 1) {
+				localizedText += '; ';
+			}
+		}
+		return localizedText;
+	},
+
+	toLocalePattern: function(pattern, regex, text, sub1, sub2) {
+		var matches = new RegExp(regex, 'g').exec(text);
+		if (matches) {
+			text = pattern.toLocaleString().replace(sub1, parseInt(matches[1].replace(/,/g,'')).toLocaleString(String.locale)).replace(sub2, parseInt(matches[2].replace(/,/g,'')).toLocaleString(String.locale));
+		}
+		return text;
+	},
+
+	_updateToolbarsVisibility: function(context) {
+		var isReadOnly = this.map.isReadOnlyMode();
+		var statusbar = w2ui['actionbar'];
+		if (isReadOnly) {
+			statusbar.disable('LanguageStatus');
+			statusbar.hide('InsertMode');
+			statusbar.hide('break6');
+			statusbar.hide('StatusSelectionMode');
+			statusbar.hide('break7');
+		} else {
+			statusbar.enable('LanguageStatus');
+			statusbar.show('InsertMode');
+			statusbar.show('break6');
+			statusbar.show('StatusSelectionMode');
+			statusbar.show('break7');
+		}
+		window.updateVisibilityForToolbar(statusbar, context);
+	},
+
+	onContextChange: function(event) {
+		this._updateToolbarsVisibility(event.context);
 	},
 
 	onClick: function(e, id, item, subItem) {
@@ -62,7 +105,12 @@ L.Control.StatusBar = L.Control.extend({
 		var docLayer = this.map._docLayer;
 
 		if (item.uno) {
-			this._map.executeAllowedCommand(item.uno);
+			if (item.unosheet && this.map.getDocType() === 'spreadsheet') {
+				this.map.toggleCommandState(item.unosheet);
+			}
+			else {
+				this.map.toggleCommandState(window.getUNOCommand(item.uno));
+			}
 		}
 		else if (id === 'zoomin' && this.map.getZoom() < this.map.getMaxZoom()) {
 			this.map.zoomIn(1, null, true /* animate? */);
@@ -74,7 +122,7 @@ L.Control.StatusBar = L.Control.extend({
 			this.map.setZoom(item.scale, null, true /* animate? */);
 		}
 		else if (id === 'zoomreset') {
-			this.map.setZoom(this.map.options.zoom, null, true);
+			this.map.setZoom(this.map.options.zoom);
 		}
 		else if (id === 'prev' || id === 'next') {
 			if (docLayer._docType === 'text') {
@@ -93,9 +141,9 @@ L.Control.StatusBar = L.Control.extend({
 		else if (id === 'cancelsearch') {
 			this._cancelSearch();
 		}
-		else if (id.startsWith('StatusBarFunc') && subItem) {
+		else if (id.startsWith('StateTableCellMenu') && subItem) {
 			e.done(function () {
-				var menu = w2ui['actionbar'].get('StatusBarFunc');
+				var menu = w2ui['actionbar'].get('StateTableCellMenu');
 				if (subItem.id === '1') { // 'None' was clicked, remove all other options
 					menu.selected = ['1'];
 				}
@@ -124,18 +172,21 @@ L.Control.StatusBar = L.Control.extend({
 		else if (id === 'signstatus') {
 			this.map.sendUnoCommand('.uno:Signature');
 		}
+		else if (subItem && subItem.id === 'morelanguages') {
+			this.map.fire('morelanguages', { applyto: 'all' });
+		}
 	},
 
 	create: function() {
 		var toolbar = $('#toolbar-down');
 		var that = this;
 
-		{
-			this._bar = toolbar.w2toolbar({
+		if (!window.mode.isMobile()) {
+			toolbar.w2toolbar({
 				name: 'actionbar',
 				items: [
 					{type: 'html',  id: 'search',
-						html: '<div class="oxool-font">' +
+						html: '<div class="cool-font">' +
 					'<label for="search-input" class="visuallyhidden" aria-hidden="false">Search:</label>' +
 					'<input size="15" id="search-input" placeholder="' + _('Search') + '"' +
 					'style="padding: 3px; border-radius: var(--border-radius); border: 1px solid var(--color-border)"/>' +
@@ -182,15 +233,10 @@ L.Control.StatusBar = L.Control.extend({
 				]),
 				onClick: function (e) {
 					that.hideTooltip(this, e.target);
-					// 被點擊的選項
-					var clickedItem = (e.subItem ? e.subItem : e.item);
-					// item 沒有自己的 onClick 事件，才執行系統的 onClick 事件
-					if (typeof(clickedItem.onClick) !== 'function') {
-						that.onClick(e, e.target, e.item, e.subItem);
-					}
+					that.onClick(e, e.target, e.item, e.subItem);
 				},
 				onRefresh: function() {
-					$('#tb_actionbar_item_userlist .w2ui-tb-caption').addClass('oxool-font');
+					$('#tb_actionbar_item_userlist .w2ui-tb-caption').addClass('cool-font');
 					window.setupSearchInput();
 				}
 			});
@@ -234,120 +280,48 @@ L.Control.StatusBar = L.Control.extend({
 	},
 
 	onDocLayerInit: function () {
-		var map = this.map;
-		var statusbar = this._bar;
+		var statusbar = w2ui['actionbar'];
 		var docType = this.map.getDocType();
-		var isReadOnly = !map.isEditMode();
-
-		var languageStatus = function(e) {
-			var id = 'LanguageStatus';
-			var item = statusbar.get(id);
-			item.disabled = e.disabled();
-			item.checked = e.checked();
-			if (e.hasValue()) {
-				var code = e.value();
-				var language = _(code);
-				var split = code.split(';');
-				if (split.length > 1) {
-					language = _(split[0]);
-					code = split[1];
-				}
-				item.text = language;
-				item.selected = language;
-			}
-			statusbar.refresh(id);
-		};
-
-		var insertMode = function(e) {
-			var state = (e.state === 'true' || e.state === 'false') ? e.state : '';
-			var mode = e.checked() ? _('Insert') : _('Overwrite');
-			this.html = '<div id="InsertMode" class="oxool-font insert-mode-' + state + '" title="' + _('Entering text mode') + '" style="padding: 5px 5px;">' + mode + '</div>';
-			statusbar.refresh(this.id);
-
-			if (state === '') {return;}
-
-			if (!e.checked() && map.hyperlinkPopup) {
-				map.hyperlinkUnderCursor = null;
-				map.closePopup(map.hyperlinkPopup);
-				map.hyperlinkPopup = null;
-			}
-		};
+		var isReadOnly = this.map.isReadOnlyMode();
 
 		switch (docType) {
 		case 'spreadsheet':
-			{
+			if (statusbar)
+				statusbar.remove('prev', 'next', 'prevnextbreak');
+
+			if (!window.mode.isMobile()) {
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
-						type: 'button', id: 'StatusDocPos', text: '', hint: _('Number of Sheets') + '(' + _('Click to go to the specified worksheet') + ')',
-						onClick: function() {
-							L.dialog.run('GotoPage');
-						},
-						stateChange: function(e) {
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.text = e.value();
-							statusbar.refresh(this.id);
-						}
+						type: 'html', id: 'StatusDocPos',
+						html: '<div id="StatusDocPos" class="cool-font" title="' + _('Number of Sheets') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break2'},
 					{
 						type: 'html', id: 'RowColSelCount',
-						html: '',
-						stateChange: function(e) {
-							var value = e.hasValue() ? e.value() : '';
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.html = '<div title="' + _('Selected range of cells') + '" style="padding: 5px 5px;">' + value + '</div>';
-							statusbar.refresh(this.id);
-						}
+						html: '<div id="RowColSelCount" class="cool-font" title="' + _('Selected range of cells') + '" style="padding: 5px 5px;line-height:0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break3', tablet: false},
 					{
 						type: 'html', id: 'InsertMode', mobile: false, tablet: false,
-						html: '',
-						stateChange: insertMode
+						html: '<div id="InsertMode" class="cool-font insert-mode-true" title="' + _('Entering text mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break4', tablet: false},
-					{
-						type: 'menu-radio', id: 'LanguageStatus', mobile: false,
-						stateChange: languageStatus
-
+					{type: 'menu-radio', id: 'LanguageStatus',
+						mobile: false
 					},
 					{type: 'break', id: 'break5', tablet: false},
 					{
-						type: 'menu-radio', id: 'StatusSelectionMode', mobile: false, tablet: false,
-						text: _('Standard selection'),
-						selected: '0',
-						items: [
-							{id: '0', text: _('Standard selection'), uno: '.uno:StatusSelectionMode'},
-							{id: '1', text: _('Extending selection'), uno: '.uno:StatusSelectionModeExt'},
-							{id: '2', text: _('Adding selection'), uno: '.uno:StatusSelectionModeExp'}
-						],
-						stateChange: function(e) {
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							// 有值才改變內容
-							if (e.hasValue()) {
-								var selectedItem = this.items[parseInt(e.value())];
-								this.text = selectedItem.text;
-								this.selected = selectedItem.id;
-							}
-							// 更新此 toolbar 項目
-							statusbar.refresh(this.id);
-						}
+						type: 'html', id: 'StatusSelectionMode', mobile: false, tablet: false,
+						html: '<div id="StatusSelectionMode" class="cool-font" title="' + _('Selection Mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break8', mobile: false, tablet: false},
 					{
 						type: 'html', id: 'StateTableCell', mobile: false, tablet: false,
-						html: '',
-						stateChange: function(e) {
-							var value = e.hasValue() ? e.value() : '';
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.html = '<div title="' + _('Choice of functions') + '" style="padding: 5px 5px;">' + value + '</div>';
-							statusbar.refresh(this.id);
-						}
+						html: '<div id="StateTableCell" class="cool-font" title="' + _('Choice of functions') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{
-						type: 'menu-check', id: 'StatusBarFunc', caption: '', selected: ['2', '512'], tablet: false,
-						items: [
+						type: 'menu-check', id: 'StateTableCellMenu', caption: '', selected: ['2', '512'], items: [
 							{id: '2', text: _('Average')},
 							{id: '8', text: _('CountA')},
 							{id: '4', text: _('Count')},
@@ -356,25 +330,11 @@ L.Control.StatusBar = L.Control.extend({
 							{id: '512', text: _('Sum')},
 							{id: '8192', text: _('Selection count')},
 							{id: '1', text: _('None')}
-						],
-						stateChange: function(e) {
-							var state = e.state;
-							this.selected = [];
-							// Check 'None' even when state is 0
-							if (state === '0') {
-								state = 1;
-							}
-							for (var it = 0; it < this.items.length; it++) {
-								if (this.items[it].id & state) {
-									this.selected.push(this.items[it].id);
-								}
-							}
-							statusbar.refresh(this.id);
-						}
+						], tablet: false
 					},
 					{type: 'break', id: 'break9', mobile: false},
 					{
-						type: 'html', id: 'PermissionMode', mobile: false, tablet: false,
+						type: 'html', id: 'PermissionMode', mobile: false, tablet: true,
 						html: this._getPermissionModeHtml(isReadOnly)
 					}
 				]);
@@ -382,60 +342,35 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 
 		case 'text':
-			{
+			if (!window.mode.isMobile()) {
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
-						type: 'button', text: '', id: 'StatePageNumber', hint: _('Number of Pages') + '(' + _('Click to go to the specified page') + ')',
-						onClick: function() {
-							L.dialog.run('GotoPage');
-						},
-						stateChange: function(e) {
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.text = e.value();
-							statusbar.refresh(this.id);
-						}
+						type: 'html', id: 'StatePageNumber',
+						html: '<div id="StatePageNumber" class="cool-font" title="' + _('Number of Pages') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break2'},
 					{
-						type: 'button', text: '', id: 'StateWordCount', hint: _('Word Counter') + '(' + _('Click to open the Detailed Word Count dialog') + ')',
-						mobile: false, tablet: false,
-						onClick: function() {
-							map.sendUnoCommand('.uno:WordCountDialog');
-						},
-						stateChange: function(e) {
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.text = e.value();
-							statusbar.refresh(this.id);
-						}
-					},
-					{type: 'break', id: 'pagestylebreak'},
-					{
-						type: 'button', text: '', id: 'PageStyle', hint: _('Page Style') + '(' + _('Click to open the styles dialog') + ')',
-						mobile: false, tablet: false,
-						onClick: function() {
-							map.sendUnoCommand('.uno:PageDialog');
-						},
-						stateChange: function(e) {
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.text = e.value();
-							statusbar.refresh(this.id);
-						}
+						type: 'html', id: 'StateWordCount', mobile: false, tablet: false,
+						html: '<div id="StateWordCount" class="cool-font" title="' + _('Word Counter') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break5', mobile: false, tablet: false},
 					{
 						type: 'html', id: 'InsertMode', mobile: false, tablet: false,
-						html: '',
-						stateChange: insertMode
+						html: '<div id="InsertMode" class="cool-font insert-mode-true" title="' + _('Entering text mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break6', mobile: false, tablet: false},
 					{
-						type: 'menu-radio', id: 'LanguageStatus', mobile: false,
-						stateChange: languageStatus
+						type: 'html', id: 'StatusSelectionMode', mobile: false, tablet: false,
+						html: '<div id="StatusSelectionMode" class="cool-font" title="' + _('Selection Mode') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+					},
+					{type: 'break', id: 'break7', mobile: false, tablet: false},
+					{type: 'menu-radio', id: 'LanguageStatus',
+						mobile: false
 					},
 					{type: 'break', id: 'break8', mobile: false},
 					{
-						type: 'html', id: 'PermissionMode', mobile: false, tablet: false,
+						type: 'html', id: 'PermissionMode', mobile: false, tablet: true,
 						html: this._getPermissionModeHtml(isReadOnly)
 					}
 				]);
@@ -443,38 +378,12 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 
 		case 'presentation':
-			{
+			if (!window.mode.isMobile()) {
 				statusbar.insert('left', [
 					{type: 'break', id: 'break1'},
 					{
 						type: 'html', id: 'PageStatus',
-						html: '',
-						stateChange: function(e) {
-							map.simpleStateChecker(e, this); // 檢查 checked & disabled
-							this.html = '<div class="oxool-font" title="' + _('Number of Slides') + '" style="padding: 5px 5px;">' + (e.hasValue() ? e.value() : '') + '</div>';
-							statusbar.refresh(this.id);
-						}
-					},
-					{type: 'break', id: 'break2', mobile: false, tablet: false},
-					{
-						type: 'menu-radio', id: 'LanguageStatus', mobile: false,
-						stateChange: languageStatus
-					},
-					{type: 'break', id: 'break8', mobile: false},
-					{
-						type: 'html', id: 'PermissionMode', mobile: false, tablet: false,
-						html: this._getPermissionModeHtml(isReadOnly)
-					}
-				]);
-			}
-			break;
-		case 'drawing':
-			{
-				statusbar.insert('left', [
-					{type: 'break', id: 'break1'},
-					{
-						type: 'html', id: 'PageStatus',
-						html: '<div id="PageStatus" class="oxool-font" title="' + _('Number of Pages') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+						html: '<div id="PageStatus" class="cool-font" title="' + _('Number of Slides') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
 					},
 					{type: 'break', id: 'break2', mobile: false, tablet: false},
 					{type: 'menu-radio', id: 'LanguageStatus',
@@ -482,7 +391,27 @@ L.Control.StatusBar = L.Control.extend({
 					},
 					{type: 'break', id: 'break8', mobile: false},
 					{
-						type: 'html', id: 'PermissionMode', mobile: false, tablet: false,
+						type: 'html', id: 'PermissionMode', mobile: false, tablet: true,
+						html: this._getPermissionModeHtml(isReadOnly)
+					}
+				]);
+			}
+			break;
+		case 'drawing':
+			if (!window.mode.isMobile()) {
+				statusbar.insert('left', [
+					{type: 'break', id: 'break1'},
+					{
+						type: 'html', id: 'PageStatus',
+						html: '<div id="PageStatus" class="cool-font" title="' + _('Number of Pages') + '" style="padding: 5px 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</div>'
+					},
+					{type: 'break', id: 'break2', mobile: false, tablet: false},
+					{type: 'menu-radio', id: 'LanguageStatus',
+						mobile: false
+					},
+					{type: 'break', id: 'break8', mobile: false},
+					{
+						type: 'html', id: 'PermissionMode', mobile: false, tablet: true,
 						html: this._getPermissionModeHtml(isReadOnly)
 					}
 				]);
@@ -490,135 +419,162 @@ L.Control.StatusBar = L.Control.extend({
 			break;
 		}
 
-		this._checkStatusPermission();
-
 		this.map.fire('updateuserlistcount');
 
-		window.updateVisibilityForToolbar(statusbar);
+		this._updateToolbarsVisibility();
 
-		if (statusbar) {
+		if (statusbar)
 			statusbar.refresh();
-			this.map.setupStateChangesForToolbar({toolbar: statusbar});
-		}
 
-		// Added by Firefly <firefly@ossii.com.tw>
-		// 使用者自訂存放於 localstorage
 		var showStatusbar = this.map.uiManager.getSavedStateOrDefault('ShowStatusbar');
-		this.map.sendUnoCommand('.uno:StatusBarVisible', {
-			StatusBarVisible: {
-				type: 'boolean',
-				value: showStatusbar
-			}
-		});
-
-		// 監控狀態列顯示與否
-		this.map.stateChangeHandler.on('.uno:StatusBarVisible', function(e) {
-			// 編輯模式才可以顯示/隱藏狀態列
-			if (this.map.isEditMode()) {
-				if (e.checked()) {
-					this.map.uiManager.showStatusBar();
-				} else {
-					this.map.uiManager.hideStatusBar();
-				}
-			}
-		}, this);
+		if (showStatusbar)
+			this.map.uiManager.toggleStatusBar();
+		else
+			this.map.uiManager.hideStatusBar(true);
 	},
 
 	_cancelSearch: function() {
-		var toolbar = w2ui['actionbar'];
+		var toolbar = window.mode.isMobile() ? w2ui['searchbar'] : w2ui['actionbar'];
 		var searchInput = L.DomUtil.get('search-input');
 		this.map.resetSelection();
 		toolbar.hide('cancelsearch');
 		toolbar.disable('searchprev');
 		toolbar.disable('searchnext');
 		searchInput.value = '';
+		if (window.mode.isMobile()) {
+			searchInput.focus();
+			// odd, but on mobile we need to invoke it twice
+			toolbar.hide('cancelsearch');
+		}
 
 		this.map._onGotFocus();
 	},
 
 	_getPermissionModeHtml: function(isReadOnly) {
-		return '<div id="PermissionMode" class="' +
+		return '<div id="PermissionMode" class="cool-font ' +
 			(isReadOnly
-				? 'status-readonly-mode" title="' + _('Permission Mode') + '">' + _('Read-only') + '</div>'
-				: 'status-edit-mode" title="' + _('Permission Mode') + '">' + _('Edit') + '</div>');
+				? ' status-readonly-mode" title="' + _('Permission Mode') + '" style="padding: 5px 5px;"> ' + _('Read-only') + ' </div>'
+				: ' status-edit-mode" title="' + _('Permission Mode') + '" style="padding: 5px 5px;"> ' + _('Edit') + ' </div>');
 	},
 
-	onPermissionChanged: function(/* event */) {
-		this._checkStatusPermission();
-	},
-
-	_checkStatusPermission: function() {
-		var isReadOnly = !this._map.isEditMode();
-		var docType = this._map.getDocType();
-		// 更新編輯權限顯示
-		$('#PermissionMode').parent().html(this._getPermissionModeHtml(isReadOnly));
-		// 依據權限顯示或隱藏某些狀態
+	onPermissionChanged: function(event) {
+		var isReadOnly = event.perm === 'readonly';
 		if (isReadOnly) {
-			switch (docType) {
-			case 'spreadsheet':
-				this._bar.hide('break2', 'RowColSelCount', 'break3', 'InsertMode', 'break4', 'LanguageStatus',
-					'break5', 'StatusSelectionMode', 'break8', 'StateTableCell', 'StatusBarFunc');
-				break;
-			case 'text':
-				this._bar.hide('pagestylebreak', 'PageStyle', 'break5', 'InsertMode', 'break6', 'LanguageStatus');
-				break;
-			case 'presentation':
-			case 'drawing':
-				this._bar.hide('break2', 'LanguageStatus');
-				break;
-			}
-			// 唯讀模式狀態列強制顯示
-			$('#toolbar-down').show();
+			$('#toolbar-down').addClass('readonly');
 		} else {
-			switch (docType) {
-			case 'spreadsheet':
-				this._bar.show('break2', 'RowColSelCount', 'break3', 'InsertMode', 'break4', 'LanguageStatus',
-					'break5', 'StatusSelectionMode', 'break8', 'StateTableCell', 'StatusBarFunc');
-				break;
-			case 'text':
-				this._bar.show('pagestylebreak', 'PageStyle', 'break5', 'InsertMode', 'break6', 'LanguageStatus');
-				break;
-			case 'presentation':
-			case 'drawing':
-				this._bar.show('break2', 'LanguageStatus');
-				break;
+			$('#toolbar-down').removeClass('readonly');
+		}
+		$('#PermissionMode').parent().html(this._getPermissionModeHtml(isReadOnly));
+	},
+
+	onCommandStateChanged: function(e) {
+		var statusbar = w2ui['actionbar'];
+		var commandName = e.commandName;
+		var state = e.state;
+
+		if (!commandName)
+			return;
+
+		if (commandName === '.uno:StatusDocPos') {
+			state = this.toLocalePattern('Sheet %1 of %2', 'Sheet (\\d+) of (\\d+)', state, '%1', '%2');
+			this.updateToolbarItem(statusbar, 'StatusDocPos', $('#StatusDocPos').html(state ? state : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp').parent().html());
+		}
+		else if (commandName === '.uno:LanguageStatus') {
+			var code = state;
+			var language = _(state);
+			var split = code.split(';');
+			if (split.length > 1) {
+				language = _(split[0]);
+				code = split[1];
 			}
+			w2ui['actionbar'].set('LanguageStatus', {text: language, selected: language});
+		}
+		else if (commandName === '.uno:RowColSelCount') {
+			state = this.toLocalePattern('$1 rows, $2 columns selected', '(\\d+) rows, (\\d+) columns selected', state, '$1', '$2');
+			state = this.toLocalePattern('$1 of $2 records found', '(\\d+) of (\\d+) records found', state, '$1', '$2');
+			this.updateToolbarItem(statusbar, 'RowColSelCount', $('#RowColSelCount').html(state ? state : '<span class="ToolbarStatusInactive">&nbsp;' + _('Select multiple cells') + '&nbsp;</span>').parent().html());
+		}
+		else if (commandName === '.uno:InsertMode') {
+			this.updateToolbarItem(statusbar, 'InsertMode', $('#InsertMode').html(state ? L.Styles.insertMode[state].toLocaleString() : '<span class="ToolbarStatusInactive">&nbsp;' + _('Insert mode: inactive') + '&nbsp;</span>').parent().html());
+
+			$('#InsertMode').removeClass();
+			$('#InsertMode').addClass('cool-font insert-mode-' + state);
+
+			if (!state && this.map.hyperlinkPopup) {
+				this.map.hyperlinkUnderCursor = null;
+				this.map.closePopup(this.map.hyperlinkPopup);
+				this.map.hyperlinkPopup = null;
+			}
+		}
+		else if (commandName === '.uno:StatusSelectionMode' ||
+				commandName === '.uno:SelectionMode') {
+			this.updateToolbarItem(statusbar, 'StatusSelectionMode', $('#StatusSelectionMode').html(state ? L.Styles.selectionMode[state].toLocaleString() : '<span class="ToolbarStatusInactive">&nbsp;' + _('Selection mode: inactive') + '&nbsp;</span>').parent().html());
+		}
+		else if (commandName == '.uno:StateTableCell') {
+			this.updateToolbarItem(statusbar, 'StateTableCell', $('#StateTableCell').html(state ? this.localizeStateTableCell(state) : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp').parent().html());
+		}
+		else if (commandName === '.uno:StatusBarFunc') {
+			var item = statusbar.get('StateTableCellMenu');
+			if (item) {
+				item.selected = [];
+				// Check 'None' even when state is 0
+				if (state === '0') {
+					state = 1;
+				}
+				for (var it = 0; it < item.items.length; it++) {
+					if (item.items[it].id & state) {
+						item.selected.push(item.items[it].id);
+					}
+				}
+			}
+		}
+		else if (commandName === '.uno:StatePageNumber') {
+			state = this.toLocalePattern('Page %1 of %2', 'Page (\\d+) of (\\d+)', state, '%1', '%2');
+			this.updateToolbarItem(statusbar, 'StatePageNumber', $('#StatePageNumber').html(state ? state : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp').parent().html());
+		}
+		else if (commandName === '.uno:StateWordCount') {
+			state = this.toLocalePattern('%1 words, %2 characters', '([\\d,]+) words, ([\\d,]+) characters', state, '%1', '%2');
+			this.updateToolbarItem(statusbar, 'StateWordCount', $('#StateWordCount').html(state ? state : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp').parent().html());
+		}
+		else if (commandName === '.uno:PageStatus') {
+			if (this.map.getDocType() === 'presentation')
+				state = this.toLocalePattern('Slide %1 of %2', 'Slide (\\d+) of (\\d+)', state, '%1', '%2');
+			else
+				state = this.toLocalePattern('Page %1 of %2', 'Slide (\\d+) of (\\d+)', state, '%1', '%2');
+			this.updateToolbarItem(statusbar, 'PageStatus', $('#PageStatus').html(state ? state : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp').parent().html());
 		}
 	},
 
-	onCommandValues: function(e) {
-		if (e.commandName === '.uno:LanguageStatus' && L.Util.isArray(e.commandValues)) {
-			var translated, neutral;
-			var constLang = '.uno:LanguageStatus?Language:string=';
-			var constDefault = 'Default_RESET_LANGUAGES';
-			var constNone = 'Default_LANGUAGE_NONE';
-			var resetLang = _('Reset to Default Language');
-			var noneLang = _('None (Do not check spelling)');
-			var languages = [];
-			e.commandValues.forEach(function (language) {
-				languages.push({ translated: _(language.split(';')[0]), neutral: language });
-			});
-			languages.sort(function (a, b) {
-				return a.translated < b.translated ? -1 : a.translated > b.translated ? 1 : 0;
-			});
+	onLanguagesUpdated: function() {
+		var translated, neutral;
+		var constLang = '.uno:LanguageStatus?Language:string=';
+		var constDefault = 'Default_RESET_LANGUAGES';
+		var constNone = 'Default_LANGUAGE_NONE';
+		var resetLang = _('Reset to Default Language');
+		var noneLang = _('None (Do not check spelling)');
+		var languages = app.languages;
 
-			var toolbaritems = [];
-			toolbaritems.push({ text: noneLang,
-			 id: 'nonelanguage',
-			 uno: constLang + constNone });
+		var toolbaritems = [];
+		toolbaritems.push({ text: noneLang,
+			id: 'nonelanguage',
+			uno: constLang + constNone });
 
 
-			for (var lang in languages) {
-				translated = languages[lang].translated;
-				neutral = languages[lang].neutral;
-				var splitNeutral = neutral.split(';');
-				toolbaritems.push({ id: neutral, text: translated, uno: constLang + encodeURIComponent('Default_' + splitNeutral[0]) });
-			}
+		for (var lang in languages) {
+			if (languages.length > 10 && app.favouriteLanguages.indexOf(languages[lang].iso) < 0)
+				continue;
 
-			toolbaritems.push({ id: 'reset', text: resetLang, uno: constLang + constDefault });
-
-			this._bar.set('LanguageStatus', {items: toolbaritems});
+			translated = languages[lang].translated;
+			neutral = languages[lang].neutral;
+			var splitNeutral = neutral.split(';');
+			toolbaritems.push({ id: neutral, text: translated, uno: constLang + encodeURIComponent('Default_' + splitNeutral[0]) });
 		}
+
+		toolbaritems.push({ id: 'reset', text: resetLang, uno: constLang + constDefault });
+
+		toolbaritems.push({ id: 'morelanguages', text: _('More...') });
+
+		w2ui['actionbar'].set('LanguageStatus', {items: toolbaritems});
 	},
 });
 

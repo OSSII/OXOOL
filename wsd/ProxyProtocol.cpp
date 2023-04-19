@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,7 +9,7 @@
  * The ProxyProtocol creates a web-socket like connection over HTTP
  * requests. URLs are formed like this:
  *      0              1           2      3          4         5
- *   /lool/<encoded-document-url>/ws/<session-id>/<command>/<serial>
+ *   /cool/<encoded-document-url>/ws/<session-id>/<command>/<serial>
  * <session-id> can be 'unknown'
  * <command> can be 'open', 'write', 'wait', or 'close'
  */
@@ -22,7 +20,7 @@
 #include "ClientSession.hpp"
 #include "ProxyProtocol.hpp"
 #include "Exceptions.hpp"
-#include "LOOLWSD.hpp"
+#include "COOLWSD.hpp"
 #include <Socket.hpp>
 
 #include <atomic>
@@ -48,8 +46,8 @@ void DocumentBroker::handleProxyRequest(
                 std::make_shared<ProxyProtocolHandler>(),
                 id, uriPublic, isReadOnly, requestDetails);
         addSession(clientSession);
-        LOOLWSD::checkDiskSpaceAndWarnClients(true);
-        LOOLWSD::checkSessionLimitsAndWarnClients();
+        COOLWSD::checkDiskSpaceAndWarnClients(true);
+        COOLWSD::checkSessionLimitsAndWarnClients();
 
         const std::string &sessionId = clientSession->getOrCreateProxyAccess();
         LOG_TRC("proxy: Returning sessionId " << sessionId);
@@ -57,10 +55,11 @@ void DocumentBroker::handleProxyRequest(
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\n"
             "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
-            "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
+            "User-Agent: " WOPI_AGENT_STRING "\r\n"
             "Content-Length: " << sessionId.size() << "\r\n"
             "Content-Type: application/json; charset=utf-8\r\n"
             "X-Content-Type-Options: nosniff\r\n"
+            "Connection: close\r\n"
             "\r\n" << sessionId;
 
         socket->send(oss.str());
@@ -214,7 +213,7 @@ void ProxyProtocolHandler::handleRequest(bool isWaiting, const std::shared_ptr<S
             std::ostringstream oss;
             oss << "HTTP/1.1 200 OK\r\n"
                 "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
-                "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
+                "User-Agent: " WOPI_AGENT_STRING "\r\n"
                 "Content-Length: " << 0 << "\r\n"
                 "\r\n";
             streamSocket->send(oss.str());
@@ -342,7 +341,7 @@ bool ProxyProtocolHandler::flushQueueTo(const std::shared_ptr<StreamSocket> &soc
     std::ostringstream oss;
     oss << "HTTP/1.1 200 OK\r\n"
         "Last-Modified: " << Util::getHttpTimeNow() << "\r\n"
-        "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
+        "User-Agent: " WOPI_AGENT_STRING "\r\n"
         "Content-Length: " << totalSize << "\r\n"
         "Content-Type: application/json; charset=utf-8\r\n"
         "X-Content-Type-Options: nosniff\r\n"

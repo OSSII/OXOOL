@@ -1,11 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include <config.h>
 
 #include <memory>
 #include <ostream>
@@ -20,8 +20,6 @@
 #include <Unit.hpp>
 #include <helpers.hpp>
 
-class LOOLWebSocket;
-
 namespace
 {
 void testStateChanged(const std::string& filename, std::set<std::string>& commands)
@@ -30,7 +28,11 @@ void testStateChanged(const std::string& filename, std::set<std::string>& comman
 
     Poco::RegularExpression reUno("\\.[a-zA-Z]*\\:[a-zA-Z]*\\=");
 
-    std::shared_ptr<LOOLWebSocket> socket = helpers::loadDocAndGetSocket(filename, Poco::URI(helpers::getTestServerURI()), testname);
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("UnitEachView");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket = helpers::loadDocAndGetSession(
+        socketPoll, filename, Poco::URI(helpers::getTestServerURI()), testname);
     helpers::SocketProcessor(testname, socket,
         [&](const std::string& msg)
         {
@@ -65,7 +67,12 @@ class UnitUNOCommand : public UnitWSD
     TestResult testStateUnoCommandImpress();
 
 public:
-    void invokeTest() override;
+    UnitUNOCommand()
+        : UnitWSD("UnitUNOCommand")
+    {
+    }
+
+    void invokeWSDTest() override;
 };
 
 UnitBase::TestResult UnitUNOCommand::testStateUnoCommandWriter()
@@ -257,7 +264,7 @@ UnitBase::TestResult UnitUNOCommand::testStateUnoCommandImpress()
     return TestResult::Ok;
 }
 
-void UnitUNOCommand::invokeTest()
+void UnitUNOCommand::invokeWSDTest()
 {
     UnitBase::TestResult result = testStateUnoCommandWriter();
     if (result != TestResult::Ok)

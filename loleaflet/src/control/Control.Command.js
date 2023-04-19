@@ -3,7 +3,8 @@
  * Feature blocking handler
  */
 
-/* global $ vex _ */
+/* global $ _ */
+
 L.Map.include({
 
 	Locking: {
@@ -30,7 +31,7 @@ L.Map.include({
 		this.Locking.calcHighlights = _(lockInfo['CalcHighlights']);
 		this.Locking.impressHighlights = _(lockInfo['ImpressHighlights']);
 		this.Locking.drawHighlights = _(lockInfo['DrawHighlights']);
-
+		this.Locking.unlockImageUrlPath = lockInfo['UnlockImageUrlPath'];
 	},
 
 	// We mark the element disabled for the feature locking
@@ -57,41 +58,37 @@ L.Map.include({
 	},
 
 	openUnlockPopup: function(cmd) {
-		if (this.isRestrictedUser() && this.isRestrictedItem(cmd))
+		if ((this.isRestrictedUser() && this.isRestrictedItem(cmd)) || this.uiManager.isAnyDialogOpen())
 			return;
-		var lockingOnMobile = '';
-
-		if (window.mode.isMobile()) {
-			lockingOnMobile = 'mobile';
-		}
-		var that = this;
-		vex.dialog.confirm({
-			unsafeMessage: [
-				'<div class="container">',
-				'<div class="item illustration"></div>',
-				'<div class="item">',
-				'<h1>' + this.Locking.unlockTitle + '</h1>',
-				'<p>' + this.Locking.unlockDescription + '<p>',
-				'<ul>',
-				'<li>' + this.Locking.writerHighlights + '</li>',
-				'<li>' + this.Locking.calcHighlights + '</li>',
-				'<li>' + this.Locking.impressHighlights + '</li>',
-				'<li>' + this.Locking.drawHighlights + '</li>',
-				'</ul>',
-				'</div>',
-				'<div>'
-			].join(''),
-			showCloseButton: false,
-			contentClassName: 'vex-content vex-locking ' + lockingOnMobile,
-			callback: function (value) {
-				if (value)
-					window.open(that.Locking.unlockLink, '_blank');
-			},
-			buttons: [
-				$.extend({}, vex.dialog.buttons.YES, { text: _('Unlock') }),
-				$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
-			]
+		var message = [
+			'<div class="container">',
+			'<div id="unlock-image" class="item illustration"></div>',
+			'<div class="item">',
+			'<h1>' + this.Locking.unlockTitle + '</h1>',
+			'<p>' + this.Locking.unlockDescription + '<p>',
+			'<ul>',
+		];
+		var highlights = [this.Locking.writerHighlights, this.Locking.calcHighlights, this.Locking.impressHighlights, this.Locking.drawHighlights];
+		highlights.forEach(function(highlight) {
+			if (highlight)
+				message.push('<li>' + highlight + '</li>');
 		});
+		message.push('</ul>', '</div>', '<div>');
+
+		message = message.join();
+
+		this.uiManager.showInfoModal('unlock-features-popup', this.Locking.unlockTitle, ' ', ' ', _('Unlock'), function() {
+			window.open(this.Locking.unlockLink, '_blank');
+			this.uiManager.closeModal(this.uiManager.generateModalId('unlock-features-popup'));
+		}.bind(this), true);
+		document.getElementById('unlock-features-popup').querySelectorAll('p')[0].outerHTML = message;
+
+		var unlockImage = L.DomUtil.get('unlock-image');
+		if (this.Locking.unlockImageUrlPath) {
+			unlockImage.style.backgroundImage = 'url(remote' + this.Locking.unlockImageUrlPath + ')';
+		} else {
+			unlockImage.style.backgroundImage = 'url(images/lock-illustration.svg)';
+		}
 	},
 
 	isLockedItem: function(item) {
@@ -151,19 +148,30 @@ L.Map.include({
 	_extractCommand: function(item) {
 		if (!item)
 			return '';
-		if (item.command) // in notebookbar uno commands are stored as command
-			return [item.command];
-		else if (item.uno) { // in classic mode uno commands are stored as uno in menus
-			if (typeof item.uno === 'string')
-				return [item.uno];
-			return [item.uno.textCommand , item.uno.objectCommand]; // some unos have multiple commands
+
+		var commandArray = [];
+		if (item.lockUno || item.uno) { // in classic mode uno commands are stored as uno in menus
+			var uno = item.lockUno ? item.lockUno : item.uno;
+			if (typeof uno === 'string')
+				commandArray.push(uno);
+			else { // some unos have multiple commands
+				commandArray.push(uno.textCommand);
+				commandArray.push(uno.objectCommand);
+				if (item.unosheet)
+					commandArray.push(item.unosheet);
+			}
 		}
+		else if (item.command) // in notebookbar uno commands are stored as command
+			commandArray.push(item.command);
 		else if (item.id)
-			return [item.id];
-		else if (item.unosheet)
-			return [item.unosheet];
+			commandArray.push(item.id);
 		else if (typeof item === 'string')
-			return [item];
-		return '';
+			commandArray.push(item);
+
+		for (var command in commandArray) {
+			if (!commandArray[command].startsWith('.uno:'))
+				commandArray[command] = '.uno:' + commandArray[command];
+		}
+		return commandArray;
 	}
 });

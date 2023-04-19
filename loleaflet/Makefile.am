@@ -38,32 +38,30 @@ JQUERY_LIGHTNESS_IMAGE_PATH = $(srcdir)/images/jquery-ui-lightness
 JQUERY_LIGHTNESS_IMAGES = $(wildcard $(JQUERY_LIGHTNESS_IMAGE_PATH)/*.png)
 JQUERY_LIGHTNESS_DIST_IMAGES = $(patsubst $(JQUERY_LIGHTNESS_IMAGE_PATH)/%.png,$(DIST_FOLDER)/images/%.png,$(JQUERY_LIGHTNESS_IMAGES))
 
-JQUERY_MINIFIED_IMAGE_PATH = node_modules/jquery-ui-dist/images
+JQUERY_MINIFIED_IMAGE_PATH = node_modules/jquery-ui/themes/base/images
 JQUERY_MINIFIED_IMAGES = $(wildcard $(JQUERY_MINIFIED_IMAGE_PATH)/*.png)
 JQUERY_MINIFIED_DIST_IMAGES = $(patsubst $(JQUERY_MINIFIED_IMAGE_PATH)/%.png,$(DIST_FOLDER)/images/%.png,$(JQUERY_MINIFIED_IMAGES))
 
-OXOOL_IMAGES_SRC = $(shell find $(srcdir)/images -name '*.*')
-OXOOL_IMAGES_DST = $(patsubst $(srcdir)/%,$(DIST_FOLDER)/%,$(OXOOL_IMAGES_SRC))
-OXOOL_IMAGES_CUSTOM_SRC = $(shell if test -n "$(CUSTOM_ICONS_DIRECTORY)"; then find $(CUSTOM_ICONS_DIRECTORY) -name '*.*'; fi)
-OXOOL_IMAGES_CUSTOM_DST = $(patsubst $(CUSTOM_ICONS_DIRECTORY)/%,$(DIST_FOLDER)/images/%,$(OXOOL_IMAGES_CUSTOM_SRC))
-
-OXOOL_UICONFIG_SRC = $(shell find $(srcdir)/uiconfig -name '*.*')
-OXOOL_UICONFIG_DST = $(patsubst $(srcdir)/%,$(DIST_FOLDER)/%,$(OXOOL_UICONFIG_SRC))
-
-OXOOL_L10N_SRC = $(shell find $(srcdir)/l10n -name '*.*')
+COOL_IMAGES_SRC = $(shell find $(srcdir)/images -name '*.*')
+COOL_IMAGES_DST = $(patsubst $(srcdir)/%,$(DIST_FOLDER)/%,$(COOL_IMAGES_SRC))
+COOL_IMAGES_CUSTOM_SRC = $(shell if test -n "$(CUSTOM_ICONS_DIRECTORY)"; then find $(CUSTOM_ICONS_DIRECTORY) -name '*.*'; fi)
+COOL_IMAGES_CUSTOM_DST = $(patsubst $(CUSTOM_ICONS_DIRECTORY)/%,$(DIST_FOLDER)/images/%,$(COOL_IMAGES_CUSTOM_SRC))
+COOL_L10N_SRC = $(shell find $(srcdir)/l10n -name '*.*')
 if !ENABLE_MOBILEAPP
-OXOOL_L10N_DST =  $(patsubst $(srcdir)/l10n/%,$(DIST_FOLDER)/l10n/%,$(OXOOL_L10N_SRC))
+COOL_L10N_DST =  $(patsubst $(srcdir)/l10n/%,$(DIST_FOLDER)/l10n/%,$(COOL_L10N_SRC))
 endif
 
-OXOOL_HTML_SRC = $(shell find $(srcdir)/html -name '*.html')
-OXOOL_HTML_DST = $(patsubst $(srcdir)/html/%.html,$(DIST_FOLDER)/%.html,$(OXOOL_HTML_SRC))
+COOL_HTML_SRC = $(shell find $(srcdir)/html -name '*.html')
+COOL_HTML_DST = $(patsubst $(srcdir)/html/%.html,$(DIST_FOLDER)/%.html,$(COOL_HTML_SRC))
 
-OXOOL_WELCOME_SRC = $(shell find $(srcdir)/welcome -name '*')
-OXOOL_WELCOME_DST = $(patsubst $(srcdir)/welcome/%,$(DIST_FOLDER)/welcome/%,$(OXOOL_WELCOME_SRC))
+if ENABLE_WELCOME_MESSAGE
+COOL_WELCOME_SRC = $(shell find $(srcdir)/welcome -name '*')
+COOL_WELCOME_DST = $(patsubst $(srcdir)/welcome/%,$(DIST_FOLDER)/welcome/%,$(COOL_WELCOME_SRC))
+endif
 
-OXOOL_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name '*.woff*' -or -name 'OFL.txt' -or -name '*.svg' -or -name '*.png' -or -name '*.min.js' -or -name 'admin.menu.js')
-OXOOL_ADMIN_ALL = $(shell find $(srcdir)/admin -name '*')
-OXOOL_ADMIN_DST = $(patsubst $(srcdir)/admin/%,$(DIST_FOLDER)/admin/%,$(OXOOL_ADMIN_SRC))
+COOL_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name 'OFL.txt' -or -name '*.svg')
+COOL_ADMIN_ALL = $(shell find $(srcdir)/admin -name '*')
+COOL_ADMIN_DST = $(patsubst $(srcdir)/admin/%,$(DIST_FOLDER)/admin/%,$(COOL_ADMIN_SRC))
 
 define file_target
 $(1): $(2)
@@ -93,126 +91,114 @@ define npm_source
 	done
 endef
 
+COOL_ADMIN_TS =\
+	admin/src/ModalDialogCreator.ts
 
-OXOOL_ADMIN_JS =\
+COOL_ADMIN_TS_JS = $(patsubst %.ts,$(TYPESCRIPT_JS_DIR)/%.js,$(COOL_ADMIN_TS))
+
+COOL_ADMIN_JS =\
 	admin/src/Base.js \
 	admin/src/Admin.js \
 	admin/src/AdminSocketBase.js \
 	admin/src/Util.js \
 	admin/src/AdminSocketOverview.js \
 	admin/src/AdminSocketAnalytics.js \
-	admin/src/AdminSocketLog.js \
-	admin/src/AdminSocketBroker.js \
-	admin/src/AdminSocketGlobalFunction.js \
-	admin/src/AdminSocketSSLCertManager.js \
-	admin/src/AdminSocketConfigSettings.js \
-	admin/src/AdminSocketSoftwareUpgrade.js \
-	admin/src/AdminSocketFontManager.js \
-	admin/src/AdminSocketMenuEditor.js \
-	admin/src/AdminSocketModules.js
+	admin/src/AdminSocketSettings.js \
+	admin/src/AdminSocketHistory.js \
+	admin/src/AdminSocketLog.js
 
 NODE_MODULES_SRC =\
 	autolinker@3.14.1 \
 	json-js@1.1.2 \
 	select2@4.0.13 \
-	vex-js@4.1.0 \
 	l10n-for-node@0.0.1 \
 	@braintree/sanitize-url@6.0.0
 
-OXOOL_CSS_LST =\
+COOL_CSS_LST =\
 	$(builddir)/node_modules/select2/dist/css/select2.css \
 	$(srcdir)/css/w2ui-1.5.rc1.css \
 	$(srcdir)/css/leaflet.css \
 	$(srcdir)/css/leaflet-spinner.css \
 	$(srcdir)/css/selectionMarkers.css \
 	$(srcdir)/css/color-palette.css \
-	#$(srcdir)/css/color-palette-dark.css \
-	$(srcdir)/css/oxool.css \
+	$(srcdir)/css/color-palette-dark.css \
+	$(srcdir)/css/cool.css \
 	$(srcdir)/css/toolbar.css \
-	$(srcdir)/css/toolbar-mobile.css \
 	$(srcdir)/css/partsPreviewControl.css \
 	$(srcdir)/css/searchControl.css \
 	$(srcdir)/css/impress.css \
 	$(srcdir)/css/impress-mobile.css \
 	$(srcdir)/css/spreadsheet.css \
 	$(srcdir)/css/writer-mobile.css \
+	$(srcdir)/css/writer.css \
 	$(srcdir)/css/editor.css \
+	$(srcdir)/css/iframedialog.css \
 	$(builddir)/node_modules/jquery-contextmenu/dist/jquery.contextMenu.css \
-	$(builddir)/node_modules/vex-js/dist/css/vex.css \
-	$(builddir)/node_modules/vex-js/dist/css/vex-theme-plain.css \
-	$(builddir)/node_modules/vex-js/dist/css/vex-theme-bottom-right-corner.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-core-css.css \
 	$(builddir)/node_modules/smartmenus/dist/css/sm-simple/sm-simple.css \
-	$(builddir)/node_modules/spectrum-colorpicker2/dist/spectrum.css \
-	$(builddir)/node_modules/jquery-ui-dist/jquery-ui.css \
+	$(srcdir)/css/welcome.css \
 	$(srcdir)/css/menubar.css \
 	$(srcdir)/css/mobilewizard.css \
 	$(srcdir)/css/jsdialogs.css \
 	$(srcdir)/css/btns.css \
 	$(srcdir)/css/notebookbar.css \
 	$(srcdir)/css/jssidebar.css \
-	$(srcdir)/css/override-vex.css \
 	$(srcdir)/css/override-smartmenus.css \
+	$(srcdir)/css/jquery-ui-lightness.css \
 	$(srcdir)/css/infobar.css
 
-if ENABLE_FEEDBACK
-OXOOL_CSS_LST += $(srcdir)/css/iframedialog.css \
-	$(srcdir)/css/welcome.css
-endif
+COOL_CSS = $(filter %,$(COOL_CSS_LST))
 
-OXOOL_CSS = $(filter %,$(OXOOL_CSS_LST))
+COOL_CSS_DST = $(foreach file,$(COOL_CSS),$(DIST_FOLDER)/$(notdir $(file)))
+COOL_CSS_M4 = $(strip $(foreach file,$(COOL_CSS),$(notdir $(file))))
 
-OXOOL_CSS_DST = $(foreach file,$(OXOOL_CSS),$(DIST_FOLDER)/$(notdir $(file)))
-OXOOL_CSS_M4 = $(strip $(foreach file,$(OXOOL_CSS),$(notdir $(file))))
-
-$(eval $(call file_targets,$(OXOOL_CSS)))
+$(eval $(call file_targets,$(COOL_CSS)))
 
 NODE_MODULES_JS =\
 	$(if $(IS_SEPARATE),node_modules/hammerjs/hammer.js,node_modules/hammerjs/hammer.min.js) \
 	node_modules/jquery/dist/jquery.js \
 	node_modules/jquery-mousewheel/jquery.mousewheel.js \
 	node_modules/jquery-contextmenu/dist/jquery.contextMenu.js \
-	node_modules/jquery-ui-dist/jquery-ui.js \
-	node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.js \
+	node_modules/jquery-ui/dist/jquery-ui.js \
+	$(shell find node_modules/jquery-ui/ui/i18n -name '*.js') \
 	node_modules/smartmenus/dist/jquery.smartmenus.js \
-	node_modules/spectrum-colorpicker2/dist/spectrum.js
+	node_modules/pako/dist/pako_inflate.es5.js \
+	node_modules/fzstd/umd/index.js
 
-OXOOL_LIBS_JS =\
+COOL_LIBS_JS =\
 	ResizeObserverPolyfill.js \
 	Autolinker.js \
-	json2.js \
 	select2.js \
-	vex.combined.js \
 	sanitize-url.js
 
 if !ENABLE_MOBILEAPP
-OXOOL_LIBS_JS +=\
+COOL_LIBS_JS +=\
 	l10n.js
 endif
 
-OXOOL_LIBS_JS +=\
+COOL_LIBS_JS +=\
 	w2ui-1.5.rc1.js \
 	viamapi-client.js
 
 NODE_MODULES_JS_SRC = $(patsubst %.js,$(builddir)/%.js,$(NODE_MODULES_JS))
 NODE_MODULES_JS_DST = $(patsubst %.js,$(DIST_FOLDER)/%.js,$(NODE_MODULES_JS))
 
-OXOOL_LIBS_JS_SRC = $(patsubst %.js,$(srcdir)/js/%.js,$(OXOOL_LIBS_JS))
-OXOOL_LIBS_JS_DST = $(patsubst %.js,$(DIST_FOLDER)/%.js,$(OXOOL_LIBS_JS))
+COOL_LIBS_JS_SRC = $(patsubst %.js,$(srcdir)/js/%.js,$(COOL_LIBS_JS))
+COOL_LIBS_JS_DST = $(patsubst %.js,$(DIST_FOLDER)/%.js,$(COOL_LIBS_JS))
 
 # the ordering of this is delicate to get JS initialization right,
 # this list includes both Javascript and Typescript generated files
 # in a rather precise order.
-OXOOL_JS_LST =\
+COOL_JS_LST =\
 	src/docstate.js \
 	src/Leaflet.js \
 	src/errormessages.js \
-	src/othermessages.js \
 	src/unocommands.js \
 	src/UNO/Key.js \
 	src/core/Log.js \
 	src/core/Util.js \
 	src/core/LOUtil.js \
+	src/core/Rectangle.ts \
 	src/core/Class.js \
 	src/core/Events.js \
 	src/core/Socket.js \
@@ -225,7 +211,9 @@ OXOOL_JS_LST =\
 	src/geo/projection/Projection.LonLat.js \
 	src/geo/crs/CRS.js \
 	src/geo/crs/CRS.Simple.js \
+	src/control/IFrameDialog.js \
 	src/map/Map.js \
+	src/control/Control.IdleHandler.ts \
 	src/map/Clipboard.js \
 	src/layer/tile/SheetSwitch.ts \
 	src/layer/Layer.js \
@@ -256,11 +244,11 @@ OXOOL_JS_LST =\
 	src/layer/tile/WriterTileLayer.js \
 	src/layer/tile/ImpressTileLayer.js \
 	src/layer/tile/CalcTileLayer.js \
+	src/layer/tile/ContentControlSection.ts \
 	src/layer/BackgroundColor.js \
 	src/layer/ImageOverlay.js \
 	src/layer/marker/ProgressOverlay.js \
 	src/layer/marker/TextInput.js \
-	src/layer/marker/TextInput-DesktopIOS.js \
 	src/layer/marker/Icon.js \
 	src/layer/marker/Icon.Default.js \
 	src/layer/marker/Marker.js \
@@ -303,6 +291,9 @@ OXOOL_JS_LST =\
 	src/dom/DomEvent.Pointer.js \
 	src/map/handler/Map.TouchGesture.js \
 	src/map/handler/Map.Keyboard.js \
+	src/map/handler/Map.Welcome.js \
+	src/map/handler/Map.Feedback.js \
+	src/map/handler/Map.VersionBar.js \
 	src/dom/DomEvent.MultiClick.js \
 	src/map/handler/Map.Mouse.js \
 	src/map/handler/Map.Print.js \
@@ -315,28 +306,36 @@ OXOOL_JS_LST =\
 	src/control/Control.Command.js \
 	src/control/Control.js \
 	src/control/Control.PartsPreview.js \
-	src/control/Control.GroupBase.js \
-	src/control/Control.CornerGroup.js \
-	src/control/Control.RowGroup.js \
-	src/control/Control.ColumnGroup.js \
-	src/control/Control.CornerHeader.js \
-	src/control/Control.Header.js \
-	src/control/Control.ColumnHeader.js \
-	src/control/Control.RowHeader.js \
+	src/control/Control.GroupBase.ts \
+	src/control/Control.CornerGroup.ts \
+	src/control/Control.RowGroup.ts \
+	src/control/Control.ColumnGroup.ts \
+	src/control/Control.CornerHeader.ts \
+	src/control/Control.Header.ts \
+	src/control/Control.ColumnHeader.ts \
+	src/control/Control.RowHeader.ts \
 	src/control/Control.DocumentRepair.js \
 	src/control/Control.DownloadProgress.js \
 	src/control/Control.ContextMenu.js \
 	src/control/Control.Menubar.js \
-	src/control/Control.ReadonlyBar.js \
 	src/control/Control.Tabs.js \
 	src/control/Control.Permission.js \
 	src/control/Control.Selection.js \
 	src/control/Control.LokDialog.js \
 	src/control/Control.AlertDialog.js \
-	src/control/Control.Infobar.js src/control/ColorPicker.js \
+	src/control/ColorPicker.js \
+	src/control/jsdialog/Widget.DrawingArea.js \
+	src/control/jsdialog/Widget.FormulabarEdit.js \
+	src/control/jsdialog/Widget.LanguageSelector.js \
+	src/control/jsdialog/Widget.MenuButton.js \
+	src/control/jsdialog/Widget.MobileTabControl.js \
+	src/control/jsdialog/Widget.MultilineEdit.js \
+	src/control/jsdialog/Widget.ScrolledWindow.js \
+	src/control/jsdialog/Widget.TreeView.js \
 	src/control/Control.JSDialog.js \
 	src/control/Control.JSDialogBuilder.js \
 	src/control/Control.MobileWizardBuilder.js \
+	src/control/Control.MobileWizardWindow.js \
 	src/control/Control.MobileWizard.js \
 	src/control/Control.MobileWizardPopup.js \
 	src/control/Control.LanguageDialog.js \
@@ -348,9 +347,8 @@ OXOOL_JS_LST =\
 	src/control/Control.MobileTopBar.js \
 	src/control/Control.MobileBottomBar.js \
 	src/control/Control.UserList.js \
-	src/control/Control.Dialogs.js \
-	src/control/Control.AlternativeCommand.js \
 	src/control/Control.FormulaBar.js \
+	src/control/Control.FormulaBarJSDialog.js \
 	src/control/Control.SheetsBar.js \
 	src/control/Control.PresentationBar.js \
 	src/control/Control.SigningBar.js \
@@ -363,14 +361,13 @@ OXOOL_JS_LST =\
 	src/control/Control.NotebookbarImpress.js \
 	src/control/Control.NotebookbarDraw.js \
 	src/control/Control.NotebookbarBuilder.js \
-	src/control/Control.AutofilterDropdown.js \
 	src/control/Control.Layers.js \
 	src/control/Control.Sidebar.js \
+	src/control/Control.Mention.js \
+	src/control/Control.Zotero.js \
 	src/control/Search.js \
 	src/control/Permission.js \
 	src/control/Toolbar.js \
-	src/control/Toolbar.Extensions.js \
-	src/control/IconAlias.js \
 	src/control/Signing.js \
 	src/control/Parts.js \
 	src/control/Scroll.js \
@@ -382,78 +379,71 @@ OXOOL_JS_LST =\
 	src/control/Control.Scroll.Annotation.js \
 	src/main.js
 
-if ENABLE_FEEDBACK
-OXOOL_JS_LST +=\
-	src/control/IFrameDialog.js \
-	src/map/handler/Map.Infobar.js \
-	src/map/handler/Map.Feedback.js \
-	src/map/handler/Map.Welcome.js
-endif
+COOL_JS_WEBORDER = $(filter %,$(COOL_JS_LST))
 
-OXOOL_JS_WEBORDER = $(filter %,$(OXOOL_JS_LST))
-
-OXOOL_JS_SRC = $(filter %.js,$(OXOOL_JS_WEBORDER))
-OXOOL_TS_SRC = $(filter %.ts,$(OXOOL_JS_WEBORDER))
+COOL_JS_SRC = $(filter %.js,$(COOL_JS_WEBORDER))
+COOL_TS_SRC = $(filter %.ts,$(COOL_JS_WEBORDER))
 
 # beware these are not helpfully ordered
-OXOOL_TS_JS_DST = $(patsubst src/%.ts,$(DIST_FOLDER)/src/%.js,$(OXOOL_TS_SRC))
-OXOOL_JS_DST = $(patsubst src/%.js,$(DIST_FOLDER)/src/%.js,$(OXOOL_JS_SRC)) $(OXOOL_TS_JS_DST)
+COOL_TS_JS_DST = $(patsubst src/%.ts,$(DIST_FOLDER)/src/%.js,$(COOL_TS_SRC))
+COOL_JS_DST = $(patsubst src/%.js,$(DIST_FOLDER)/src/%.js,$(COOL_JS_SRC)) $(COOL_TS_JS_DST)
 # should be no lingering / obsolete files:
-OXOOL_ASSERT_INTERSECT = $(filter $(OXOOL_JS_SRC), $(patsubst %.ts,%.js,$(OXOOL_TS_SRC)))
+COOL_ASSERT_INTERSECT = $(filter $(COOL_JS_SRC), $(patsubst %.ts,%.js,$(COOL_TS_SRC)))
 
 COMMA := ,
 EMPTY :=
 SPACE := $(EMPTY) $(EMPTY)
-OXOOL_VERSION = $(shell cd $(srcdir) && git log -1 --pretty=format:"%h")
+COOL_VERSION = $(shell cd $(srcdir) && git log -1 --pretty=format:"%h")
 INTERMEDIATE_DIR ?= $(if $(IS_SEPARATE),$(abs_builddir)/debug,$(abs_builddir)/release)
 
 EXTRA_DIST = $(shell find . -type f -not -path './.git/*' -not -path './node_modules/*' | sed 's/.\///')
 
-define bundle_oxool
+define bundle_cool
 	$(if $(IS_SEPARATE),\
 		@touch $@,
 		@m4 -PE -DIOSAPP=$(ENABLE_IOSAPP) \
 			-DGTKAPP=$(ENABLE_GTKAPP) \
 			-DANDROIDAPP=$(ENABLE_ANDROIDAPP) \
 			-DMOBILEAPPNAME="$(APP_NAME)" \
-			-DVERSION=$(OXOOL_VERSION) \
+			-DVERSION=$(COOL_VERSION) \
 			-DCOPYRIGHT=$(srcdir)/src/copyright.js \
-			-DOXOOL_JS=$(subst $(SPACE),$(COMMA),$(patsubst src/%.ts,$(DIST_FOLDER)/src/%.js,$(OXOOL_JS_WEBORDER))) \
-			$(srcdir)/loleaflet-src.js.m4 > $@)
+			-DCOOL_JS=$(subst $(SPACE),$(COMMA),$(patsubst src/%.ts,$(DIST_FOLDER)/src/%.js,$(COOL_JS_WEBORDER))) \
+			$(srcdir)/cool-src.js.m4 > $@)
 endef
 
-define prereq_oxool
-	$(if $(IS_SEPARATE),$(OXOOL_JS_DST),$(OXOOL_JS_SRC))
+define prereq_cool
+	$(if $(IS_SEPARATE),$(COOL_JS_DST),$(COOL_JS_SRC))
 endef
 
 define bundle_css
 	$(if $(IS_SEPARATE),\
 		@touch $@,\
-		@echo "Uglify oxool css files..."
-		@$(NODE) node_modules/uglifycss/uglifycss $(OXOOL_CSS) > $@)
+		@echo "Uglify cool css files..."
+		@$(NODE) node_modules/uglifycss/uglifycss $(COOL_CSS) > $@)
 endef
 
 define prereq_css
-	$(if $(IS_SEPARATE),$(OXOOL_CSS_DST),$(OXOOL_CSS))
+	$(if $(IS_SEPARATE),$(COOL_CSS_DST),$(COOL_CSS))
 endef
 
 define bundle_all
 	$(if $(IS_SEPARATE),\
 		@touch $@,\
-		@echo "Uglify oxool js files..."
+		@echo "Uglify cool js files..."
 		@m4 -PE -DL10N_IOS_ALL_JS=$(L10N_IOS_ALL_JS) \
 			-DNODE_MODULES_JS=$(subst $(SPACE),$(COMMA),$(NODE_MODULES_JS)) \
-			-DOXOOL_LIBS_JS=$(subst $(SPACE),$(COMMA),$(OXOOL_LIBS_JS_SRC)) \
-			-DOXOOL_JS=$(INTERMEDIATE_DIR)/loleaflet-src.js \
+			-DCOOL_LIBS_JS=$(subst $(SPACE),$(COMMA),$(COOL_LIBS_JS_SRC)) \
+			-DCOOL_JS=$(INTERMEDIATE_DIR)/cool-src.js \
 			$(srcdir)/bundle.js.m4 > $(INTERMEDIATE_DIR)/bundle.js
 		@$(NODE) node_modules/uglify-js/bin/uglifyjs \
+			-O max_line_len=100 \
 			$(INTERMEDIATE_DIR)/bundle.js \
 			--output $@)
 endef
 
 define prereq_all
-	$(if $(IS_SEPARATE),$(NODE_MODULES_JS_DST) $(OXOOL_LIBS_JS_DST),\
-		$(NODE_MODULES_JS_SRC) $(OXOOL_LIBS_JS_SRC))
+	$(if $(IS_SEPARATE),$(NODE_MODULES_JS_DST) $(COOL_LIBS_JS_DST),\
+		$(NODE_MODULES_JS_SRC) $(COOL_LIBS_JS_SRC))
 endef
 
 define global_file
@@ -463,25 +453,43 @@ define global_file
 		@$(NODE) node_modules/uglify-js/bin/uglifyjs $< --output $@)
 endef
 
-.PHONY: build-oxool
+.PHONY: build-cool
 
-all-local: build-oxool
+all-local: build-cool
 
 if !ENABLE_MOBILEAPP
 ADMIN_BUNDLE = $(DIST_FOLDER)/admin-bundle.js
+endif
+
+if ENABLE_WASM
+$(DIST_FOLDER)/online%: $(abs_top_builddir)/wasm/online%
+	@mkdir -p $(dir $@)
+	@cp $< $@
+
+$(DIST_FOLDER)/soffice%: $(abs_top_builddir)/wasm/soffice%
+	@mkdir -p $(dir $@)
+	@cp $< $@
+
+WASM_FILES= \
+	$(DIST_FOLDER)/online.data \
+	$(DIST_FOLDER)/online.js \
+	$(DIST_FOLDER)/online.wasm \
+	$(DIST_FOLDER)/online.wasm.debug.wasm \
+	$(DIST_FOLDER)/online.worker.js \
+	$(DIST_FOLDER)/soffice.data \
+	$(DIST_FOLDER)/soffice.data.js.metadata
 endif
 
 $(TYPESCRIPT_JS_DIR)/%.js: $(srcdir)/%.ts
 	@mkdir -p $(dir $@)
 	$(builddir)/node_modules/typescript/bin/tsc --outFile $@ $<
 
-build-oxool: \
-	$(OXOOL_L10N_DST) \
+build-cool: \
+	$(COOL_L10N_DST) \
 	$(L10N_JSON) \
 	$(SRC_TS_JS_DST) \
-	$(OXOOL_IMAGES_DST) \
-	$(OXOOL_IMAGES_CUSTOM_DST) \
-	$(OXOOL_UICONFIG_DST) \
+	$(COOL_IMAGES_DST) \
+	$(COOL_IMAGES_CUSTOM_DST) \
 	$(JQUERY_LIGHTNESS_DIST_IMAGES) \
 	$(JQUERY_MINIFIED_DIST_IMAGES) \
 	$(ADMIN_BUNDLE) \
@@ -490,8 +498,9 @@ build-oxool: \
 	$(DIST_FOLDER)/device-tablet.css \
 	$(DIST_FOLDER)/device-desktop.css \
 	$(DIST_FOLDER)/bundle.js \
-	$(DIST_FOLDER)/loleaflet.html
-	@echo "build oxool completed"
+	$(DIST_FOLDER)/cool.html \
+	$(WASM_FILES)
+	@echo "build cool completed"
 if ENABLE_ANDROIDAPP
 	@if test -d "$(APP_BRANDING_DIR)" ; then cp -a "$(APP_BRANDING_DIR)/branding.css" "$(APP_BRANDING_DIR)/branding.js" $(DIST_FOLDER)/ ; else touch $(DIST_FOLDER)/branding.css ; fi
 	@if test -d "$(APP_BRANDING_DIR)" ; then cp -a "$(APP_BRANDING_DIR)"/images/*.svg $(DIST_FOLDER)/images/ ; fi
@@ -505,26 +514,26 @@ if ENABLE_CYPRESS
 	@echo "Added HTML file for multiuser tests"
 endif
 
-$(DIST_FOLDER)/admin-bundle.js: $(OXOOL_ADMIN_DST) \
+$(DIST_FOLDER)/admin-bundle.js: $(COOL_ADMIN_DST) \
 	$(INTERMEDIATE_DIR)/admin-src.js
 	@NODE_PATH=$(abs_builddir)/node_modules:$(INTERMEDIATE_DIR) $(NODE) node_modules/browserify/bin/cmd.js -g browserify-css $(if $(IS_SEPARATE),--debug,-g uglifyify) -o $@ $(srcdir)/admin/main-admin.js
 
-$(INTERMEDIATE_DIR)/admin-src.js: $(OXOOL_ADMIN_JS)
+$(INTERMEDIATE_DIR)/admin-src.js: $(COOL_ADMIN_TS_JS) $(COOL_ADMIN_JS)
 	@mkdir -p $(dir $@)
 	@echo "Checking for admin JS errors..."
 	@$(NODE) node_modules/eslint/bin/eslint.js --resolve-plugins-relative-to $(abs_builddir) --ignore-path $(srcdir)/.eslintignore --config $(srcdir)/.eslintrc --no-eslintrc $(srcdir)/admin/src
-	@awk 'FNR == 1 {print ""} 1' $(patsubst %.js,$(srcdir)/%.js,$(OXOOL_ADMIN_JS)) > $@
+	@awk 'FNR == 1 {print ""} 1' $(COOL_ADMIN_TS_JS) $(patsubst %.js,$(srcdir)/%.js,$(COOL_ADMIN_JS)) > $@
 
-$(INTERMEDIATE_DIR)/loleaflet-src.js: tscompile.done $(call prereq_oxool) $(OXOOL_JS_DST)
+$(INTERMEDIATE_DIR)/cool-src.js: tscompile.done $(call prereq_cool) $(COOL_JS_DST)
 	@mkdir -p $(dir $@)
-#	$(abs_top_srcdir)/scripts/unocommands.py --check $(abs_top_srcdir)
+	$(abs_top_srcdir)/scripts/unocommands.py --check $(abs_top_srcdir)
 	@printf "Checking for obsolete JS build intermediates in this makefile... "
-	@if ! test "z$(OXOOL_ASSERT_INTERSECT)" == "z"; then echo; echo "Error: please remove obsolete files:"; echo "$(OXOOL_ASSERT_INTERSECT)"; exit 1; else echo "clean"; fi
-	@echo "Checking for oxool JS errors..."
+	@if ! test "z$(COOL_ASSERT_INTERSECT)" == "z"; then echo; echo "Error: please remove obsolete files:"; echo "$(COOL_ASSERT_INTERSECT)"; exit 1; else echo "clean"; fi
+	@echo "Checking for cool JS errors..."
 	@$(NODE) node_modules/eslint/bin/eslint.js $(srcdir)/src --resolve-plugins-relative-to $(abs_builddir) \
 		$(srcdir)/js --ignore-path $(srcdir)/.eslintignore --no-eslintrc --config $(srcdir)/.eslintrc
-	@echo "Bundling oxool..."
-	$(call bundle_oxool)
+	@echo "Bundling cool..."
+	$(call bundle_cool)
 
 $(DIST_FOLDER)/bundle.css: $(call prereq_css)
 	@mkdir -p $(dir $@)
@@ -532,7 +541,7 @@ $(DIST_FOLDER)/bundle.css: $(call prereq_css)
 	@$(NODE) node_modules/stylelint/bin/stylelint.js --config $(srcdir)/.stylelintrc.json $(srcdir)/css/*.css
 	$(call bundle_css)
 
-$(DIST_FOLDER)/bundle.js: $(INTERMEDIATE_DIR)/loleaflet-src.js $(call prereq_all)
+$(DIST_FOLDER)/bundle.js: $(INTERMEDIATE_DIR)/cool-src.js $(call prereq_all)
 	@mkdir -p $(dir $@)
 	$(call bundle_all)
 
@@ -540,26 +549,27 @@ $(DIST_FOLDER)/global.js: $(srcdir)/js/global.js
 	@mkdir -p $(dir $@)
 	$(call global_file)
 
-$(DIST_FOLDER)/loleaflet.html: $(srcdir)/html/loleaflet.html.m4 \
-	$(OXOOL_HTML_DST) \
-	$(OXOOL_WELCOME_DST) \
+$(DIST_FOLDER)/cool.html: $(srcdir)/html/cool.html.m4 \
+	$(COOL_HTML_DST) \
+	$(COOL_WELCOME_DST) \
 	$(DIST_FOLDER)/bundle.css \
 	$(DIST_FOLDER)/global.js \
 	$(DIST_FOLDER)/bundle.js
-	@echo "Generating loleaflet.html..."
+	@echo "Generating cool.html..."
 	m4 -PE -DBUNDLE=$(IS_BUNDLE) \
-		-DENABLE_FEEDBACK=$(ENABLE_FEEDBACK) \
 		-DIOSAPP=$(ENABLE_IOSAPP) \
 		-DGTKAPP=$(ENABLE_GTKAPP) \
+		-DDEBUG=$(ENABLE_DEBUG) \
 		-DANDROIDAPP=$(ENABLE_ANDROIDAPP) \
+		-DEMSCRIPTENAPP=$(ENABLE_EMSCRIPTENAPP) \
 		-DMOBILEAPPNAME="$(APP_NAME)" \
-		-DOXOOL_CSS="$(subst $(SPACE),$(COMMA),$(OXOOL_CSS_M4))" \
+		-DCOOL_CSS="$(subst $(SPACE),$(COMMA),$(COOL_CSS_M4))" \
 		-DGLOBAL_JS="$(DIST_FOLDER)/global.js" \
-		-DOXOOL_JS="$(subst $(SPACE),$(COMMA),$(NODE_MODULES_JS) \
-		$(OXOOL_LIBS_JS) \
-		$(patsubst %.ts,%.js,$(OXOOL_JS_WEBORDER)))" \
+		-DCOOL_JS="$(subst $(SPACE),$(COMMA),$(NODE_MODULES_JS) \
+		$(COOL_LIBS_JS) \
+		$(patsubst %.ts,%.js,$(COOL_JS_WEBORDER)))" \
 		-DVENDOR="$(VENDOR)" \
-		$(srcdir)/html/loleaflet.html.m4 > $@
+		$(srcdir)/html/cool.html.m4 > $@
 
 node_modules: package.json archived-packages
 	@npm install
@@ -589,10 +599,6 @@ $(DIST_FOLDER)/images/%: $(srcdir)/images/%
 	@mkdir -p $(dir $@)
 	@cp $< $@
 
-$(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
-	@mkdir -p $(dir $@)
-	@cp $< $@
-
 $(DIST_FOLDER)/%.html: $(srcdir)/html/%.html
 	@mkdir -p $(dir $@)
 	@if test -z '$(ENABLE_BROWSERSYNC)'; then \
@@ -601,6 +607,7 @@ $(DIST_FOLDER)/%.html: $(srcdir)/html/%.html
 		`ln -sf $(abs_srcdir)/$< $@`; \
 	fi
 
+if ENABLE_WELCOME_MESSAGE
 $(DIST_FOLDER)/welcome/%: $(srcdir)/welcome/%
 	@mkdir -p $(dir $@)
 	@if test -z '$(ENABLE_BROWSERSYNC)'; then \
@@ -608,12 +615,17 @@ $(DIST_FOLDER)/welcome/%: $(srcdir)/welcome/%
 	else \
 		`ln -sf $(abs_srcdir)/$< $@`; \
 	fi
+endif
 
-tscompile.done: $(OXOOL_JS_SRC) $(OXOOL_TS_SRC)
-	$(builddir)/node_modules/typescript/bin/tsc --typeRoots $(builddir)/node_modules/@types --outDir $(DIST_FOLDER)/src --rootDir $(srcdir)/src --checkJs false --project $(srcdir)/tsconfig.json
+if ENABLE_DEBUG
+SourceMap=--allowJs true --sourceMap true --inlineSources true
+endif
+
+tscompile.done: $(COOL_JS_SRC) $(COOL_TS_SRC)
+	$(builddir)/node_modules/typescript/bin/tsc --typeRoots $(builddir)/node_modules/@types --outDir $(DIST_FOLDER)/src --rootDir $(srcdir)/src --checkJs false --project $(srcdir)/tsconfig.json $(SourceMap)
 	@touch $@
 
-$(OXOOL_TS_JS_DST): tscompile.done
+$(COOL_TS_JS_DST): tscompile.done
 	@:
 
 $(DIST_FOLDER)/src/%.js: $(srcdir)/src/%.js
@@ -665,9 +677,8 @@ $(DIST_FOLDER)/admin/%: $(srcdir)/admin/%
 	@cp $< $@
 
 install-data-hook:
-	mkdir -p $(DESTDIR)$(pkgdatadir)/loleaflet; \
-	cp -a dist/ $(DESTDIR)$(pkgdatadir)/loleaflet/; \
-	rm -fr $(DESTDIR)$(pkgdatadir)/loleaflet/dist/src;
+	mkdir -p $(DESTDIR)$(pkgdatadir)/browser; \
+	cp -a dist/ $(DESTDIR)$(pkgdatadir)/browser/;
 
 libs:
 	@mkdir -p $(abs_srcdir)/libs
@@ -675,10 +686,13 @@ libs:
 	&& $(call npm_source,$(NODE_MODULES_SRC))
 
 pot:
-	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/templates/loleaflet-ui.pot \
+	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/templates/cool-ui.pot \
 		admin/admin.strings.js \
-		admin/js/admin.menu.js \
-		admin/src/*.js \
+		admin/src/AdminSocketAnalytics.js \
+		admin/src/AdminSocketBase.js \
+		admin/src/AdminSocketOverview.js \
+		admin/src/AdminSocketSettings.js \
+		admin/src/Util.js \
 		js/w2ui-1.5.rc1.js \
 		src/control/ColorPicker.js \
 		src/control/Control.AlertDialog.js \
@@ -688,13 +702,16 @@ pot:
 		src/control/Control.DocumentRepair.js \
 		src/control/Control.DownloadProgress.js \
 		src/control/Control.FormulaBar.js \
+		src/control/Control.FormulaBarJSDialog.js \
 		src/control/Control.JSDialogBuilder.js \
 		src/control/Control.LanguageDialog.js \
 		src/control/Control.Menubar.js \
-		src/control/Control.ReadonlyBar.js \
 		src/control/Control.MobileBottomBar.js \
 		src/control/Control.MobileTopBar.js \
 		src/control/Control.MobileWizardBuilder.js \
+		src/control/Control.MobileWizardWindow.js \
+		src/control/Control.MobileWizard.js \
+		src/control/Control.MobileWizardPopup.js \
 		src/control/Control.Notebookbar.js \
 		src/control/Control.NotebookbarBuilder.js \
 		src/control/Control.NotebookbarCalc.js \
@@ -711,38 +728,34 @@ pot:
 		src/control/Control.Toolbar.js \
 		src/control/Control.TopToolbar.js \
 		src/control/Control.UserList.js \
-		src/control/Control.Dialogs.js \
-		src/control/Control.AlternativeCommand.js \
+		src/control/Control.Zotero.js \
 		src/control/Parts.js \
 		src/control/Permission.js \
 		src/control/Ruler.js \
 		src/control/Signing.js \
 		src/control/Toolbar.js \
-		src/control/Toolbar.Extensions.js \
-		src/control/IconAlias.js \
 		src/core/Socket.js \
 		src/errormessages.js \
-		src/othermessages.js \
 		src/layer/tile/CanvasTileLayer.js \
 		src/layer/tile/CommentListSection.ts \
 		src/layer/tile/CommentSection.ts \
 		src/main.js \
 		src/map/Clipboard.js \
 		src/map/Map.js \
+		src/map/handler/Map.Feedback.js \
 		src/map/handler/Map.FileInserter.js \
 		src/map/handler/Map.Keyboard.js \
-		src/map/handler/Map.WOPI.js \
-		uiconfig/dialogs/*.js
+		src/map/handler/Map.WOPI.js
 
-	html2po --pot --input=html/loleaflet-help.html --output=po/templates/loleaflet-help.pot --duplicates=merge
+	html2po --pot --input=html/cool-help.html --output=po/templates/cool-help.pot --duplicates=merge
 	html2po --pot --input=welcome/welcome.html --output=po/templates/welcome.pot --duplicates=merge
-	$(srcdir)/util/appendwelcome.py po/templates/welcome.pot po/templates/loleaflet-ui.pot
+	$(srcdir)/util/appendwelcome.py po/templates/welcome.pot po/templates/cool-ui.pot
 	rm po/templates/welcome.pot
-	msguniq -w 78 -t UTF-8 po/templates/loleaflet-ui.pot > po/templates/loleaflet-ui.pot.new; mv po/templates/loleaflet-ui.pot.new po/templates/loleaflet-ui.pot
+	msguniq -w 78 -t UTF-8 po/templates/cool-ui.pot > po/templates/cool-ui.pot.new; mv po/templates/cool-ui.pot.new po/templates/cool-ui.pot
 
 l10n: pot
-	for i in po/ui-*.po; do pot2po --input=po/templates/loleaflet-ui.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
-	for i in po/help-*.po; do pot2po --input=po/templates/loleaflet-help.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
+	for i in po/ui-*.po; do pot2po --input=po/templates/cool-ui.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
+	for i in po/help-*.po; do pot2po --input=po/templates/cool-help.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
 
 clean-local:
 	@rm -rf $(DIST_FOLDER)
@@ -751,10 +764,10 @@ clean-local:
 	@rm -f $(abs_srcdir)/jsconfig.json
 	@rm -f $(abs_srcdir)/admin/jsconfig.json
 
-CLEANFILES = tscompile.done $(INTERMEDIATE_DIR)/loleaflet-src.js $(DIST_FOLDER)/bundle.css $(DIST_FOLDER)/bundle.js $(INTERMEDIATE_DIR)/loleaflet-src.js
+CLEANFILES = tscompile.done $(INTERMEDIATE_DIR)/cool-src.js $(DIST_FOLDER)/bundle.css $(DIST_FOLDER)/bundle.js $(INTERMEDIATE_DIR)/cool-src.js
 
 ctags:
-	@$(CTAGS) --language-force=JavaScript $(OXOOL_JS_SRC) $(srcdir)/js/global.js
+	@$(CTAGS) --language-force=JavaScript $(COOL_JS_SRC) $(srcdir)/js/global.js
 
 $(abs_srcdir)/jsconfig.json:
 	@printf "{\n \
@@ -773,15 +786,22 @@ jsconfig: $(abs_srcdir)/jsconfig.json $(abs_srcdir)/admin/jsconfig.json
 build-tests: $(MOCHA_TS_JS_FILES)
 	@echo "Build of mocha test finished."
 
+MOCHA_TEST_LOG = "`pwd`/mocha.log"
 check-local: $(MOCHA_TS_JS_FILES)
 	@echo "Running mocha tests..."
-	@$(NODE) node_modules/mocha/bin/mocha "$(srcdir)/mocha_tests/**/*.js"
+	@echo > ${MOCHA_TEST_LOG}
+	@if npm test 2> ${MOCHA_TEST_LOG} 1>&2; then \
+		echo "Mocha tests finished successfully. Results in ${MOCHA_TEST_LOG}"; \
+	else \
+		cat ${MOCHA_TEST_LOG}; \
+		exit 1; \
+	fi
 
-SSL_FLAG = `xmllint --xpath 'string(/config/ssl/enable)' $(abs_top_builddir)/oxoolwsd.xml`
+SSL_FLAG = `xmllint --xpath 'string(/config/ssl/enable)' $(abs_top_builddir)/coolwsd.xml`
 
-# the delay (in miliseconds) between each emulated key stroke for each view
+# the delay (in milliseconds) between each emulated key stroke for each view
 typing_speed=100
-# The duration of the typing (in miliseconds)
+# The duration of the typing (in milliseconds)
 typing_duration=30000
 # By default 6 views are spawned in the document.
 single_view="false"

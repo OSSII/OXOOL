@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -24,6 +22,9 @@
 #include <Protocol.hpp>
 #include <ServerSocket.hpp>
 #include <WebSocketHandler.hpp>
+#if !MOBILEAPP
+#include <net/HttpHelper.hpp>
+#endif
 #if ENABLE_SSL
 #  include <SslSocket.hpp>
 #endif
@@ -35,8 +36,8 @@ class DumpSocketHandler : public WebSocketHandler
 {
 public:
     DumpSocketHandler(const std::weak_ptr<StreamSocket>& socket,
-                      const Poco::Net::HTTPRequest& request) :
-        WebSocketHandler(socket, request)
+                      const Poco::Net::HTTPRequest& request)
+        : WebSocketHandler(socket.lock(), request)
     {
     }
 
@@ -45,12 +46,12 @@ private:
     void handleMessage(const std::vector<char> &data) override
     {
         std::cout << "WebSocket message data:\n";
-        Util::dumpHex(std::cout, "", "    ", data, false);
+        Util::dumpHex(std::cout, data, "", "    ", false);
     }
 };
 
 /// Handles incoming connections and dispatches to the appropriate handler.
-class ClientRequestDispatcher : public SimpleSocketHandler
+class ClientRequestDispatcher final : public SimpleSocketHandler
 {
 public:
     ClientRequestDispatcher()
@@ -111,7 +112,7 @@ private:
                     logger << " / " << it.first << ": " << it.second;
                 }
 
-                LOG_END(logger);
+                LOG_END_FLUSH(logger);
             }
 
             const std::streamsize contentLength = request.getContentLength();
@@ -142,7 +143,8 @@ private:
 
             const std::string& requestURI = request.getURI();
             StringVector pathTokens(StringVector::tokenize(requestURI, '/'));
-            if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
+            if (request.find("Upgrade") != request.end()
+                && Util::iequal(request["Upgrade"], "websocket"))
             {
                 auto dumpHandler = std::make_shared<DumpSocketHandler>(_socket, request);
                 socket->setHandler(dumpHandler);
@@ -162,18 +164,11 @@ private:
         catch (const std::exception& exc)
         {
             // Bad request.
-            std::ostringstream oss;
-            oss << "HTTP/1.1 400\r\n"
-                << "Date: " << Util::getHttpTimeNow() << "\r\n"
-                << "User-Agent: LOOLWSD WOPI Agent\r\n"
-                << "Content-Length: 0\r\n"
-                << "\r\n";
-            socket->send(oss.str());
-            socket->shutdown();
+            HttpHelper::sendErrorAndShutdown(400, socket);
 
             // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
             LOG_INF('#' << socket->getFD() << " Exception while processing incoming request: [" <<
-                    LOOLProtocol::getAbbreviatedMessage(in) << "]: " << exc.what());
+                    COOLProtocol::getAbbreviatedMessage(in) << "]: " << exc.what());
         }
 
         // if we succeeded - remove the request from our input buffer
@@ -187,9 +182,7 @@ private:
         return POLLIN;
     }
 
-    void performWrites() override
-    {
-    }
+    void performWrites(std::size_t /*capacity*/) override {}
 
 private:
     // The socket that owns us (we can't own it).
@@ -208,11 +201,13 @@ public:
     {
 #if ENABLE_SSL
         if (_isSSL)
-            return StreamSocket::create<SslStreamSocket>(physicalFd, false, std::make_shared<ClientRequestDispatcher>());
+            return StreamSocket::create<SslStreamSocket>(
+                std::string(), physicalFd, false, std::make_shared<ClientRequestDispatcher>());
 #else
-        (void) _isSSL;
+        (void)_isSSL;
 #endif
-        return StreamSocket::create<StreamSocket>(physicalFd, false, std::make_shared<ClientRequestDispatcher>());
+        return StreamSocket::create<StreamSocket>(std::string(), physicalFd, false,
+                                                  std::make_shared<ClientRequestDispatcher>());
     }
 };
 
@@ -224,10 +219,10 @@ namespace Util
     }
 }
 
-class LoolConfig final: public Poco::Util::XMLConfiguration
+class CoolConfig final: public Poco::Util::XMLConfiguration
 {
 public:
-    LoolConfig()
+    CoolConfig()
         {}
 };
 
@@ -243,8 +238,8 @@ int main (int argc, char **argv)
     Log::initialize("WebSocketDump", "trace", true, false,
                     std::map<std::string, std::string>());
 
-    LoolConfig config;
-    config.load("oxoolwsd.xml");
+    CoolConfig config;
+    config.load("coolwsd.xml");
 
     // read the port & ssl support
     int port = 9042;
@@ -263,15 +258,12 @@ int main (int argc, char **argv)
     const std::string ssl_key_file_path = "etc/key.pem";
     const std::string ssl_ca_file_path = "etc/ca-chain.cert.pem";
     const std::string ssl_cipher_list = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH";
-    const std::string ssl_password = "";
 
     // Initialize the non-blocking socket SSL.
     if (isSSL)
-        SslContext::initialize(ssl_cert_file_path,
-                               ssl_key_file_path,
-                               ssl_ca_file_path,
-                               ssl_cipher_list,
-                               ssl_password);
+        ssl::Manager::initializeServerContext(ssl_cert_file_path, ssl_key_file_path,
+                                              ssl_ca_file_path, ssl_cipher_list,
+                                              ssl::CertificateVerification::Disabled);
 #endif
 
     SocketPoll acceptPoll("accept");
@@ -298,7 +290,7 @@ int main (int argc, char **argv)
 
     while (true)
     {
-        DumpSocketPoll.poll(100 * 1000 * 1000);
+        DumpSocketPoll.poll(std::chrono::seconds(100));
     }
 }
 

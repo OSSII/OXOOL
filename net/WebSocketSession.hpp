@@ -20,6 +20,7 @@
 #include "Common.hpp"
 #include <common/MessageQueue.hpp>
 #include "NetUtil.hpp"
+#include "SigUtil.hpp"
 #include <net/Socket.hpp>
 #include <net/HttpRequest.hpp>
 #include <net/WebSocketHandler.hpp>
@@ -93,14 +94,14 @@ public:
         std::string port;
         if (!net::parseUri(uri, scheme, host, port))
         {
-            LOG_ERR("Invalid URI while creating WebSocketSession: " << uri);
+            LOG_ERR_S("Invalid URI while creating WebSocketSession: " << uri);
             return nullptr;
         }
 
         const std::string lowerScheme = Util::toLower(scheme);
         if (!Util::startsWith(lowerScheme, "http") && !Util::startsWith(lowerScheme, "ws"))
         {
-            LOG_ERR("Unsupported scheme in URI while creating WebSocketSession: " << uri);
+            LOG_ERR_S("Unsupported scheme in URI while creating WebSocketSession: " << uri);
             return nullptr;
         }
 
@@ -112,7 +113,7 @@ public:
     }
 
     /// Create a WebSocketSession and make a request to given @url.
-    static std::shared_ptr<WebSocketSession> create(std::shared_ptr<SocketPoll> socketPoll,
+    static std::shared_ptr<WebSocketSession> create(const std::shared_ptr<SocketPoll>& socketPoll,
                                                     const std::string& uri, const std::string& url)
     {
         auto session = create(uri);
@@ -147,7 +148,7 @@ public:
     Protocol protocol() const { return _protocol; }
     bool secure() const { return _protocol == Protocol::HttpSsl; }
 
-    bool asyncRequest(http::Request& req, std::shared_ptr<SocketPoll> socketPoll)
+    bool asyncRequest(http::Request& req, const std::shared_ptr<SocketPoll>& socketPoll)
     {
         LOG_TRC("asyncRequest: " << req.getVerb() << ' ' << host() << ':' << port() << ' '
                                  << req.getUrl());
@@ -185,8 +186,13 @@ public:
                     return message;
             }
 
+            if (SigUtil::getShutdownRequestFlag())
+                break;
+
             // Timed wait, if we must.
-        } while (_inCv.wait_for(lock, timeout, [this]() { return !_inQueue.isEmpty(); }));
+        } while (_inCv.wait_for(
+            lock, timeout,
+            [this]() { return !_inQueue.isEmpty() || SigUtil::getShutdownRequestFlag(); }));
 
         LOG_DBG(context << "Giving up polling after " << timeout);
         return std::vector<char>();
@@ -235,7 +241,7 @@ public:
                     auto ws = weakptr.lock();
                     if (ws)
                     {
-                        LOG_TRC("WebSocketSession: shutdown");
+                        LOG_TRC_S("WebSocketSession: shutdown");
                         ws->shutdown(true, "Shutting down");
                     }
                 });
@@ -254,10 +260,16 @@ public:
         _shutdown = true;
         if (!_disconnected)
         {
-            std::unique_lock<std::mutex> lock(_outMutex);
-            if (_outQueue.isEmpty())
+            const auto pollPtr = _socketPoll.lock();
+            if (pollPtr && pollPtr->isAlive())
             {
-                shutdownWS();
+                pollPtr->wakeup();
+            }
+            else
+            {
+                LOG_WRN("WebSocketSession: No SocketPoll to issue asyncShutdown. Shutting down "
+                        "directly.");
+                shutdown(true, "Async shutting down");
             }
         }
     }
@@ -279,7 +291,7 @@ public:
 private:
     void handleMessage(const std::vector<char>& data) override
     {
-        LOG_DBG("Got message: " << LOOLProtocol::getAbbreviatedMessage(data));
+        LOG_TRC("Got message: " << COOLProtocol::getAbbreviatedMessage(data));
         {
             std::unique_lock<std::mutex> lock(_inMutex);
             _inQueue.put(data);
@@ -291,9 +303,9 @@ private:
     bool matchMessage(const std::string& prefix, const std::vector<char>& message,
                       const std::string& context)
     {
-        const auto header = LOOLProtocol::getFirstLine(message);
-        const bool match = LOOLProtocol::matchPrefix(prefix, header);
-        LOG_DBG(context << (match ? "Matched" : "Skipped") << " message [" << prefix
+        const auto header = COOLProtocol::getFirstLine(message);
+        const bool match = COOLProtocol::matchPrefix(prefix, header);
+        LOG_DBG(context << (match ? " Matched" : " Skipped") << " message [" << prefix
                         << "]: " << header);
         return match;
     }
@@ -302,7 +314,7 @@ private:
                       int64_t& /*timeoutMaxMicroS*/) override
     {
         std::unique_lock<std::mutex> lock(_outMutex);
-        if (!_outQueue.isEmpty())
+        if (!_outQueue.isEmpty() || _shutdown) // Graceful disconnection needs to send a frame.
             return POLLIN | POLLOUT;
         return POLLIN;
     }
@@ -331,8 +343,7 @@ private:
 
             if (_shutdown && _outQueue.isEmpty())
             {
-                LOG_DBG("WebSocketSession: shutting down after sending all the data, as flagged.");
-                shutdownWS();
+                sendCloseFrame();
             }
         }
         catch (const std::exception& ex)
@@ -347,7 +358,6 @@ private:
     using WebSocketHandler::sendBinaryMessage;
     using WebSocketHandler::sendMessage;
     using WebSocketHandler::sendTextMessage;
-    using WebSocketHandler::shutdown;
 
     void onConnect(const std::shared_ptr<StreamSocket>& socket) override
     {

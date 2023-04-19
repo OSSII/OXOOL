@@ -82,11 +82,9 @@ std::unique_ptr<SslContext> ssl::Manager::ClientInstance(nullptr);
 
 SslContext::SslContext(const std::string& certFilePath, const std::string& keyFilePath,
                        const std::string& caFilePath, const std::string& cipherList,
-                       ssl::CertificateVerification verification,
-                       const std::string& privateKeyPassword)
+                       ssl::CertificateVerification verification)
     : _ctx(nullptr)
     , _verification(verification)
-    , _privateKeyPassword(privateKeyPassword)
 {
     const std::vector<char> rand = Util::rng::getBytes(512);
     RAND_seed(&rand[0], rand.size());
@@ -146,11 +144,6 @@ SslContext::SslContext(const std::string& certFilePath, const std::string& keyFi
             {
                 std::string msg = getLastErrorMsg();
                 throw std::runtime_error(std::string("Error loading private key from file ") + keyFilePath + " (" + msg + ')');
-            }
-            else
-            {
-                // Automatically respond with private key password (if any).
-                SSL_CTX_set_default_passwd_cb_userdata(_ctx, (void *)_privateKeyPassword.c_str());
             }
         }
 

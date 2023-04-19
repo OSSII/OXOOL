@@ -4,11 +4,11 @@
  * from the JSON description provided by the server.
  */
 
-/* global $ _UNO _ */
+/* global $ _UNO _ JSDialog */
 
 L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 	_customizeOptions: function() {
-		this.options.noLabelsForUnoButtons = false;
+		this.options.noLabelsForUnoButtons = true;
 		this.options.useInLineLabelsForUnoButtons = false;
 		this.options.cssClass = 'mobile-wizard';
 	},
@@ -24,6 +24,8 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 		this._controlHandlers['panel'] = this._panelHandler;
 		this._controlHandlers['toolbox'] = this._toolboxHandler;
 		this._controlHandlers['mobile-popup-container'] = this._mobilePopupContainer;
+		this._controlHandlers['tabcontrol'] = JSDialog.mobileTabControl;
+		this._controlHandlers['paneltabs'] = JSDialog.mobilePanelControl;
 		this._controlHandlers['scrollwindow'] = undefined;
 
 		this._toolitemHandlers['.uno:FontworkAlignmentFloater'] = function () { return false; };
@@ -64,6 +66,9 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 		spinfield.onkeypress = builder._preventNonNumericalInput;
 		spinfield.dir = document.documentElement.dir;
 		controls['spinfield'] = spinfield;
+
+		if (data.labelledBy)
+			spinfield.setAttribute('aria-labelledby', data.labelledBy);
 
 		if (data.unit) {
 			var unit = L.DomUtil.create('span', 'spinfieldunit', div);
@@ -222,7 +227,7 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 
 		var checkboxLabel = L.DomUtil.create('label', '', div);
 		checkboxLabel.textContent = builder._cleanText(data.text);
-		checkboxLabel.for = data.id;
+		checkboxLabel.htmlFor = data.id;
 		var checkbox = L.DomUtil.createWithId('input', data.id, div);
 		checkbox.type = 'checkbox';
 
@@ -258,7 +263,7 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 
 		var radiobuttonLabel = L.DomUtil.create('label', '', container);
 		radiobuttonLabel.textContent = builder._cleanText(data.text);
-		radiobuttonLabel.for = data.id;
+		radiobuttonLabel.htmlFor = data.id;
 
 		if (data.enabled === 'false' || data.enabled === false)
 			$(radiobutton).attr('disabled', 'disabled');
@@ -281,6 +286,8 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 		edit.value = builder._cleanText(data.text);
 		edit.id = data.id;
 		edit.dir = 'auto';
+		if (data.password)
+			edit.type = 'password';
 
 		if (data.enabled === 'false' || data.enabled === false)
 			$(edit).prop('disabled', true);
@@ -697,6 +704,9 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 			var childData = data[childIndex];
 			if (!childData)
 				continue;
+
+			this._handleResponses(childData, this);
+
 			this._parentize(childData);
 			var childType = childData.type;
 			var processChildren = true;
@@ -713,6 +723,11 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 			if (childData.dialogid) {
 				var dialog = L.DomUtil.createWithId('div', childData.dialogid, childObject);
 				childObject = dialog;
+			}
+
+			if (this.wizard._dialogid === 'ContentControlDialog' && childData.id !== '') {
+				var div = L.DomUtil.createWithId('div', childData.id, childObject);
+				childObject = div;
 			}
 
 			var handler = this._controlHandlers[childType];
@@ -748,8 +763,6 @@ L.Control.MobileWizardBuilder = L.Control.JSDialogBuilder.extend({
 					var isCancel = response === '0' || response === 0;
 					if (button && (isHelp || isClose || isCancel))
 						button.style.display = 'none';
-					else if (button)
-						this.setupStandardButtonHandler(button, response, this);
 				}
 			}
 		}

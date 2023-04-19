@@ -1,7 +1,5 @@
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -39,7 +37,7 @@ public class PrintAdapter extends PrintDocumentAdapter {
         super.onStart();
         //Will show its own progress bar for the below task
         printDocFile = new File(mainActivity.getCacheDir(), "print.pdf");
-        mainActivity.saveAs(printDocFile.toURI().toString(), "pdf");
+        mainActivity.saveAs(printDocFile.toURI().toString(), "pdf", null);
     }
 
     @Override

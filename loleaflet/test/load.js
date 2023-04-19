@@ -64,9 +64,9 @@ global.console = {
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 
-var data = fs.readFileSync(top_builddir + '/loleaflet/dist/loleaflet.html', {encoding: 'utf8'});
+var data = fs.readFileSync(top_builddir + '/browser/dist/cool.html', {encoding: 'utf8'});
 
-data = data.replace(/%SERVICE_ROOT%\/loleaflet\/%VERSION%/g, top_builddir + '/loleaflet/dist');
+data = data.replace(/%SERVICE_ROOT%\/browser\/%VERSION%/g, top_builddir + '/browser/dist');
 data = data.replace(/%SERVICE_ROOT%/g, '');
 data = data.replace(/%VERSION%/g, 'dist');
 if (ssl_flag === 'true')
@@ -78,8 +78,8 @@ data = data.replace(/%ACCESS_TOKEN_TTL%/g, '0');
 data = data.replace(/%ACCESS_HEADER%/g, '');
 data = data.replace(/%BROWSER_LOGGING%/g, 'true');
 data = data.replace(/%ENABLE_WELCOME_MSG%/g, 'false');
-data = data.replace(/%ENABLE_WELCOME_MSG%/g, 'false');
-data = data.replace(/%ENABLE_WELCOME_MSG_BTN%/g, 'false');
+data = data.replace(/%AUTO_SHOW_WELCOME%/g, 'false');
+data = data.replace(/%AUTO_SHOW_FEEDBACK%/g, 'false');
 data = data.replace(/%USER_INTERFACE_MODE%/g, '');
 data = data.replace(/%USE_INTEGRATION_THEME%/g, 'true');
 data = data.replace(/%OUT_OF_FOCUS_TIMEOUT_SECS%/g, '1000000');
@@ -90,13 +90,15 @@ data = data.replace(/%FRAME_ANCESTORS%/g, '');
 data = data.replace(/%SOCKET_PROXY%/g, 'false');
 data = data.replace(/%UI_DEFAULTS%/g, '{}');
 data = data.replace(/%HEXIFY_URL%/g, '""');
+data = data.replace(/%GROUP_DOWNLOAD_AS%/g, 'false');
+data = data.replace(/%DOCUMENT_SIGNING_URL%/g, '');
 
 window = new JSDOM(data, {
 				runScripts: 'dangerously',
 				verbose: false,
 				pretendToBeVisual: false,
 				includeNodeLocations: false,
-				url: 'file:///tmp/notthere/loleaflet.html?file_path=file:///' + to_load,
+				url: 'file:///tmp/notthere/cool.html?file_path=file:///' + to_load,
 				resources: 'usable',
 				beforeParse(window) {
 					console.debug('Before script parsing');
@@ -118,7 +120,7 @@ Object.defineProperty(window.HTMLElement.prototype, "clientHeight", {
 	}
 });
 
-console.log('Finished bootstrapping: ' + window.L.Browser.mobile + ' desktop ' + window.mode.isDesktop() + ' now running');
+process.stderr.write('Finished bootstrapping: mobile=' + window.L.Browser.mobile + ' desktop=' + window.mode.isDesktop() + ' now running\n');
 console.debug('Window size ' + window.innerWidth + 'x' + window.innerHeight);
 
 window.HTMLElement.prototype.getBoundingClientRect = function() {
@@ -126,6 +128,21 @@ window.HTMLElement.prototype.getBoundingClientRect = function() {
 	return {
 		width: 0, height: 0, top: 0, left: 0
 	};
+};
+
+// nodejs requires rejectUnauthorized to be set to cope with our https
+window.createWebSocket = function(uri) {
+        if ('processCoolUrl' in window) {
+                uri = window.processCoolUrl({ url: uri, type: 'ws' });
+        }
+
+        if (global.socketProxy) {
+                window.socketProxy = true;
+                return new global.ProxySocket(uri);
+        } else {
+		// FIXME: rejectUnauthorized: false for SSL?
+                return new WebSocket(uri);
+        }
 };
 
 function sleep(ms)
@@ -169,11 +186,11 @@ function dumpStats() {
 	output += `Duration=${typing_duration}ms\n`;
 	output += `Total num of incoming socket messages=${socketMessageCount}\n`;
 	output += `Single view=${single_view}\n`;
-	fs.writeFile(top_builddir + '/loleaflet/test/tilestats.txt', output, function (err) {
+	fs.writeFile(top_builddir + '/browser/test/tilestats.txt', output, function (err) {
 		if (err) console.log('tilestats: error dumping stats to file!', err);
 		else console.log('tilestats: finished dumping the stats to file!');
 	});
-	console.log(output);
+	process.stderr.write(output);
 }
 
 window.onload = function() {

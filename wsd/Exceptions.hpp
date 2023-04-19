@@ -25,8 +25,8 @@
             { type::count++; } \
     };
 
-// Generic LOOL errors and base for others.
-class LoolException : public std::runtime_error
+// Generic COOL errors and base for others.
+class CoolException : public std::runtime_error
 {
 public:
     std::string toString() const
@@ -37,15 +37,15 @@ protected:
     using std::runtime_error::runtime_error;
 };
 
-EXCEPTION_DECL(StorageSpaceLowException,LoolException)
+EXCEPTION_DECL(StorageSpaceLowException,CoolException)
 
 /// General exception thrown when we are not able to
 /// connect to storage.
-EXCEPTION_DECL(StorageConnectionException,LoolException)
+EXCEPTION_DECL(StorageConnectionException,CoolException)
 
 /// A bad-request exception that is meant to signify,
 /// and translate into, an HTTP bad request.
-EXCEPTION_DECL(BadRequestException,LoolException)
+EXCEPTION_DECL(BadRequestException,CoolException)
 
 /// A bad-argument exception that is meant to signify,
 /// and translate into, an HTTP bad request.
@@ -53,13 +53,13 @@ EXCEPTION_DECL(BadArgumentException,BadRequestException)
 
 /// An authorization exception that is meant to signify,
 /// and translate into, an HTTP unauthorized error.
-EXCEPTION_DECL(UnauthorizedRequestException,LoolException)
+EXCEPTION_DECL(UnauthorizedRequestException,CoolException)
 
 /// A service-unavailable exception that is meant to signify
 /// an internal error.
-EXCEPTION_DECL(ServiceUnavailableException,LoolException)
+EXCEPTION_DECL(ServiceUnavailableException,CoolException)
 
 /// Badly formed data we are parsing
-EXCEPTION_DECL(ParseError,LoolException)
+EXCEPTION_DECL(ParseError,CoolException)
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

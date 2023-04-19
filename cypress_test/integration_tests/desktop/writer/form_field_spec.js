@@ -1,23 +1,26 @@
-/* global describe it cy require afterEach expect */
+/* global describe it cy require afterEach expect Cypress */
 
 var helper = require('../../common/helper');
+var desktopHelper = require('../../common/desktop_helper');
 
 describe('Form field button tests.', function() {
 	var testFileName = 'shape_operations.odt';
 
 	function before(fileName) {
-		testFileName = fileName;
-		helper.beforeAll(fileName, 'writer');
+		testFileName = helper.beforeAll(fileName, 'writer');
+
+		if (Cypress.env('INTEGRATION') === 'nextcloud') {
+			desktopHelper.showStatusBarIfHidden();
+		}
 
 		// Blinking cursor is not visible for some reason.
-		cy.get('textarea.clipboard')
-			.type('x');
+		helper.typeIntoDocument('x');
 
 		cy.get('.blinking-cursor')
 			.should('be.visible');
 	}
 	afterEach(function() {
-		helper.afterAll(testFileName, 'writer');
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function buttonShouldNotExist() {
@@ -56,33 +59,6 @@ describe('Form field button tests.', function() {
 						expect(frameRect.bottom).to.be.at.least(cursorRect.bottom);
 						expect(frameRect.left).to.at.most(cursorRect.left);
 						expect(frameRect.right).to.be.at.least(cursorRect.right);
-					});
-			});
-	}
-
-	function doZoom(zoomIn) {
-		helper.initAliasToEmptyString('prevZoom');
-
-		cy.get('#tb_actionbar_item_zoom .w2ui-tb-caption')
-			.invoke('text')
-			.as('prevZoom');
-
-		cy.get('@prevZoom')
-			.should('not.be.equal', '');
-
-		if (zoomIn) {
-			cy.get('.w2ui-tb-image.w2ui-icon.zoomin')
-				.click();
-		} else {
-			cy.get('.w2ui-tb-image.w2ui-icon.zoomout')
-				.click();
-		}
-
-		cy.get('@prevZoom')
-			.then(function(prevZoom) {
-				cy.get('#tb_actionbar_item_zoom .w2ui-tb-caption')
-					.should(function(zoomItem) {
-						expect(zoomItem.text()).to.be.not.equal(prevZoom);
 					});
 			});
 	}
@@ -285,13 +261,11 @@ describe('Form field button tests.', function() {
 
 		buttonShouldExist();
 
-		// Do a zoom in
-		doZoom(true);
+		desktopHelper.zoomIn();
 
 		buttonShouldExist();
 
-		// Do a zoom out
-		doZoom(false);
+		desktopHelper.zoomOut();
 
 		buttonShouldExist();
 
@@ -303,8 +277,7 @@ describe('Form field button tests.', function() {
 
 		buttonShouldNotExist();
 
-		// Do a zoom in again
-		doZoom(true);
+		desktopHelper.zoomIn();
 	});
 
 	it('Test dynamic font size.', function() {
@@ -315,50 +288,38 @@ describe('Form field button tests.', function() {
 
 		buttonShouldExist();
 
-		// Get the initial font size from the style
-		helper.initAliasToEmptyString('prevFontSize');
-
+		// Get the initial font size from the style.
+		var prevFontSize = '';
 		cy.get('.drop-down-field-list-item')
-			.invoke('css', 'font-size')
-			.as('prevFontSize');
+			.should(function(item) {
+				prevFontSize = item.css('font-size');
+				expect(prevFontSize).to.not.equal('');
+			});
 
-		cy.get('@prevFontSize')
-			.should('not.be.equal', '');
-
-		// Do a zoom in
-		doZoom(true);
+		desktopHelper.zoomIn();
 
 		buttonShouldExist();
 
 		// Check that the font size was changed
-		cy.get('@prevFontSize')
-			.then(function(prevFontSize) {
-				cy.get('.drop-down-field-list-item')
-					.should(function(items) {
-						var prevSize = parseInt(prevFontSize, 10);
-						var currentSize = parseInt(items.css('font-size'), 10);
-						expect(currentSize).to.be.greaterThan(prevSize);
-					});
+		cy.get('.drop-down-field-list-item')
+			.should(function(item) {
+				var prevSize = parseInt(prevFontSize, 10);
+				var currentSize = parseInt(item.css('font-size'), 10);
+				expect(currentSize).to.be.greaterThan(prevSize);
 			});
 
 		cy.get('.drop-down-field-list-item')
 			.invoke('css', 'font-size')
 			.as('prevFontSize');
 
-		// Do a zoom out
-		doZoom(false);
+		desktopHelper.zoomOut();
 
 		buttonShouldExist();
 
-		// Check that the font size was changed
-		cy.get('@prevFontSize')
-			.then(function(prevFontSize) {
-				cy.get('.drop-down-field-list-item')
-					.should(function(items) {
-						var prevSize = parseInt(prevFontSize, 10);
-						var currentSize = parseInt(items.css('font-size'), 10);
-						expect(currentSize).to.be.lessThan(prevSize);
-					});
+		// Check that the font size was changed back
+		cy.get('.drop-down-field-list-item')
+			.should(function(item) {
+				expect(item.css('font-size')).to.be.equal(prevFontSize);
 			});
 	});
 });

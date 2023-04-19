@@ -7,7 +7,7 @@
 
 #include <config.h>
 
-#include "LOOLWSD.hpp"
+#include "COOLWSD.hpp"
 #include "RequestDetails.hpp"
 #include "common/Log.hpp"
 #include "HostUtil.hpp"
@@ -66,7 +66,6 @@ template <typename T> bool equal(const T& lhs, const T& rhs)
 }
 
 RequestDetails::RequestDetails(Poco::Net::HTTPRequest &request, const std::string& serviceRoot)
-    : _isMobile(false)
 {
     // Check and remove the ServiceRoot from the request.getURI()
     if (!Util::startsWith(request.getURI(), serviceRoot))
@@ -100,7 +99,6 @@ RequestDetails::RequestDetails(const std::string &mobileURI)
     , _isProxy(false)
     , _isWebSocket(false)
 {
-    _isMobile = true;
     _uriString = mobileURI;
     dehexify();
     processURI();
@@ -108,8 +106,8 @@ RequestDetails::RequestDetails(const std::string &mobileURI)
 
 void RequestDetails::dehexify()
 {
-    // For now, we only hexify lool/ URLs.
-    constexpr auto Prefix = "lool/0x";
+    // For now, we only hexify cool/ URLs.
+    constexpr auto Prefix = "cool/0x";
     constexpr auto PrefixLen = sizeof(Prefix) - 1;
 
     const auto hexPos = _uriString.find(Prefix);
@@ -172,11 +170,11 @@ void RequestDetails::processURI()
     std::string uriRes = _uriString.substr(posDocUri + 1);
 
     const auto posLastWS = uriRes.rfind("/ws");
-    // DocumentURI is the second segment in lool URIs.
-    if (_pathSegs.equals(0, "lool"))
+    // DocumentURI is the second segment in cool URIs.
+    if (_pathSegs.equals(0, "cool"))
     {
         //FIXME: For historic reasons the DocumentURI includes the WOPISrc.
-        // This is problematic because decoding a URI that embedds not one, but
+        // This is problematic because decoding a URI that embeds not one, but
         // *two* encoded URIs within it is bound to produce an invalid URI.
         // Potentially three '?' might exist in the result (after decoding).
         std::size_t end = uriRes.rfind("/ws?");
@@ -190,7 +188,7 @@ void RequestDetails::processURI()
         {
             end = (posLastWS != std::string::npos ? posLastWS : uriRes.find('/'));
             if (end == std::string::npos)
-                end = uriRes.find('?'); // e.g. /lool/clipboard?WOPISrc=file%3A%2F%2F%2Ftmp%2Fcopypasteef324307_empty.ods...
+                end = uriRes.find('?'); // e.g. /cool/clipboard?WOPISrc=file%3A%2F%2F%2Ftmp%2Fcopypasteef324307_empty.ods...
         }
 
         const std::string docUri = uriRes.substr(0, end);
@@ -262,7 +260,7 @@ Poco::URI RequestDetails::sanitizeURI(const std::string& uri)
         throw std::runtime_error("Invalid URI.");
     }
 
-    // We decoded access token before embedding it in loleaflet.html
+    // We decoded access token before embedding it in cool.html
     // So, we need to decode it now to get its actual value
     Poco::URI::QueryParameters queryParams = uriPublic.getQueryParameters();
     for (auto& param : queryParams)

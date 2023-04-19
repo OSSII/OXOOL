@@ -1,7 +1,7 @@
 #main-menu {
-	top: 0px;
+	top: 0;
 	height: auto;
-	z-index: auto;
+	z-index: 1000;
 	outline: none;
 	float: left;
 	background-color: transparent;
@@ -24,8 +24,8 @@
 }
 .document-logo {
 	position: relative;
-	width: 28px;
-	height: 28px;
+	width: 30px;
+	height: 30px;
 }
 
 .document-title {
@@ -58,14 +58,14 @@
 	top: -9px;
 }
 
-.main-nav.readonly #table-optionstoolboxdown {
+.main-nav.readonly #optionstoolboxdown {
 	display: none;
 }
 .main-nav {
 	height: var(--header-height); /* on mouseover menubar items, border emerges */
 	width: auto;
-	background: var(--doc-identify-color);
-	padding: 0;
+	background: var(--color-background-lighter);
+	padding: 3px 3px 3px 0;
 	white-space: nowrap;
 	z-index: 12;
 	display: flex;
@@ -73,7 +73,7 @@
 }
 .main-nav.readonly {
 	position: relative;
-	border-bottom: 1px solid var(color-border);
+	border-bottom: 1px solid var(--color-border);
 }
 .main-nav.hasnotebookbar {
 	height: var(--header-height);
@@ -85,8 +85,9 @@
 	height: 0;
 }
 .main-nav.hasnotebookbar:not(.readonly) {
-	/* background: var(--gray-light-bg-color); */
+	background: var(--color-main-background);
 	padding: 0px;
+	overflow-x: auto;
 }
 
 /* Customizations to sm-simple theme to make it look like LO menu, lo-menu class */
@@ -105,53 +106,33 @@
 	cursor: default;
 }
 
-/* menubar 選項 */
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active {
-	font-family: var(--oxool-font);
-	font-size: 16px;
-	line-height: 16px;
+	font-family: var(--cool-font);
+	font-size: var(--default-font-size);
+	line-height: 15px;
 }
-/* sub menu */
+
 .lo-menu ul a, .lo-menu ul a:hover, .lo-menu ul a:focus, .lo-menu ul a:active {
-	font-size: 14px;
-	margin-left: 3px;
-	margin-right: 3px;
-	margin-top: 0px;
-	margin-bottom: 0px;
-	border-radius: 5px;
-}
-
-.lo-menu ul li:first-child {
-	margin-top: 3px;
-}
-
-.lo-menu ul li:last-child {
-	margin-bottom: 3px;
+	font-size: var(--default-font-size);
 }
 
 .lo-menu a.disabled {
-	cursor: default;
+	cursor: not-allowed;
 }
 
 .lo-menu > li > a, .lo-menu > li > a.has-submenu {
-	height: 26px;
-	padding-left: 12px;
-	padding-right: 12px;
-	padding-top: 5px;
+	padding: 8px;
 	z-index: 400;
 	border: 1px solid transparent;
 }
 
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
-	padding: 5px 32px 5px 48px;
-	color: var(--color-text-accent);
+	padding: 5px 22px;
+	color: var(--color-main-text);
 }
 .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
-	background: var(--doc-identify-color);
-	color: #fff;
-}
-.lo-menu a:hover.disabled {
-	color: var(--color-text-lighter);
+	background: var(--color-background-darker);
+	color: var(--color-text-darker);
 }
 .lo-menu > li, .lo-menu > li > .disabled {
 	background: transparent; /* top-level menus remain greyish */
@@ -159,31 +140,19 @@
 }
 .lo-menu > li .disabled {
 	background: var(--color-main-background);
-	color: var(--color-text-disabled);
+	color: var(--color-text-lighter);
 }
 .lo-menu > li > a:hover, .lo-menu > li > a:focus, .lo-menu > li > a:active, .lo-menu > li > a.highlighted {
-	background: var(--color-main-background);
+	background: var(--color-background-darker);
 	color: var(--color-text-darker);
 	border-color: var(--color-border-darker);
 	border-bottom: 1px solid var(--color-border-darker);
 }
-
-/* menubar 頂端文字 */
-.lo-menu > li > a {
-	color: #fff;
-}
-
 .lo-menu > li > a.highlighted {
 	border-bottom-color: var(--color-border-dark);
 }
-
-/* 第一層子選單 */
 .lo-menu > li > ul {
-	/* margin-top: -1px !important; */
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	-webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 50%);
-	box-shadow: 0 2px 5px rgb(0 0 0 / 50%);
+	margin-top: -1px !important;
 	z-index: 400;
 }
 .lo-menu > li > a span.sub-arrow {
@@ -202,12 +171,10 @@
 }
 .lo-menu ul a span.sub-arrow {
 	right: 0;
-	left: auto;
-	margin-right: 8px;
-	width: 8px;
-	height: 16px;
-	background: transparent url('images/submenuarrow.svg') no-repeat center/contain; /* we want them to be transparent always whether mobile or desktop */
+	margin-right: 5px;
+	background: transparent url('images/lc_menu_chevron.svg') no-repeat center right; /* we want them to be transparent always whether mobile or desktop */
 	color: transparent;
+	/*transform: rotate(180deg);*/
 }
 .lo-menu ul a:hover > span.sub-arrow {
 	-webkit-filter: brightness(100);
@@ -217,67 +184,14 @@
 	border-left: 0;
 	border-top: none;
 }
-.lo-menu i.separator {
-	margin-left: 44px;
-	margin-top: 3px;
-	margin-bottom: 3px;
-	display: block;
-	border-bottom: 1px solid #ddd;
+.lo-menu a.separator {
+	height: 1px;
+	margin: 4px 0;
+	overflow: hidden;
+	padding-top: 0;
+	padding-bottom: 0;
+	background-color: var(--color-border-lighter);
 }
-
-.menuicon, .menuicon:hover {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	left: 24px; /* 選單 ICON 前空白 */
-}
-
-.img-icon {
-	height: 18px;
-	width: 18px;
-	background-color: transparent;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: contain;
-	-moz-background-size: contain;
-	-webkit-background-size: contain;
-	-o-background-size: contain;
-}
-
-li .disabled .img-icon {
-	filter: grayscale(100%);
-	opacity: 0.3;
-}
-
-.item-has-hotkey {
-	padding-right: 132px !important;
-}
-
-.hotkey {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	right: 6px;
-	font-size: 10px;
-	display: inline-block;
-}
-
-.hotkey .keyboard {
-	font-family: var(--oxool-font);
-	font-weight: normal;
-	font-style: normal;
-	border-radius: 3px;
-	border: 1px solid rgb(220, 220, 220);
-	display: inline-block;
-	line-height: 1;
-	padding: 1px;
-	white-space: nowrap;
-}
-
-li .disabled .keyboard {
-	opacity: 0.4;
-}
-
 /* lo-menu customizations end */
 
 .main-nav:after {
@@ -360,11 +274,10 @@ li .disabled .keyboard {
 .lo-menu-item-checked::before {
 	position: absolute;
 	content: ' ';
-	top: 3px;
-	left: 6px;
+	left: 2px;
 	background: url('images/lc_listitem-selected.svg') no-repeat left -2px;
-	width: 18px;
-	height: 18px;
+	width: 20px;
+	height: 20px;
 }
 
 .lo-menu-item-checked:hover::before {
@@ -375,36 +288,36 @@ li .disabled .keyboard {
 
 .writer-icon-img {
 	background-image: url('images/x-office-document.svg');
-	background-size: 28px 28px;
+	background-size: 16px 16px;
 	background-repeat: no-repeat;
-	background-position: bottom;
+	background-position: center;
 }
 
 .calc-icon-img {
 	background-image: url('images/x-office-spreadsheet.svg');
-	background-size: 28px 28px;
+	background-size: 16px 16px;
 	background-repeat: no-repeat;
-	background-position: bottom;
+	background-position: center;
 }
 
 .impress-icon-img {
 	background-image: url('images/x-office-presentation.svg');
-	background-size: 28px 28px;
+	background-size: 16px 16px;
 	background-repeat: no-repeat;
-	background-position: bottom;
+	background-position: center;
 }
 
 .draw-icon-img {
 	background-image: url('images/x-office-drawing.svg');
-	background-size: 28px 28px;
+	background-size: 16px 16px;
 	background-repeat: no-repeat;
-	background-position: bottom;
+	background-position: center;
 }
 
 #menu-last-mod a {
-	font-size: 12px;
 	color: var(--color-text-lighter);
 	padding: 8px 15px 7px;
+	z-index: 400;
 	border: 1px solid transparent;
 }
 
@@ -417,7 +330,7 @@ li .disabled .keyboard {
 	color: var(--color-text-lighter) !important;
 	background-color: var(--color-background-lighter);
 	box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.2);
-	background: url('images/lc_freeemiumlock.svg') right top / 24px no-repeat
+	background: url('images/lc_lock.svg') right top / 24px no-repeat
 }
 
 #main-menu .locking-disabled {
@@ -436,7 +349,7 @@ li .disabled .keyboard {
 
 /* For notebook bar mode and sidebar*/
 .locking-disabled:not(.mobile-wizard) img.unobutton, #toolbar-up .locking-disabled .w2ui-tb-image.w2ui-icon {
-	background: url('images/lc_freeemiumlock.svg') center top / 24px no-repeat !important;
+	background: url('images/lc_lock.svg') center top / 24px no-repeat !important;
 	width: 24px !important;
 	padding-left: 24px;
 	box-sizing: border-box;
@@ -532,69 +445,4 @@ li .disabled .keyboard {
 }
 .restricted-item {
 	display: none !important;
-}
-
-#oxool-readonlybar {
-	display: flex;
-	height: 48px;
-	width: auto;
-	background: var(--doc-identify-color);
-	padding: 0;
-	white-space: nowrap;
-	z-index: 12;
-	align-items: center;
-	justify-content: space-between;
-	-webkit-box-shadow: 0 8px 6px -6px rgba(0,0,0,0.5);
-	-moz-box-shadow: 0 8px 6px -6px rgba(0,0,0,0.5);
-	box-shadow: 0 8px 6px -6px rgba(0,0,0,0.5);
-}
-
-#oxool-readonlybar .document-shortcuts-bar {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: var(--header-height);
-	padding-left: 10px;
-	padding-right: 10px;
-	box-sizing: border-box;
-	border: 1px solid var(--color-border-dark);
-	border-radius: 20px;
-	background: var(--color-background-lighter);
-	margin-left: 10px;
-}
-
-.document-shortcuts-bar .unotoolbutton.notebookbar {
-	margin-inline-end: 0px !important;
-	border: 1px solid transparent;
-}
-
-#oxool-readonlybar .document-name-header {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 200px;
-	max-width: 450px;
-	height: var(--header-height);
-	padding-left: 10px;
-	padding-right: 10px;
-	overflow: hidden;
-	background-color: var(--color-background-lighter);
-	border-radius: 20px;
-	margin-left: 10px;
-	margin-right: 10px;
-}
-
-#oxool-readonlybar .document-name {
-	font-family: var(--oxool-font);
-	font-size: var(--header-font-size);
-	font-weight: bold;
-	color: var(--color-main-text);
-}
-
-#oxool-readonlybar .closebuttonimage {
-	width: 32px;
-	height: 32px;
-	background: url('images/closedoc.svg') no-repeat center/32px;
-	margin-right: 10px;	
-	cursor: pointer;
 }

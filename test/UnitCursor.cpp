@@ -1,11 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include <config.h>
 
 #include <memory>
 #include <ostream>
@@ -20,12 +20,10 @@
 #include <Unit.hpp>
 #include <helpers.hpp>
 
-class LOOLWebSocket;
-
 namespace
 {
 void getCursor(const std::string& message, int& cursorX, int& cursorY, int& cursorWidth,
-               int& cursorHeight)
+               int& cursorHeight, const std::string& testname)
 {
     Poco::JSON::Parser parser;
     const Poco::Dynamic::Var result = parser.parse(message);
@@ -45,12 +43,13 @@ void getCursor(const std::string& message, int& cursorX, int& cursorY, int& curs
     LOK_ASSERT(cursorHeight >= 0);
 }
 
-void limitCursor(const std::function<void(const std::shared_ptr<LOOLWebSocket>& socket, int cursorX,
-                                          int cursorY, int cursorWidth, int cursorHeight,
-                                          int docWidth, int docHeight)>& keyhandler,
-                 const std::function<void(int docWidth, int docHeight, int newWidth,
-                                          int newHeight)>& checkhandler,
-                 const std::string& testname)
+void limitCursor(
+    const std::function<void(const std::shared_ptr<http::WebSocketSession>& socket, int cursorX,
+                             int cursorY, int cursorWidth, int cursorHeight, int docWidth,
+                             int docHeight)>& keyhandler,
+    const std::function<void(int docWidth, int docHeight, int newWidth, int newHeight)>&
+        checkhandler,
+    const std::string& testname)
 {
     int docSheet = -1;
     int docSheets = 0;
@@ -69,14 +68,18 @@ void limitCursor(const std::function<void(const std::shared_ptr<LOOLWebSocket>& 
     std::string response;
 
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket("empty.ods", uri, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CursorPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, "empty.ods", uri, testname);
 
     // check document size
     helpers::sendTextFrame(socket, "status", testname);
     response = helpers::assertResponseString(socket, "status:", testname);
     helpers::parseDocSize(response.substr(7), "spreadsheet", docSheet, docSheets, docWidth,
-                          docHeight, docViewId);
+                          docHeight, docViewId, testname);
 
     // Send an arrow key to initialize the CellCursor, otherwise we get "EMPTY".
     helpers::sendTextFrame(socket, "key type=input char=0 key=1027", testname);
@@ -89,7 +92,7 @@ void limitCursor(const std::function<void(const std::shared_ptr<LOOLWebSocket>& 
                  256, 256, 3840, 3840);
     helpers::sendTextFrame(socket, text, testname);
     const auto cursor = helpers::getResponseString(socket, "commandvalues:", testname);
-    getCursor(cursor.substr(14), cursorX, cursorY, cursorWidth, cursorHeight);
+    getCursor(cursor.substr(14), cursorX, cursorY, cursorWidth, cursorHeight, testname);
 
     // move cursor
     keyhandler(socket, cursorX, cursorY, cursorWidth, cursorHeight, docWidth, docHeight);
@@ -97,7 +100,7 @@ void limitCursor(const std::function<void(const std::shared_ptr<LOOLWebSocket>& 
     // filter messages, and expect to receive new document size
     response = helpers::assertResponseString(socket, "status:", testname);
     helpers::parseDocSize(response.substr(7), "spreadsheet", newSheet, newSheets, newWidth,
-                          newHeight, docViewId);
+                          newHeight, docViewId, testname);
 
     LOK_ASSERT_EQUAL(docSheets, newSheets);
     LOK_ASSERT_EQUAL(docSheet, newSheet);
@@ -117,7 +120,12 @@ class UnitCursor : public UnitWSD
     TestResult testInsertAnnotationCalc();
 
 public:
-    void invokeTest() override;
+    UnitCursor()
+        : UnitWSD("UnitCursor")
+    {
+    }
+
+    void invokeWSDTest() override;
 };
 
 UnitBase::TestResult UnitCursor::testMaxColumn()
@@ -126,8 +134,9 @@ UnitBase::TestResult UnitCursor::testMaxColumn()
     {
         limitCursor(
             // move cursor to last column
-            [](const std::shared_ptr<LOOLWebSocket>& socket, int cursorX, int cursorY,
-               int cursorWidth, int cursorHeight, int docWidth, int docHeight) {
+            [&](const std::shared_ptr<http::WebSocketSession>& socket, int cursorX, int cursorY,
+                int cursorWidth, int cursorHeight, int docWidth, int docHeight)
+            {
                 LOK_ASSERT(cursorX >= 0);
                 LOK_ASSERT(cursorY >= 0);
                 LOK_ASSERT(cursorWidth >= 0);
@@ -138,12 +147,13 @@ UnitBase::TestResult UnitCursor::testMaxColumn()
                 const std::string text = "key type=input char=0 key=1027";
                 while (cursorX <= docWidth)
                 {
-                    helpers::sendTextFrame(socket, text);
+                    helpers::sendTextFrame(socket, text, testname);
                     cursorX += cursorWidth;
                 }
             },
             // check new document width
-            [](int docWidth, int docHeight, int newWidth, int newHeight) {
+            [&](int docWidth, int docHeight, int newWidth, int newHeight)
+            {
                 LOK_ASSERT_EQUAL(docHeight, newHeight);
                 LOK_ASSERT(newWidth > docWidth);
             },
@@ -162,8 +172,9 @@ UnitBase::TestResult UnitCursor::testMaxRow()
     {
         limitCursor(
             // move cursor to last row
-            [](const std::shared_ptr<LOOLWebSocket>& socket, int cursorX, int cursorY,
-               int cursorWidth, int cursorHeight, int docWidth, int docHeight) {
+            [&](const std::shared_ptr<http::WebSocketSession>& socket, int cursorX, int cursorY,
+                int cursorWidth, int cursorHeight, int docWidth, int docHeight)
+            {
                 LOK_ASSERT(cursorX >= 0);
                 LOK_ASSERT(cursorY >= 0);
                 LOK_ASSERT(cursorWidth >= 0);
@@ -174,12 +185,13 @@ UnitBase::TestResult UnitCursor::testMaxRow()
                 const std::string text = "key type=input char=0 key=1024";
                 while (cursorY <= docHeight)
                 {
-                    helpers::sendTextFrame(socket, text);
+                    helpers::sendTextFrame(socket, text, testname);
                     cursorY += cursorHeight;
                 }
             },
             // check new document height
-            [](int docWidth, int docHeight, int newWidth, int newHeight) {
+            [&](int docWidth, int docHeight, int newWidth, int newHeight)
+            {
                 LOK_ASSERT_EQUAL(docWidth, newWidth);
                 LOK_ASSERT(newHeight > docHeight);
             },
@@ -194,15 +206,16 @@ UnitBase::TestResult UnitCursor::testMaxRow()
 
 UnitBase::TestResult UnitCursor::testInsertAnnotationWriter()
 {
-    const char* testname = "insertAnnotationWriter ";
-
     std::string documentPath, documentURL;
     helpers::getDocumentPathAndURL("hello.odt", documentPath, documentURL, testname);
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, documentURL);
 
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CursorPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     // Insert comment.
     helpers::sendTextFrame(socket, "uno .uno:InsertAnnotation", testname);
@@ -249,13 +262,15 @@ UnitBase::TestResult UnitCursor::testInsertAnnotationWriter()
         std::string("textselectioncontent: and now for something completely different"), res);
 
     // Close and reopen the same document and test again.
-    socket->shutdown();
+    socket->shutdownWS();
+    LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                       socket->waitForDisconnection(std::chrono::seconds(5)));
 
     // Make sure the document is fully unloaded.
-    // testNoExtraLoolKitsLeft();
+    // testNoExtraCoolKitsLeft();
 
     TST_LOG("Reloading ");
-    socket = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+    socket = helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     // Confirm that the text is in the comment and not doc body.
     // Click in the body.
@@ -286,14 +301,16 @@ UnitBase::TestResult UnitCursor::testInsertAnnotationWriter()
 
 UnitBase::TestResult UnitCursor::testEditAnnotationWriter()
 {
-    const char* testname = "editAnnotationWriter ";
-
     std::string documentPath, documentURL;
     helpers::getDocumentPathAndURL("with_comment.odt", documentPath, documentURL, testname);
 
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CursorPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     // Click in the body.
     helpers::sendTextFrame(
@@ -321,17 +338,19 @@ UnitBase::TestResult UnitCursor::testEditAnnotationWriter()
     LOK_ASSERT_EQUAL(
         std::string("textselectioncontent: and now for something completely different"), res);
 
-    // const int kitcount = getLoolKitProcessCount();
+    // const int kitcount = getCoolKitProcessCount();
 
     // Close and reopen the same document and test again.
     TST_LOG("Closing connection after pasting.");
-    socket->shutdown();
+    socket->shutdownWS();
+    LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
+                       socket->waitForDisconnection(std::chrono::seconds(5)));
 
     TST_LOG("Reloading ");
-    socket = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+    socket = helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     // Should have no new instances.
-    // CPPUNIT_ASSERT_EQUAL(kitcount, countLoolKitProcesses(kitcount));
+    // LOK_ASSERT_EQUAL(kitcount, countCoolKitProcesses(kitcount));
 
     // Confirm that the text is in the comment and not doc body.
     // Click in the body.
@@ -362,10 +381,13 @@ UnitBase::TestResult UnitCursor::testEditAnnotationWriter()
 
 UnitBase::TestResult UnitCursor::testInsertAnnotationCalc()
 {
-    const char* testname = "insertAnnotationCalc ";
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket("setclientpart.ods", uri, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CursorPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, "setclientpart.ods", uri, testname);
 
     // Insert comment.
     helpers::sendTextFrame(socket, "uno .uno:InsertAnnotation", testname);
@@ -380,7 +402,7 @@ UnitBase::TestResult UnitCursor::testInsertAnnotationCalc()
     return TestResult::Ok;
 }
 
-void UnitCursor::invokeTest()
+void UnitCursor::invokeWSDTest()
 {
     UnitBase::TestResult result = testMaxColumn();
     if (result != TestResult::Ok)

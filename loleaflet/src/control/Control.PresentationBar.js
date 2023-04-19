@@ -3,72 +3,58 @@
  * L.Control.PresentationBar
  */
 
-/* global $ _UNO */
+/* global $ w2ui _ _UNO */
 L.Control.PresentationBar = L.Control.extend({
 	options: {
 		shownavigation: true
 	},
-
-	_bar: null, // 紀錄自己的 toolbar
 
 	onAdd: function (map) {
 		this.map = map;
 		this.create();
 
 		map.on('wopiprops', this.onWopiProps, this);
+		map.on('doclayerinit', this.onDocLayerInit, this);
 		map.on('updatepermission', this.onUpdatePermission, this);
+		map.on('commandstatechanged', this.onCommandStateChanged, this);
 	},
 
 	create: function() {
 		var that = this;
 		var toolbar = $('#presentation-toolbar');
-		this._bar = toolbar.w2toolbar({
+		toolbar.w2toolbar({
 			name: 'presentation-toolbar',
 			hidden: true,
 			items: [
 				{type: 'html',  id: 'left'},
-				{type: 'button',  id: 'presentation', img: 'presentation', hidden:true, hint: this._getItemUnoName('presentation'), uno: '.uno:Presentation', stateChange: true},
-				{type: 'button',  id: 'presentationcurrentslide', img: 'presentationcurrentslide', hidden:true, hint: this._getItemUnoName('presentationcurrentslide'), uno: '.uno:PresentationCurrentSlide', stateChange: true},
+				{type: 'button',  id: 'presentation', img: 'presentation', hidden:true, hint: this._getItemUnoName('presentation')},
 				{type: 'break', id: 'presentationbreak', hidden:true},
-				{type: 'button',  id: 'insertpage', img: 'insertpage', hint: this._getItemUnoName('insertpage'), uno: '.uno:InsertPage', stateChange: true, disabled: true},
-				{type: 'button',  id: 'duplicatepage', img: 'duplicatepage', hint: this._getItemUnoName('duplicatepage'), uno: '.uno:DuplicatePage', stateChange: true, disabled: true},
-				{type: 'button',  id: 'deletepage', img: 'deletepage', hint: this._getItemUnoName('deletepage'), uno: '.uno:DeletePage', stateChange: true, disabled: true},
+				{type: 'button',  id: 'insertpage', img: 'insertpage', hint: this._getItemUnoName('insertpage')},
+				{type: 'button',  id: 'duplicatepage', img: 'duplicatepage', hint: this._getItemUnoName('duplicatepage')},
+				{type: 'button',  id: 'deletepage', img: 'deletepage', hint: this._getItemUnoName('deletepage')},
 				{type: 'html',  id: 'right'}
 			],
 			onClick: function (e) {
-				// In the iOS app we don't want clicking on the toolbar to pop up the keyboard.
-				if (!window.ThisIsTheiOSApp) {
-					that.map.focus(that.map.canAcceptKeyboardInput()); // Maintain same keyboard state.
-				}
-				// 被點擊的選項
-				var clickedItem = (e.subItem ? e.subItem : e.item);
-				// item 沒有自己的 onClick 事件，才執行系統的 onClick 事件
-				if (typeof(clickedItem.onClick) !== 'function') {
-					// 該選項有指定 uno 指令
-					if (clickedItem.uno) {
-						that.map.executeAllowedCommand(clickedItem.uno);
-					}
-				}
+				that.onClick(e, e.target);
 				window.hideTooltip(this, e.target);
 			}
 		});
 
 		this.map.uiManager.enableTooltip(toolbar);
 
-		toolbar.bind('touchstart', function() {
-			this._bar.touchStarted = true;
-		});
+		if (this.map.getDocType() === 'drawing')
+			w2ui['presentation-toolbar'].disable('presentation');
 
-		this.map.setupStateChangesForToolbar({toolbar: this._bar});
+		toolbar.bind('touchstart', function() {
+			w2ui['presentation-toolbar'].touchStarted = true;
+		});
 	},
 
 	_getItemUnoName: function(id) {
 		var docType = this.map.getDocType();
 		switch (id) {
 		case 'presentation':
-			return docType === 'presentation' ? _UNO('.uno:Presentation', 'presentation') : '';
-		case 'presentationcurrentslide':
-			return docType === 'presentation' ? _UNO('.uno:PresentationCurrentSlide', 'presentation') : '';
+			return docType === 'presentation' ? _('Fullscreen presentation') : '';
 		case 'insertpage':
 			return docType === 'presentation' ? _UNO('.uno:TaskPaneInsertPage', 'presentation') : _UNO('.uno:InsertPage', 'presentation');
 		case 'duplicatepage':
@@ -79,25 +65,116 @@ L.Control.PresentationBar = L.Control.extend({
 		return '';
 	},
 
-	// 切換縮圖視窗工具列上的投影按鈕
-	_switchPresentationButton: function(isOff) {
-		if (!isOff && this.map.getDocType() === 'presentation') {
-			this._bar.show('presentation', 'presentationcurrentslide', 'presentationbreak');
-		} else {
-			this._bar.hide('presentation', 'presentationcurrentslide', 'presentationbreak');
+	onDelete: function(e) {
+		if (e !== false) {
+			this.map.deletePage();
+		}
+	},
+
+	onClick: function(e, id, item) {
+		if ('presentation-toolbar' in w2ui && w2ui['presentation-toolbar'].get(id) !== null) {
+			var toolbar = w2ui['presentation-toolbar'];
+			item = toolbar.get(id);
+		}
+
+		// In the iOS app we don't want clicking on the toolbar to pop up the keyboard.
+		if (!window.ThisIsTheiOSApp && id !== 'zoomin' && id !== 'zoomout' && id !== 'mobile_wizard' && id !== 'insertion_mobile_wizard') {
+			this.map.focus(this.map.canAcceptKeyboardInput()); // Maintain same keyboard state.
+		}
+
+		if (item.disabled) {
+			return;
+		}
+
+		if ((id === 'presentation') && this.map.getDocType() === 'presentation') {
+			this.map.fire('fullscreen');
+		}
+		else if (id === 'insertpage') {
+			this.map.insertPage();
+		}
+		else if (id === 'duplicatepage') {
+			this.map.duplicatePage();
+		}
+		else if (id === 'deletepage') {
+			this.map.dispatch('deletepage');
 		}
 	},
 
 	onWopiProps: function(e) {
-		this._switchPresentationButton(e.HideExportOption === true);
+		if (e.HideExportOption) {
+			w2ui['presentation-toolbar'].hide('presentation', 'presentationbreak');
+		}
+	},
+
+	onDocLayerInit: function() {
+		var presentationToolbar = w2ui['presentation-toolbar'];
+		if (!this.map['wopi'].HideExportOption && presentationToolbar && this._map.getDocType() !== 'drawing') {
+			presentationToolbar.show('presentation', 'presentationbreak');
+		}
+
+		if (!window.mode.isMobile()) {
+			$('#presentation-toolbar').show();
+		}
 	},
 
 	onUpdatePermission: function(e) {
-		this._switchPresentationButton(this.map['wopi'].HideExportOption === true);
+		var presentationButtons = ['insertpage', 'duplicatepage', 'deletepage'];
+		var that = this;
+
 		if (e.perm === 'edit') {
-			$('#presentation-toolbar').show();
+			var toolbar = w2ui['presentation-toolbar'];
+			if (toolbar) {
+				presentationButtons.forEach(function(id) {
+					toolbar.enable(id);
+				});
+			}
+
+			if (toolbar) {
+				presentationButtons.forEach(function(id) {
+					if (id === 'deletepage') {
+						var itemState = that.map['stateChangeHandler'].getItemValue('.uno:DeletePage');
+					} else if (id === 'insertpage') {
+						itemState = that.map['stateChangeHandler'].getItemValue('.uno:InsertPage');
+					} else if (id === 'duplicatepage') {
+						itemState = that.map['stateChangeHandler'].getItemValue('.uno:DuplicatePage');
+					} else {
+						itemState = 'enabled';
+					}
+
+					if (itemState === 'enabled') {
+						toolbar.enable(id);
+					} else {
+						toolbar.disable(id);
+					}
+				});
+			}
 		} else {
-			$('#presentation-toolbar').hide();
+			toolbar = w2ui['presentation-toolbar'];
+			if (toolbar) {
+				presentationButtons.forEach(function(id) {
+					toolbar.disable(id);
+				});
+			}
+		}
+	},
+
+	onCommandStateChanged: function(e) {
+		var commandName = e.commandName;
+		var state = e.state;
+
+		if (this.map.isEditMode() && (state === 'enabled' || state === 'disabled')) {
+			var id = window.unoCmdToToolbarId(commandName);
+
+			if (id === 'deletepage' || id === 'insertpage' || id === 'duplicatepage') {
+				var toolbar = w2ui['presentation-toolbar'];
+
+				if (state === 'enabled') {
+					toolbar.enable(id);
+				} else {
+					toolbar.uncheck(id);
+					toolbar.disable(id);
+				}
+			}
 		}
 	},
 });

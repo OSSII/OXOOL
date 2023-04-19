@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -12,9 +10,18 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-#include <Poco/Net/HTTPRequest.h>
-#include <Poco/URI.h>
+namespace Poco
+{
+namespace Net
+{
+class HTTPRequest;
+}
+
+class URI;
+
+} // namespace Poco
 
 /// Class to keep the authorization data, which can be either access_token or access_header.
 class Authorization
@@ -22,9 +29,10 @@ class Authorization
 public:
     enum class Type
     {
-        None,
+        None, //< Unlike Expired, this implies no Authorization needed.
         Token,
-        Header
+        Header,
+        Expired //< The server is rejecting the current authorization key.
     };
 
 private:
@@ -45,9 +53,8 @@ public:
 
     /// Create an Authorization instance from the URI query parameters.
     /// Expects access_token (preferred) or access_header.
-    static Authorization create(const Poco::URI::QueryParameters& queryParams);
-    static Authorization create(const Poco::URI& uri) { return create(uri.getQueryParameters()); }
-    static Authorization create(const std::string& uri) { return create(Poco::URI(uri)); }
+    static Authorization create(const Poco::URI& uri);
+    static Authorization create(const std::string& uri);
 
     void resetAccessToken(std::string accessToken)
     {
@@ -55,7 +62,13 @@ public:
         _data = std::move(accessToken);
     }
 
-    /// Set the access_token parametr to the given uri.
+    /// Expire the Authorization data.
+    void expire() { _type = Type::Expired; }
+
+    /// Returns true iff the Authorization data is invalid.
+    bool isExpired() const { return _type == Type::Expired; }
+
+    /// Set the access_token parameter to the given URI.
     void authorizeURI(Poco::URI& uri) const;
 
     /// Set the Authorization: header in request.

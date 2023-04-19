@@ -4,46 +4,46 @@
 
 interface PosSizeTestData {
     rowIndex: number,
-    possize: oxool.DimensionPosSize
+    possize: cool.DimensionPosSize
 }
 
 interface PointUnitCoversionTest {
     zoomScale?: number;
-    inputPoint: oxool.Point;
-    outputPoint: oxool.Point;
+    inputPoint: cool.Point;
+    outputPoint: cool.Point;
 }
 
 interface AreaUnitConversionTest {
     zoomScale?: number;
-    inputArea: oxool.Bounds;
-    outputArea: oxool.Bounds;
+    inputArea: cool.Bounds;
+    outputArea: cool.Bounds;
 }
 
 interface SizeInAllUnitsTest {
-    corePixels: oxool.Point;
-    tileTwips: oxool.Point;
-    printTwips: oxool.Point;
+    corePixels: cool.Point;
+    tileTwips: cool.Point;
+    printTwips: cool.Point;
 }
 
 interface CellTest {
     col: number;
     row: number;
     zoomScale: number;
-    cpixBoundsAtZoom: oxool.Bounds;
-    cpixBoundsAtSelfZoom: oxool.Bounds;
+    cpixBoundsAtZoom: cool.Bounds;
+    cpixBoundsAtSelfZoom: cool.Bounds;
 }
 
 interface PartTestData {
     part: number,
     description: string,
 
-    viewCellArea: oxool.CellRange;
+    viewCellArea: cool.CellRange;
     rowData: PosSizeTestData;
 
     colGroupLevels: number;
     rowGroupLevels: number;
-    colGroupsInView: oxool.GroupData[];
-    rowGroupsInView: oxool.GroupData[];
+    colGroupsInView: cool.GroupData[];
+    rowGroupsInView: cool.GroupData[];
 
     tileTwipsAtZoom: PointUnitCoversionTest;
     printTwipsToTile: PointUnitCoversionTest;
@@ -53,18 +53,18 @@ interface PartTestData {
 
     cellRectData: CellTest;
 
-    sheetgeometrymsg: oxool.SheetGeometryCoreData;
+    sheetgeometrymsg: cool.SheetGeometryCoreData;
 };
 
 interface TestDataForZoom {
     zoom: number;
-    viewBoundsTwips: oxool.Bounds;
+    viewBoundsTwips: cool.Bounds;
     partsTestData: PartTestData[];
 }
 
 type TestData = TestDataForZoom[];
 
-var sheetGeometryMessageObjects: oxool.SheetGeometryCoreData[] = [
+var sheetGeometryMessageObjects: cool.SheetGeometryCoreData[] = [
     // part 0
     {
         commandName: ".uno:SheetGeometryData",
@@ -175,39 +175,39 @@ var testDataForZoom10: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39974, 17002),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39974, 17002),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39885, 17202),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39885, 17202),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39375, 17040),
-                new oxool.Point(44475, 21885)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39375, 17040),
+                new cool.Point(44475, 21885)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(87285, 8500133),
-            tileTwips: new oxool.Point(1309275, 127501995),
-            printTwips: new oxool.Point(1314370, 128002014),
+            corePixels: new cool.Point(87285, 8500133),
+            tileTwips: new cool.Point(1309275, 127501995),
+            printTwips: new cool.Point(1314370, 128002014),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2272, 104741),
-                new oxool.Point(2374, 104761),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2272, 104741),
+                new cool.Point(2374, 104761),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1895, 89026),
-                new oxool.Point(1980, 89043),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1895, 89026),
+                new cool.Point(1980, 89043),
             ),
         },
 
@@ -244,39 +244,39 @@ var testDataForZoom10: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39997, 16977),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39997, 16977),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39855, 17225),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39855, 17225),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39615, 17010),
-                new oxool.Point(44715, 21855)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39615, 17010),
+                new cool.Point(44715, 21855)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(87131, 8500229),
-            tileTwips: new oxool.Point(1306965, 127503435),
-            printTwips: new oxool.Point(1312080, 128003431),
+            corePixels: new cool.Point(87131, 8500229),
+            tileTwips: new cool.Point(1306965, 127503435),
+            printTwips: new cool.Point(1312080, 128003431),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2149, 104854),
-                new oxool.Point(2251, 104874),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2149, 104854),
+                new cool.Point(2251, 104874),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1791, 89122),
-                new oxool.Point(1876, 89139),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1791, 89122),
+                new cool.Point(1876, 89139),
             ),
         },
 
@@ -313,39 +313,39 @@ var testDataForZoom10: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39984, 16945),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39984, 16945),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39860, 17213),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39860, 17213),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39465, 17085),
-                new oxool.Point(44565, 21930)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39465, 17085),
+                new cool.Point(44565, 21930)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(87121, 8499932),
-            tileTwips: new oxool.Point(1306815, 127498980),
-            printTwips: new oxool.Point(1311925, 127998976),
+            corePixels: new cool.Point(87121, 8499932),
+            tileTwips: new cool.Point(1306815, 127498980),
+            printTwips: new cool.Point(1311925, 127998976),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2136, 104500),
-                new oxool.Point(2238, 104520),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2136, 104500),
+                new cool.Point(2238, 104520),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1781, 88825),
-                new oxool.Point(1866, 88842),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1781, 88825),
+                new cool.Point(1866, 88842),
             ),
         },
 
@@ -404,39 +404,39 @@ var testDataForZoom10: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(40000, 16945),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(40000, 16945),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39845, 17213),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39845, 17213),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39525, 17085),
-                new oxool.Point(44625, 21930)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39525, 17085),
+                new cool.Point(44625, 21930)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(87040, 8499949),
-            tileTwips: new oxool.Point(1305600, 127499235),
-            printTwips: new oxool.Point(1310720, 127999232),
+            corePixels: new cool.Point(87040, 8499949),
+            tileTwips: new cool.Point(1305600, 127499235),
+            printTwips: new cool.Point(1310720, 127999232),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2040, 104520),
-                new oxool.Point(2142, 104540),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2040, 104520),
+                new cool.Point(2142, 104540),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1700, 88842),
-                new oxool.Point(1785, 88859),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1700, 88842),
+                new cool.Point(1785, 88859),
             ),
         },
 
@@ -476,39 +476,39 @@ var testDataForZoom7: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(40156, 18330),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(40156, 18330),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39703, 15974),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39703, 15974),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39193, 15812),
-                new oxool.Point(44274, 20244)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39193, 15812),
+                new cool.Point(44274, 20244)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(50316, 4500079),
-            tileTwips: new oxool.Point(1304284, 116650485),
-            printTwips: new oxool.Point(1314370, 128002014),
+            corePixels: new cool.Point(50316, 4500079),
+            tileTwips: new cool.Point(1304284, 116650485),
+            printTwips: new cool.Point(1314370, 128002014),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2272, 104741),
-                new oxool.Point(2374, 104761),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2272, 104741),
+                new cool.Point(2374, 104761),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1091, 47140),
-                new oxool.Point(1140, 47149),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1091, 47140),
+                new cool.Point(1140, 47149),
             ),
         },
 
@@ -545,39 +545,39 @@ var testDataForZoom7: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(40159, 18306),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(40159, 18306),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39693, 16001),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39693, 16001),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39453, 15786),
-                new oxool.Point(44533, 20218)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39453, 15786),
+                new cool.Point(44533, 20218)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(50228, 4500134),
-            tileTwips: new oxool.Point(1302003, 116651910),
-            printTwips: new oxool.Point(1312080, 128003431),
+            corePixels: new cool.Point(50228, 4500134),
+            tileTwips: new cool.Point(1302003, 116651910),
+            printTwips: new cool.Point(1312080, 128003431),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2149, 104854),
-                new oxool.Point(2251, 104874),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2149, 104854),
+                new cool.Point(2251, 104874),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1032, 47195),
-                new oxool.Point(1081, 47204),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1032, 47195),
+                new cool.Point(1081, 47204),
             ),
         },
 
@@ -614,39 +614,39 @@ var testDataForZoom7: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(40152, 18517),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(40152, 18517),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39692, 15758),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39692, 15758),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39297, 15630),
-                new oxool.Point(44378, 20063)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39297, 15630),
+                new cool.Point(44378, 20063)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(50222, 4499964),
-            tileTwips: new oxool.Point(1301848, 116647504),
-            printTwips: new oxool.Point(1311925, 127998976),
+            corePixels: new cool.Point(50222, 4499964),
+            tileTwips: new cool.Point(1301848, 116647504),
+            printTwips: new cool.Point(1311925, 127998976),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2136, 104500),
-                new oxool.Point(2238, 104520),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2136, 104500),
+                new cool.Point(2238, 104520),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(1026, 47025),
-                new oxool.Point(1075, 47034),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(1026, 47025),
+                new cool.Point(1075, 47034),
             ),
         },
 
@@ -705,39 +705,39 @@ var testDataForZoom7: PartTestData[] = [
 
         tileTwipsAtZoom: {
             zoomScale: 1.2,
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(40150, 18517),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(40150, 18517),
         },
         printTwipsToTile: {
-            inputPoint: new oxool.Point(40000, 17280),
-            outputPoint: new oxool.Point(39695, 15758),
+            inputPoint: new cool.Point(40000, 17280),
+            outputPoint: new cool.Point(39695, 15758),
         },
         printTwipsSheetAreatoTile: {
-            inputArea: new oxool.Bounds(
-                new oxool.Point(40000, 17280),
-                new oxool.Point(44500, 21780)),
-            outputArea: new oxool.Bounds(
-                new oxool.Point(39375, 15630),
-                new oxool.Point(44455, 20063)),
+            inputArea: new cool.Bounds(
+                new cool.Point(40000, 17280),
+                new cool.Point(44500, 21780)),
+            outputArea: new cool.Bounds(
+                new cool.Point(39375, 15630),
+                new cool.Point(44455, 20063)),
         },
 
         sheetSize: {
-            corePixels: new oxool.Point(50176, 4499973),
-            tileTwips: new oxool.Point(1300655, 116647737),
-            printTwips: new oxool.Point(1310720, 127999232),
+            corePixels: new cool.Point(50176, 4499973),
+            tileTwips: new cool.Point(1300655, 116647737),
+            printTwips: new cool.Point(1310720, 127999232),
         },
 
         cellRectData: {
             col: 20,
             row: 5230,
             zoomScale: 1.2,
-            cpixBoundsAtZoom: new oxool.Bounds(
-                new oxool.Point(2040, 104520),
-                new oxool.Point(2142, 104540),
+            cpixBoundsAtZoom: new cool.Bounds(
+                new cool.Point(2040, 104520),
+                new cool.Point(2142, 104540),
             ),
-            cpixBoundsAtSelfZoom: new oxool.Bounds(
-                new oxool.Point(980, 47034),
-                new oxool.Point(1029, 47043),
+            cpixBoundsAtSelfZoom: new cool.Bounds(
+                new cool.Point(980, 47034),
+                new cool.Point(1029, 47043),
             ),
         },
 
@@ -749,18 +749,18 @@ var testDataForZoom7: PartTestData[] = [
 var testData: TestData = [
     {
         zoom: 10,
-        viewBoundsTwips: new oxool.Bounds(
-            new oxool.Point(0, 0),
-            new oxool.Point(27240, 11190)),
+        viewBoundsTwips: new cool.Bounds(
+            new cool.Point(0, 0),
+            new cool.Point(27240, 11190)),
 
         partsTestData: testDataForZoom10,
     },
 
     {
         zoom: 7,
-        viewBoundsTwips: new oxool.Bounds(
-            new oxool.Point(0, 0),
-            new oxool.Point(27240, 11190)
+        viewBoundsTwips: new cool.Bounds(
+            new cool.Point(0, 0),
+            new cool.Point(27240, 11190)
         ),
 
         partsTestData: testDataForZoom7,

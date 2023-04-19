@@ -1,4 +1,5 @@
 const https = require("https");
+const http = require("http");
 
 const { spawn, fork } = require('child_process');
 if (process.argv.length < 5 || process.argv[2] == '--help') {
@@ -28,7 +29,8 @@ let args = [
 	'--o:admin_console.password=admin',
 	'--o:logging.file[@enable]=true --o:logging.level=' + (debug ? 'trace' : 'warning'),
 	'--o:trace_event[@enable]=true',
-	`--port=${port}`
+	`--port=${port}`,
+	'--signal'
 ];
 
 let ssl_args = [
@@ -39,49 +41,58 @@ let ssl_args = [
 
 if (ssl_flag === 'true')
 	args = [...args, ...ssl_args];
+else
+	args = [...args, '--o:ssl.enable=false'];
 
-const oxoolwsd = spawn(`${top_builddir}/oxoolwsd`, args);
+process.on('SIGUSR2', serverReady);
+
+var coolwsd_options = debug ? {} : { stdio: 'ignore'};
+const coolwsd = spawn(`${top_builddir}/coolwsd`, args, coolwsd_options);
 
 if (debug)
 {
-	oxoolwsd.stdout.on('data', (data) => {
+	coolwsd.stdout.on('data', (data) => {
 		console.log(`stdout: ${data}`);
 	});
-	oxoolwsd.stderr.on('data', (data) => {
+	coolwsd.stderr.on('data', (data) => {
 		console.error(`stderr: ${data}`);
 	});
 }
 
-oxoolwsd.on('exit', (code) => {
-	console.log(`oxoolwsd process exited with code ${code}`);
+coolwsd.on('exit', (code) => {
+	console.log(`coolwsd process exited with code ${code}`);
 });
 
-console.log('\nTest running - connect to:\n\n\t' +
-	    'https://localhost:9999/loleaflet/1234/loleaflet.html?file_path=file://' +
-	    top_builddir + '/test/data/perf-test-edit.odt\n\n');
-
+process.env.NODE_PATH = `${top_builddir}/browser/node_modules`
 let childNodes = [];
 
-let execArgs = [];
-if (inspect === 'true')
+function serverReady() {
+    console.log('\nTest running - connect to:\n\n\t' +
+		(ssl_flag === 'true'?'https':'http') +
+		'://localhost:9999/browser/1234/cool.html?file_path=file://' +
+		top_builddir + '/test/data/perf-test-edit.odt\n\n');
+
+    let execArgs = [];
+
+    if (inspect === 'true')
 	execArgs.push('--inspect');
-childNodes.push(
+    childNodes.push(
 	fork(`${srcdir}/test/load.js`, [ssl_flag, top_builddir, `${top_builddir}/test/data/perf-test-edit.odt`, `testEdit_1`, `${port}`, `${typing_speed}`, `${typing_duration}`, `${recordStats}`, `${single_view}`], {execArgv: execArgs})
 );
-if(single_view !== "true") {
+    if(single_view !== "true") {
 	for (let i = 2; i <= 6; i++) {
-		childNodes.push(
-			fork(`${srcdir}/test/load.js`, [ssl_flag, top_builddir, `${top_builddir}/test/data/perf-test-edit.odt`, `testEdit_${i}`, `${port}`, `${typing_speed}`, `${typing_duration}`, 'false', 'false'])
+	    childNodes.push(
+		fork(`${srcdir}/test/load.js`, [ssl_flag, top_builddir, `${top_builddir}/test/data/perf-test-edit.odt`, `testEdit_${i}`, `${port}`, `${typing_speed}`, `${typing_duration}`, 'false', 'false'])
 		);
 	}
+    }
+    setInterval(dumpMemoryUse, 3000);
 }
-
-
 
 function vacuumCleaner(kill, message, code) {
 		console.log(message);
 		childNodes.forEach(n => n.kill(kill));
-		oxoolwsd.kill(kill);
+		coolwsd.kill(kill);
 		console.log(`Process exited with code ${code}`);
 }
 
@@ -92,6 +103,7 @@ function exitHandler(options, exitCode) {
 	if (options.exit) {
 		vacuumCleaner('SIGINT', 'exiting...', exitCode)
 	}
+	process.exit();
 }
 
 //do something when app is closing
@@ -115,7 +127,7 @@ function parseStats(content) {
 	for (let l of lines) {
 		var keyval = l.split(' ');
 		if (keyval.length >= 2)
-			stats[keyval[0]] = keyval[1];
+			stats[keyval[0]] = Number(keyval[1]);
 	}
 	if (stats.size < 8)
 		return undefined; // not our stats
@@ -123,10 +135,14 @@ function parseStats(content) {
 	return stats;
 }
 
+function getHttpProtocol() {
+    return ssl_flag === 'true' ? https : http;
+}
+
 function dumpMemoryUse() {
-	var url = 'https://admin:admin@localhost:' + port + '/oxool/getMetrics/';
+	var url = (ssl_flag === 'true' ? 'https' : 'http') + '://admin:admin@localhost:' + port + '/cool/getMetrics/';
 	console.log('Fetching stats from ' + url);
-	var req = https.request(
+	var req = getHttpProtocol().request(
 		url,
 		{
 			rejectUnauthorized: false,
@@ -154,5 +170,3 @@ function dumpMemoryUse() {
 		});
 	req.end();
 }
-
-setInterval(dumpMemoryUse, 3000);

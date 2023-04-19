@@ -188,7 +188,7 @@ L.LatLngBounds.prototype = {
 	},
 
 	// Please do not remove even if unused. It can be useful in
-	// temporary window.app.console.log() etc.
+	// temporary console.log() etc.
 	toString: function() {
 		return 'LatLngBounds(' + this._southWest.toString() + ',' + this._northEast.toString() + ')';
 	},

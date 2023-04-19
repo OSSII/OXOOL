@@ -17,7 +17,6 @@
 }
 .leaflet-container {
 	overflow: hidden;
-	touch-action: none;
 	-ms-touch-action: none;
 	/* visual tweaks */
 	background: var(--color-main-background);
@@ -42,7 +41,6 @@
 .leaflet-safari .leaflet-tile-container {
 	width: 1600px;
 	height: 1600px;
-	transform-origin: 0 0;
 	-webkit-transform-origin: 0 0;
 }
 .leaflet-marker-icon,
@@ -80,7 +78,6 @@
 
 /* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
 .leaflet-overlay-pane svg {
-	user-select: none;
 	-moz-user-select: none;
 }
 
@@ -190,6 +187,9 @@
 
 /* cursors */
 
+.leaflet-interactive {
+	cursor: move;
+}
 .leaflet-crosshair,
 .leaflet-crosshair .leaflet-interactive {
 	cursor: crosshair;
@@ -197,6 +197,29 @@
 .leaflet-popup-pane,
 .leaflet-control {
 	cursor: auto;
+}
+.leaflet-dragging .leaflet-container,
+.leaflet-dragging .leaflet-interactive {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor: -moz-grabbing;
+}
+
+.drag-marker--0,
+.drag-marker--4.drag-marker--8 {
+	cursor: nesw-resize;
+}
+.drag-marker--1.drag-marker--2,
+.drag-marker--5.drag-marker--10 {
+	cursor: ew-resize;
+}
+.drag-marker--2.drag-marker--4,
+.drag-marker--6.drag-marker--12 {
+	cursor: nwse-resize;
+}
+.drag-marker--3.drag-marker--6,
+.drag-marker--7.drag-marker--14 {
+	cursor: ns-resize;
 }
 
 .anchor-marker {
@@ -542,6 +565,15 @@ a.leaflet-control-buttons:hover:first-child {
 	border: 1px solid transparent;
 	border-radius: 50%;
 }
+.leaflet-container a.leaflet-popup-close-button.download-popup {
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+	right: -8px;
+	top: -8px;
+	background: var(--color-background-darker);
+	border: 1px solid var(--color-btn-border);
+}
 .leaflet-container a.leaflet-popup-close-button:hover {
 	background-color: var(--color-background-darker);
 	border: 1px solid var(--color-border-darker);
@@ -628,15 +660,11 @@ a.leaflet-control-buttons:hover:first-child {
 
 .leaflet-cursor-header {
 	background: black;
-	height: 20px;
-	margin-top: -20px;
+	height: 10px;
+	margin-top: -10px;
 	pointer-events: none;
 	color: white;
-	font-family: var(--oxool-font);
-	font-size: 14px;
-	padding-left: 3px;
-	padding-right: 3px;
-	border-radius: var(--border-radius);
+	font-size: 9px;
 }
 
 div.leaflet-cursor-container:hover > .leaflet-cursor-header {
@@ -723,46 +751,17 @@ div.leaflet-cursor-container:hover > .leaflet-cursor-header {
 	top: 0px;
 	width: 0px;
 	height: 0px;
-	background: #b45f17;
-	border-radius: 6px;
-	border: 2px #e0e0e0 solid;
-	box-shadow: 5px 5px 5px rgba(128, 128, 128, 0.7);
-	z-index: -1;
+	z-index: 100;
 	opacity: 0;
 }
 
-.clipboard-container.overspot {
-	width: auto;
-	height: auto;
-	padding: 0px;
-	opacity: 0.9;
-	z-index: 100;
-}
-
-textarea.clipboard {
-	width: 0px;
-	height: 0px;
-	resize: none;
-	overflow: hidden;
-	font-size: 16px;
-	font-weight: bold;
-	line-height: 16px;
-	background-color: transparent;
-	color: #ffffff;
+input.clipboard {
+	width: 1px;
+	height: 1px;
 	padding: 0px !important; /* w2ui defines "input:not([type=button])" rule which sets
 				    the padding to non-zero. Hence, the !important. Otherwise,
 				    clipboard cursor apperas in MSIE and MSEdge */
 	border: 0px !important;
-	z-index: -1;
-}
-
-textarea.clipboard.overspot {
-	margin-top: 4px;
-	margin-left: 4px;
-	margin-right: 4px;
-	margin-bottom: 0px;
-	height: 16px;
-	z-index: 100;
 }
 
 .clipboard:focus {
@@ -865,7 +864,7 @@ textarea.clipboard.overspot {
 
 .leaflet-progress-label {
 	text-align: center;
-	font: var(--default-font-size)/1.5 var(--oxool-font);
+	font: var(--default-font-size)/1.5 var(--cool-font);
 }
 
 .leaflet-progress-label.brand-label {
@@ -882,7 +881,7 @@ textarea.clipboard.overspot {
 	margin-left: 10px;
 	margin: 0px; /*Ruler styling*/
 }
-.oxool-ruler {
+.cool-ruler {
 	background-color: var(--color-main-background);
 	height: 20px;
 	width: 100vw;
@@ -890,19 +889,19 @@ textarea.clipboard.overspot {
 	position: fixed;
 }
 
-.oxool-ruler-breakcontainer {
+.cool-ruler-breakcontainer {
 	height: 100%;
 	position: absolute;
 	display: flex;
 	align-items: center;
 }
 
-.oxool-ruler-tabstopcontainer {
+.cool-ruler-tabstopcontainer {
 	height: 100%;
 	position: absolute;
 }
 
-.oxool-ruler-indentation-marker-down {
+.cool-ruler-indentation-marker-down {
 	width: 14px;
 	height: 10px;
 	background: url('images/indentation_marker_down.svg');
@@ -913,7 +912,7 @@ textarea.clipboard.overspot {
 	background-repeat: no-repeat;
 }
 
-.oxool-ruler-indentation-marker-up {
+.cool-ruler-indentation-marker-up {
 	width: 14px;
 	height: 10px;
 	background: url('images/indentation_marker_up.svg');
@@ -924,7 +923,7 @@ textarea.clipboard.overspot {
 	background-repeat: no-repeat;
 }
 
-.oxool-ruler-indentation-marker-center{
+.cool-ruler-indentation-marker-center{
 	position: fixed;
 	display: none;
 	height: 100vh;
@@ -935,14 +934,14 @@ textarea.clipboard.overspot {
 	z-index: 12;
 }
 
-.oxool-ruler-marginwrapper {
+.cool-ruler-marginwrapper {
 	height: 100%;
 	position: absolute;
 	width: inherit;
 	z-index: 11;
 }
 
-.oxool-ruler-breakwrapper {
+.cool-ruler-breakwrapper {
 	position: absolute;
 	height: 100%;
 	overflow: hidden;
@@ -950,12 +949,12 @@ textarea.clipboard.overspot {
 	z-index: 10;
 }
 
-.oxool-ruler-face {
+.cool-ruler-face {
 	height: 100%;
 	background-color: var(--color-background-lighter);
 }
 
-.oxool-ruler-maj {
+.cool-ruler-maj {
 	height: auto;
 	display: inline-block;
 	border-width: 0px .5px;
@@ -967,7 +966,7 @@ textarea.clipboard.overspot {
 	line-height: 7px;
 }
 
-.oxool-ruler-tabstop-left {
+.cool-ruler-tabstop-left {
 	width: 20px;
 	height: 20px;
 	background: url('images/tabstop-left.svg');
@@ -975,7 +974,7 @@ textarea.clipboard.overspot {
 	pointer-events: none;
 }
 
-.oxool-ruler-tabstop-right {
+.cool-ruler-tabstop-right {
 	width: 20px;
 	height: 20px;
 	background: url('images/tabstop-right.svg');
@@ -983,7 +982,7 @@ textarea.clipboard.overspot {
 	pointer-events: none;
 }
 
-.oxool-ruler-tabstop-center {
+.cool-ruler-tabstop-center {
 	width: 20px;
 	height: 20px;
 	background: url('images/tabstop-center.svg');
@@ -991,7 +990,7 @@ textarea.clipboard.overspot {
 	pointer-events: none;
 }
 
-.oxool-ruler-tabstop-decimal {
+.cool-ruler-tabstop-decimal {
 	width: 20px;
 	height: 20px;
 	background: url('images/tabstop-decimal.svg');
@@ -999,47 +998,47 @@ textarea.clipboard.overspot {
 	pointer-events: none;
 }
 
-.oxool-ruler-margin {
+.cool-ruler-margin {
 	height: 100%;
 	background-color: var(--color-main-background);
 }
 
-.oxool-ruler-left {
+.cool-ruler-left {
 	left: 0px;
 	height: 100%;
 	float: left;
 }
 
-.oxool-ruler-right {
+.cool-ruler-right {
 	left: 0px;
 	height: 100%;
 	float: right;
 }
 
-.oxool-ruler-drag {
+.cool-ruler-drag {
 	height: 100%;
 	width: 0px;
 }
 
-.oxool-ruler-drag.oxool-ruler-right {
+.cool-ruler-drag.cool-ruler-right {
 	border-left: 3px solid var(--color-border-dark);
 }
 
-.oxool-ruler-drag.oxool-ruler-left {
+.cool-ruler-drag.cool-ruler-left {
 	border-right: 3px solid var(--color-border-dark);
 }
 
-.oxool-ruler-left.leaflet-drag-moving {
+.cool-ruler-left.leaflet-drag-moving {
 	height: 100vh;
 	border-right: 2px dotted var(--color-border-dark);
 }
 
-.oxool-ruler-right.leaflet-drag-moving {
+.cool-ruler-right.leaflet-drag-moving {
 	height: 100vh;
 	border-left: 2px dotted var(--color-border-dark);
 }
 
-.oxool-ruler-ltooltip, .oxool-ruler-rtooltip {
+.cool-ruler-ltooltip, .cool-ruler-rtooltip {
 	display: none;
 	text-align: center;
 	width: 46px;
@@ -1087,30 +1086,23 @@ path.leaflet-pane-splitter:hover {
 */
 
 .input-help {
-	border-radius: 5px;
+	border-radius: 15px;
 	padding: 5px;
 	box-sizing: content-box;
-	border: 1px solid rgb(80, 80, 80);
-	color: black;
-	background-color: rgb(255, 255, 192);
-	white-space: pre-wrap;
-	width: max-content;
-	min-width: 50px;
-	max-width: 300px;
-	min-height: 32px;
-	font-size: 12px;
-	box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+	border: 1px solid var(--color-border-dark);
+	color: var(--color-text-dark);
+	background-color: var(--color-background-dark);
+	min-width: 200px;
+	text-align: center;
 }
 
-.input-help > div {
-	border-radius: 3px;
-	padding: 2px;
-	background-color: darkseagreen;
-	text-align: center;
-	font-weight: bold;
+.input-help > h4 {
+	display: block;
+	font-weight: 900;
 }
 
 .input-help > p {
-	padding: 0px;
-	color: rgb(15, 15, 15);
+	display: block;
+	text-indent: 20px;
+	text-align: justify;
 }

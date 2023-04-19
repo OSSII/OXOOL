@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,14 +15,12 @@
 #include <sstream>
 #include <string>
 
-#include <Poco/URI.h>
-
 #include <Protocol.hpp>
 #include <net/WebSocketHandler.hpp>
 #include <Log.hpp>
 #include <Unit.hpp>
 #include <Util.hpp>
-#include <wsd/LOOLWSD.hpp>
+#include <wsd/COOLWSD.hpp>
 #include <wsd/Exceptions.hpp>
 
 #include <fnmatch.h>
@@ -99,7 +95,7 @@ const std::string Document::getHistory() const
     std::ostringstream oss;
     oss << "{";
     oss << "\"docKey\"" << ":\"" << _docKey << "\",";
-    oss << "\"filename\"" << ":\"" << LOOLWSD::anonymizeUrl(getFilename()) << "\",";
+    oss << "\"filename\"" << ":\"" << COOLWSD::anonymizeUrl(getFilename()) << "\",";
     oss << "\"start\"" << ':' << _start << ',';
     oss << "\"end\"" << ':' << _end << ',';
     oss << "\"pid\"" << ':' << getPid() << ',';
@@ -166,7 +162,7 @@ bool Subscriber::notify(const std::string& message)
     std::shared_ptr<WebSocketHandler> webSocket = _ws.lock();
     if (webSocket)
     {
-        if (_subscriptions.find(LOOLProtocol::getFirstToken(message)) == _subscriptions.end())
+        if (_subscriptions.find(COOLProtocol::getFirstToken(message)) == _subscriptions.end())
         {
             // No subscribers for the given message.
             return true;
@@ -244,7 +240,7 @@ std::string AdminModel::query(const std::string& command)
 {
     assertCorrectThread();
 
-    const auto token = LOOLProtocol::getFirstToken(command);
+    const auto token = COOLProtocol::getFirstToken(command);
     if (token == "documents")
     {
         return getDocuments();
@@ -289,7 +285,7 @@ std::string AdminModel::query(const std::string& command)
     return std::string("");
 }
 
-/// Returns memory consumed by all active oxoolkit processes
+/// Returns memory consumed by all active coolkit processes
 unsigned AdminModel::getKitsMemoryUsage()
 {
     assertCorrectThread();
@@ -508,10 +504,10 @@ void AdminModel::modificationAlert(const std::string& docKey, pid_t pid, bool va
 void AdminModel::addDocument(const std::string& docKey, pid_t pid,
                              const std::string& filename, const std::string& sessionId,
                              const std::string& userName, const std::string& userId,
-                             const int smapsFD, const std::string& wopiHost)
+                             const int smapsFD, const Poco::URI& wopiSrc)
 {
     assertCorrectThread();
-    const auto ret = _documents.emplace(docKey, std::unique_ptr<Document>(new Document(docKey, pid, filename, wopiHost)));
+    const auto ret = _documents.emplace(docKey, std::unique_ptr<Document>(new Document(docKey, pid, filename, wopiSrc)));
     ret.first->second->setProcSMapsFD(smapsFD);
     ret.first->second->takeSnapshot();
     ret.first->second->addView(sessionId, userName, userId);
@@ -553,12 +549,13 @@ void AdminModel::addDocument(const std::string& docKey, pid_t pid,
         memoryAllocated = std::to_string(_documents.begin()->second->getMemoryDirty());
     }
 
+    const std::string wopiHost = wopiSrc.getHost();
     oss << memoryAllocated << ' ' << wopiHost;
-    if (LOOLWSD::getConfigValue<bool>("logging.docstats", false))
+    if (COOLWSD::getConfigValue<bool>("logging.docstats", false))
     {
         std::string docstats = "docstats : adding a document : " + filename
-                            + ", created by : " + LOOLWSD::anonymizeUsername(userName)
-                            + ", using WopiHost : " + LOOLWSD::anonymizeUrl(wopiHost)
+                            + ", created by : " + COOLWSD::anonymizeUsername(userName)
+                            + ", using WopiHost : " + COOLWSD::anonymizeUrl(wopiHost)
                             + ", allocating memory of : " + memoryAllocated;
 
         LOG_ANY(docstats);
@@ -568,6 +565,10 @@ void AdminModel::addDocument(const std::string& docKey, pid_t pid,
 
 void AdminModel::doRemove(std::map<std::string, std::unique_ptr<Document>>::iterator &docIt)
 {
+    std::ostringstream ostream;
+    ostream << "routing_rmdoc " << docIt->second->getWopiSrc();
+    notify(ostream.str());
+
     std::unique_ptr<Document> doc;
     std::swap(doc, docIt->second);
     std::string docItKey = docIt->first;
@@ -811,31 +812,6 @@ std::string AdminModel::getDocuments() const
     return oss.str();
 }
 
-// Added by Firefly <firefly@ossii.com.tw>
-// 把所有編輯中的檔案 file token 變成陣列傳回去
-std::vector<std::string> AdminModel::getDocumentTokens() const
-{
-    assertCorrectThread();
-
-    std::vector<std::string> docTokens;
-    // 巡迴
-    for (const auto& it: _documents)
-    {
-        // 未過期
-        if (!it.second->isExpired())
-        {
-            Poco::URI requestUri(it.second->getDocKey());
-            std::vector<std::string> reqPathSegs;
-            requestUri.getPathSegments(reqPathSegs);
-            if (reqPathSegs.size() > 0)
-            {
-                docTokens.push_back(reqPathSegs[reqPathSegs.size() - 1]);
-            }
-        }
-    }
-    return docTokens;
-}
-
 void AdminModel::updateLastActivityTime(const std::string& docKey)
 {
     assertCorrectThread();
@@ -856,7 +832,7 @@ double AdminModel::getServerUptimeSecs()
 {
     const auto currentTime = std::chrono::steady_clock::now();
     const std::chrono::milliseconds uptime
-        = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - LOOLWSD::StartTime);
+        = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - COOLWSD::StartTime);
     return uptime.count() / 1000.0; // Convert to seconds and fractions.
 }
 
@@ -1128,10 +1104,10 @@ void PrintKitAggregateMetrics(std::ostringstream &oss, const char* name, const c
 
 void AdminModel::getMetrics(std::ostringstream &oss)
 {
-    oss << "oxoolwsd_count " << getPidsFromProcName(std::regex("oxoolwsd"), nullptr) << std::endl;
-    oss << "oxoolwsd_thread_count " << Util::getStatFromPid(getpid(), 19) << std::endl;
-    oss << "oxoolwsd_cpu_time_seconds " << Util::getCpuUsage(getpid()) / sysconf (_SC_CLK_TCK) << std::endl;
-    oss << "oxoolwsd_memory_used_bytes " << Util::getMemoryUsagePSS(getpid()) * 1024 << std::endl;
+    oss << "coolwsd_count " << getPidsFromProcName(std::regex("coolwsd"), nullptr) << std::endl;
+    oss << "coolwsd_thread_count " << Util::getStatFromPid(getpid(), 19) << std::endl;
+    oss << "coolwsd_cpu_time_seconds " << Util::getCpuUsage(getpid()) / sysconf (_SC_CLK_TCK) << std::endl;
+    oss << "coolwsd_memory_used_bytes " << Util::getMemoryUsagePSS(getpid()) * 1024 << std::endl;
     oss << std::endl;
 
     oss << "forkit_count " << getPidsFromProcName(std::regex("forkit"), nullptr) << std::endl;
@@ -1186,6 +1162,33 @@ void AdminModel::getMetrics(std::ostringstream &oss)
     oss << "error_unauthorized_request " << UnauthorizedRequestException::count << "\n";
     oss << "error_service_unavailable " << ServiceUnavailableException::count << "\n";
     oss << "error_parse_error " << ParseError::count << "\n";
+    oss << std::endl;
+
+    int tick_per_sec = sysconf(_SC_CLK_TCK);
+    // dump document data
+    for (const auto& it : _documents)
+    {
+        const Document &doc = *it.second;
+        std::string pid = std::to_string(doc.getPid());
+
+        std::string encodedFilename;
+        Poco::URI::encode(doc.getFilename(), " ", encodedFilename);
+        oss << "doc_pid{host=\"" << doc.getHostName() << "\","
+               "key=\"" << doc.getDocKey() << "\","
+               "filename=\"" << encodedFilename << "\"} " << pid << "\n";
+
+        std::string suffix = "{pid=\"" + pid + "\"} ";
+        oss << "doc_views" << suffix << doc.getViews().size() << "\n";
+        oss << "doc_views_active" << suffix << doc.getActiveViews() << "\n";
+        oss << "doc_is_modified" << suffix << doc.getModifiedStatus() << "\n";
+        oss << "doc_memory_used_bytes" << suffix << doc.getMemoryDirty() << "\n";
+        oss << "doc_cpu_used_seconds" << suffix << ((double)doc.getLastJiffies()/tick_per_sec) << "\n";
+        oss << "doc_open_time_seconds" << suffix << doc.getOpenTime() << "\n";
+        oss << "doc_idle_time_seconds" << suffix << doc.getIdleTime() << "\n";
+        oss << "doc_download_time_seconds" << suffix << ((double)doc.getWopiDownloadDuration().count() / 1000) << "\n";
+        oss << "doc_upload_time_seconds" << suffix << ((double)doc.getWopiUploadDuration().count() / 1000) << "\n";
+        oss << std::endl;
+    }
 }
 
 std::set<pid_t> AdminModel::getDocumentPids() const

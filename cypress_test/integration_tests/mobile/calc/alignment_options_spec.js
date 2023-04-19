@@ -1,43 +1,39 @@
-/* global describe it cy beforeEach require afterEach expect*/
+/* global describe it cy beforeEach Cypress require afterEach expect*/
 
 var helper = require('../../common/helper');
 var calcHelper = require('../../common/calc_helper');
 var mobileHelper = require('../../common/mobile_helper');
-var calcMobileHelper = require('./calc_mobile_helper');
-
-require('cypress-wait-until');
 
 describe('Change alignment settings.', function() {
-	var testFileName = 'alignment_options.ods';
+	var origTestFileName = 'alignment_options.ods';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(origTestFileName, 'calc');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
-	function getTextPosForFirstCell() {
+	function getTextEndPosForFirstCell() {
 		calcHelper.dblClickOnFirstCell();
 
-		// Select text content
-		helper.typeIntoDocument('{ctrl}a');
+		helper.getCursorPos('left', 'currentTextEndPos');
 
-		helper.initAliasToNegative('currentTextPos');
+		//remove text selection
+		cy.get('#tb_actionbar_item_acceptformula').should('be.visible')
+			.then($ele =>{
+				if (Cypress.dom.isVisible($ele)) {
+					cy.wrap($ele).click();
+				}
+			});
 
-		cy.get('.leaflet-selection-marker-end')
-			.invoke('offset')
-			.its('left')
-			.as('currentTextPos');
-
-		cy.get('@currentTextPos')
-			.should('be.greaterThan', 0);
-
-		calcMobileHelper.removeTextSelection();
+		cy.get('.cursor-overlay .blinking-cursor')
+			.should('not.exist');
 	}
 
 	function openAlignmentPaneForFirstCell() {
@@ -47,7 +43,7 @@ describe('Change alignment settings.', function() {
 
 		helper.clickOnIdle('#ScAlignmentPropertyPanel');
 
-		cy.get('#AlignLeft')
+		cy.get('.unoAlignLeft')
 			.should('be.visible');
 	}
 
@@ -55,9 +51,9 @@ describe('Change alignment settings.', function() {
 		openAlignmentPaneForFirstCell();
 
 		// Set right aligment first
-		helper.clickOnIdle('#AlignRight');
+		helper.clickOnIdle('.unoAlignRight');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'align', 'right');
@@ -69,9 +65,9 @@ describe('Change alignment settings.', function() {
 
 		helper.clickOnIdle('#ScAlignmentPropertyPanel');
 
-		helper.clickOnIdle('#AlignLeft');
+		helper.clickOnIdle('.unoAlignLeft');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'align', 'left');
@@ -80,9 +76,9 @@ describe('Change alignment settings.', function() {
 	it('Align to center horizontally.', function() {
 		openAlignmentPaneForFirstCell();
 
-		helper.clickOnIdle('#AlignHorizontalCenter');
+		helper.clickOnIdle('.unoAlignHorizontalCenter');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'align', 'center');
@@ -91,9 +87,9 @@ describe('Change alignment settings.', function() {
 	it('Change to block alignment.', function() {
 		openAlignmentPaneForFirstCell();
 
-		helper.clickOnIdle('#AlignBlock');
+		helper.clickOnIdle('.unoAlignBlock');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'align', 'justify');
@@ -102,13 +98,13 @@ describe('Change alignment settings.', function() {
 	it('Right-to-left and left-to-right writing mode.', function() {
 		openAlignmentPaneForFirstCell();
 
-		helper.clickOnIdle('#ParaRightToLeft');
+		helper.clickOnIdle('.unoParaRightToLeft');
 
 		// TODO: we don't have a way of testing this
 		// copy container doesn't have info about this
 		cy.wait(500);
 
-		helper.clickOnIdle('#ParaLeftToRight');
+		helper.clickOnIdle('.unoParaLeftToRight');
 
 		cy.wait(500);
 	});
@@ -116,9 +112,9 @@ describe('Change alignment settings.', function() {
 	it('Align to the top and to bottom.', function() {
 		openAlignmentPaneForFirstCell();
 
-		helper.clickOnIdle('#AlignTop');
+		helper.clickOnIdle('.unoAlignTop');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'valign', 'top');
@@ -130,9 +126,9 @@ describe('Change alignment settings.', function() {
 
 		helper.clickOnIdle('#ScAlignmentPropertyPanel');
 
-		helper.clickOnIdle('#AlignBottom');
+		helper.clickOnIdle('.unoAlignBottom');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'valign', 'bottom');
@@ -141,23 +137,23 @@ describe('Change alignment settings.', function() {
 	it('Align to center vertically.', function() {
 		openAlignmentPaneForFirstCell();
 
-		helper.clickOnIdle('#AlignVCenter');
+		helper.clickOnIdle('.unoAlignVCenter');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'valign', 'middle');
 	});
 
 	it('Increment / decrement text indent.', function() {
-		helper.initAliasToNegative('originalTextPos');
+		helper.initAliasToNegative('originalTextEndPos');
 
 		// Get text position first
-		getTextPosForFirstCell();
-		cy.get('@currentTextPos')
-			.as('originalTextPos');
+		getTextEndPosForFirstCell();
+		cy.get('@currentTextEndPos')
+			.as('originalTextEndPos');
 
-		cy.get('@originalTextPos')
+		cy.get('@originalTextEndPos')
 			.should('be.greaterThan', 0);
 
 		openAlignmentPaneForFirstCell();
@@ -168,23 +164,23 @@ describe('Change alignment settings.', function() {
 		// We use the text position as indicator
 		cy.get('body')
 			.should(function() {
-				getTextPosForFirstCell();
+				getTextEndPosForFirstCell();
 
-				cy.get('@currentTextPos')
-					.then(function(currentTextPos) {
-						cy.get('@originalTextPos')
-							.then(function(originalTextPos) {
-								expect(originalTextPos).to.be.lessThan(currentTextPos);
+				cy.get('@currentTextEndPos')
+					.then(function(currentTextEndPos) {
+						cy.get('@originalTextEndPos')
+							.then(function(originalTextEndPos) {
+								expect(originalTextEndPos).to.be.lessThan(currentTextEndPos);
 							});
 					});
 			});
 
-		helper.initAliasToNegative('originalTextPos');
+		helper.initAliasToNegative('originalTextEndPos');
 
-		cy.get('@currentTextPos')
-			.as('originalTextPos');
+		cy.get('@currentTextEndPos')
+			.as('originalTextEndPos');
 
-		cy.get('@currentTextPos')
+		cy.get('@currentTextEndPos')
 			.should('be.greaterThan', 0);
 
 		// Decrease indent
@@ -195,73 +191,26 @@ describe('Change alignment settings.', function() {
 		// We use the text position as indicator
 		cy.get('body')
 			.should(function() {
-				getTextPosForFirstCell();
+				getTextEndPosForFirstCell();
 
-				cy.get('@currentTextPos')
-					.then(function(currentTextPos) {
-						cy.get('@originalTextPos')
-							.then(function(originalTextPos) {
-								expect(originalTextPos).to.be.greaterThan(currentTextPos);
-							});
-					});
-			});
-	});
-
-	it.skip('Change text indent via input field.', function() {
-		// TODO: this fails, because the input field always becomes disabled.
-		helper.initAliasToNegative('originalTextPos');
-
-		getTextPosForFirstCell();
-		cy.get('@currentTextPos')
-			.as('originalTextPos');
-
-		cy.get('@currentTextPos')
-			.should('be.greaterThan', 0);
-
-		openAlignmentPaneForFirstCell();
-
-		// TODO: First we need to increase indent to make the input enabled
-		helper.clickOnIdle('#IncrementIndent');
-
-		cy.wait(300);
-
-		helper.clickOnIdle('#IncrementIndent');
-
-		calcMobileHelper.removeTextSelection();
-
-		openAlignmentPaneForFirstCell();
-
-		cy.get('#leftindent .spinfield')
-			.should('not.have.attr', 'disabled');
-
-		// Increase indent
-		cy.get('#leftindent .spinfield')
-			.clear()
-			.type('20{enter}');
-
-		// We use the text position as indicator
-		cy.get('body')
-			.should(function() {
-				getTextPosForFirstCell();
-
-				cy.get('@currentTextPos')
-					.then(function(currentTextPos) {
-						cy.get('@originalTextPos')
-							.then(function(originalTextPos) {
-								expect(originalTextPos).to.be.lessThan(currentTextPos);
+				cy.get('@currentTextEndPos')
+					.then(function(currentTextEndPos) {
+						cy.get('@originalTextEndPos')
+							.then(function(originalTextEndPos) {
+								expect(originalTextEndPos).to.be.greaterThan(currentTextEndPos);
 							});
 					});
 			});
 	});
 
 	it('Enable text wrapping.', function() {
-		helper.initAliasToNegative('originalTextPos');
+		helper.initAliasToNegative('originalTextEndPos');
 
-		getTextPosForFirstCell();
-		cy.get('@currentTextPos')
-			.as('originalTextPos');
+		getTextEndPosForFirstCell();
+		cy.get('@currentTextEndPos')
+			.as('originalTextEndPos');
 
-		cy.get('@currentTextPos')
+		cy.get('@currentTextEndPos')
 			.should('be.greaterThan', 0);
 
 		openAlignmentPaneForFirstCell();
@@ -276,13 +225,13 @@ describe('Change alignment settings.', function() {
 
 		// We use the text position as indicator
 		cy.waitUntil(function() {
-			getTextPosForFirstCell();
+			getTextEndPosForFirstCell();
 
-			return cy.get('@currentTextPos')
-				.then(function(currentTextPos) {
-					return cy.get('@originalTextPos')
-						.then(function(originalTextPos) {
-							return originalTextPos > currentTextPos;
+			return cy.get('@currentTextEndPos')
+				.then(function(currentTextEndPos) {
+					return cy.get('@originalTextEndPos')
+						.then(function(originalTextEndPos) {
+							return originalTextEndPos > currentTextEndPos;
 						});
 				});
 		});
@@ -306,8 +255,8 @@ describe('Change alignment settings.', function() {
 	});
 
 	it('Merge cells.', function() {
-		// Select the full row
-		calcMobileHelper.selectFirstRow();
+		// Select the 100 cells in 1st row
+		calcHelper.selectCellsInRange('A1:CV1');
 
 		// Despite the selection is there, merge cells needs more time here.
 		cy.wait(1000);
@@ -316,7 +265,7 @@ describe('Change alignment settings.', function() {
 
 		helper.clickOnIdle('#ScAlignmentPropertyPanel');
 
-		cy.get('#AlignLeft')
+		cy.get('.unoAlignLeft')
 			.should('be.visible');
 
 		cy.get('input#mergecells')
@@ -332,9 +281,9 @@ describe('Change alignment settings.', function() {
 			.should('have.prop', 'checked', true);
 
 		// Check content
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectCellsInRange('A1:CV1');
 
 		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'colspan', '1024');
+			.should('have.attr', 'colspan', '100');
 	});
 });

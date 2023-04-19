@@ -52,7 +52,7 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		map.on('zoomend', this._onZoomRowColumns, this);
 		map.on('updateparts', this._onUpdateParts, this);
 		map.on('splitposchanged', this.setSplitCellFromPos, this);
-		this._setCommandStateChange(map);
+		map.on('commandstatechanged', this._onCommandStateChanged, this);
 		map.uiManager.initializeSpecializedUI('spreadsheet');
 	},
 
@@ -81,6 +81,8 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		this._cellCursorXY = new L.Point(-1, -1);
 		this._gotFirstCellCursor = false;
 		this._sheetSwitch = new L.SheetSwitchViewRestore(map);
+		this._lastColumn = 0; // with data
+		this._lastRow = 0; // with data
 		this.requestCellCursor();
 	},
 
@@ -122,18 +124,6 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			this.refreshViewData({x: this._map._getTopLeftPoint().x, y: this._map._getTopLeftPoint().y,
 				offset: {x: undefined, y: undefined}}, true /* compatDataSrcOnly */);
 			app.socket.sendMessage('commandvalues command=.uno:ViewAnnotationsPosition');
-		} else if (textMsg.startsWith('launchmenu:')) {
-			var menu = JSON.parse(textMsg.replace('launchmenu: ', ''));
-			switch (menu.type) {
-			case 'DataSelect':
-				L.dialog.run('DataSelect', menu);
-				break;
-			case 'AutoFilter':
-				L.dialog.run('AutoFilter', menu);
-				break;
-			default:
-				window.app.console.debug('Warning! unknow launch menu :', menu);
-			}
 		} else if (this.options.sheetGeometryDataEnabled &&
 				textMsg.startsWith('invalidatesheetgeometry:')) {
 			var params = textMsg.substring('invalidatesheetgeometry:'.length).trim().split(' ');
@@ -181,6 +171,10 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			command.height = parseInt(strTwips[3]);
 			command.part = this._selectedPart;
 		}
+
+		if (isNaN(command.mode))
+			command.mode = this._selectedMode;
+
 		var topLeftTwips = new L.Point(command.x, command.y);
 		var offset = new L.Point(command.width, command.height);
 		var bottomRightTwips = topLeftTwips.add(offset);
@@ -203,7 +197,8 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		for (var key in this._tiles) {
 			var coords = this._tiles[key].coords;
 			var bounds = this._coordsToTileBounds(coords);
-			if (coords.part === command.part && invalidBounds.intersects(bounds)) {
+			if (coords.part === command.part && coords.mode === command.mode &&
+				invalidBounds.intersects(bounds)) {
 				if (this._tiles[key]._invalidCount) {
 					this._tiles[key]._invalidCount += 1;
 				}
@@ -224,7 +219,8 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			}
 		}
 
-		if (needsNewTiles && command.part === this._selectedPart && this._debug)
+		if (needsNewTiles && command.part === this._selectedPart
+			&& command.mode === this._selectedMode && this._debug)
 		{
 			this._debugAddInvalidationMessage(textMsg);
 		}
@@ -233,7 +229,7 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			// compute the rectangle that each tile covers in the document based
 			// on the zoom level
 			coords = this._keyToTileCoords(key);
-			if (coords.part !== command.part) {
+			if (coords.part !== command.part || coords.mode !== command.mode) {
 				continue;
 			}
 
@@ -285,6 +281,38 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		var newDocWidth = Math.min(maxDocSize.x, this._docWidthTwips);
 		var newDocHeight = Math.min(maxDocSize.y, this._docHeightTwips);
 
+		var mapPosX = this._map._getTopLeftPoint().x;
+		var mapPosY = this._map._getTopLeftPoint().y;
+		var mapSize = this._map.getSize();
+
+		var lastCellPixel = this.sheetGeometry.getCellRect(this._lastColumn, this._lastRow);
+		var isCalcRTL = this._map._docLayer.isCalcRTL();
+		lastCellPixel = isCalcRTL ? lastCellPixel.getBottomRight() : lastCellPixel.getBottomLeft();
+		var lastCellTwips = this._corePixelsToTwips(lastCellPixel);
+		var mapSizeTwips = this._corePixelsToTwips(mapSize);
+
+		var limitWidth = mapPosX + mapSize.x < lastCellPixel.x;
+		var limitHeight = mapPosY + mapSize.y < lastCellPixel.y;
+
+		// limit to data area only (and map size for margin)
+		if (limitWidth)
+			newDocWidth = Math.min(lastCellTwips.x + mapSizeTwips.x, newDocWidth);
+
+		if (limitHeight)
+			newDocHeight = Math.min(lastCellTwips.y + mapSizeTwips.y, newDocHeight);
+
+		var extendedLimit = false;
+
+		if (!limitWidth && maxDocSize.x > this._docWidthTwips) {
+			newDocWidth = this._docWidthTwips + mapSizeTwips.x;
+			extendedLimit = true;
+		}
+
+		if (!limitHeight && maxDocSize.y > this._docHeightTwips) {
+			newDocHeight = this._docHeightTwips + mapSizeTwips.y;
+			extendedLimit = true;
+		}
+
 		var shouldRestrict = (newDocWidth !== this._docWidthTwips ||
 				newDocHeight !== this._docHeightTwips);
 
@@ -308,6 +336,9 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		this._map.setMaxBounds(new L.LatLngBounds(topLeft, bottomRight));
 
 		this._map.fire('scrolllimits', newSizePx.clone());
+
+		if (limitWidth || limitHeight || extendedLimit)
+			this._painter._sectionContainer.requestReDraw();
 	},
 
 	_getCursorPosSize: function () {
@@ -337,6 +368,26 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		};
 	},
 
+	/// take into account only data area to reduce scrollbar range
+	updateScollLimit: function () {
+		if (this.sheetGeometry && this._lastColumn && this._lastRow) {
+			this._restrictDocumentSize();
+		}
+	},
+
+	_handleRTLFlags: function (command) {
+		var rtlChanged = command.rtlParts === undefined;
+		rtlChanged = rtlChanged || this._rtlParts !== undefined && (
+			command.rtlParts.length !== this._rtlParts.length
+			|| this._rtlParts.some(function (part, index) {
+				return part !== command.rtlParts[index];
+			}));
+		this._rtlParts = command.rtlParts || [];
+		if (rtlChanged) {
+			this._adjustCanvasSectionsForLayoutChange();
+		}
+	},
+
 	_onStatusMsg: function (textMsg) {
 		console.log('DEBUG: onStatusMsg: ' + textMsg);
 		var command = app.socket.parseServerCmd(textMsg);
@@ -344,12 +395,15 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			var firstSelectedPart = (typeof this._selectedPart !== 'number');
 			this._docWidthTwips = command.width;
 			this._docHeightTwips = command.height;
+			this._lastColumn = command.lastcolumn;
+			this._lastRow = command.lastrow;
 			app.file.size.twips = [this._docWidthTwips, this._docHeightTwips];
 			app.file.size.pixels = [Math.round(this._tileSize * (this._docWidthTwips / this._tileWidthTwips)), Math.round(this._tileSize * (this._docHeightTwips / this._tileHeightTwips))];
 			app.view.size.pixels = app.file.size.pixels.slice();
 			this._docType = command.type;
 			this._parts = command.parts;
 			this._selectedPart = command.selectedPart;
+			this._selectedMode = (command.mode !== undefined) ? command.mode : 0;
 			if (this.sheetGeometry && this._selectedPart != this.sheetGeometry.getPart()) {
 				// Core initiated sheet switch, need to get full sheetGeometry data for the selected sheet.
 				this.requestSheetGeometryData();
@@ -371,38 +425,8 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			else {
 				this._updateMaxBounds(true);
 			}
-			// Added by Firefly <firefly@ossii.com.tw>
-			// 含有各工作表的詳細資訊
-			if (command.partsinfo !== undefined) {
-				var map = this._map;
-				this._partsInfo = command.partsinfo;
-				// 加入簡易方法，簡化程式設計
-				this._partsInfo.forEach(function(part) {
-					// 取得背景顏色
-					part.backgroundColor = function () {
-						// 背景色如果是 -1 表示預設顏色，否則轉為 CSS 表示用的顏色(#rrggbb);
-						return this.bgColor === '-1' ? '' : map.rgbToHex(this.bgColor);
-					},
-					// 背景色是否偏暗
-					part.isDark = function() {
-						return this.bgIsDark === '1';
-					};
-					// 是否被保護
-					part.isProtected = function() {
-						return this.protected === '1';
-					};
-					// 是否有密碼保護
-					part.havePassword = function() {
-						return this.protectedWithPass === '1';
-					};
-					part.isVisible = function() {
-						return this.visible === '1';
-					};
-				});
-			}
 			this._hiddenParts = command.hiddenparts || [];
-			this._rtlParts = command.rtlParts || [];
-			console.log('DEBUG: rtlParts = ' + this._rtlParts);
+			this._handleRTLFlags(command);
 			this._documentInfo = textMsg;
 			var partNames = textMsg.match(/[^\r\n]+/g);
 			// only get the last matches
@@ -420,7 +444,12 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			if (firstSelectedPart) {
 				this._switchSplitPanesContext();
 			}
+		} else {
+			this._handleRTLFlags(command);
 		}
+
+		var scrollSection = app.sectionContainer.getSectionWithName(L.CSections.Scroll.name);
+		scrollSection.stepByStepScrolling = true;
 	},
 
 	// This initiates a selective repainting of row/col headers and
@@ -555,7 +584,6 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			updatecolumns: updateCols,
 			cursor: this._getCursorPosSize(),
 			selection: this._getSelectionHeaderData(),
-			converter: this._twipsToCorePixels,
 			context: this
 		});
 	},
@@ -593,8 +621,7 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 	},
 
 	_adjustCanvasSectionsForLayoutChange: function () {
-
-		var sheetIsRTL = this._selectedPart in this._rtlParts;
+		var sheetIsRTL = this._rtlParts.indexOf(this._selectedPart) >= 0;
 		if (sheetIsRTL && this._layoutIsRTL !== true) {
 			console.log('debug: in LTR -> RTL canvas section adjustments');
 			var sectionContainer = this._painter._sectionContainer;
@@ -632,6 +659,7 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			this._layoutIsRTL = true;
 
 			sectionContainer.reNewAllSections(true);
+			this._syncTileContainerSize();
 
 		} else if (!sheetIsRTL && this._layoutIsRTL === true) {
 
@@ -669,7 +697,7 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 			tilesSection.anchor = [[L.CSections.ColumnHeader.name, 'bottom', 'top'], [L.CSections.RowHeader.name, 'right', 'left']];
 
 			sectionContainer.reNewAllSections(true);
-
+			this._syncTileContainerSize();
 		}
 	},
 
@@ -755,18 +783,16 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		}
 	},
 
-	_onRowColSelCount: function (e) {
-		// 切出字串內的數字成為 array
-		var rowCol = e.state.match(/\d+/g);
-		if (L.Util.isArray(rowCol)) {
-			var rowCount = rowCol[0];
-			var columnCount = rowCol[1];
+	_onRowColSelCount: function (state) {
+		if (state.trim() !== '') {
+			var rowCount = parseInt(state.split(', ')[0].trim().split(' ')[0].replace(',', '').replace(',', ''));
+			var columnCount = parseInt(state.split(', ')[1].trim().split(' ')[0].replace(',', '').replace(',', ''));
 			if (rowCount > 1000000)
 				this._map.wholeColumnSelected = true;
 			else
 				this._map.wholeColumnSelected = false;
 
-			if (columnCount >= 1024)
+			if (columnCount === 1024)
 				this._map.wholeRowSelected = true;
 			else
 				this._map.wholeRowSelected = false;
@@ -777,37 +803,29 @@ L.CalcTileLayer = L.CanvasTileLayer.extend({
 		}
 	},
 
-	/**
-	 * 設定處理狀態變更事件
-	 */
-	_setCommandStateChange: function(map) {
-		map.stateChangeHandler
-			// 凍結欄
-			.on('.uno:FreezePanesColumn', function(e) {
-				this._onSplitStateChanged(e, true /* isSplitCol */);
-			}, this)
-			// 凍結列
-			.on('.uno:FreezePanesRow', function(e) {
-				this._onSplitStateChanged(e, false /* isSplitCol */);
-			}, this)
-			// 選取欄或列
-			.on('.uno:RowColSelCount', this._onRowColSelCount, this)
-			// 插入或覆寫狀態
-			.on('.uno:InsertMode', function(e) {
-				/* If we get textselection message from core:
-				   When insertMode is active:  User is selecting some text.
-				   When insertMode is passive: User is selecting cells.
-				*/
-				this.insertMode = e.state !== 'true' && e.state !== 'false' ? false: true;
-			}, this);
+	_onCommandStateChanged: function (e) {
+
+		if (e.commandName === '.uno:FreezePanesColumn') {
+			this._onSplitStateChanged(e, true /* isSplitCol */);
+		}
+		else if (e.commandName === '.uno:FreezePanesRow') {
+			this._onSplitStateChanged(e, false /* isSplitCol */);
+		}
+		else if (e.commandName === '.uno:RowColSelCount') {
+			// We also call the function when state is empty, because row/column variables should be set.
+			if (e.state.trim() === '' || e.state.startsWith('Selected'))
+				this._onRowColSelCount(e.state.replace('Selected:', '').replace('row', '').replace('column', '').replace('s', ''));
+		}
+		else if (e.commandName === '.uno:InsertMode') {
+			/* If we get textselection message from core:
+				When insertMode is active:  User is selecting some text.
+				When insertMode is passive: User is selecting cells.
+			*/
+			this.insertMode = e.state.trim() === '' ? false: true;
+		}
 	},
 
 	_onSplitStateChanged: function (e, isSplitCol) {
-		// 沒有實際的值，就不處理
-		if (!e.hasValue()) {
-			return;
-		}
-
 		if (!this._splitPanesContext) {
 			return;
 		}

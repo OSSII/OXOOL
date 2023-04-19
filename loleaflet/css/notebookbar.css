@@ -3,6 +3,8 @@
 
 .notebookbar-tabs-container {
 	display: inline-flex;
+	flex: 1 1 auto;
+	margin-inline-start: 5px;
 }
 
 .ui-tabs.notebookbar {
@@ -12,17 +14,20 @@
 	height: 100%;
 }
 
-.ui-tab.notebookbar {
-	font-size: var(--header-font-size);
-	font-family: var(--oxool-font);
-	line-height: normal;
-	color: #fff;
+button.ui-tab.notebookbar {
+	box-sizing: border-box;
 	height: 24px;
 	display: flex;
 	align-items: center;
-	padding: 0px 10px;
+	justify-content: center;
+	padding: 0px 1em;
 	border: 1px solid transparent;
 	border-radius: var(--border-radius);
+	background-color: transparent;
+	font-size: var(--header-font-size);
+	font-family: var(--cool-font);
+	line-height: normal;
+	color: var(--color-main-text);
 }
 
 .ui-tab.notebookbar[style*='block'] {
@@ -30,20 +35,22 @@
 }
 
 .ui-tab.hidden.notebookbar {
-	display: none;
+	display: none !important;
 }
 
 .ui-tab.selected.notebookbar {
-	color: var(--color-text-darker);
-	background: var(--color-background-dark);
-	border: 1px solid var(--color-border-dark);
+	background: var(--color-background-dark) !important;
+	border: 1px solid var(--color-border-dark) !important;
+	color: var(--color-text-darker) !important;
 }
+
 .ui-tab.notebookbar:hover {
-	color: var(--color-text-darker);
-	background: var(--color-background-darker);
-	border: 1px solid var(--color-border-darker);
-	cursor: pointer;
+	background: var(--color-background-darker) !important;
+	border: 1px solid var(--color-border-darker) !important;
+	cursor: pointer !important;
+	color: var(--color-text-darker) !important;
 }
+
 /* Document Logo */
 .main-nav.hasnotebookbar #document-header {
 	height: 100%;
@@ -62,33 +69,23 @@
 .notebookbar-shortcuts-bar {
 	display: inline-block;
 	position: relative;
-	height: 26px;
 	z-index: 1000;
 	box-sizing: border-box;
-	border: 1px solid var(--color-border-dark);
-	background: var(--color-background-dark);
-	border-radius: var(--border-radius);
 }
 
 .notebookbar-shortcuts-bar > table {
 	display: block;
-	height: 32px;
+	height: 31px;
 }
 
-.notebookbar-shortcuts-bar .unotoolbutton.notebookbar .unobutton {
-	width: 18px !important;
-	height: 18px !important;
+.notebookbar-shortcuts-bar .unotoolbutton.notebookbar .unobutton img {
+	width: 16px !important;
+	height: 16px !important;
 	margin: 0 !important;
 }
 
 .notebookbar-shortcuts-bar .notebookbar.unotoolbutton {
-	height: 20px;
-	width: 20px;
-	display: flex;
 	margin: 0px !important;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
 }
 
 .notebookbar-shortcuts-bar .cell.notebookbar {
@@ -110,7 +107,10 @@
 	margin-left: 11px;
 }
 
-#Save1.savemodified:after {
+#File .unoSave.savemodified {
+	position: relative;
+}
+#File .unoSave.savemodified:after {
 	content: '';
 	display: block;
 	width: 6px;
@@ -121,7 +121,7 @@
 	box-shadow: 0 0 0 2px var(--color-main-background);
 	border: 1px solid var(--color-primary);
 	position: absolute;
-	top: 18px;
+	top: 0;
 	margin-left: 28px;
 }
 
@@ -199,13 +199,6 @@
 
 /* unobuttons */
 
-.hasnotebookbar .ui-content .unobutton {
-	width: 32px;
-	height: 32px;
-	margin-right: 5px;
-	vertical-align: middle;
-}
-
 /* avoid bug with arrow in new line when window is small */
 #table-Home-Section-Insert #table-LineB9 #InsertGraphic.notebookbar,
 #table-Home-Section-Insert #table-GroupB20 #InsertTable.notebookbar {
@@ -221,20 +214,39 @@
 }
 
 .unotoolbutton.notebookbar .unobutton {
-	width: 24px !important;
-	height: 24px !important;
-	margin-right: 0px !important;
+	box-sizing: border-box;
+	padding: 0;
+	width: var(--btn-size);
+	height: var(--btn-size);
+	background-color: transparent;
+	margin: 0;
+	vertical-align: middle;
+	border: none;
+	line-height: 0em;
+	color: var(--color-main-text);
+	font-size: var(--default-font-size);
+	border-radius: var(--border-radius);
+}
+
+.jsdialog .ui-tabs-content {
+	margin-top: 10px;
+}
+
+.ui-tabs-content .unobutton > img {
+	width: var(--btn-size);
+	height: var(--btn-size);
 }
 
 .has-dropdown--color.notebookbar {
-	height: 24px !important;
+	height: var(--btn-size) !important;
 }
 
 .unotoolbutton.notebookbar .unolabel {
 	font-size: var(--header-font-size);
-	font-family: var(--oxool-font);
+	font-family: var(--cool-font);
 	color: var(--color-main-text);
 	padding: 0px 5px !important;
+	line-height: normal;
 }
 
 #table-HomeTab .unospan-uptoolbar:not(.disabled) {
@@ -267,6 +279,7 @@
 .mobile-wizard-widebutton.disabled,
 .locking-disabled {
 	opacity: 0.65;
+	cursor: not-allowed;
 }
 
 .locking-disabled:hover {
@@ -288,6 +301,8 @@
 }
 #zoomreset, .unotoolbutton.notebookbar.has-label > *{ /*so they stay side by side*/
 	display: table-cell;
+	width: 100%;
+	height: 100%;
 }
 
 .unotoolbutton.notebookbar.has-label {
@@ -295,8 +310,7 @@
 }
 
 .unotoolbutton.notebookbar.has-label:not(.inline) img {
-	width: 32px !important;
-	height: 32px !important;
+	width: 24px !important;
 	margin: auto !important;
 	display: block;
 }
@@ -555,58 +569,58 @@
 	font-size: calc(var(--default-font-size)*1.5);
 }
 
-.downloadas-odt-submenu-icon {
+[class*='as-odt-submenu-icon'] {
 	background: url('images/lc_downloadas-odt.svg') center;
 }
 
-.downloadas-ods-submenu-icon {
+[class*='as-ods-submenu-icon'] {
 	background: url('images/lc_downloadas-ods.svg') center;
 }
 
-.downloadas-odp-submenu-icon {
+[class*='as-odp-submenu-icon'] {
 	background: url('images/lc_downloadas-odp.svg') center;
 }
 
-.downloadas-odg-submenu-icon {
+[class*='as-odg-submenu-icon'] {
 	background: url('images/lc_downloadas-odg.svg') center;
 }
 
-.downloadas-rtf-submenu-icon {
+[class*='as-rtf-submenu-icon'] {
 	background: url('images/lc_downloadas-rtf.svg') center;
 }
 
-.downloadas-doc-submenu-icon {
+[class*='as-doc-submenu-icon'] {
 	background: url('images/lc_downloadas-doc.svg') center;
 }
 
-.downloadas-docx-submenu-icon {
+[class*='as-docx-submenu-icon'] {
 	background: url('images/lc_downloadas-docx.svg') center;
 }
 
-.downloadas-pdf-submenu-icon {
-	background: url('images/lc_downloadas-pdf.svg') center;
+[class*='pdf-submenu-icon'] {
+	background: url('images/lc_exportpdf.svg') center;
 }
 
-.downloadas-epub-submenu-icon {
-	background: url('images/lc_downloadas-epub.svg') center;
+[class*='epub-submenu-icon'] {
+	background: url('images/lc_exportepub.svg') center;
 }
 
-.downloadas-xls-submenu-icon {
+[class*='as-xls-submenu-icon'] {
 	background: url('images/lc_downloadas-xls.svg') center;
 }
 
-.downloadas-xlsx-submenu-icon {
+[class*='as-xlsx-submenu-icon'] {
 	background: url('images/lc_downloadas-xlsx.svg') center;
 }
 
-.downloadas-csv-submenu-icon {
+[class*='as-csv-submenu-icon'] {
 	background: url('images/lc_downloadas-csv.svg') center;
 }
 
-.downloadas-ppt-submenu-icon {
+[class*='as-ppt-submenu-icon'] {
 	background: url('images/lc_downloadas-ppt.svg') center;
 }
 
-.downloadas-pptx-submenu-icon {
+[class*='as-pptx-submenu-icon'] {
 	background: url('images/lc_downloadas-pptx.svg') center;
 }

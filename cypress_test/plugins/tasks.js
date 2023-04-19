@@ -1,11 +1,19 @@
 /* global require Promise */
 
 var fs = require('fs');
+var list = require('./selectorList').list;
 
 function copyFile(args) {
 	return new Promise(function(resolve) {
 		var sourceFile = args.sourceDir + args.fileName;
-		var destFile = args.destDir + args.fileName;
+		var destFileName;
+		if (args.destFileName) {
+			destFileName = args.destFileName;
+		} else {
+			destFileName = args.fileName;
+		}
+
+		var destFile = args.destDir + destFileName;
 
 		if (fs.existsSync(sourceFile)) {
 			fs.mkdirSync(args.destDir, { recursive: true });
@@ -19,4 +27,13 @@ function copyFile(args) {
 	});
 }
 
+function getSelectors(args) {
+	if (args.mode === 'notebookbar') {
+		return list[args.name][0];
+	} else {
+		return list[args.name][1];
+	}
+}
+
 module.exports.copyFile = copyFile;
+module.exports.getSelectors = getSelectors;

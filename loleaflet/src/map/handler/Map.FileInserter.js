@@ -94,10 +94,11 @@ L.Map.FileInserter = L.Handler.extend({
 	_sendFile: function (name, file, type) {
 		var socket = app.socket;
 		var map = this._map;
+		var sectionContainer = app.sectionContainer;
 		var url = this.getWopiUrl(map);
 
-		if ('processOxoolUrl' in window) {
-			url = window.processOxoolUrl({ url: url, type: 'insertfile' });
+		if ('processCoolUrl' in window) {
+			url = window.processCoolUrl({ url: url, type: 'insertfile' });
 		}
 
 		if (!(file.filename && file.url) && (file.name === '' || file.size === 0)) {
@@ -105,7 +106,7 @@ L.Map.FileInserter = L.Handler.extend({
 			if (file.size === 0)
 				errMsg = _('The file of type: %0 cannot be uploaded to server since the file is empty');
 			errMsg = errMsg.replace('%0', file.type);
-			map.fire('error', {msg: errMsg});
+			map.fire('error', {msg: errMsg, critical: false});
 			return;
 		}
 
@@ -139,7 +140,16 @@ L.Map.FileInserter = L.Handler.extend({
 				if (xmlHttp.readyState === 4) {
 					map.hideBusy();
 					if (xmlHttp.status === 200) {
-						socket.sendMessage('insertfile name=' + name + ' type=' + type);
+						var sectionName = L.CSections.ContentControl.name;
+						var section;
+						if (sectionContainer.doesSectionExist(sectionName)) {
+							section = sectionContainer.getSectionWithName(sectionName);
+						}
+						if (section && section.sectionProperties.picturePicker && type === 'graphic') {
+							socket.sendMessage('contentcontrolevent type=picture' + ' name=' + name);
+						} else {
+							socket.sendMessage('insertfile name=' + name + ' type=' + type);
+						}
 					}
 					else if (xmlHttp.status === 404) {
 						map.fire('error', {msg: errorMessages.uploadfile.notfound});
@@ -175,7 +185,17 @@ L.Map.FileInserter = L.Handler.extend({
 	},
 
 	_sendURL: function (name, url) {
-		app.socket.sendMessage('insertfile name=' + encodeURIComponent(url) + ' type=graphicurl');
+		var sectionName = L.CSections.ContentControl.name;
+		var section;
+		if (app.sectionContainer.doesSectionExist(sectionName)) {
+			section = app.sectionContainer.getSectionWithName(sectionName);
+		}
+
+		if (section && section.sectionProperties.picturePicker) {
+			app.socket.sendMessage('contentcontrolevent type=pictureurl' + ' name=' + encodeURIComponent(url));
+		} else {
+			app.socket.sendMessage('insertfile name=' + encodeURIComponent(url) + ' type=graphicurl');
+		}
 	}
 });
 

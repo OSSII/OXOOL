@@ -3,6 +3,8 @@
  * L.Util contains various utility functions used throughout Leaflet code.
  */
 
+/* global brandProductFAQURL */
+
 L.Util = {
 	// extend an object with properties of one or more other objects
 	extend: function (dest) {
@@ -97,9 +99,30 @@ L.Util = {
 		return Math.round(num * pow) / pow;
 	},
 
-	// trim whitespace from both sides of a string
-	trim: function (str) {
-		return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
+	// removes given prefix and suffix from the string if exists
+	// if suffix is not specifed prefix is trimmed from both end of string
+	// trim whitespace from both sides of a string if prefix and suffix are not given
+	trim: function (str, prefix, suffix) {
+		if (!prefix)
+			return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
+		var result = this.trimStart(str, prefix);
+		result = this.trimEnd(result, suffix);
+		return result;
+	},
+
+	// removes prefix from string if string starts with that prefix
+	trimStart: function (str, prefix) {
+		if (str.indexOf(prefix) === 0)
+			return str.substring(prefix.length);
+		return str;
+	},
+
+	// removes suffix from string if string ends with that suffix
+	trimEnd: function (str, suffix) {
+		var suffixIndex = str.lastIndexOf(suffix);
+		if (suffixIndex !== -1 && (str.length - suffix.length === suffixIndex))
+			return str.substring(0, suffixIndex);
+		return str;
 	},
 
 	// split a string into words
@@ -191,6 +214,18 @@ L.Util = {
 		return Math.floor(metrics.width);
 	},
 
+	getProduct: function () {
+		var brandFAQURL = (typeof brandProductFAQURL !== 'undefined') ?
+		    brandProductFAQURL : 'https://collaboraonline.github.io/post/faq/';
+		if (window.feedbackUrl && window.buyProductUrl) {
+			var integratorUrl = encodeURIComponent(window.buyProductUrl);
+			brandFAQURL = window.feedbackUrl;
+			brandFAQURL = brandFAQURL.substring(0, brandFAQURL.lastIndexOf('/')) +
+				'/product.html?integrator='+ integratorUrl;
+		}
+		return brandFAQURL;
+	},
+
 	replaceCtrlAltInMac: function(msg) {
 		if (navigator.appVersion.indexOf('Mac') != -1 || navigator.userAgent.indexOf('Mac') != -1) {
 			var ctrl = /Ctrl/g;
@@ -208,6 +243,15 @@ L.Util = {
 			return msg.replace(ctrl, '⌘').replace(alt, '⌥');
 		}
 		return msg;
+	},
+
+	randomString: function(len) {
+		var result = '';
+		var ValidCharacters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+		for (var i = 0; i < len; i++) {
+			result += ValidCharacters.charAt(Math.floor(Math.random() * ValidCharacters.length));
+		}
+		return result;
 	}
 };
 

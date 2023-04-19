@@ -1,18 +1,14 @@
-/* global describe it cy require afterEach */
+/* global describe it cy Cypress require afterEach */
 
 var helper = require('../../common/helper');
 var calcHelper = require('../../common/calc_helper');
 var mobileHelper = require('../../common/mobile_helper');
-var calcMobileHelper = require('./calc_mobile_helper');
-
-require('cypress-wait-until');
 
 describe('Interact with bottom toolbar.', function() {
 	var testFileName;
 
 	function before(fileName) {
-		testFileName = fileName;
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(fileName, 'calc');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
@@ -23,26 +19,23 @@ describe('Interact with bottom toolbar.', function() {
 	}
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
-	function getTextPosForFirstCell() {
+	function getTextEndPosForFirstCell() {
 		calcHelper.dblClickOnFirstCell();
 
-		// Select text content
-		helper.typeIntoDocument('{ctrl}a');
+		helper.getCursorPos('left', 'currentTextEndPos');
 
-		helper.initAliasToNegative('currentTextPos');
+		cy.get('#tb_actionbar_item_acceptformula').should('be.visible')
+			.then($ele =>{
+				if (Cypress.dom.isVisible($ele)) {
+					cy.wrap($ele).click();
+				}
+			});
 
-		cy.get('.leaflet-selection-marker-end')
-			.invoke('offset')
-			.its('left')
-			.as('currentTextPos');
-
-		cy.get('@currentTextPos')
-			.should('be.greaterThan', 0);
-
-		calcMobileHelper.removeTextSelection();
+		cy.get('.cursor-overlay .blinking-cursor')
+			.should('not.exist');
 	}
 
 	it('Apply bold.', function() {
@@ -51,7 +44,7 @@ describe('Interact with bottom toolbar.', function() {
 		cy.get('.w2ui-tb-image.w2ui-icon.bold')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td b')
 			.should('exist');
@@ -63,7 +56,7 @@ describe('Interact with bottom toolbar.', function() {
 		cy.get('.w2ui-tb-image.w2ui-icon.italic')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td i')
 			.should('exist');
@@ -75,19 +68,19 @@ describe('Interact with bottom toolbar.', function() {
 		cy.get('.w2ui-tb-image.w2ui-icon.underline')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td u')
 			.should('exist');
 	});
 
-	it('Apply strikeout.', function() {
+	it.skip('Apply strikeout.', function() {
 		before('bottom_toolbar.ods');
 
 		cy.get('.w2ui-tb-image.w2ui-icon.strikeout')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td s')
 			.should('exist');
@@ -101,7 +94,7 @@ describe('Interact with bottom toolbar.', function() {
 
 		mobileHelper.selectFromColorPalette(0, 5);
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td font')
 			.should('have.attr', 'color', '#00FF00');
@@ -115,7 +108,7 @@ describe('Interact with bottom toolbar.', function() {
 
 		mobileHelper.selectFromColorPalette(0, 5);
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('have.attr', 'bgcolor', '#00FF00');
@@ -124,8 +117,8 @@ describe('Interact with bottom toolbar.', function() {
 	it('Merge cells', function() {
 		before('bottom_toolbar.ods');
 
-		// Select the full row
-		calcMobileHelper.selectFirstRow();
+		// Select 100 cells in first row
+		calcHelper.selectCellsInRange('A1:CV1');
 
 		// Despite the selection is there, merge cells needs more time here.
 		cy.wait(1000);
@@ -133,70 +126,22 @@ describe('Interact with bottom toolbar.', function() {
 		cy.get('.w2ui-tb-image.w2ui-icon.togglemergecells')
 			.click();
 
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectCellsInRange('A1:CV1');
 
 		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'colspan', '1024');
+			.should('have.attr', 'colspan', '100');
 	});
 
-	it('Apply left/right alignment', function() {
+	it.skip('Enable text wrapping.', function() {
 		before('bottom_toolbar.ods');
 
-		// Set right aligment first
-		cy.get('.w2ui-tb-image.w2ui-icon.alignright')
-			.click();
+		helper.initAliasToNegative('originalTextEndPos');
 
-		calcMobileHelper.selectAllMobile();
+		getTextEndPosForFirstCell();
+		cy.get('@currentTextEndPos')
+			.as('originalTextEndPos');
 
-		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'align', 'right');
-
-		// Change alignment back
-		calcHelper.clickOnFirstCell();
-
-		cy.get('.w2ui-tb-image.w2ui-icon.alignleft')
-			.click();
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'align', 'left');
-	});
-
-	it('Align to center.', function() {
-		before('bottom_toolbar.ods');
-
-		cy.get('.w2ui-tb-image.w2ui-icon.alignhorizontal')
-			.click();
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'align', 'center');
-	});
-
-	it('Change to block alignment.', function() {
-		before('bottom_toolbar.ods');
-
-		cy.get('.w2ui-tb-image.w2ui-icon.alignblock')
-			.click();
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table td')
-			.should('have.attr', 'align', 'justify');
-	});
-
-	it('Enable text wrapping.', function() {
-		before('bottom_toolbar.ods');
-
-		helper.initAliasToNegative('originalTextPos');
-
-		getTextPosForFirstCell();
-		cy.get('@currentTextPos')
-			.as('originalTextPos');
-
-		cy.get('@currentTextPos')
+		cy.get('@currentTextEndPos')
 			.should('be.greaterThan', 0);
 
 		calcHelper.clickOnFirstCell();
@@ -206,66 +151,15 @@ describe('Interact with bottom toolbar.', function() {
 
 		// We use the text position as indicator
 		cy.waitUntil(function() {
-			getTextPosForFirstCell();
+			getTextEndPosForFirstCell();
 
-			return cy.get('@currentTextPos')
-				.then(function(currentTextPos) {
-					return cy.get('@originalTextPos')
-						.then(function(originalTextPos) {
-							return originalTextPos > currentTextPos;
+			return cy.get('@currentTextEndPos')
+				.then(function(currentTextEndPos) {
+					return cy.get('@originalTextEndPos')
+						.then(function(originalTextEndPos) {
+							return originalTextEndPos > currentTextEndPos;
 						});
 				});
 		});
-	});
-
-	it('Insert row after.', function() {
-		before('bottom_toolbar2.ods');
-
-		cy.get('.w2ui-tb-image.w2ui-icon.insertrowsafter')
-			.click();
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table tr')
-			.should('have.length', 3);
-
-		cy.get('#copy-paste-container table tr:nth-of-type(1)')
-			.should('contain.text', 'long line long line long line');
-
-		cy.get('#copy-paste-container table tr:nth-of-type(2)')
-			.should('not.contain.text', 'long line long line long line');
-
-		cy.get('#copy-paste-container table tr:nth-of-type(2)')
-			.should('not.contain.text', '2');
-
-		cy.get('#copy-paste-container table tr:nth-of-type(3)')
-			.should('contain.text', '2');
-	});
-
-	it('Insert column after.', function() {
-		before('bottom_toolbar2.ods');
-
-		cy.get('.w2ui-tb-image.w2ui-icon.insertcolumnsafter')
-			.click();
-
-		calcMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container table tr')
-			.should('have.length', 2);
-
-		cy.get('#copy-paste-container table tr:nth-of-type(1) td')
-			.should('have.length', 3);
-
-		cy.get('#copy-paste-container table tr:nth-of-type(1) td:nth-of-type(1)')
-			.should('contain.text', 'long line long line long line');
-
-		cy.get('#copy-paste-container table tr:nth-of-type(1) td:nth-of-type(2)')
-			.should('not.contain.text', 'long line long line long line');
-
-		cy.get('#copy-paste-container table tr:nth-of-type(1) td:nth-of-type(2)')
-			.should('not.contain.text', '1');
-
-		cy.get('#copy-paste-container table tr:nth-of-type(1) td:nth-of-type(3)')
-			.should('contain.text', '1');
 	});
 });

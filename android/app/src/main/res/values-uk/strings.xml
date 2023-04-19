@@ -19,9 +19,9 @@
     <string name="storage_permission_required">Необхідний дозвіл на збереження</string>
     <string name="file_creation_failed">Не вдалось створити файл</string>
     <string name="file_exists_warning">Файл з такою назвою вже існує і буде перезаписаний.</string>
-    <string name="temp_file_saving_disabled">Цей файл доступний лише для читання, запис неможливий.</string>
+    <string name="temp_file_saving_disabled">Цей файл лише для читання, збереження неможливе.</string>
     <string name="no_items">Немає елементів</string>
-    <string name="no_recent_items">Відкрийте файл за допомогою піктограми папки на панелі інструментів.</string>
+    <string name="no_recent_items">Відкрийте файл за допомогою піктограми теки на панелі інструментів.</string>
     <string name="app_vendor">Цей випуск надано $VENDOR.</string>
     <string name="app_description">$APP_NAME це сучасний, простий у використанні набір програм з відкритим кодом для обробки текстів, електронних таблиць, презентацій тощо.</string>
     <string name="app_version">Версія: %1$s, збірка: %2$s</string>
@@ -31,13 +31,13 @@
     <string name="owncloud_unspecified_error">Помилка підключення до хмарного сервера. Перевірте свої налаштування і/або спробуйте пізніше.</string>
     <string name="owncloud_unauthorized">Не вдалося авторизуватись на хмарному сервері. Перевірте свої налаштування.</string>
     <string name="owncloud_wrong_connection">Не можна під\'єднатися до хмарного сервера. Перевірте свої налаштування.</string>
-    <string name="usb_connected_configure">USB підключено, налаштуйте свій пристрій</string>
+    <string name="usb_connected_configure">USB під\'єднано, налаштуйте свій пристрій.</string>
     <string name="remote_server">Віддалений сервер</string>
     <string name="otg_file_system">OTG пристрій (експериментально)</string>
     <string name="external_sd_file_system">Зовнішня SD-карта</string>
     <string name="local_file_system">Локальна файлова система</string>
     <string name="local_documents">Каталог з документами</string>
-    <string name="close_document_locations">Закрити розташування файлу</string>
+    <string name="close_document_locations">Закрити розташування файла</string>
     <string name="document_locations">Розміщення файлів</string>
     <string name="filter_presentations">Презентації</string>
     <string name="filter_spreadsheets">Таблиці</string>
@@ -46,7 +46,7 @@
     <string name="share_via">Поділитися через</string>
     <string name="share">Поділитися</string>
     <string name="open">Відкрити</string>
-    <string name="action_settings">Налаштування</string>
+    <string name="action_settings">Параметри</string>
     <string name="action_about">Про програму</string>
     <string name="title_browser">Усі файли</string>
     <string name="title_recents">Недавні файли</string>
@@ -105,4 +105,12 @@
     <string name="app_version_and_hash">Версія: %1$s
 \nonline git-hash: %2$s
 \ncore git-hash: %3$s</string>
+    <string name="theme_light">Світла</string>
+    <string name="theme_dark">Темна</string>
+    <string name="theme_system_default">Типова системна</string>
+    <string name="choose_theme">Оберіть тему</string>
+    <string name="theme">Тема</string>
+    <string name="pref_user_name_guest">Користувач Гість</string>
+    <string name="pref_user_name_info">Застосовується під час додавання коментаря</string>
+    <string name="pref_user_name">Ім\'я користувача</string>
 </resources>

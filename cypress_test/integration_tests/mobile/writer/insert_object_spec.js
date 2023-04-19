@@ -1,36 +1,23 @@
 /* global describe it cy beforeEach require expect afterEach */
 
-require('cypress-file-upload');
-
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var writerMobileHelper = require('./writer_mobile_helper');
+var writerHelper = require('../../common/writer_helper');
 
 describe('Insert objects via insertion wizard.', function() {
-	var testFileName = 'insert_object.odt';
+	var origTestFileName = 'insert_object.odt';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'writer');
+		testFileName = helper.beforeAll(origTestFileName, 'writer');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
-
-	function getCursorPos(offsetProperty, aliasName) {
-		helper.initAliasToNegative(aliasName);
-
-		cy.get('.blinking-cursor')
-			.invoke('offset')
-			.its(offsetProperty)
-			.as(aliasName);
-
-		cy.get('@' + aliasName)
-			.should('be.greaterThan', 0);
-	}
 
 	it('Insert local image.', function() {
 		mobileHelper.openInsertionWizard();
@@ -53,21 +40,16 @@ describe('Insert objects via insertion wizard.', function() {
 			.click();
 
 		// Comment insertion dialog is opened
-		cy.get('.loleaflet-annotation-table')
-			.should('exist');
+		cy.get('.cool-annotation-table').should('exist');
 
 		// Add some comment
-		cy.get('.loleaflet-annotation-textarea')
-			.type('some text');
+		cy.get('#input-modal-input').type('some text');
 
-		cy.get('.vex-dialog-button-primary')
-			.click();
+		cy.get('#response-ok').click();
 
-		cy.get('.loleaflet-annotation')
-			.should('exist');
+		cy.get('#comment-container-1').should('exist');
 
-		cy.get('.loleaflet-annotation-content.loleaflet-dont-break')
-			.should('have.text', 'some text');
+		cy.get('#annotation-content-area-1').should('have.text', 'some text');
 	});
 
 	it('Insert default table.', function() {
@@ -89,7 +71,7 @@ describe('Insert objects via insertion wizard.', function() {
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('exist');
 
-		writerMobileHelper.selectAllMobile();
+		helper.typeIntoDocument('{ctrl}a');
 
 		// Two rows
 		cy.get('#copy-paste-container tr')
@@ -123,7 +105,7 @@ describe('Insert objects via insertion wizard.', function() {
 		cy.get('.leaflet-marker-icon.table-column-resize-marker')
 			.should('exist');
 
-		writerMobileHelper.selectAllMobile();
+		helper.typeIntoDocument('{ctrl}a');
 
 		// Three rows
 		cy.get('#copy-paste-container tr')
@@ -139,7 +121,7 @@ describe('Insert objects via insertion wizard.', function() {
 
 		helper.typeText('body', 'xxxx', 500);
 
-		getCursorPos('left', 'cursorOrigLeft');
+		helper.getCursorPos('left', 'cursorOrigLeft');
 
 		mobileHelper.openInsertionWizard();
 
@@ -170,7 +152,7 @@ describe('Insert objects via insertion wizard.', function() {
 		// Get the blinking cursor pos
 		helper.typeIntoDocument('xxxx');
 
-		getCursorPos('top', 'cursorOrigTop');
+		helper.getCursorPos('top', 'cursorOrigTop');
 
 		mobileHelper.openInsertionWizard();
 
@@ -202,7 +184,7 @@ describe('Insert objects via insertion wizard.', function() {
 		// Get the blinking cursor pos
 		helper.typeIntoDocument('xxxx');
 
-		getCursorPos('top', 'cursorOrigTop');
+		helper.getCursorPos('top', 'cursorOrigTop');
 
 		mobileHelper.openInsertionWizard();
 
@@ -224,7 +206,7 @@ describe('Insert objects via insertion wizard.', function() {
 		// Get the blinking cursor pos
 		helper.typeIntoDocument('xxxx');
 
-		getCursorPos('top', 'cursorOrigTop');
+		helper.getCursorPos('top', 'cursorOrigTop');
 
 		mobileHelper.openInsertionWizard();
 
@@ -246,7 +228,7 @@ describe('Insert objects via insertion wizard.', function() {
 		// Get the blinking cursor pos
 		helper.typeIntoDocument('xxxx');
 
-		getCursorPos('top', 'cursorOrigTop');
+		helper.getCursorPos('top', 'cursorOrigTop');
 
 		mobileHelper.openInsertionWizard();
 
@@ -268,7 +250,7 @@ describe('Insert objects via insertion wizard.', function() {
 		// Get the blinking cursor pos
 		helper.typeIntoDocument('xxxx');
 
-		getCursorPos('top', 'cursorOrigTop');
+		helper.getCursorPos('top', 'cursorOrigTop');
 
 		mobileHelper.openInsertionWizard();
 
@@ -294,26 +276,54 @@ describe('Insert objects via insertion wizard.', function() {
 			.click();
 
 		// Dialog is opened
-		cy.get('.vex-content.hyperlink-dialog')
+		cy.get('#hyperlink-link-box')
 			.should('exist');
 
 		// Type text and link
-		cy.get('.vex-content.hyperlink-dialog input[name="text"]')
+		cy.get('#hyperlink-text-box')
 			.type('some text');
-		cy.get('.vex-content.hyperlink-dialog input[name="link"]')
+		cy.get('#hyperlink-link-box')
 			.type('www.something.com');
 
 		// Insert
-		cy.get('.vex-content.hyperlink-dialog .vex-dialog-button-primary')
+		cy.get('#response-ok')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\nsome text');
+		helper.expectTextForClipboard('some text');
 
 		cy.get('#copy-paste-container p a')
 			.should('have.attr', 'href', 'http://www.something.com/');
+	});
+
+	it('Open inserted hyperlink.', function() {
+		mobileHelper.openInsertionWizard();
+
+		// Open hyperlink dialog
+		cy.contains('.menu-entry-with-icon', 'Hyperlink...')
+			.click();
+
+		// Dialog is opened
+		cy.get('#hyperlink-link-box')
+			.should('exist');
+
+		// Type text and link
+		cy.get('#hyperlink-text-box')
+			.type('some text');
+		cy.get('#hyperlink-link-box')
+			.type('www.something.com');
+
+		// Insert
+		cy.get('#response-ok')
+			.click();
+
+		helper.typeIntoDocument('{leftArrow}');
+
+		cy.get('#hyperlink-pop-up').click();
+
+		cy.get('#info-modal-label2')
+			.should('have.text', 'http://www.something.com');
 	});
 
 	it('Insert shape.', function() {

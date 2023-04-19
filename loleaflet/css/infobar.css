@@ -19,9 +19,8 @@
 	color: var(--color-text-darker);
 	border-radius: var(--border-radius);
 	font-size: var(--header-font-size);
-	font-family: var(--oxool-font);
+	font-family: var(--cool-font);
 }
 .ui-widget-content {
-	font-family: var(--oxool-font);
 	color: var(--color-main-text);
 }

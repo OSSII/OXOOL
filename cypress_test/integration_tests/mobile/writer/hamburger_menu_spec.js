@@ -1,54 +1,52 @@
-/* global describe it cy beforeEach require afterEach expect */
+/* global describe it cy Cypress beforeEach require afterEach expect */
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var writerMobileHelper = require('./writer_mobile_helper');
+var writerHelper = require('../../common/writer_helper');
+var repairHelper = require('../../common/repair_document_helper');
 
 describe('Trigger hamburger menu options.', function() {
-	var testFileName = 'hamburger_menu.odt';
+	var origTestFileName = 'hamburger_menu.odt';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'writer');
+		testFileName = helper.beforeAll(origTestFileName, 'writer');
 
-		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function hideText() {
 		// Change text color to white to hide text.
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		mobileHelper.openMobileWizard();
 
-		helper.clickOnIdle('#FontColor');
+		helper.clickOnIdle('#FontColor .ui-header');
 
-		mobileHelper.selectFromColorPalette(0, 0, 7);
+		mobileHelper.selectFromColorPicker('#FontColor', 0, 7);
 
 		// End remove spell checking red lines
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['View', 'Automatic Spell Checking']);
 
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Automatic Spell Checking')
-			.click();
+		// Remove any selections.
+		helper.moveCursor('left');
 	}
 
 	function openPageWizard() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Page Setup')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Page Setup']);
 
 		cy.get('#mobile-wizard-content')
 			.should('not.be.empty');
 	}
 
 	function closePageWizard() {
+		cy.get('#mobile-wizard-back')
+			.should('have.class', 'close-button');
+
 		cy.get('#mobile-wizard-back')
 			.click();
 
@@ -57,45 +55,54 @@ describe('Trigger hamburger menu options.', function() {
 	}
 
 	it('Save', function() {
-		mobileHelper.openHamburgerMenu();
+		// Change the document content and save it
+		writerHelper.selectAllTextOfDoc();
 
-		cy.contains('.menu-entry-with-icon', 'File')
-			.click();
+		cy.wait(1000);
 
-		cy.contains('.menu-entry-with-icon', 'Save')
-			.click();
+		helper.typeIntoDocument('new');
 
-		// TODO: we have no visual indicator of save was done
-		// So just trigger saving to catch any exception / console error
-		cy.wait(500);
+		writerHelper.selectAllTextOfDoc();
+
+		cy.wait(1000);
+
+		helper.expectTextForClipboard('new');
+
+		mobileHelper.selectHamburgerMenuItem(['File', 'Save']);
+
+		//reset get to original function
+		Cypress.Commands.overwrite('get', function(originalFn, selector, options) {
+			return originalFn(selector, options);
+		});
+
+		// Reopen the document and check content.
+		helper.reload(testFileName, 'writer', true);
+
+		mobileHelper.enableEditingMobile();
+
+		writerHelper.selectAllTextOfDoc();
+
+		helper.expectTextForClipboard('new');
 	});
 
 	it('Print', function() {
 		// A new window should be opened with the PDF.
-		cy.window()
+		helper.getCoolFrameWindow()
 			.then(function(win) {
 				cy.stub(win, 'open');
 			});
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['File', 'Print']);
 
-		cy.contains('.menu-entry-with-icon', 'File')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Print')
-			.click();
-
-		cy.window().its('open').should('be.called');
+		helper.getCoolFrameWindow()
+			.then(function(win) {
+				cy.wrap(win).its('open').should('be.called');
+			});
 	});
 
 	it('Download as PDF', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'PDF Document (.pdf)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'PDF Document (.pdf)']);
+		mobileHelper.pressPushButtonOfDialog('Export');
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -103,13 +110,7 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Download as ODT', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'ODF text document (.odt)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'ODF text document (.odt)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -117,13 +118,7 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Download as DOC', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Word 2003 Document (.doc)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'Word 2003 Document (.doc)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -131,13 +126,7 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Download as DOCX', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Word Document (.docx)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'Word Document (.docx)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -145,13 +134,7 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Download as RTF', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Rich Text (.rtf)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'Rich Text (.rtf)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -159,13 +142,8 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Download as EPUB', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'EPUB (.epub)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'EPUB (.epub)']);
+		mobileHelper.pressPushButtonOfDialog('OK');
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -176,288 +154,100 @@ describe('Trigger hamburger menu options.', function() {
 		// Type a new character
 		helper.typeIntoDocument('q');
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', 'q');
 
 		// Undo
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Undo']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Undo')
-			.click();
-
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('not.contain.text', 'q');
 
 		// Redo
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Redo']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Redo')
-			.click();
-
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', 'q');
 	});
 
-	it('Repair.', function() {
-		// First change
-		helper.typeIntoDocument('q');
 
-		// Second change
-		helper.typeIntoDocument('w');
+	it('Repair Document', function() {
+		helper.typeIntoDocument('Hello World');
 
-		writerMobileHelper.selectAllMobile();
+		repairHelper.rollbackPastChange('Typing: “World”', undefined, true);
 
-		cy.get('#copy-paste-container p')
-			.should('contain.text', 'qw');
+		helper.selectAllText();
 
-		// Undo
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Undo')
-			.click();
-
-		writerMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container p')
-			.should('not.contain.text', 'w');
-
-		// Revert one undo step via Repair
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Repair')
-			.click();
-
-		cy.get('.leaflet-popup-content')
-			.should('be.visible');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(2)')
-			.should('contain.text', 'Redo');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(3)')
-			.should('contain.text', 'Undo');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(2)')
-			.click();
-
-		cy.get('.leaflet-popup-content input[value=\'Jump to state\']')
-			.click();
-
-		writerMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container p')
-			.should('contain.text', 'qw');
-
-		// Revert to the initial state via Repair
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Repair')
-			.click();
-
-		cy.get('.leaflet-popup-content')
-			.should('be.visible');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(2)')
-			.should('contain.text', 'Undo');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(3)')
-			.should('contain.text', 'Undo');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(3)')
-			.click();
-
-		cy.get('.leaflet-popup-content input[value=\'Jump to state\']')
-			.click();
-
-		writerMobileHelper.selectAllMobile();
-
-		cy.get('#copy-paste-container p')
-			.should('not.contain.text', 'q');
-
-		cy.get('#copy-paste-container p')
-			.should('not.contain.text', 'w');
+		helper.expectTextForClipboard('Hello \n');
 	});
 
 	it('Cut.', function() {
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Cut']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Cut')
-			.click();
-
-		// TODO: cypress does not support clipboard operations
-		// so we get a warning dialog here.
-		cy.get('.vex-dialog-form')
-			.should('be.visible');
-
-		cy.get('.vex-dialog-message')
-			.should('have.text', 'Please use the copy/paste buttons on your on-screen keyboard.');
-
-		cy.get('.vex-dialog-button-primary.vex-dialog-button.vex-first')
-			.click();
-
-		cy.get('.vex-dialog-form')
-			.should('not.be.visible');
+		cy.get('#copy_paste_warning').should('exist');
 	});
 
 	it('Copy.', function() {
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Copy']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Copy')
-			.click();
-
-		// TODO: cypress does not support clipboard operations
-		// so we get a warning dialog here.
-		cy.get('.vex-dialog-form')
-			.should('be.visible');
-
-		cy.get('.vex-dialog-message')
-			.should('have.text', 'Please use the copy/paste buttons on your on-screen keyboard.');
-
-		cy.get('.vex-dialog-button-primary.vex-dialog-button.vex-first')
-			.click();
-
-		cy.get('.vex-dialog-form')
-			.should('not.be.visible');
+		cy.get('#copy_paste_warning').should('exist');
 	});
 
 	it('Paste.', function() {
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Paste']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Paste')
-			.click();
-
-		// TODO: cypress does not support clipboard operations
-		// so we get a warning dialog here.
-		cy.get('.vex-dialog-form')
-			.should('be.visible');
-
-		cy.get('.vex-dialog-message')
-			.should('have.text', 'Please use the copy/paste buttons on your on-screen keyboard.');
-
-		cy.get('.vex-dialog-button-primary.vex-dialog-button.vex-first')
-			.click();
-
-		cy.get('.vex-dialog-form')
-			.should('not.be.visible');
+		cy.get('#copy_paste_warning').should('exist');
 	});
 
 	it('Select all.', function() {
-		cy.get('#copy-paste-container p')
-			.should('not.contain.text', 'xxxxxx');
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Select All']);
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Select All')
-			.click();
-
-		cy.get('.leaflet-marker-icon')
-			.should('be.visible');
+		helper.textSelectionShouldExist();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', 'xxxxxx');
 	});
 
 	it('Enable track changes recording.', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Record')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Record']);
 
 		// Insert some text and check whether it's tracked.
 		helper.typeIntoDocument('q');
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Previous']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Previous')
-			.click();
-
-		cy.get('.leaflet-marker-icon')
-			.should('exist');
+		helper.textSelectionShouldExist();
 
 		// We should have 'q' selected.
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\nq');
+		helper.expectTextForClipboard('q');
 
 		// Then disable recording.
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Record')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Record']);
 
 		helper.typeIntoDocument('{rightArrow}w');
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Previous']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Previous')
-			.click();
-
-		cy.get('.leaflet-marker-icon')
-			.should('exist');
+		helper.textSelectionShouldExist();
 
 		// We should have 'q' selected.
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\nq');
+		helper.expectTextForClipboard('q');
 	});
 
 	it('Show track changes.', function() {
-		mobileHelper.openHamburgerMenu();
-
-		// First start recording.
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Record')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Record']);
 
 		// Remove text content.
 		cy.get('#document-container')
@@ -466,20 +256,15 @@ describe('Trigger hamburger menu options.', function() {
 		helper.clearAllText();
 
 		// By default track changed are shown.
-		writerMobileHelper.selectAllMobile();
-
-		// We have selection markers.
-		cy.get('.leaflet-marker-icon')
-			.should('exist');
+		writerHelper.selectAllTextOfDoc();
 
 		// No actual text sent from core because of the removal.
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\n\n\n');
+		helper.expectTextForClipboard('\n\n');
 
 		// We have a multiline selection
-		cy.get('.leaflet-marker-icon:nth-of-type(1)')
+		cy.get('.leaflet-selection-marker-start')
 			.then(function(firstMarker) {
-				cy.get('.leaflet-marker-icon:nth-of-type(2)')
+				cy.get('.leaflet-selection-marker-end')
 					.then(function(secondMarker) {
 						expect(firstMarker.offset().top).to.be.lessThan(secondMarker.offset().top);
 						expect(firstMarker.offset().left).to.be.lessThan(secondMarker.offset().left);
@@ -490,21 +275,15 @@ describe('Trigger hamburger menu options.', function() {
 		helper.typeIntoDocument('{leftArrow}');
 
 		// Hide track changes.
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Show')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Show']);
 
 		// Trigger select all
 		helper.typeIntoDocument('{ctrl}a');
 
 		// Both selection markers should be in the same line
-		cy.get('.leaflet-marker-icon:nth-of-type(1)')
+		cy.get('.leaflet-selection-marker-start')
 			.then(function(firstMarker) {
-				cy.get('.leaflet-marker-icon:nth-of-type(2)')
+				cy.get('.leaflet-selection-marker-end')
 					.then(function(secondMarker) {
 						expect(firstMarker.offset().top).to.be.equal(secondMarker.offset().top);
 						expect(firstMarker.offset().left).to.be.lessThan(secondMarker.offset().left);
@@ -513,14 +292,7 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Accept all changes.', function() {
-		mobileHelper.openHamburgerMenu();
-
-		// First start recording.
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Record')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Record']);
 
 		// Remove text content.
 		cy.get('#document-container')
@@ -529,33 +301,19 @@ describe('Trigger hamburger menu options.', function() {
 		helper.clearAllText();
 
 		// Accept removal.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Accept All']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Accept All')
-			.click();
-
-		// Check that we dont have the removed content
+		// Check that we don't have the removed content
 		helper.typeIntoDocument('{ctrl}a');
 
 		cy.wait(1000);
 
 		// No selection
-		cy.get('.leaflet-marker-icon')
-			.should('not.exist');
+		helper.textSelectionShouldNotExist();
 	});
 
 	it('Reject all changes.', function() {
-		mobileHelper.openHamburgerMenu();
-
-		// First start recording.
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Record')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Record']);
 
 		// Remove text content.
 		cy.get('#document-container')
@@ -563,22 +321,15 @@ describe('Trigger hamburger menu options.', function() {
 
 		helper.clearAllText();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
-		// We dont have actual text content.
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\n\n\n');
+		// We don't have actual text content.
+		helper.expectTextForClipboard('\n\n');
 
 		// Reject removal.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Reject All']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Reject All')
-			.click();
-
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		// We get back the content.
 		cy.contains('#copy-paste-container p', 'xxxxxxx')
@@ -586,14 +337,7 @@ describe('Trigger hamburger menu options.', function() {
 	});
 
 	it('Go to next/prev change.', function() {
-		mobileHelper.openHamburgerMenu();
-
-		// First start recording.
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Record')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Record']);
 
 		// First change
 		helper.typeIntoDocument('q');
@@ -602,47 +346,23 @@ describe('Trigger hamburger menu options.', function() {
 		helper.typeIntoDocument('{rightArrow}w');
 
 		// Find second change using prev.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Previous']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Previous')
-			.click();
-
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\nw');
+		helper.expectTextForClipboard('w');
 
 		// Find first change using prev.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Previous']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Previous')
-			.click();
-
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\nq');
+		helper.expectTextForClipboard('q');
 
 		// Find second change using next.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Track Changes', 'Next']);
 
-		cy.contains('.menu-entry-with-icon', 'Track Changes')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Next')
-			.click();
-
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\nw');
+		helper.expectTextForClipboard('w');
 	});
 
 	it('Search some word.', function() {
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Search')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Search']);
 
 		// Search bar become visible
 		cy.get('#mobile-wizard-content')
@@ -657,23 +377,18 @@ describe('Trigger hamburger menu options.', function() {
 		helper.clickOnIdle('#search');
 
 		// Part of the text should be selected
-		cy.get('.leaflet-marker-icon')
-			.should('exist');
+		helper.textSelectionShouldExist();
 
-		cy.get('#copy-paste-container p')
-			.should('have.text', '\na');
+		helper.expectTextForClipboard('a');
 
 		cy.get('#copy-paste-container p b')
 			.should('not.exist');
 	});
 
 	it('Check word counts.', function() {
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Word Count...')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Word Count...']);
 
 		// Selected counts
 		cy.get('#selectwords')
@@ -702,279 +417,161 @@ describe('Trigger hamburger menu options.', function() {
 			.should('have.text', '0');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Page setup: change paper size.', function() {
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 517px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
+	it('Page setup: change paper size.', function() {
+		// For now, we don't/can't actually check if the size of the document is updated or not.
+		// That can be checked with a unit test.
 
 		openPageWizard();
 
-		helper.clickOnIdle('#papersize');
+		mobileHelper.selectListBoxItem2('#papersize', 'A3');
 
-		helper.clickOnIdle('.ui-combobox-text', 'C6 Envelope');
-
-		// Smaller paper size makes center tile to contain text too.
-		helper.imageShouldBeFullWhiteOrNot(centerTile, false);
-
-		// Check that the page wizard shows the right value after reopen.
 		closePageWizard();
 
+		// Check that the page wizard shows the right value after reopen.
 		openPageWizard();
 
 		cy.get('#papersize .ui-header-left')
-			.should('have.text', 'C6 Envelope');
+			.should('have.text', 'A3');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Page setup: change paper width.', function() {
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 517px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
+	it('Page setup: change paper width.', function() {
+		// For now, we don't/can't actually check if the size of the document is updated or not.
+		// That can be checked with a unit test.
 
 		openPageWizard();
 
-		helper.inputOnIdle('#paperwidth .spinfield', '5');
+		helper.inputOnIdle('#paperwidth .spinfield', '12');
 
-		// Smaller paper size makes center tile to contain text too.
-		helper.imageShouldBeFullWhiteOrNot(centerTile, false);
-
-		// Check that the page wizard shows the right value after reopen.
 		closePageWizard();
 
+		// Check that the page wizard shows the right value after reopen.
 		openPageWizard();
 
 		cy.get('#papersize .ui-header-left')
 			.should('have.text', 'User');
 
 		cy.get('#paperwidth .spinfield')
-			.should('have.attr', 'value', '5');
+			.should('have.value', '12');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Page setup: change paper height.', function() {
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 517px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
+	it('Page setup: change paper height.', function() {
+		// For now, we don't/can't actually check if the size of the document is updated or not.
+		// That can be checked with a unit test.
 
 		openPageWizard();
 
 		helper.inputOnIdle('#paperheight .spinfield', '3.0');
 
-		// Smaller paper size makes center tile to contain the end of the page.
-		helper.imageShouldBeFullWhiteOrNot(centerTile, false);
-
-		// Check that the page wizard shows the right value after reopen.
 		closePageWizard();
 
+		// Check that the page wizard shows the right value after reopen.
 		openPageWizard();
 
 		cy.get('#papersize .ui-header-left')
 			.should('have.text', 'User');
 
 		cy.get('#paperheight .spinfield')
-			.should('have.attr', 'value', '3');
+			.should('have.value', '3');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Page setup: change orientation.', function() {
-		cy.get('.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 1024px; top: 5px;\']')
-			.should('not.exist');
-
-		// Move the cursor to the right side of the document,
-		// so the new tile will be visible and loaded.
-		helper.typeIntoDocument('{end}');
-
-		cy.get('.blinking-cursor')
-			.should('be.visible');
+	it('Page setup: change orientation.', function() {
+		// For now, we don't/can't actually check if the size of the document is updated or not.
+		// That can be checked with a unit test.
 
 		openPageWizard();
 
-		helper.clickOnIdle('#paperorientation');
+		mobileHelper.selectListBoxItem2('#paperorientation', 'Landscape');
 
-		helper.clickOnIdle('.ui-combobox-text', 'Landscape');
-
-		// We got some extra tiles horizontally.
-		cy.get('.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 1024px; top: 5px;\']')
-			.should('exist');
-
-		// Check that the page wizard shows the right value after reopen.
 		closePageWizard();
 
+		// Check that the page wizard shows the right value after reopen.
 		openPageWizard();
 
 		cy.get('#paperorientation .ui-header-left')
 			.should('have.text', 'Landscape');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Page setup: change margin.', function() {
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 261px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, false);
+	it('Page setup: change margin.', function() {
+		// We use the cursor horizontal position as indicator of margin change.
+		helper.typeIntoDocument('{home}');
+
+		cy.get('.blinking-cursor')
+			.should('be.visible');
+
+		helper.getCursorPos('left', 'cursorOrigLeft');
 
 		openPageWizard();
 
-		helper.clickOnIdle('#marginLB');
+		mobileHelper.selectListBoxItem2('#marginLB', 'None');
 
-		helper.clickOnIdle('.ui-combobox-text', 'None');
-
-		// Text is moved up by margin removal, so the the center tile will be empty.
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
-
-		// Check that the page wizard shows the right value after reopen.
 		closePageWizard();
 
+		// Text is moved leftward by margin removal.
+		cy.get('@cursorOrigLeft')
+			.then(function(cursorOrigLeft) {
+				cy.get('.blinking-cursor')
+					.should(function(cursor) {
+						expect(cursor.offset().left).to.be.lessThan(cursorOrigLeft);
+					});
+			});
+
+		// Check that the page wizard shows the right value after reopen.
 		openPageWizard();
 
 		cy.get('#marginLB .ui-header-left')
 			.should('have.text', 'None');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Show formatting marks.', function() {
-		// Hide text so the center tile is full white.
+	it('Show formatting marks.', function() {
+		// Hide text so the document is full white.
 		hideText();
 
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 261px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
+		var canvas = '.leaflet-canvas-container canvas';
+		helper.canvasShouldBeFullWhite(canvas);
 
 		// Enable it first -> spaces will be visible.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['View', 'Formatting Marks']);
 
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Formatting Marks')
-			.click();
-
-		helper.imageShouldBeFullWhiteOrNot(centerTile, false);
+		helper.canvasShouldNotBeFullWhite(canvas);
 
 		// Then disable it again.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['View', 'Formatting Marks']);
 
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
+		helper.typeIntoDocument('{home}{end}');
 
-		cy.contains('.menu-entry-with-icon', 'Formatting Marks')
-			.click();
-
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
+		helper.canvasShouldBeFullWhite(canvas);
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Automatic spell checking.', function() {
-		// Hide text so the center tile is full white.
+	it('Automatic spell checking.', function() {
+		// Hide text so the document is full white.
 		hideText();
 
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 261px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
+		var canvas = '.leaflet-canvas-container canvas';
+		helper.canvasShouldBeFullWhite(canvas);
 
 		// Enable it first.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['View', 'Automatic Spell Checking']);
 
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Automatic Spell Checking')
-			.click();
-
-		helper.imageShouldBeFullWhiteOrNot(centerTile, false);
+		helper.canvasShouldNotBeFullWhite(canvas);
 
 		// Then disable it again.
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['View', 'Automatic Spell Checking']);
 
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
+		helper.typeIntoDocument('{home}{end}');
 
-		cy.contains('.menu-entry-with-icon', 'Automatic Spell Checking')
-			.click();
-
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
-	});
-
-	it('Resolved comments.', function() {
-		// Insert comment first
-		mobileHelper.openInsertionWizard();
-
-		cy.contains('.menu-entry-with-icon', 'Comment')
-			.click();
-
-		cy.get('.loleaflet-annotation-table')
-			.should('exist');
-
-		cy.get('.loleaflet-annotation-textarea')
-			.type('some text');
-
-		cy.get('.vex-dialog-button-primary')
-			.click();
-
-		cy.get('.loleaflet-annotation:nth-of-type(2)')
-			.should('have.attr', 'style')
-			.should('not.contain', 'visibility: hidden');
-
-		// Resolve comment
-		cy.get('.loleaflet-annotation-menu')
-			.click({force: true});
-
-		cy.contains('.context-menu-link', 'Resolve')
-			.click();
-
-		cy.get('.loleaflet-annotation:nth-of-type(2)')
-			.should('have.attr', 'style')
-			.should('contain', 'visibility: hidden');
-
-		// Show resolved comments
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Resolved Comments')
-			.click();
-
-		cy.get('.loleaflet-annotation:nth-of-type(2)')
-			.should('have.attr', 'style')
-			.should('not.contain', 'visibility: hidden');
-
-		// Hide resolved comments
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'View')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Resolved Comments')
-			.click();
-
-		// TODO: can't hide resolved comments again.
-		//cy.get('.loleaflet-annotation:nth-of-type(2)')
-		//	.should('have.attr', 'style')
-		//	.should('contain', 'visibility: hidden');
+		helper.canvasShouldBeFullWhite(canvas);
 	});
 
 	it('Check version information.', function() {
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['About']);
 
-		// Open about dialog
-		cy.contains('.menu-entry-with-icon', 'About')
-			.click();
-
-		cy.get('.vex-content')
+		cy.get('#mobile-wizard-content')
 			.should('exist');
 
 		// Check the version
-		if (helper.getLOVersion() === 'master') {
-			cy.contains('#lokit-version', 'LibreOffice')
-				.should('exist');
-		} else if (helper.getLOVersion() === 'cp-6-2' ||
-				   helper.getLOVersion() === 'cp-6-4')
-		{
-			cy.contains('#lokit-version', 'Collabora Office')
-				.should('exist');
-		}
+		cy.contains('#lokit-version', 'Collabora Office').should('exist');
 
 		// Close about dialog
-		cy.get('.vex-close')
-			.click({force : true});
-
-		cy.get('.vex-content')
-			.should('not.exist');
+		cy.get('div.mobile-wizard.jsdialog-overlay.cancellable').click({force : true});
 	});
 });
-

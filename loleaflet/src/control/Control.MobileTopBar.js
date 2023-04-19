@@ -3,14 +3,12 @@
  * L.Control.SearchBar
  */
 
-/* global $ _ _UNO app */
+/* global $ w2ui _UNO _ app */
 L.Control.MobileTopBar = L.Control.extend({
 
 	options: {
 		doctype: 'text'
 	},
-
-	_bar: null,
 
 	initialize: function (docType) {
 		L.setOptions(this, {docType: docType});
@@ -19,59 +17,56 @@ L.Control.MobileTopBar = L.Control.extend({
 	onAdd: function (map) {
 		this.map = map;
 		this.create();
-		// 暫時關掉選單按鈕
-		$('#toolbar-hamburger').css('width', '0');
 
 		map.on('updatepermission', this.onUpdatePermission, this);
+		map.on('commandstatechanged', this.onCommandStateChanged, this);
 	},
 
 	getToolItems: function(docType) {
-		var items = [
-			{	// 分隔線
-				type: 'break', id: 'undoredobreak',
-				applyDocType: 'all', applyPermission: {'edit': true},
-			},
-			{	// 復原
-				type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: '.uno:Undo',
-				applyDocType: 'all', applyPermission: {'edit': true},
-				stateChange: true
-			},
-			{	// 重做
-				type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: '.uno:Redo',
-				applyDocType: 'all', applyPermission: {'edit': true},
-				stateChange: true
-			},
-			{	// 接受公式
-				type: 'button', id: 'acceptformula', img: 'ok', hint: _('Accept'), applyDocType: {spreadsheet: true}, applyPermission: {'edit': true}, hidden: true
-			},
-			{	// 拒絕公式
-				type: 'button', id: 'cancelformula', img: 'cancel', hint: _('Cancel'), applyDocType: {spreadsheet: true}, applyPermission: {'edit': true}, hidden: true
-			},
-			{	// 彈簧(撐開用)
-				type: 'spacer', applyDocType: 'all', applyPermission: 'all'
-			},
-			{
-				type: 'button',  id: 'mobile_wizard', img: 'mobile_wizard',
-				applyDocType: 'all', applyPermission: {'edit': true},
-			},
-			{	// 插入選單
-				type: 'button',  id: 'insertion_mobile_wizard', img: 'insertion_mobile_wizard',
-				applyDocType: 'all', applyPermission: {'edit': true},
-			},
-			{	// 檢視註解
-				type: 'button',  id: 'comment_wizard', img: 'mobile_comment_wizard',
-				applyDocType: 'all', applyPermission: 'all'
-			},
-			{	// impress: 投影
-				type: 'button', id: 'fullscreen-' + docType, img: 'fullscreen-presentation', hint: _UNO('.uno:FullScreen', docType),
-				applyDocType: {presentation: true}, applyPermission: 'all'
-			},
-			{	// 使用者列表
-				type: 'drop', id: 'userlist', img: 'users', hidden: true, html: L.control.createUserListWidget()
-			},
-		];
-
-		return items;
+		if (docType == 'text') {
+			return [
+				{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
+				{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
+				{type: 'spacer'},
+				{type: 'button',  id: 'mobile_wizard', img: 'mobile_wizard', disabled: true},
+				{type: 'button',  id: 'insertion_mobile_wizard', img: 'insertion_mobile_wizard', disabled: true},
+				{type: 'button',  id: 'comment_wizard', img: 'viewcomments'},
+				{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: L.control.createUserListWidget()},
+			];
+		} else if (docType == 'spreadsheet') {
+			return [
+				{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
+				{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
+				{type: 'button', hidden: true, id: 'acceptformula',  img: 'ok', hint: _('Accept')},
+				{type: 'button', hidden: true, id: 'cancelformula',  img: 'cancel', hint: _('Cancel')},
+				{type: 'spacer'},
+				{type: 'button',  id: 'mobile_wizard', img: 'mobile_wizard', disabled: true},
+				{type: 'button',  id: 'insertion_mobile_wizard', img: 'insertion_mobile_wizard', disabled: true},
+				{type: 'button',  id: 'comment_wizard', img: 'viewcomments'},
+				{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: L.control.createUserListWidget()},
+			];
+		} else if (docType == 'presentation') {
+			return [
+				{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
+				{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
+				{type: 'spacer'},
+				{type: 'button',  id: 'mobile_wizard', img: 'mobile_wizard', disabled: true},
+				{type: 'button',  id: 'insertion_mobile_wizard', img: 'insertion_mobile_wizard', disabled: true},
+				{type: 'button',  id: 'comment_wizard', img: 'viewcomments'},
+				{type: 'button', id: 'fullscreen-' + docType, img: 'fullscreen-presentation', hint: _UNO('.uno:FullScreen', docType)},
+				{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: L.control.createUserListWidget()},
+			];
+		} else if (docType == 'drawing') {
+			return [
+				{type: 'button',  id: 'undo',  img: 'undo', hint: _UNO('.uno:Undo'), uno: 'Undo', disabled: true},
+				{type: 'button',  id: 'redo',  img: 'redo', hint: _UNO('.uno:Redo'), uno: 'Redo', disabled: true},
+				{type: 'spacer'},
+				{type: 'button',  id: 'mobile_wizard', img: 'mobile_wizard', disabled: true},
+				{type: 'button',  id: 'insertion_mobile_wizard', img: 'insertion_mobile_wizard', disabled: true},
+				{type: 'button',  id: 'comment_wizard', img: 'viewcomments'},
+				{type: 'drop', id: 'userlist', img: 'users', hidden: true, html: L.control.createUserListWidget()},
+			];
+		}
 	},
 
 	create: function() {
@@ -79,20 +74,19 @@ L.Control.MobileTopBar = L.Control.extend({
 		var that = this;
 
 		var toolbar = $('#toolbar-up');
-		this._bar = toolbar.w2toolbar({
+		toolbar.w2toolbar({
 			name: 'actionbar',
 			items: toolItems,
 			onClick: function (e) {
-				that.onClick(e, e.target, e.item);
+				that.onClick(e, e.target);
 				window.hideTooltip(this, e.target);
 			}
 		});
 
 		this.map.uiManager.enableTooltip(toolbar);
-		this.map.setupStateChangesForToolbar({toolbar: this._bar});
 
 		toolbar.bind('touchstart', function(e) {
-			that._bar.touchStarted = true;
+			w2ui['actionbar'].touchStarted = true;
 			var touchEvent = e.originalEvent;
 			if (touchEvent && touchEvent.touches.length > 1) {
 				L.DomEvent.preventDefault(e);
@@ -101,19 +95,27 @@ L.Control.MobileTopBar = L.Control.extend({
 	},
 
 	onClick: function(e, id, item) {
-		var toolbar = this._bar;
+		if ('actionbar' in w2ui && w2ui['actionbar'].get(id) !== null) {
+			var toolbar = w2ui['actionbar'];
+			item = toolbar.get(id);
+		}
 
 		// In the iOS app we don't want clicking on the toolbar to pop up the keyboard.
-		if (!window.ThisIsTheiOSApp && id !== 'mobile_wizard' && id !== 'insertion_mobile_wizard') {
+		if (!window.ThisIsTheiOSApp && id !== 'zoomin' && id !== 'zoomout' && id !== 'mobile_wizard' && id !== 'insertion_mobile_wizard') {
 			this.map.focus(this.map.canAcceptKeyboardInput()); // Maintain same keyboard state.
 		}
 
-		if (item.disabled === true) {
+		if (item.disabled) {
 			return;
 		}
 
 		if (item.uno) {
-			this.map.executeAllowedCommand(item.uno);
+			if (item.unosheet && this.map.getDocType() === 'spreadsheet') {
+				this.map.toggleCommandState(item.unosheet);
+			}
+			else {
+				this.map.toggleCommandState(window.getUNOCommand(item.uno));
+			}
 		}
 		else if (id === 'cancelformula') {
 			this.map.dispatch('cancelformula');
@@ -193,21 +195,40 @@ L.Control.MobileTopBar = L.Control.extend({
 	},
 
 	onUpdatePermission: function(e) {
-		if (this._bar) {
-			var docType = this.map.getDocType(); // 文件類型
-			var idArray = this._bar.get(); // 工具列所有 id
-			idArray.forEach(function(id) {
-				var item = this._bar.get(id);
-				if (item) {
-					var rightDocType = item.applyDocType === 'all' || (item.applyDocType && item.applyDocType[docType] === true);
-					var rightPermission = item.applyPermission === 'all' || (item.applyPermission && item.applyPermission[e.perm] === true);
-					if (rightDocType && rightPermission) {
-						this._bar.show(id);
-					} else {
-						this._bar.hide(id);
-					}
-				}
-			}.bind(this));
+		var toolbar;
+		var toolbarDownButtons = ['next', 'prev', 'mobile_wizard', 'insertion_mobile_wizard', 'comment_wizard'];
+		if (e.perm === 'edit') {
+			toolbar = w2ui['actionbar'];
+			if (toolbar) {
+				toolbarDownButtons.forEach(function(id) {
+					toolbar.enable(id);
+				});
+			}
+		} else {
+			toolbar = w2ui['actionbar'];
+			if (toolbar) {
+				toolbarDownButtons.forEach(function(id) {
+					toolbar.disable(id);
+				});
+				toolbar.enable('comment_wizard');
+			}
+		}
+	},
+
+	onCommandStateChanged: function(e) {
+		var commandName = e.commandName;
+		var state = e.state;
+
+		if (this.map.isEditMode() && (state === 'enabled' || state === 'disabled')) {
+			var id = window.unoCmdToToolbarId(commandName);
+			var toolbar = w2ui['actionbar'];
+
+			if (state === 'enabled') {
+				toolbar.enable(id);
+			} else {
+				toolbar.uncheck(id);
+				toolbar.disable(id);
+			}
 		}
 	},
 });

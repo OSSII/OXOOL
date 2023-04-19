@@ -28,6 +28,7 @@ L.Control.DocumentRepair = L.Control.extend({
 					response: 0
 				},
 			],
+			'init_focus_id': 'ok',
 			enabled: true,
 			children: [
 				{
@@ -94,20 +95,16 @@ L.Control.DocumentRepair = L.Control.extend({
 	},
 
 	createAction: function (type, index, comment, viewId, dateTime) {
-		var d = new Date(dateTime.replace(/,.*/, 'Z'));
-		var dateOptions = {year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false};
-		var dateString = d.toLocaleDateString(String.locale, dateOptions);
 		this.actions.push({ 'text': comment, 'columns': [
-			_(type),
-			index,
+			type,
 			comment,
 			viewId,
-			dateString
+			dateTime
 		].map(
 			function (item) {
 				return { text: item };
 			}
-		), 'row': index, 'type': type});
+		), 'row': index});
 	},
 
 	fillAction: function (actions, type) {
@@ -131,10 +128,10 @@ L.Control.DocumentRepair = L.Control.extend({
 					control: {
 						id: 'versions',
 						type: 'treelistbox',
-						headers: [_('Type'), _('Index'), _('Comment'), _('User name'), _('Timestamp')].map(
+						headers: [_('Type'), _('What?'), _('Who?'), _('When?')].map(
 							function(item) { return { text: item }; }
 						),
-						text: 'haha',
+						text: '',
 						enabled: true,
 						entries: this.actions,
 					},
@@ -160,8 +157,8 @@ L.Control.DocumentRepair = L.Control.extend({
 	},
 
 	fillActions: function (data) {
-		this.fillAction(data.Redo.actions, 'Redo');
-		this.fillAction(data.Undo.actions, 'Undo');
+		this.fillAction(data.Redo.actions, _('Redo'));
+		this.fillAction(data.Undo.actions, _('Undo'));
 	},
 
 	_onAction: function(element, action, data, index) {
@@ -169,8 +166,7 @@ L.Control.DocumentRepair = L.Control.extend({
 		if (element === 'treeview') {
 			var entry = data.entries[parseInt(index)];
 			this.selected = {
-				//action: entry.columns[0].text,
-				action: entry.type,
+				action: entry.columns[0].text,
 				index: parseInt(entry.row),
 			};
 			return;
@@ -200,7 +196,7 @@ L.Control.DocumentRepair = L.Control.extend({
 			type: 'unsigned short',
 			value: index + 1
 		};
-		this._map.sendUnoCommand('.uno:' + action, command);
+		this._map.sendUnoCommand('.uno:' + action, command, true);
 	}
 });
 

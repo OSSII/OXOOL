@@ -1,12 +1,12 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <chrono>
+#include <string>
 #define TST_LOG_REDIRECT
 #include <test.hpp>
 
@@ -24,6 +24,7 @@
 #include <cppunit/TestRunner.h>
 #include <cppunit/TextTestProgressListener.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include <Poco/RegularExpression.h>
 #include <Poco/DirectoryIterator.h>
@@ -32,8 +33,11 @@
 
 #include <helpers.hpp>
 #include <Unit.hpp>
-#include <wsd/LOOLWSD.hpp>
-
+#include <wsd/COOLWSD.hpp>
+#if ENABLE_SSL
+#include <Ssl.hpp>
+#include <SslSocket.hpp>
+#endif
 #include <Log.hpp>
 
 #include "common/Protocol.hpp"
@@ -75,6 +79,7 @@ static bool IsDebugrun = false;
 int main(int argc, char** argv)
 {
     bool verbose = false;
+    std::string cert_path = "/etc/coolwsd/";
     for (int i = 1; i < argc; ++i)
     {
         const std::string arg(argv[i]);
@@ -86,12 +91,54 @@ int main(int argc, char** argv)
         {
             IsDebugrun = true;
         }
+        else if (arg == "--cert-path" && ++i < argc)
+        {
+            cert_path = argv[i];
+        }
     }
 
     const char* loglevel = verbose ? "trace" : "warning";
-    Log::initialize("tst", loglevel, true, false, {});
+    const bool withColor = isatty(fileno(stderr));
+    Log::initialize("tst", loglevel, withColor, false, {});
 
-    return runClientTests(true, verbose)? 0: 1;
+#if ENABLE_SSL
+    try
+    {
+        // The most likely place. If not found, SSL will be disabled in the tests.
+        const std::string ssl_cert_file_path = cert_path + "/cert.pem";
+        const std::string ssl_key_file_path = cert_path + "/key.pem";
+        const std::string ssl_ca_file_path = cert_path + "/ca-chain.cert.pem";
+        const std::string ssl_cipher_list = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH";
+
+        // Initialize the non-blocking socket SSL.
+        ssl::Manager::initializeServerContext(ssl_cert_file_path, ssl_key_file_path,
+                                              ssl_ca_file_path, ssl_cipher_list,
+                                              ssl::CertificateVerification::Disabled);
+
+        ssl::Manager::initializeClientContext(ssl_cert_file_path, ssl_key_file_path,
+                                              ssl_ca_file_path, ssl_cipher_list,
+                                              ssl::CertificateVerification::Required);
+    }
+    catch (const std::exception& ex)
+    {
+        LOG_ERR("Exception while initializing SslContext: " << ex.what());
+    }
+
+    if (!ssl::Manager::isServerContextInitialized())
+        LOG_ERR("Failed to initialize Server SSL. Set the path to the certificates via "
+                "--cert-path. HTTPS tests will be disabled in unit-tests.");
+    else
+        LOG_INF("Initialized Server SSL.");
+
+    if (!ssl::Manager::isClientContextInitialized())
+        LOG_ERR("Failed to initialize Client SSL.");
+    else
+        LOG_INF("Initialized Client SSL.");
+#else
+    LOG_INF("SSL is unsupported in this build.");
+#endif
+
+    return runClientTests(argv[0], true, verbose) ? 0 : 1;
 }
 
 static bool IsStandalone = false;
@@ -127,26 +174,47 @@ public:
 
     void startTest(CppUnit::Test* test)
     {
-        _name = test->getName();
-        writeTestLog("\n=============== START " + _name + '\n');
+        writeTestLog("\n=============== START " + test->getName() + '\n');
+        if (UnitBase::isUnitTesting()) // Only if we are in UnitClient.
+            UnitBase::get().setTestname(test->getName());
+        _startTime = std::chrono::steady_clock::now();
     }
 
     void addFailure(const CppUnit::TestFailure& failure)
     {
         if (failure.isError())
-            writeTestLog("\n>>>>>>>> FAILED " + _name + " <<<<<<<<<\n");
+            writeTestLog("\n>>>>>>>> ERROR " + failure.failedTestName() + " <<<<<<<<<\n");
         else
-            writeTestLog("\n>>>>>>>> PASS " + _name + " <<<<<<<<<\n");
+            writeTestLog("\n>>>>>>>> FAILED " + failure.failedTestName() + " <<<<<<<<<\n");
+
+        const auto ex = failure.thrownException();
+        if (ex != nullptr)
+        {
+            writeTestLog("\nException: " + ex->message().shortDescription() + '\n'
+                         + ex->message().details() + "\tat " + ex->sourceLine().fileName() + ':'
+                         + std::to_string(ex->sourceLine().lineNumber()) + '\n');
+        }
+        else
+        {
+            writeTestLog("\tat " + failure.sourceLine().fileName() + ':'
+                         + std::to_string(failure.sourceLine().lineNumber()) + '\n');
+        }
     }
 
-    void done() { writeTestLog("\n=============== END " + _name + " ===============\n"); }
+    void endTest(CppUnit::Test* test)
+    {
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - _startTime);
+        writeTestLog("\n=============== END " + test->getName() + " (" + std::to_string(ms.count())
+                     + "ms) ===============\n");
+    }
 
 private:
-    std::string _name;
+    std::chrono::steady_clock::time_point _startTime;
 };
 
 // returns true on success
-bool runClientTests(bool standalone, bool verbose)
+bool runClientTests(const char* cmd, bool standalone, bool verbose)
 {
     IsVerbose = verbose;
     IsStandalone = standalone;
@@ -204,12 +272,12 @@ bool runClientTests(bool standalone, bool verbose)
     {
         std::cerr << "\nTo reproduce the first test failure use:\n\n";
 #ifdef STANDALONE_CPPUNIT // unittest
-        const char *cmd = "./unittest";
         std::cerr << "To debug:\n\n";
         std::cerr << "  (cd test; CPPUNIT_TEST_NAME=\"" << (*failures.begin())->failedTestName() << "\" gdb --args " << cmd << ")\n\n";
 #else
+        (void)cmd;
         std::string aLib = UnitBase::get().getUnitLibPath();
-        size_t lastSlash = aLib.rfind('/');
+        std::size_t lastSlash = aLib.rfind('/');
         if (lastSlash != std::string::npos)
             aLib = aLib.substr(lastSlash + 1, aLib.length() - lastSlash - 4) + ".la";
         std::cerr << "(cd test; CPPUNIT_TEST_NAME=\"" << (*failures.begin())->failedTestName() <<
@@ -223,22 +291,22 @@ bool runClientTests(bool standalone, bool verbose)
 // Standalone tests don't really use WSD
 #ifndef STANDALONE_CPPUNIT
 
-std::vector<int> getKitPids()
+std::set<pid_t> getKitPids()
 {
-    return LOOLWSD::getKitPids();
+    return COOLWSD::getKitPids();
 }
 
 /// Get the PID of the forkit
-std::vector<int> getForKitPids()
+std::set<pid_t> getForKitPids()
 {
-    std::vector<int> pids;
-    if (LOOLWSD::ForKitProcId >= 0)
-        pids.push_back(LOOLWSD::ForKitProcId);
+    std::set<pid_t> pids;
+    if (COOLWSD::ForKitProcId >= 0)
+        pids.emplace(COOLWSD::ForKitProcId);
     return pids;
 }
 
-/// How many live loolkit processes do we have ?
-int getLoolKitProcessCount()
+/// How many live coolkit processes do we have ?
+int getCoolKitProcessCount()
 {
     return getKitPids().size();
 }

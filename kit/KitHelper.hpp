@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,14 +11,13 @@
 #include <string>
 
 #include <Util.hpp>
-#include <Poco/URI.h>
 
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
 namespace LOKitHelper
 {
-    constexpr auto tunnelled_dialog_image_cache_size = 100;
+    constexpr auto tunnelledDialogImageCacheSize = 100;
 
     inline std::string documentTypeToString(LibreOfficeKitDocumentType type)
     {
@@ -53,10 +50,11 @@ namespace LOKitHelper
         const auto type = static_cast<LibreOfficeKitDocumentType>(loKitDocument->pClass->getDocumentType(loKitDocument));
 
         const int parts = loKitDocument->pClass->getParts(loKitDocument);
+        const int part = loKitDocument->pClass->getPart(loKitDocument);
         std::ostringstream oss;
         oss << "type=" << documentTypeToString(type)
             << " parts=" << parts
-            << " current=" << loKitDocument->pClass->getPart(loKitDocument);
+            << " current=" << part;
 
         long width, height;
         loKitDocument->pClass->getDocumentSize(loKitDocument, &width, &height);
@@ -64,14 +62,20 @@ namespace LOKitHelper
             << " height=" << height
             << " viewid=" << loKitDocument->pClass->getView(loKitDocument);
 
+        if (type == LOK_DOCTYPE_SPREADSHEET)
+        {
+            long lastColumn, lastRow;
+            loKitDocument->pClass->getDataArea(loKitDocument, part, &lastColumn, &lastRow);
+            oss << " lastcolumn=" << lastColumn
+                << " lastrow=" << lastRow;
+        }
+
         if (type == LOK_DOCTYPE_SPREADSHEET || type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING)
         {
             std::ostringstream hposs;
             std::ostringstream sposs;
             std::ostringstream rtlposs;
-            std::ostringstream detail;
-            std::ostringstream names;
-            std::ostringstream hashes;
+            std::string mode;
             for (int i = 0; i < parts; ++i)
             {
                 ptrValue = loKitDocument->pClass->getPartInfo(loKitDocument, i);
@@ -95,17 +99,17 @@ namespace LOKitHelper
                         if (prop.second == "1")
                             rtlposs << i << ',';
                     }
-                    else if (name == "name")
+                    else if (name == "mode" && mode.empty())
                     {
-                        detail << partinfo << ",";
-                        names << prop.second << '\n';
-                    }
-                    else if (name == "hashCode")
-                    {
-                        hashes << prop.second << '\n';
+                        std::ostringstream modess;
+                        modess << prop.second;
+                        mode = modess.str();
                     }
                 }
             }
+
+            if (!mode.empty())
+                oss << " mode=" << mode;
 
             std::string hiddenparts = hposs.str();
             if (!hiddenparts.empty())
@@ -128,44 +132,22 @@ namespace LOKitHelper
                 oss << " rtlparts=" << rtlparts;
             }
 
-            std::string detailList = detail.str();
-            if (!detailList.empty())
+            for (int i = 0; i < parts; ++i)
             {
-                detailList.pop_back(); // Remove last ','
-                std::string encodedDetial;
-                Poco::URI::encode("[" + detailList + "]", "", encodedDetial);
-                oss << " partsinfo=" << encodedDetial;
-
-                std::string partNames = names.str();
-                partNames.pop_back(); // Remove last '\n'
-                oss << '\n' << partNames;
-
-                std::string hashNames = hashes.str();
-                if (!hashNames.empty() && (type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING))
-                {
-                    hashNames.pop_back(); // Remove last '\n'
-                    oss << '\n' << hashNames;
-                }
+                oss << '\n';
+                ptrValue = loKitDocument->pClass->getPartName(loKitDocument, i);
+                oss << ptrValue;
+                std::free(ptrValue);
             }
-            else
+
+            if (type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING)
             {
                 for (int i = 0; i < parts; ++i)
                 {
                     oss << '\n';
-                    ptrValue = loKitDocument->pClass->getPartName(loKitDocument, i);
+                    ptrValue = loKitDocument->pClass->getPartHash(loKitDocument, i);
                     oss << ptrValue;
                     std::free(ptrValue);
-                }
-
-                if (type == LOK_DOCTYPE_PRESENTATION || type == LOK_DOCTYPE_DRAWING)
-                {
-                    for (int i = 0; i < parts; ++i)
-                    {
-                        oss << "\n";
-                        ptrValue = loKitDocument->pClass->getPartHash(loKitDocument, i);
-                        oss << ptrValue;
-                        std::free(ptrValue);
-                    }
                 }
             }
         }
@@ -173,6 +155,7 @@ namespace LOKitHelper
         if (type == LOK_DOCTYPE_TEXT)
         {
             std::string rectangles = loKitDocument->pClass->getPartPageRectangles(loKitDocument);
+
             std::string::iterator end_pos = std::remove(rectangles.begin(), rectangles.end(), ' ');
             rectangles.erase(end_pos, rectangles.end());
 

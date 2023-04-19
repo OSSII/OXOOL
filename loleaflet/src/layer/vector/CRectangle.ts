@@ -4,15 +4,15 @@
 
 class CRectangle extends CPolygon {
 
-	constructor(bounds: oxool.Bounds, options: any) {
+	constructor(bounds: cool.Bounds, options: any) {
 		super(CRectangle.boundsToPointSet(bounds), options);
 	}
 
-	setBounds(bounds: oxool.Bounds) {
+	setBounds(bounds: cool.Bounds) {
 		this.setPointSet(CRectangle.boundsToPointSet(bounds));
 	}
 
-	public static boundsToPointSet(bounds: oxool.Bounds): CPointSet {
+	public static boundsToPointSet(bounds: cool.Bounds): CPointSet {
 		if (!bounds.isValid()) {
 			return new CPointSet();
 		}
@@ -40,7 +40,7 @@ class CCellCursor extends CPathGroup {
 	private innerContrastBorder: CRectangle;
 	private options: any;
 
-	constructor(bounds: oxool.Bounds, options: any) {
+	constructor(bounds: cool.Bounds, options: any) {
 		super([]);
 		if (options.weight != 1) {
 			this.cursorWeight = Math.round(options.weight);
@@ -51,35 +51,32 @@ class CCellCursor extends CPathGroup {
 		this.options.lineCap = 'butt';
 		this.options.viewId = CPath.getViewId(options);
 		this.options.groupType = PathGroupType.CellCursor;
-		if (this.options.contrastBorderColor === undefined) {
-			this.options.contrastBorderColor = 'white';
-		}
 
 		this.setBounds(bounds);
 	}
 
-	setBounds(bounds: oxool.Bounds) {
-		const cellBounds = new oxool.Bounds(
-			bounds.min.subtract(new oxool.Point(0.5, 0.5)),
-			bounds.max.subtract(new oxool.Point(0.5, 0.5))
+	setBounds(bounds: cool.Bounds) {
+		const cellBounds = new cool.Bounds(
+			bounds.min.subtract(new cool.Point(0.5, 0.5)),
+			bounds.max.subtract(new cool.Point(0.5, 0.5))
 		);
 
 		// Compute bounds for border path.
-		const boundsForBorder: oxool.Bounds[] = [];
+		const boundsForBorder: cool.Bounds[] = [];
 		for (let idx = 0; idx < this.cursorWeight; ++idx) {
 			const pixels = idx; // device pixels from real cell-border.
-			boundsForBorder.push(new oxool.Bounds(
-				cellBounds.min.add(new oxool.Point(pixels, pixels)),
-				cellBounds.max.subtract(new oxool.Point(pixels, pixels))
+			boundsForBorder.push(new cool.Bounds(
+				cellBounds.min.subtract(new cool.Point(pixels, pixels)),
+				cellBounds.max.add(new cool.Point(pixels, pixels))
 			));
 		}
 
-		const boundsForContrastBorder = new oxool.Bounds(
-			cellBounds.min.add(new oxool.Point(this.cursorWeight, this.cursorWeight)),
-			cellBounds.max.subtract(new oxool.Point(this.cursorWeight, this.cursorWeight)));
+		const boundsForContrastBorder = new cool.Bounds(
+			cellBounds.min.add(new cool.Point(1.0, 1.0)),
+			cellBounds.max.subtract(new cool.Point(1.0, 1.0)));
 
 		if (this.borderPaths && this.innerContrastBorder) {
-			window.app.console.assert(this.borderPaths.length === this.cursorWeight);
+			console.assert(this.borderPaths.length === this.cursorWeight);
 			// Update the border path.
 			this.borderPaths.forEach(function (borderPath, index) {
 				borderPath.setBounds(boundsForBorder[index]);
@@ -98,7 +95,7 @@ class CCellCursor extends CPathGroup {
 
 			const contrastBorderOpt = getOptionsClone(this.options);
 			contrastBorderOpt.name += '-contrast-border';
-			contrastBorderOpt.color = contrastBorderOpt.contrastBorderColor;
+			contrastBorderOpt.color = 'white';
 			this.innerContrastBorder = new CRectangle(boundsForContrastBorder, contrastBorderOpt);
 			this.push(this.innerContrastBorder);
 		}
@@ -108,7 +105,7 @@ class CCellCursor extends CPathGroup {
 	// other user's name in it when the CCellCursor is used for displaying view cell cursors.
 	bindPopup(content: any, options: any): CPath {
 		// forward to the innermost black border rectangle.
-		window.app.console.assert(this.borderPaths && this.borderPaths.length, 'borders not setup yet!');
+		console.assert(this.borderPaths && this.borderPaths.length, 'borders not setup yet!');
 
 		return this.borderPaths[0].bindPopup(content, options);
 	}
@@ -131,9 +128,6 @@ class CCellSelection extends CPathGroup {
 		this.options.lineCap = 'butt';
 		this.options.viewId = CPath.getViewId(options);
 		this.options.groupType = PathGroupType.CellSelection;
-		if (this.options.contrastBorderColor === undefined) {
-			this.options.contrastBorderColor = 'white';
-		}
 
 		this.setPointSet(pointSet);
 	}
@@ -142,21 +136,21 @@ class CCellSelection extends CPathGroup {
 	// using CPointSet data-structure.
 	setPointSet(pointSet: CPointSet) {
 		const outerPointSet = pointSet;
-		outerPointSet.applyOffset(new oxool.Point(0.5, 0.5), false /* centroidSymmetry */, true /* preRound */);
+		outerPointSet.applyOffset(new cool.Point(0.5, 0.5), false /* centroidSymmetry */, true /* preRound */);
 
 		const borderPointSets: CPointSet[] = [];
 
 		for (let idx = 0; idx < this.selectionWeight; ++idx) {
 			const pixels = idx; // device pixels from real cell-border.
 			const borderPset = outerPointSet.clone();
-			borderPset.applyOffset(new oxool.Point(-pixels, -pixels), true /* centroidSymmetry */, false /* preRound */);
+			borderPset.applyOffset(new cool.Point(-pixels, -pixels), true /* centroidSymmetry */, false /* preRound */);
 			borderPointSets.push(borderPset);
 		}
 		const contrastBorderPointSet = outerPointSet.clone();
-		contrastBorderPointSet.applyOffset(new oxool.Point(-this.selectionWeight, -this.selectionWeight), true /* centroidSymmetry */, false /* preRound */);
+		contrastBorderPointSet.applyOffset(new cool.Point(-this.selectionWeight, -this.selectionWeight), true /* centroidSymmetry */, false /* preRound */);
 
 		if (this.borderPaths && this.innerContrastBorder) {
-			window.app.console.assert(this.borderPaths.length === this.selectionWeight);
+			console.assert(this.borderPaths.length === this.selectionWeight);
 			// Update the border path.
 			this.borderPaths.forEach(function (borderPath, index) {
 				borderPath.setPointSet(borderPointSets[index]);
@@ -178,20 +172,20 @@ class CCellSelection extends CPathGroup {
 
 			const contrastBorderOpt = getOptionsClone(this.options);
 			contrastBorderOpt.name += '-contrast-border';
-			contrastBorderOpt.color = contrastBorderOpt.contrastBorderColor;
+			contrastBorderOpt.color = 'white';
 			contrastBorderOpt.fill = true;
 			this.innerContrastBorder = new CPolygon(contrastBorderPointSet, contrastBorderOpt);
 			this.push(this.innerContrastBorder);
 		}
 	}
 
-	getBounds(): oxool.Bounds {
+	getBounds(): cool.Bounds {
 		if (!this.borderPaths || !this.borderPaths.length)
-			return new oxool.Bounds(undefined);
+			return new cool.Bounds(undefined);
 		return this.borderPaths[0].getBounds();
 	}
 
-	anyRingBoundContains(corePxPoint: oxool.Point): boolean {
+	anyRingBoundContains(corePxPoint: cool.Point): boolean {
 		if (!this.borderPaths || !this.borderPaths.length)
 			return false;
 

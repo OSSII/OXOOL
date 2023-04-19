@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,58 +7,13 @@
 
 #pragma once
 
-#include <mutex>
-
 #include "AdminModel.hpp"
 #include "Log.hpp"
 
 #include "net/WebSocketHandler.hpp"
-#include "LOOLWSD.hpp"
+#include "COOLWSD.hpp"
 
 class Admin;
-
-class ReceiveFile
-{
-public:
-    ///
-    ReceiveFile();
-
-    /// 是否正在收資料狀態
-    bool isWorking() { return _working; }
-
-    /// 開始接收資料
-    bool begin(const std::string& fileName, const size_t fileSize);
-
-    /// 資料寫入檔案
-    void writeData(const std::vector<char> &payload);
-
-    /// 取得目前收到的檔案大小
-    size_t size() { return _receivedSize; }
-
-    /// 是否接收完畢
-    bool isComplete();
-
-    /// 取得目前接收檔案存放的完整路徑
-    std::string getWorkPath() { return _tempPath.toString() + std::to_string(_workID); };
-
-    /// 取得目前接收檔案檔名
-    std::string getWorkFileName() { return _name; }
-
-    /// 清除工作目錄
-    void deleteWorkDir();
-
-private:
-    Poco::Path _tempPath; // 暫存目錄
-
-    bool _working; // 是否正在接收檔案
-    unsigned int _workID; // 工作ID (接收的檔案存放在 _tempPath/_workID/檔名)
-
-    std::string _name; // 上傳的檔案名稱
-    size_t _size; // 上傳檔案的大小(bytes)
-
-    size_t _receivedSize; // 已收到的資料大小(bytes)
-    std::ofstream _receivedFile; // 已收到的檔案
-};
 
 /// Handle admin client's Websocket requests & replies.
 class AdminSocketHandler : public WebSocketHandler
@@ -86,15 +39,29 @@ public:
 
 private:
     /// Sends text frames simply to authenticated clients.
-    /// Modified by Firefly <firefly@ossii.com.tw>
-    /// 若 flush = true 的話，會立刻把資料傳出去，預設為 flase
-    void sendTextFrame(const std::string& message, bool flush = false);
+    void sendTextFrame(const std::string& message);
 
 private:
     Admin* _admin;
     int _sessionId;
     bool _isAuthenticated;
-    ReceiveFile _receiveFile;
+};
+
+class MonitorSocketHandler : public AdminSocketHandler
+{
+public:
+    MonitorSocketHandler(Admin *admin, const std::string &uri);
+
+    int getPollEvents(std::chrono::steady_clock::time_point now,
+                      int64_t &timeoutMaxMicroS) override;
+
+    void performWrites(std::size_t capacity) override;
+
+    void onDisconnect() override;
+
+private:
+    bool _connecting;
+    std::string _uri;
 };
 
 class MemoryStatsTask;
@@ -117,6 +84,12 @@ public:
     void start();
     void stop();
 
+    void startMonitors();
+
+    void updateMonitors(std::vector<std::string>& oldMonitors);
+
+    std::vector<std::string> getMonitorList();
+
     /// Custom poll thread function
     void pollingThread() override;
 
@@ -133,7 +106,7 @@ public:
     /// Calls with same pid will increment view count, if pid already exists
     void addDoc(const std::string& docKey, pid_t pid, const std::string& filename,
                 const std::string& sessionId, const std::string& userName, const std::string& userId,
-                const int smapsFD, const std::string& wopiHost);
+                const int smapsFD, const Poco::URI& wopiSrc);
 
     /// Decrement view count till becomes zero after which doc is removed
     void rmDoc(const std::string& docKey, const std::string& sessionId);
@@ -167,7 +140,7 @@ public:
     void updateLastActivityTime(const std::string& docKey);
     void addBytes(const std::string& docKey, uint64_t sent, uint64_t recv);
 
-    void dumpState(std::ostream& os) override;
+    void dumpState(std::ostream& os) const override;
 
     const DocProcSettings& getDefDocProcSettings() const { return _defDocProcSettings; }
     void setDefDocProcSettings(const DocProcSettings& docProcSettings, bool notifyKit)
@@ -191,6 +164,9 @@ public:
     void addLostKitsTerminated(unsigned lostKitsTerminated);
 
     void getMetrics(std::ostringstream &metrics);
+
+    // delete entry from _monitorSocket map
+    void deleteMonitorSocket(const std::string &uriWithoutParam);
 
 private:
     /// Notify Forkit of changed settings.
@@ -250,6 +226,9 @@ private:
     // Don't update any more frequently than this since it's excessive.
     static const int MinStatsIntervalMs;
     static const int DefStatsIntervalMs;
+
+    // map to make sure only connection with unique monitor uri exists
+    std::map<std::string, std::shared_ptr<MonitorSocketHandler>> _monitorSockets;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

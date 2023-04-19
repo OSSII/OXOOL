@@ -210,7 +210,7 @@ L.Control.MobileWizardPopup = L.Control.extend({
 
 			var isCommentWizard = data.children && data.children.length && data.children[0].type == 'comment';
 
-			this._container = L.DomUtil.create('div', 'jsdialog-container ui-dialog ui-widget-content lokdialog_container oxool-annotation-collapsed', parent);
+			this._container = L.DomUtil.create('div', 'jsdialog-container ui-dialog ui-widget-content lokdialog_container cool-annotation-collapsed', parent);
 			this._container.id = 'mobile-wizard-popup';
 			this._container.style.visibility = 'hidden';
 			if (data.collapsed && (data.collapsed === 'true' || data.collapsed === true))
@@ -276,9 +276,11 @@ L.Control.MobileWizardPopup = L.Control.extend({
 								});
 						}
 					}
-				} else {
+				} else if (this._container) {
 					posX = window.innerWidth/2 - this._container.offsetWidth/2;
 					posY = window.innerHeight/2 - this._container.offsetHeight/2;
+				} else {
+					console.error('no _container objet in mobile wizard popup');
 				}
 			};
 

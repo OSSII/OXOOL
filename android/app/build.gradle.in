@@ -1,0 +1,87 @@
+apply plugin: 'com.android.application'
+
+// buildhost settings - paths and the like
+apply from: 'appSettings.gradle'
+
+android {
+    compileSdkVersion 30
+    buildDir = "${rootProject.getBuildDir()}/app"
+
+    defaultConfig {
+        // applicationId, versionCode and versionName are defined in appSettings.gradle
+        minSdkVersion 21
+        targetSdkVersion 30
+
+        resValue "string", "app_name", "${liboAppName}"
+        resValue "string", "vendor", "${liboVendor}"
+        resValue "string", "info_url", "${liboInfoURL}"
+        resValue "string", "online_version_hash", "${liboOVersionHash}"
+        resValue "string", "core_version_hash", "${liboCoreVersionHash}"
+        resValue "string", "image_draw_header", "@drawable/drawer_header"
+        manifestPlaceholders = [ appIcon: "${liboLauncherIcon}" ]
+        buildConfigField "boolean", "APP_HAS_BRANDING", "${liboHasBranding}"
+    }
+    splits {
+        abi {
+            enable true
+
+            reset ()
+            include @ANDROID_ABI_SPLIT@
+        }
+    }
+
+    lintOptions {
+        disable 'MissingTranslation', 'ExtraTranslation'
+    }
+
+    buildTypes {
+        debug {
+            resValue "string", "app_name", "${liboAppName} Debug"
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+            debuggable true
+        }
+        release {
+            if (file("src/main/res/drawable/drawer_header_brand.png").exists()) {
+                resValue "string", "image_draw_header", "@drawable/drawer_header_brand"
+            }
+
+            minifyEnabled false // FIXME disabled before we get a good proguardRules for callFakeWebsocketOnMessage calling from C++
+            shrinkResources false // FIXME cannot be enabled when minifyEnabled is turned off
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core:1.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha04'
+    implementation 'com.google.android.play:core:1.8.0'
+
+    //before changing the version please see https://issuetracker.google.com/issues/111662669
+    implementation 'androidx.preference:preference:1.1.0-alpha01'
+    implementation project(path: ':lib')
+}
+
+task copyBrandFiles(type: Copy) {
+	from "${liboBrandingDir}/android"
+	into "src/main/res"
+}
+
+afterEvaluate {
+	if (!project.ext.liboHasBranding.equals("true") || !file("${liboBrandingDir}").exists()) {
+		copyBrandFiles.enabled = false
+	}
+
+	preBuild.dependsOn copyBrandFiles
+}

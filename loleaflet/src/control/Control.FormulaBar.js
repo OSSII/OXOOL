@@ -18,6 +18,7 @@ L.Control.FormulaBar = L.Control.extend({
 				// if the user is not editing the address field
 				L.DomUtil.get('addressInput').value = e.address;
 			}
+			map.formulabarSetDirty();
 		});
 	},
 
@@ -30,7 +31,6 @@ L.Control.FormulaBar = L.Control.extend({
 			items: [
 				{type: 'html',  id: 'left'},
 				{type: 'html', id: 'address', html: '<input id="addressInput" type="text">'},
-				{type: 'button', id: 'functiondialog', img: 'functiondialog', hint: _('Function Wizard')},
 				{type: 'html', id: 'formula', html: '<div id="calc-inputbar-wrapper"><div id="calc-inputbar"></div></div>'}
 			],
 			onClick: function (e) {
@@ -81,14 +81,6 @@ L.Control.FormulaBar = L.Control.extend({
 				this.map.toggleCommandState(window.getUNOCommand(item.uno));
 			}
 		}
-		else if (id === 'functiondialog') {
-			if (window.mode.isMobile() && this.map._functionWizardData) {
-				this.map._docLayer._closeMobileWizard();
-				this.map._docLayer._openMobileWizard(this.map._functionWizardData);
-			} else {
-				this.map.sendUnoCommand('.uno:FunctionDialog');
-			}
-		}
 	},
 
 	onDocLayerInit: function() {
@@ -99,7 +91,7 @@ L.Control.FormulaBar = L.Control.extend({
 	},
 
 	onUpdatePermission: function(e) {
-		var formulaBarButtons = ['functiondialog', 'sum', 'function'];
+		var formulaBarButtons = ['sum', 'function'];
 		var toolbar = w2ui.formulabar;
 
 		if (e.perm === 'edit') {
@@ -148,10 +140,19 @@ L.Control.FormulaBar = L.Control.extend({
 L.Map.include({
 	onFormulaBarFocus: function() {
 		var mobileTopBar = w2ui['actionbar'];
-		mobileTopBar.hide('undo');
-		mobileTopBar.hide('redo');
-		mobileTopBar.show('cancelformula');
-		mobileTopBar.show('acceptformula');
+		var jsdialogFormulabar = this.formulabar;
+		var target = jsdialogFormulabar;
+
+		if (window.mode.isMobile() === true) {
+			mobileTopBar.hide('undo');
+			mobileTopBar.hide('redo');
+			target = mobileTopBar;
+		} else {
+			jsdialogFormulabar.hide('startformula');
+			jsdialogFormulabar.hide('AutoSumMenu');
+		}
+		target.show('cancelformula');
+		target.show('acceptformula');
 	},
 
 	onFormulaBarBlur: function() {
@@ -159,14 +160,29 @@ L.Map.include({
 		// 'accept' button to act before we hide these buttons because
 		// once hidden, click event won't be processed.
 		// TODO: Some better way to do it ?
+		var map = this;
+
 		setTimeout(function() {
 			if ($('.leaflet-cursor').is(':visible'))
 				return;
 			var mobileTopBar = w2ui['actionbar'];
+			var jsdialogFormulabar = map.formulabar;
+
+			var target = window.mode.isMobile() ? mobileTopBar : jsdialogFormulabar;
+			target.hide('cancelformula');
+			target.hide('acceptformula');
+
 			mobileTopBar.show('undo');
 			mobileTopBar.show('redo');
-			mobileTopBar.hide('cancelformula');
-			mobileTopBar.hide('acceptformula');
+
+			$('#AutoSumMenuimg').css('margin-inline', '0');
+			$('#AutoSumMenu .unoarrow').css('margin', '0');
+
+			jsdialogFormulabar.show('startformula');
+			jsdialogFormulabar.show('AutoSumMenu');
+
+			// clear reference marks
+			map._docLayer._clearReferences();
 		}, 250);
 	}
 });

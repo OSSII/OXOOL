@@ -1,136 +1,107 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "config.h"
+#include <config.h>
 
-#include "WopiTestServer.hpp"
-#include "Log.hpp"
-#include "Unit.hpp"
-#include "UnitHTTP.hpp"
-#include "helpers.hpp"
+#include "WOPIUploadConflictCommon.hpp"
+
+#include <string>
+#include <memory>
 
 #include <Poco/Net/HTTPRequest.h>
-#include <Poco/Timestamp.h>
 
-/**
- * This test asserts that the unsaved changes in the opened document are
- * discarded in case document is changed in storage behind our back. We don't
- * want to overwrite the document which is in storage when the user asks us to
- * do so.
- */
-class UnitWOPIDocumentConflict : public WopiTestServer
+#include "Util.hpp"
+#include "Log.hpp"
+#include "UnitHTTP.hpp"
+#include "helpers.hpp"
+#include "lokassert.hpp"
+
+class UnitWOPIDocumentConflict : public WOPIUploadConflictCommon
 {
-    enum class Phase
-    {
-        Load,
-        ModifyAndChangeStorageDoc,
-        LoadNewDocument,
-        Polling
-    } _phase;
+    using Base = WOPIUploadConflictCommon;
 
-    enum class DocLoaded
-    {
-	Doc1,
-	Doc2
-    } _docLoaded;
+    using Base::Phase;
+    using Base::Scenario;
 
-    const std::string _testName = "UnitWOPIDocumentConflict";
+    using Base::ConflictingDocContent;
+    using Base::ModifiedOriginalDocContent;
+    using Base::OriginalDocContent;
 
 public:
-    UnitWOPIDocumentConflict() :
-        _phase(Phase::Load)
+    UnitWOPIDocumentConflict()
+        : Base("UnitWOPIDocumentConflict", OriginalDocContent)
     {
     }
 
     void assertGetFileRequest(const Poco::Net::HTTPRequest& /*request*/) override
     {
-	if (_docLoaded == DocLoaded::Doc2)
-	{
-	    // On second doc load, we should have the document in storage which
-	    // was changed beneath us, not the one which we modified by pressing 'a'
-	    if (getFileContent() != "Modified content in storage")
-		exitTest(TestResult::Failed);
-	    else
-		exitTest(TestResult::Ok);
-	}
+        LOG_TST("Testing " << toString(_scenario));
+        LOK_ASSERT_STATE(_phase, Phase::WaitLoadStatus);
+
+        assertGetFileCount();
     }
 
-    bool filterSendMessage(const char* data, const size_t len, const WSOpCode /* code */, const bool /* flush */, int& /*unitReturn*/) override
+    std::unique_ptr<http::Response>
+    assertPutFileRequest(const Poco::Net::HTTPRequest& /*request*/) override
     {
-        std::string message(data, len);
-        if (message == "error: cmd=storage kind=documentconflict")
+        LOG_TST("Testing " << toString(_scenario));
+        LOK_ASSERT_STATE(_phase, Phase::WaitDocClose);
+
+        assertPutFileCount();
+
+        switch (_scenario)
         {
-	    // we don't want to save current changes because doing so would
-	    // overwrite the document which was changed underneath us
-	    helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "closedocument", _testName);
-	    _phase = Phase::LoadNewDocument;
+            case Scenario::Disconnect:
+            case Scenario::SaveDiscard:
+            case Scenario::CloseDiscard:
+            case Scenario::VerifyOverwrite:
+                LOK_ASSERT_FAIL("Unexpectedly overwritting the document in storage");
+                break;
+            case Scenario::SaveOverwrite:
+                LOG_TST("Closing the document to verify its contents after reloading");
+                WSD_CMD("closedocument");
+                break;
         }
 
-        return false;
+        return nullptr;
     }
 
-    void invokeTest() override
+    void onDocBrokerDestroy(const std::string& docKey) override
     {
-        switch (_phase)
+        LOG_TST("Testing " << toString(_scenario) << " with dockey [" << docKey << "] closed.");
+        LOK_ASSERT_STATE(_phase, Phase::WaitDocClose);
+
+        std::string expectedContents;
+        switch (_scenario)
         {
-            case Phase::Load:
-            {
-                initWebsocket("/wopi/files/0?access_token=anything");
-		_docLoaded = DocLoaded::Doc1;
-
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), _testName);
-
-                _phase = Phase::ModifyAndChangeStorageDoc;
+            case Scenario::Disconnect:
+                expectedContents = ConflictingDocContent; //TODO: save-as in this case.
                 break;
-            }
-            case Phase::ModifyAndChangeStorageDoc:
-            {
-		// modify the currently opened document; type 'a'
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "key type=input char=97 key=0", _testName);
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "key type=up char=0 key=512", _testName);
-                SocketPoll::wakeupWorld();
-
-		// ModifiedStatus=true is a bit slow; let's sleep and hope that
-		// it is received before we wake up
-		std::this_thread::sleep_for(std::chrono::microseconds(POLL_TIMEOUT_MICRO_S));
-
-		// change the document underneath, in storage
-		setFileContent("Modified content in storage");
-
-		// save the document; wsd should detect now that document has
-		// been changed underneath it and send us:
-		// "error: cmd=storage kind=documentconflict"
-		helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "save", _testName);
-
-                _phase = Phase::Polling;
-
+            case Scenario::SaveDiscard:
+                expectedContents = ConflictingDocContent;
                 break;
-            }
-	    case Phase::LoadNewDocument:
-            {
-		initWebsocket("/wopi/files/0?access_token=anything");
-		_docLoaded = DocLoaded::Doc2;
-                _phase = Phase::Polling;
+            case Scenario::CloseDiscard:
+                expectedContents = ConflictingDocContent;
                 break;
-            }
-            case Phase::Polling:
-            {
-                // just wait for the results
+            case Scenario::SaveOverwrite:
+                expectedContents = ModifiedOriginalDocContent;
                 break;
-            }
+            case Scenario::VerifyOverwrite:
+                expectedContents = OriginalDocContent;
+                break;
         }
+
+        LOK_ASSERT_EQUAL_MESSAGE("Unexpected contents in storage", expectedContents,
+                                 getFileContent());
+
+        Base::onDocBrokerDestroy(docKey);
     }
 };
 
-UnitBase *unit_create_wsd(void)
-{
-    return new UnitWOPIDocumentConflict();
-}
+UnitBase* unit_create_wsd(void) { return new UnitWOPIDocumentConflict(); }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

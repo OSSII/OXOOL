@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,47 +12,42 @@
 #include <Unit.hpp>
 #include <UnitHTTP.hpp>
 #include <helpers.hpp>
-#include <Poco/Net/HTTPRequest.h>
 #include <Poco/Util/LayeredConfiguration.h>
 
 class UnitWOPILoadEncoded : public WopiTestServer
 {
-    enum class Phase
-    {
-        LoadEncoded,
-        CloseDoc,
-        Polling
-    } _phase;
+    STATE_ENUM(Phase, LoadEncoded, CloseDoc, Done)
+    _phase;
 
 public:
-    UnitWOPILoadEncoded() :
-        _phase(Phase::LoadEncoded)
+    UnitWOPILoadEncoded()
+        : WopiTestServer("UnitWOPILoadEncoded")
+        , _phase(Phase::LoadEncoded)
     {
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
-        constexpr char testName[] = "UnitWOPILoadEncoded";
-
         switch (_phase)
         {
             case Phase::LoadEncoded:
             {
+                TRANSITION_STATE(_phase, Phase::CloseDoc);
+
                 initWebsocket("/wopi/files/3?access_token=anything");
 
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
-                SocketPoll::wakeupWorld();
+                WSD_CMD("load url=" + getWopiSrc());
 
-                _phase = Phase::CloseDoc;
                 break;
             }
             case Phase::CloseDoc:
             {
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "closedocument", testName);
-                _phase = Phase::Polling;
+                TRANSITION_STATE(_phase, Phase::Done);
+
+                WSD_CMD("closedocument");
                 break;
             }
-            case Phase::Polling:
+            case Phase::Done:
             {
                 exitTest(TestResult::Ok);
                 break;

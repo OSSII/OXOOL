@@ -1,7 +1,7 @@
-Leaflet platform for OxOffice Online
+Leaflet platform for Collabora Online
 ========================================
 
-This is the client part of OxOffice Online.  For the server part, see the
+This is the client part of Collabora Online.  For the server part, see the
 ../wsd/README, and install it first.
 
 Build dependencies
@@ -29,7 +29,7 @@ To update any of the dependency, process often goes like this:
 1.) Change version of the dependency in package.json
 2.) Do an `npm update <package_name>', which fetches the new module from npm registry. Make sure that
     only the module that you want to update is updated.
-3.) `npm shrinkwrap --dev` to update npm-shrinkwrap.json with newer information. You might see
+3.) `npm shrinkwrap --include=dev` to update npm-shrinkwrap.json with newer information. You might see
     that this tool updates path convention of tarballs inside node_shrinkwrap/ also, but this
     should get corrected in next step.
 4.) Do `shrinkpack', which should remove the old tarball, add new one, and make appropriate
@@ -75,23 +75,23 @@ Running
 
 To see an example:
 
-* run oxoolwsd, like:
+* run coolwsd, like:
 
-    ./oxoolwsd --o:sys_template_path=${SYSTEMPLATE} --o:child_root_path=${ROOTFORJAILS}
+    ./coolwsd --o:sys_template_path=${SYSTEMPLATE} --o:child_root_path=${ROOTFORJAILS}
 
-Note that this will, by default, set the oxoolwsd's file server's root to the parent directory of oxoolwsd,
-which means you can access all the files in browser using /loleaflet/ path. It is advised to set
+Note that this will, by default, set the coolwsd's file server's root to the parent directory of coolwsd,
+which means you can access all the files in browser using /browser/ path. It is advised to set
 file_server_root_path manually for more control. See wsd/README for more information.
 
-* open dist/loleaflet.html through oxoolwsd's fileserver
+* open dist/cool.html through coolwsd's fileserver
 
-    https://localhost:9980/loleaflet/dist/loleaflet.html?file_path=file:///PATH/TO_DOC&host=wss://localhost:9980
+    https://localhost:9980/browser/dist/cool.html?file_path=file:///PATH/TO_DOC&host=wss://localhost:9980
 
 and you should see the document in the browser.
 Note that accessing local storage is disabled by default for security reasons. You need to explicitly enable it
-with the --o:storage.filesystem[@allow]=true option of oxoolwsd. In case anything goes wrong, check the oxoolwsd console for
+with the --o:storage.filesystem[@allow]=true option of coolwsd. In case anything goes wrong, check the coolwsd console for
 the debugging output. You might be asked to confirm the certificate if you are using self-signed certificate
-for oxoolwsd.
+for coolwsd.
 
 Development
 -----------
@@ -105,7 +105,7 @@ Remember to add '--enable-browsersync' argument for './configure' script and del
 
 Run server and start browser-sync:
 
-OXOOL_SERVE_FROM_FS=1 make run
+COOL_SERVE_FROM_FS=1 make run
 
 and in the second terminal:
 
@@ -114,21 +114,21 @@ make sync-[writer|calc|impress]
 Your browser will open example document and now you can edit .css files and see the result without server restart.
 
 To run another document use:
-browser-sync start --config browsersync-config.js --startPath "loleaflet/96c23f663/loleaflet.html?file_path=file:///path/to/the/file.ods"
+browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/cool.html?file_path=file:///path/to/the/file.ods"
 
 Admin Panel
 -----------
 
-You can do live monitoring of all the user sessions running on oxoolwsd instance. To access the admin
-console you need to ask for admin.html file from oxoolwsd which resides in dist/admin/admin.html.
+You can do live monitoring of all the user sessions running on coolwsd instance. To access the admin
+console you need to ask for admin.html file from coolwsd which resides in dist/admin/admin.html.
 
 For example:
 
-    https://localhost:9980/loleaflet/dist/admin/admin.html
+    https://localhost:9980/browser/dist/admin/admin.html
 
-It will ask for username and password which is set by the admin_console options of oxoolwsd. For example you can
+It will ask for username and password which is set by the admin_console options of coolwsd. For example you can
 pass --o:admin_console.username=admin --o:admin_console.password=admin in command line, or set these values in
-oxoolwsd.xml. After entering the correct password you should be able to monitor the live documents opened, total
+coolwsd.xml. After entering the correct password you should be able to monitor the live documents opened, total
 users, memory consumption, document URLs with number of users viewing that document etc. You can also kill the
 documents directly from the panel which would result in closing the socket connection to the respective document.
 
@@ -136,7 +136,7 @@ API & events
 ------------
 
 #######################################################################
-# See /loleaflet/reference.html for a better formatted documentation. #
+# See /browser/reference.html for a better formatted documentation. #
 # See /wsd/reference.md for the HTTP API documentation.               #
 #######################################################################
 
@@ -220,10 +220,10 @@ Parts (like slides in presentation, or sheets in spreadsheets):
 Statusindicator (when the document is loading):
     - events
         map.on('statusindicator', function (e) {}) where:
-            + e.statusType = 'start' | 'setvalue' | 'finish' | 'oxoolloaded' | 'alltilesloaded'
+            + e.statusType = 'start' | 'setvalue' | 'finish' | 'coolloaded' | 'alltilesloaded'
             + e.value == a value from 0 to 100 indicating the status
               if the statusType is 'setvalue
-            + 'oxoolloaded' is fired when the JS code is initialized and the document
+            + 'coolloaded' is fired when the JS code is initialized and the document
                 load request is sent and we're waiting for the tiles
             + 'alltilesloaded' is fired when all newly requested (empty tiles) have been loaded
                 it is not fired during pre-fetching and during editing
@@ -391,6 +391,6 @@ x				menu-nb-hamburger > ul (calculated from jquery.smartmenus.js)
 1001			mobile-edit-button
 1500			mobile-wizard (with class=menuwizard)
 1501			toolbar-hamburger (with class=menuwizard-opened)
-2000			vex-overlay
-2001			vex dialog (vex-content)
+2000			vex-overlay // JSDialog overlay?
+2001			vex dialog (vex-content) // JSDialog content?
 -------------------------------------------

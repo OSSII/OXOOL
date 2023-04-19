@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,20 +9,6 @@
 
 #include "Session.hpp"
 
-#include <sys/types.h>
-#include <ftw.h>
-#include <utime.h>
-
-#include <cassert>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <set>
-
 #include <Poco/Exception.h>
 #include <Poco/Path.h>
 #include <Poco/String.h>
@@ -33,12 +17,9 @@
 #include "Common.hpp"
 #include "Protocol.hpp"
 #include "Log.hpp"
-#include <TileCache.hpp>
 #include "Util.hpp"
-#include "Unit.hpp"
-#include "JsonUtil.hpp"
 
-using namespace LOOLProtocol;
+using namespace COOLProtocol;
 
 using Poco::Exception;
 
@@ -51,12 +32,12 @@ Session::Session(const std::shared_ptr<ProtocolHandlerInterface> &protocol,
     _isActive(true),
     _lastActivityTime(std::chrono::steady_clock::now()),
     _isCloseFrame(false),
+    _isWritable(readOnly),
     _isReadOnly(readOnly),
     _isAllowChangeComments(false),
     _haveDocPassword(false),
     _isDocPasswordProtected(false),
-    _watermarkWhenEditing(false),
-    _watermarkWhenPrinting(false)
+    _watermarkOpacity(0.2)
 {
 }
 
@@ -68,11 +49,12 @@ bool Session::sendTextFrame(const char* buffer, const int length)
 {
     if (!_protocol)
     {
-        LOG_TRC("ERR - missing protocol " << getName() << ": Send: [" << getAbbreviatedMessage(buffer, length) << "].");
+        LOG_TRC("ERR - missing protocol " << getName() << ": Send: ["
+                                          << getAbbreviatedMessage(buffer, length) << ']');
         return false;
     }
 
-    LOG_TRC(getName() << ": Send: [" << getAbbreviatedMessage(buffer, length) << "].");
+    LOG_TRC("Send: [" << getAbbreviatedMessage(buffer, length) << ']');
     return _protocol->sendTextMessage(buffer, length) >= length;
 }
 
@@ -80,11 +62,12 @@ bool Session::sendBinaryFrame(const char *buffer, int length)
 {
     if (!_protocol)
     {
-        LOG_TRC("ERR - missing protocol " << getName() << ": Send: " << std::to_string(length) << " binary bytes.");
+        LOG_TRC("ERR - missing protocol " << getName() << ": Send: " << std::to_string(length)
+                                          << " binary bytes");
         return false;
     }
 
-    LOG_TRC(getName() << ": Send: " << std::to_string(length) << " binary bytes.");
+    LOG_TRC("Send: " << std::to_string(length) << " binary bytes");
     return _protocol->sendBinaryMessage(buffer, length) >= length;
 }
 
@@ -102,7 +85,7 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
     {
         std::string name;
         std::string value;
-        if (!LOOLProtocol::parseNameValuePair(tokens[i], name, value))
+        if (!COOLProtocol::parseNameValuePair(tokens[i], name, value))
         {
             LOG_WRN("Unexpected doc options token [" << tokens[i] << "]. Skipping.");
             continue;
@@ -148,6 +131,11 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
             Poco::URI::decode(value, _userExtraInfo);
             ++offset;
         }
+        else if (name == "authorprivateinfo")
+        {
+            Poco::URI::decode(value, _userPrivateInfo);
+            ++offset;
+        }
         else if (name == "readonly")
         {
             _isReadOnly = value != "0";
@@ -155,7 +143,7 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         }
         else if (name == "password")
         {
-            Poco::URI::decode(value, _docPassword);
+            _docPassword = value;
             _haveDocPassword = true;
             ++offset;
         }
@@ -167,14 +155,9 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
                 _lang = value;
             ++offset;
         }
-        else if (name == "watermarkWhenEditing")
+        else if (name == "timezone")
         {
-            _watermarkWhenEditing = value!= "0";
-            ++offset;
-        }
-        else if (name == "watermarkWhenPrinting")
-        {
-            _watermarkWhenPrinting = value!= "0";
+            _timezone= value;
             ++offset;
         }
         else if (name == "watermarkText")
@@ -185,35 +168,6 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
         else if (name == "watermarkOpacity")
         {
             _watermarkOpacity = std::stod(value);
-            ++offset;
-        }
-        else if (name == "watermarkFont")
-        {
-            std::string decodeFont;
-            Poco::URI::decode(value, decodeFont);
-            Poco::JSON::Object::Ptr jsonObj;
-            if (JsonUtil::parseJSON(decodeFont, jsonObj))
-            {
-                for (auto it = jsonObj->begin() ; it != jsonObj->end() ; it++)
-                {
-                    _watermarkFont.set(it->first, it->second);
-                }
-            }
-            ++offset;
-        }
-        else if (name == "clientAddr")
-        {
-            _clientAddr = value;
-            ++offset;
-        }
-        else if (name == "timezone")
-        {
-            _timezone = value;
-            ++offset;
-        }
-        else if (name == "timezoneOffset")
-        {
-            _timezoneOffset = std::stol(value);
             ++offset;
         }
         else if (name == "timestamp")
@@ -267,72 +221,6 @@ void Session::parseDocOptions(const StringVector& tokens, int& part, std::string
     }
 }
 
-std::string Session::getConvertedWatermarkText()
-{
-    std::string retString = getWatermarkText();
-
-    // 使用者 ID ${id}
-    Poco::replaceInPlace(retString, std::string("${id}"), getUserId());
-    // 使用者名稱 ${name}
-    Poco::replaceInPlace(retString, std::string("${name}"), getUserName());
-    // 使用者時區 ${timezone}
-    Poco::replaceInPlace(retString, std::string("${timezone}"), getTimezone());
-
-    // 使用者 IP ${ip}
-    std::string ip = getClientAddr();
-    if (Util::startsWith(ip, "::ffff:"))
-    {
-        ip = ip.substr(7);
-    }
-    else if (ip == "::1")
-    {
-        ip = "127.0.0.1";
-    }
-    Poco::replaceInPlace(retString, std::string("${ip}"), ip);
-
-    // 系統時間加上客戶端時區偏移值，就是客戶端目前時間
-    Poco::DateTime clientDateTime(Poco::Timestamp() + Poco::Timespan(getTimezoneOffset() * 60 * -1, 0));
-
-    // 日期 ${yyyy-mm-dd}
-    Poco::replaceInPlace(retString, std::string("${yyyy-mm-dd}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%Y-%n-%e"));
-    // 日期 ${mm-dd-yyyy}
-    Poco::replaceInPlace(retString, std::string("${mm-dd-yyyy}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%n-%e-%Y"));
-    // 日期 ${dd-mm-yyyy}
-    Poco::replaceInPlace(retString, std::string("${dd-mm-yyyy}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%e-%n-%Y"));
-
-    // 日期 ${yyyy/mm/dd}
-    Poco::replaceInPlace(retString, std::string("${yyyy/mm/dd}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%Y/%n/%e"));
-    // 日期 ${mm/dd/yyyy}
-    Poco::replaceInPlace(retString, std::string("${mm/dd/yyyy}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%n/%e/%Y"));
-    // 日期 ${dd/mm/yyyy}
-    Poco::replaceInPlace(retString, std::string("${dd/mm/yyyy}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%e/%n/%Y"));
-
-    // 日期 ${yyyy.mm.dd}
-    Poco::replaceInPlace(retString, std::string("${yyyy.mm.dd}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%Y.%n.%e"));
-    // 日期 ${mm.dd.yyyy}
-    Poco::replaceInPlace(retString, std::string("${mm.dd.yyyy}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%n.%e.%Y"));
-    // 日期 ${dd.mm.yyyy}
-    Poco::replaceInPlace(retString, std::string("${dd.mm.yyyy}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%e.%n.%Y"));
-
-    // 24小時格式時間 ${time}
-    Poco::replaceInPlace(retString, std::string("${time}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%H:%M"));
-    // 12小時格式時間 ${ampm}
-    Poco::replaceInPlace(retString, std::string("${ampm}"),
-                         Poco::DateTimeFormatter::format(clientDateTime, "%h:%M %a"));
-
-    return retString;
-}
-
 void Session::disconnect()
 {
     if (!_disconnected)
@@ -344,9 +232,8 @@ void Session::disconnect()
 
 void Session::shutdown(bool goingAway, const std::string& statusMessage)
 {
-    LOG_TRC("Shutting down WS [" << getName() << "] " <<
-            (goingAway ? "going" : "normal") <<
-            " and reason [" << statusMessage << "].");
+    LOG_TRC("Shutting down WS [" << getName() << "] " << (goingAway ? "going" : "normal")
+                                 << " and reason [" << statusMessage << ']');
 
     // See protocol.txt for this application-level close frame.
     if (_protocol)
@@ -375,15 +262,13 @@ void Session::handleMessage(const std::vector<char> &data)
     }
     catch (const Exception& exc)
     {
-        LOG_ERR("Session::handleInput: Exception while handling [" <<
-                getAbbreviatedMessage(data) <<
-                "] in " << getName() << ": " << exc.displayText() <<
-                (exc.nested() ? " (" + exc.nested()->displayText() + ')' : ""));
+        LOG_ERR("Exception while handling ["
+                << getAbbreviatedMessage(data) << "] in " << getName() << ": " << exc.displayText()
+                << (exc.nested() ? " (" + exc.nested()->displayText() + ')' : ""));
     }
     catch (const std::exception& exc)
     {
-        LOG_ERR("Session::handleInput: Exception while handling [" <<
-                getAbbreviatedMessage(data) << "]: " << exc.what());
+        LOG_ERR("Exception while handling [" << getAbbreviatedMessage(data) << "]: " << exc.what());
     }
 }
 
@@ -406,7 +291,10 @@ void Session::dumpState(std::ostream& os)
        << "\n\t\tdisconnected: " << _disconnected
        << "\n\t\tisActive: " << _isActive
        << "\n\t\tisCloseFrame: " << _isCloseFrame
+       << "\n\t\tisWritable: " << _isWritable
        << "\n\t\tisReadOnly: " << _isReadOnly
+       << "\n\t\tisAllowChangeComments: " << _isAllowChangeComments
+       << "\n\t\tisEditable: " << isEditable()
        << "\n\t\tdocURL: " << _docURL
        << "\n\t\tjailedFilePath: " << _jailedFilePath
        << "\n\t\tdocPwd: " << _docPassword
@@ -416,6 +304,7 @@ void Session::dumpState(std::ostream& os)
        << "\n\t\tuserId: " << _userId
        << "\n\t\tuserName: " << _userName
        << "\n\t\tlang: " << _lang
+       << "\n\t\ttimezone: " << _timezone
        << '\n';
 }
 

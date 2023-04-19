@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,15 +17,12 @@
 
 class UnitWOPISaveAs : public WopiTestServer
 {
-    enum class Phase
-    {
-        LoadAndSaveAs,
-        Polling
-    } _phase;
+    STATE_ENUM(Phase, LoadAndSaveAs, Polling) _phase;
 
 public:
-    UnitWOPISaveAs() :
-        _phase(Phase::LoadAndSaveAs)
+    UnitWOPISaveAs()
+        : WopiTestServer("UnitWOPISaveAs")
+        , _phase(Phase::LoadAndSaveAs)
     {
     }
 
@@ -41,7 +36,9 @@ public:
         LOK_ASSERT(std::stoul(request.get("X-WOPI-Size")) > getFileContent().size());
     }
 
-    bool filterSendMessage(const char* data, const size_t len, const WSOpCode /* code */, const bool /* flush */, int& /*unitReturn*/) override
+    bool onFilterSendWebSocketMessage(const char* data, const std::size_t len,
+                                      const WSOpCode /* code */, const bool /* flush */,
+                                      int& /*unitReturn*/) override
     {
         const std::string message(data, len);
 
@@ -57,21 +54,18 @@ public:
         return false;
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
-        constexpr char testName[] = "UnitWOPISaveAs";
-
         switch (_phase)
         {
             case Phase::LoadAndSaveAs:
             {
                 initWebsocket("/wopi/files/0?access_token=anything");
 
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "saveas url=wopi:///jan/hole%C5%A1ovsk%C3%BD/hello%20world%251.pdf", testName);
-                SocketPoll::wakeupWorld();
+                TRANSITION_STATE(_phase, Phase::Polling);
 
-                _phase = Phase::Polling;
+                WSD_CMD("load url=" + getWopiSrc());
+                WSD_CMD("saveas url=wopi:///jan/hole%C5%A1ovsk%C3%BD/hello%20world%251.pdf");
                 break;
             }
             case Phase::Polling:

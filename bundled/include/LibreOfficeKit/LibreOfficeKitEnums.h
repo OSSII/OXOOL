@@ -53,7 +53,7 @@ typedef enum
 {
     LOK_SELTYPE_NONE,
     LOK_SELTYPE_TEXT,
-    LOK_SELTYPE_LARGE_TEXT,
+    LOK_SELTYPE_LARGE_TEXT, // unused (same as LOK_SELTYPE_COMPLEX)
     LOK_SELTYPE_COMPLEX
 }
 LibreOfficeKitSelectionType;
@@ -371,7 +371,7 @@ typedef enum
      * {
      *     "classification": "error" | "warning" | "info"
      *     "kind": "network" etc.
-     *     "code": a structured 32-bit error code, the ErrCode from LibreOffice's <tools/errcode.hxx>
+     *     "code": a structured 32-bit error code, the ErrCode from LibreOffice's <comphelper/errcode.hxx>
      *     "message": freeform description
      * }
      */
@@ -785,6 +785,55 @@ typedef enum
     LOK_COMMAND_BLOCKED = 53,
 
     /**
+     * The position of the cell cursor jumped to.
+     *
+     * Payload format: "x, y, width, height, column, row", where the first
+     * 4 numbers are document coordinates, in twips, and the last 2 are table
+     * coordinates starting from 0.
+     * When the cursor is not shown the payload format is the "EMPTY" string.
+     *
+     * Rectangle format is the same as LOK_CALLBACK_INVALIDATE_TILES.
+     */
+    LOK_CALLBACK_SC_FOLLOW_JUMP = 54,
+
+    /**
+     * Sends all information for displaying metadata for a text based content control.
+     *
+     * Examples:
+     * Entered a rich text content control:
+     * {
+     *     "action": "show",
+     *     "alias": "my alias", // omitted if empty
+     *     "rectangles": "1418, 1694, 720, 551; 10291, 1418, 1099, 275"
+     * }
+     *
+     * Left a rich text content control:
+     * {
+     *     "action": "hide"
+     * }
+     *
+     * Entered a dropdown content control:
+     * {
+     *     "action": "show",
+     *     "rectangles": "...",
+     *     "items": ["red", "green", "blue"]
+     * }
+     *
+     * Clicked on a picture content control's placeholder:
+     * {
+     *     "action": "change-picture"
+     * }
+     *
+     * Entered a date content control:
+     * {
+     *     "action": "show",
+     *     "rectangles": "...",
+     *     "date": "true"
+     * }
+     */
+    LOK_CALLBACK_CONTENT_CONTROL = 55,
+
+    /**
      * This is Calc specific. The payload contains print ranges of all
      * sheets in the document.
      *
@@ -811,36 +860,69 @@ typedef enum
      * The format of the inner "ranges" array for each sheet is
      * [<startColumn>, <startRow>, <endColumn>, <endRow>]
      */
-    LOK_CALLBACK_PRINT_RANGES = 54,
+    LOK_CALLBACK_PRINT_RANGES = 56,
 
     /**
-     * Show a message on the editor's screen.
+     * Informs the LibreOfficeKit client that a font specified in the
+     * document is missing.
      *
-     * The payload example:
+     * This callback is emitted right after the document has been loaded.
+     *
+     * Payload example:
      * {
-     *     "type": "warning" or "error" or "info" or "question" or "success",
-     *     "text": "message text"
+     *     "fontsmissing": [
+     *         "Some Random Font",
+     *         "Another Font"
+     *     ]
      * }
+     *
+     * The names are those of the font family. Sadly it is currently
+     * not possible to know the name of the font style that is
+     * missing.
+     *
      */
-    LOK_CALLBACK_MSGBOX = 1000,
+    LOK_CALLBACK_FONTS_MISSING = 57,
 
     /**
-     * When launch auto filter or data select menu.
+     * Insertion, removal, movement, and selection of a media shape.
+     * The payload is a json with the relevant details.
      *
-     * The payload example:
-     * {
-     *      "type": "DataSelect" or "AutoFilter"
-     *      "part": number of sheet
-     *      "row":  number of row
-     *      "column" : number of column
-     *      "address": cell address(e.g. $A$1)
-     *      "isRTL": ture(Text from right to left) or not
-     *      "left", "top": cell position(pixel)
-     *      "width", "height": cell size(pixel)
-     *      "list": [ {"item": "item 1", "checked": boolean}, ... ]
-     * }
+     *      {
+     *          "action": "insert",
+     *          "id": 123456,
+     *          "url": "file:// ..."
+     *          "x": ...,
+     *          "y": ...,
+     *      }
+     *
+     *      where the "svg" property is a string containing an svg document
+     *      which is a representation of the pie segment.
      */
-    LOK_CALLBACK_LAUNCH_MENU = 1001,
+    LOK_CALLBACK_MEDIA_SHAPE = 58,
+
+    /**
+     * The document is available to download by the client.
+     *
+     * Payload example:
+     * "file:///tmp/hello-world.pdf"
+     */
+    LOK_CALLBACK_EXPORT_FILE = 59,
+
+    /**
+     * Some attribute of this view has changed, that will cause it
+     * to completely re-render, eg. non-printing characters or
+     * or dark mode was toggled, and then distinct from other views.
+     *
+     * Payload is an opaque string that matches this set of states.
+     * this will be emitted after creating a new view.
+     */
+    LOK_CALLBACK_VIEW_RENDER_STATE = 60,
+
+    /**
+     * Informs the LibreOfficeKit client that the background color surrounding
+     * the document has changed.
+    */
+   LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR = 61
 }
 LibreOfficeKitCallbackType;
 
@@ -977,24 +1059,35 @@ static inline const char* lokCallbackTypeToString(int nType)
         return "LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR";
     case LOK_COMMAND_BLOCKED:
         return "LOK_COMMAND_BLOCKED";
+    case LOK_CALLBACK_SC_FOLLOW_JUMP:
+        return "LOK_CALLBACK_SC_FOLLOW_JUMP";
+    case LOK_CALLBACK_CONTENT_CONTROL:
+        return "LOK_CALLBACK_CONTENT_CONTROL";
     case LOK_CALLBACK_PRINT_RANGES:
         return "LOK_CALLBACK_PRINT_RANGES";
-    case LOK_CALLBACK_MSGBOX:
-        return "LOK_CALLBACK_MSGBOX";
-    case LOK_CALLBACK_LAUNCH_MENU:
-        return "LOK_CALLBACK_LAUNCH_MENU";
+    case LOK_CALLBACK_FONTS_MISSING:
+        return "LOK_CALLBACK_FONTS_MISSING";
+    case LOK_CALLBACK_MEDIA_SHAPE:
+        return "LOK_CALLBACK_MEDIA_SHAPE";
+    case LOK_CALLBACK_EXPORT_FILE:
+        return "LOK_CALLBACK_EXPORT_FILE";
+    case LOK_CALLBACK_VIEW_RENDER_STATE:
+        return "LOK_CALLBACK_VIEW_RENDER_STATE";
+    case LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR:
+        return "LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR";
     }
 
-    return "Unknown LibreOfficeKitCallbackType type.";
+    assert(!"Unknown LibreOfficeKitCallbackType type.");
+    return nullptr;
 }
 
 typedef enum
 {
-    /// A pressed gesture has started.
+    /// A mouse button has been pressed down.
     LOK_MOUSEEVENT_MOUSEBUTTONDOWN,
-    /// A pressed gesture has finished.
+    /// A mouse button has been let go.
     LOK_MOUSEEVENT_MOUSEBUTTONUP,
-    /// A change has happened during a press gesture.
+    /// The mouse has moved while a button is pressed.
     LOK_MOUSEEVENT_MOUSEMOVE
 }
 LibreOfficeKitMouseEventType;

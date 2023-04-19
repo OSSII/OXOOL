@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,8 +18,8 @@
 #include "Common.hpp"
 #include "Kit.hpp"
 #include "Session.hpp"
+#include "Watermark.hpp"
 
-class Watermark;
 class ChildSession;
 
 enum class LokEventTargetEnum
@@ -72,6 +70,9 @@ public:
     virtual void alertAllUsers(const std::string& cmd, const std::string& kind) = 0;
 
     virtual unsigned getMobileAppDocId() const = 0;
+
+    /// See if we should clear out our memory
+    virtual void trimIfInactive() = 0;
 };
 
 struct RecordedEvent
@@ -211,14 +212,26 @@ public:
     const std::string& getViewUserId() const { return getUserId(); }
     const std::string& getViewUserName() const { return getUserName(); }
     const std::string& getViewUserExtraInfo() const { return getUserExtraInfo(); }
+    const std::string& getViewUserPrivateInfo() const { return getUserPrivateInfo(); }
     void updateSpeed();
     int getSpeed();
 
     void loKitCallback(const int type, const std::string& payload);
 
-    std::shared_ptr<Watermark> _docWatermark;
+    /// Initializes the watermark support, if enabled and required.
+    /// Returns true if watermark is enabled and initialized.
+    bool initWatermark()
+    {
+        if (hasWatermark())
+        {
+            _docWatermark.reset(
+                new Watermark(getLOKitDocument(), getWatermarkText(), getWatermarkOpacity()));
+        }
 
-    const std::shared_ptr<Watermark>& watermark() const { return _docWatermark; }
+        return _docWatermark != nullptr;
+    }
+
+    const std::shared_ptr<Watermark>& watermark() const { return _docWatermark; };
 
     bool sendTextFrame(const char* buffer, int length) override
     {
@@ -252,6 +265,14 @@ public:
         _docManager = nullptr;
     }
 
+    // Only called by kit.
+    void setCanonicalViewId(int viewId) { _canonicalViewId = viewId; }
+
+    int  getCanonicalViewId() { return _canonicalViewId; }
+
+    void setViewRenderState(const std::string& state) { _viewRenderState = state; }
+
+    std::string getViewRenderState() { return _viewRenderState; }
 private:
     bool loadDocument(const StringVector& tokens);
 
@@ -268,7 +289,6 @@ private:
     std::string getTextSelectionInternal(const std::string& mimeType);
     bool paste(const char* buffer, int length, const StringVector& tokens);
     bool insertFile(const StringVector& tokens);
-    bool insertPicture(const StringVector& tokens, bool isChange = false);
     bool keyEvent(const StringVector& tokens, const LokEventTargetEnum target);
     bool extTextInputEvent(const StringVector& tokens);
     bool dialogKeyEvent(const char* buffer, int length, const std::vector<std::string>& tokens);
@@ -283,6 +303,7 @@ private:
     bool resizeWindow(const StringVector& tokens);
     bool resetSelection(const StringVector& tokens);
     bool saveAs(const StringVector& tokens);
+    bool exportAs(const StringVector& tokens);
     bool setClientPart(const StringVector& tokens);
     bool selectClientPart(const StringVector& tokens);
     bool moveSelectedClientParts(const StringVector& tokens);
@@ -293,15 +314,22 @@ private:
     bool uploadSignedDocument(const char* buffer, int length, const StringVector& tokens);
     bool exportSignAndUploadDocument(const char* buffer, int length, const StringVector& tokens);
     bool renderShapeSelection(const StringVector& tokens);
-    bool getGraphicSelection(const StringVector& tokens);
     bool removeTextContext(const StringVector& tokens);
+#if ENABLE_FEATURE_LOCK || ENABLE_FEATURE_RESTRICTION
+    bool updateBlockingCommandStatus(const StringVector& tokens);
+    std::string getBlockedCommandType(std::string command);
+#endif
+    bool handleZoteroMessage(const StringVector& tokens);
     bool formFieldEvent(const char* buffer, int length, const StringVector& tokens);
+    bool contentControlEvent(const StringVector& tokens);
     bool renderSearchResult(const char* buffer, int length, const StringVector& tokens);
+
     void rememberEventsForInactiveUser(const int type, const std::string& payload);
-    bool initUnoStatus(const char* buffer, int length, const StringVector& tokens);
 
     virtual void disconnect() override;
     virtual bool _handleInput(const char* buffer, int length) override;
+
+    static void dumpRecordedUnoCommands();
 
     std::shared_ptr<lok::Document> getLOKitDocument() const
     {
@@ -337,6 +365,8 @@ private:
     const std::string _jailRoot;
     DocumentManagerInterface* _docManager;
 
+    std::shared_ptr<Watermark> _docWatermark;
+
     std::queue<std::chrono::steady_clock::time_point> _cursorInvalidatedEvent;
     const unsigned _eventStorageIntervalMs = 15*1000;
 
@@ -353,8 +383,19 @@ private:
     /// If we are copying to clipboard.
     bool _copyToClipboard;
 
-    /// window tile hash cache
     std::vector<uint64_t> _pixmapCache;
+
+    /// How many sessions / clients we have
+    static size_t NumSessions;
+
+    /// stores wopi url for export as operation
+    std::string _exportAsWopiUrl;
+
+    /// stores info about the view
+    std::string _viewRenderState;
+
+    /// the canonical id unique to the set of rendering properties of this session
+    int _canonicalViewId;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

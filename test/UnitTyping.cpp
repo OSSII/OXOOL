@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,9 +17,10 @@
 #include <Unit.hpp>
 #include <UnitHTTP.hpp>
 #include <helpers.hpp>
-#include <LOOLWSD.hpp>
+#include <COOLWSD.hpp>
 
 #include <wsd/TileDesc.hpp>
+#include <net/WebSocketSession.hpp>
 
 using namespace ::helpers;
 
@@ -32,12 +31,14 @@ class UnitTyping : public UnitWSD
     std::thread _worker;
 
 public:
-    UnitTyping() :
-        _workerStarted(false)
+    UnitTyping()
+        : UnitWSD("UnitTyping")
+        , _workerStarted(false)
     {
-        int timeout_minutes = 5;
-        setTimeout(timeout_minutes * 60 * 1000);
+        constexpr std::chrono::minutes timeout_minutes(5);
+        setTimeout(timeout_minutes);
     }
+
     ~UnitTyping()
     {
         LOG_INF("Joining test worker thread\n");
@@ -53,9 +54,7 @@ public:
 
     TestResult testWriterTyping()
     {
-        const char* testname = "writerCompositionTest ";
-        std::string serverURL = LOOLWSD::getServerURL();
-        const Poco::URI uri(serverURL);
+        Poco::URI uri(helpers::getTestServerURI());
 
         LOG_TRC("test writer typing");
 
@@ -64,28 +63,38 @@ public:
         helpers::getDocumentPathAndURL(
             "empty.odt", documentPath, documentURL, testname);
 
-        std::shared_ptr<LOOLWebSocket> socket = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("TypingPoll");
+        socketPoll->startThread();
 
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
+
+        // We input two Bopomofo (Mandarin Phonetic Symbols) characters and a grave accent using
+        // textinput messages and then delete them and then input a fourth character. Apparently
+        // this is supposed to mimic what happens when input is coming from an IME for Traditional
+        // Chinese? Unclear whether the 'key' messages here really match what the JS generates in
+        // such a case.
         static const char *commands[] = {
             "key type=up char=0 key=17",
-            "textinput id=0 type=input text=%E3%84%98",
-            "textinput id=0 type=end text=%E3%84%98",
+            // BOPOMOFO LETTER C
+            "textinput id=0 text=%E3%84%98",
             "key type=up char=0 key=519",
 
-            "textinput id=0 type=input text=%E3%84%9C",
-            "textinput id=0 type=end text=%E3%84%9C",
+            // BOPOMOFO LETTER E
+            "textinput id=0 text=%E3%84%9C",
             "key type=up char=0 key=522",
 
-            "textinput id=0 type=input text=%CB%8B",
-            "textinput id=0 type=end text=%CB%8B",
+            // MODIFIER LETTER GRAVE ACCENT
+            // Huh?
+            "textinput id=0 text=%CB%8B",
             "key type=up char=0 key=260",
 
             // replace with the complete character
             "removetextcontext id=0 before=3 after=0",
-            "textinput id=0 type=input text=%E6%B8%AC",
-            "textinput id=0 type=end text=%E6%B8%AC",
+            "textinput id=0 text=%E6%B8%AC",
             "key type=up char=0 key=259"
         };
+        // CJK UNIFIED IDEOGRAPH-6E2C
         static const unsigned char correct[] = {
             0xe6, 0xb8, 0xac
         };
@@ -101,15 +110,116 @@ public:
         LOG_TRC("Waiting for test selection:");
         const char response[] = "textselectioncontent:";
         const int responseLen = sizeof(response) - 1;
-        std::string result = getResponseString(
-            socket, response, testname, 5000 /* 5 secs */);
+        const std::string result
+            = getResponseString(socket, response, testname, std::chrono::seconds(5));
 
-        LOG_TRC("length " << result.length() << " vs. " << (responseLen + 4));
+        // The result string should contain "textselectioncontent:\n" followed by the UTF-8 bytes
+        LOG_TRC("length " << result.length() << " vs. " << (responseLen + 1 + sizeof(correct)));
         if (strncmp(result.c_str(), response, responseLen) ||
-            result.length() < responseLen + 4 ||
-            strncmp(result.c_str() + responseLen + 1, (const char *)correct, 3))
+            result.length() != responseLen + 1 + sizeof(correct) ||
+            memcmp(result.c_str() + responseLen + 1, (const char *)correct, sizeof(correct)))
         {
-            Util::dumpHex(std::cerr, "Error: wrong textselectioncontent:", "", result);
+            LOK_ASSERT_FAIL("Error: wrong textselectioncontent:\n" + Util::dumpHex(result));
+            return TestResult::Failed;
+        }
+
+        return TestResult::Ok;
+    }
+
+    TestResult testMessageQueueMerging()
+    {
+        MessageQueue queue;
+
+        queue.put("child-foo textinput id=0 text=a");
+        queue.put("child-foo textinput id=0 text=b");
+
+        MessageQueue::Payload v;
+        v = queue.get();
+
+        if (!queue.isEmpty())
+        {
+            LOG_ERR("Merge of textinput messages did not happen");
+            return TestResult::Failed;
+        }
+
+        std::string s;
+        s = std::string(v.data(), v.size());
+
+        if (s != "child-foo textinput id=0 text=ab")
+        {
+            LOG_ERR("Merge of textinput messages produced unexpected result '" << s << "'");
+            return TestResult::Failed;
+        }
+
+        queue.put("child-foo textinput id=0 text=a");
+        queue.put("child-bar textinput id=0 text=b");
+        queue.put("child-foo textinput id=0 text=c");
+
+        v = queue.get();
+        if (queue.isEmpty())
+        {
+            LOG_ERR("Merge of textinput messages for different clients that should not have happened");
+            return TestResult::Failed;
+        }
+
+        // Verify that the earlier textinput was removed and its contents merged with the later one
+        s = std::string(v.data(), v.size());
+        if (s != "child-bar textinput id=0 text=b")
+        {
+            LOG_ERR("Merge of textinput messages done incorrectly");
+            return TestResult::Failed;
+        }
+
+        v = queue.get();
+        if (!queue.isEmpty())
+        {
+            LOG_ERR("Merge of textinput messages did not happen");
+            return TestResult::Failed;
+        }
+
+        s = std::string(v.data(), v.size());
+        if (s != "child-foo textinput id=0 text=ac")
+        {
+            LOG_ERR("Merge of textinput messages done incorrectly");
+            return TestResult::Failed;
+        }
+
+        queue.put("child-foo textinput id=0 text=a");
+        queue.put("child-foo key type=input char=97 key=0");
+        queue.put("child-foo textinput id=0 text=b");
+
+        v = queue.get();
+        v = queue.get();
+        if (queue.isEmpty())
+        {
+            LOG_ERR("Merge of textinput messages with a key message inbetween that should not have happened");
+            return TestResult::Failed;
+        }
+        v = queue.get();
+        if (!queue.isEmpty())
+        {
+            LOG_ERR("MessageQueue contains more than was put into it");
+            return TestResult::Failed;
+        }
+
+        queue.put("child-foo textinput id=0 text=abcdef");
+        queue.put("child-foo removetextcontext id=0 before=1 after=0");
+        queue.put("child-foo removetextcontext id=0 before=1 after=0");
+
+        v = queue.get();
+        v = queue.get();
+
+        if (!queue.isEmpty())
+        {
+            LOG_ERR("Merge of removetextcontext messages did not happen");
+            return TestResult::Failed;
+        }
+
+        s = std::string(v.data(), v.size());
+
+        if (s != "child-foo removetextcontext id=0 before=2 after=0")
+        {
+            LOG_ERR("Merge of removetextcontext messages produced unexpected result '" << s << "'");
             return TestResult::Failed;
         }
 
@@ -118,27 +228,30 @@ public:
 
     TestResult testCalcTyping()
     {
-        const char* testname = "calcMultiViewEdit ";
-        std::string serverURL = LOOLWSD::getServerURL();
-        const Poco::URI uri(serverURL);
+        Poco::URI uri(helpers::getTestServerURI());
 
         // Load a doc with the cursor saved at a top row.
         std::string documentPath, documentURL;
         helpers::getDocumentPathAndURL("empty.ods", documentPath, documentURL, testname);
 
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("TypingPoll");
+        socketPoll->startThread();
+
         const int numRender = 2;
         const int numTyping = 6;
         const int numSocket = numRender + numTyping;
-        std::vector<std::shared_ptr<LOOLWebSocket>> sockets;
+        std::vector<std::shared_ptr<http::WebSocketSession>> sockets;
 
-        LOG_TRC("Connecting first client to " << serverURL << " doc: " << documentURL);
-        sockets.push_back(helpers::loadDocAndGetSocket(uri, documentURL, testname));
+        LOG_TRC("Connecting first client to " << uri.toString() << " doc: " << documentURL);
+        sockets.emplace_back(helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname));
 
         for (int i = 1; i < numSocket; ++i)
         {
             LOG_TRC("Connecting client " << i);
-            std::shared_ptr<LOOLWebSocket> socket = helpers::loadDocAndGetSocket(uri, documentURL, testname);
-            sockets.push_back(socket);
+            std::shared_ptr<http::WebSocketSession> socket =
+                helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
+            sockets.emplace_back(
+                helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname));
             for (int j = 0; j < i * 3; ++j)
             {
                 // cursor down some multiple of times
@@ -180,7 +293,7 @@ public:
             }
         }
 
-        int waitMS = 5;
+        constexpr std::chrono::milliseconds waitMS{ 5 };
         std::vector<std::thread> threads;
         std::atomic<bool> started(false);
         std::atomic<int> liveTyping(0);
@@ -190,7 +303,7 @@ public:
         for (int i = 0; i < numRender; ++i)
             threads.emplace_back([&,i] {
                     std::mt19937 randDev(numRender * 257);
-                    std::shared_ptr<LOOLWebSocket> sock = sockets[numTyping + i];
+                    std::shared_ptr<http::WebSocketSession> sock = sockets[numTyping + i];
                     while (!started || liveTyping > 0)
                     {
                         std::ostringstream oss;
@@ -201,7 +314,8 @@ public:
                             << " tilewidth=7680 tileheight=7680";
                         sendTextFrame(sock, oss.str(), testname);
 
-                        std::vector<char> tile = getResponseMessage(sock, "tile:", testname, 5 /* ms */);
+                        const std::vector<char> tile = getResponseMessage(
+                            sock, "tile:", testname, std::chrono::milliseconds(5));
 
                         std::this_thread::sleep_for(std::chrono::milliseconds(25));
                     }
@@ -212,7 +326,7 @@ public:
         {
             threads.emplace_back([&,which] {
                     std::mt19937 randDev(which * 16);
-                    std::shared_ptr<LOOLWebSocket> sock = sockets[which];
+                    std::shared_ptr<http::WebSocketSession> sock = sockets[which];
                     liveTyping++;
                     started = true;
                     for (size_t i = 0; i < messages[which].size(); ++i)
@@ -224,7 +338,7 @@ public:
                             sendTextFrame(sock, "ping", testname);
 
                         // suck and dump replies down
-                        std::vector<char> tile = getResponseMessage(sock, "tile:", testname, waitMS /* ms */);
+                        std::vector<char> tile = getResponseMessage(sock, "tile:", testname, waitMS);
                         if (tile.size())
                         {
 // 1544818858022 INCOMING: tile: nviewid=0 part=0 width=256 height=256 tileposx=15360 tileposy=38400 tilewidth=3840 tileheight=3840 oldwid=0 wid=232 ver=913 imgsize=1002
@@ -260,7 +374,8 @@ public:
             sendTextFrame(sockets[i], "gettextselection mimetype=text/plain;charset=utf-8", testname);
 
             LOG_TRC("Waiting for test selection:");
-            std::string result = getResponseString(sockets[i],  "textselectioncontent:", testname, 20000 /* 20 secs */);
+            const std::string result = getResponseString(sockets[i], "textselectioncontent:", testname,
+                                                   std::chrono::seconds(20));
             results[i] = result;
 
             char target = 'a'+i;
@@ -285,11 +400,16 @@ public:
         res = testWriterTyping();
         if (res != TestResult::Ok)
             return res;
+
+        res = testMessageQueueMerging();
+        if (res != TestResult::Ok)
+            return res;
+
 //        res = testCalcTyping();
         return res;
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
         // this method gets called every few seconds.
         if (_workerStarted)

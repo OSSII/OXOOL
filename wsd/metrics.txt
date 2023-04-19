@@ -5,16 +5,16 @@ which can be found here: https://prometheus.io/docs/instrumenting/exposition_for
 GLOBAL
 
     global_host_system_memory_bytes - Total host system memory in bytes.
-    global_memory_available_bytes – Memory available to our application in bytes. This is equal to global_host_system_memory_bytes * memproportion where memproportion represents the maximum percentage of system memory consumed by all of the LibreOffice Online, after which we start cleaning up idle documents. This parameter can be setup in oxoolwsd.xml.
-    global_memory_used_bytes – Total memory usage: PSS(oxoolwsd) + RSS(forkit) + Private_Dirty(all assigned oxoolkits).
+    global_memory_available_bytes – Memory available to our application in bytes. This is equal to global_host_system_memory_bytes * memproportion where memproportion represents the maximum percentage of system memory consumed by all of the Collabora Online, after which we start cleaning up idle documents. This parameter can be setup in coolwsd.xml.
+    global_memory_used_bytes – Total memory usage: PSS(coolwsd) + RSS(forkit) + Private_Dirty(all assigned coolkits).
     global_memory_free_bytes - global_memory_available_bytes - global_memory_used_bytes
 
-LOOLWSD
+COOLWSD
 
-    oxoolwsd_count – number of running oxoolwsd processes.
-    oxoolwsd_thread_count – number of threads in the current oxoolwsd process.
-    oxoolwsd_cpu_time_seconds – the CPU usage by current oxoolwsd process.
-    oxoolwsd_memory_used_bytes – the memory used by current oxoolwsd process: PSS(oxoolwsd).
+    coolwsd_count – number of running coolwsd processes.
+    coolwsd_thread_count – number of threads in the current coolwsd process.
+    coolwsd_cpu_time_seconds – the CPU usage by current coolwsd process.
+    coolwsd_memory_used_bytes – the memory used by current coolwsd process: PSS(coolwsd).
 
 FORKIT
 
@@ -27,8 +27,9 @@ KITS
 
     kit_count – total number of running kit processes.
     kit_unassigned_count – number of running kit processes that are not assigned to documents.
-    kit_assigned_count – number of running kit processes that are assigned to documents.
+    kit_assigned_count – number of running kit processes that are assigned to documents (number of currently open documents).
     kit_segfault_count - number of kit processes terminated with SIGSEGV or SIGBUS signals since the start of application.
+    kit_lost_terminated_count - number of kit processes that were lost by coolwsd and were terminated by cleanup mechanism.
     kit_thread_count_total - total number of threads in all running kit processes.
     kit_thread_count_average – average number of threads per running kit process.
     kit_thread_count_min - minimum from the number of threads in each running kit process.
@@ -41,6 +42,12 @@ KITS
     kit_cpu_time_average_seconds – average between the CPU time each running kit process used.
     kit_cpu_time_min_seconds – minimum from the CPU time each running kit process used.
     kit_cpu_time_max_seconds - maximum from the CPU time each running kit process used.
+
+RESOURCE CONSUMING DOCUMENTS (See config.per_document.cleanup section in coolwsd.xml)
+
+    document_resource_consuming_count - number of active documents that were detected as resource consuming.
+    document_resource_consuming_abort_started_count - number of resource consuming documents for which the termination process started (SIGABRT/SIGKILL signal was sent to the associated kit process) but they are still considered active by coolwsd. This is relevant because it shows how many resource consuming docs possibly could not be terminated or for which the termination process is too long.
+    document_resource_consuming_aborted_count - number of terminated resource consuming documents.
 
 DOCUMENT VIEWS
 
@@ -112,7 +119,7 @@ DOCUMENT BYTES RECEIVED FROM CLIENTS
 
 DOCUMENT DOWNLOAD DURATION
 
-    document_all_wopi_download_duration_total_seconds - sum of download duration of each document (active or expired). 
+    document_all_wopi_download_duration_total_seconds - sum of download duration of each document (active or expired).
     document_all_wopi_download_duration_average_seconds – average between the download duration of each document (active or expired).
     document_all_wopi_download_duration_min_seconds – minimum from the download duration of each document (active or expired).
     document_all_wopi_download_duration_max_seconds - maximum from the download duration of each document (active or expired).
@@ -154,3 +161,27 @@ DOCUMENT VIEW LOAD DURATION
     document_expired_view_load_duration_average_seconds - average between the load duration of all views (active or expired) of each expired document.
     document_expired_view_load_duration_min_seconds - minimum from the load duration of all views (active or expired) of each expired document.
     document_expired_view_load_duration_max_seconds - maximum from the load duration of all views (active or expired) of each expired document.
+
+SELECTED ERRORS - all integer counts
+
+    error_storage_space_low - local storage space too low to operate
+    error_storage_connection - unable to connect to storage
+    error_bad_request - we returned an HTTP bad request to a caller
+    error_bad_argument - we returned an HTTP bad argument to a caller
+    error_unauthorized_request - an authorization exception usually on CheckFileInfo
+    error_service_unavailable - internal error, service is unavailable
+    error_parse_error - badly formed data provided for us to parse.
+
+PER DOCUMENT DETAILS - suffixed by {pid=<pid>} for each document:
+
+    doc_pid - define the pid of the related document with these labels:
+        host= - host this document was fetched from
+        key= - key often WOPISrc used to fetch the document
+	filename= - filename of the document
+    doc_active_views - number of views/users currently
+    doc_is_modified - is the document modified, or not ie. saved/readonly
+    doc_memory_used_bytes - bytes of memory dirtied by this process
+    doc_cpu_used_seconds - number of seconds of CPU time used
+    doc_open_time_seconds - time since the document was first opened
+    doc_download_time_seconds - how long it took to download the doc
+    doc_upload_time_seconds - how long it last took to up-load the doc or 0 if unsaved.

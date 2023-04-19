@@ -47,7 +47,7 @@ describe('SheetGeometry bugfix tests', function () {
         var tileWidthTwips = Math.round(tileSizePx * 15 / zoomToAbsScale(10));
         var tileHeightTwips = tileWidthTwips;
 
-        var sg = new oxool.SheetGeometry(sgObj, tileWidthTwips, tileHeightTwips, tileSizePx, 0);
+        var sg = new cool.SheetGeometry(sgObj, tileWidthTwips, tileHeightTwips, tileSizePx, 0);
         it('correctness of getRowGroupLevels() before ungroup', function () {
             assert.equal(sg.getRowGroupLevels(), 3);
         });
@@ -80,7 +80,7 @@ function testsForDocZoom(testDataForZoom: TestDataForZoom) {
     runPartsData.forEach(function(partTestData) {
         var part = partTestData.part;
         var partTestDesc = ' part#' + part + ' - ' + partTestData.description;
-        var sg = new oxool.SheetGeometry(partTestData.sheetgeometrymsg,
+        var sg = new cool.SheetGeometry(partTestData.sheetgeometrymsg,
             tileWidthTwips, tileHeightTwips, tileSizePx, part);
 
         var viewBoundsTwips = testDataForZoom.viewBoundsTwips;
@@ -92,7 +92,7 @@ function testsForDocZoom(testDataForZoom: TestDataForZoom) {
     });
 }
 
-function testsForPart(partTestData: PartTestData, part: number, zoom: number, sg: oxool.SheetGeometry) {
+function testsForPart(partTestData: PartTestData, part: number, zoom: number, sg: cool.SheetGeometry) {
     it('correctness of getPart()', function () {
         assert.equal(sg.getPart(), part);
     });
@@ -181,7 +181,7 @@ function testsForPart(partTestData: PartTestData, part: number, zoom: number, sg
         var cellRectData = partTestData.cellRectData;
         var midPoint = cellRectData.cpixBoundsAtSelfZoom.getCenter(true);
         var cell = sg.getCellFromPos(midPoint, 'corepixels');
-        assert.deepEqual(cell, new oxool.Point(cellRectData.col, cellRectData.row), 'Incorrect cell indices at self zoom returned');
+        assert.deepEqual(cell, new cool.Point(cellRectData.col, cellRectData.row), 'Incorrect cell indices at self zoom returned');
     });
 
     it('correctness of getSnapDocPosX() and getSnapDocPosY()', function () {

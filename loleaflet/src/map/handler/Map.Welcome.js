@@ -32,13 +32,14 @@ L.Map.Welcome = L.Handler.extend({
 		this.remove();
 	},
 
-	onUpdateList: function () {
+	isGuest: function() {
 		var docLayer = this._map._docLayer || {};
 		var viewInfo = this._map._viewInfo[docLayer._viewId];
-		var isGuest  = viewInfo && viewInfo.userextrainfo &&
-		    viewInfo.userextrainfo.is_guest;
+		return  viewInfo && viewInfo.userextrainfo && viewInfo.userextrainfo.is_guest;
+	},
 
-		if (!isGuest && this.shouldWelcome()) {
+	onUpdateList: function () {
+		if (!this.isGuest() && window.autoShowWelcome && this.shouldWelcome()) {
 			this.showWelcomeDialog();
 		}
 	},
@@ -89,6 +90,9 @@ L.Map.Welcome = L.Handler.extend({
 	},
 
 	onMessage: function (e) {
+		if (typeof e.data !== 'string')
+			return; // Some extensions may inject scripts resulting in load events that are not strings
+
 		if (e.data.startsWith('updatecheck-show'))
 			return;
 
@@ -100,7 +104,7 @@ L.Map.Welcome = L.Handler.extend({
 			this._iframeWelcome.clearTimeout();
 			var keys = Object.keys(data.strings);
 			for (var it in keys) {
-				data.strings[keys[it]] = _(keys[it]).replace('%oxoolVersion', window.oxoolwsdVersion);
+				data.strings[keys[it]] = _(keys[it]).replace('%coolVersion', window.coolwsdVersion);
 			}
 			this._iframeWelcome.postMessage(data);
 		} else if (data.MessageId === 'welcome-close') {

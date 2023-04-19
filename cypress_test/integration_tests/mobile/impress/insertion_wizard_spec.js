@@ -1,22 +1,21 @@
-/* global describe it cy beforeEach require expect afterEach*/
-
-require('cypress-file-upload');
+/* global describe it cy beforeEach require expect afterEach Cypress*/
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var impressMobileHelper = require('./impress_mobile_helper');
+var impressHelper = require('../../common/impress_helper');
 
 describe('Impress insertion wizard.', function() {
-	var testFileName = 'insertion_wizard.odp';
+	var origTestFileName = 'insertion_wizard.odp';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'impress');
+		testFileName = helper.beforeAll(origTestFileName, 'impress');
 
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function selectionShouldBeTextShape(checkShape) {
@@ -77,21 +76,16 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Comment insertion dialog is opened
-		cy.get('.loleaflet-annotation-table')
-			.should('exist');
+		cy.get('#comment-container-new').should('exist');
 
 		// Add some comment
-		cy.get('.loleaflet-annotation-textarea')
-			.type('some text');
+		cy.get('#input-modal-input').type('some text');
 
-		cy.get('.vex-dialog-button-primary')
-			.click();
+		cy.get('#response-ok').click();
 
-		cy.get('.loleaflet-annotation')
-			.should('exist');
+		cy.get('#comment-container-1').should('exist');
 
-		cy.get('.loleaflet-annotation-content.loleaflet-dont-break')
-			.should('have.text', 'some text');
+		cy.get('#annotation-content-area-1').should('have.text', 'some text');
 	});
 
 	it('Insert default table.', function() {
@@ -159,17 +153,17 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Dialog is opened
-		cy.get('.vex-content.hyperlink-dialog')
+		cy.get('#hyperlink-link-box')
 			.should('exist');
 
 		// Type text and link
-		cy.get('.vex-content.hyperlink-dialog input[name="text"]')
+		cy.get('#hyperlink-text-box')
 			.type('some text');
-		cy.get('.vex-content.hyperlink-dialog input[name="link"]')
+		cy.get('#hyperlink-link-box')
 			.type('www.something.com');
 
 		// Insert
-		cy.get('.vex-content.hyperlink-dialog .vex-dialog-button-primary')
+		cy.get('#response-ok')
 			.click();
 
 		// TODO: we have some wierd shape here instead of a text shape with the link
@@ -207,7 +201,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('Tap to edit text');
 	});
@@ -225,7 +219,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape(false);
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a date in MM/DD/YY format
 		var regex = /\d{1,2}[/]\d{1,2}[/]\d{1,2}/;
@@ -245,7 +239,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape(false);
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a date in MM/DD/YY format
 		var regex = /\d{1,2}[/]\d{1,2}[/]\d{1,2}/;
@@ -265,7 +259,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape(false);
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a time in HH/MM/SS format
 		var regex = /\d{1,2}[:]\d{1,2}[:]\d{1,2}/;
@@ -285,7 +279,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape(false);
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a time in HH/MM/SS format
 		var regex = /\d{1,2}[:]\d{1,2}[:]\d{1,2}/;
@@ -305,7 +299,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('1');
 	});
@@ -323,7 +317,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('Slide 1');
 	});
@@ -341,7 +335,7 @@ describe('Impress insertion wizard.', function() {
 		selectionShouldBeTextShape();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('1');
 	});
@@ -356,21 +350,21 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Dialog is opened
-		cy.get('.vex-content.hyperlink-dialog')
+		cy.get('#hyperlink-link-box')
 			.should('exist');
 
 		// Type text and link
-		cy.get('.vex-content.hyperlink-dialog input[name="text"]')
+		cy.get('#hyperlink-text-box')
 			.type('some text');
-		cy.get('.vex-content.hyperlink-dialog input[name="link"]')
+		cy.get('#hyperlink-link-box')
 			.type('www.something.com');
 
 		// Insert
-		cy.get('.vex-content.hyperlink-dialog .vex-dialog-button-primary')
+		cy.get('#response-ok')
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('some text');
 
@@ -390,7 +384,7 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a date in MM/DD/YY format
 		var regex = /\d{1,2}[/]\d{1,2}[/]\d{1,2}/;
@@ -409,7 +403,7 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a date in MM/DD/YY format
 		var regex = /\d{1,2}[/]\d{1,2}[/]\d{1,2}/;
@@ -428,7 +422,7 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a time in HH/MM/SS format
 		var regex = /\d{1,2}[:]\d{1,2}[:]\d{1,2}/;
@@ -447,7 +441,7 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		// Check that we have a time in HH/MM/SS format
 		var regex = /\d{1,2}[:]\d{1,2}[:]\d{1,2}/;
@@ -466,7 +460,7 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('1');
 	});
@@ -483,7 +477,7 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('Slide 1');
 	});
@@ -500,8 +494,28 @@ describe('Impress insertion wizard.', function() {
 			.click();
 
 		// Check the text
-		impressMobileHelper.selectTextOfShape();
+		impressHelper.selectTextOfShape();
 
 		helper.expectTextForClipboard('1');
+	});
+
+	it('Insert new slide with plus button.', function() {
+		impressHelper.assertNumberOfSlidePreviews(1);
+
+		cy.contains('.leaflet-control-zoom-in', '+')
+			.should('be.visible');
+
+		cy.contains('.leaflet-control-zoom-in', '+')
+			.click();
+
+		impressHelper.assertNumberOfSlidePreviews(2);
+
+		if (Cypress.env('INTEGRATION') !== 'nextcloud') {
+			cy.get('#toolbar-mobile-back')
+				.click();
+
+			cy.get('.leaflet-control-zoom-in')
+				.should('not.exist');
+		}
 	});
 });

@@ -1,12 +1,8 @@
 // -*- Mode: ObjC; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*-
 //
-// This file is part of the LibreOffice project.
-//
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-#import "svtools/strings.hrc"
 
 #import <LibreOfficeKit/LibreOfficeKitInit.h>
 
@@ -15,6 +11,8 @@
 #import "L10n.h"
 #import "TemplateCollectionViewController.h"
 #import "TemplateSectionHeaderView.h"
+
+#import "svtools/strings.hrc"
 
 static NSString *mapTemplateExtensionToActual(NSString *templateName) {
     NSString *baseName = [templateName stringByDeletingPathExtension];
@@ -33,6 +31,11 @@ static NSString *mapTemplateExtensionToActual(NSString *templateName) {
 @implementation TemplateCollectionViewController
 
 - (void)viewDidLoad {
+
+    // Partial fix for issue #1962 Dismiss view by tapping outside of the view
+    // Setting modalInPresentation to YES will ignore all events outside of
+    // the view so set self.modalInPresentation to NO.
+    self.modalInPresentation = NO;
 
     static NSString *downloadedTemplates = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingString:@"/downloadedTemplates/"];
 
@@ -61,6 +64,18 @@ static NSString *mapTemplateExtensionToActual(NSString *templateName) {
         templates[1] = [[[NSBundle mainBundle] URLsForResourcesWithExtension:@".ots" subdirectory:@"Templates"] mutableCopy];
     if ([templates[2] count] == 0)
         templates[2] = [[[NSBundle mainBundle] URLsForResourcesWithExtension:@".otp" subdirectory:@"Templates"] mutableCopy];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    // Partial fix for issue #1962 Invoke import handler when view is dismissed
+    // If the import handler has not already been invoked, invoke it or else
+    // -[DocumentBrowserViewController
+    // documentBrowser:didRequestDocumentCreationWithHandler:] will never be
+    // hcalled again.
+    if (self.importHandler) {
+        self.importHandler(nil, UIDocumentBrowserImportModeNone);
+        self.importHandler = nil;
+    }
 }
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
@@ -145,11 +160,25 @@ static NSString *mapTemplateExtensionToActual(NSString *templateName) {
     doc->pClass->saveAs(doc, [[newURL absoluteString] UTF8String], nullptr, nullptr);
     doc->pClass->destroy(doc);
 
-    self.importHandler(newURL, UIDocumentBrowserImportModeMove);
+    // Partial fix for issue #1962 Set import handler to nil after use
+    if (self.importHandler) {
+        self.importHandler(newURL, UIDocumentBrowserImportModeMove);
+        self.importHandler = nil;
+    }
 
     [self dismissViewControllerAnimated:YES completion:nil];
 
     return YES;
+}
+
+- (void)cancel {
+    // Partial fix for issue #1962 Set import handler to nil after use
+    if (self.importHandler) {
+        self.importHandler(nil, UIDocumentBrowserImportModeNone);
+        self.importHandler = nil;
+    }
+
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

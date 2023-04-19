@@ -5,7 +5,6 @@
 	width: 30px;
 	height: 44px;
 	background-image: url('images/handle_start.svg');
-	cursor: move;
 }
 
 .leaflet-selection-marker-end {
@@ -15,7 +14,6 @@
 	width: 30px;
 	height: 44px;
 	background-image: url('images/handle_end.svg');
-	cursor: move;
 }
 
 .leaflet-cursor-handler {

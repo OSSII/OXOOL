@@ -3,7 +3,7 @@
  * Impress tile layer is used to display a presentation document
  */
 
-/* global app $ L isAnyVexDialogActive */
+/* global app $ L */
 
 L.ImpressTileLayer = L.CanvasTileLayer.extend({
 
@@ -133,7 +133,7 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 	},
 
 	onUpdateParts: function () {
-		if (isAnyVexDialogActive()) // Need this check else vex loses focus
+		if (this._map.uiManager.isAnyDialogOpen()) // Need this check else dialog loses focus
 			return;
 
 		app.sectionContainer.getSectionWithName(L.CSections.CommentList.name).onPartChange();
@@ -179,6 +179,10 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 			command.height = parseInt(strTwips[3]);
 			command.part = this._selectedPart;
 		}
+
+		if (isNaN(command.mode))
+			command.mode = this._selectedMode;
+
 		var topLeftTwips = new L.Point(command.x, command.y);
 		var offset = new L.Point(command.width, command.height);
 		var bottomRightTwips = topLeftTwips.add(offset);
@@ -193,7 +197,8 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 		for (var key in this._tiles) {
 			var coords = this._tiles[key].coords;
 			var bounds = this._coordsToTileBounds(coords);
-			if (coords.part === command.part && invalidBounds.intersects(bounds)) {
+			if (coords.part === command.part && invalidBounds.intersects(bounds) &&
+				coords.mode === command.mode) {
 				if (this._tiles[key]._invalidCount) {
 					this._tiles[key]._invalidCount += 1;
 				}
@@ -222,7 +227,7 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 			// compute the rectangle that each tile covers in the document based
 			// on the zoom level
 			coords = this._keyToTileCoords(key);
-			if (coords.part !== command.part) {
+			if (coords.part !== command.part || coords.mode !== command.mode) {
 				continue;
 			}
 			bounds = this._coordsToTileBounds(coords);
@@ -231,6 +236,7 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 			}
 		}
 		if (command.part === this._selectedPart &&
+			command.mode === this._selectedMode &&
 			command.part !== this._lastValidPart) {
 			this._map.fire('updatepart', {part: this._lastValidPart, docType: this._docType});
 			this._lastValidPart = command.part;
@@ -281,16 +287,11 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 			app.file.size.pixels = [Math.round(this._tileSize * (this._docWidthTwips / this._tileWidthTwips)), Math.round(this._tileSize * (this._docHeightTwips / this._tileHeightTwips))];
 			app.view.size.pixels = app.file.size.pixels.slice();
 
-			// Added by Firefly <firefly@ossii.com.tw>
-			// 含有各投影片的詳細資訊
-			if (command.partsinfo !== undefined) {
-				this._partsInfo = command.partsinfo;
-			}
-
 			this._updateMaxBounds(true);
 			this._documentInfo = textMsg;
 			this._viewId = parseInt(command.viewid);
 			this._selectedPart = command.selectedPart;
+			this._selectedMode = (command.mode !== undefined) ? command.mode : 0;
 			this._selectedParts = command.selectedParts || [command.selectedPart];
 			this._resetPreFetching(true);
 			this._update();

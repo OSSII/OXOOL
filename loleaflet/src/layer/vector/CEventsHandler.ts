@@ -1,7 +1,7 @@
 
 // Type of the data passed to event handlers.
 interface EventData {
-	position?: oxool.Point;
+	position?: cool.Point;
 }
 
 type EventHandlerType = (data: EventData) => void;
@@ -40,7 +40,7 @@ abstract class CEventsHandler {
 	on(eventName: string, handler: EventHandlerType): boolean {
 		var handlerSet = this.handlers.get(eventName);
 		if (handlerSet === undefined) {
-			window.app.console.warn('Unknown event type: ' + eventName + ' used to register a handler');
+			console.warn('Unknown event type: ' + eventName + ' used to register a handler');
 			return false;
 		}
 
@@ -50,13 +50,13 @@ abstract class CEventsHandler {
 	off(eventName: string, handler: EventHandlerType): boolean {
 		var handlerSet = this.handlers.get(eventName);
 		if (handlerSet === undefined) {
-			window.app.console.warn('Unknown event type: ' + eventName + ' used to unregister a handler');
+			console.warn('Unknown event type: ' + eventName + ' used to unregister a handler');
 			return false;
 		}
 
 		var removed = handlerSet.delete(handler);
 		if (!removed) {
-			window.app.console.warn('Unregistered handler!');
+			console.warn('Unregistered handler!');
 			return false;
 		}
 
@@ -66,7 +66,7 @@ abstract class CEventsHandler {
 	fire(eventName: string, eventData: EventData): boolean {
 		var handlerSet = this.handlers.get(eventName);
 		if (handlerSet === undefined) {
-			window.app.console.warn('Unknown event type: ' + eventName);
+			console.warn('Unknown event type: ' + eventName);
 			return false;
 		}
 

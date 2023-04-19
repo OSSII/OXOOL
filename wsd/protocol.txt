@@ -39,6 +39,45 @@ it as a final error (that requires reloading to retry).
 client -> server
 ================
 
+A convention: Messages that have the first token (keyword) in
+UPPERCASE are related to debugging and tracing of the client and
+server software and not related to the user's actions.
+
+DEBUG <rest of message>
+
+    The rest of the message (without the DEBUG keyword), possibly
+    multiple lines, is logged by the server as LOG_DBG.
+
+ERROR <rest of message>
+
+    The rest of the message (without the ERROR keyword), possibly
+    multiple lines, is logged by the server as LOG_ERR.
+
+TRACEEVENT name=<name> ph=<letter> ts=<timestamp> <more parameters>... [ args=<JSON.stringify-string> ]
+
+    Timestamps and durations are in microseconds, from
+    performance.now(), multiplied by 1000, and rouded to an integer.
+
+    name is a string of non-space characters.
+
+    ts is the timestamp when the trace event was generated.
+
+    ph is one of the following, and the rest of the parameters depend
+    on what it is.
+
+    args is an optional parameter, and its value is a JSON string
+    where the keys and values are strings with no spaces in them.
+
+    'i': An "Instant" event.
+
+    'S', 'F': The start and finish of an "Async" event. In addition to
+    the name, the messages have an "id" parameter, a unique number
+    that must be the same for the 'S' and 'F' messages.
+
+    'X': A "complete" event. The "dur" parameter is the duration
+    between the beginning of the thing being timed and the time when
+    the 'X' message was emitted, also in microseconds.
+
 canceltiles
 
     All outstanding tile messages from the client to the server are
@@ -97,7 +136,7 @@ load <pathname>
 
     Deprecated.
 
-load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [deviceFormFactor=<device type>] [options=<options>]
+load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [deviceFormFactor=<device type>] [timezone=<timezone>] [options=<options>]
 
     part is an optional parameter. <partNumber> is a number.
 
@@ -110,17 +149,29 @@ load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [deviceFor
     deviceFormFactor specifies the form factor of the device the client is running on
     it can be one of the following: 'desktop', 'tablet', 'mobile'
 
+    timestamp is in tzfile(5) format. For example: Pacific/Auckland.
+
     options are the whole rest of the line, not URL-encoded, and must be valid JSON.
 
-loolclient <major.minor[-patch]>
+coolclient <major.minor[-patch]> [ <timestamp> <perfcounter> ]
 
     Upon connection, a client must announce the version number it supports.
-    Major: an integer that must always match between client and server,
+    major: an integer that must always match between client and server,
            otherwise there are no guarantees of any sensible
            compatibility. This is bumped when API changes.
-    Minor: an integer is more flexible and is at the discretion of either party.
+    minor: an integer is more flexible and is at the discretion of either party.
            Security fixes that do not alter the API would bump the minor version number.
-    Patch: an optional string that is informational.
+    patch: an optional string that is informational.
+
+    timestamp: the value of the JavaScript Date.now(), i.e. integer number of milliseconds since
+           the Unix epoch.
+
+    perfcounter: the value of the JavaScript performance.now() function at the same time.
+            This is also in milliseconds but can be a floating point number and can be up to
+            microsecond precision.
+
+            The timestamp and perfcounter are used by the server to translate performance
+            counter values from the client for Trace Event logging into absolute timestamps.
 
 mouse type=<type> x=<x> y=<y> count=<count>
 
@@ -187,7 +238,7 @@ tile part=<partNumber> width=<width> height=<height> tileposx=<xpos> tileposy=<y
     Note: id must be echoed back in the response verbatim. It and the
     following parameter, broadcast, are used when rendering slide
     previews of presentation documents, and not for anything else. It
-    is only useful to loleaflet and will break it if not returned in
+    is only useful to JS part and will break it if not returned in
     the response.
 
 tilecombine <parameters>
@@ -256,8 +307,8 @@ versionrestore <action>
 
     Version restore related messages.
 
-    <action> can take following values:
-    - prerestore: The storage is about restore the document to an earlier
+    <action> can take the following values:
+    - prerestore: The storage is about to restore the document to an earlier
     revision.
 
 asksignaturestatus
@@ -279,16 +330,49 @@ removesession <viewid>
     privilege views cannot remove higher ones, eg. a readonly view
     can't remove an editor.
 
-initunostatus <.uno:commandA[,.uno:commandB]>
+traceeventrecording <start/stop>
 
-    Request to report the status of the specified uno command.
-    If there is more than one command, separate them with a comma,
-    Please use URIEncode() to encode the command.
+    Starts or stops comphelper::TraceEvent recording.
+
+sallogoverride <string>
+
+    Overrides the SAL_LOG value, or stops overriding if no parameter
+    or parameter is "default".
+
+loggingleveloverride <default|max|verbose|terse|none|fatal|critical|error|warning|notice|information|debug|trace>
+
+    Override the Online logging level for the thread(s) and Kit
+    processes handling this particular client.
+
+    The value is either one of the log level names, or the special
+    value "default" (meaning whatever is the log level specified in
+    the "logging.level" configuration setting), "verbose", or "terse")
+    (meaning the most or least verbose level allowed, the
+    "logging.most_verbose_level_settable_from_client" or
+    "logging.least_verbose_level_settable_from_client" configuration
+    setting).
+
+paintwindow <id> rectangle=<x>,<y>,<width>,<height> dpiscale=<scale>
+
+    Requests painting the area of a window.
+
+    <id> is the window's int ID.
+
+    <x>,<y>,<width>,<height> is the area of the dialog to be rendered.
+
+    <scale> is a scaling factor, e.g. 1 for non-HiDPI.
+
+contentcontrolevent <JSON>
+    *Properties:
+    type - date,drop-down
+    selected:
+        - for drop-down: zero based index of item that is selected
+        - for date: date which is selected by date picker
 
 server -> client
 ================
 
-loolserver <loolwsd version> <loolwsd git hash> <major.minor[-patch]>
+coolserver <coolwsd version> <coolwsd git hash> <major.minor[-patch]>
 
     Upon connection, the server must announce the version number it supports.
     Major: an integer that must always match between client and server,
@@ -303,8 +387,8 @@ lokitversion <JSON string>
     JSON string contains version information in format:
     {ProductName: <>, ProductVersion: <>, ProductExtension: <>, BuildId: <>}
 
-    Eg: {"ProductName": "OxOffice",
-         "ProductVersion": "R9S1",
+    Eg: {"ProductName": "LibreOffice",
+         "ProductVersion": "5.3",
          "ProductExtension": ".0.0.alpha0",
          "BuildId": "<full 40 char git hash>"}
 
@@ -397,6 +481,9 @@ invalidatetiles: part=<partNumber> x=<x> y=<y> width=<width> height=<height>
     zoom level.
 
 invalidatetiles: EMPTY
+invalidatetiles: EMPTY, <partNumber>
+
+    Tells the client to invalidate all cached tiles.
 
 pong rendercount=<num>
 
@@ -436,17 +523,22 @@ complexselection:
     Complex selections with embedded objects and large text selections need special export handling.
     This response signifies that the payload is large and/or complex and needs to be retrieved via the clipboard API.
 
-tile: part=<partNumber> width=<width> height=<height> tileposx=<xpos> tileposy=<ypos> tilewidth=<tileWidth> tileheight=<tileHeight> [timestamp=<time>] [renderid=<id>] [wid=<wireId>]
+tile: part=<partNumber> width=<width> height=<height> tileposx=<xpos> tileposy=<ypos> tilewidth=<tileWidth> tileheight=<tileHeight> [timestamp=<time>] [wid=<wireId>]
 <binaryPngImage>
 
     The parameters from the corresponding 'tile' command.
 
-    In a debug build, the renderid is either a unique identifier,
-    different for each actual call to LibreOfficeKit to render a tile,
-    or the string 'cached' if the tile was found in the cache. WireId
-    is a unique reference to a hashed tile on the server, and can
-    be included by the client in the next 'tile' message requesting
-    the same tile.
+    WireId is a monotonically incrementing, unique reference to a
+    state of the document on the server, and can be included by
+    the client in the next 'tile' message requesting the same tile.
+
+    the tile message has at least one keyframe, followed by any
+    number of concatentated compressed deltas.
+
+delta: part=<partNumber> width=<width> height=<height> tileposx=<xpos> tileposy=<ypos> tilewidth=<tileWidth> tileheight=<tileHeight> [timestamp=<time>] [wid=<wireId>]
+
+    A delta command is like a tile: command but the payload is purely
+    an incremental patch on top of a previous tile.
 
 commandresult: <payload>
     This is used to acknowledge the commands from the client.
@@ -532,14 +624,16 @@ perm: <permission>
 wopi: <JSON>
 
      Sent only in case storage is WOPI. Contains WOPI related
-     capabilities/information for loleaflet to act accordingly.
+     capabilities/information for JS part to act accordingly.
 
      Properties mentioned:
      + PostMessageOrigin: See WOPI specs for more information
-     + HideSaveOption: (boolean): If loleaflet should hide the save options
-     + HidePrintOption: (boolean): If loleaflet should hide print options
-     + HideExportOption: (boolean): If loleaflet should hide the export options
+     + HideSaveOption: (boolean): If Collabora Online should hide the save options
+     + HidePrintOption: (boolean): If Collabora Online should hide print options
+     + HideExportOption: (boolean): If Collabora Online should hide the export options
        this implies 'Download as' options in file menu
+     + HideRepairOption: (boolean): If Collabora Online should hide the Repair
+       undo functionality
 
 versionrestore: <action>
 
@@ -577,6 +671,30 @@ mobile: <event>
     Available only in the mobile (Android and iOS) apps.  When you send
     'mobile: eventname', the socket code will fire a 'eventname' event on the
     map.
+
+windowpaint: id=<id> width=<width> height=<height> rectangle=<x>,<y>,<width>,<height> hash=<hash> nopng
+
+    Sent to the client when the server rendered the bitmap of a dialog.
+
+    <id> is the window's int ID.
+
+    <width> is the pixel width of the returned bitmap.
+
+    <height> is the pixel height of the returned bitmap.
+
+    <x>,<y>,<width>,<height> is the rendered area of the dialog
+
+    <hash> is the hash key of this bitmap in the pixmap cache
+
+    nopng appears when the the bitmap was already in the cache, so no PNG
+    encoding happened.
+
+contentcontrol: <JSON>
+    *Properties
+        - action - show, hide, change-picture
+        - rectangles - rectangle coordinates (x-coordinate, y-coordinate, width, height)
+        - date - boolean to indicate date content control
+        - items - array of items for dropdown
 
 
 child -> parent
@@ -617,6 +735,17 @@ clipboardcontent:
      length\n
      <binary selection content>
      ...
+
+traceevent:
+forcedtraceevent:
+
+     Followed by a number of lines consisting of Chrome Trace Event
+     formatted data recorded by the comphelper::TraceEvent API in the
+     core parts of the kit process.
+
+     The forcedtraceevent variant causes the data to be written to the
+     output file even if Trace Event recording is not turned on at the
+     moment. This is for metadata information.
 
 parent -> child
 ===============
@@ -684,8 +813,8 @@ subscribe <space separated list of commands>
 
 version
 
-    Queries the server for current version of lokit and loolserver. See
-    'lokitversion' and 'loolserver' in admin -> client for the format of
+    Queries the server for current version of lokit and coolserver. See
+    'lokitversion' and 'coolserver' in admin -> client for the format of
     response message.
 
 documents
@@ -732,8 +861,8 @@ sent_bytes
 recv_bytes
 
     Queries for total memory or bandwidth being consumed by the server
-    in kilobytes. For mem_consumed this includes processes - loolwsd,
-    loolforkit, and child processes hosting various documents. For
+    in kilobytes. For mem_consumed this includes processes - coolwsd,
+    coolforkit, and child processes hosting various documents. For
     sent/recv_bytes this includes only external traffic.
 
 active_docs_count
@@ -750,7 +879,7 @@ settings
     Queries the server for configurable settings from admin console.
 
 log_lines
-    Gets last n lines from "loolwsd.log" file.
+    Gets last n lines from "coolwsd.log" file.
 
 channel_list
     Gets the log channels list with their respective log levels.
@@ -815,6 +944,16 @@ section). Others are just response messages to some client command.
     <pid> process id hosting the document
     reset the idle time counter for the document
 
+[*] updateroutetoken <JSON string>
+
+    <JSON string> contains the map of serverId as key and routeToken as value
+
+[*] routing_rmdoc <wopiSrc>
+
+    <wopiSrc> of the document that is getting removed, fired when all the views gets expired
+
+    note: This might get additional parameters in future
+
 InvalidAuthToken
 
     This is sent when invalid auth token is provided in 'auth' command. See
@@ -837,9 +976,9 @@ documents <pid> <filename> <number of views> <memory consumed> <elapsed time> <i
     Each set document attributes is separated by a newline.
 
 mem_consumed <memory>
-    Total memory being consumed by LibreOffice Online.
+    Total memory being consumed by Collabora Online.
 total_avail_mem <memory>
-    Total memory available to whole LibreOffice Online. This takes into account
+    Total memory available to whole Collabora Online. This takes into account
     the memproportion setting, if set by the user, when calculating the amount
     of memory available to the process.
 
@@ -861,7 +1000,7 @@ mem_stats <comma separated list of memory consumed values>
      The length of the list is equal to the value of setting
      mem_stats_size`
 
-loolserver <JSON string>
+coolserver <JSON string>
 
     The returned JSON string contains information in the following format:
     {Version: <>, Hash: <>}
@@ -874,7 +1013,7 @@ lokitversion <JSON string>
     JSON string contains version information in format:
     {ProductName: <>, ProductVersion: <>, ProductExtension: <>, BuildId: <>}
 
-    Eg: {"ProductName": "OxOffice",
-         "ProductVersion": "R9S1",
+    Eg: {"ProductName": "LibreOffice",
+         "ProductVersion": "5.3",
          "ProductExtension": ".0.0.alpha0",
          "BuildId": "<full 40 char git hash>"}

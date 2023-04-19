@@ -31,7 +31,6 @@ L.Control.PartsPreview = L.Control.extend({
 		this._container = container;
 		this._partsPreviewCont = preview;
 		this._partsPreviewCont.onscroll = this._onScroll.bind(this);
-		this._needRefreshAllPreviews = false;
 	},
 
 	onAdd: function (map) {
@@ -51,30 +50,6 @@ L.Control.PartsPreview = L.Control.extend({
 		map.on('deletepage', this._deletePreview, this);
 		map.on('scrolllimits', this._updateAllPreview, this);
 		map.on('scrolltopart', this._scrollToPart, this);
-
-		// Added by Firefly <firefly@ossii.com.tw>
-		// 監聽投影片母片(.uno:SlideMasterPage)狀態
-		map.stateChangeHandler.on('.uno:SlideMasterPage', this._slideMasterPage, this);
-	},
-
-	/**
-	 * 回報投影片母片狀態
-	 * @param {object} e - 狀態事件
-	 */
-	_slideMasterPage: function(e) {
-		if (e.checked()) {
-			$('#document-container').removeClass('slide-normal-mode');
-			$('#document-container').addClass('slide-master-mode');
-		} else {
-			$('#document-container').removeClass('slide-master-mode');
-			$('#document-container').addClass('slide-normal-mode');
-		}
-		this._map._docLayer._masterPageChanged = true;
-		this._needRefreshAllPreviews = true;
-		// clear the old tiles because they are saved in the same place
-		// since the part no will be the same for both views and it will think it is cached
-		this._map._docLayer._onMessage('invalidatetiles: EMPTY', null);
-		app.socket.sendMessage('status'); // 重新要求檔案狀態
 	},
 
 	createScrollbar: function () {
@@ -163,12 +138,7 @@ L.Control.PartsPreview = L.Control.extend({
 			for (i = 0; i < parts; i++) {
 				L.DomUtil.removeClass(this._previewTiles[i], removePreviewImg);
 				L.DomUtil.addClass(this._previewTiles[i], addPreviewImg);
-				// 需要更新預覽圖
-				if (this._needRefreshAllPreviews) {
-					this._map._docLayer._onMessage('invalidatetiles: EMPTY, ' + i);
-				}
 			}
-			this._needRefreshAllPreviews = false; // 關閉預覽圖更新要求
 
 			var previewFrame = $(this._partsPreviewCont).find('.preview-frame');
 			previewFrame.removeClass(removePreviewFrame);

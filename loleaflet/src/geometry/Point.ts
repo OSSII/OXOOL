@@ -1,6 +1,6 @@
 declare var L: any;
 
-namespace oxool {
+namespace cool {
 
 export interface PointLike {
 	x: number;
@@ -22,13 +22,13 @@ export class Point {
 
 	public static parse(pointString: string): Point { // (string) -> Point
 		if (typeof pointString !== 'string') {
-			window.app.console.error('invalid point string');
+			console.error('invalid point string');
 			return undefined;
 		}
 
 		var pointParts = pointString.match(/\d+/g);
 		if (pointParts === null || pointParts.length < 2) {
-			window.app.console.error('incomplete point');
+			console.error('incomplete point');
 			return undefined;
 		}
 
@@ -198,5 +198,5 @@ export class Point {
 
 }
 
-L.Point = oxool.Point;
-L.point = oxool.Point.toPoint;
+L.Point = cool.Point;
+L.point = cool.Point.toPoint;

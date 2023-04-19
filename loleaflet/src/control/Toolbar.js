@@ -3,7 +3,7 @@
  * Toolbar handler
  */
 
-/* global app $ w2ui window vex sanitizeUrl brandProductName brandProductURL _ _UNOTARGET */
+/* global app $ window sanitizeUrl brandProductName brandProductURL _ */
 L.Map.include({
 
 	// a mapping of uno commands to more readable toolbar items
@@ -70,48 +70,38 @@ L.Map.include({
 
 		createSelector();
 
-		// 如果是手機模式，才執行這裡
-		// TODO: 未來仍須修改手機模式的字體大小選擇，
-		// 連根拔掉這個 map.createFontSelector() 及相關部份
-		if (window.mode.isMobile()) {
-			var onCommandStateChanged = function(e) {
-				var commandName = e.commandName;
+		var onCommandStateChanged = function(e) {
+			var commandName = e.commandName;
 
-				if (commandName !== '.uno:CharFontName')
-					return;
+			if (commandName !== '.uno:CharFontName')
+				return;
 
-				if (!e.hasValue()) {
+			var state = e.state;
+			var found = false;
+			fontcombobox.children('option').each(function () {
+				var value = this.value;
+				if (value.toLowerCase() === state.toLowerCase()) {
+					found = true;
 					return;
 				}
+			});
 
-				var state = e.state;
-				var found = false;
-				fontcombobox.children('option').each(function () {
-					var value = this.value;
-					if (value.toLowerCase() === state.toLowerCase()) {
-						found = true;
-						return;
-					}
-				});
+			if (!found && state) {
+				fontcombobox
+					.append($('<option></option>')
+						.text(state));
+			}
 
-				if (!found && state) {
-					fontcombobox
-						.append($('<option></option>')
-							.text(state));
-				}
-
-				fontcombobox.val(state).trigger('change');
-			};
-
-			this.off('commandstatechanged', onCommandStateChanged);
-			this.on('commandstatechanged', onCommandStateChanged);
-		}
+			fontcombobox.val(state).trigger('change');
+		};
 
 		var onFontListChanged = function(e) {
 			if (e.commandName === '.uno:CharFontName')
 				createSelector();
 		};
 
+		this.off('commandstatechanged', onCommandStateChanged);
+		this.on('commandstatechanged', onCommandStateChanged);
 		this.off('updatetoolbarcommandvalues', onFontListChanged);
 		this.on('updatetoolbarcommandvalues', onFontListChanged);
 	},
@@ -155,20 +145,11 @@ L.Map.include({
 		}
 		fontsizecombobox.off('select2:select', this.onFontSizeSelect.bind(this)).on('select2:select', this.onFontSizeSelect.bind(this));
 
-		// 如果不是手機模式，就結束
-		// TODO: 未來仍須修改手機模式的字體大小選擇，
-		// 連根拔掉這個 map.createFontSizeSelector() 及相關部份
-		if (!window.mode.isMobile()) return;
-
 		var onCommandStateChanged = function(e) {
 			var commandName = e.commandName;
 
 			if (commandName !== '.uno:FontHeight')
 				return;
-
-			if (!e.hasValue()) {
-				return;
-			}
 
 			var state = e.state;
 			var found = false;
@@ -245,23 +226,19 @@ L.Map.include({
 			options = '';
 		}
 
-		// 如果是下載或列印 pdf，而且 server 也沒有指定浮水印的話
-		// 就詢問使用者是否加浮水印
-		if (format === 'pdf') {
-			if (this.options.watermark === undefined || this.options.watermark.printing !== true) {
-				L.dialog.run('PdfWatermarkText', {
-					args: {
-						name: name,
-						id: id,
-						options: options
-					}
-				});
-				return;
-			}
-		}
+		// printing: don't export form fields, irrelevant, and can be buggy
+		// comments are irrelevant, too
+		if (id === 'print' && format === 'pdf' && options === '')
+			options = '{\"ExportFormFields\":{\"type\":\"boolean\",\"value\":\"false\"},' +
+						'\"ExportNotes\":{\"type\":\"boolean\",\"value\":\"false\"}}';
+
+		// download: don't export comments into PDF by default
+		if (id == 'export' && format === 'pdf' && options === '')
+			options = '{\"ExportNotes\":{\"type\":\"boolean\",\"value\":\"false\"}}';
 
 		if (!window.ThisIsAMobileApp)
 			this.showBusy(_('Downloading...'), false);
+
 		app.socket.sendMessage('downloadas ' +
 			'name=' + encodeURIComponent(name) + ' ' +
 			'id=' + id + ' ' +
@@ -294,6 +271,14 @@ L.Map.include({
 			'url=wopi:' + encodeURIComponent(url) + ' ' +
 			'format=' + format + ' ' +
 			'options=' + options);
+	},
+
+	exportAs: function (url) {
+		if (url === undefined || url == null) {
+			return;
+		}
+
+		app.socket.sendMessage('exportas url=wopi:' + encodeURIComponent(url));
 	},
 
 	renameFile: function (filename) {
@@ -344,7 +329,7 @@ L.Map.include({
 		app.socket.sendMessage(msg);
 	},
 
-	/* messageNeedsToBeRedirected: function(command) {
+	messageNeedsToBeRedirected: function(command) {
 		if (command === '.uno:EditHyperlink') {
 			var that = this;
 			setTimeout(function () { that.showHyperlinkDialog(); }, 500);
@@ -353,21 +338,12 @@ L.Map.include({
 		else {
 			return false;
 		}
-	}, */
+	},
 
-	sendUnoCommand: function (command, json) {
-		command = command.trim(); // 去掉前後空白，(不知為何，就有程序愛加空白在命令列後面 XD)
-		// 是否有替代 uno?
-		var targetURL = _UNOTARGET(command, this.getDocType());
-		// 有的話就用替代 uno
-		if (targetURL !== '') command = targetURL;
-		// 有的 uno 用 URI 方式傳遞參數，所以必須 encode 確保參數傳遞正確
-		command = encodeURI(command);
-
+	sendUnoCommand: function (command, json, force) {
 		if ((command.startsWith('.uno:Sidebar') && !command.startsWith('.uno:SidebarShow')) ||
-			command.startsWith('.uno:SlideMasterPage') || command.startsWith('.uno:SlideChangeWindow') ||
-			command.startsWith('.uno:CustomAnimation') || command.startsWith('.uno:MasterSlidesPanel') ||
-			command.startsWith('.uno:ModifyPage')) {
+			command.startsWith('.uno:SlideChangeWindow') || command.startsWith('.uno:CustomAnimation') ||
+			command.startsWith('.uno:MasterSlidesPanel') || command.startsWith('.uno:ModifyPage')) {
 
 			// sidebar control is present only in desktop/tablet case
 			if (this.sidebar) {
@@ -377,9 +353,6 @@ L.Map.include({
 					// we don't know which deck was active last, show first then switch if needed
 					app.socket.sendMessage('uno .uno:SidebarShow');
 
-					if (this.sidebar.getTargetDeck() == null)
-						app.socket.sendMessage('uno ' + command);
-
 					this.sidebar.setupTargetDeck(command);
 					return;
 				}
@@ -387,7 +360,7 @@ L.Map.include({
 		}
 
 		// To exercise the Trace Event functionality, uncomment this
-		// app.socket.emitInstantTraceEvent('oxool-unocommand:' + command);
+		// app.socket.emitInstantTraceEvent('cool-unocommand:' + command);
 
 		var isAllowedInReadOnly = false;
 		var allowedCommands = ['.uno:Save', '.uno:WordCountDialog',
@@ -396,7 +369,7 @@ L.Map.include({
 		if (this.isPermissionEditForComments()) {
 			allowedCommands.push('.uno:InsertAnnotation','.uno:DeleteCommentThread', '.uno:DeleteAnnotation', '.uno:DeleteNote',
 				'.uno:DeleteComment', '.uno:ReplyComment', '.uno:ReplyToAnnotation', '.uno:ResolveComment',
-				'.uno:ResolveCommentThread', '.uno:ResolveComment', '.uno:EditAnnotation');
+				'.uno:ResolveCommentThread', '.uno:ResolveComment', '.uno:EditAnnotation', '.uno:ExportToEPUB', '.uno:ExportToPDF');
 		}
 
 		for (var i in allowedCommands) {
@@ -420,11 +393,13 @@ L.Map.include({
 
 		if (this.uiManager.isUIBlocked())
 			return;
-		if (this.dialog.hasOpenedDialog() && !command.startsWith('.uno:ToolbarMode'))
+		if ((this.dialog.hasOpenedDialog() || (this.jsdialog && this.jsdialog.hasDialogOpened()))
+			&& !command.startsWith('.uno:ToolbarMode') && !force) {
+			console.debug('Cannot execute: ' + command + ' when dialog is opened.');
 			this.dialog.blinkOpenDialog();
-		else if (this.isEditMode() || isAllowedInReadOnly) {
-			//if (!this.messageNeedsToBeRedirected(command))
-			app.socket.sendMessage('uno ' + command + (json ? ' ' + JSON.stringify(json) : ''));
+		} else if (this.isEditMode() || isAllowedInReadOnly) {
+			if (!this.messageNeedsToBeRedirected(command))
+				app.socket.sendMessage('uno ' + command + (json ? ' ' + JSON.stringify(json) : ''));
 		}
 	},
 
@@ -433,7 +408,7 @@ L.Map.include({
 			if (!unoState.startsWith('.uno:')) {
 				unoState = '.uno:' + unoState;
 			}
-			this.executeAllowedCommand(unoState);
+			this.sendUnoCommand(unoState);
 		}
 	},
 
@@ -449,52 +424,233 @@ L.Map.include({
 		this.fire('selectbackground', {file: file});
 	},
 
+	onHelpOpen: function(id, map, productName) {
+		var i;
+		// Display keyboard shortcut or online help
+		if (id === 'keyboard-shortcuts') {
+			document.getElementById('online-help').style.display='none';
+			// Display help according to document opened
+			if (map.getDocType() === 'text') {
+				document.getElementById('text-shortcuts').style.display='block';
+			}
+			else if (map.getDocType() === 'spreadsheet') {
+				document.getElementById('spreadsheet-shortcuts').style.display='block';
+			}
+			else if (map.getDocType() === 'presentation') {
+				document.getElementById('presentation-shortcuts').style.display='block';
+			}
+			else if (map.getDocType() === 'drawing') {
+				document.getElementById('drawing-shortcuts').style.display='block';
+			}
+		} else /* id === 'online-help' */ {
+			document.getElementById('keyboard-shortcuts').style.display='none';
+			if (window.socketProxy) {
+				var helpdiv = document.getElementById('online-help');
+				var imgList = helpdiv.querySelectorAll('img');
+				for (var p = 0; p < imgList.length; p++) {
+					var imgSrc = imgList[p].src;
+					imgSrc = imgSrc.substring(imgSrc.indexOf('/images'));
+					imgList[p].src = window.makeWsUrl('/browser/dist'+ imgSrc);
+				}
+			}
+			// Display help according to document opened
+			if (map.getDocType() === 'text') {
+				var x = document.getElementsByClassName('text');
+				for (i = 0; i < x.length; i++) {
+					x[i].style.display = 'block';
+				}
+			}
+			else if (map.getDocType() === 'spreadsheet') {
+				x = document.getElementsByClassName('spreadsheet');
+				for (i = 0; i < x.length; i++) {
+					x[i].style.display = 'block';
+				}
+			}
+			else if (map.getDocType() === 'presentation' || map.getDocType() === 'drawing') {
+				x = document.getElementsByClassName('presentation');
+				for (i = 0; i < x.length; i++) {
+					x[i].style.display = 'block';
+				}
+			}
+		}
+
+		var contentElement = document.getElementById(id);
+
+		// Let's translate
+		var max;
+		var translatableContent = contentElement.querySelectorAll('h1');
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			translatableContent[i].innerHTML = translatableContent[i].innerHTML.toLocaleString();
+		}
+		translatableContent = contentElement.querySelectorAll('h2');
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			translatableContent[i].innerHTML = translatableContent[i].innerHTML.toLocaleString();
+		}
+		translatableContent = contentElement.querySelectorAll('h3');
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			translatableContent[i].innerHTML = translatableContent[i].innerHTML.toLocaleString();
+		}
+		translatableContent = contentElement.querySelectorAll('h4');
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			translatableContent[i].innerHTML = translatableContent[i].innerHTML.toLocaleString();
+		}
+		translatableContent = contentElement.querySelectorAll('td');
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			var orig = translatableContent[i].innerHTML;
+			var trans = translatableContent[i].innerHTML.toLocaleString();
+			// Try harder to get translation of keyboard shortcuts (html2po trims starting <kbd> and ending </kbd>)
+			if (orig === trans && orig.indexOf('kbd') != -1) {
+				var trimmedOrig = orig.replace(/^(<kbd>)/,'').replace(/(<\/kbd>$)/,'');
+				var trimmedTrans = trimmedOrig.toLocaleString();
+				if (trimmedOrig !== trimmedTrans) {
+					trans = '<kbd>' + trimmedTrans + '</kbd>';
+				}
+			}
+			translatableContent[i].innerHTML = trans;
+		}
+		translatableContent = contentElement.querySelectorAll('p');
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			translatableContent[i].innerHTML = translatableContent[i].innerHTML.toLocaleString();
+		}
+		translatableContent = contentElement.querySelectorAll('button'); // TOC
+		for (i = 0, max = translatableContent.length; i < max; i++) {
+			translatableContent[i].innerHTML = translatableContent[i].innerHTML.toLocaleString();
+		}
+
+		//translatable screenshots
+		var supportedLanguage = ['fr', 'it', 'de', 'es', 'pt-BR'];
+		var currentLanguage = String.locale;
+		if (supportedLanguage.indexOf(currentLanguage) >= 0) {
+			translatableContent = $(contentElement.querySelectorAll('.screenshot')).querySelectorAll('img');
+			for (i = 0, max = translatableContent.length; i < max; i++) {
+				translatableContent[i].src = translatableContent[i].src.replace('/en/', '/'+currentLanguage+'/');
+			}
+		}
+
+		// Substitute %productName in Online Help and replace special Mac key names
+		if (id === 'online-help') {
+			var productNameContent = contentElement.querySelectorAll('span.productname');
+			for (i = 0, max = productNameContent.length; i < max; i++) {
+				productNameContent[i].innerHTML = productNameContent[i].innerHTML.replace(/%productName/g, productName);
+			}
+			document.getElementById('online-help').innerHTML = L.Util.replaceCtrlAltInMac(document.getElementById('online-help').innerHTML);
+		}
+		if (id === 'keyboard-shortcuts') {
+			document.getElementById('keyboard-shortcuts').innerHTML = L.Util.replaceCtrlAltInMac(document.getElementById('keyboard-shortcuts').innerHTML);
+		}
+	},
+
+	_doOpenHelpFile: function(data, id, map) {
+		var productName;
+		if (window.ThisIsAMobileApp) {
+			productName = window.MobileAppName;
+		} else {
+			productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'Collabora Online Development Edition (unbranded)';
+		}
+
+		map.uiManager.showInfoModal(id, '', '', '', null, false);
+
+		document.getElementById(id).innerHTML = data;
+		this.onHelpOpen(id, map, productName);
+	},
+
+	showHelp: function(id) {
+		var map = this;
+		if (window.ThisIsAMobileApp) {
+			map._doOpenHelpFile(window.HelpFile, id, map);
+			return;
+		}
+		var helpLocation = 'cool-help.html';
+		if (window.socketProxy)
+			helpLocation = window.makeWsUrl('/browser/dist/' + helpLocation);
+		$.get(helpLocation, function(data) {
+			map._doOpenHelpFile(data, id, map);
+		});
+	},
+
+	aboutDialogKeyHandler: function(event) {
+		if (event.key === 'd') {
+			this._docLayer.toggleTileDebugMode();
+		} else if (event.key === 'l') {
+			// L toggges the Online logging level between the default (whatever
+			// is set in coolwsd.xml or on the coolwsd command line) and the
+			// most verbose a client is allowed to set (which also can be set in
+			// coolwsd.xml or on the coolwsd command line).
+			//
+			// In a typical developer "make run" setup, the default is "trace"
+			// so there is nothing more verbose. But presumably it is different
+			// in production setups.
+
+			app.socket.threadLocalLoggingLevelToggle = !app.socket.threadLocalLoggingLevelToggle;
+
+			var newLogLevel = (app.socket.threadLocalLoggingLevelToggle ? 'verbose' : 'default');
+
+			app.socket.sendMessage('loggingleveloverride ' + newLogLevel);
+
+			var logLevelInformation;
+			if (newLogLevel === 'default')
+				logLevelInformation = 'default (from coolwsd.xml)';
+			else if (newLogLevel === 'verbose')
+				logLevelInformation = 'most verbose (from coolwsd.xml)';
+			else if (newLogLevel === 'terse')
+				logLevelInformation = 'least verbose (from coolwsd.xml)';
+			else
+				logLevelInformation = newLogLevel;
+
+			console.debug('Log level: ' + logLevelInformation);
+		}
+	},
+
+	aboutDialogClickHandler: function(event) {
+		if (event.detail === 3)
+			this._docLayer.toggleTileDebugMode();
+	},
+
 	showLOAboutDialog: function() {
-		// Move the div sitting in 'body' as vex-content and make it visible
-		var content = $('#about-dialog').clone().css({display: 'block'});
+		// Just as a test to exercise the Async Trace Event functionality, uncomment this
+		// line and the asyncTraceEvent.finish() below.
+		// var asyncTraceEvent = app.socket.createAsyncTraceEvent('cool-showLOAboutDialog');
+
+		var aboutDialogId = 'about-dialog';
+		// Move the div sitting in 'body' as content and make it visible
+		var content = document.getElementById(aboutDialogId).cloneNode(true);
+		content.style.display = 'block';
+
 		// fill product-name and product-string
-		var productName = brandProductName;
-		var productURL = brandProductURL;
-		content.find('#product-name').text(productName).addClass('product-' + productName.split(/[ ()]+/).join('-').toLowerCase());
+		var productName;
+		if (window.ThisIsAMobileApp) {
+			productName = window.MobileAppName;
+		} else {
+			productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'Collabora Online Development Edition (unbranded)';
+		}
+		var productURL = (typeof brandProductURL !== 'undefined') ? brandProductURL : 'https://collaboraonline.github.io/';
+
+		content.querySelector('#product-name').innerText = productName;
+		content.classList.add('product-' + productName.split(/[ ()]+/).join('-').toLowerCase());
+
 		var productString = _('This version of %productName is powered by');
 		var productNameWithURL;
 		if (!window.ThisIsAMobileApp)
-			productNameWithURL = '<a href="' + sanitizeUrl.sanitizeUrl(productURL) +
+			productNameWithURL = '<a href="' + sanitizeUrl(productURL) +
 								 '" target="_blank">' + productName + '</a>';
 		else
 			productNameWithURL = productName;
-		content.find('#product-string').html(productString.replace('%productName', productNameWithURL));
+
+		if (content.querySelector('#product-string'))
+			content.querySelector('#product-string').innerText = productString.replace('%productName', productNameWithURL);
 
 		if (window.socketProxy)
-			content.find('#slow-proxy').text(_('"Slow Proxy"'));
+			content.querySelector('#slow-proxy').innerText = _('"Slow Proxy"');
 
-		var w;
-		var iw = window.innerWidth;
-		if (iw < 768) {
-			w = iw - 30;
-		}
-		else if (iw > 1920) {
-			w = 960;
-		}
-		else {
-			w = iw / 5 + 590;
-		}
 		var map = this;
-		vex.open({
-			unsafeContent: content[0].outerHTML,
-			showCloseButton: true,
-			closeClassName: 'vex-close-m',
-			escapeButtonCloses: true,
-			overlayClosesOnClick: true,
-			buttons: {},
-			afterOpen: function() {
-				this.contentEl.style.width = w + 'px';
-				$('.vex-overlay').css({ 'pointer-events': 'none'});
-			},
-			beforeClose: function () {
-				map.focus();
-			}
-		});
+
+		map.uiManager.showInfoModal(aboutDialogId + '-box', '', '', '', '', null, false, 'about-dialog');
+		document.getElementById(aboutDialogId + '-box').innerHTML = content.outerHTML;
+
+		var form = document.getElementById('modal-dialog-about-dialog-box');
+		form.addEventListener('click', this.aboutDialogClickHandler.bind(this));
+		form.addEventListener('keyup', this.aboutDialogKeyHandler.bind(this));
+		form.querySelector('#coolwsd-version').querySelector('a').focus();
 	},
 
 	extractContent: function(html) {
@@ -509,13 +665,90 @@ L.Map.include({
 		return str;
 	},
 
-	showHyperlinkDialog: function() {
+	_createAndRunHyperlinkDialog: function(defaultText, defaultLink) {
+		var map = this;
+		var id = 'hyperlink';
+		var title = _('Insert hyperlink');
+
+		var dialogId = 'modal-dialog-' + id;
+		var json = map.uiManager._modalDialogJSON(id, title, true, [
+			{
+				id: 'hyperlink-text-box-label',
+				type: 'fixedtext',
+				text: _('Text'),
+				labelFor: 'hyperlink-text-box'
+			},
+			{
+				id: 'hyperlink-text-box',
+				type: 'multilineedit',
+				text: defaultText,
+				labelledBy: 'hyperlink-text-box-label'
+			},
+			{
+				id: 'hyperlink-link-box-label',
+				type: 'fixedtext',
+				text: _('Link'),
+				labelFor: 'hyperlink-link-box'
+			},
+			{
+				id: 'hyperlink-link-box',
+				type: 'edit',
+				text: defaultLink,
+				labelledBy: 'hyperlink-link-box-label'
+			},
+			{
+				type: 'buttonbox',
+				enabled: true,
+				children: [
+					{
+						id: 'response-cancel',
+						type: 'pushbutton',
+						text: _('Cancel'),
+					},
+					{
+						id: 'response-ok',
+						type: 'pushbutton',
+						text: _('OK'),
+						'has_default': true,
+					}
+				],
+				vertical: false,
+				layoutstyle: 'end'
+			},
+		], 'hyperlink-link-box');
+
+		map.uiManager.showModal(json, [
+			{id: 'response-ok', func: function() {
+				var text = document.getElementById('hyperlink-text-box');
+				var link = document.getElementById('hyperlink-link-box');
+
+				if (link.value != '') {
+					if (!text.value || text.value === '')
+						text.value = link.value;
+
+					var command = {
+						'Hyperlink.Text': {
+							type: 'string',
+							value: text.value
+						},
+						'Hyperlink.URL': {
+							type: 'string',
+							value: map.makeURLFromStr(link.value)
+						}
+					};
+					map.sendUnoCommand('.uno:SetHyperlink', command, true);
+				}
+
+				map.uiManager.closeModal(dialogId);
+			}}
+		]);
+	},
+
+	getTextForLink: function() {
 		var map = this;
 		var text = '';
-		var link = '';
-		if (this.hyperlinkUnderCursor && this.hyperlinkUnderCursor.text && this.hyperlinkUnderCursor.link) {
+		if (this.hyperlinkUnderCursor && this.hyperlinkUnderCursor.text) {
 			text = this.hyperlinkUnderCursor.text;
-			link = this.hyperlinkUnderCursor.link;
 		} else if (this._clip && this._clip._selectionType == 'text') {
 			if (map['stateChangeHandler'].getItemValue('.uno:Copy') === 'enabled') {
 				text = this.extractContent(this._clip._selectionContent);
@@ -523,51 +756,16 @@ L.Map.include({
 		} else if (this._docLayer._selectedTextContent) {
 			text = this.extractContent(this._docLayer._selectedTextContent);
 		}
+		return text;
+	},
 
-		vex.dialog.open({
-			contentClassName: 'hyperlink-dialog vex-has-inputs',
-			message: _('Insert hyperlink'),
-			overlayClosesOnClick: false,
-			input: [
-				_('Text') + '<textarea name="text" id="hyperlink-text-box" style="resize: none" type="text"></textarea>',
-				_('Link') + '<input name="link" id="hyperlink-link-box" type="text" value="' + link + '"/>'
-			].join(''),
-			buttons: [
-				$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') }),
-				$.extend({}, vex.dialog.buttons.YES, { text: _('OK') })
-			],
-			callback: function(data) {
-				if (data && data.link != '') {
-					var command = {
-						'Hyperlink.Text': {
-							type: 'string',
-							value: data.text
-						},
-						'Hyperlink.URL': {
-							type: 'string',
-							value: map.makeURLFromStr(data.link)
-						}
-					};
-					map.sendUnoCommand('.uno:SetHyperlink', command);
-					map.focus();
-				}
-				else {
-					map.focus();
-				}
-			},
-			afterOpen: function() {
-				setTimeout(function() {
-					var textBox = document.getElementById('hyperlink-text-box');
-					textBox.textContent = text ? text.trim() : '';
-					if (textBox.textContent.trim() !== '') {
-						document.getElementById('hyperlink-link-box').focus();
-					}
-					else {
-						textBox.focus();
-					}
-				}, 0);
-			}
-		});
+	showHyperlinkDialog: function() {
+		var text = this.getTextForLink();
+		var link = '';
+		if (this.hyperlinkUnderCursor && this.hyperlinkUnderCursor.link)
+			link = this.hyperlinkUnderCursor.link;
+
+		this._createAndRunHyperlinkDialog(text ? text.trim() : '', link);
 	},
 
 	openRevisionHistory: function () {
@@ -581,37 +779,192 @@ L.Map.include({
 		var map = this;
 		map.fire('postMessage', {msgId: 'UI_Share'});
 	},
-	openSaveAs: function () {
+	openSaveAs: function (format) {
 		var map = this;
-		map.fire('postMessage', {msgId: 'UI_SaveAs'});
+		map.fire('postMessage', {msgId: 'UI_SaveAs', args: {format: format}});
+	},
+
+	formulabarBlur: function() {
+		if (!this.uiManager.isAnyDialogOpen())
+			this.focus();
+	},
+
+	formulabarFocus: function() {
+		this.formulabar.focus();
+	},
+
+	formulabarSetDirty: function() {
+		if (this.formulabar)
+			this.formulabar.dirty = true;
 	},
 
 	// map.dispatch() will be used to call some actions so we can share the code
 	dispatch: function(action) {
+		// Don't allow to execute new actions while any dialog is visible.
+		// It prevents launching multiple instances of the same dialog.
+		if (this.dialog.hasOpenedDialog() || (this.jsdialog && this.jsdialog.hasDialogOpened())) {
+			this.dialog.blinkOpenDialog();
+			console.debug('Cannot dispatch: ' + action + ' when dialog is opened.');
+			return;
+		}
+
+		if (action.indexOf('saveas-') === 0) {
+			var format = action.substring('saveas-'.length);
+			this.openSaveAs(format);
+			return;
+		} else if (action.indexOf('downloadas-') === 0) {
+			var format = action.substring('downloadas-'.length);
+			var fileName = this['wopi'].BaseFileName;
+			fileName = fileName.substr(0, fileName.lastIndexOf('.'));
+			fileName = fileName === '' ? 'document' : fileName;
+			this.downloadAs(fileName + '.' + format, format);
+			return;
+		} if (action.indexOf('exportas-') === 0) {
+			var format = action.substring('exportas-'.length);
+			this.openSaveAs(format);
+			return;
+		}
+
 		switch (action) {
 		case 'acceptformula':
 			{
-				// focus on map, and press enter
-				this.focus();
-				this._docLayer.postKeyboardEvent('input',
-					this.keyboard.keyCodes.enter,
-					this.keyboard._toUNOKeyCode(this.keyboard.keyCodes.enter));
-
 				if (window.mode.isMobile()) {
-					w2ui['actionbar'].hide('acceptformula', 'cancelformula');
-					w2ui['actionbar'].show('undo', 'redo');
+					this.focus();
+					this._docLayer.postKeyboardEvent('input',
+						this.keyboard.keyCodes.enter,
+						this.keyboard._toUNOKeyCode(this.keyboard.keyCodes.enter));
+				} else {
+					this.sendUnoCommand('.uno:AcceptFormula');
 				}
+
+				this.onFormulaBarBlur();
+				this.formulabarBlur();
+				this.formulabarSetDirty();
 			}
 			break;
 		case 'cancelformula':
 			{
 				this.sendUnoCommand('.uno:Cancel');
-				if (window.mode.isMobile()) {
-					w2ui['actionbar'].hide('acceptformula', 'cancelformula');
-					w2ui['actionbar'].show('undo', 'redo');
+				this.onFormulaBarBlur();
+				this.formulabarBlur();
+				this.formulabarSetDirty();
+			}
+			break;
+		case 'startformula':
+			{
+				this.sendUnoCommand('.uno:StartFormula');
+				this.onFormulaBarFocus();
+				this.formulabarFocus();
+				this.formulabarSetDirty();
+			}
+			break;
+		case 'functiondialog':
+			{
+				if (window.mode.isMobile() && this._functionWizardData) {
+					this._docLayer._closeMobileWizard();
+					this._docLayer._openMobileWizard(this._functionWizardData);
+					this.formulabarSetDirty();
+				} else {
+					this.sendUnoCommand('.uno:FunctionDialog');
 				}
 			}
 			break;
+		case 'remotelink':
+			this.fire('postMessage', { msgId: 'UI_PickLink' });
+			break;
+		case 'zoteroaddeditcitation':
+			{
+				this.zotero.handleItemList();
+			}
+			break;
+		case 'zoterosetdocprefs':
+			{
+				this.zotero.handleStyleList();
+			}
+			break;
+		case 'zoteroaddeditbibliography':
+			{
+				this.zotero.insertBibliography();
+			}
+			break;
+		case 'zoteroaddnote':
+			{
+				this.zotero.handleInsertNote();
+			}
+			break;
+		case 'zoterorefresh':
+			{
+				this.zotero.refreshCitationsAndBib();
+			}
+			break;
+		case 'zoterounlink':
+			{
+				this.zotero.unlinkCitations();
+			}
+			break;
+		case 'exportpdf':
+			{
+				this.sendUnoCommand('.uno:ExportToPDF', {
+					'SynchronMode': {
+						'type': 'boolean',
+						'value': false
+					}
+				});
+			}
+			break;
+		case 'exportepub':
+			{
+				this.sendUnoCommand('.uno:ExportToEPUB', {
+					'SynchronMode': {
+						'type': 'boolean',
+						'value': false
+					}
+				});
+			}
+			break;
+		case 'deletepage':
+			{
+				var map = this;
+				var msg;
+				if (map.getDocType() === 'presentation') {
+					msg = _('Are you sure you want to delete this slide?');
+				}
+				else { /* drawing */
+					msg = _('Are you sure you want to delete this page?');
+				}
+				map.uiManager.showInfoModal('deleteslide-modal', _('Delete'),
+					msg, '', _('OK'), function () { map.deletePage(); }, true);
+			}
+			break;
+		case 'hyperlinkdialog':
+			this.showHyperlinkDialog();
+			break;
+		case 'rev-history':
+			this.openRevisionHistory();
+			break;
+		case 'shareas':
+			this.openShare();
+			break;
+		case 'presentation':
+			this.fire('fullscreen');
+			break;
+		case 'charmapcontrol':
+			this.sendUnoCommand('.uno:InsertSymbol');
+			break;
+		case 'closetablet':
+			this.uiManager.enterReadonlyOrClose();
+			break;
+		case 'showresolvedannotations':
+			var items = this['stateChangeHandler'];
+			var val = items.getItemValue('.uno:ShowResolvedAnnotations');
+			val = (val === 'true' || val === true);
+			this.showResolvedComments(!val);
+			break;
+		case 'toggledarktheme':
+			this.uiManager.toggleDarkMode();
+			break;
+		default:
+			console.error('unknown dispatch: "' + action + '"');
 		}
 	},
 });

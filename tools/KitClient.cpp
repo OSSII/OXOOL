@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,7 +18,6 @@
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 
-#include <Poco/Buffer.h>
 #include <Poco/String.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/URI.h>
@@ -90,13 +87,13 @@ protected:
 
             StringVector tokens(StringVector::tokenize(line, ' '));
 
-            if (tokens.size() == 0)
+            if (tokens.empty())
                 continue;
 
             if (tokens.equals(0, "?") || tokens.equals(0, "help"))
             {
                 std::cout <<
-                    "Commands mimic LOOL protocol but we talk directly to LOKit:" << std::endl <<
+                    "Commands mimic COOL protocol but we talk directly to LOKit:" << std::endl <<
                     "    status" << std::endl <<
                     "        calls LibreOfficeKitDocument::getDocumentType, getParts, getPartName, getDocumentSize" << std::endl <<
                     "    tile part pixelwidth pixelheight docposx docposy doctilewidth doctileheight" << std::endl <<
@@ -161,7 +158,7 @@ protected:
         }
 
         // Safest to just bluntly exit
-        std::_Exit(EX_OK);
+        Util::forcedExit(EX_OK);
     }
 };
 

@@ -26,7 +26,7 @@
     <string name="new_spreadsheet">Fueya de cálculu nueva</string>
     <string name="new_presentation">Presentación nueva</string>
     <string name="new_textdocument">Documentu de testu nuevu</string>
-    <string name="temp_file_saving_disabled">Esti ficheru ye namái de llectura; nun se pue atroxar.</string>
+    <string name="temp_file_saving_disabled">Esti ficheru ye namái de llectura; nun pue guardase.</string>
     <string name="action_overwrite">Sobroscribir</string>
     <string name="search_label">Dir</string>
     <string name="cancel_label">Encaboxar</string>
@@ -82,4 +82,18 @@
     <string name="unable_to_go_further">Nun se pue dir más allá.</string>
     <string name="theme">Tema</string>
     <string name="theme_system_default">Predetermináu del sistema</string>
+    <string name="remove_from_list">Quitar de la llista</string>
+    <string name="title_permission_required">Ríquese permisu</string>
+    <string name="user_name">Nome d\'usuariu</string>
+    <string name="server_url">URL del sirvidor</string>
+    <string name="external_sd_path">Camín a SD esterna</string>
+    <string name="pref_user_name_guest">Usuariu invitáu</string>
+    <string name="pref_user_name_info">Utilízase al amestar comentarios</string>
+    <string name="pref_user_name">Nome d\'usuariu</string>
+    <string name="owncloud_settings">Axustes del sirvidor na nube</string>
+    <string name="password">Conseña</string>
+    <string name="physical_storage_settings">Axustes d\'almacenamientu físicu</string>
+    <string name="storage_provider_settings">Axustes del fornidor d\'almacenamientu</string>
+    <string name="theme_dark">Escuru</string>
+    <string name="choose_theme">Escueyi\'l tema</string>
 </resources>

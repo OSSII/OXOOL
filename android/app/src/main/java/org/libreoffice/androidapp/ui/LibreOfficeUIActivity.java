@@ -1,7 +1,5 @@
 /* -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -59,7 +57,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import org.libreoffice.androidapp.AboutDialogFragment;
-import org.libreoffice.androidapp.LibreOfficeApplication;
 import org.libreoffice.androidapp.R;
 import org.libreoffice.androidapp.SettingsActivity;
 import org.libreoffice.androidapp.SettingsListenerModel;
@@ -83,6 +80,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -401,6 +399,14 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
     /** Initialize the FloatingActionButton. */
     private void setupFloatingActionButton() {
         editFAB = findViewById(R.id.editFAB);
+        if (LOActivity.isChromeOS(this)) {
+            int dp = (int)getResources().getDisplayMetrics().density;
+            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams)editFAB.getLayoutParams();
+            layoutParams.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID;
+            layoutParams.bottomMargin = dp * 24;
+            editFAB.setCustomSize(dp * 70);
+        }
+
         editFAB.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -410,34 +416,43 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
                     expandFabMenu();
             }
         });
+        final OnClickListener clickListener = new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switch (view.getId()) {
+                    case R.id.newWriterFAB:
+                    case R.id.writerLayout:
+                        createNewFileInputDialog(getString(R.string.new_textdocument) + FileUtilities.DEFAULT_WRITER_EXTENSION, "application/vnd.oasis.opendocument.text", CREATE_DOCUMENT_REQUEST_CODE);
+                        break;
+                    case R.id.newCalcFAB:
+                    case R.id.calcLayout:
+                        createNewFileInputDialog(getString(R.string.new_spreadsheet) + FileUtilities.DEFAULT_SPREADSHEET_EXTENSION, "application/vnd.oasis.opendocument.spreadsheet", CREATE_SPREADSHEET_REQUEST_CODE);
+                        break;
+                    case R.id.newImpressFAB:
+                    case R.id.impressLayout:
+                        createNewFileInputDialog(getString(R.string.new_presentation) + FileUtilities.DEFAULT_IMPRESS_EXTENSION, "application/vnd.oasis.opendocument.presentation", CREATE_PRESENTATION_REQUEST_CODE);
+                        break;
+                }
+            }
+        };
 
         writerFAB = findViewById(R.id.newWriterFAB);
-        writerFAB.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createNewFileInputDialog(getString(R.string.new_textdocument) + FileUtilities.DEFAULT_WRITER_EXTENSION, "application/vnd.oasis.opendocument.text", CREATE_DOCUMENT_REQUEST_CODE);
-            }
-        });
+        writerFAB.setOnClickListener(clickListener);
 
         calcFAB = findViewById(R.id.newCalcFAB);
-        calcFAB.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createNewFileInputDialog(getString(R.string.new_spreadsheet) + FileUtilities.DEFAULT_SPREADSHEET_EXTENSION, "application/vnd.oasis.opendocument.spreadsheet", CREATE_SPREADSHEET_REQUEST_CODE);
-            }
-        });
+        calcFAB.setOnClickListener(clickListener);
 
         impressFAB = findViewById(R.id.newImpressFAB);
-        impressFAB.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createNewFileInputDialog(getString(R.string.new_presentation) + FileUtilities.DEFAULT_IMPRESS_EXTENSION, "application/vnd.oasis.opendocument.presentation", CREATE_PRESENTATION_REQUEST_CODE);
-            }
-        });
+        impressFAB.setOnClickListener(clickListener);
 
         writerLayout = findViewById(R.id.writerLayout);
+        writerLayout.setOnClickListener(clickListener);
+
         impressLayout = findViewById(R.id.impressLayout);
+        impressLayout.setOnClickListener(clickListener);
+
         calcLayout = findViewById(R.id.calcLayout);
+        calcLayout.setOnClickListener(clickListener);
     }
 
     /** Expand the Floating action button. */
@@ -574,20 +589,8 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
     /** Opens an Input dialog to get the name of new file. */
     private void createNewFileInputDialog(final String defaultFileName, final String mimeType, final int requestCode) {
         collapseFabMenu();
-
-        Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-
-        // The mime type and category must be set
-        i.setType(mimeType);
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-
-        i.putExtra(Intent.EXTRA_TITLE, defaultFileName);
-
-        // Try to default to the Documents folder
-        Uri documentsUri = Uri.parse("content://com.android.externalstorage.documents/document/home%3A");
-        i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, documentsUri);
-
-        startActivityForResult(i, requestCode);
+        // call existing function in LOActivity to avoid having the same code twice
+        LOActivity.createNewFileInputDialog(this, defaultFileName, mimeType, requestCode);
     }
 
     /**
@@ -597,27 +600,43 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
      * @param extension is required to know what template should be used when creating the document
      */
     private void createNewFile(final Uri uri, final String extension) {
-        InputStream templateFileStream = null;
-        OutputStream newFileStream = null;
+        // this might require a network operation
+        // in this case we need to do it in a seperate thread
+        // to avoid exception
+        class CreateThread extends Thread {
+            @Override
+            public void run() {
+                InputStream templateFileStream = null;
+                OutputStream newFileStream = null;
+                try {
+                    //read the template and copy it to the new file
+                    templateFileStream = getAssets().open("templates/untitled." + extension);
+                    newFileStream = getContentResolver().openOutputStream(uri);
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = templateFileStream.read(buffer)) > 0) {
+                        newFileStream.write(buffer, 0, length);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        //close the streams
+                        templateFileStream.close();
+                        newFileStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        CreateThread thread = new CreateThread();
+        thread.run();
         try {
-            //read the template and copy it to the new file
-            templateFileStream = getAssets().open("templates/untitled." + extension);
-            newFileStream = getContentResolver().openOutputStream(uri);
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = templateFileStream.read(buffer)) > 0) {
-                newFileStream.write(buffer, 0, length);
-            }
-        } catch (IOException e) {
+            thread.join();
+        } catch (Exception e)
+        {
             e.printStackTrace();
-        } finally {
-            try {
-                //close the streams
-                templateFileStream.close();
-                newFileStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -723,6 +742,8 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
                 "application/vnd.visio",
                 "application/vnd.visio.xml",
                 "application/x-mspublisher",
+                "application/vnd.ms-excel.sheet.binary.macroenabled.12",
+                "application/vnd.ms-excel.sheet.macroenabled.12",
 
                 // OOXML
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -737,6 +758,7 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
 
                 // other
                 "text/csv",
+                "text/plain",
                 "text/comma-separated-values",
                 "application/vnd.ms-works",
                 "application/vnd.apple.keynote",
@@ -745,7 +767,8 @@ public class LibreOfficeUIActivity extends AppCompatActivity implements Settings
                 "image/x-emf",
                 "image/x-svm",
                 "image/x-wmf",
-                "image/svg+xml"
+                "image/svg+xml",
+                "application/pdf"
             };
             i.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
         }

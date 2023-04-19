@@ -6,6 +6,7 @@
 /* global $ w2ui _ */
 L.Control.UserList = L.Control.extend({
 	options: {
+		userLimitHeader: 6,
 		userPopupTimeout: null,
 		userJoinedPopupMessage: '<div>' + _('%user has joined') + '</div>',
 		userLeftPopupMessage: '<div>' + _('%user has left') + '</div>',
@@ -96,7 +97,7 @@ L.Control.UserList = L.Control.extend({
 		$(document).on('click', '#' + content.id, this.onUseritemClicked.bind(this));
 
 		var iconTd = L.DomUtil.create('td', 'usercolor', content);
-		var nameTd = L.DomUtil.create('td', 'username oxool-font', content);
+		var nameTd = L.DomUtil.create('td', 'username cool-font', content);
 
 		iconTd.appendChild(L.control.createAvatar(viewId, userName, extraInfo, color));
 		nameTd.textContent = userName;
@@ -139,8 +140,21 @@ L.Control.UserList = L.Control.extend({
 
 		var that = this;
 
+		var headerUserList = this.options.listUser.slice(-this.options.userLimitHeader);
+
+		// Remove users that should no longer be in the header
+		Array.from(document.querySelectorAll('#userListSummary [data-view-id]')).map(function(element) {
+			return element.getAttribute('data-view-id');
+		}).filter(function(viewId) {
+			return headerUserList.map(function(user) {
+				return user.viewId;
+			}).indexOf(viewId) === -1;
+		}).forEach(function(viewId) {
+			L.DomUtil.remove(document.querySelector('#userListSummary [data-view-id="' + viewId + '"]'));
+		});
+
 		// Summary rendering
-		this.options.listUser.slice(-3).forEach(function (user) {
+		headerUserList.forEach(function (user) {
 			if (!document.querySelector('#userListSummary [data-view-id="' + user.viewId + '"]')) {
 				document.getElementById('userListSummary').appendChild(L.control.createAvatar(user.viewId, user.userName, user.extraInfo, user.color));
 			}
@@ -275,16 +289,16 @@ L.Control.UserList = L.Control.extend({
 			showPopup = $(userlistItem.html).find('#userlist_table tbody tr').length > 0;
 
 		if (showPopup) {
-			$('#userListHeader')
+			$('#tb_actionbar_item_userlist')
 				.w2overlay({
-					class: 'oxool-font',
+					class: 'cool-font',
 					html: this.options.userJoinedPopupMessage.replace('%user', username),
 					style: 'padding: 5px'
 				});
 			clearTimeout(this.options.userPopupTimeout);
 			var that = this;
 			this.options.userPopupTimeout = setTimeout(function() {
-				$('#userListHeader').w2overlay('');
+				$('#tb_actionbar_item_userlist').w2overlay('');
 				clearTimeout(that.options.userPopupTimeout);
 				that.options.userPopupTimeout = null;
 			}, 3000);
@@ -314,15 +328,15 @@ L.Control.UserList = L.Control.extend({
 	onRemoveView: function(e) {
 		var that = this;
 		var username = this.escapeHtml(e.username);
-		$('#userListHeader')
+		$('#tb_actionbar_item_userlist')
 			.w2overlay({
-				class: 'oxool-font',
+				class: 'cool-font',
 				html: this.options.userLeftPopupMessage.replace('%user', username),
 				style: 'padding: 5px'
 			});
 		clearTimeout(this.options.userPopupTimeout);
 		this.options.userPopupTimeout = setTimeout(function() {
-			$('#userListHeader').w2overlay('');
+			$('#tb_actionbar_item_userlist').w2overlay('');
 			clearTimeout(that.options.userPopupTimeout);
 			that.options.userPopupTimeout = null;
 		}, 3000);
@@ -347,7 +361,7 @@ L.control.userList = function () {
 
 L.control.createUserListWidget = function () {
 	return '<div id="userlist_container"><table id="userlist_table"><tbody></tbody></table>' +
-		'<hr><table class="oxool-font" id="editor-btn">' +
+		'<hr><table class="cool-font" id="editor-btn">' +
 		'<tr>' +
 		'<td><label id="follow-container"><input type="checkbox" name="alwaysFollow" id="follow-checkbox" onclick="editorUpdate(event)"><span class="checkmark"></span></label></td>' +
 		'<td>' + _('Always follow the editor') + '</td>' +

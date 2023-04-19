@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,7 +16,6 @@
 
 #include <Poco/Path.h>
 #include <Poco/Types.h>
-#include <Poco/JSON/Object.h>
 
 #include "Protocol.hpp"
 #include "Log.hpp"
@@ -49,7 +46,7 @@ public:
                 return it.second;
         }
 
-        const std::size_t id = _canonicalIds.size() + 1;
+        const std::size_t id = _canonicalIds.size() + 1000;
         _canonicalIds[viewProps] = id;
         return id;
     }
@@ -80,14 +77,31 @@ public:
     const std::string& getName() const { return _name; }
     bool isDisconnected() const { return _disconnected; }
 
-    virtual void setReadOnly(bool bValue = true) { _isReadOnly = bValue; }
+    /// Controls whether writing in the Storage is enabled in this session.
+    /// If set to false, will setReadOnly(true) and setAllowChangeComments(false).
+    void setWritable(bool writable)
+    {
+        _isWritable = writable;
+        if (!writable)
+        {
+            setReadOnly(true);
+            setAllowChangeComments(false);
+        }
+    }
+
+    /// True iff the session can write in the Storage.
+    bool isWritable() const { return _isWritable; }
+
+    /// Controls whether editing is enabled in this session.
+    virtual void setReadOnly(bool readonly) { _isReadOnly = readonly; }
     bool isReadOnly() const { return _isReadOnly; }
 
-    void setAllowChangeComments(bool bValue = true)
-    {
-        _isAllowChangeComments = bValue;
-    }
+    /// Controls whether commenting is enabled in this session
+    void setAllowChangeComments(bool allow) { _isAllowChangeComments = allow; }
     bool isAllowChangeComments() const { return _isAllowChangeComments; }
+
+    /// Returns true iff the view is either non-readonly or can change comments.
+    bool isEditable() const { return !isReadOnly() || isAllowChangeComments(); }
 
     /// overridden to prepend client ids on messages by the Kit
     virtual bool sendBinaryFrame(const char* buffer, int length);
@@ -184,27 +198,15 @@ public:
 
     void getIOStats(uint64_t &sent, uint64_t &recv);
 
-    std::string getConvertedWatermarkText();
-
     void setUserId(const std::string& userId) { _userId = userId; }
 
     const std::string& getUserId() const { return _userId; }
 
-    void setWatermarkWhenEditing(const bool isEnable) { _watermarkWhenEditing = isEnable; }
-
-    void setWatermarkWhenPrinting(const bool isEnable) { _watermarkWhenPrinting = isEnable; }
-
     void setWatermarkText(const std::string& watermarkText) { _watermarkText = watermarkText; }
 
-    void setWatermarkOpacity(const double& watermarkOpacity) { _watermarkOpacity = watermarkOpacity; }
-
-    void setClientAddr(const std::string& clientAddr) { _clientAddr = clientAddr; }
-
-    void setTimezone(const std::string& clientTimezone) { _timezone = clientTimezone; }
-
-    void setTimezoneOffset(long timezoneOffset) { _timezoneOffset = timezoneOffset; }
-
     void setUserExtraInfo(const std::string& userExtraInfo) { _userExtraInfo = userExtraInfo; }
+
+    void setUserPrivateInfo(const std::string& userPrivateInfo) { _userPrivateInfo = userPrivateInfo; }
 
     void setUserName(const std::string& userName) { _userName = userName; }
 
@@ -216,25 +218,15 @@ public:
 
     const std::string& getDocOptions() const { return _docOptions; }
 
-    bool watermarkWhenEditing() const { return _watermarkWhenEditing; }
-
-    bool watermarkWhenPrinting() const { return _watermarkWhenPrinting; }
-
     bool hasWatermark() const { return !_watermarkText.empty() && _watermarkOpacity > 0.0; }
 
     const std::string& getWatermarkText() const { return _watermarkText; }
 
     double getWatermarkOpacity() const { return _watermarkOpacity; }
 
-    Poco::JSON::Object& getWatermarkFont() { return _watermarkFont; }
-
-    const std::string& getClientAddr() const { return _clientAddr; }
+    const std::string& getLang() const { return _lang; }
 
     const std::string& getTimezone() const { return _timezone; }
-
-    long getTimezoneOffset() const { return _timezoneOffset; }
-
-    const std::string& getLang() const { return _lang; }
 
     bool getHaveDocPassword() const { return _haveDocPassword; }
 
@@ -246,20 +238,13 @@ public:
 
     const std::string& getUserExtraInfo() const { return _userExtraInfo; }
 
+    const std::string& getUserPrivateInfo() const { return _userPrivateInfo; }
+
     const std::string& getDocURL() const { return  _docURL; }
 
     const std::string& getJailedFilePath() const { return _jailedFilePath; }
 
     const std::string& getJailedFilePathAnonym() const { return _jailedFilePathAnonym; }
-
-    int  getCanonicalViewId() { return _canonicalViewId; }
-    // Only called by kit.
-    void setCanonicalViewId(int viewId) { _canonicalViewId = viewId; }
-    // Only called by wsd.
-    template<class T> void createCanonicalViewId(SessionMap<T> &map)
-    {
-        _canonicalViewId = map.createCanonicalId(_watermarkText);
-    }
 
     const std::string& getDeviceFormFactor() const { return _deviceFormFactor; }
 
@@ -287,6 +272,8 @@ protected:
 
     void dumpState(std::ostream& os) override;
 
+    inline void logPrefix(std::ostream& os) const { os << _name << ": "; }
+
 private:
 
     void shutdown(bool goingAway = false, const std::string& statusMessage = std::string());
@@ -310,10 +297,14 @@ private:
     // Whether websocket received close frame.  Closing Handshake
     std::atomic<bool> _isCloseFrame;
 
-    /// Whether the session is opened as readonly
+    /// Whether the session can write in storage.
+    bool _isWritable;
+
+    /// Whether the session can edit the document.
     bool _isReadOnly;
 
-    /// If the session is read-only, are comments allowed
+    /// Whether the session can add/change comments.
+    /// Must have _isWritable=true, regardless of _isReadOnly.
     bool _isAllowChangeComments;
 
     /// The actual URL, also in the child, even if the child never accesses that.
@@ -352,13 +343,8 @@ private:
     /// Extra info per user, mostly mail, avatar, links, etc.
     std::string _userExtraInfo;
 
-    /// If enabled, a watermark will be displayed when editing document.
-    /// 編輯時，顯示浮水印
-    bool _watermarkWhenEditing;
-
-    /// If enabled, a watermark will be displayed when printing document or exporting PDF document.
-    /// 列印或匯出 PDF 時，顯示浮水印
-    bool _watermarkWhenPrinting;
+    /// Private info per user, not shared with others.
+    std::string _userPrivateInfo;
 
     /// In case a watermark has to be rendered on each tile.
     std::string _watermarkText;
@@ -366,28 +352,16 @@ private:
     /// Opacity in case a watermark has to be rendered on each tile.
     double _watermarkOpacity;
 
-    /// Watermark font setting.
-    Poco::JSON::Object _watermarkFont;
-
-    /// Client address(IP)
-    std::string _clientAddr;
-
-    /// Client timezone
-    std::string _timezone;
-
-    /// Client timezone offset
-    long _timezoneOffset;
-
     /// Language for the document based on what the user has in the UI.
     std::string _lang;
 
-    /// the canonical id unique to the set of rendering properties of this session
-    int _canonicalViewId;
+    /// Timezone of the user.
+    std::string _timezone;
 
     /// The form factor of the device where the client is running: desktop, tablet, mobile.
     std::string _deviceFormFactor;
 
-    /// The start value of Auto Spell Checking wheter it is enabled or disabled on start.
+    /// The start value of Auto Spell Checking whether it is enabled or disabled on start.
     std::string _spellOnline;
 
     /// Disable dialogs interactivity.

@@ -1,11 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include <config.h>
 
 #include <memory>
 #include <string>
@@ -17,19 +17,20 @@
 #include <Util.hpp>
 #include <helpers.hpp>
 
-class LOOLWebSocket;
-
 /// Rendering options testcase.
 class UnitRenderingOptions : public UnitWSD
 {
 public:
-    void invokeTest() override;
+    UnitRenderingOptions()
+        : UnitWSD("UnitRenderRenderingOptions")
+    {
+    }
+
+    void invokeWSDTest() override;
 };
 
-void UnitRenderingOptions::invokeTest()
+void UnitRenderingOptions::invokeWSDTest()
 {
-    const char testname[] = "UnitRenderingOptions";
-
     try
     {
         // Load a document and make it empty, then paste some text into it.
@@ -40,19 +41,20 @@ void UnitRenderingOptions::invokeTest()
         const std::string options
             = "{\"rendering\":{\".uno:HideWhitespace\":{\"type\":\"boolean\",\"value\":\"true\"}}}";
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, documentURL);
-        Poco::Net::HTTPResponse response;
-        std::shared_ptr<LOOLWebSocket> socket = helpers::connectLOKit(
-            Poco::URI(helpers::getTestServerURI()), request, response, testname);
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("WithoutPasswordPoll");
+        socketPoll->startThread();
 
-        helpers::sendTextFrame(socket, "load url=" + documentURL + " options=" + options);
-        helpers::sendTextFrame(socket, "status");
+        std::shared_ptr<http::WebSocketSession> socket = helpers::connectLOKit(
+            socketPoll, Poco::URI(helpers::getTestServerURI()), documentURL, testname);
+
+        helpers::sendTextFrame(socket, "load url=" + documentURL + " options=" + options, testname);
+        helpers::sendTextFrame(socket, "status", testname);
         const auto status = helpers::assertResponseString(socket, "status:", testname);
 
         // Expected format is something like 'status: type=text parts=2 current=0 width=12808 height=1142'.
 
         StringVector tokens(StringVector::tokenize(status, ' '));
-        LOK_ASSERT_EQUAL(static_cast<size_t>(7), tokens.size());
+        LOK_ASSERT_EQUAL(static_cast<size_t>(8), tokens.size());
 
         const std::string token = tokens[5];
         const std::string prefix = "height=";

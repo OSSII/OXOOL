@@ -1,31 +1,30 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <config.h>
+
 #include <memory>
 #include <ostream>
-#include <set>
 #include <string>
 
 #include <Poco/Exception.h>
-#include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
 #include <test/lokassert.hpp>
 
 #include <Png.hpp>
 #include <Unit.hpp>
 #include <helpers.hpp>
-
-class LOOLWebSocket;
+#include <kit/Delta.hpp>
+#include <net/WebSocketSession.hpp>
 
 namespace
 {
-double getColRowSize(const std::string& property, const std::string& message, int index)
+double getColRowSize(const std::string& property, const std::string& message, int index,
+                     const std::string& testname)
 {
     Poco::JSON::Parser parser;
     const Poco::Dynamic::Var result = parser.parse(message);
@@ -46,7 +45,7 @@ double getColRowSize(const std::string& property, const std::string& message, in
     return item->getValue<double>("size");
 }
 
-double getColRowSize(const std::shared_ptr<LOOLWebSocket>& socket, const std::string& item,
+double getColRowSize(const std::shared_ptr<http::WebSocketSession>& socket, const std::string& item,
                      int index, const std::string& testname)
 {
     std::vector<char> response;
@@ -56,7 +55,7 @@ double getColRowSize(const std::shared_ptr<LOOLWebSocket>& socket, const std::st
     std::vector<char> json(response.begin() + std::string("commandvalues:").length(),
                            response.end());
     json.push_back(0);
-    return getColRowSize(item, json.data(), index);
+    return getColRowSize(item, json.data(), index, testname);
 }
 }
 
@@ -70,15 +69,23 @@ class UnitCalc : public UnitWSD
     TestResult testOptimalResize();
 
 public:
-    void invokeTest() override;
+    UnitCalc()
+        : UnitWSD("UnitCalc")
+    {
+    }
+
+    void invokeWSDTest() override;
 };
 
 UnitBase::TestResult UnitCalc::testCalcEditRendering()
 {
-    const char* testname = "calcEditRendering ";
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket("calc_render.xls", uri, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CalcPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, "calc_render.xls", uri, testname);
 
     helpers::sendTextFrame(socket, "mouse type=buttondown x=5000 y=5 count=1 buttons=1 modifier=0",
                            testname);
@@ -100,19 +107,23 @@ UnitBase::TestResult UnitCalc::testCalcEditRendering()
     int minor = 0;
     helpers::getServerVersion(socket, major, minor, testname);
 
-    const std::string firstLine = LOOLProtocol::getFirstLine(tile);
-    std::vector<char> res(tile.begin() + firstLine.size() + 1, tile.end());
-    std::stringstream streamRes;
-    std::copy(res.begin(), res.end(), std::ostream_iterator<char>(streamRes));
+    const std::string firstLine = COOLProtocol::getFirstLine(tile);
+    Blob zimg = std::make_shared<BlobData>(tile.begin() + firstLine.size() + 1, tile.end());
 
-    std::fstream outStream("/tmp/res.png", std::ios::out);
-    outStream.write(res.data(), res.size());
+    std::fstream outStream("/tmp/res.z", std::ios::out);
+    outStream.write(zimg->data(), zimg->size());
     outStream.close();
 
-    png_uint_32 height = 0;
-    png_uint_32 width = 0;
-    png_uint_32 rowBytes = 0;
-    std::vector<png_bytep> rows = Png::decodePNG(streamRes, height, width, rowBytes);
+    Blob img = DeltaGenerator::expand(zimg);
+
+    png_uint_32 height = 512;
+    png_uint_32 width = 512;
+    png_uint_32 rowBytes = 512 * 4;
+    LOK_ASSERT_EQUAL(img->size(), (size_t)rowBytes * height);
+
+    std::vector<png_bytep> rows;
+    for (png_uint_32 i = 0; i < height; ++i)
+        rows.push_back((png_bytep)img->data() + rowBytes * i);
 
     const std::vector<char> exp
         = helpers::readDataFromFile("calc_render_0_512x512.3840,0.7680x7680.png");
@@ -148,15 +159,17 @@ UnitBase::TestResult UnitCalc::testCalcEditRendering()
 /// This only happens at high rows.
 UnitBase::TestResult UnitCalc::testCalcRenderAfterNewView51()
 {
-    const char* testname = "calcRenderAfterNewView51 ";
-
     // Load a doc with the cursor saved at a top row.
     std::string documentPath, documentURL;
     helpers::getDocumentPathAndURL("empty.ods", documentPath, documentURL, testname);
 
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CalcPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     int major = 0;
     int minor = 0;
@@ -186,8 +199,8 @@ UnitBase::TestResult UnitCalc::testCalcRenderAfterNewView51()
 
     // Connect second client, which will load at the top.
     TST_LOG("Connecting second client.");
-    std::shared_ptr<LOOLWebSocket> socket2
-        = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+    std::shared_ptr<http::WebSocketSession> socket2 =
+        helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     // Up one row on the first view to trigger the bug.
     TST_LOG("Up.");
@@ -204,15 +217,17 @@ UnitBase::TestResult UnitCalc::testCalcRenderAfterNewView51()
 
 UnitBase::TestResult UnitCalc::testCalcRenderAfterNewView53()
 {
-    const char* testname = "calcRenderAfterNewView53 ";
-
     // Load a doc with the cursor saved at a top row.
     std::string documentPath, documentURL;
     helpers::getDocumentPathAndURL("calc-render.ods", documentPath, documentURL, testname);
 
     Poco::URI uri(helpers::getTestServerURI());
-    std::shared_ptr<LOOLWebSocket> socket
-        = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CalcPoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket =
+        helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     int major = 0;
     int minor = 0;
@@ -236,8 +251,8 @@ UnitBase::TestResult UnitCalc::testCalcRenderAfterNewView53()
 
     // Connect second client, which will load at the top.
     TST_LOG("Connecting second client.");
-    std::shared_ptr<LOOLWebSocket> socket2
-        = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+    std::shared_ptr<http::WebSocketSession> socket2 =
+        helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     TST_LOG("Waiting for cellviewcursor of second on first.");
     helpers::assertResponseString(socket, "cellviewcursor:", testname);
@@ -249,14 +264,13 @@ UnitBase::TestResult UnitCalc::testCalcRenderAfterNewView53()
     LOK_ASSERT(tile1 == tile2);
 
     // Don't let them go out of scope and disconnect.
-    socket2->shutdown();
-    socket->shutdown();
+    socket2->shutdownWS();
+    socket->shutdownWS();
     return TestResult::Ok;
 }
 
 UnitBase::TestResult UnitCalc::testColumnRowResize()
 {
-    const char* testname = "columnRowResize ";
     try
     {
         std::vector<char> response;
@@ -265,11 +279,15 @@ UnitBase::TestResult UnitCalc::testColumnRowResize()
 
         helpers::getDocumentPathAndURL("setclientpart.ods", documentPath, documentURL, testname);
         Poco::URI uri(helpers::getTestServerURI());
-        std::shared_ptr<LOOLWebSocket> socket
-            = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CalcPoll");
+        socketPoll->startThread();
+
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
         const std::string commandValues = "commandvalues command=.uno:ViewRowColumnHeaders";
-        helpers::sendTextFrame(socket, commandValues);
+        helpers::sendTextFrame(socket, commandValues, testname);
         response = helpers::getResponseMessage(socket, "commandvalues:", testname);
         LOK_ASSERT_MESSAGE("did not receive a commandvalues: message as expected",
                                !response.empty());
@@ -279,9 +297,9 @@ UnitBase::TestResult UnitCalc::testColumnRowResize()
             json.push_back(0);
 
             // get column 2
-            oldHeight = getColRowSize("rows", json.data(), 1);
+            oldHeight = getColRowSize("rows", json.data(), 1, testname);
             // get row 2
-            oldWidth = getColRowSize("columns", json.data(), 1);
+            oldWidth = getColRowSize("columns", json.data(), 1, testname);
         }
 
         // send column width
@@ -309,7 +327,7 @@ UnitBase::TestResult UnitCalc::testColumnRowResize()
             std::vector<char> json(response.begin() + std::string("commandvalues:").length(),
                                    response.end());
             json.push_back(0);
-            newWidth = getColRowSize("columns", json.data(), 1);
+            newWidth = getColRowSize("columns", json.data(), 1, testname);
             LOK_ASSERT(newWidth > oldWidth);
         }
 
@@ -338,7 +356,7 @@ UnitBase::TestResult UnitCalc::testColumnRowResize()
             std::vector<char> json(response.begin() + std::string("commandvalues:").length(),
                                    response.end());
             json.push_back(0);
-            newHeight = getColRowSize("rows", json.data(), 1);
+            newHeight = getColRowSize("rows", json.data(), 1, testname);
             LOK_ASSERT(newHeight > oldHeight);
         }
     }
@@ -351,7 +369,6 @@ UnitBase::TestResult UnitCalc::testColumnRowResize()
 
 UnitBase::TestResult UnitCalc::testOptimalResize()
 {
-    const char* testname = "optimalResize ";
     try
     {
         double newWidth, newHeight;
@@ -372,8 +389,12 @@ UnitBase::TestResult UnitCalc::testOptimalResize()
         std::string documentPath, documentURL;
         helpers::getDocumentPathAndURL("empty.ods", documentPath, documentURL, testname);
         Poco::URI uri(helpers::getTestServerURI());
-        std::shared_ptr<LOOLWebSocket> socket
-            = helpers::loadDocAndGetSocket(uri, documentURL, testname);
+
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("CalcPoll");
+        socketPoll->startThread();
+
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
         const std::string commandValues = "commandvalues command=.uno:ViewRowColumnHeaders";
         // send new column width
@@ -456,7 +477,7 @@ UnitBase::TestResult UnitCalc::testOptimalResize()
     return TestResult::Ok;
 }
 
-void UnitCalc::invokeTest()
+void UnitCalc::invokeWSDTest()
 {
     UnitBase::TestResult result = testCalcEditRendering();
     if (result != TestResult::Ok)

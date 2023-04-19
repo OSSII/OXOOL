@@ -10,7 +10,6 @@
 #include <net/DelaySocket.hpp>
 
 #include <memory>
-#include <mutex>
 
 #define DELAY_LOG(X) std::cerr << X << '\n';
 
@@ -39,7 +38,7 @@ class DelaySocket : public Socket {
             _sendTime = std::chrono::steady_clock::now() +
                 std::chrono::milliseconds(delayMs);
         }
-        bool isError() { return _data.size() == 0; }
+        bool isError() const { return _data.empty(); }
         std::chrono::steady_clock::time_point getSendTime() const { return _sendTime; }
         std::vector<char>& getData() { return _data; }
     private:
@@ -157,7 +156,7 @@ public:
             }
         }
 
-        if (_chunks.size() == 0)
+        if (_chunks.empty())
         {
             if (_state == EofFlushWrites)
                 changeState(Closed);
@@ -168,7 +167,7 @@ public:
             if (std::chrono::duration_cast<std::chrono::milliseconds>(
                     now - chunk->getSendTime()).count() >= 0)
             {
-                if (chunk->getData().size() == 0)
+                if (chunk->getData().empty())
                 { // delayed error or close
                     DELAY_LOG('#' << getFD() << " handling delayed close\n");
                     changeState(Closed);
@@ -204,7 +203,7 @@ public:
                         if (len > 0)
                             chunk->getData().erase(chunk->getData().begin(), chunk->getData().begin() + len);
 
-                        if (chunk->getData().size() == 0)
+                        if (chunk->getData().empty())
                             _chunks.erase(_chunks.begin(), _chunks.begin() + 1);
                     }
                 }

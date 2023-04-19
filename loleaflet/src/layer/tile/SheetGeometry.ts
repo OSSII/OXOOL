@@ -1,6 +1,6 @@
 declare var L: any;
 
-namespace oxool {
+namespace cool {
 
 export type GeometryUnit = 'corepixels' | 'tiletwips' | 'printtwips';
 
@@ -68,7 +68,7 @@ export class SheetGeometry {
 			typeof tileHeightTwips !== 'number' ||
 			typeof tileSizePixels !== 'number' ||
 			typeof part !== 'number') {
-			window.app.console.error('Incorrect constructor argument types or missing required arguments');
+			console.error('Incorrect constructor argument types or missing required arguments');
 			return;
 		}
 
@@ -93,20 +93,20 @@ export class SheetGeometry {
 		var updateOK = true;
 		if (sheetGeomJSON.columns) {
 			if (!this._columns.update(sheetGeomJSON.columns)) {
-				window.app.console.error(this._unoCommand + ': columns update failed.');
+				console.error(this._unoCommand + ': columns update failed.');
 				updateOK = false;
 			}
 		}
 
 		if (sheetGeomJSON.rows) {
 			if (!this._rows.update(sheetGeomJSON.rows)) {
-				window.app.console.error(this._unoCommand + ': rows update failed.');
+				console.error(this._unoCommand + ': rows update failed.');
 				updateOK = false;
 			}
 		}
 
 		if (updateOK) {
-			window.app.console.assert(typeof part === 'number', 'part must be a number');
+			console.assert(typeof part === 'number', 'part must be a number');
 			if (part !== this._part) {
 				this._part = part;
 			}
@@ -127,7 +127,7 @@ export class SheetGeometry {
 	public setViewArea(topLeftTwipsPoint: Point, sizeTwips: Point): boolean {
 
 		if (!(topLeftTwipsPoint instanceof L.Point) || !(sizeTwips instanceof L.Point)) {
-			window.app.console.error('invalid argument types');
+			console.error('invalid argument types');
 			return false;
 		}
 
@@ -201,7 +201,7 @@ export class SheetGeometry {
 	// and returns the equivalent point in display-twips at the given zoom.
 	public getTileTwipsAtZoom(point: Point, zoomScale: number): Point {
 		if (!(point instanceof L.Point)) {
-			window.app.console.error('Bad argument type, expected L.Point');
+			console.error('Bad argument type, expected L.Point');
 			return point;
 		}
 
@@ -213,7 +213,7 @@ export class SheetGeometry {
 	// and returns the equivalent point in core-pixels at the given zoomScale.
 	public getCorePixelsAtZoom(point: Point, zoomScale: number): Point {
 		if (!(point instanceof L.Point)) {
-			window.app.console.error('Bad argument type, expected L.Point');
+			console.error('Bad argument type, expected L.Point');
 			return point;
 		}
 
@@ -225,7 +225,7 @@ export class SheetGeometry {
 	// and returns the equivalent point in core-pixels at the current zoom.
 	public getCorePixelsFromZoom(point: Point, zoomScale: number): Point {
 		if (!(point instanceof L.Point)) {
-			window.app.console.error('Bad argument type, expected L.Point');
+			console.error('Bad argument type, expected L.Point');
 			return point;
 		}
 
@@ -237,7 +237,7 @@ export class SheetGeometry {
 	// in tile-twips.
 	public getTileTwipsPointFromPrint(point: Point): Point {
 		if (!(point instanceof L.Point)) {
-			window.app.console.error('Bad argument type, expected L.Point');
+			console.error('Bad argument type, expected L.Point');
 			return point;
 		}
 
@@ -249,7 +249,7 @@ export class SheetGeometry {
 	// in print-twips.
 	public getPrintTwipsPointFromTile(point: Point): Point {
 		if (!(point instanceof L.Point)) {
-			window.app.console.error('Bad argument type, expected L.Point');
+			console.error('Bad argument type, expected L.Point');
 			return point;
 		}
 
@@ -261,7 +261,7 @@ export class SheetGeometry {
 	// in tile-twips aligned to the cells.
 	public getTileTwipsSheetAreaFromPrint(rectangle: Bounds): Bounds {
 		if (!(rectangle instanceof L.Bounds)) {
-			window.app.console.error('Bad argument type, expected L.Bounds');
+			console.error('Bad argument type, expected L.Bounds');
 			return rectangle;
 		}
 
@@ -296,7 +296,7 @@ export class SheetGeometry {
 	}
 
 	public getCellFromPos(pos: Point, unit: GeometryUnit): Point {
-		window.app.console.assert(pos instanceof L.Point);
+		console.assert(pos instanceof L.Point);
 		return new L.Point(
 			this._columns.getIndexFromPos(pos.x, unit),
 			this._rows.getIndexFromPos(pos.y, unit)
@@ -318,12 +318,12 @@ export class SheetGeometry {
 	private _testValidity(sheetGeomJSON: SheetGeometryCoreData, checkCompleteness: boolean): boolean {
 
 		if (!sheetGeomJSON.commandName) {
-			window.app.console.error(this._unoCommand + ' response has no property named "commandName".');
+			console.error(this._unoCommand + ' response has no property named "commandName".');
 			return false;
 		}
 
 		if (sheetGeomJSON.commandName !== this._unoCommand) {
-			window.app.console.error('JSON response has wrong commandName: ' +
+			console.error('JSON response has wrong commandName: ' +
 				sheetGeomJSON.commandName + ' expected: ' +
 				this._unoCommand);
 			return false;
@@ -331,13 +331,13 @@ export class SheetGeometry {
 
 		if (typeof sheetGeomJSON.maxtiledcolumn !== 'string' ||
 			!/^\d+$/.test(sheetGeomJSON.maxtiledcolumn)) {
-			window.app.console.error('JSON is missing/unreadable maxtiledcolumn property');
+			console.error('JSON is missing/unreadable maxtiledcolumn property');
 			return false;
 		}
 
 		if (typeof sheetGeomJSON.maxtiledrow !== 'string' ||
 			!/^\d+$/.test(sheetGeomJSON.maxtiledrow)) {
-			window.app.console.error('JSON is missing/unreadable maxtiledrow property');
+			console.error('JSON is missing/unreadable maxtiledrow property');
 			return false;
 		}
 
@@ -345,14 +345,14 @@ export class SheetGeometry {
 
 			if (!sheetGeomJSON.rows || !sheetGeomJSON.columns) {
 
-				window.app.console.error(this._unoCommand + ' response is incomplete.');
+				console.error(this._unoCommand + ' response is incomplete.');
 				return false;
 			}
 
 			if (typeof sheetGeomJSON.rows !== 'object' ||
 				typeof sheetGeomJSON.columns !== 'object') {
 
-				window.app.console.error(this._unoCommand + ' response has invalid rows/columns children.');
+				console.error(this._unoCommand + ' response has invalid rows/columns children.');
 				return false;
 			}
 
@@ -365,14 +365,14 @@ export class SheetGeometry {
 
 				// Don't accept empty string or any other types.
 				if (typeof encodingForRows !== 'string' || !encodingForRows) {
-					window.app.console.error(this._unoCommand + ' response has invalid value for rows.' +
+					console.error(this._unoCommand + ' response has invalid value for rows.' +
 						fieldName);
 					return false;
 				}
 
 				// Don't accept empty string or any other types.
 				if (typeof encodingForCols !== 'string' || !encodingForCols) {
-					window.app.console.error(this._unoCommand + ' response has invalid value for columns.' +
+					console.error(this._unoCommand + ' response has invalid value for columns.' +
 						fieldName);
 					return false;
 				}
@@ -588,7 +588,7 @@ export class SheetDimension {
 
 		if (unitName !== 'corepixels' &&
 			unitName !== 'tiletwips' && unitName !== 'printtwips') {
-			window.app.console.error('unsupported unitName: ' + unitName);
+			console.error('unsupported unitName: ' + unitName);
 			return undefined;
 		}
 
@@ -727,7 +727,7 @@ export class SheetDimension {
 			return groupsData;
 		}
 
-		this._outlines.forEachGroupInRange(this._viewStartIndex, this._viewEndIndex,
+		this._outlines.forEachGroupInRange(0, this._viewEndIndex,
 			function (levelIdx: number, groupIdx: number, start: number, end: number, hidden: number) {
 
 				var startElementData = this.getElementData(start);
@@ -752,7 +752,7 @@ export class SheetDimension {
 	// display twips position at the given zoomScale.
 	public getTileTwipsAtZoom(posTT: number, zoomScale: number): number {
 		if (typeof posTT !== 'number' || typeof zoomScale !== 'number') {
-			window.app.console.error('Wrong argument types');
+			console.error('Wrong argument types');
 			return;
 		}
 
@@ -764,7 +764,7 @@ export class SheetDimension {
 	// core-pixels position at the given zoomScale.
 	public getCorePixelsAtZoom(posCP: number, zoomScale: number): number {
 		if (typeof posCP !== 'number' || typeof zoomScale !== 'number') {
-			window.app.console.error('Wrong argument types');
+			console.error('Wrong argument types');
 			return;
 		}
 
@@ -803,7 +803,7 @@ export class SheetDimension {
 	// core-pixels position at the current zoom.
 	public getCorePixelsFromZoom(posCPZ: number, zoomScale: number): number {
 		if (typeof posCPZ !== 'number' || typeof zoomScale !== 'number') {
-			window.app.console.error('Wrong argument types');
+			console.error('Wrong argument types');
 			return;
 		}
 
@@ -842,7 +842,7 @@ export class SheetDimension {
 	public getTileTwipsPosFromPrint(posPT: number, zoomScale?: number): number {
 
 		if (typeof posPT !== 'number') {
-			window.app.console.error('Wrong argument type');
+			console.error('Wrong argument type');
 			return;
 		}
 
@@ -882,7 +882,7 @@ export class SheetDimension {
 		var elementDataPT = this._getElementDataAnyFromSpanByIndex(element.index, element.span, 'printtwips');
 
 		var offset = posPT - elementDataPT.startpos;
-		window.app.console.assert(offset >= 0, 'offset should not be negative');
+		console.assert(offset >= 0, 'offset should not be negative');
 
 		// Preserve any offset from the matching column/row start position.
 		return elementDataTT.startpos + offset;
@@ -892,7 +892,7 @@ export class SheetDimension {
 	public getPrintTwipsPosFromTile(posTT: number): number {
 
 		if (typeof posTT !== 'number') {
-			window.app.console.error('Wrong argument type');
+			console.error('Wrong argument type');
 			return;
 		}
 
@@ -901,7 +901,7 @@ export class SheetDimension {
 		var elementDataPT = this._getElementDataAnyFromSpanByIndex(element.index, element.span, 'printtwips');
 
 		var offset = posTT - elementDataTT.startpos;
-		window.app.console.assert(offset >= 0, 'offset should not be negative');
+		console.assert(offset >= 0, 'offset should not be negative');
 
 		// Preserve any offset from the matching column/row start position.
 		return elementDataPT.startpos + offset;
@@ -955,8 +955,8 @@ export class SheetDimension {
 	}
 
 	public getSnapPos(pos: number, unit: GeometryUnit): number {
-		window.app.console.assert(typeof pos === 'number', 'pos is not a number');
-		window.app.console.assert(this.isUnitSupported(unit), 'unit: ' + unit + ' is not supported');
+		console.assert(typeof pos === 'number', 'pos is not a number');
+		console.assert(this.isUnitSupported(unit), 'unit: ' + unit + ' is not supported');
 
 		var origUnit = unit;
 
@@ -965,7 +965,7 @@ export class SheetDimension {
 			unit = 'tiletwips';
 		}
 
-		window.app.console.assert(unit === 'tiletwips' || unit === 'printtwips', 'wrong unit assumption');
+		console.assert(unit === 'tiletwips' || unit === 'printtwips', 'wrong unit assumption');
 		var result = (unit === 'tiletwips') ?
 			this._getSpanAndIndexFromTileTwipsPos(pos) :
 			this._getSpanAndIndexFromPrintTwipsPos(pos);
@@ -974,15 +974,15 @@ export class SheetDimension {
 	}
 
 	public getIndexFromPos(pos: number, unit: GeometryUnit): number {
-		window.app.console.assert(typeof pos === 'number', 'pos is not a number');
-		window.app.console.assert(this.isUnitSupported(unit), 'unit: ' + unit + ' is not supported');
+		console.assert(typeof pos === 'number', 'pos is not a number');
+		console.assert(this.isUnitSupported(unit), 'unit: ' + unit + ' is not supported');
 
 		if (unit === 'corepixels') {
 			pos = pos * this._twipsPerCorePixel;
 			unit = 'tiletwips';
 		}
 
-		window.app.console.assert(unit === 'tiletwips' || unit === 'printtwips', 'wrong unit assumption');
+		console.assert(unit === 'tiletwips' || unit === 'printtwips', 'wrong unit assumption');
 		var result = (unit === 'tiletwips') ?
 			this._getSpanAndIndexFromTileTwipsPos(pos) :
 			this._getSpanAndIndexFromPrintTwipsPos(pos);
@@ -1628,4 +1628,4 @@ function _findFirstMatch(array: any[], key: any, directionProvider: DirectionPro
 
 }
 
-L.SheetGeometry = oxool.SheetGeometry;
+L.SheetGeometry = cool.SheetGeometry;

@@ -5,12 +5,12 @@
 // regime the renders will be incorrect. At least in Calc it is possible to have pixel
 // coordinates greater than this limit at higher zooms near the bottom of the sheet.
 class OverlayTransform {
-	private translationAmount: oxool.Point;
-	private scaleAmount: oxool.Point;
+	private translationAmount: cool.Point;
+	private scaleAmount: cool.Point;
 
 	constructor() {
-		this.translationAmount = new oxool.Point(0, 0);
-		this.scaleAmount = new oxool.Point(1, 1);
+		this.translationAmount = new cool.Point(0, 0);
+		this.scaleAmount = new cool.Point(1, 1);
 	}
 
 	translate(x: number, y: number) {
@@ -30,15 +30,15 @@ class OverlayTransform {
 		this.scaleAmount.y = 1;
 	}
 
-	applyToPoint(point: oxool.Point): oxool.Point {
+	applyToPoint(point: cool.Point): cool.Point {
 		// 'scale first then translation' model.
-		return new oxool.Point(
+		return new cool.Point(
 			point.x * this.scaleAmount.x - this.translationAmount.x,
 			point.y * this.scaleAmount.y - this.translationAmount.y);
 	}
 
-	applyToBounds(bounds: oxool.Bounds): oxool.Bounds {
-		return new oxool.Bounds(
+	applyToBounds(bounds: cool.Bounds): cool.Bounds {
+		return new cool.Bounds(
 			this.applyToPoint(bounds.min),
 			this.applyToPoint(bounds.max)
 		);
@@ -58,7 +58,7 @@ class TransformationsList {
 		this.list.push(tx);
 	}
 
-	public addNew(translate: oxool.Point, scale: oxool.Point) {
+	public addNew(translate: cool.Point, scale: cool.Point) {
 		const tx = new OverlayTransform();
 		tx.translate(translate.x, translate.y);
 		tx.scale(scale.x, scale.y);
@@ -69,7 +69,7 @@ class TransformationsList {
 		this.list = [];
 	}
 
-	applyToPoint(point: oxool.Point): oxool.Point {
+	applyToPoint(point: cool.Point): cool.Point {
 		let tPoint = point.clone();
 		this.list.forEach((tx) => {
 			tPoint = tx.applyToPoint(tPoint);
@@ -78,7 +78,7 @@ class TransformationsList {
 		return tPoint;
 	}
 
-	applyToBounds(bounds: oxool.Bounds): oxool.Bounds {
+	applyToBounds(bounds: cool.Bounds): cool.Bounds {
 		let tBounds = bounds.clone();
 		this.list.forEach((tx) => {
 			tBounds = tx.applyToBounds(tBounds);
@@ -90,46 +90,58 @@ class TransformationsList {
 
 // CanvasOverlay handles CPath rendering and mouse events handling via overlay-section of the main canvas.
 // where overlays like cell-cursors, cell-selections, edit-cursors are instances of CPath or its subclasses.
-class CanvasOverlay {
+class CanvasOverlay extends CanvasSectionObject {
 	private map: any;
 	private ctx: CanvasRenderingContext2D;
 	private paths: Map<number, any>;
-	private bounds: oxool.Bounds;
+	private bounds: cool.Bounds;
 	private tsManager: any;
-	private overlaySection: CanvasSectionObject;
 	private transformList: TransformationsList;
 
 	constructor(mapObject: any, canvasContext: CanvasRenderingContext2D) {
+		super({
+			name: L.CSections.Overlays.name,
+			anchor: 'top left',
+			position: [0, 0],
+			size: [0, 0],
+			expand: '',
+			processingOrder: L.CSections.Overlays.processingOrder,
+			drawingOrder: L.CSections.Overlays.drawingOrder,
+			zIndex: L.CSections.Overlays.zIndex,
+			interactable: true,
+			sectionProperties: {},
+		});
 		this.map = mapObject;
 		this.ctx = canvasContext;
 		this.tsManager = this.map.getTileSectionMgr();
-		this.overlaySection = undefined;
+		this.sectionProperties.docLayer = this.map._docLayer;
+		this.sectionProperties.tsManager = this.tsManager;
 		this.paths = new Map<number, CPath>();
 		this.transformList = new TransformationsList();
 		this.updateCanvasBounds();
 	}
 
-	onInitialize() {
+	onInitialize(): void {
 		return;
 	}
 
-	onResize() {
+	onResize(): void {
 		this.paths.forEach(function (path: CPath) {
 			path.onResize();
 		});
 		this.onDraw();
 	}
 
-	onDraw() {
+	onDraw(): void {
 		// No need to "erase" previous drawings because tiles are draw first via its onDraw.
 		this.draw();
 	}
 
-	onMouseMove(position: Array<number>) {
-		var mousePos = new oxool.Point(position[0], position[1]);
+	onMouseMove(position: Array<number>): void {
+		var mousePos = new cool.Point(position[0], position[1]);
 		var overlaySectionBounds = this.bounds.clone();
 		var splitPos = this.tsManager.getSplitPos();
-		if (this.overlaySection.isCalcRTL()) {
+		if (this.isCalcRTL()) {
 			// Mirror the mouse position in overlay section coordinates.
 			mousePos.x = overlaySectionBounds.max.x - overlaySectionBounds.min.x - mousePos.x;
 		}
@@ -157,16 +169,8 @@ class CanvasOverlay {
 		});
 	}
 
-	setOverlaySection(overlaySection: any) {
-		this.overlaySection = overlaySection;
-	}
-
-	getTestDiv(): HTMLDivElement {
-		return this.overlaySection.getTestDiv();
-	}
-
-	setPenOnOverlay() {
-		this.overlaySection.containerObject.setPenPosition(this.overlaySection);
+	setPenOnOverlay(): void {
+		this.containerObject.setPenPosition(this);
 	}
 
 	initPath(path: CPath) {
@@ -187,7 +191,7 @@ class CanvasOverlay {
 		// This does not get called via onDraw, so ask section container to redraw everything.
 		path.setDeleted();
 		this.paths.delete(path.getId());
-		this.overlaySection.containerObject.requestReDraw();
+		this.containerObject.requestReDraw();
 	}
 
 	removePathGroup(pathGroup: CPathGroup) {
@@ -196,15 +200,15 @@ class CanvasOverlay {
 		}.bind(this));
 	}
 
-	updatePath(path: CPath, oldBounds: oxool.Bounds) {
+	updatePath(path: CPath, oldBounds: cool.Bounds) {
 		this.redraw(path, oldBounds);
 	}
 
-	updateStyle(path: CPath, oldBounds: oxool.Bounds) {
+	updateStyle(path: CPath, oldBounds: cool.Bounds) {
 		this.redraw(path, oldBounds);
 	}
 
-	paintRegion(paintArea: oxool.Bounds) {
+	paintRegion(paintArea: cool.Bounds) {
 		this.draw(paintArea);
 	}
 
@@ -212,14 +216,14 @@ class CanvasOverlay {
 		return this.map.getSplitPanesContext();
 	}
 
-	private isVisible(path: CPath): boolean {
+	private isPathVisible(path: CPath): boolean {
 		var pathBounds = path.getBounds();
 		if (!pathBounds.isValid())
 			return false;
 		return this.intersectsVisible(pathBounds);
 	}
 
-	private intersectsVisible(queryBounds: oxool.Bounds): boolean {
+	private intersectsVisible(queryBounds: cool.Bounds): boolean {
 		this.updateCanvasBounds();
 		var spc = this.getSplitPanesContext();
 		return spc ? spc.intersectsVisible(queryBounds) : this.bounds.intersects(queryBounds);
@@ -262,7 +266,7 @@ class CanvasOverlay {
 		return a.viewId - b.viewId;
 	}
 
-	private draw(paintArea?: oxool.Bounds) {
+	private draw(paintArea?: cool.Bounds) {
 		if (this.tsManager && this.tsManager.waitForTiles()) {
 			// don't paint anything till tiles arrive for new zoom.
 			return;
@@ -277,39 +281,39 @@ class CanvasOverlay {
 		orderedPaths.sort(CanvasOverlay.renderOrderComparator);
 
 		orderedPaths.forEach((path: CPath) => {
-			if (this.isVisible(path))
+			if (this.isPathVisible(path))
 				path.updatePathAllPanes(paintArea);
 		}, this);
 	}
 
-	private redraw(path: CPath, oldBounds: oxool.Bounds) {
+	private redraw(path: CPath, oldBounds: cool.Bounds) {
 		if (this.tsManager && this.tsManager.waitForTiles()) {
 			// don't paint anything till tiles arrive for new zoom.
 			return;
 		}
 
-		if (!this.isVisible(path) && (!oldBounds.isValid() || !this.intersectsVisible(oldBounds)))
+		if (!this.isPathVisible(path) && (!oldBounds.isValid() || !this.intersectsVisible(oldBounds)))
 			return;
 		// This does not get called via onDraw(ie, tiles aren't painted), so ask tileSection to "erase" by painting over.
 		// Repainting the whole canvas is not necessary but finding the minimum area to paint over
 		// is potentially expensive to compute (think of overlapped path objects).
 		// TODO: We could repaint the area on the canvas occupied by all the visible path-objects
 		// and paint tiles just for that, but need a more general version of _tilesSection.onDraw() and callees.
-		this.overlaySection.containerObject.requestReDraw();
+		this.containerObject.requestReDraw();
 	}
 
 	private updateCanvasBounds() {
 		var viewBounds: any = this.map.getPixelBoundsCore();
-		this.bounds = new oxool.Bounds(new oxool.Point(viewBounds.min.x, viewBounds.min.y), new oxool.Point(viewBounds.max.x, viewBounds.max.y));
+		this.bounds = new cool.Bounds(new cool.Point(viewBounds.min.x, viewBounds.min.y), new cool.Point(viewBounds.max.x, viewBounds.max.y));
 	}
 
-	getBounds(): oxool.Bounds {
+	getBounds(): cool.Bounds {
 		this.updateCanvasBounds();
 		return this.bounds;
 	}
 
 	// Applies canvas translation so that polygons/circles can be drawn using core-pixel coordinates.
-	private ctStart(clipArea?: oxool.Bounds, paneBounds?: oxool.Bounds, fixed?: boolean) {
+	private ctStart(clipArea?: cool.Bounds, paneBounds?: cool.Bounds, fixed?: boolean) {
 		this.updateCanvasBounds();
 		this.transformList.reset();
 		this.ctx.save();
@@ -336,14 +340,14 @@ class CanvasOverlay {
 			var leftMin = paneBounds.min.x < 0 ? -Infinity : 0;
 			var topMin = paneBounds.min.y < 0 ? -Infinity : 0;
 			// Compute the new top left in core pixels that ties with the origin of overlay canvas section.
-			var newTopLeft = new oxool.Point(
+			var newTopLeft = new cool.Point(
 				Math.max(leftMin,
 					-splitPos.x - 1 + (center.x - (center.x - paneBounds.min.x) / scale)),
 				Math.max(topMin,
 					-splitPos.y - 1 + (center.y - (center.y - paneBounds.min.y) / scale)));
 
 			// Compute clip area which needs to be applied after setting the transformation.
-			var clipTopLeft = new oxool.Point(0, 0);
+			var clipTopLeft = new cool.Point(0, 0);
 			// Original pane size.
 			var paneSize = paneBounds.getSize();
 			var clipSize = paneSize.clone();
@@ -359,7 +363,7 @@ class CanvasOverlay {
 				clipSize.y = (paneSize.y - splitPos.y * (scale - 1)) / scale;
 			}
 			// Force clip area to the zoom frame area of the pane specified.
-			clipArea = new oxool.Bounds(
+			clipArea = new cool.Bounds(
 				clipTopLeft,
 				clipTopLeft.add(clipSize));
 
@@ -372,7 +376,7 @@ class CanvasOverlay {
 			transform.scale(scale, scale);
 
 			if (clipArea) {
-				clipArea = new oxool.Bounds(
+				clipArea = new cool.Bounds(
 					clipArea.min.divideBy(scale),
 					clipArea.max.divideBy(scale)
 				);
@@ -385,10 +389,10 @@ class CanvasOverlay {
 		}
 
 		this.transformList.add(transform);
-		if (this.overlaySection.isCalcRTL()) {
-			const sectionWidth = this.overlaySection.size[0];
+		if (this.isCalcRTL()) {
+			const sectionWidth = this.size[0];
 			// Apply horizontal flip transformation.
-			this.transformList.addNew(new oxool.Point(-sectionWidth, 0), new oxool.Point(-1, 1));
+			this.transformList.addNew(new cool.Point(-sectionWidth, 0), new cool.Point(-1, 1));
 		}
 
 		if (clipArea) {
@@ -405,11 +409,11 @@ class CanvasOverlay {
 		this.ctx.restore();
 	}
 
-	updatePoly(path: CPath, closed: boolean = false, clipArea?: oxool.Bounds, paneBounds?: oxool.Bounds) {
+	updatePoly(path: CPath, closed: boolean = false, clipArea?: cool.Bounds, paneBounds?: cool.Bounds) {
 		var i: number;
 		var j: number;
 		var len2: number;
-		var part: oxool.Point;
+		var part: cool.Point;
 		var parts = path.getParts();
 		var len: number = parts.length;
 
@@ -434,7 +438,7 @@ class CanvasOverlay {
 		this.ctEnd();
 	}
 
-	updateCircle(path: CPath, clipArea?: oxool.Bounds, paneBounds?: oxool.Bounds) {
+	updateCircle(path: CPath, clipArea?: cool.Bounds, paneBounds?: cool.Bounds) {
 		if (path.empty())
 			return;
 

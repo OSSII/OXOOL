@@ -18,10 +18,6 @@ L.Map.include({
 		}
 
 		var searchCmd = {
-			'SearchItem.AllTables': {
-				'type': 'boolean',
-				'value': true
-			},
 			'SearchItem.SearchString': {
 				'type': 'string'
 			},

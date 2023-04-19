@@ -1,11 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include <config.h>
 
 #include <memory>
 #include <string>
@@ -23,8 +23,6 @@
 #include <UserMessages.hpp>
 #include <Util.hpp>
 #include <helpers.hpp>
-
-class LOOLWebSocket;
 
 namespace
 {
@@ -58,11 +56,17 @@ class UnitSession : public UnitWSD
     TestResult testSlideShow();
 
 public:
-    void invokeTest() override;
+    UnitSession()
+        : UnitWSD("UnitSession")
+    {
+    }
+
+    void invokeWSDTest() override;
 };
 
 UnitBase::TestResult UnitSession::testBadRequest()
 {
+    TST_LOG("Starting Test: " << testname);
     try
     {
         // Try to load a bogus url.
@@ -93,74 +97,56 @@ UnitBase::TestResult UnitSession::testBadRequest()
 
 UnitBase::TestResult UnitSession::testHandshake()
 {
-    const char* testname = "handshake ";
-    try
+    TST_LOG("Starting Test: " << testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>(testname);
+    std::string documentPath, documentURL;
+    helpers::getDocumentPathAndURL("hello.odt", documentPath, documentURL, testname);
+
+    socketPoll->startThread();
+
+    // NOTE: Do not replace with wrappers. This has to be explicit.
+    auto wsSession = http::WebSocketSession::create(helpers::getTestServerURI());
+    http::Request req(documentURL);
+    wsSession->asyncRequest(req, socketPoll);
+
+    wsSession->sendMessage("load url=" + documentURL);
+
+    auto assertMessage = [&wsSession, this](const std::string expectedStr)
     {
-        std::string documentPath, documentURL;
-        helpers::getDocumentPathAndURL("hello.odt", documentPath, documentURL, testname);
-
-        // NOTE: Do not replace with wrappers. This has to be explicit.
-        Poco::Net::HTTPResponse response;
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, documentURL);
-        std::unique_ptr<Poco::Net::HTTPClientSession> session(
-            helpers::createSession(Poco::URI(helpers::getTestServerURI())));
-        LOOLWebSocket socket(*session, request, response);
-        socket.setReceiveTimeout(0);
-
-        int flags = 0;
-        char buffer[1024] = { 0 };
-        int bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-        TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
-        LOK_ASSERT_EQUAL(std::string("statusindicator: find"), std::string(buffer, bytes));
-
-        bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-        TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
-        if (bytes > 0 && !std::strstr(buffer, "error:"))
-        {
-            LOK_ASSERT_EQUAL(std::string("statusindicator: connect"),
-                                 std::string(buffer, bytes));
-
-            bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-            TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
-            if (!std::strstr(buffer, "error:"))
+        wsSession->poll(
+            [&](const std::vector<char>& message)
             {
-                LOK_ASSERT_EQUAL(std::string("statusindicator: ready"),
-                                     std::string(buffer, bytes));
-            }
-            else
-            {
-                // check error message
-                LOK_ASSERT(std::strstr(SERVICE_UNAVAILABLE_INTERNAL_ERROR, buffer) != nullptr);
+                const std::string msg = Util::toString(message);
+                if (!Util::startsWith(msg, "error:"))
+                {
+                    LOK_ASSERT_EQUAL(expectedStr, msg);
+                }
+                else
+                {
+                    // check error message
+                    LOK_ASSERT_EQUAL(std::string(SERVICE_UNAVAILABLE_INTERNAL_ERROR), msg);
 
-                // close frame message
-                bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-                TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
-                LOK_ASSERT((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
-                               == Poco::Net::WebSocket::FRAME_OP_CLOSE);
-            }
-        }
-        else
-        {
-            // check error message
-            LOK_ASSERT(std::strstr(SERVICE_UNAVAILABLE_INTERNAL_ERROR, buffer) != nullptr);
+                    // close frame message
+                    //TODO: check that the socket is closed.
+                }
 
-            // close frame message
-            bytes = socket.receiveFrame(buffer, sizeof(buffer), flags);
-            TST_LOG("Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, bytes, flags));
-            LOK_ASSERT((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK)
-                           == Poco::Net::WebSocket::FRAME_OP_CLOSE);
-        }
-    }
-    catch (const Poco::Exception& exc)
-    {
-        LOK_ASSERT_FAIL(exc.displayText());
-    }
+                return true;
+            },
+            std::chrono::seconds(10), testname);
+    };
+
+    assertMessage("statusindicator: find");
+    assertMessage("statusindicator: connect");
+    assertMessage("statusindicator: ready");
+
+    socketPoll->joinThread();
     return TestResult::Ok;
 }
 
 UnitBase::TestResult UnitSession::testSlideShow()
 {
-    const char* testname = "slideshow ";
+    TST_LOG("Starting Test: " << testname);
     try
     {
         // Load a document
@@ -168,14 +154,11 @@ UnitBase::TestResult UnitSession::testSlideShow()
         std::string response;
         helpers::getDocumentPathAndURL("setclientpart.odp", documentPath, documentURL, testname);
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, documentURL);
-        Poco::Net::HTTPResponse httpResponse;
-        std::shared_ptr<LOOLWebSocket> socket = helpers::connectLOKit(
-            Poco::URI(helpers::getTestServerURI()), request, httpResponse, testname);
+        std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>(testname);
+        socketPoll->startThread();
 
-        helpers::sendTextFrame(socket, "load url=" + documentURL, testname);
-        LOK_ASSERT_MESSAGE("cannot load the document " + documentURL,
-                               helpers::isDocumentLoaded(socket, testname));
+        std::shared_ptr<http::WebSocketSession> socket = helpers::loadDocAndGetSession(
+            socketPoll, Poco::URI(helpers::getTestServerURI()), documentURL, testname);
 
         // request slide show
         helpers::sendTextFrame(
@@ -197,7 +180,7 @@ UnitBase::TestResult UnitSession::testSlideShow()
         std::string encodedDoc;
         Poco::URI::encode(documentPath, ":/?", encodedDoc);
         const std::string ignoredSuffix = "%3FWOPISRC=madness"; // cf. iPhone.
-        const std::string path = "/lool/" + encodedDoc + "/download/" + downloadId + '/' + ignoredSuffix;
+        const std::string path = "/cool/" + encodedDoc + "/download/" + downloadId + '/' + ignoredSuffix;
         std::unique_ptr<Poco::Net::HTTPClientSession> session(
             helpers::createSession(Poco::URI(helpers::getTestServerURI())));
         Poco::Net::HTTPRequest requestSVG(Poco::Net::HTTPRequest::HTTP_GET, path);
@@ -241,7 +224,7 @@ UnitBase::TestResult UnitSession::testSlideShow()
     return TestResult::Ok;
 }
 
-void UnitSession::invokeTest()
+void UnitSession::invokeWSDTest()
 {
     UnitBase::TestResult result = testBadRequest();
     if (result != TestResult::Ok)

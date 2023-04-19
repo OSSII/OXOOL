@@ -1,64 +1,9 @@
-/* global cy expect require */
+/* global cy expect */
 
-require('cypress-wait-until');
-
-function removeTextSelection() {
-	cy.log('Removing text selection - start.');
-
-	cy.get('.spreadsheet-header-rows')
-		.then(function(header) {
-			var rect = header[0].getBoundingClientRect();
-			var posX = (rect.right + rect.left) / 2.0;
-			var posY = (rect.top + rect.bottom) / 2.0;
-
-			var moveY = 0.0;
-			cy.waitUntil(function() {
-				cy.get('body')
-					.click(posX, posY + moveY);
-
-				moveY += 1.0;
-				var regex = /A([0-9]+):AMJ\1$/;
-				return cy.get('input#addressInput')
-					.should('have.prop', 'value')
-					.then(function(value) {
-						return regex.test(value);
-					});
-			});
-		});
-
-
-	cy.log('Removing text selection - end.');
-}
-
-function selectAllMobile(removeSelection = true) {
-	cy.log('Selecting all text - start.');
-
-	if (removeSelection)
-		removeTextSelection();
-
-	cy.get('#spreadsheet-header-corner')
-		.then(function(corner) {
-			var yPos = corner.height() - 10;
-			cy.get('#spreadsheet-header-corner')
-				.click(0, yPos);
-			// A known issue that removing a column selection
-			// triggers a small freeze of the document.
-			// So let's wait here to avoit timeout.
-			if (removeSelection)
-				cy.wait(3000);
-		});
-
-	cy.get('.spreadsheet-cell-resize-marker')
-		.should('be.visible');
-
-	cy.get('input#addressInput')
-		.should('have.prop', 'value', 'A1:AMJ1048576');
-
-	cy.log('Selecting all text - end.');
-}
-
+//warning: after jumbo sheet patch, number of columns become 16000 so if you select whole row and do some operation
+//cypress timeout
 function selectFirstRow() {
-	cy.get('.spreadsheet-header-rows')
+	cy.get('[id="test-div-row header"]')
 		.then(function(items) {
 			expect(items).to.have.lengthOf(1);
 
@@ -74,26 +19,12 @@ function selectFirstRow() {
 	cy.get('.spreadsheet-cell-resize-marker:nth-of-type(2)')
 		.should('not.be.visible');
 
+	var regex = /^A1:(AMJ|XFD)1$/;
 	cy.get('input#addressInput')
-		.should('have.prop', 'value', 'A1:AMJ1');
-}
-
-function selectFirstColumn() {
-	cy.get('.spreadsheet-header-columns')
-		.then(function(items) {
-			expect(items).to.have.lengthOf(1);
-
-			var XPos = items[0].getBoundingClientRect().left + 10;
-			var YPos = (items[0].getBoundingClientRect().top + items[0].getBoundingClientRect().bottom) / 2;
-			cy.get('body')
-				.click(XPos, YPos);
+		.should('have.prop', 'value')
+		.then(function(value) {
+			return regex.test(value);
 		});
-
-	cy.get('input#addressInput')
-		.should('have.prop', 'value', 'A1:A1048576');
 }
 
-module.exports.removeTextSelection = removeTextSelection;
-module.exports.selectAllMobile = selectAllMobile;
 module.exports.selectFirstRow = selectFirstRow;
-module.exports.selectFirstColumn = selectFirstColumn;

@@ -17,8 +17,8 @@ class Cursor {
 	headerName: string;
 	headerTimeout: number = 3000;
 
-	private position: oxool.Point;
-	private size: oxool.Point;
+	private position: cool.Point;
+	private size: cool.Point;
 	private width: number;
 	private container: HTMLDivElement;
 	private cursorHeader: HTMLDivElement;
@@ -29,7 +29,7 @@ class Cursor {
 	private domAttached: boolean = false;
 
 	// position and size should be in core pixels.
-	constructor(position: oxool.Point, size: oxool.Point, map: any, options: any) {
+	constructor(position: cool.Point, size: cool.Point, map: any, options: any) {
 		this.opacity = options.opacity !== undefined ? options.opacity : this.opacity;
 		this.zIndex = options.zIndex !== undefined ? options.zIndex : this.zIndex;
 		this.blink = options.blink !== undefined ? options.blink : this.blink;
@@ -72,22 +72,27 @@ class Cursor {
 	}
 
 	setMouseCursor() {
-		/* if (this.domAttached && this.container && this.container.querySelector('.blinking-cursor') !== null) {
+		if (this.domAttached && this.container && this.container.querySelector('.blinking-cursor') !== null) {
 			if (this.map._docLayer._docType === 'presentation') {
 				$('.leaflet-interactive').css('cursor', 'text');
 			} else {
 				$('.leaflet-pane.leaflet-map-pane').css('cursor', 'text');
 			}
-		} */
+		}
+	}
+	setMouseCursorForTextBox() {
+		if (this.domAttached && this.container && this.container.querySelector('.blinking-cursor') !== null) {
+			$('.leaflet-interactive').css('cursor', 'text');
+		}
 	}
 
 	remove() {
 		this.map.off('splitposchanged', this.update, this);
-		/* if (this.map._docLayer._docType === 'presentation') {
+		if (this.map._docLayer._docType === 'presentation') {
 			$('.leaflet-interactive').css('cursor', '');
 		} else {
 			$('.leaflet-pane.leaflet-map-pane').css('cursor', '');
-		} */
+		}
 		if (this.container && this.domAttached) {
 			this.map.getCursorOverlayContainer().removeChild(this.container);
 		}
@@ -127,13 +132,13 @@ class Cursor {
 	}
 
 	// position and size should be in core pixels.
-	setPositionSize(position: oxool.Point, size: oxool.Point) {
+	setPositionSize(position: cool.Point, size: cool.Point) {
 		this.position = position;
 		this.size = size;
 		this.update();
 	}
 
-	getPosition(): oxool.Point {
+	getPosition(): cool.Point {
 		return this.position;
 	}
 
@@ -141,14 +146,14 @@ class Cursor {
 		if (!this.container || !this.map)
 			return;
 
-		var docBounds = <oxool.Bounds>this.map.getCorePxDocBounds();
+		var docBounds = <cool.Bounds>this.map.getCorePxDocBounds();
 		var inDocCursor = docBounds.contains(this.position);
 		// Calculate position and size in CSS pixels.
-		var viewBounds = <oxool.Bounds>(this.map.getPixelBoundsCore());
+		var viewBounds = <cool.Bounds>(this.map.getPixelBoundsCore());
 		var spCxt = this.map.getSplitPanesContext();
 		var origin = viewBounds.min.clone();
 		var paneSize = viewBounds.getSize();
-		var splitPos = new oxool.Point(0, 0);
+		var splitPos = new cool.Point(0, 0);
 		if (inDocCursor && spCxt) {
 			splitPos = spCxt.getSplitPos().multiplyBy(app.dpiScale);
 			if (this.position.x <= splitPos.x && this.position.x >= 0) {
@@ -170,11 +175,11 @@ class Cursor {
 		var canvasOffset = this.position.subtract(origin);
 
 		if (inDocCursor) {
-			var cursorOffset = new oxool.Point(
+			var cursorOffset = new cool.Point(
 				origin.x ? canvasOffset.x - splitPos.x : canvasOffset.x,
 				origin.y ? canvasOffset.y - splitPos.y : canvasOffset.y);
-			var paneBounds = new oxool.Bounds(new oxool.Point(0, 0), paneSize);
-			var cursorBounds = new oxool.Bounds(cursorOffset, cursorOffset.add(this.size));
+			var paneBounds = new cool.Bounds(new cool.Point(0, 0), paneSize);
+			var cursorBounds = new cool.Bounds(cursorOffset, cursorOffset.add(this.size));
 
 			if (!paneBounds.contains(cursorBounds)) {
 				this.container.style.visibility = 'hidden';
@@ -262,7 +267,7 @@ class Cursor {
 		return this.map._size.x - xpos;
 	}
 
-	private setPos(pos: oxool.Point) {
+	private setPos(pos: cool.Point) {
 		this.container.style.top = pos.y + 'px';
 		this.container.style.left = this.transformX(pos.x) + 'px';
 		this.container.style.zIndex = this.zIndex + '';
@@ -274,83 +279,28 @@ class Cursor {
 		}
 	}
 
-	private setSize(size: oxool.Point) {
+	private setSize(size: cool.Point) {
 		this.cursor.style.height = size.y + 'px';
 		this.container.style.top = '-' + (this.container.clientHeight - size.y - 2) / 2 + 'px';
 	}
 
-	static customCursors: {[name: string]: any} = {
-		ase: {x: 30, y:16},
-		asn: {x: 16, y: 1},
-		asne: {x:30, y: 1},
-		asns: {x:16, y:16},
-		asnswe: {x:16, y:16},
-		asnw: {x: 1, y: 1},
-		ass: {x:16, y:30},
-		asse: {x:30, y:30},
-		assw: {x: 1, y:30},
-		asw: {x: 1, y:30},
-		aswe: {x: 16, y: 16},
-		fill: {x: 7, y: 16},
-		chain: {x: 1, y: 1},
-		chainnot: {x: 16, y: 16},
-		chart: {x: 16, y: 16},
-		copydlnk: {x: 1, y:1},
-		copyf: {x: 7, y: 6},
-		copyf2: {x: 7, y: 6},
-		copyflnk: {x: 7, y: 6},
-		crop: {x: 7, y: 6},
-		crook: {x: 16, y: 16},
-		darc: {x: 16, y: 16},
-		dbezier: {x: 16, y: 16},
-		dcapt: {x: 16, y: 16},
-		dcirccut: {x: 16, y: 16},
-		dconnect: {x: 16, y: 16},
-		dellipse: {x: 16, y: 16},
-		dfree: {x: 16, y: 16},
-		dline: {x: 16, y: 16},
-		dpie: {x: 16, y: 16},
-		dpolygon: {x: 16, y: 16},
-		drect: {x: 16, y: 16},
-		dtext: {x: 16, y: 16},
-		linkf: {x: 7, y: 6},
-		magnify: {x: 16, y: 16},
-		mirror: {x: 16, y: 16},
-		movebw: {x: 1, y: 1},
-		movedata: {x: 1, y: 1},
-		movedlnk: {x: 1, y: 1},
-		movef: {x: 7, y: 6},
-		move2: {x: 7, y: 6},
-		moveflnk: {x: 7, y: 6},
-		movept: {x: 1, y: 1},
-		pen: {x:27, y:25},
-		pivotcol: {x: 7, y: 6},
-		pivotdel: {x:16, y: 16},
-		pivotfld: {x: 7, y: 6},
-		pivotrow: {x: 7, y: 6},
-		rotate: {x:16, y: 16},
-		tblsels: {x: 16, y: 30},
-		tblsele: {x: 30, y: 16},
-		tblselse: {x: 30, y: 30},
-		tblselw: {x: 1, y: 16},
-		tblselsw: {x:1, y: 30},
-		hshear: {x:16, y: 16},
-		vshear: {x:16, y: 16},
-		wshide: {x:16, y: 16},
-		wsshow: {x:16, y: 16}
-	};
+	static hotSpot = new Map<string, cool.Point>([['fill', new cool.Point(7, 16)]]);
+
+	static customCursors = [
+		'fill'
+	];
 
 	static imagePath: string;
 
 	static isCustomCursor(cursorName: string): boolean {
-		return (Cursor.customCursors[cursorName] !== undefined);
+		return (Cursor.customCursors.indexOf(cursorName) !== -1);
 	}
 
 	static getCustomCursor(cursorName: string) {
 		var customCursor;
 
 		if (Cursor.isCustomCursor(cursorName)) {
-			var cursorHotSpot = Cursor.customCursors[cursorName];
+			var cursorHotSpot = Cursor.hotSpot.get(cursorName) || new cool.Point(0, 0);
 			customCursor = L.Browser.ie ? // IE10 does not like item with left/top position in the url list
 				'url(' + Cursor.imagePath + '/' + cursorName + '.cur), default' :
 				'url(' + Cursor.imagePath + '/' + cursorName + '.png) ' + cursorHotSpot.x + ' ' + cursorHotSpot.y + ', default';

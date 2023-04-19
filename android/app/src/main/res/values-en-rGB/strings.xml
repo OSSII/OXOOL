@@ -10,7 +10,7 @@
     <string name="new_textdocument">New Text Document</string>
     <string name="about_moreinfo">More Info</string>
     <string name="about_notice">Show Notice</string>
-    <string name="about_license">Show License</string>
+    <string name="about_license">Show Licence</string>
     <string name="pref_enable_chrome_debugger_info">Enable to use Chrome\'s debugging tool in the document</string>
     <string name="pref_enable_chrome_debugger">Chrome Debugging</string>
     <string name="pref_show_debug_info_summary">Enable to show debug information in document viewer</string>
@@ -110,4 +110,7 @@
     <string name="theme_system_default">System default</string>
     <string name="choose_theme">Choose theme</string>
     <string name="theme">Theme</string>
+    <string name="pref_user_name_guest">Guest User</string>
+    <string name="pref_user_name_info">Used when adding a comment</string>
+    <string name="pref_user_name">User Name</string>
 </resources>

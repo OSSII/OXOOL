@@ -28,8 +28,8 @@
     <string name="app_version_and_hash">Versio: %1$s
 \nreta git-hash: %2$s
 \nkerna git-hash: %3$s</string>
-    <string name="directory_not_saved">Ne konservis dosierujon</string>
-    <string name="bmp_null">Bmp estas nevalida!</string>
+    <string name="directory_not_saved">Ne konservis dosierujon.</string>
+    <string name="bmp_null">BMP estas nevalida!</string>
     <string name="unable_to_go_further">Ne povas iri plu.</string>
     <string name="share_document">Kunhavi dokumenton</string>
     <string name="action_overwrite">Anstataŭigi</string>
@@ -38,7 +38,7 @@
     <string name="create_new_document_title">Krei novan dokumenton</string>
     <string name="negative_im_sure">Mi estas certa</string>
     <string name="positive_ok">Akcepti</string>
-    <string name="reason_required_to_read_documents">Necesas permeso por konservejo por legi viajn dokumentojn</string>
+    <string name="reason_required_to_read_documents">Necesas permeso por konservejo por legi viajn dokumentojn.</string>
     <string name="title_permission_required">Permeso bezonata</string>
     <string name="current_dir">Aktuala dosierujo: %1$s</string>
     <string name="bad_directory">Nevalida dosieruja vojprefikso</string>
@@ -53,7 +53,7 @@
     <string name="external_sd_path">Ekstera SD-vojprefikso</string>
     <string name="physical_storage_settings">Agordoj pri fizika konservejo</string>
     <string name="owncloud_settings">Agordoj pri nuba servilo</string>
-    <string name="storage_provider_settings">"Agordoj  pri provizanto de enhavo"</string>
+    <string name="storage_provider_settings">Agordoj pri provizanto de enhavo</string>
     <string name="otg_missing_error">Radika dosiero ne validas. Kontrolu vian OTG-ilon kaj/aŭ viajn agordojn.</string>
     <string name="ext_document_provider_error">Radika dosiero ne validas. Kontrolu viajn SD-kartajn agordojn.</string>
     <string name="owncloud_unspecified_error">Ne indikita eraro okazis konekti al la nuba servilo. Kontrolu viajn agordon kaj/aŭ provu postiome.</string>
@@ -105,4 +105,12 @@
     <string name="failed_to_load_file">Malsukcesis decidi dosieron ŝargotan</string>
     <string name="storage_permission_required">Permeso bezonata por konservi</string>
     <string name="file_creation_failed">Malsukcesis krei dosieron</string>
+    <string name="theme_system_default">Defaŭlta sistema</string>
+    <string name="choose_theme">Elekti etoson</string>
+    <string name="theme">Etoso</string>
+    <string name="theme_light">Hela</string>
+    <string name="theme_dark">Malhela</string>
+    <string name="pref_user_name_info">Uzata por aldoni komenton</string>
+    <string name="pref_user_name">Salutnomo</string>
+    <string name="pref_user_name_guest">Gasta uzanto</string>
 </resources>

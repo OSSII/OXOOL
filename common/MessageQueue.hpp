@@ -134,8 +134,8 @@ protected:
     {
         std::string id;
         std::string text;
-        if (!LOOLProtocol::getTokenString(tokens, "id", id) ||
-            !LOOLProtocol::getTokenString(tokens, "text", text))
+        if (!COOLProtocol::getTokenString(tokens, "id", id) ||
+            !COOLProtocol::getTokenString(tokens, "text", text))
             return std::string();
 
         int i = getQueue().size() - 1;
@@ -160,9 +160,9 @@ protected:
             std::string queuedText;
             if (queuedTokens.equals(0, tokens, 0) &&
                 queuedTokens.equals(1, "textinput") &&
-                LOOLProtocol::getTokenString(queuedTokens, "id", queuedId) &&
+                COOLProtocol::getTokenString(queuedTokens, "id", queuedId) &&
                 queuedId == id &&
-                LOOLProtocol::getTokenString(queuedTokens, "text", queuedText))
+                COOLProtocol::getTokenString(queuedTokens, "text", queuedText))
             {
                 // Remove the queued textinput message and combine it with the current one
                 getQueue().erase(getQueue().begin() + i);
@@ -181,7 +181,7 @@ protected:
     }
 
     /// Search the queue for a previous removetextcontext message (which actually means "remove text
-    /// content", the word "context" is becaue of some misunderstanding lost in history) and if
+    /// content", the word "context" is because of some misunderstanding lost in history) and if
     /// found, remove it and combine its input with that in the current removetextcontext message.
     /// We check that there aren't any interesting messages inbetween that would make it wrong to
     /// merge the removetextcontext messages.
@@ -192,9 +192,9 @@ protected:
         std::string id;
         int before = 0;
         int after = 0;
-        if (!LOOLProtocol::getTokenString(tokens, "id", id) ||
-            !LOOLProtocol::getTokenInteger(tokens, "before", before) ||
-            !LOOLProtocol::getTokenInteger(tokens, "after", after))
+        if (!COOLProtocol::getTokenString(tokens, "id", id) ||
+            !COOLProtocol::getTokenInteger(tokens, "before", before) ||
+            !COOLProtocol::getTokenInteger(tokens, "after", after))
             return std::string();
 
         int i = getQueue().size() - 1;
@@ -220,10 +220,10 @@ protected:
             int queuedAfter = 0;
             if (queuedTokens.equals(0, tokens, 0) &&
                 queuedTokens.equals(1, "removetextcontext") &&
-                LOOLProtocol::getTokenStringFromMessage(queuedMessage, "id", queuedId) &&
+                COOLProtocol::getTokenStringFromMessage(queuedMessage, "id", queuedId) &&
                 queuedId == id &&
-                LOOLProtocol::getTokenIntegerFromMessage(queuedMessage, "before", queuedBefore) &&
-                LOOLProtocol::getTokenIntegerFromMessage(queuedMessage, "after", queuedAfter))
+                COOLProtocol::getTokenIntegerFromMessage(queuedMessage, "before", queuedBefore) &&
+                COOLProtocol::getTokenIntegerFromMessage(queuedMessage, "after", queuedAfter))
             {
                 // Remove the queued removetextcontext message and combine it with the current one
                 getQueue().erase(getQueue().begin() + i);

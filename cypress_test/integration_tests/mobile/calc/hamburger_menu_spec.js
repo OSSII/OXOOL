@@ -1,71 +1,82 @@
-/* global describe it cy require afterEach expect */
+/* global describe it cy Cypress require afterEach expect */
 
 var helper = require('../../common/helper');
 var calcHelper = require('../../common/calc_helper');
 var mobileHelper = require('../../common/mobile_helper');
-var calcMobileHelper = require('./calc_mobile_helper');
+var repairHelper = require('../../common/repair_document_helper');
 
 describe('Trigger hamburger menu options.', function() {
-	var testFileName = '';
+	var testFileName;
 
 	function before(testFile) {
-		testFileName = testFile;
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(testFile, 'calc');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	}
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Save', function() {
 		before('hamburger_menu.ods');
+		calcHelper.selectEntireSheet();
 
-		mobileHelper.openHamburgerMenu();
+		cy.get('#copy-paste-container table td')
+			.should('contain.text', 'Textx');
 
-		cy.contains('.menu-entry-with-icon', 'File')
-			.click();
+		calcHelper.clickOnFirstCell(true, true);
 
-		cy.contains('.menu-entry-with-icon', 'Save')
-			.click();
+		helper.selectAllText();
 
-		// TODO: we have no visual indicator of save was done
-		// So just trigger saving to catch any exception / console error
-		cy.wait(500);
+		helper.typeIntoDocument('new');
+
+		calcHelper.selectEntireSheet();
+
+		cy.get('#copy-paste-container table td')
+			.should('contain.text', 'new');
+
+		mobileHelper.selectHamburgerMenuItem(['File', 'Save']);
+
+		//reset get to original function
+		Cypress.Commands.overwrite('get', function(originalFn, selector, options) {
+			return originalFn(selector, options);
+		});
+
+		// Reopen the document and check content.
+		helper.reload(testFileName, 'calc', true);
+
+		mobileHelper.enableEditingMobile();
+
+		calcHelper.selectEntireSheet();
+
+		cy.get('#copy-paste-container table td')
+			.should('contain.text', 'new');
 	});
 
 	it('Print', function() {
 		before('hamburger_menu.ods');
 
 		// A new window should be opened with the PDF.
-		cy.window()
+		helper.getCoolFrameWindow()
 			.then(function(win) {
 				cy.stub(win, 'open');
 			});
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['File', 'Print']);
 
-		cy.contains('.menu-entry-with-icon', 'File')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Print')
-			.click();
-
-		cy.window().its('open').should('be.called');
+		helper.getCoolFrameWindow()
+			.then(function(win) {
+				cy.wrap(win).its('open').should('be.called');
+			});
 	});
 
 	it('Download as PDF', function() {
 		before('hamburger_menu.ods');
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'PDF Document (.pdf)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'PDF Document (.pdf)']);
+		mobileHelper.pressPushButtonOfDialog('Export');
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -75,13 +86,7 @@ describe('Trigger hamburger menu options.', function() {
 	it('Download as ODS', function() {
 		before('hamburger_menu.ods');
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'ODF spreadsheet (.ods)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'ODF spreadsheet (.ods)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -91,13 +96,7 @@ describe('Trigger hamburger menu options.', function() {
 	it('Download as XLS', function() {
 		before('hamburger_menu.ods');
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Excel 2003 Spreadsheet (.xls)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'Excel 2003 Spreadsheet (.xls)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -107,13 +106,7 @@ describe('Trigger hamburger menu options.', function() {
 	it('Download as XLSX', function() {
 		before('hamburger_menu.ods');
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Download as')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Excel Spreadsheet (.xlsx)')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Download as', 'Excel Spreadsheet (.xlsx)']);
 
 		cy.get('iframe')
 			.should('have.attr', 'data-src')
@@ -129,47 +122,35 @@ describe('Trigger hamburger menu options.', function() {
 		cy.get('textarea.clipboard')
 			.type('{q}');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('contain.text', 'q');
 
 		// Undo
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Undo')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Undo']);
 
 		cy.get('input#addressInput')
 			.should('have.prop', 'value', 'A1');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('not.contain.text', 'q');
 
 		// Redo
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Redo')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Redo']);
 
 		cy.get('input#addressInput')
 			.should('have.prop', 'value', 'A1');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('contain.text', 'q');
 	});
 
-	it('Repair.', function() {
+	it('Repair Document', function() {
 		before('hamburger_menu.ods');
 
 		// Type a new character
@@ -177,36 +158,18 @@ describe('Trigger hamburger menu options.', function() {
 		cy.get('textarea.clipboard')
 			.type('{q}');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('contain.text', 'q');
 
 		// Revert one undo step via Repair
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Repair')
-			.click();
-
-		cy.get('.leaflet-popup-content')
-			.should('be.visible');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(2)')
-			.should('contain.text', 'Undo');
-
-		cy.get('.leaflet-popup-content table tr:nth-of-type(2)')
-			.click();
-
-		cy.get('.leaflet-popup-content input[value=\'Jump to state\']')
-			.click();
+		repairHelper.rollbackPastChange('Undo', undefined, true);
 
 		cy.get('input#addressInput')
 			.should('have.prop', 'value', 'A1');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td')
 			.should('not.contain.text', 'q');
@@ -215,102 +178,39 @@ describe('Trigger hamburger menu options.', function() {
 	it('Cut.', function() {
 		before('hamburger_menu.ods');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Cut']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Cut')
-			.click();
-
-		// TODO: cypress does not support clipboard operations
-		// so we get a warning dialog here.
-		cy.get('.vex-dialog-form')
-			.should('be.visible');
-
-		cy.get('.vex-dialog-message')
-			.should('have.text', 'Please use the copy/paste buttons on your on-screen keyboard.');
-
-		cy.get('.vex-dialog-button-primary.vex-dialog-button.vex-first')
-			.click();
-
-		cy.get('.vex-dialog-form')
-			.should('not.be.visible');
+		cy.get('#copy_paste_warning').should('exist');
 	});
 
 	it('Copy.', function() {
 		before('hamburger_menu.ods');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Copy']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Copy')
-			.click();
-
-		// TODO: cypress does not support clipboard operations
-		// so we get a warning dialog here.
-		cy.get('.vex-dialog-form')
-			.should('be.visible');
-
-		cy.get('.vex-dialog-message')
-			.should('have.text', 'Please use the copy/paste buttons on your on-screen keyboard.');
-
-		cy.get('.vex-dialog-button-primary.vex-dialog-button.vex-first')
-			.click();
-
-		cy.get('.vex-dialog-form')
-			.should('not.be.visible');
+		cy.get('#copy_paste_warning').should('exist');
 	});
 
 	it('Paste.', function() {
 		before('hamburger_menu.ods');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Paste']);
 
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Paste')
-			.click();
-
-		// TODO: cypress does not support clipboard operations
-		// so we get a warning dialog here.
-		cy.get('.vex-dialog-form')
-			.should('be.visible');
-
-		cy.get('.vex-dialog-message')
-			.should('have.text', 'Please use the copy/paste buttons on your on-screen keyboard.');
-
-		cy.get('.vex-dialog-button-primary.vex-dialog-button.vex-first')
-			.click();
-
-		cy.get('.vex-dialog-form')
-			.should('not.be.visible');
+		cy.get('#copy_paste_warning').should('exist');
 	});
 
 	it('Select all.', function() {
 		before('hamburger_menu.ods');
 
-		cy.get('#copy-paste-container table td')
-			.should('not.contain.text', 'Text');
+		mobileHelper.selectHamburgerMenuItem(['Edit', 'Select All']);
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Edit')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Select All')
-			.click();
-
-		cy.get('.leaflet-marker-icon')
+		cy.get('.spreadsheet-cell-resize-marker')
 			.should('be.visible');
 
 		cy.get('#copy-paste-container table td')
@@ -320,10 +220,7 @@ describe('Trigger hamburger menu options.', function() {
 	it('Search some word.', function() {
 		before('hamburger_menu_search.ods');
 
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Search')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Search']);
 
 		// Search bar become visible
 		cy.get('#mobile-wizard-content')
@@ -347,18 +244,9 @@ describe('Trigger hamburger menu options.', function() {
 
 		calcHelper.clickOnFirstCell();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Sheet', 'Insert Rows', 'Rows Above']);
 
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Insert Rows')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Rows Above')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 3);
@@ -377,18 +265,9 @@ describe('Trigger hamburger menu options.', function() {
 
 		calcHelper.clickOnFirstCell();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Sheet', 'Insert Rows', 'Rows Below']);
 
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Insert Rows')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Rows Below')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 3);
@@ -407,18 +286,9 @@ describe('Trigger hamburger menu options.', function() {
 
 		calcHelper.clickOnFirstCell();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Sheet', 'Insert Columns', 'Columns Before']);
 
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Insert Columns')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Columns Before')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 2);
@@ -437,18 +307,9 @@ describe('Trigger hamburger menu options.', function() {
 
 		calcHelper.clickOnFirstCell();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Sheet', 'Insert Columns', 'Columns After']);
 
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Insert Columns')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Columns After')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 2);
@@ -467,15 +328,9 @@ describe('Trigger hamburger menu options.', function() {
 
 		calcHelper.clickOnFirstCell();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Sheet', 'Delete Rows']);
 
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Delete Rows')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 1);
@@ -492,15 +347,9 @@ describe('Trigger hamburger menu options.', function() {
 
 		calcHelper.clickOnFirstCell();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Sheet', 'Delete Columns']);
 
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Delete Columns')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 2);
@@ -512,117 +361,15 @@ describe('Trigger hamburger menu options.', function() {
 			});
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Sheet: insert / delete row break.', function() {
-		before('hamburger_menu_sheet.ods');
-
-		// Select B2 cell
-		calcHelper.clickOnFirstCell();
-
-		cy.get('.spreadsheet-cell-resize-marker[style=\'transform: translate3d(77px, 11px, 0px); z-index: 11;\']')
-			.then(function(marker) {
-				expect(marker).to.have.lengthOf(1);
-				var XPos = marker[0].getBoundingClientRect().right + 2;
-				var YPos = marker[0].getBoundingClientRect().bottom + 2;
-				cy.get('body')
-					.click(XPos, YPos);
-
-				cy.get('input#addressInput')
-					.should('have.prop', 'value', 'B2');
-			});
-
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Insert Page Break')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Row Break')
-			.click();
-
-		// TODO: no visual indicator here
-		cy.wait(500);
-
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Delete Page Break')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Remove Row Break')
-			.click();
-
-		// TODO: no visual indicator here
-		cy.wait(500);
-	});
-
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Sheet: insert / delete column break.', function() {
-		before('hamburger_menu_sheet.ods');
-
-		// Select B2 cell
-		calcHelper.clickOnFirstCell();
-
-		cy.get('.spreadsheet-cell-resize-marker[style=\'transform: translate3d(77px, 11px, 0px); z-index: 11;\']')
-			.then(function(marker) {
-				expect(marker).to.have.lengthOf(1);
-				var XPos = marker[0].getBoundingClientRect().right + 2;
-				var YPos = marker[0].getBoundingClientRect().bottom + 2;
-				cy.get('body')
-					.click(XPos, YPos);
-
-				cy.get('input#addressInput')
-					.should('have.prop', 'value', 'B2');
-			});
-
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Insert Page Break')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Column Break')
-			.click();
-
-		// TODO: no visual indicator here
-		cy.wait(500);
-
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Sheet')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Delete Page Break')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Remove Column Break')
-			.click();
-
-		// TODO: no visual indicator here
-		cy.wait(500);
-	});
-
 	it('Data: sort ascending.', function() {
 		before('hamburger_menu_sort.ods');
 
 		// Sort the first column's data
-		calcMobileHelper.selectFirstColumn();
+		calcHelper.selectFirstColumn();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Sort Ascending']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Sort Ascending')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 4);
@@ -641,17 +388,11 @@ describe('Trigger hamburger menu options.', function() {
 		before('hamburger_menu_sort.ods');
 
 		// Sort the first column's data
-		calcMobileHelper.selectFirstColumn();
+		calcHelper.selectFirstColumn();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Sort Descending']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Sort Descending')
-			.click();
-
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table tr')
 			.should('have.length', 4);
@@ -669,271 +410,83 @@ describe('Trigger hamburger menu options.', function() {
 	it('Data: grouping / ungrouping.', function() {
 		before('hamburger_menu.ods');
 
-		// Use columns header height as indicator
-		helper.initAliasToNegative('origHeaderHeight');
-
-		cy.get('.spreadsheet-header-columns')
-			.invoke('height')
-			.as('origHeaderHeight');
-
-		cy.get('@origHeaderHeight')
-			.should('be.greaterThan', 0);
-
 		// Group first
-		calcMobileHelper.selectFirstColumn();
+		calcHelper.selectFirstColumn();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Group...']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group...')
-			.click();
-
-		cy.get('@origHeaderHeight')
-			.then(function(origHeaderHeight) {
-				cy.get('.spreadsheet-header-columns')
-					.should(function(header) {
-						expect(header.height()).to.be.greaterThan(origHeaderHeight);
-					});
-			});
+		cy.get('[id="test-div-column group"]').should('exist');
 
 		// Then ungroup
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Ungroup...']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Ungroup...')
-			.click();
-
-		cy.get('@origHeaderHeight')
-			.then(function(origHeaderHeight) {
-				cy.get('.spreadsheet-header-columns')
-					.should(function(header) {
-						expect(header.height()).to.be.at.most(origHeaderHeight);
-					});
-			});
+		cy.get('[id="test-div-column group"]').should('not.exist');
 	});
 
 	it('Data: remove grouping outline.', function() {
 		before('hamburger_menu.ods');
 
-		// Use columns header height as indicator
-		helper.initAliasToNegative('origHeaderHeight');
-
-		cy.get('.spreadsheet-header-columns')
-			.invoke('height')
-			.as('origHeaderHeight');
-
-		cy.get('@origHeaderHeight')
-			.should('be.greaterThan', 0);
-
 		// Group first
-		calcMobileHelper.selectFirstColumn();
+		calcHelper.selectFirstColumn();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Group...']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group...')
-			.click();
-
-		cy.get('@origHeaderHeight')
-			.then(function(origHeaderHeight) {
-				cy.get('.spreadsheet-header-columns')
-					.should(function(header) {
-						expect(header.height()).to.be.greaterThan(origHeaderHeight);
-					});
-			});
+		cy.get('[id="test-div-column group"]').should('exist');
 
 		// Then remove outline
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Remove Outline']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Remove Outline')
-			.click();
-
-		cy.get('@origHeaderHeight')
-			.then(function(origHeaderHeight) {
-				cy.get('.spreadsheet-header-columns')
-					.should(function(header) {
-						expect(header.height()).to.be.at.most(origHeaderHeight);
-					});
-			});
+		cy.get('[id="test-div-column group"]').should('not.exist');
 	});
 
 	it('Data: show / hide grouping details.', function() {
 		before('hamburger_menu.ods');
 
-		// Use columns header height as indicator
-		helper.initAliasToNegative('origHeaderHeight');
-
-		cy.get('.spreadsheet-header-columns')
-			.invoke('height')
-			.as('origHeaderHeight');
-
-		cy.get('@origHeaderHeight')
-			.should('be.greaterThan', 0);
-
 		// Group first
-		calcMobileHelper.selectFirstColumn();
+		calcHelper.selectFirstColumn();
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Group...']);
 
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group...')
-			.click();
-
-		cy.get('@origHeaderHeight')
-			.then(function(origHeaderHeight) {
-				cy.get('.spreadsheet-header-columns')
-					.should(function(header) {
-						expect(header.height()).to.be.greaterThan(origHeaderHeight);
-					});
-			});
+		cy.get('[id="test-div-column group"]').should('exist');
 
 		// Use selected content as indicator
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table')
 			.should('exist');
 
 		// Hide details
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Hide Details')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Hide Details']);
 
 		// Frist column is hidden -> no content
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table')
 			.should('not.exist');
 
 		// Show details
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Data')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Group and Outline')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Show Details')
-			.click();
+		mobileHelper.selectHamburgerMenuItem(['Data', 'Group and Outline', 'Show Details']);
 
 		// Frist column is visible again -> we have content again
-		calcMobileHelper.selectAllMobile(false);
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table')
 			.should('exist');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Automatic spell checking.', function() {
-		before('hamburger_menu.ods');
-
-		// Make everything white on tile
-		calcMobileHelper.selectAllMobile(false);
-
-		mobileHelper.openMobileWizard();
-
-		helper.clickOnIdle('#ScCellAppearancePropertyPanel');
-
-		cy.contains('.menu-entry-with-icon', 'Background Color')
-			.should('be.visible');
-
-		helper.clickOnIdle('#border-12');
-
-		helper.clickOnIdle('#FrameLineColor');
-
-		mobileHelper.selectFromColorPalette(2, 0, 7);
-
-		mobileHelper.closeMobileWizard();
-
-		mobileHelper.openTextPropertiesPanel();
-
-		helper.clickOnIdle('#Color');
-
-		mobileHelper.selectFromColorPalette(0, 0, 7);
-
-		var firstTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 0px; top: 5px;\']';
-		var centerTile = '.leaflet-tile-loaded[style=\'width: 256px; height: 256px; left: 256px; top: 5px;\']';
-		helper.imageShouldBeFullWhiteOrNot(centerTile, true);
-		helper.imageShouldBeFullWhiteOrNot(firstTile, false);
-
-		// Disable automatic spell checking
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Automatic Spell Checking')
-			.click();
-
-		helper.imageShouldBeFullWhiteOrNot(firstTile, true);
-
-		// Enable automatic spell checking again
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Automatic Spell Checking')
-			.click();
-
-		helper.imageShouldBeFullWhiteOrNot(firstTile, false);
-	});
-
 	it('Check version information.', function() {
 		before('hamburger_menu.ods');
 
-		mobileHelper.openHamburgerMenu();
+		mobileHelper.selectHamburgerMenuItem(['About']);
 
-		// Open about dialog
-		cy.contains('.menu-entry-with-icon', 'About')
-			.click();
-
-		cy.get('.vex-content')
+		cy.get('#mobile-wizard-content')
 			.should('exist');
 
 		// Check the version
-		if (helper.getLOVersion() === 'master') {
-			cy.contains('#lokit-version', 'LibreOffice')
-				.should('exist');
-		} else if (helper.getLOVersion() === 'cp-6-2' ||
-				   helper.getLOVersion() === 'cp-6-4')
-		{
-			cy.contains('#lokit-version', 'Collabora Office')
-				.should('exist');
-		}
+		cy.contains('#lokit-version', 'Collabora Office')
+			.should('exist');
 
 		// Close about dialog
-		cy.get('.vex-close')
-			.click({force : true});
-
-		cy.get('.vex-content')
-			.should('not.exist');
+		cy.get('div.mobile-wizard.jsdialog-overlay.cancellable').click({force : true});
 	});
 });

@@ -1,7 +1,5 @@
 /* -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -31,6 +29,7 @@ public class FileUtilities {
     static final int CALC = 1;
     static final int IMPRESS = 2;
     static final int DRAWING = 3;
+    static final int PDF = 4;
 
     static final int UNKNOWN = 10;
 
@@ -64,6 +63,7 @@ public class FileUtilities {
         mExtnMap.put(".fodg", DRAWING);
         mExtnMap.put(".fodp",  IMPRESS);
         mExtnMap.put(".fods",  CALC);
+        mExtnMap.put(".pdf",  PDF);
 
         // ODF templates
         mExtnMap.put(".ott", DOC);
@@ -80,6 +80,8 @@ public class FileUtilities {
         mExtnMap.put(".ppt",  IMPRESS);
         // mExtnMap.put(".pps",  IMPRESS);
         mExtnMap.put(".xls",  CALC);
+        mExtnMap.put(".xlsb",  CALC);
+        mExtnMap.put(".xlsm",  CALC);
 
         // MS templates
         mExtnMap.put(".dot",  DOC);
@@ -124,6 +126,7 @@ public class FileUtilities {
         extensionToMimeTypeMap.put("odm", "application/vnd.oasis.opendocument.text-master");
         extensionToMimeTypeMap.put("ott", "application/vnd.oasis.opendocument.text-template");
         extensionToMimeTypeMap.put("oth", "application/vnd.oasis.opendocument.text-web");
+        extensionToMimeTypeMap.put("txt", "text/plain");
     }
 
     public static String getExtension(String filename) {

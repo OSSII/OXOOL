@@ -3,7 +3,7 @@
  * L.Clipboard is used to abstract our storage and management of
  * local & remote clipboard data.
  */
-/* global app _ vex brandProductName isAnyVexDialogActive $ _UNO */
+/* global app _ brandProductName $ */
 
 // Get all interesting clipboard related events here, and handle
 // download logic in one place ...
@@ -76,10 +76,16 @@ L.Clipboard = L.Class.extend({
 	getMetaPath: function(idx) {
 		if (!idx)
 			idx = 0;
-		return '/lool/clipboard?WOPISrc=' + encodeURIComponent(this._map.options.doc) +
+
+		var metaPath = '/cool/clipboard?WOPISrc=' + encodeURIComponent(this._map.options.doc) +
 			'&ServerId=' + app.socket.WSDServer.Id +
 			'&ViewId=' + this._map._docLayer._viewId +
 			'&Tag=' + this._accessKey[idx];
+
+		if (window.routeToken !== '')
+			metaPath += '&RouteToken='+window.routeToken;
+
+		return metaPath;
 	},
 
 	getMetaURL: function(idx) {
@@ -237,12 +243,12 @@ L.Clipboard = L.Class.extend({
 				}
 			}, false);
 
-			if ('processOxoolUrl' in window) {
-				url = window.processOxoolUrl({ url: url, type: 'clipboard' });
+			if ('processCoolUrl' in window) {
+				url = window.processCoolUrl({ url: url, type: 'clipboard' });
 			}
 
 			request.open(type, url, true /* isAsync */);
-			request.timeout = 20 * 1000; // 20 secs ...
+			request.timeout = 30 * 1000; // 30 secs ...
 			request.responseType = 'blob';
 			if (optionalFormData !== null)
 				request.send(optionalFormData);
@@ -267,8 +273,8 @@ L.Clipboard = L.Class.extend({
 				that._doAsyncDownload(
 					'POST', dest, formData, false,
 					function() {
-						if (this.pasteSpecialVex && this.pasteSpecialVex.isOpen) {
-							vex.close(this.pasteSpecialVex);
+						if (this.isPasteSpecialDialogOpen()) {
+							this._map.jsdialog.closeDialog(this.pasteSpecialDialogId, false);
 							window.app.console.log('up-load done, now paste special');
 							app.socket.sendMessage('uno .uno:PasteSpecial');
 						} else {
@@ -288,12 +294,7 @@ L.Clipboard = L.Class.extend({
 				if (that._isStubHtml(fallbackHtml))
 				{
 					// Let the user know they haven't really copied document content.
-					vex.dialog.alert({
-						message: _('Failed to download clipboard, please re-copy'),
-						callback: function () {
-							that._map.focus();
-						}
-					});
+					this._map.uiManager.showInfoModal('data transfer warning', '', _('Failed to download clipboard, please re-copy'));
 					return;
 				}
 
@@ -302,8 +303,8 @@ L.Clipboard = L.Class.extend({
 				that._doAsyncDownload(
 					'POST', dest, formData, false,
 					function() {
-						if (this.pasteSpecialVex && this.pasteSpecialVex.isOpen) {
-							vex.close(this.pasteSpecialVex);
+						if (this.isPasteSpecialDialogOpen()) {
+							this._map.jsdialog.closeDialog(this.pasteSpecialDialogId, false);
 							window.app.console.log('up-load of fallback done, now paste special');
 							app.socket.sendMessage('uno .uno:PasteSpecial');
 						} else {
@@ -509,15 +510,24 @@ L.Clipboard = L.Class.extend({
 		if ($('.ui-edit').is(':focus'))
 			return true;
 
+		if ($('.ui-textarea').is(':focus'))
+			return true;
+
 		if ($('.w2ui-input').is(':focus'))
 			return true;
 
-		if (isAnyVexDialogActive() && !(this.pasteSpecialVex && this.pasteSpecialVex.isOpen))
+		if (this._map.uiManager.isAnyDialogOpen() && !this.isPasteSpecialDialogOpen())
 			return true;
 
-		if ($('.annotation-active').length && $('.oxool-annotation-edit').is(':visible'))
+		if ($('.annotation-active').length && $('.cool-annotation-edit').is(':visible'))
 		    return true;
 
+		return false;
+	},
+
+	_isFormulabarSelected: function() {
+		if ($('#sc_input_window').is(':focus'))
+			return true;
 		return false;
 	},
 
@@ -630,10 +640,7 @@ L.Clipboard = L.Class.extend({
 			else
 			{
 				window.app.console.log('help did not arrive for ' + operation);
-				if (window.mode.isDesktop())
-					that._warnCopyPaste();
-				else
-					L.dialog.AsyncClipboard.onlyPasteInside(cmd);
+				that._warnCopyPaste();
 			}
 		}, 150 /* ms */);
 	},
@@ -657,13 +664,9 @@ L.Clipboard = L.Class.extend({
 		} else if (cmd === '.uno:Cut') {
 			this._execCopyCutPaste('cut', cmd);
 		} else if (cmd === '.uno:Paste') {
-			if (L.dialog.AsyncClipboard.canBePaste()) {
-				L.dialog.AsyncClipboard.paste();
-			} else {
-				this._execCopyCutPaste('paste', cmd);
-			}
-		} else if (cmd === '.uno:PasteSpecial' || cmd === '.uno:PasteUnformatted') {
-			this._openPasteSpecialPopup(cmd);
+			this._execCopyCutPaste('paste', cmd);
+		} else if (cmd === '.uno:PasteSpecial') {
+			this._openPasteSpecialPopup();
 		} else {
 			return false;
 		}
@@ -708,13 +711,9 @@ L.Clipboard = L.Class.extend({
 			// paste into dialog
 			var KEY_PASTE = 1299;
 			map._textInput._sendKeyEvent(0, KEY_PASTE);
-		} else if (this.pasteSpecialVex && this.pasteSpecialVex.isOpen) {
-			this.pasteSpecialVex.close();
-			if (map.isUnoCommand(this.pasteSpecialVex.filterCmd)) {
-				app.socket.sendMessage('uno ' + this.pasteSpecialVex.filterCmd);
-			} else {
-				app.socket.sendMessage('uno .uno:PasteSpecial');
-			}
+		} else if (this.isPasteSpecialDialogOpen()) {
+			this._map.jsdialog.closeDialog(this.pasteSpecialDialogId, false);
+			app.socket.sendMessage('uno .uno:PasteSpecial');
 		} else {
 			// paste into document
 			app.socket.sendMessage('uno .uno:Paste');
@@ -731,7 +730,7 @@ L.Clipboard = L.Class.extend({
 
 		window.app.console.log('Paste');
 
-		if (this._isAnyInputFieldSelected())
+		if (this._isAnyInputFieldSelected() && !this._isFormulabarSelected())
 			return;
 
 		// If the focus is in the search box, paste there.
@@ -858,7 +857,6 @@ L.Clipboard = L.Class.extend({
 	},
 
 	_warnCopyPaste: function() {
-		var self = this;
 		var msg;
 		if (window.mode.isMobile() || window.mode.isTablet()) {
 			msg = _('<p>Please use the copy/paste buttons on your on-screen keyboard.</p>');
@@ -866,16 +864,15 @@ L.Clipboard = L.Class.extend({
 			msg = _('<p>Your browser has very limited access to the clipboard, so use these keyboard shortcuts:</p><table class="warn-copy-paste"><tr><td><kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>C</kbd></td><td><kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>X</kbd></td><td><kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>V</kbd></td></tr><tr><td>Copy</td><td>Cut</td><td>Paste</td></tr></table>');
 			msg = L.Util.replaceCtrlAltInMac(msg);
 		}
-		vex.dialog.alert({
-			unsafeMessage: msg,
-			callback: function () {
-				self._map.focus();
-			}
-		});
+
+		this._map.uiManager.showInfoModal('copy_paste_warning');
+		document.getElementById('copy_paste_warning').innerHTML = msg;
+		document.getElementById('copy_paste_warning').tabIndex = 0;
+		document.getElementById('copy_paste_warning').focus(); // We hid the OK button, we need to set focus manually on the popup.
 	},
 
 	_substProductName: function (msg) {
-		var productName = brandProductName;
+		var productName = (typeof brandProductName !== 'undefined') ? brandProductName : 'Collabora Online Development Edition (unbranded)';
 		return msg.replace('%productName', productName);
 	},
 
@@ -883,51 +880,40 @@ L.Clipboard = L.Class.extend({
 		if (this._userAlreadyWarned('warnedAboutLargeCopy'))
 			return;
 
-		var self = this;
 		var msg = _('<p>If you would like to share larger elements of your document with other applications ' +
 			    'it is necessary to first download them onto your device. To do that press the ' +
 			    '"Start download" button below, and when complete click "Confirm copy to clipboard".</p>' +
 			    '<p>If you are copy and pasting between documents inside %productName, ' +
 			    'there is no need to download.</p>');
-		vex.dialog.alert({
-			unsafeMessage: this._substProductName(msg),
-			callback: function () {
-				self._map.focus();
-			}
-		});
+
+		this._map.uiManager.showInfoModal('large_copy_paste_warning');
+		document.getElementById('large_copy_paste_warning').innerHTML = this._substProductName(msg);
+		document.getElementById('large_copy_paste_warning').tabIndex = 0;
+		document.getElementById('large_copy_paste_warning').focus(); // We hid the OK button, we need to set focus manually on the popup.
 	},
 
 	_warnLargeCopyPasteAlreadyStarted: function () {
-		var self = this;
-		vex.dialog.alert({
-			unsafeMessage: _('<p>A download due to a large copy/paste operation has already started. ' +
-				   'Please, wait for the current download or cancel it before starting a new one</p>'),
-			callback: function () {
-				self._map.focus();
-			}
-		});
+		this._map.uiManager.showInfoModal('large copy paste started warning');
+		document.getElementById('large copy paste started warning').innerHTML = _('<p>A download due to a large copy/paste operation has already started. ' +
+		'Please, wait for the current download or cancel it before starting a new one</p>');
 	},
 
-	_openPasteSpecialPopup: function (cmd) {
-		if (L.dialog.AsyncClipboard.canBePaste()) {
-			L.dialog.AsyncClipboard.paste(cmd);
-			return;
-		}
-		var self = this;
-		var title = (cmd === undefined ? '' : '<h3>' + _UNO(cmd, this._map.getDocType()) + '</h3>');
-		var msg = title + _('<p>Your browser has very limited access to the clipboard</p><p>Please press now: <kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>V</kbd> to see more options</p><p class="vex-footnote">Close popup to ignore paste special</p>');
+	isPasteSpecialDialogOpen: function() {
+		return document.getElementById('paste_special_dialog') ? true: false;
+	},
+
+	_openPasteSpecialPopup: function () {
+		var msg = _('<p>Your browser has very limited access to the clipboard</p><p>Please press now: <kbd>Ctrl</kbd><span class="kbd--plus">+</span><kbd>V</kbd> to see more options</p><p>Close popup to ignore paste special</p>');
 		msg = L.Util.replaceCtrlAltInMac(msg);
-		self._map._clip.pasteSpecialVex = vex.open({
-			unsafeContent: msg,
-			showCloseButton: true,
-			escapeButtonCloses: true,
-			overlayClosesOnClick: false,
-			buttons: {},
-			afterOpen: function() {
-				self._map.focus();
-			}
-		});
-		this._map._clip.pasteSpecialVex.filterCmd = cmd;
+
+		this._map.uiManager.showInfoModal('paste_special_dialog');
+
+		// We will use this for closing the dialog.
+		this.pasteSpecialDialogId = this._map.uiManager.generateModalId('paste_special_dialog');
+
+		document.getElementById('paste_special_dialog').innerHTML = msg;
+		document.getElementById('paste_special_dialog').tabIndex = 0;
+		document.getElementById('paste_special_dialog').focus(); // We hid the OK button, we need to set focus manually on the popup.
 	},
 });
 

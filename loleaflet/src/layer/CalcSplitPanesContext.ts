@@ -1,6 +1,6 @@
 declare var L: any;
 
-namespace oxool {
+namespace cool {
 
 export class CalcSplitPanesContext extends SplitPanesContext {
 
@@ -14,12 +14,12 @@ export class CalcSplitPanesContext extends SplitPanesContext {
 	}
 
 	public setSplitCol(splitCol: number): boolean {
-		window.app.console.assert(typeof splitCol === 'number', 'invalid argument type');
+		console.assert(typeof splitCol === 'number', 'invalid argument type');
 		return this._splitCell.setX(splitCol);
 	}
 
 	public setSplitRow(splitRow: number): boolean {
-		window.app.console.assert(typeof splitRow === 'number', 'invalid argument type');
+		console.assert(typeof splitRow === 'number', 'invalid argument type');
 		return this._splitCell.setY(splitRow);
 	}
 
@@ -53,4 +53,4 @@ export class CalcSplitPanesContext extends SplitPanesContext {
 
 }
 
-L.CalcSplitPanesContext = oxool.CalcSplitPanesContext;
+L.CalcSplitPanesContext = cool.CalcSplitPanesContext;

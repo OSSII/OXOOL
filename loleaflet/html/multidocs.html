@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<!-- Proof of concept of running multiple instance of loleaflet.html
+<!-- Proof of concept of running multiple instance of cool.html
      at the same time (each one in a different iframe).
 
      To open the first document add the path into the input and click
@@ -14,7 +14,7 @@
      That will keep the other documents opened, but not in focus.
 
      To test this, do 'make run', and then in your browser open:
-     https://localhost:9980/loleaflet/dist/multidocs.html?file_path=/opt/libreoffice/online/test/data/hello-world.ods
+     https://localhost:9980/browser/dist/multidocs.html?file_path=/opt/libreoffice/online/test/data/hello-world.ods
 -->
 
 <meta name="robots" content="noindex">
@@ -47,7 +47,7 @@
         margin-bottom: 0.25rem;
       }
       .link a {
-        color: rgb(107, 114, 128);
+        color: rgb(107, 114, 128);      
         text-decoration: none;
         font-size: 1.25rem;
         line-height: 1.75rem;
@@ -86,7 +86,7 @@
         background: rgb(243, 244, 246);
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: center;  
       }
       .modal {
         max-width: 30rem;
@@ -135,7 +135,7 @@
           <li class="link open-doc">
             <a href="#">Add new Document</a>
           </li>
-          <!-- Sample document
+          <!-- Sample document 
           <li id="doc-link-111" class="link doc">
             <a href="#" class="selected">Doc-111.ods</a>
           </li>
@@ -157,11 +157,11 @@
       (function() {
         var openedDocs = {};
         var id = 0;
-
+        
         // this function will create an iframe
         function openDocument(path) {
           var fileName = path.split('\\').pop().split('/').pop();
-
+          
           // add menu link
           var liEl = document.createElement('li');
           liEl.id = 'doc-link-' + id;
@@ -173,99 +173,99 @@
           aEl.textContent = fileName;
           liEl.appendChild(aEl);
           document.querySelector('nav ul').appendChild(liEl);
-
+          
           // add iframe
           var docEl = document.createElement('iframe');
           docEl.id = 'doc-' + id;
           docEl.setAttribute('src', getIframeSrc(path));
           document.querySelector('main').appendChild(docEl);
-
+          
           openedDocs[path] = { fileName: fileName, id: id };
-
+          
           setActiveDocument(id);
-
+          
           id++;
         }
-
+        
         function getIframeSrc(path) {
           var query = '?';
           query += 'file_path=file://' + path;
           query += '&NotWOPIButIframe=true';
 
-          var editorPath = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'loleaflet.html';
+          var editorPath = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'cool.html';
           var src = window.location.protocol + '//' + window.location.host + editorPath + query;
-
+          
           return src;
         }
-
+        
         function setActiveDocument(id) {
           // remove selected status from previous active document
           var currentActiveDoc = document.querySelector('.doc .selected');
-
+          
           if (currentActiveDoc) {
-            currentActiveDoc.classList.remove('selected');
+            currentActiveDoc.classList.remove('selected');      
           }
-
+          
           var currentActiveIframe = document.querySelector('iframe.opened');
-
+          
           if (currentActiveIframe) {
             currentActiveIframe.classList.remove('opened');
           }
-
+          
           // add selected status to new document
           document.querySelector('#doc-link-' + id + ' a').classList.add('selected');
-
+          
           // set selected status to current opened document iframe
           document.querySelector('#doc-' + id).classList.add('opened');
         }
-
+        
         function toggleModal() {
           if (Object.keys(openedDocs).length > 0) {
             document.querySelector('.js-cancel').classList.remove('hidden');
           }
-
+          
           var overlayEl = document.querySelector('.overlay');
           var operation = overlayEl.classList.contains('opened') ? 'remove' : 'add';
-
+          
           overlayEl.classList[operation]('opened');
         }
-
+        
         function onFormSubmit(formEl) {
           return function (evt) {
             evt.preventDefault();
-
+            
             var pathEl = formEl.querySelector('[name=path]');
             var path = pathEl.value;
             pathEl.value = '';
-
+            
             // already opened
             if (openedDocs[path]) {
               alert('already opened');
               return;
             }
-
+            
             openDocument(path);
-
-            toggleModal();
+            
+            toggleModal();      
           }
         }
-
+        
         function onToggleModal(evt) {
           evt.preventDefault();
           toggleModal();
         }
-
+        
         function onMenuItemClick(evt) {
           evt.preventDefault();
-
+          
           var el = evt.target;
-
+          
           if (el.classList.contains('selected') || el.nodeName !== 'A') {
             return;
           }
-
+          
           var id = el.parentElement.id;
-
+          
           if (id) {
             id = id.replace('doc-link-', '');
             setActiveDocument(id);
@@ -274,17 +274,17 @@
 
         function load() {
           var formEl = document.querySelector('.modal form');
-
+          
           formEl.addEventListener('submit', onFormSubmit(formEl));
-
+          
           document.querySelector('.open-doc a').addEventListener('click', onToggleModal);
           document.querySelector('.js-cancel').addEventListener('click', onToggleModal);
-
+          
           document.querySelector('nav ul').addEventListener('click', onMenuItemClick);
         }
-
+        
         window.onload = load;
-
+        
       }());
     </script>
   </body>

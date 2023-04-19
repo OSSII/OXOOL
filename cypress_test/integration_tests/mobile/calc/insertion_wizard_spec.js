@@ -1,31 +1,26 @@
 /* global describe it cy beforeEach require afterEach expect*/
 
-require('cypress-file-upload');
-
 var helper = require('../../common/helper');
 var calcHelper = require('../../common/calc_helper');
 var mobileHelper = require('../../common/mobile_helper');
-var calcMobileHelper = require('./calc_mobile_helper');
 
 describe('Calc insertion wizard.', function() {
-	var testFileName = 'insertion_wizard.ods';
+	var origTestFileName = 'insertion_wizard.ods';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'calc');
+		testFileName = helper.beforeAll(origTestFileName, 'calc');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 
 		calcHelper.clickOnFirstCell();
 
-		cy.get('.leaflet-marker-icon')
-			.should('be.visible');
-
 		mobileHelper.openInsertionWizard();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Inset local image.', function() {
@@ -54,13 +49,13 @@ describe('Calc insertion wizard.', function() {
 			.should('exist');
 	});
 
-	// FIXME temporarily disabled, does not work with CanvasTileLayer
-	it.skip('Insert chart.', function() {
+	it('Insert chart.', function() {
 		cy.contains('.menu-entry-with-icon', 'Chart...')
 			.click();
 
+		// TODO: why we have 32 markers here instead of 8?
 		cy.get('.leaflet-drag-transform-marker')
-			.should('have.length', 8);
+			.should('have.length', 32);
 	});
 
 	it('Insert hyperlink.', function() {
@@ -68,24 +63,24 @@ describe('Calc insertion wizard.', function() {
 			.click();
 
 		// Dialog is opened
-		cy.get('.vex-content.hyperlink-dialog')
+		cy.get('#hyperlink-link-box')
 			.should('exist');
 
 		// Type text and link
-		cy.get('.vex-content.hyperlink-dialog input[name="text"]')
+		cy.get('#hyperlink-text-box')
 			.clear()
 			.type('some text');
-		cy.get('.vex-content.hyperlink-dialog input[name="link"]')
+		cy.get('#hyperlink-link-box')
 			.type('www.something.com');
 
 		// Insert
-		cy.get('.vex-content.hyperlink-dialog .vex-dialog-button-primary')
+		cy.get('#response-ok')
 			.click();
 
 		cy.get('.blinking-cursor')
 			.should('be.visible');
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		cy.get('#copy-paste-container table td a')
 			.should('have.text', 'some text');
@@ -106,7 +101,7 @@ describe('Calc insertion wizard.', function() {
 		cy.get('.leaflet-pane.leaflet-overlay-pane svg g')
 			.should('exist');
 
-		cy.get('.leaflet-pane.leaflet-overlay-pane svg')
+		cy.get('.leaflet-pane.leaflet-overlay-pane svg.bottomright-svg-pane')
 			.should(function(svg) {
 				expect(svg[0].getBBox().width).to.be.greaterThan(0);
 				expect(svg[0].getBBox().height).to.be.greaterThan(0);
@@ -118,7 +113,7 @@ describe('Calc insertion wizard.', function() {
 		cy.contains('.menu-entry-with-icon', 'Date')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		var regex = new RegExp(';MM/DD/YY$');
 		cy.get('#copy-paste-container table td')
@@ -131,7 +126,7 @@ describe('Calc insertion wizard.', function() {
 		cy.contains('.menu-entry-with-icon', 'Time')
 			.click();
 
-		calcMobileHelper.selectAllMobile();
+		calcHelper.selectEntireSheet();
 
 		var regex = new RegExp(';HH:MM:SS AM/PM$');
 		cy.get('#copy-paste-container table td')

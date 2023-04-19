@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -33,11 +31,11 @@
 
 #include <Common.hpp>
 #include <Protocol.hpp>
-#include <LOOLWebSocket.hpp>
+#include "COOLWebSocket.hpp"
 #include <Log.hpp>
 #include <Util.hpp>
 
-using namespace LOOLProtocol;
+using namespace COOLProtocol;
 
 using Poco::Net::AcceptCertificateHandler;
 using Poco::Net::Context;
@@ -61,11 +59,13 @@ using Poco::Util::Application;
 static bool closeExpected = false;
 static std::mutex coutMutex;
 
-/// Prints incoming data from a LOOLWebSocket.
+constexpr auto Name = "connect ";
+
+/// Prints incoming data from a COOLWebSocket.
 class Output : public Runnable
 {
 public:
-    Output(LOOLWebSocket& ws) :
+    Output(COOLWebSocket& ws) :
         _ws(ws)
     {
     }
@@ -79,12 +79,12 @@ public:
             do
             {
                 char buffer[100000];
-                n = _ws.receiveFrame(buffer, sizeof(buffer), flags);
+                n = _ws.receiveFrame(buffer, sizeof(buffer), flags, Name);
                 if (n > 0 && (flags & WebSocket::FRAME_OP_BITMASK) != WebSocket::FRAME_OP_CLOSE)
                 {
                     {
                         std::unique_lock<std::mutex> lock(coutMutex);
-                        std::cout << "Got " << LOOLWebSocket::getAbbreviatedFrameDump(buffer, n, flags) << std::endl;
+                        std::cout << "Got " << COOLWebSocket::getAbbreviatedFrameDump(buffer, n, flags) << std::endl;
                     }
 
                     std::string firstLine = getFirstLine(buffer, n);
@@ -111,7 +111,7 @@ public:
                 std::cout << "CLOSE frame received" << std::endl;
             }
             if (!closeExpected)
-                std::_Exit(EX_SOFTWARE);
+                Util::forcedExit(EX_SOFTWARE);
         }
         catch (WebSocketException& exc)
         {
@@ -121,10 +121,10 @@ public:
     }
 
 private:
-    LOOLWebSocket& _ws;
+    COOLWebSocket& _ws;
 };
 
-/// Program for interactive or scripted testing of a oxool server.
+/// Program for interactive or scripted testing of a cool server.
 class Connect: public Poco::Util::Application
 {
 public:
@@ -163,9 +163,9 @@ protected:
 #endif
         std::string encodedUri;
         URI::encode(args[0], ":/?", encodedUri);
-        HTTPRequest request(HTTPRequest::HTTP_GET, "/lool/" + encodedUri + "/ws");
+        HTTPRequest request(HTTPRequest::HTTP_GET, "/cool/" + encodedUri + "/ws");
         HTTPResponse response;
-        LOOLWebSocket ws(cs, request, response);
+        COOLWebSocket ws(cs, request, response);
 
         ws.setReceiveTimeout(0);
 
@@ -192,7 +192,7 @@ protected:
             }
             else if (line == "exit")
             {
-                // While hacking on LOOL and editing input files for this program back and forth it
+                // While hacking on COOL and editing input files for this program back and forth it
                 // is a good idea to be able to add an enforced exit in the middle of the input
                 // file.
                 {
@@ -211,6 +211,7 @@ protected:
                     std::unique_lock<std::mutex> lock(coutMutex);
                     std::cout << "Sending: '" << line << '\'' << std::endl;
                 }
+
                 ws.sendFrame(line.c_str(), line.size());
             }
         }
@@ -219,8 +220,9 @@ protected:
             std::unique_lock<std::mutex> lock(coutMutex);
             std::cout << "Shutting down websocket" << std::endl;
         }
+
         closeExpected = true;
-        ws.shutdown();
+        ws.shutdown(Name);
         thread.join();
 
         return EX_OK;

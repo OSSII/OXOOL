@@ -3,65 +3,43 @@
  * L.Control.DocumentNameInput
  */
 
-/* global $ _ L */
+/* global $ _ */
 L.Control.DocumentNameInput = L.Control.extend({
-
-	_hasWopi: false,
-
-	_nameInput: null,
 
 	onAdd: function (map) {
 		this.map = map;
 
-		this._nameInput = L.DomUtil.get('document-name-input');
-
-		this._nameInput.removeAttribute('disabled'); // 強制移除 disabled 屬性
-		this._nameInput.setAttribute('autocomplete', 'off'); // 關掉自動完成
-
 		map.on('doclayerinit', this.onDocLayerInit, this);
 		map.on('wopiprops', this.onWopiProps, this);
-		map.on('updatepermission', this.onUpdatePermission, this);
-	},
-
-	onRemove: function() {
-		this.map.off('doclayerinit', this.onDocLayerInit, this);
-		this.map.off('wopiprops', this.onWopiProps, this);
-		this.map.off('updatepermission', this.onUpdatePermission, this);
 	},
 
 	documentNameConfirm: function() {
-		var value = $(this._nameInput).val();
-		// 檔名有變更
-		if (value !== null && value != '' && value != this._getFileName()) {
-			// 如果是 WOPI 協定
-			if (this._hasWopi) {
-				if (this.map['wopi'].UserCanRename && this.map['wopi'].SupportsRename) {
-					if (value.lastIndexOf('.') > 0) {
-						var fname = this.map['wopi'].BaseFileName;
-						var ext = fname.substr(fname.lastIndexOf('.')+1, fname.length);
-						// check format conversion
-						if (ext != value.substr(value.lastIndexOf('.')+1, value.length)) {
-							this.map.saveAs(value);
-						} else {
-							// same extension, just rename the file
-							// file name must be without the extension for rename
-							value = value.substr(0, value.lastIndexOf('.'));
-							this.map.renameFile(value);
-						}
+		var value = $('#document-name-input').val();
+		if (value !== null && value != '' && value != this.map['wopi'].BaseFileName) {
+			if (this.map['wopi'].UserCanRename && this.map['wopi'].SupportsRename) {
+				if (value.lastIndexOf('.') > 0) {
+					var fname = this.map['wopi'].BaseFileName;
+					var ext = fname.substr(fname.lastIndexOf('.')+1, fname.length);
+					// check format conversion
+					if (ext != value.substr(value.lastIndexOf('.')+1, value.length)) {
+						this.map.saveAs(value);
+					} else {
+						// same extension, just rename the file
+						// file name must be without the extension for rename
+						value = value.substr(0, value.lastIndexOf('.'));
+						this.map.renameFile(value);
 					}
-				} else {
-					// saveAs for rename
-					this.map.saveAs(value);
 				}
 			} else {
-				// TODO: non wopi rename/saveas flow.
+				// saveAs for rename
+				this.map.saveAs(value);
 			}
 		}
 		this.map._onGotFocus();
 	},
 
 	documentNameCancel: function() {
-		$(this._nameInput).val(this._getFileName());
+		$('#document-name-input').val(this.map['wopi'].BreadcrumbDocName);
 		this.map._onGotFocus();
 	},
 
@@ -76,17 +54,17 @@ L.Control.DocumentNameInput = L.Control.extend({
 	onDocumentNameFocus: function() {
 		// hide the caret in the main document
 		this.map._onLostFocus();
-		var name = this._getFileName();
+		var name = this.map['wopi'].BaseFileName;
 		var extn = name.lastIndexOf('.');
 		if (extn < 0)
 			extn = name.length;
-		$(this._nameInput).val(name);
-		$(this._nameInput)[0].setSelectionRange(0, extn);
+		$('#document-name-input').val(name);
+		$('#document-name-input')[0].setSelectionRange(0, extn);
 	},
 
 	onDocLayerInit: function() {
 
-		var el = $(this._nameInput);
+		var el = $('#document-name-input');
 
 		try {
 			var fileNameFullPath = new URL(
@@ -125,51 +103,31 @@ L.Control.DocumentNameInput = L.Control.extend({
 		}
 	},
 
-	onWopiProps: function(/* e */) {
-		this._hasWopi = true;
-		$(this._nameInput).val(this._getFileName()); // 文件名稱
-	},
-
-	/**
-	 * 依據是否可編輯決定文件名稱欄位是否唯讀
-	 * @param {object} e - 'onupdatepermission' 事件
-	 */
-	onUpdatePermission: function(e) {
-		var readonly = (e.perm !== 'edit'); // 預設可編輯狀態時，可以輸入文件名稱
-
-		$(this._nameInput).val(this._getFileName()); // 文件名稱
-
-		// 如果非唯讀，再考慮 WOPI 是否禁止另存新檔或是改檔名
-		if (!readonly && this._hasWopi) {
-			// WOPI 指定不能另存新檔的話，或是不能改名的話，文件名稱就禁止輸入
-			readonly = (this.map['wopi'].UserCanNotWriteRelative === true || this.map['wopi'].UserCanRename !== true);
-		}
-
-		if (readonly) {
-			$(this._nameInput).prop('readonly', true);
-			$(this._nameInput).off('keypress', this.onDocumentNameKeyPress);
-			$(this._nameInput).off('focus', this.onDocumentNameFocus);
-			$(this._nameInput).off('blur', this.documentNameCancel);
+	onWopiProps: function(e) {
+		if (e.BaseFileName !== null)
+			// set the document name into the name field
+			$('#document-name-input').val(e.BreadcrumbDocName !== undefined ? e.BreadcrumbDocName : e.BaseFileName);
+		if (e.UserCanNotWriteRelative === false) {
+			// Save As allowed
+			$('#document-name-input').prop('disabled', false);
+			$('#document-name-input').addClass('editable');
+			$('#document-name-input').off('keypress', this.onDocumentNameKeyPress).on('keypress', this.onDocumentNameKeyPress.bind(this));
+			$('#document-name-input').off('focus', this.onDocumentNameFocus).on('focus', this.onDocumentNameFocus.bind(this));
+			$('#document-name-input').off('blur', this.documentNameCancel).on('blur', this.documentNameCancel.bind(this));
 		} else {
-			$(this._nameInput).prop('readonly', false);
-			$(this._nameInput).off('keypress', this.onDocumentNameKeyPress).on('keypress', this.onDocumentNameKeyPress.bind(this));
-			$(this._nameInput).off('focus', this.onDocumentNameFocus).on('focus', this.onDocumentNameFocus.bind(this));
-			$(this._nameInput).off('blur', this.documentNameCancel).on('blur', this.documentNameCancel.bind(this));
+			$('#document-name-input').prop('disabled', true);
+			$('#document-name-input').removeClass('editable');
+			$('#document-name-input').off('keypress', this.onDocumentNameKeyPress);
 		}
 	},
 
 	_getMaxAvailableWidth: function() {
-		var x = $(this._nameInput).prop('offsetLeft') + $('.document-title').prop('offsetLeft') + $(this._nameInput).prop('offsetLeft');
+		var x = $('#document-titlebar').prop('offsetLeft') + $('.document-title').prop('offsetLeft') + $('#document-name-input').prop('offsetLeft');
 		var containerWidth = parseInt($('.main-nav').css('width'));
 		var maxWidth = Math.max(containerWidth - x - 30, 0);
 		maxWidth = Math.max(maxWidth, 300); // input field at least 300px
 		return maxWidth;
 	},
-
-	_getFileName: function() {
-		return this._hasWopi ? this.map['wopi'].BaseFileName :
-			decodeURIComponent(decodeURIComponent(this.map.options.doc.replace(/.*\//, '')));
-	}
 
 });
 

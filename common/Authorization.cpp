@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,13 +8,11 @@
 #include <config.h>
 
 #include "Authorization.hpp"
-#include "Protocol.hpp"
 #include "Log.hpp"
-#include <Exceptions.hpp>
+#include "StringVector.hpp"
 
-#include <cstdlib>
-#include <cassert>
-#include <regex>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/URI.h>
 
 void Authorization::authorizeURI(Poco::URI& uri) const
 {
@@ -59,21 +55,21 @@ void Authorization::authorizeRequest(Poco::Net::HTTPRequest& request) const
             {
                 std::string token = tokens.getParam(*it);
 
-                size_t separator = token.find_first_of(':');
+                std::size_t separator = token.find_first_of(':');
                 if (separator != std::string::npos)
                 {
-                    size_t headerStart = token.find_first_not_of(' ', 0);
-                    size_t headerEnd = token.find_last_not_of(' ', separator - 1);
+                    std::size_t headerStart = token.find_first_not_of(' ', 0);
+                    std::size_t headerEnd = token.find_last_not_of(' ', separator - 1);
 
-                    size_t valueStart = token.find_first_not_of(' ', separator + 1);
-                    size_t valueEnd = token.find_last_not_of(' ');
+                    std::size_t valueStart = token.find_first_not_of(' ', separator + 1);
+                    std::size_t valueEnd = token.find_last_not_of(' ');
 
                     // set the header
                     if (headerStart != std::string::npos && headerEnd != std::string::npos &&
                             valueStart != std::string::npos && valueEnd != std::string::npos)
                     {
-                        size_t headerLength = headerEnd - headerStart + 1;
-                        size_t valueLength = valueEnd - valueStart + 1;
+                        std::size_t headerLength = headerEnd - headerStart + 1;
+                        std::size_t valueLength = valueEnd - valueStart + 1;
 
                         request.set(token.substr(headerStart, headerLength), token.substr(valueStart, valueLength));
                     }
@@ -82,17 +78,17 @@ void Authorization::authorizeRequest(Poco::Net::HTTPRequest& request) const
             break;
         }
         default:
-            // assert(false);
-            throw BadRequestException("Invalid HTTP request type");
+            LOG_ERR("No HTTP Authorization type detected. Assuming no authorization needed. "
+                    "Specify access_token to set the Authorization Bearer header.");
             break;
     }
 }
 
-Authorization Authorization::create(const Poco::URI::QueryParameters& queryParams)
+Authorization Authorization::create(const Poco::URI& uri)
 {
     // prefer the access_token
     std::string decoded;
-    for (const auto& param : queryParams)
+    for (const auto& param : uri.getQueryParameters())
     {
         if (param.first == "access_token")
         {
@@ -109,5 +105,7 @@ Authorization Authorization::create(const Poco::URI::QueryParameters& queryParam
 
     return Authorization();
 }
+
+Authorization Authorization::create(const std::string& uri) { return create(Poco::URI(uri)); }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

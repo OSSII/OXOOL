@@ -1,6 +1,6 @@
 declare var L: any;
 
-namespace oxool {
+namespace cool {
 
 /**
  * Transformation is an utility class to perform simple point transformations through a 2d-matrix.
@@ -41,4 +41,4 @@ export class Transformation {
 
 }
 
-L.Transformation = oxool.Transformation;
+L.Transformation = cool.Transformation;

@@ -9,7 +9,7 @@
 
 #include <Poco/URI.h>
 
-#include <LOOLWSD.hpp>
+#include <COOLWSD.hpp>
 #include "ProxyRequestHandler.hpp"
 #include <net/HttpRequest.hpp>
 #include <net/HttpHelper.hpp>
@@ -83,7 +83,7 @@ void ProxyRequestHandler::handleRequest(const std::string& relPath,
             };
 
     sessionProxy->setFinishedHandler(proxyCallback);
-    if (!sessionProxy->asyncRequest(requestProxy, *LOOLWSD::getWebServerPoll()))
+    if (!sessionProxy->asyncRequest(requestProxy, *COOLWSD::getWebServerPoll()))
     {
         HttpHelper::sendErrorAndShutdown(400, socket);
     }

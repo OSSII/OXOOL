@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,7 +23,7 @@
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
-namespace LOOLProtocol
+namespace COOLProtocol
 {
     // Protocol Version Number.
     // See protocol.txt.
@@ -239,20 +237,28 @@ namespace LOOLProtocol
     /// can only potentially be modifying, e.g. 'mouse' while dragging.
     /// Note: this is only used when we don't have the modified flag from
     /// Core so we flag the document as user-modified more accurately.
-    inline bool tokenIndicatesDocumentModification(const std::string& token)
+    inline bool tokenIndicatesDocumentModification(const StringVector& tokens)
     {
         // These keywords are chosen to cover the largest set of
         // commands that may potentially modify the document.
         // We need to assume modification rather than not.
-        return (
-            token.find("mouse") != std::string::npos || token.find("key") != std::string::npos ||
-            token.find("command") != std::string::npos ||
-            token.find("select") != std::string::npos || token.find("set") != std::string::npos ||
-            token.find("uno") != std::string::npos || token.find("input") != std::string::npos ||
-            token.find("move") != std::string::npos || token.find("paste") != std::string::npos ||
-            token.find("insert") != std::string::npos ||
-            token.find("resize") != std::string::npos ||
-            token.find("remove") != std::string::npos || token.find("sign") != std::string::npos);
+        if (tokens.equals(0, "key") || tokens.equals(0, "outlinestate") ||
+            tokens.equals(0, "paste") || tokens.equals(0, "insertfile") ||
+            tokens.equals(0, "textinput") || tokens.equals(0, "windowkey") ||
+            tokens.equals(0, "windowmouse") || tokens.equals(0, "windowgesture") ||
+            tokens.equals(0, "signdocument"))
+        {
+            return true;
+        }
+
+        if (tokens.size() > 1 && tokens.equals(0, "uno"))
+        {
+            // By default, all uno commands are modifying, unless we are certain they don't.
+            return !tokens.equals(1, ".uno:SidebarHide") && !tokens.equals(1, ".uno:SidebarShow") &&
+                   !tokens.equals(1, ".uno:Copy") && !tokens.equals(1, ".uno:Save");
+        }
+
+        return false;
     }
 
     /// Returns the first line of a message.
@@ -270,7 +276,7 @@ namespace LOOLProtocol
     }
 
     /// Returns an abbreviation of the message (the first line, indicating truncation). We assume
-    /// that it adhers to the LOOL protocol, i.e. that there is always a first (or only) line that
+    /// that it adhers to the COOL protocol, i.e. that there is always a first (or only) line that
     /// is in printable UTF-8. I.e. no encoding of binary bytes is done. The format of the result is
     /// not guaranteed to be stable. It is to be used for logging purposes only, not for decoding
     /// protocol frames.

@@ -53,12 +53,8 @@
 #include <chrono>
 #include <iomanip>
 
-#ifdef IOS
-#include <Foundation/Foundation.h>
-#endif
-
 #include "Log.hpp"
-#include "SpookyV2.h"
+#include "TraceEvent.hpp"
 
 namespace Png
 {
@@ -157,10 +153,6 @@ inline bool impl_encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size
     png_set_compression_level(png_ptr, 4);
 #endif
 
-#ifdef IOS
-    auto initialSize = output.size();
-#endif
-
     png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
@@ -184,16 +176,6 @@ inline bool impl_encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size
 
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
-#ifdef IOS
-    auto base64 = [[NSData dataWithBytesNoCopy:output.data() + initialSize length:(output.size() - initialSize) freeWhenDone:NO] base64EncodedDataWithOptions:0];
-
-    const char dataURLStart[] = "data:image/png;base64,";
-
-    output.resize(initialSize);
-    output.insert(output.end(), dataURLStart, dataURLStart + sizeof(dataURLStart)-1);
-    output.insert(output.end(), (char*)base64.bytes, (char*)base64.bytes + base64.length);
-#endif
-
     return true;
 }
 
@@ -203,6 +185,8 @@ inline bool encodeSubBufferToPNG(unsigned char* pixmap, size_t startX, size_t st
                                  int height, int bufferWidth, int bufferHeight,
                                  std::vector<char>& output, LibreOfficeKitTileMode mode)
 {
+    ProfileZone pz("encodeSubBufferToPNG");
+
     const auto start = std::chrono::steady_clock::now();
 
     const bool res = impl_encodeSubBufferToPNG(pixmap, startX, startY, width, height, bufferWidth,
@@ -241,28 +225,6 @@ bool encodeBufferToPNG(unsigned char* pixmap, int width, int height,
                        std::vector<char>& output, LibreOfficeKitTileMode mode)
 {
     return encodeSubBufferToPNG(pixmap, 0, 0, width, height, width, height, output, mode);
-}
-
-inline
-uint64_t hashSubBuffer(unsigned char* pixmap, size_t startX, size_t startY,
-                       long width, long height, int bufferWidth, int bufferHeight)
-{
-    if (bufferWidth < width || bufferHeight < height)
-        return 0; // magic invalid hash.
-
-    // assume a consistent mode - RGBA vs. BGRA for process
-    SpookyHash hash;
-    hash.Init(1073741789, 1073741789); // Seeds can be anything.
-    for (long y = 0; y < height; ++y)
-    {
-        const size_t position = ((startY + y) * bufferWidth * 4) + (startX * 4);
-        hash.Update(pixmap + position, width * 4);
-    }
-
-    uint64_t hash1;
-    uint64_t hash2;
-    hash.Final(&hash1, &hash2);
-    return hash1;
 }
 
 static

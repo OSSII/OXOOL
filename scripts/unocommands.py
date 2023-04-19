@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 # -*- tab-width: 4; indent-tabs-mode: nil; py-indent-offset: 4 -*-
 #
-# This file is part of the LibreOffice project.
-#
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
 import os
-import polib
 import re
 import sys
+import polib
 from lxml import etree
+
 
 def usageAndExit():
     message = """usage: {program} [--check|--update|--translate] online_dir [...]
@@ -36,11 +35,11 @@ Update the translations of unocommands.js before releasing:
     {program} --translate /path/to/online /path/to/translations
 
 """
-    print(message.format(program = sys.argv[0]))
+    print(message.format(program=sys.argv[0]))
     exit(1)
 
-# Extract uno commands name from lines like "  'Command1', 'Command2',"
 def commandsFromLine(line):
+    """Extract uno commands name from lines like "  'Command1', 'Command2',"""
     commands = []
 
     inCommand = False
@@ -50,31 +49,33 @@ def commandsFromLine(line):
             inCommand = not inCommand
             # command ended, collect it
             if not inCommand and command != '':
-                commands += [ command ]
+                commands += [command]
                 command = ''
         elif inCommand:
             command += c
 
     return commands
 
+
 # Extract uno commands name from lines like "  {uno: '.uno:Command3',"
 def commandFromMenuLine(line):
     m = re.search(r"\b_UNO\('.uno:([^']*)'", line)
     if m:
-        return [ m.group(1) ]
+        return [m.group(1)]
 
     m = re.search(r"\buno: *'\.uno:([^']*)'", line)
     if m:
-        return [ m.group(1) ]
+        return [m.group(1)]
 
     return []
+
 
 # Extract all the uno commands we are using in the Online menu
 def extractMenuCommands(path):
     commands = []
 
     # extract from the menu specifications
-    f = open(path + '/loleaflet/src/control/Control.Menubar.js', 'r')
+    f = open(path + '/browser/src/control/Control.Menubar.js', 'r')
     for line in f:
         if line.find("uno:") >= 0 and line.find("name:") < 0:
             commands += commandFromMenuLine(line)
@@ -84,13 +85,14 @@ def extractMenuCommands(path):
     # may the list unique
     return set(commands)
 
+
 # Extract all the uno commands we are using in the Online context menu
 def extractContextCommands(path):
     commandsToIgnore = ["FontDialogForParagraph"]
     commands = []
 
     # extract from the comments whitelist
-    f = open(path + '/loleaflet/src/control/Control.ContextMenu.js', 'r')
+    f = open(path + '/browser/src/control/Control.ContextMenu.js', 'r')
     readingCommands = False
     for line in f:
         if line.find('UNOCOMMANDS_EXTRACT_START') >= 0:
@@ -100,96 +102,100 @@ def extractContextCommands(path):
         elif readingCommands:
             commands += commandsFromLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.ColumnHeader.js', 'r')
+    f = open(path + '/browser/src/control/Control.ColumnHeader.ts', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.RowHeader.js', 'r')
+    f = open(path + '/browser/src/control/Control.RowHeader.ts', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.Tabs.js', 'r')
+    f = open(path + '/browser/src/control/Control.Tabs.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    commands = [command for command in commands if command not in commandsToIgnore]
+    commands = [command for command in commands
+                if command not in commandsToIgnore]
     # may the list unique
     return set(commands)
+
 
 # Extract all the uno commands we are using in the Online toolbar
 def extractToolbarCommands(path):
     commands = []
 
     # extract from the toolbars
-    f = open(path + '/loleaflet/src/control/Control.Toolbar.js', 'r')
+    f = open(path + '/browser/src/control/Control.Toolbar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.MobileBottomBar.js', 'r')
+    f = open(path + '/browser/src/control/Control.MobileBottomBar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.MobileTopBar.js', 'r')
+    f = open(path + '/browser/src/control/Control.MobileTopBar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.MobileWizardBuilder.js', 'r')
+    f = open(path + '/browser/src/control/Control.MobileWizardBuilder.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.NotebookbarBuilder.js', 'r')
+    f = open(path +
+             '/browser/src/control/Control.NotebookbarBuilder.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.Notebookbar.js', 'r')
+    f = open(path + '/browser/src/control/Control.Notebookbar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.NotebookbarWriter.js', 'r')
+    f = open(path + '/browser/src/control/Control.NotebookbarWriter.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.NotebookbarCalc.js', 'r')
+    f = open(path + '/browser/src/control/Control.NotebookbarCalc.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.NotebookbarImpress.js', 'r')
+    f = open(path +
+             '/browser/src/control/Control.NotebookbarImpress.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.NotebookbarDraw.js', 'r')
+    f = open(path + '/browser/src/control/Control.NotebookbarDraw.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.PresentationBar.js', 'r')
+    f = open(path + '/browser/src/control/Control.PresentationBar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.SearchBar.js', 'r')
+    f = open(path + '/browser/src/control/Control.SearchBar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.StatusBar.js', 'r')
+    f = open(path + '/browser/src/control/Control.StatusBar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
 
-    f = open(path + '/loleaflet/src/control/Control.TopToolbar.js', 'r')
+    f = open(path + '/browser/src/control/Control.TopToolbar.js', 'r')
     for line in f:
         if line.find("_UNO(") >= 0:
             commands += commandFromMenuLine(line)
@@ -197,10 +203,11 @@ def extractToolbarCommands(path):
     # may the list unique
     return set(commands)
 
+
 # Create mapping between the commands and appropriate strings
 def collectCommandsFromXCU(xcu, descriptions, commands, label, type):
     root = etree.parse(xcu)
-    nodes = root.xpath("/oor:component-data/node/node/node", namespaces = {
+    nodes = root.xpath("/oor:component-data/node/node/node", namespaces={
         'oor': 'http://openoffice.org/2001/registry',
         })
     for node in nodes:
@@ -210,10 +217,10 @@ def collectCommandsFromXCU(xcu, descriptions, commands, label, type):
 
         if unoCommand in commands:
             # normal labels
-            textElement = node.xpath('prop[@oor:name="' + label + '"]/value', namespaces = {
-                'oor': 'http://openoffice.org/2001/registry',
-                })
-
+            textElement = node.xpath('prop[@oor:name="' + label + '"]/value',
+                                     namespaces={'oor':
+                                                 'http://open' +
+                                                 'office.org/2001/registry', })
             if len(textElement) == 1:
                 # extract the uno command's English text
                 text = ''.join(textElement[0].itertext())
@@ -237,13 +244,16 @@ def collectCommandsFromXCU(xcu, descriptions, commands, label, type):
 
     return descriptions
 
+
 # Print commands from all the XCU files, and collect them too
-def writeUnocommandsJS(onlineDir, lofficeDir, menuCommands, contextCommands, toolbarCommands):
+def writeUnocommandsJS(
+        onlineDir, lofficeDir, menuCommands, contextCommands, toolbarCommands):
+
     descriptions = {}
     dir = lofficeDir + '/officecfg/registry/data/org/openoffice/Office/UI'
     for file in os.listdir(dir):
         if file.endswith('.xcu'):
-            type = 'global';
+            type = 'global'
             if file.startswith('Writer'):
                 type = 'text'
             elif file.startswith('Calc'):
@@ -252,23 +262,46 @@ def writeUnocommandsJS(onlineDir, lofficeDir, menuCommands, contextCommands, too
                 type = 'presentation'
 
             # main menu
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, menuCommands, 'ContextLabel', type)
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, contextCommands, 'ContextLabel', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions, menuCommands,
+                                                  'ContextLabel', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions,
+                                                  contextCommands,
+                                                  'ContextLabel', type)
 
             # right-click menu
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, contextCommands, 'PopupLabel', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions,
+                                                  contextCommands,
+                                                  'PopupLabel', type)
 
             # toolbar
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, toolbarCommands, 'PopupLabel', type)
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, toolbarCommands, 'TooltipLabel', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions,
+                                                  toolbarCommands,
+                                                  'PopupLabel', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions,
+                                                  toolbarCommands,
+                                                  'TooltipLabel', type)
 
             # fallbacks
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, menuCommands, 'Label', type)
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, contextCommands, 'Label', type)
-            descriptions = collectCommandsFromXCU(os.path.join(dir, file), descriptions, toolbarCommands, 'Label', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions, menuCommands,
+                                                  'Label', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions,
+                                                  contextCommands,
+                                                  'Label', type)
+            descriptions = collectCommandsFromXCU(os.path.join(dir, file),
+                                                  descriptions,
+                                                  toolbarCommands,
+                                                  'Label', type)
 
     # output the unocommands.js
-    f = open(onlineDir + '/loleaflet/src/unocommands.js', 'w', encoding='utf-8')
+    f = open(onlineDir + '/browser/src/unocommands.js', 'w',
+             encoding='utf-8')
     f.write('''// Don't modify, generated using unocommands.py
 
 var unoCommandsArray = {\n''')
@@ -278,7 +311,8 @@ var unoCommandsArray = {\n''')
         for type in sorted(descriptions[key].keys()):
             f.write(type + ':{')
             for menuType in sorted(descriptions[key][type].keys()):
-                f.write(menuType + ":_('" + descriptions[key][type][menuType] + "'),")
+                f.write(menuType + ":_('" + descriptions[key][type][menuType]
+                        + "'),")
             f.write('},')
         f.write('},\n')
 
@@ -324,12 +358,13 @@ window.removeAccessKey = function(text) {
 
     return descriptions
 
+
 # Read the uno commands present in the unocommands.js for checking
 def parseUnocommandsJS(onlineDir):
     strings = {}
 
-    f = open(onlineDir + '/loleaflet/src/unocommands.js', 'r', encoding='utf-8')
-    readingCommands = False
+    f = open(onlineDir + '/browser/src/unocommands.js', 'r',
+             encoding='utf-8')
     for line in f:
         m = re.match(r"\t\'([^:]*)\':.*", line)
         if m:
@@ -340,6 +375,7 @@ def parseUnocommandsJS(onlineDir):
                 strings[command] = n
 
     return strings
+
 
 # Generate translation JSONs for the .uno: commands
 def writeTranslations(onlineDir, translationsDir, strings):
@@ -353,7 +389,8 @@ def writeTranslations(onlineDir, translationsDir, strings):
 
         sys.stderr.write('Generating ' + lang + '...\n')
 
-        po = polib.pofile(poFile, autodetect_encoding=False, encoding="utf-8", wrapwidth=-1)
+        po = polib.pofile(poFile, autodetect_encoding=False,
+                          encoding="utf-8", wrapwidth=-1)
 
         translations = {}
         for entry in po.translated_entries():
@@ -365,7 +402,8 @@ def writeTranslations(onlineDir, translationsDir, strings):
                         if text == entry.msgid:
                             translations[entry.msgid] = entry.msgstr
 
-        f = open(onlineDir + '/loleaflet/l10n/uno/' + lang + '.json', 'w', encoding='utf-8')
+        f = open(onlineDir + '/browser/l10n/uno/' +
+                 lang + '.json', 'w', encoding='utf-8')
         f.write('{\n')
 
         writeComma = False
@@ -374,9 +412,11 @@ def writeTranslations(onlineDir, translationsDir, strings):
                 f.write(',\n')
             else:
                 writeComma = True
-            f.write('"' + key.replace('"','\\\"') + '":"' + translations[key].replace('"','\\\"') + '"')
+            f.write('"' + key.replace('"', '\\\"') + '":"' +
+                    translations[key].replace('"', '\\\"') + '"')
 
         f.write('\n}\n')
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -419,13 +459,14 @@ if __name__ == "__main__":
         parsed = parseUnocommandsJS(onlineDir)
         processedCommands = set(parsed.keys())
     else:
-        written = writeUnocommandsJS(onlineDir, lofficeDir, menuCommands, contextCommands, toolbarCommands)
+        written = writeUnocommandsJS(onlineDir, lofficeDir, menuCommands,
+                                     contextCommands, toolbarCommands)
         processedCommands = set(written.keys())
 
-    requiredCommands = (menuCommands | contextCommands | toolbarCommands)
-
     # check that we have translations for everything
+    requiredCommands = (menuCommands | contextCommands | toolbarCommands)
     dif = requiredCommands - processedCommands
+
     if len(dif) > 0:
         sys.stderr.write("ERROR: The following commands are not covered in unocommands.js, run scripts/unocommands.py --update:\n\n.uno:" + '\n.uno:'.join(dif) + "\n\n")
         exit(1)

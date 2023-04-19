@@ -1,7 +1,5 @@
 // -*- Mode: ObjC; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*-
 //
-// This file is part of the LibreOffice project.
-//
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,9 +17,8 @@
 #import <sys/stat.h>
 
 #import "ios.h"
-#import "CollaboraOnlineWebViewKeyboardManager.h"
 #import "FakeSocket.hpp"
-#import "LOOLWSD.hpp"
+#import "COOLWSD.hpp"
 #import "Log.hpp"
 #import "MobileApp.hpp"
 #import "SigUtil.hpp"
@@ -29,10 +26,9 @@
 
 #import "DocumentViewController.h"
 
-@interface DocumentViewController() <WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIDocumentPickerDelegate> {
+@interface DocumentViewController() <WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UIScrollViewDelegate, UIDocumentPickerDelegate, UIFontPickerViewControllerDelegate> {
     int closeNotificationPipeForForwardingThread[2];
     NSURL *downloadAsTmpURL;
-    CollaboraOnlineWebViewKeyboardManager *keyboardManager;
 }
 
 @end
@@ -84,7 +80,7 @@ static IMP standardImpOfInputAccessoryView = nil;
     WKUserContentController *userContentController = [[WKUserContentController alloc] init];
 
     [userContentController addScriptMessageHandler:self name:@"debug"];
-    [userContentController addScriptMessageHandler:self name:@"lool"];
+    [userContentController addScriptMessageHandler:self name:@"lok"];
     [userContentController addScriptMessageHandler:self name:@"error"];
 
     configuration.userContentController = userContentController;
@@ -101,9 +97,6 @@ static IMP standardImpOfInputAccessoryView = nil;
     // stopping any zoom attempt in scrollViewWillBeginZooming: below. (The zooming of the document
     // contents is handled fully in JavaScript, the WebView has no knowledge of that.)
     self.webView.scrollView.delegate = self;
-
-    keyboardManager =
-        [[CollaboraOnlineWebViewKeyboardManager alloc] initForWebView:self.webView];
 
     [self.view addSubview:self.webView];
 
@@ -203,7 +196,7 @@ static IMP standardImpOfInputAccessoryView = nil;
             [self.document closeWithCompletionHandler:^(BOOL success){
                     LOG_TRC("close completion handler gets " << (success?"YES":"NO"));
                     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"debug"];
-                    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"lool"];
+                    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"lok"];
                     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"error"];
                     self.webView.configuration.userContentController = nil;
                     [self.webView removeFromSuperview];
@@ -272,6 +265,10 @@ static IMP standardImpOfInputAccessoryView = nil;
     completionHandler(@"Something happened.");
 }
 
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    LOG_ERR("WebContent process terminated! What should we do?");
+}
+
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     int rc;
     struct pollfd p;
@@ -279,21 +276,36 @@ static IMP standardImpOfInputAccessoryView = nil;
     if ([message.name isEqualToString:@"error"]) {
         LOG_ERR("Error from WebView: " << [message.body UTF8String]);
     } else if ([message.name isEqualToString:@"debug"]) {
-        LOG_TRC_NOFILE("==> " << [message.body UTF8String]);
-    } else if ([message.name isEqualToString:@"lool"]) {
+        std::cerr << "==> " << [message.body UTF8String] << std::endl;
+    } else if ([message.name isEqualToString:@"lok"]) {
         NSString *subBody = [message.body substringToIndex:std::min(100ul, ((NSString*)message.body).length)];
         if (subBody.length < ((NSString*)message.body).length)
             subBody = [subBody stringByAppendingString:@"..."];
 
         LOG_TRC("To Online: " << [subBody UTF8String]);
 
+#if 0
+        static int n = 0;
+
+        if ((n++ % 10) == 0) {
+            auto enumerator = [[NSFileManager defaultManager] enumeratorAtPath:NSHomeDirectory()];
+            NSString *file;
+            long long total = 0;
+            while ((file = [enumerator nextObject])) {
+                if ([enumerator fileAttributes][NSFileType] == NSFileTypeRegular)
+                    total += [[enumerator fileAttributes][NSFileSize] longLongValue];
+            }
+            NSLog(@"==== Total size of app home directory: %lld", total);
+        }
+#endif
+
         if ([message.body isEqualToString:@"HULLO"]) {
             // Now we know that the JS has started completely
 
-            // Contact the permanently (during app lifetime) listening LOOLWSD server
+            // Contact the permanently (during app lifetime) listening COOLWSD server
             // "public" socket
-            assert(loolwsd_server_socket_fd != -1);
-            rc = fakeSocketConnect(self.document->fakeClientFd, loolwsd_server_socket_fd);
+            assert(coolwsd_server_socket_fd != -1);
+            rc = fakeSocketConnect(self.document->fakeClientFd, coolwsd_server_socket_fd);
             assert(rc != -1);
 
             // Create a socket pair to notify the below thread when the document has been closed
@@ -352,6 +364,8 @@ static IMP standardImpOfInputAccessoryView = nil;
             p.fd = self.document->fakeClientFd;
             p.events = POLLOUT;
             fakeSocketPoll(&p, 1, -1);
+
+            // This is read in the iOS-specific code in ClientRequestDispatcher::handleIncomingMessage() in COOLWSD.cpp
             std::string message(url + " " + std::to_string(self.document->appDocId));
             fakeSocketWrite(self.document->fakeClientFd, message.c_str(), message.size());
 
@@ -365,17 +379,17 @@ static IMP standardImpOfInputAccessoryView = nil;
 
             // Create the SVG for the slideshow.
 
-            self.slideshowFile = Util::createRandomTmpDir() + "/slideshow.svg";
+            self.slideshowFile = FileUtil::createRandomTmpDir() + "/slideshow.svg";
             self.slideshowURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:self.slideshowFile.c_str()] isDirectory:NO];
 
-            getDocumentDataForMobileAppDocId(self.document->appDocId).loKitDocument->saveAs([[self.slideshowURL absoluteString] UTF8String], "svg", nullptr);
+            DocumentData::get(self.document->appDocId).loKitDocument->saveAs([[self.slideshowURL absoluteString] UTF8String], "svg", nullptr);
 
             // Add a new full-screen WebView displaying the slideshow.
 
             WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
             WKUserContentController *userContentController = [[WKUserContentController alloc] init];
 
-            [userContentController addScriptMessageHandler:self name:@"lool"];
+            [userContentController addScriptMessageHandler:self name:@"lok"];
 
             configuration.userContentController = userContentController;
 
@@ -420,9 +434,9 @@ static IMP standardImpOfInputAccessoryView = nil;
 
             // Create the PDF to print.
 
-            std::string printFile = Util::createRandomTmpDir() + "/print.pdf";
+            std::string printFile = FileUtil::createRandomTmpDir() + "/print.pdf";
             NSURL *printURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:printFile.c_str()] isDirectory:NO];
-            getDocumentDataForMobileAppDocId(self.document->appDocId).loKitDocument->saveAs([[printURL absoluteString] UTF8String], "pdf", nullptr);
+            DocumentData::get(self.document->appDocId).loKitDocument->saveAs([[printURL absoluteString] UTF8String], "pdf", nullptr);
 
             UIPrintInteractionController *pic = [UIPrintInteractionController sharedPrintController];
             UIPrintInfo *printInfo = [UIPrintInfo printInfo];
@@ -471,6 +485,15 @@ static IMP standardImpOfInputAccessoryView = nil;
                 [application openURL:url options:@{} completionHandler:nil];
                 return;
             }
+        } else if ([message.body isEqualToString:@"FONTPICKER"]) {
+            UIFontPickerViewControllerConfiguration *configuration = [[UIFontPickerViewControllerConfiguration alloc] init];
+            configuration.includeFaces = YES;
+            UIFontPickerViewController *picker = [[UIFontPickerViewController alloc] initWithConfiguration:configuration];
+            picker.delegate = self;
+            [self presentViewController:picker
+                               animated:YES
+                             completion:nil];
+            return;
         } else if ([message.body hasPrefix:@"downloadas "]) {
             NSArray<NSString*> *messageBodyItems = [message.body componentsSeparatedByString:@" "];
             NSString *format = nil;
@@ -496,7 +519,7 @@ static IMP standardImpOfInputAccessoryView = nil;
 
                 std::remove([[downloadAsTmpURL path] UTF8String]);
 
-                getDocumentDataForMobileAppDocId(self.document->appDocId).loKitDocument->saveAs([[downloadAsTmpURL absoluteString] UTF8String], [format UTF8String], nullptr);
+                DocumentData::get(self.document->appDocId).loKitDocument->saveAs([[downloadAsTmpURL absoluteString] UTF8String], [format UTF8String], nullptr);
 
                 // Then verify that it indeed was saved, and then use an
                 // UIDocumentPickerViewController to ask the user where to store the exported
@@ -516,15 +539,6 @@ static IMP standardImpOfInputAccessoryView = nil;
                                  completion:nil];
                 return;
             }
-        } else if ([message.body hasPrefix:@"REMOVE "]) {
-            // Sent from the img element's onload event handler. Remove tile file once it has been loaded.
-            NSArray<NSString*> *messageBodyItems = [message.body componentsSeparatedByString:@" "];
-            assert([messageBodyItems count] == 2);
-            NSURL *tile = [NSURL URLWithString:messageBodyItems[1]];
-            if (unlink([[tile path] UTF8String]) == -1) {
-                LOG_SYS("Could not unlink tile " << [[tile path] UTF8String]);
-            }
-            return;
         }
 
         const char *buf = [message.body UTF8String];
@@ -551,13 +565,39 @@ static IMP standardImpOfInputAccessoryView = nil;
     scrollView.pinchGestureRecognizer.enabled = NO;
 }
 
+- (void)fontPickerViewControllerDidPickFont:(UIFontPickerViewController *)viewController {
+    // Partial fix #5885 Close the font picker when a font is tapped
+    // This matches the behavior of Apple apps such as Pages and Mail.
+    [viewController dismissViewControllerAnimated:YES completion:nil];
+
+    // NSLog(@"Picked font: %@", [viewController selectedFontDescriptor]);
+    NSDictionary<UIFontDescriptorAttributeName, id> *attribs = [[viewController selectedFontDescriptor] fontAttributes];
+    NSString *family = attribs[UIFontDescriptorFamilyAttribute];
+    if (family && [family length] > 0) {
+        NSString *js = [[@"window.MagicFontNameCallback('" stringByAppendingString:family] stringByAppendingString:@"');"];
+        [self.webView evaluateJavaScript:js
+                       completionHandler:^(id _Nullable obj, NSError * _Nullable error)
+             {
+                 if (error) {
+                     LOG_ERR("Error after " << [js UTF8String] << ": " << [[error localizedDescription] UTF8String]);
+                     NSString *jsException = error.userInfo[@"WKJavaScriptExceptionMessage"];
+                     if (jsException != nil)
+                         LOG_ERR("JavaScript exception: " << [jsException UTF8String]);
+                 }
+             }
+         ];
+    }
+}
+
 - (void)bye {
     // Close one end of the socket pair, that will wake up the forwarding thread above
     fakeSocketClose(closeNotificationPipeForForwardingThread[0]);
 
-    // deallocateDocumentDataForMobileAppDocId(self.document->appDocId);
+    // DocumentData::deallocate(self.document->appDocId);
 
-    [[NSFileManager defaultManager] removeItemAtURL:self.document->copyFileURL error:nil];
+    if (![[NSFileManager defaultManager] removeItemAtURL:self.document->copyFileURL error:nil]) {
+        LOG_SYS("Could not remove copy of document at " << [[self.document->copyFileURL path] UTF8String]);
+    }
 
     // The dismissViewControllerAnimated must be done on the main queue.
     dispatch_async(dispatch_get_main_queue(),

@@ -118,6 +118,19 @@ struct _LibreOfficeKitClass
 
     /// @see lok::Office::setOption
     void (*setOption) (LibreOfficeKit* pThis, const char* pOption, const char* pValue);
+
+    /// @see lok::Office::dumpState
+    /// @since LibreOffice 7.5
+    void (*dumpState) (LibreOfficeKit* pThis, const char* pOptions, char** pState);
+
+    /** @see lok::Office::extractRequest.
+     */
+    char* (*extractRequest) (LibreOfficeKit* pThis,
+                           const char* pFilePath);
+
+    /// @see lok::Office::trimMemory
+    /// @since LibreOffice 7.6
+    void (*trimMemory) (LibreOfficeKit* pThis, int nTarget);
 };
 
 #define LIBREOFFICEKIT_DOCUMENT_HAS(pDoc,member) LIBREOFFICEKIT_HAS_MEMBER(LibreOfficeKitDocumentClass,member,(pDoc)->pClass->nSize)
@@ -279,6 +292,7 @@ struct _LibreOfficeKitDocumentClass
     void (*paintPartTile) (LibreOfficeKitDocument* pThis,
                            unsigned char* pBuffer,
                            const int nPart,
+                           const int nMode,
                            const int nCanvasWidth,
                            const int nCanvasHeight,
                            const int nTilePosX,
@@ -461,7 +475,7 @@ struct _LibreOfficeKitDocumentClass
     /// @see lok::Document::setBlockedCommandList
     void (*setBlockedCommandList) (LibreOfficeKitDocument* pThis,
                                 int nViewId,
-                                const char* bolckedCommandList);
+                                const char* blockedCommandList);
 
     /// @see lok::Document::renderSearchResult
     bool (*renderSearchResult) (LibreOfficeKitDocument* pThis,
@@ -469,18 +483,27 @@ struct _LibreOfficeKitDocumentClass
                                 unsigned char** pBitmapBuffer,
                                 int* pWidth, int* pHeight, size_t* pByteSize);
 
-    /// Added by Firefly<firefly@ossii.com.tw>
-    /// @see lok::Document::initUnoStatus
-    void (*initUnoStatus) (LibreOfficeKitDocument* pThis,
-                           const char* pCommands);
+    /// @see lok::Document::sendContentControlEvent().
+    void (*sendContentControlEvent)(LibreOfficeKitDocument* pThis, const char* pArguments);
 
-    /// @see lok::Document::postWindowExtTextInputEventWithCursorPosition
-    void (*postWindowExtTextInputEventWithCursorPosition) (LibreOfficeKitDocument* pThis,
-                                         unsigned nWindowId,
-                                         int nType,
-                                         const char* pText,
-                                         int nCursorPos);
-    ///---------------------------------------
+    /// @see lok::Document::getSelectionTypeAndText
+    /// @since LibreOffice 7.4
+    int (*getSelectionTypeAndText) (LibreOfficeKitDocument* pThis,
+                                    const char* pMimeType,
+                                    char** pText,
+                                    char** pUsedMimeType);
+
+    /// @see lok::Document::getDataArea().
+    void (*getDataArea) (LibreOfficeKitDocument* pThis,
+                         long nPart,
+                         long* pCol,
+                         long* pRow);
+
+    /// @see lok::Document::getEditMode().
+    int (*getEditMode) (LibreOfficeKitDocument* pThis);
+
+    /// @see lok::Document::setViewTimezone().
+    void (*setViewTimezone) (LibreOfficeKitDocument* pThis, int nId, const char* timezone);
 
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };

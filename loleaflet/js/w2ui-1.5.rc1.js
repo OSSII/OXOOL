@@ -2325,15 +2325,18 @@ w2utils.event = {
                 // if content of specific height
                 if (options.tmp.contentHeight) {
                     h = parseInt(options.tmp.contentHeight);
-                    w = parseInt(options.tmp.contentWidth);
                     if (h > $(".leaflet-container").height()) h = $(".leaflet-container").height();
                     div2.height(h);
-                    // 真正的內容是 table 高度，是故應判斷 table 高度是否大於 menu 高度，
-                    // 再決定 menu 的 overflow-y 是否應為 auto
-                    var $table = div2.find('div.menu > table');
-                    if ($table.height() > menu.height()) {
-                        overflowY = true;
-                    }
+                    setTimeout(function () {
+                        var $div = div2.find('div.menu');
+                        if (h > $div.height()) {
+                            div2.find('div.menu').css('overflow-y', 'hidden');
+                        }
+                    }, 1);
+                    setTimeout(function () {
+                        var $div = div2.find('div.menu');
+                        if ($div.css('overflow-y') != 'auto') $div.css('overflow-y', 'auto');
+                    }, 10);
                 }
                 if (options.tmp.contentWidth && options.align != 'both') {
                     w = parseInt(options.tmp.contentWidth);
@@ -2451,11 +2454,9 @@ w2utils.event = {
                     );
                 }
                 // check scroll bar (needed to avoid horizontal scrollbar)
-                if (overflowY && options.align != 'both') {
-                    div2.width(w + w2utils.scrollBarSize() + 2);
-                    menu.css('overflow-y', 'auto');
-                }
+                if (overflowY && options.align != 'both') div2.width(w + w2utils.scrollBarSize() + 2);
             }
+            menu.css('overflow-y', 'auto');
         }
     };
 
@@ -6230,7 +6231,36 @@ w2utils.event = {
             var img  = '<td>&#160;</td>';
             var text = item.text;
             if (typeof text == 'function') text = text.call(this, item);
-            if (item.img)  img = '<td><div class="w2ui-tb-image w2ui-icon '+ item.img +'"></div></td>';
+
+            if (item.img) {
+                // color indicator container for classic mode
+                var colorContainer = '<div class="selected-color-classic"></div>';
+
+                /**
+                 * @css class="textcolor" used in:
+                 *  - Writer, Calc, Impress, Draw
+                 *  - as "Font Color"
+                 *
+                 * @css class="backcolor" used in:
+                 *  - Writer, Impress, Draw
+                 *  - as "Character Highlighting Color"
+                 *
+                 * @css class="backgroundcolor" used in:
+                 *  - Calc
+                 *  - as "Background Color"
+                 *  - (on mobile Calc uses "backcolor")
+                 *
+                 * It would be appropriate to place color indicator to below
+                 * of those classes' container.
+                 *
+                 * We have to filter where to add the color indicator,
+                 * otherwise it will be added to below of each toolbar
+                 * elements.
+                 */
+                img = (item.img == 'textcolor' || item.img == 'backcolor' || item.img == 'backgroundcolor') ?
+                '<td><div class="w2ui-tb-image w2ui-icon '+ item.img +'"></div>' + colorContainer + '</td>' :
+                '<td><div class="w2ui-tb-image w2ui-icon '+ item.img +'"></div></td>';
+            }
             if (item.icon) img = '<td><div class="w2ui-tb-image"><span class="'+ item.icon +'"></span></div></td>';
 
             if (html === '') switch (item.type) {

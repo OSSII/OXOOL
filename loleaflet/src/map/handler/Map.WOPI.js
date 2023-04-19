@@ -15,6 +15,7 @@ L.Map.WOPI = L.Handler.extend({
 	HidePrintOption: false,
 	HideSaveOption: false,
 	HideExportOption: false,
+	HideRepairOption: false,
 	HideChangeTrackingControls: false,
 	DisablePrint: false,
 	DisableExport: false,
@@ -23,14 +24,13 @@ L.Map.WOPI = L.Handler.extend({
 	DownloadAsPostMessage: false,
 	UserCanNotWriteRelative: true,
 	EnableInsertRemoteImage: false,
+	EnableInsertRemoteLink: false,
 	EnableShare: false,
 	HideUserList: null,
 	CallPythonScriptSource: null,
 	SupportsRename: false,
 	UserCanRename: false,
 	UserCanWrite: false,
-	DocumentOwner: false, // 是否為文件擁有者
-	UserExtraInfo: {}, // 額外的使用者資訊
 
 	_appLoadedConditions: {
 		docloaded: false,
@@ -96,6 +96,7 @@ L.Map.WOPI = L.Handler.extend({
 	},
 
 	_setWopiProps: function(wopiInfo) {
+		var overridenFileInfo = window.checkFileInfoOverride;
 		// Store postmessageorigin property, if it exists
 		if (wopiInfo['PostMessageOrigin']) {
 			this.PostMessageOrigin = wopiInfo['PostMessageOrigin'];
@@ -108,24 +109,27 @@ L.Map.WOPI = L.Handler.extend({
 		this.HidePrintOption = !!wopiInfo['HidePrintOption'];
 		this.HideSaveOption = !!wopiInfo['HideSaveOption'];
 		this.HideExportOption = !!wopiInfo['HideExportOption'];
+		this.HideRepairOption = !!wopiInfo['HideRepairOption'];
 		this.HideChangeTrackingControls = !!wopiInfo['HideChangeTrackingControls'];
 		this.DisablePrint = !!wopiInfo['DisablePrint'];
 		this.DisableExport = !!wopiInfo['DisableExport'];
 		this.DisableCopy = !!wopiInfo['DisableCopy'];
 		this.DisableInactiveMessages = !!wopiInfo['DisableInactiveMessages'];
-		this.DownloadAsPostMessage = !!wopiInfo['DownloadAsPostMessage'];
+		this.DownloadAsPostMessage = Object.prototype.hasOwnProperty.call(overridenFileInfo, 'DownloadAsPostMessage') ?
+			overridenFileInfo.DownloadAsPostMessage : !!wopiInfo['DownloadAsPostMessage'];
 		this.UserCanNotWriteRelative = !!wopiInfo['UserCanNotWriteRelative'];
 		this.EnableInsertRemoteImage = !!wopiInfo['EnableInsertRemoteImage'];
+		this.EnableRemoteLinkPicker = !!wopiInfo['EnableRemoteLinkPicker'];
 		this.SupportsRename = !!wopiInfo['SupportsRename'];
 		this.UserCanRename = !!wopiInfo['UserCanRename'];
 		this.EnableShare = !!wopiInfo['EnableShare'];
 		this.UserCanWrite = !!wopiInfo['UserCanWrite'];
-		if (this.UserCanWrite)
-			window.docPermission = 'edit';
+		if (this.UserCanWrite) // There are 2 places that set the file permissions, WOPI and URI. Don't change permission if URI doesn't allow.
+			app.file.permission = (app.file.permission === 'edit' ? 'edit': app.file.permission);
 		else
-			window.docPermission = 'readonly';
-		this.DocumentOwner = (wopiInfo['DocumentOwner'] === true);
-		this.UserExtraInfo = (wopiInfo['UserExtraInfo'] !== undefined) ? wopiInfo['UserExtraInfo'] : {};
+			app.file.permission = 'readonly';
+		this.IsOwner = !!wopiInfo['IsOwner'];
+
 		if (wopiInfo['HideUserList'])
 			this.HideUserList = wopiInfo['HideUserList'].split(',');
 
@@ -316,6 +320,8 @@ L.Map.WOPI = L.Handler.extend({
 		else if (msg.MessageId === 'Insert_Button' &&
 			msg.Values && msg.Values.id && msg.Values.imgurl) {
 			this._map.uiManager.insertButton(msg.Values);
+		} else if (msg.MessageId === 'Send_UNO_Command' && msg.Values && msg.Values.Command) {
+			this._map.sendUnoCommand(msg.Values.Command, msg.Values.Args || '');
 		}
 		else if (msg.MessageId === 'Disable_Default_UIAction') {
 			// Disable the default handler and action for a UI command.
@@ -335,12 +341,12 @@ L.Map.WOPI = L.Handler.extend({
 		}
 
 		if (msg.MessageId === 'Host_PostmessageReady') {
-			// We already have a listener for this in loleaflet.html, so ignore it here
+			// We already have a listener for this in cool.html, so ignore it here
 			return;
 		}
 
 		if (msg.MessageId === 'Grab_Focus') {
-			this._map.makeActive();
+			app.idleHandler._activate();
 			return;
 		}
 
@@ -352,7 +358,7 @@ L.Map.WOPI = L.Handler.extend({
 
 		// For all other messages, warn if trying to interact before we are completely loaded
 		if (!this._appLoaded) {
-			window.app.console.error('OxOffice Online not loaded yet. Listen for App_LoadingStatus (Document_Loaded) event before using PostMessage API. Ignoring post message \'' + msg.MessageId + '\'.');
+			window.app.console.error('Collabora Online not loaded yet. Listen for App_LoadingStatus (Document_Loaded) event before using PostMessage API. Ignoring post message \'' + msg.MessageId + '\'.');
 			return;
 		}
 
@@ -397,6 +403,45 @@ L.Map.WOPI = L.Handler.extend({
 				this._map.insertURL(msg.Values.url);
 			}
 		}
+		else if (msg.MessageId == 'Action_InsertLink') {
+			if (msg.Values) {
+				var link = this._map.makeURLFromStr(msg.Values.url);
+				var text = this._map.getTextForLink();
+
+				text = text ? text.trim() : link;
+
+				var command = {
+					'Hyperlink.Text': {
+						type: 'string',
+						value: text
+					},
+					'Hyperlink.URL': {
+						type: 'string',
+						value: link
+					}
+				};
+				this._map.sendUnoCommand('.uno:SetHyperlink', command);
+				this._map.focus();
+			}
+		}
+		else if (msg.MessageId == 'Action_GetLinkPreview_Resp') {
+			var preview = document.querySelector('#hyperlink-pop-up-preview');
+			if (preview) {
+				// check if this is a preview for currently displayed link
+				if (preview.nextSibling && preview.nextSibling.innerText !== msg.Values.url)
+					return;
+
+				preview.innerText = '';
+				if (msg.Values.image && msg.Values.image.indexOf('data:') === 0) {
+					var image = L.DomUtil.create('img', '', preview);
+					image.src = msg.Values.image;
+				}
+				if (msg.Values.title) {
+					var title = L.DomUtil.create('p', '', preview);
+					title.innerText = msg.Values.title;
+				}
+			}
+		}
 		else if (msg.MessageId === 'Action_InsertFile') {
 			if (msg.Values && (msg.Values.File instanceof Blob)) {
 				this._map.fire('insertfile', {file: msg.Values.File});
@@ -431,8 +476,22 @@ L.Map.WOPI = L.Handler.extend({
 			if (msg.Values) {
 				if (msg.Values.Filename !== null && msg.Values.Filename !== undefined) {
 					this._notifySave = msg.Values['Notify'];
-					this._map.showBusy(_('Creating copy...'), false);
-					this._map.saveAs(msg.Values.Filename);
+					var nameParts = msg.Values.Filename.split('.');
+					var format = undefined;
+					if (nameParts.length > 1)
+						format = nameParts.pop();
+					else {
+						this._map.uiManager.showInfoModal('error', _('Error'), _('File name should contain an extension.'), '', _('OK'));
+						return;
+					}
+
+					var isExport = format === 'pdf' || format === 'epub';
+					if (isExport) {
+						this._map.exportAs(msg.Values.Filename);
+					} else {
+						this._map.showBusy(_('Creating copy...'), false);
+						this._map.saveAs(msg.Values.Filename, format);
+					}
 				}
 			}
 		}
@@ -462,6 +521,10 @@ L.Map.WOPI = L.Handler.extend({
 		}
 		else if (msg.MessageId === 'Action_ChangeUIMode') {
 			this._map.uiManager.onChangeUIMode({mode: msg.Values.Mode, force: true});
+		}
+		else if (msg.MessageId === 'Action_Mention') {
+			var list = msg.Values.list;
+			this._map.fire('openmentionpopup', {data: list});
 		}
 	},
 

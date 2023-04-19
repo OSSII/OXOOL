@@ -1,7 +1,7 @@
 declare var L: any;
 declare var app: any;
 
-namespace oxool {
+namespace cool {
 
 export type SplitPanesOptions = {
 	maxHorizontalSplitPercent: number;
@@ -29,8 +29,8 @@ export class SplitPanesContext {
 
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	constructor(docLayer: any, createSplitters: boolean = false) {
-		window.app.console.assert(docLayer, 'no docLayer!');
-		window.app.console.assert(docLayer._map, 'no map!');
+		console.assert(docLayer, 'no docLayer!');
+		console.assert(docLayer._map, 'no map!');
 
 		this._docLayer = docLayer;
 		this._map = docLayer._map;
@@ -87,7 +87,7 @@ export class SplitPanesContext {
 
 	public setHorizSplitPos(splitX: number, forceUpdate: boolean, noFire: boolean): boolean {
 
-		window.app.console.assert(typeof splitX === 'number', 'splitX must be a number');
+		console.assert(typeof splitX === 'number', 'splitX must be a number');
 
 		if (this._splitPos.x === splitX) {
 			if (forceUpdate || !this._docLayer.hasXSplitter()) {
@@ -113,7 +113,7 @@ export class SplitPanesContext {
 
 	public setVertSplitPos(splitY: number, forceUpdate: boolean, noFire: boolean): boolean {
 
-		window.app.console.assert(typeof splitY === 'number', 'splitY must be a number');
+		console.assert(typeof splitY === 'number', 'splitY must be a number');
 
 		if (this._splitPos.y === splitY) {
 			if (forceUpdate || !this._docLayer.hasYSplitter()) {
@@ -261,4 +261,4 @@ export class SplitPanesContext {
 
 }
 
-L.SplitPanesContext = oxool.SplitPanesContext;
+L.SplitPanesContext = cool.SplitPanesContext;

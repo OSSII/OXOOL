@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,6 +18,7 @@
 #include <openssl/evp.h>
 
 #include <Poco/Exception.h>
+#include <Poco/File.h>
 #include <Poco/Util/Application.h>
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/Option.h>
@@ -39,10 +38,10 @@ using Poco::Util::XMLConfiguration;
 #define MIN_PWD_ITERATIONS 1000
 #define MIN_PWD_HASH_LENGTH 20
 
-class LoolConfig final: public XMLConfiguration
+class CoolConfig final: public XMLConfiguration
 {
 public:
-    LoolConfig()
+    CoolConfig()
         {}
 };
 
@@ -62,22 +61,24 @@ public:
     unsigned getPwdHashLength() const { return _pwdHashLength; }
 };
 
-// Config tool to change oxoolwsd configuration (oxoolwsd.xml)
+// Config tool to change coolwsd configuration (coolwsd.xml)
 class Config: public Application
 {
     // Display help information on the console
     void displayHelp();
 
-    LoolConfig _oxoolConfig;
+    CoolConfig _coolConfig;
 
     AdminConfig _adminConfig;
 
 public:
     static std::string ConfigFile;
+    static std::string OldConfigFile;
     static std::string SupportKeyString;
     static bool SupportKeyStringProvided;
     static std::uint64_t AnonymizationSalt;
     static bool AnonymizationSaltProvided;
+    static bool Write;
 
 protected:
     void defineOptions(OptionSet&) override;
@@ -89,21 +90,26 @@ std::string Config::ConfigFile =
 #if ENABLE_DEBUG
     DEBUG_ABSSRCDIR
 #else
-    LOOLWSD_CONFIGDIR
+    COOLWSD_CONFIGDIR
 #endif
-    "/oxoolwsd.xml";
+    "/coolwsd.xml";
+
+std::string Config::OldConfigFile = "/etc/loolwsd/loolwsd.xml";
+bool Config::Write = false;
 
 std::string Config::SupportKeyString;
 bool Config::SupportKeyStringProvided = false;
 std::uint64_t Config::AnonymizationSalt = 0;
 bool Config::AnonymizationSaltProvided = false;
 
+int MigrateConfig(std::string, std::string,  bool);
+
 void Config::displayHelp()
 {
     HelpFormatter helpFormatter(options());
     helpFormatter.setCommand(commandName());
     helpFormatter.setUsage("COMMAND [OPTIONS]");
-    helpFormatter.setHeader("oxoolconfig - Configuration tool for LibreOffice Online.\n"
+    helpFormatter.setHeader("coolconfig - Configuration tool for Collabora Online.\n"
                             "\n"
                             "Some options make sense only with a specific command.\n\n"
                             "Options:");
@@ -113,6 +119,7 @@ void Config::displayHelp()
     // Command list
     std::cout << std::endl
               << "Commands: " << std::endl
+              << "    migrateconfig [--old-config-file=<path>] [--config-file=<path>] [--write]" << std::endl
               << "    anonymize [string-1]...[string-n]" << std::endl
               << "    set-admin-password" << std::endl
 #if ENABLE_SUPPORT_KEY
@@ -133,11 +140,15 @@ void Config::defineOptions(OptionSet& optionSet)
                         .required(false)
                         .repeatable(false)
                         .argument("path"));
+    optionSet.addOption(Option("old-config-file", "", "Specify configuration file path to migrate manually.")
+                        .required(false)
+                        .repeatable(false)
+                        .argument("path"));
 
     optionSet.addOption(Option("pwd-salt-length", "", "Length of the salt to use to hash password [set-admin-password].")
                         .required(false)
-                        .repeatable(false).
-                        argument("number"));
+                        .repeatable(false)
+                        .argument("number"));
     optionSet.addOption(Option("pwd-iterations", "", "Number of iterations to do in PKDBF2 password hashing [set-admin-password].")
                         .required(false)
                         .repeatable(false)
@@ -158,6 +169,10 @@ void Config::defineOptions(OptionSet& optionSet)
                         .required(false)
                         .repeatable(false)
                         .argument("salt"));
+
+    optionSet.addOption(Option("write", "", "Write migrated configuration.")
+                        .required(false)
+                        .repeatable(false));
 }
 
 void Config::handleOption(const std::string& optionName, const std::string& optionValue)
@@ -166,11 +181,15 @@ void Config::handleOption(const std::string& optionName, const std::string& opti
     if (optionName == "help")
     {
         displayHelp();
-        std::exit(EX_OK);
+        Util::forcedExit(EX_OK);
     }
     else if (optionName == "config-file")
     {
         ConfigFile = optionValue;
+    }
+    else if (optionName == "old-config-file")
+    {
+        OldConfigFile = optionValue;
     }
     else if (optionName == "pwd-salt-length")
     {
@@ -213,6 +232,10 @@ void Config::handleOption(const std::string& optionName, const std::string& opti
         AnonymizationSaltProvided = true;
         std::cout << "Anonymization Salt: [" << AnonymizationSalt << "]." << std::endl;
     }
+    else if (optionName == "write")
+    {
+        Write = true;
+    }
 }
 
 int Config::main(const std::vector<std::string>& args)
@@ -226,14 +249,14 @@ int Config::main(const std::vector<std::string>& args)
 
     int retval = EX_OK;
     bool changed = false;
-    _oxoolConfig.load(ConfigFile);
+    _coolConfig.load(ConfigFile);
 
     if (args[0] == "set-admin-password")
     {
 #if HAVE_PKCS5_PBKDF2_HMAC
-        unsigned char pwdhash[_adminConfig.getPwdHashLength()];
-        unsigned char salt[_adminConfig.getPwdSaltLength()];
-        RAND_bytes(salt, _adminConfig.getPwdSaltLength());
+        std::vector<unsigned char> pwdhash(_adminConfig.getPwdHashLength());
+        std::vector<unsigned char> salt(_adminConfig.getPwdSaltLength());
+        RAND_bytes(salt.data(), _adminConfig.getPwdSaltLength());
         std::stringstream stream;
 
         // Ask for admin username
@@ -269,10 +292,10 @@ int Config::main(const std::vector<std::string>& args)
 
         // Do the magic !
         PKCS5_PBKDF2_HMAC(adminPwd.c_str(), -1,
-                          salt, _adminConfig.getPwdSaltLength(),
+                          salt.data(), _adminConfig.getPwdSaltLength(),
                           _adminConfig.getPwdIterations(),
                           EVP_sha512(),
-                          _adminConfig.getPwdHashLength(), pwdhash);
+                          _adminConfig.getPwdHashLength(), pwdhash.data());
 
         // Make salt randomness readable
         for (unsigned j = 0; j < _adminConfig.getPwdSaltLength(); ++j)
@@ -291,14 +314,14 @@ int Config::main(const std::vector<std::string>& args)
         std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
         pwdConfigValue << std::to_string(_adminConfig.getPwdIterations()) << '.';
         pwdConfigValue << saltHash << '.' << passwordHash;
-        _oxoolConfig.setString("admin_console.username", adminUser);
-        _oxoolConfig.setString("admin_console.secure_password[@desc]",
+        _coolConfig.setString("admin_console.username", adminUser);
+        _coolConfig.setString("admin_console.secure_password[@desc]",
                               "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
-        _oxoolConfig.setString("admin_console.secure_password", pwdConfigValue.str());
+        _coolConfig.setString("admin_console.secure_password", pwdConfigValue.str());
 
         changed = true;
 #else
-        std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/oxool/oxoolwsd.xml." << std::endl;
+        std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/coolwsd/coolwsd.xml." << std::endl;
         return EX_UNAVAILABLE;
 #endif
     }
@@ -326,7 +349,7 @@ int Config::main(const std::vector<std::string>& args)
                 else
                 {
                     std::cerr << "Valid for " << validDays << " days - setting to config\n";
-                    _oxoolConfig.setString("support_key", supportKeyString);
+                    _coolConfig.setString("support_key", supportKeyString);
                     changed = true;
                 }
             }
@@ -334,7 +357,7 @@ int Config::main(const std::vector<std::string>& args)
         else
         {
             std::cerr << "Removing empty support key\n";
-            _oxoolConfig.remove("support_key");
+            _coolConfig.remove("support_key");
             changed = true;
         }
     }
@@ -345,16 +368,19 @@ int Config::main(const std::vector<std::string>& args)
         {
             // args[1] = key
             // args[2] = value
-            if (_oxoolConfig.has(args[1]))
+            if (_coolConfig.has(args[1]))
             {
-                const std::string val = _oxoolConfig.getString(args[1]);
+                const std::string val = _coolConfig.getString(args[1]);
                 std::cout << "Previous value found in config file: \""  << val << '"' << std::endl;
                 std::cout << "Changing value to: \"" << args[2] << '"' << std::endl;
-                _oxoolConfig.setString(args[1], args[2]);
-                changed = true;
             }
             else
-                std::cerr << "No property, \"" << args[1] << "\"," << " found in config file." << std::endl;
+            {
+                std::cout << "No property, \"" << args[1] << "\"," << " found in config file." << std::endl;
+                std::cout << "Adding it as new with value: \"" << args[2] << '"' << std::endl;
+            }
+            _coolConfig.setString(args[1], args[2]);
+            changed = true;
         }
         else
             std::cerr << "set expects a key and value as arguments" << std::endl
@@ -364,7 +390,7 @@ int Config::main(const std::vector<std::string>& args)
     }
     else if (args[0] == "update-system-template")
     {
-        const char command[] = "oxoolwsd-systemplate-setup /opt/oxool/systemplate " LO_PATH " >/dev/null 2>&1";
+        const char command[] = "coolwsd-systemplate-setup /opt/cool/systemplate " LO_PATH " >/dev/null 2>&1";
         std::cout << "Running the following command:" << std::endl
                   << command << std::endl;
 
@@ -376,14 +402,42 @@ int Config::main(const std::vector<std::string>& args)
     {
         if (!AnonymizationSaltProvided)
         {
-            const std::string val = _oxoolConfig.getString("logging.anonymize.anonymization_salt");
+            const std::string val = _coolConfig.getString("logging.anonymize.anonymization_salt");
             AnonymizationSalt = std::stoull(val);
             std::cout << "Anonymization Salt: [" << AnonymizationSalt << "]." << std::endl;
         }
 
         for (std::size_t i = 1; i < args.size(); ++i)
         {
-            std::cout << "[" << args[i] << "]: " << Util::anonymizeUrl(args[i], AnonymizationSalt) << std::endl;
+            std::cout << '[' << args[i] << "]: " << Util::anonymizeUrl(args[i], AnonymizationSalt) << std::endl;
+        }
+    }
+    else if (args[0] == "migrateconfig")
+    {
+        std::cout << "Migrating old configuration from " << OldConfigFile << " to " << ConfigFile << "." << std::endl;
+        if (!Write)
+            std::cout << "This is a dry run, no changes are written to file." << std::endl;
+        std::cout << std::endl;
+        const std::string OldConfigMigrated = OldConfigFile + ".migrated";
+        Poco::File AlreadyMigrated(OldConfigMigrated);
+        if (AlreadyMigrated.exists())
+        {
+            std::cout << "Migration already performed, file " + OldConfigMigrated + " exists. Aborting." << std::endl;
+        }
+        else
+        {
+            const int Result = MigrateConfig(OldConfigFile, ConfigFile, Write);
+            if (Result == 0)
+            {
+                std::cout << "Successful migration." << std::endl;
+                if (Write)
+                {
+                    Poco::File ConfigToRename(OldConfigFile);
+                    ConfigToRename.renameTo(OldConfigMigrated);
+                }
+            }
+            else
+                std::cout << "Migration of old configuration failed." << std::endl;
         }
     }
     else
@@ -395,7 +449,7 @@ int Config::main(const std::vector<std::string>& args)
     if (changed)
     {
         std::cout << "Saving configuration to : " << ConfigFile << " ..." << std::endl;
-        _oxoolConfig.save(ConfigFile);
+        _coolConfig.save(ConfigFile);
         std::cout << "Saved" << std::endl;
     }
 

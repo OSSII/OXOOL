@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,12 +7,14 @@
 
 #include <config.h>
 
+#include <Poco/Net/HTTPRequest.h>
+
 #include <WopiTestServer.hpp>
 #include <Log.hpp>
 #include <Unit.hpp>
 #include <UnitHTTP.hpp>
 #include <helpers.hpp>
-#include <Poco/Net/HTTPRequest.h>
+#include <net/HttpHelper.hpp>
 
 class UnitWOPITemplate : public WopiTestServer
 {
@@ -26,26 +26,31 @@ class UnitWOPITemplate : public WopiTestServer
         Polling
     } _phase;
 
+    bool _savedTemplate;
+
 public:
-    UnitWOPITemplate() :
-        _phase(Phase::LoadTemplate)
+    UnitWOPITemplate()
+        : WopiTestServer("UnitWOPITemplate")
+        , _phase(Phase::LoadTemplate)
+        , _savedTemplate(false)
     {
     }
 
-    virtual bool handleHttpRequest(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& /*message*/, std::shared_ptr<StreamSocket>& socket) override
+    virtual bool handleHttpRequest(const Poco::Net::HTTPRequest& request,
+                                   Poco::MemoryInputStream& /*message*/,
+                                   std::shared_ptr<StreamSocket>& socket) override
     {
-        Poco::URI uriReq(request.getURI());
-        LOG_INF("Fake wopi host request: " << uriReq.toString() << " method " << request.getMethod());
+        const Poco::URI uriReq(request.getURI());
+        LOG_TST("FakeWOPIHost: " << request.getMethod() << " request: " << uriReq.toString());
 
         // CheckFileInfo
         if (request.getMethod() == "GET" && uriReq.getPath() == "/wopi/files/10")
         {
-            LOG_INF("Fake wopi host request, handling CheckFileInfo: " << uriReq.getPath());
+            LOG_TST("FakeWOPIHost: Handling CheckFileInfo: " << uriReq.getPath());
 
-            Poco::LocalDateTime now;
             Poco::JSON::Object::Ptr fileInfo = new Poco::JSON::Object();
             fileInfo->set("BaseFileName", "test.odt");
-            fileInfo->set("TemplateSource", std::string("http://127.0.0.1:") + std::to_string(ClientPortNumber) + "/test.ott"); // must be http, otherwise Neon in the core complains
+            fileInfo->set("TemplateSource", helpers::getTestServerURI() + "/test.ott");
             fileInfo->set("Size", getFileContent().size());
             fileInfo->set("Version", "1.0");
             fileInfo->set("OwnerId", "test");
@@ -58,26 +63,20 @@ public:
 
             std::ostringstream jsonStream;
             fileInfo->stringify(jsonStream);
-            std::string responseString = jsonStream.str();
 
-            const std::string mimeType = "application/json; charset=utf-8";
-
-            std::ostringstream oss;
-            oss << "HTTP/1.1 200 OK\r\n"
-                << "Last-Modified: " << Util::getHttpTime(getFileLastModifiedTime()) << "\r\n"
-                << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-                << "Content-Length: " << responseString.size() << "\r\n"
-                << "Content-Type: " << mimeType << "\r\n"
-                << "\r\n"
-                << responseString;
-
-            socket->send(oss.str());
-            socket->shutdown();
+            http::Response httpResponse(http::StatusCode::OK);
+            httpResponse.set("Last-Modified", Util::getHttpTime(getFileLastModifiedTime()));
+            httpResponse.setBody(jsonStream.str(), "application/json; charset=utf-8");
+            socket->sendAndShutdown(httpResponse);
 
             return true;
         }
-        else if ((request.getMethod() == "OPTIONS" || request.getMethod() == "HEAD" || request.getMethod() == "PROPFIND") && uriReq.getPath() == "/test.ott")
+        else if ((request.getMethod() == "OPTIONS" || request.getMethod() == "HEAD"
+                  || request.getMethod() == "PROPFIND")
+                 && uriReq.getPath() == "/test.ott")
         {
+            LOG_TST("FakeWOPIHost: Handling " << request.getMethod() << " on " << uriReq.getPath());
+
             std::ostringstream oss;
             oss << "HTTP/1.1 200 OK\r\n"
                 << "Allow: GET\r\n"
@@ -92,7 +91,7 @@ public:
         // Get the template
         else if (request.getMethod() == "GET" && uriReq.getPath() == "/test.ott")
         {
-            LOG_INF("Fake wopi host request, handling template GetFile: " << uriReq.getPath());
+            LOG_TST("FakeWOPIHost: Handling template GetFile: " << uriReq.getPath());
 
             HttpHelper::sendFileAndShutdown(socket, TDOC "/test.ott", "");
 
@@ -101,51 +100,60 @@ public:
         // Save template
         else if (request.getMethod() == "POST" && uriReq.getPath() == "/wopi/files/10/contents")
         {
-            LOG_INF("Fake wopi host request, handling PutFile: " << uriReq.getPath());
+            LOG_TST("FakeWOPIHost: Handling PutFile: " << uriReq.getPath());
 
-            std::streamsize size = request.getContentLength();
+            if (!_savedTemplate)
+            {
+                // First, we expect to get a PutFile right after loading.
+                LOK_ASSERT_EQUAL(static_cast<int>(Phase::SaveDoc), static_cast<int>(_phase));
+                _savedTemplate = true;
+                LOG_TST("SaveDoc => CloseDoc");
+                _phase = Phase::CloseDoc;
+            }
+            else
+            {
+                // This is the save at shutting down.
+                LOK_ASSERT_EQUAL(static_cast<int>(Phase::Polling), static_cast<int>(_phase));
+                exitTest(TestResult::Ok);
+            }
+
+            const std::streamsize size = request.getContentLength();
             LOK_ASSERT( size > 0 );
 
-            std::ostringstream oss;
-            oss << "HTTP/1.1 200 OK\r\n"
-                << "User-Agent: " << WOPI_AGENT_STRING << "\r\n"
-                << "\r\n"
-                << "{\"LastModifiedTime\": \"" << Util::getHttpTime(getFileLastModifiedTime()) << "\" }";
-
-            socket->send(oss.str());
-            socket->shutdown();
-
-            LOK_ASSERT_EQUAL(static_cast<int>(Phase::SaveDoc), static_cast<int>(_phase));
-            _phase = Phase::CloseDoc;
+            const std::string body = "{\"LastModifiedTime\": \"" +
+                                     Util::getIso8601FracformatTime(getFileLastModifiedTime()) + "\" }";
+            http::Response httpResponse(http::StatusCode::OK);
+            httpResponse.setBody(body, "application/json; charset=utf-8");
+            socket->sendAndShutdown(httpResponse);
 
             return true;
         }
 
-
+        LOG_TST("FakeWOPIHost: unknown request "
+                << request.getMethod() << " request: " << uriReq.toString() << ". Defaulting.");
         return false;
     }
 
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
-        constexpr char testName[] = "UnitWOPITemplate";
-
         switch (_phase)
         {
             case Phase::LoadTemplate:
             {
-                initWebsocket("/wopi/files/10?access_token=anything");
-
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
-                SocketPoll::wakeupWorld();
-
+                LOG_TST("LoadTemplate => SaveDoc");
                 _phase = Phase::SaveDoc;
+
+                initWebsocket("/wopi/files/10?access_token=anything");
+                WSD_CMD("load url=" + getWopiSrc());
+
                 break;
             }
             case Phase::CloseDoc:
             {
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "closedocument", testName);
+                LOG_TST("CloseDoc => Polling");
                 _phase = Phase::Polling;
+                WSD_CMD("closedocument");
                 break;
             }
             case Phase::Polling:

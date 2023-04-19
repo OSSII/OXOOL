@@ -2,13 +2,14 @@
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var writerMobileHelper = require('./writer_mobile_helper');
+var writerHelper = require('../../common/writer_helper');
 
 describe('Insert formatting mark via insertion wizard.', function() {
-	var testFileName = 'insert_formatting_mark.odt';
+	var origTestFileName = 'insert_formatting_mark.odt';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'writer');
+		testFileName = helper.beforeAll(origTestFileName, 'writer');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
@@ -24,74 +25,77 @@ describe('Insert formatting mark via insertion wizard.', function() {
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Insert non-breaking space.', function() {
-		cy.contains('.menu-entry-with-icon', 'Non-breaking space')
+		cy.contains('.menu-entry-with-icon', 'Insert non-breaking space')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u00a0');
 	});
 
 	it('Insert non-breaking hyphen.', function() {
-		cy.contains('.menu-entry-with-icon', 'Non-breaking hyphen')
+		cy.contains('.menu-entry-with-icon', 'Insert non-breaking hyphen')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u2011');
 	});
 
 	it('Insert soft hyphen.', function() {
-		cy.contains('.menu-entry-with-icon', 'Soft hyphen')
+		cy.contains('.menu-entry-with-icon', 'Insert soft Hyphen')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u00ad');
 	});
 
 	it('Insert no-width optional break.', function() {
-		cy.contains('.menu-entry-with-icon', 'No-width optional break')
+		cy.contains('.menu-entry-with-icon', 'No-width Optional Break')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u200b');
 	});
 
-	it('Insert no-width no break.', function() {
-		cy.contains('.menu-entry-with-icon', 'No-width no break')
+	it('Insert word joiner.', function() {
+		cy.contains('.menu-entry-with-icon', 'Word Joiner')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
+
+		cy.get('#copy-paste-container p')
+			.should('exist');
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u2060');
 	});
 
 	it('Insert left-to-right mark.', function() {
-		cy.contains('.menu-entry-with-icon', 'Left-to-right mark')
+		cy.contains('.menu-entry-with-icon', 'Left-to-right Mark')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u200e');
 	});
 
 	it('Insert right-to-left mark.', function() {
-		cy.contains('.menu-entry-with-icon', 'Right-to-left mark')
+		cy.contains('.menu-entry-with-icon', 'Right-to-left Mark')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		cy.get('#copy-paste-container p')
 			.should('contain.text', '\u200f');

@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,16 +17,13 @@
 
 class UnitWOPIRenameFile : public WopiTestServer
 {
-    enum class Phase
-    {
-        Load,
-        RenameFile,
-        Polling
-    } _phase;
+    STATE_ENUM(Phase, Load, RenameFile, Done)
+    _phase;
 
 public:
-    UnitWOPIRenameFile() :
-        _phase(Phase::Load)
+    UnitWOPIRenameFile()
+        : WopiTestServer("UnitWOPIRenameFile")
+        , _phase(Phase::Load)
     {
     }
 
@@ -38,7 +33,9 @@ public:
         LOK_ASSERT_EQUAL(std::string("hello"), request.get("X-WOPI-RequestedName"));
     }
 
-    bool filterSendMessage(const char* data, const size_t len, const WSOpCode /* code */, const bool /* flush */, int& /*unitReturn*/) override
+    bool onFilterSendWebSocketMessage(const char* data, const std::size_t len,
+                                      const WSOpCode /* code */, const bool /* flush */,
+                                      int& /*unitReturn*/) override
     {
         const std::string message(data, len);
 
@@ -53,27 +50,27 @@ public:
         return false;
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
-        constexpr char testName[] = "UnitWOPIRenameFile";
-
         switch (_phase)
         {
             case Phase::Load:
             {
+                TRANSITION_STATE(_phase, Phase::RenameFile);
+
                 initWebsocket("/wopi/files/0?access_token=anything");
 
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(), testName);
-                _phase = Phase::RenameFile;
+                WSD_CMD("load url=" + getWopiSrc());
                 break;
             }
             case Phase::RenameFile:
             {
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "renamefile filename=hello", testName);
-                _phase = Phase::Polling;
+                TRANSITION_STATE(_phase, Phase::Done);
+
+                WSD_CMD("renamefile filename=hello");
                 break;
             }
-            case Phase::Polling:
+            case Phase::Done:
             {
                 // just wait for the results
                 break;

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <LibreOfficeKit/LibreOfficeKit.h>
+#include <LibreOfficeKit/LibreOfficeKitEnums.h>
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 
 /*
@@ -125,6 +126,11 @@ public:
         mpDoc->pClass->setPartMode(mpDoc, nMode);
     }
 
+    int getEditMode()
+    {
+        return mpDoc->pClass->getEditMode(mpDoc);
+    }
+
     /**
      * Renders a subset of the document to a pre-allocated buffer.
      *
@@ -205,6 +211,12 @@ public:
     void getDocumentSize(long* pWidth, long* pHeight)
     {
         mpDoc->pClass->getDocumentSize(mpDoc, pWidth, pHeight);
+    }
+
+    /// Get the data area (in Calc last row and column).
+    void getDataArea(long nPart, long* pCol, long* pRow)
+    {
+        mpDoc->pClass->getDataArea(mpDoc, nPart, pCol, pRow);
     }
 
     /**
@@ -363,11 +375,37 @@ public:
     /**
      * Gets the type of the selected content.
      *
+     * In most cases it is more efficient to use getSelectionTypeAndText().
+     *
      * @return an element of the LibreOfficeKitSelectionType enum.
      */
     int getSelectionType()
     {
         return mpDoc->pClass->getSelectionType(mpDoc);
+    }
+
+    /**
+     * Gets the type of the selected content and possibly its text.
+     *
+     * This function is a more efficient combination of getSelectionType() and getTextSelection().
+     * It returns the same as getSelectionType(), and additionally if the return value is
+     * LOK_SELTYPE_TEXT then it also returns the same as getTextSelection(), otherwise
+     * pText and pUsedMimeType are unchanged.
+     *
+     * @param pMimeType suggests the return format, for example text/plain;charset=utf-8.
+     * @param pText the currently selected text
+     * @param pUsedMimeType output parameter to inform about the determined format (suggested one or plain text).
+     * @return an element of the LibreOfficeKitSelectionType enum.
+     * @since LibreOffice 7.4
+     */
+    int getSelectionTypeAndText(const char* pMimeType, char** pText, char** pUsedMimeType = NULL)
+    {
+        if (LIBREOFFICEKIT_DOCUMENT_HAS(mpDoc, getSelectionTypeAndText))
+            return mpDoc->pClass->getSelectionTypeAndText(mpDoc, pMimeType, pText, pUsedMimeType);
+        int type = mpDoc->pClass->getSelectionType(mpDoc);
+        if(type == LOK_SELTYPE_TEXT && pText)
+            *pText = mpDoc->pClass->getTextSelection(mpDoc, pMimeType, pUsedMimeType);
+        return type;
     }
 
     /**
@@ -571,6 +609,7 @@ public:
      */
     void paintPartTile(unsigned char* pBuffer,
                               const int nPart,
+                              const int nMode,
                               const int nCanvasWidth,
                               const int nCanvasHeight,
                               const int nTilePosX,
@@ -578,7 +617,7 @@ public:
                               const int nTileWidth,
                               const int nTileHeight)
     {
-        return mpDoc->pClass->paintPartTile(mpDoc, pBuffer, nPart,
+        return mpDoc->pClass->paintPartTile(mpDoc, pBuffer, nPart, nMode,
                                             nCanvasWidth, nCanvasHeight,
                                             nTilePosX, nTilePosY,
                                             nTileWidth, nTileHeight);
@@ -787,11 +826,10 @@ public:
         mpDoc->pClass->sendFormFieldEvent(mpDoc, pArguments);
     }
 
-    void setBlockedCommandList(int nViewId, const char* bolckedCommandList)
+    void setBlockedCommandList(int nViewId, const char* blockedCommandList)
     {
-        mpDoc->pClass->setBlockedCommandList(mpDoc, nViewId, bolckedCommandList);
+        mpDoc->pClass->setBlockedCommandList(mpDoc, nViewId, blockedCommandList);
     }
-
     /**
      * Render input search result to a bitmap buffer.
      *
@@ -808,32 +846,45 @@ public:
         return mpDoc->pClass->renderSearchResult(mpDoc, pSearchResult, pBitmapBuffer, pWidth, pHeight, pByteSize);
     }
 
-    // Added by Firefly <firefly@ossii.com.tw>
     /**
-     * Let OxOffice report the status of the specified UNO command.
-     * 讓 OxOffice 回報指定的 UNO 命令狀態
+     * Posts an event for the content control at the cursor position.
      *
-     * @param pCommands Uno commands separated by commas.
+     * @param pArguments arguments of the event.
+     *
+     * Examples:
+     * To select the 3rd list item of the drop-down:
+     * {
+     *     "type": "drop-down",
+     *     "selected": "2"
+     * }
+     *
+     * To change a picture place-holder:
+     * {
+     *     "type": "picture",
+     *     "changed": "file:///path/to/test.png"
+     * }
+     *
+     * To select a date of the current date content control:
+     * {
+     *     "type": "date",
+     *     "selected": "2022-05-29T00:00:00Z"
+     * }
      */
-    void initUnoStatus(const char* pCommands)
+    void sendContentControlEvent(const char* pArguments)
     {
-        mpDoc->pClass->initUnoStatus(mpDoc, pCommands);
+        mpDoc->pClass->sendContentControlEvent(mpDoc, pArguments);
     }
 
     /**
-     * Post the text input from external input window, like IME, to given windowId
+     * Set the timezone of the window with the specified nId.
      *
-     * @param nWindowId Specify the window id to post the input event to. If
-     * nWindow is 0, the event is posted into the document
-     * @param nType see LibreOfficeKitExtTextInputType
-     * @param pText Text for LOK_EXT_TEXTINPUT
-     * @param nCursorPos text Cursor position
+     * @param nId a view ID, returned by createView().
+     * @param timezone a timezone in the tzfile(5) format (e.g. Pacific/Auckland).
      */
-    void postWindowExtTextInputEventWithCursorPosition(unsigned nWindowId, int nType, const char* pText, int nCursorPos)
+    void setViewTimezone(int nId, const char* timezone)
     {
-        mpDoc->pClass->postWindowExtTextInputEventWithCursorPosition(mpDoc, nWindowId, nType, pText, nCursorPos);
+        mpDoc->pClass->setViewTimezone(mpDoc, nId, timezone);
     }
-    //-----------------------------------------
 
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
@@ -999,7 +1050,7 @@ public:
     }
 
     /**
-     * Exports the document and signes its content.
+     * Exports the document and signs its content.
      */
     bool signDocument(const char* pURL,
                        const unsigned char* pCertificateBinary, const int nCertificateBinarySize,
@@ -1074,6 +1125,43 @@ public:
     void setOption(const char* pOption, const char* pValue)
     {
         mpThis->pClass->setOption(mpThis, pOption, pValue);
+    }
+
+    /**
+     * Debugging tool for triggering a dump of internal state.
+     *
+     * LibreOfficeKit can get into an unhelpful state at run-time when
+     * in heavy use. This provides a critical tool for inspecting
+     * relevant internal state.
+     *
+     * @param pOption future expansion - string options.
+     * @param pState - heap allocated, C string containing the state dump.
+     */
+    void dumpState(const char* pOption, char** pState)
+    {
+        mpThis->pClass->dumpState(mpThis, pOption, pState);
+    }
+
+    char* extractRequest(const char* pFilePath)
+    {
+        return mpThis->pClass->extractRequest(mpThis, pFilePath);
+    }
+
+    /**
+     * Trim memory usage.
+     *
+     * LibreOfficeKit caches lots of information from large pixmaps
+     * to view and calculation results. When a view has not been
+     * used for some time, depending on the load on memory it can
+     * be useful to free up memory.
+     *
+     * @param nTarget - a negative number means the app is back
+     * in active use, and to re-fill caches, a large positive
+     * number (>=1000) encourages immediate maximum memory saving.
+     */
+    void trimMemory (int nTarget)
+    {
+        mpThis->pClass->trimMemory(mpThis, nTarget);
     }
 };
 

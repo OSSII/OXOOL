@@ -55,7 +55,7 @@
 	width: 0;
 	height: 0;
 }
-.vex-content .oxool-annotation-img {
+.cool-annotation-img {
 	box-sizing: content-box !important;
 }
 
@@ -120,16 +120,16 @@
 }
 
 .main-nav.readonly.hasnotebookbar #document-title-pencil {
-	min-width: 24px;
+	min-width: var(--btn-size);
 	margin: 0;
 }
 
-#oxoolwsd-version span:before,
+#coolwsd-version span:before,
 #lokit-version > span:before {
 	content: ' (';
 	white-space: pre;
 }
-#oxoolwsd-version span:after,
+#coolwsd-version span:after,
 #lokit-version > span:after {
 	content: ')';
 }

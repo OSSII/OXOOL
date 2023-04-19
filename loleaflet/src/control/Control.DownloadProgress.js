@@ -32,7 +32,7 @@ L.Control.DownloadProgress = L.Control.extend({
 		this._container.style.visibility = 'hidden';
 		this._ignoreEvents(this._container);
 
-		var closeButton = L.DomUtil.create('a', 'leaflet-popup-close-button', this._container);
+		var closeButton = L.DomUtil.create('a', 'leaflet-popup-close-button download-popup', this._container);
 		closeButton.href = '#close';
 		closeButton.innerHTML = '&#215;';
 		L.DomEvent.on(closeButton, 'click', this._onClose, this);
@@ -102,8 +102,8 @@ L.Control.DownloadProgress = L.Control.extend({
 	},
 
 	setValue: function (value) {
-		this._bar.style.width = value + '%';
-		this._value.innerHTML = value + '%';
+		this._bar.style.width = Math.round(value) + '%';
+		this._value.innerHTML = Math.round(value) + '%';
 	},
 
 	_setProgressCursor: function() {

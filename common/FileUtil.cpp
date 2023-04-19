@@ -201,7 +201,7 @@ namespace FileUtil
         Poco::File(root).createDirectories();
 
         // Don't const to allow for automatic move on return.
-        std::string newTmp = root + "/lool-" + Util::rng::getFilename(16);
+        std::string newTmp = root + "/cool-" + Util::rng::getFilename(16);
         if (::mkdir(newTmp.c_str(), S_IRWXU) < 0)
         {
             LOG_SYS("Failed to create random temp directory [" << newTmp << ']');
@@ -501,18 +501,20 @@ namespace FileUtil
         assert(!path.empty());
 
 #if !MOBILEAPP
-        bool hookResult;
+        bool hookResult = true;
         if (UnitBase::get().filterCheckDiskSpace(path, hookResult))
             return hookResult;
 #endif
 
         // we should be able to run just OK with 5GB for production or 1GB for development
+#if defined(__linux__) || defined(__FreeBSD__) || defined(IOS)
 #if ENABLE_DEBUG
         constexpr int64_t gb(1);
 #else
         constexpr int64_t gb(5);
 #endif
         constexpr int64_t ENOUGH_SPACE = gb*1024*1024*1024;
+#endif
 
 #if defined(__linux__) || defined(__FreeBSD__)
         struct statfs sfs;
@@ -566,6 +568,11 @@ namespace FileUtil
     std::string anonymizeUsername(const std::string& username)
     {
         return AnonymizeUserData ? Util::anonymize(username, AnonymizationSalt) : username;
+    }
+
+    std::string extractFileExtension(const std::string& path)
+    {
+        return Util::splitLast(path, '.', true).second;
     }
 
 } // namespace FileUtil

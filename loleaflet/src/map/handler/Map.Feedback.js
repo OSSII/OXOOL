@@ -6,7 +6,7 @@
 /* global _ */
 
 L.Map.mergeOptions({
-	feedback: true,
+	feedback: !window.ThisIsAMobileApp,
 	feedbackTimeout: 30000
 });
 
@@ -59,7 +59,7 @@ L.Map.Feedback = L.Handler.extend({
 				laterDate.setTime(timeValue + 432000000);
 			}
 
-			if (docCount > 15 && currentDate > laterDate)
+			if (docCount > 15 && currentDate > laterDate && window.autoShowFeedback)
 				setTimeout(L.bind(this.onFeedback, this), this._map.options.feedbackTimeout);
 		}
 	},
@@ -111,6 +111,9 @@ L.Map.Feedback = L.Handler.extend({
 	},
 
 	onMessage: function (e) {
+		if (typeof e.data !== 'string')
+			return; // Some extensions may inject scripts resulting in load events that are not strings
+
 		if (e.data.startsWith('updatecheck-show'))
 			return;
 

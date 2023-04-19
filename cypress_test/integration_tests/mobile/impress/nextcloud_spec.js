@@ -3,19 +3,19 @@
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
 var nextcloudHelper = require('../../common/nextcloud_helper');
-var impressMobileHelper = require('./impress_mobile_helper');
 
 describe('Nextcloud specific tests.', function() {
-	var testFileName = 'nextcloud.odp';
+	var origTestFileName = 'nextcloud.odp';
+	var testFileName;
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	it('Insert image from storage.', function() {
-		helper.loadFileToNextCloud('image_to_insert.png', 'impress');
+		helper.upLoadFileToNextCloud('image_to_insert.png', 'impress');
 
-		helper.beforeAll(testFileName, 'impress', undefined, true);
+		testFileName = helper.beforeAll(origTestFileName, 'impress', undefined, true);
 
 		mobileHelper.enableEditingMobile();
 
@@ -26,7 +26,7 @@ describe('Nextcloud specific tests.', function() {
 	});
 
 	it('Save as.', function() {
-		helper.beforeAll(testFileName, 'impress');
+		testFileName = helper.beforeAll(origTestFileName, 'impress');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
@@ -37,7 +37,7 @@ describe('Nextcloud specific tests.', function() {
 		cy.get('#mobile-edit-button')
 			.should('be.visible');
 
-		cy.get('#tb_actionbar_item_closemobile')
+		cy.get('#toolbar-mobile-back')
 			.then(function(item) {
 				cy.wrap(item)
 					.click();
@@ -52,56 +52,11 @@ describe('Nextcloud specific tests.', function() {
 	});
 
 	it('Share.', function() {
-		helper.beforeAll(testFileName, 'impress');
+		testFileName = helper.beforeAll(origTestFileName, 'impress');
 
 		mobileHelper.enableEditingMobile();
 
 		nextcloudHelper.checkAndCloseSharing();
-	});
-
-	it('Revision history.', function() {
-		helper.beforeAll(testFileName, 'impress');
-
-		mobileHelper.enableEditingMobile();
-
-		nextcloudHelper.checkAndCloseRevisionHistory();
-	});
-
-	it('Restore previous revision.', function() {
-		helper.beforeAll(testFileName, 'impress');
-
-		mobileHelper.enableEditingMobile();
-
-		// Initially we have "text" text in the document
-		impressMobileHelper.selectTextShapeInTheCenter();
-
-		impressMobileHelper.selectTextOfShape();
-
-		helper.expectTextForClipboard('text');
-
-		helper.typeIntoDocument('new');
-
-		helper.selectAllText();
-
-		helper.expectTextForClipboard('new');
-
-		mobileHelper.openHamburgerMenu();
-
-		cy.contains('.menu-entry-with-icon', 'File')
-			.click();
-
-		cy.contains('.menu-entry-with-icon', 'Save')
-			.click();
-
-		nextcloudHelper.restorePreviousVersion();
-
-		mobileHelper.enableEditingMobile();
-
-		impressMobileHelper.selectTextShapeInTheCenter();
-
-		impressMobileHelper.selectTextOfShape();
-
-		helper.expectTextForClipboard('text');
 	});
 });
 

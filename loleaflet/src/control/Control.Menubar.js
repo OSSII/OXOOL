@@ -3,28 +3,907 @@
 * Control.Menubar
 */
 
-/* global app $ _ _UNO vex L */
+/* global app $ _ _UNO L */
+L.Control.MenubarShortcuts = {
+	shortcuts: {
+		SAVE: 'Ctrl + S',
+		UNDO: 'Ctrl + Z',
+		REDO: 'Ctrl + Y',
+		PRINT: 'Ctrl + P',
+		CUT: 'Ctrl + X',
+		COPY: 'Ctrl + C',
+		PASTE: 'Ctrl + V',
+		PASTE_SPECIAL: 'Ctrl + Shift + Alt + V',
+		SELECT_ALL: 'Ctrl + A',
+		COMMENT: 'Ctrl + Alt + C',
+		FOOTNOTE: 'Ctrl + Alt + F',
+		ENDNOTE: 'Ctrl + Alt + D',
+		BOLD: 'Ctrl + B',
+		ITALIC: 'Ctrl + I',
+		UNDERLINE: 'Ctrl + U',
+		DOUBLE_UNDERLINE: 'Ctrl + D',
+		STRIKETHROUGH: 'Ctrl + Alt + 5',
+		SUPERSCRIPT: 'Ctrl + Shift + P',
+		SUBSCRIPT: 'Ctrl + Shift + B',
+		LEFT: 'Ctrl + L',
+		CENTERED: 'Ctrl + E',
+		RIGHT: 'Ctrl + R',
+		JUSTIFIED: 'Ctrl + J',
+		KEYBOARD_SHORTCUTS: 'Ctrl + Shift + ?'
+	},
+
+	addShortcut: function (text, shortcut) {
+		// localize shortcut
+		if (String.locale.startsWith('de') || String.locale.startsWith('dsb') || String.locale.startsWith('hsb')) {
+			shortcut = shortcut.replace('Ctrl', 'Strg');
+		}
+		if (String.locale.startsWith('lt')) {
+			shortcut = shortcut.replace('Ctrl', 'Vald');
+		}
+		if (String.locale.startsWith('sl')) {
+			shortcut = shortcut.replace('Ctrl', 'Krmilka').replace('Alt', 'izmenjalka').replace('Shift', 'dvigalka');
+		}
+
+		var newText = _(text).replace('~', '') + ' (' + L.Util.replaceCtrlAltInMac(shortcut) + ')';
+
+		return newText;
+	}
+};
+
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help, eg: mobiledrawing)
 	options: {
+		initial: [
+			{name: _UNO('.uno:PickList')},
+			{name: _UNO('.uno:EditMenu')},
+			{name: _UNO('.uno:ViewMenu')},
+			{name: _UNO('.uno:InsertMenu')},
+			{name: _UNO('.uno:ToolsMenu')}
+		],
+		text:  [
+			{name: _UNO('.uno:PickList', 'text'), id: 'file', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Save', 'text'), L.Control.MenubarShortcuts.shortcuts.SAVE), id: 'save', type: 'action'},
+				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: window.uiDefaults && window.uiDefaults.saveAsMode === 'group' ? 'menu' : 'action', menu: [
+					{name: _('ODF text document (.odt)'), id: 'saveas-odt', type: 'action'},
+					{name: _('Word 2003 Document (.doc)'), id: 'saveas-doc', type: 'action'},
+					{name: _('Word Document (.docx)'), id: 'saveas-docx', type: 'action'},
+					{name: _('Rich Text (.rtf)'), id: 'saveas-rtf', type: 'action'},
+				]},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'},
+					{name: _('EPUB (.epub)'), id: 'exportas-epub', type: 'action'}
+				]},
+				{name: _('Share...'), id:'shareas', type: 'action'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id: 'downloadas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
+					{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action'},
+					{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action'},
+					{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action'},
+					{name: _('Rich Text (.rtf)'), id: 'downloadas-rtf', type: 'action'},
+					{name: _('EPUB (.epub)'), id: !window.ThisIsAMobileApp ? 'exportepub' : 'downloadas-epub', type: 'action'}]},
+				{name: _('Sign document'), id: 'signdocument', type: 'action'},
+				{name: _UNO('.uno:SetDocumentProperties', 'text'), uno: '.uno:SetDocumentProperties', id: 'properties'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Print', 'text'), L.Control.MenubarShortcuts.shortcuts.PRINT), id: 'print', type: 'action'},
+				{name: _('Close document'), id: 'closedocument', type: 'action'}
+			]},
+			{name: _UNO('.uno:EditMenu', 'text'), id: 'editmenu', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Undo', 'text'), L.Control.MenubarShortcuts.shortcuts.UNDO), uno: '.uno:Undo'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Redo', 'text'), L.Control.MenubarShortcuts.shortcuts.REDO), uno: '.uno:Redo'},
+				{name: _('Repair'), id: 'repair',  type: 'action'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Cut', 'text'), L.Control.MenubarShortcuts.shortcuts.CUT), uno: '.uno:Cut'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Copy', 'text'), L.Control.MenubarShortcuts.shortcuts.COPY), uno: '.uno:Copy'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Paste', 'text'), L.Control.MenubarShortcuts.shortcuts.PASTE), uno: '.uno:Paste'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:PasteSpecial', 'text'), L.Control.MenubarShortcuts.shortcuts.PASTE_SPECIAL), uno: '.uno:PasteSpecial'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SelectAll', 'text'), L.Control.MenubarShortcuts.shortcuts.SELECT_ALL), uno: '.uno:SelectAll'},
+				{type: 'separator'},
+				{uno: '.uno:SearchDialog'},
+				{type: 'separator'},
+				{name: _UNO('.uno:ChangesMenu', 'text'), id: 'changesmenu', type: 'menu', menu: [
+					{uno: '.uno:TrackChanges'},
+					{uno: '.uno:ShowTrackedChanges'},
+					{type: 'separator'},
+					{uno: '.uno:AcceptTrackedChanges'},
+					{uno: '.uno:AcceptAllTrackedChanges'},
+					{uno: '.uno:RejectAllTrackedChanges'},
+					{uno: '.uno:PreviousTrackedChange'},
+					{uno: '.uno:NextTrackedChange'}
+				]},
+				{uno: '.uno:EditStyle'}
+			]},
+			{name: _UNO('.uno:ViewMenu', 'text'), id: 'view', type: 'menu',
+			 menu: (window.mode.isTablet() ? [
+					{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				] : [
+					{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action'},
+					{type: 'separator'},
+					{name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action'},
+					{name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action',},
+					{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				]).concat([
+					{type: 'separator'},
+					{name: _('Toggle UI Mode'), id: 'toggleuimode', type: 'action'},
+					{name: _('Show Ruler'), id: 'showruler', type: 'action'},
+					{name: _('Show Status Bar'), id: 'showstatusbar', type: 'action'},
+					{name: _('Dark Mode'), id: 'toggledarktheme', type: 'action'},
+					{uno: '.uno:Sidebar'},
+					{type: 'separator'},
+					{name: _UNO('.uno:ShowResolvedAnnotations', 'text'), id: 'showresolved', type: 'action'},
+					{uno: '.uno:ControlCodes'},
+				])},
+			{name: _UNO('.uno:InsertMenu', 'text'), id: 'insert', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:InsertAnnotation', 'text'), L.Control.MenubarShortcuts.shortcuts.COMMENT), id: 'insertcomment', type: 'action'},
+				{uno: '.uno:InsertObjectChart'},
+				{name: _UNO('.uno:FontworkGalleryFloater'), uno: '.uno:FontworkGalleryFloater', id: 'fontworkgalleryfloater'},
+				{name: _UNO('.uno:DrawText'), uno: '.uno:DrawText'},
+				{name: _UNO('.uno:VerticalText'), uno: '.uno:VerticalText'},
+				{type: 'separator'},
+				{uno: '.uno:InsertSection', id: 'insertsection'},
+				{uno: '.uno:PageNumberWizard', id: 'pagenumberwizard'},
+				{name: _UNO('.uno:InsertFieldCtrl', 'text'), type: 'menu', menu: [
+					{uno: '.uno:InsertPageNumberField'},
+					{uno: '.uno:InsertPageCountField'},
+					{uno: '.uno:InsertDateField'},
+					{uno: '.uno:InsertTimeField'},
+					{uno: '.uno:InsertTitleField'},
+					{uno: '.uno:InsertAuthorField'},
+					{uno: '.uno:InsertTopicField'},
+					{type: 'separator'},
+					{uno: '.uno:InsertField'},
+				]},
+				{name: _UNO('.uno:InsertHeaderFooterMenu', 'text'), type: 'menu', menu: [
+					{name: _UNO('.uno:InsertPageHeader', 'text'), type: 'menu', menu: [
+						{name: _('All'), disabled: true, id: 'insertheader', tag: '_ALL_', uno: '.uno:InsertPageHeader?'}]},
+					{name: _UNO('.uno:InsertPageFooter', 'text'), type: 'menu', menu: [
+						{name: _('All'), disabled: true, id: 'insertfooter', tag: '_ALL_', uno: '.uno:InsertPageFooter?'}]}
+				]},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:InsertFootnote', 'text'), L.Control.MenubarShortcuts.shortcuts.FOOTNOTE), uno: '.uno:InsertFootnote'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:InsertEndnote', 'text'), L.Control.MenubarShortcuts.shortcuts.ENDNOTE), uno: '.uno:InsertEndnote'},
+				{type: 'separator'},
+				{uno: '.uno:InsertPagebreak'},
+				{name: _UNO('.uno:InsertColumnBreak', 'spreadsheet'), uno: '.uno:InsertColumnBreak'},
+				{type: 'separator'},
+				{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+				{name: _('Smart Picker'), id: 'remotelink', type: 'action'},
+				{type: 'separator'},
+				{uno: '.uno:InsertSymbol'},
+				{name: _UNO('.uno:FormattingMarkMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:InsertNonBreakingSpace'},
+					{uno: '.uno:InsertHardHyphen'},
+					{uno: '.uno:InsertSoftHyphen'},
+					{uno: '.uno:InsertZWSP'},
+					{uno: '.uno:InsertWJ'},
+					{uno: '.uno:InsertLRM'},
+					{uno: '.uno:InsertRLM'}]},
+			]},
+			{name: _UNO('.uno:FormatMenu', 'text'), id: 'format', type: 'menu', menu: [
+				{name: _UNO('.uno:FormatTextMenu', 'text'), type: 'menu', menu: [
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Bold', 'text'), L.Control.MenubarShortcuts.shortcuts.BOLD), uno: '.uno:Bold'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Italic', 'text'), L.Control.MenubarShortcuts.shortcuts.ITALIC), uno: '.uno:Italic'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Underline', 'text'), L.Control.MenubarShortcuts.shortcuts.UNDERLINE), uno: '.uno:Underline'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:UnderlineDouble', 'text'), L.Control.MenubarShortcuts.shortcuts.DOUBLE_UNDERLINE), uno: '.uno:UnderlineDouble'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Strikeout', 'text'), L.Control.MenubarShortcuts.shortcuts.STRIKETHROUGH), uno: '.uno:Strikeout'},
+					{uno: '.uno:Overline'},
+					{type: 'separator'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SuperScript', 'text'), L.Control.MenubarShortcuts.shortcuts.SUPERSCRIPT), uno: '.uno:SuperScript'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SubScript', 'text'), L.Control.MenubarShortcuts.shortcuts.SUBSCRIPT), uno: '.uno:SubScript'},
+					{type: 'separator'},
+					{uno: '.uno:Shadowed'},
+					{uno: '.uno:OutlineFont'},
+					{type: 'separator'},
+					{uno: '.uno:Grow'},
+					{uno: '.uno:Shrink'},
+					{type: 'separator'},
+					{uno: '.uno:ChangeCaseToUpper'},
+					{uno: '.uno:ChangeCaseToLower'},
+					{uno: '.uno:ChangeCaseRotateCase'},
+					{type: 'separator'},
+					{uno: '.uno:ChangeCaseToSentenceCase'},
+					{uno: '.uno:ChangeCaseToTitleCase'},
+					{uno: '.uno:ChangeCaseToToggleCase'},
+					{type: 'separator'},
+					{uno: '.uno:SmallCaps'}]},
+				{name: _('Text orientation'), type: 'menu', menu: [
+					{uno: '.uno:ParaLeftToRight'},
+					{uno: '.uno:ParaRightToLeft'}]},
+				{name: _UNO('.uno:FormatSpacingMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:SpacePara1'},
+					{uno: '.uno:SpacePara15'},
+					{uno: '.uno:SpacePara2'},
+					{type: 'separator'},
+					{uno: '.uno:ParaspaceIncrease'},
+					{uno: '.uno:ParaspaceDecrease'},
+					{type: 'separator'},
+					{uno: '.uno:IncrementIndent'},
+					{uno: '.uno:DecrementIndent'}]},
+				{name: _UNO('.uno:TextAlign', 'text'), type: 'menu', menu: [
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:CommonAlignLeft', 'text'), L.Control.MenubarShortcuts.shortcuts.LEFT), uno: '.uno:CommonAlignLeft'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:CommonAlignHorizontalCenter', 'text'), L.Control.MenubarShortcuts.shortcuts.CENTERED), uno: '.uno:CommonAlignHorizontalCenter'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:CommonAlignRight', 'text'), L.Control.MenubarShortcuts.shortcuts.RIGHT), uno: '.uno:CommonAlignRight'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:CommonAlignJustified', 'text'), L.Control.MenubarShortcuts.shortcuts.JUSTIFIED), uno: '.uno:CommonAlignJustified'},
+					{type: 'separator'},
+					{uno: '.uno:CommonAlignTop'},
+					{uno: '.uno:CommonAlignVerticalCenter'},
+					{uno: '.uno:CommonAlignBottom'}]},
+				{name: _UNO('.uno:FormatBulletsMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:DefaultBullet'},
+					{uno: '.uno:DefaultNumbering'},
+					{type: 'separator'},
+					{uno: '.uno:DecrementLevel'},
+					{uno: '.uno:IncrementLevel'},
+					{uno: '.uno:DecrementSubLevels'},
+					{uno: '.uno:IncrementSubLevels'},
+					{type: 'separator'},
+					{uno: '.uno:MoveDown'},
+					{uno: '.uno:MoveUp'},
+					{uno: '.uno:MoveDownSubItems'},
+					{uno: '.uno:MoveUpSubItems'},
+					{type: 'separator'},
+					{uno: '.uno:InsertNeutralParagraph'},
+					{uno: '.uno:NumberingStart'},
+					{uno: '.uno:RemoveBullets'},
+					{type: 'separator'},
+					{uno: '.uno:JumpDownThisLevel'},
+					{uno: '.uno:JumpUpThisLevel'},
+					{uno: '.uno:ContinueNumbering'}]},
+				{type: 'separator'},
+				{uno: '.uno:FormatPaintbrush'},
+				{uno: '.uno:ResetAttributes'},
+				{type: 'separator'},
+				{uno: '.uno:FontDialog'},
+				{uno: '.uno:ParagraphDialog'},
+				{uno: '.uno:OutlineBullet'},
+				{type: 'separator'},
+				{uno: '.uno:PageDialog'},
+				{uno: '.uno:TitlePageDialog'},
+				{uno: '.uno:FormatColumns'},
+				{uno: '.uno:Watermark'},
+				{uno: '.uno:EditRegion'},
+				{type: 'separator'},
+				{uno: '.uno:TransformDialog'},
+				{uno: '.uno:FormatLine'},
+				{uno: '.uno:FormatArea'}
+			]},
+			{name: _('References'), id: 'references', type: 'menu', menu: [
+				{name: _UNO('.uno:IndexesMenu', 'text'), uno: '.uno:InsertMultiIndex'},
+				{uno: '.uno:InsertIndexesEntry'},
+				{name: _('Update Index'), uno: '.uno:UpdateCurIndex'},
+				{type: 'separator'},
+				{uno: '.uno:InsertFootnote'},
+				{uno: '.uno:InsertEndnote'},
+				{uno: '.uno:FootnoteDialog'},
+				{type: 'separator'},
+				{uno: '.uno:InsertBookmark'},
+				{uno: '.uno:InsertReferenceField'},
+				{id: 'zoteroseparator', type: 'separator', hidden: !window.zoteroEnabled},
+				{name: _('Add Citation'), id: 'zoteroaddeditcitation', type: 'action', hidden: !window.zoteroEnabled},
+				{name: _('Add Citation Note'), id: 'zoteroaddnote', type: 'action', hidden: !window.zoteroEnabled},
+				{name: _('Add Bibliography'), id: 'zoteroaddeditbibliography', type: 'action', hidden: !window.zoteroEnabled},
+				{is: 'zoteroseparator2', type: 'separator', hidden: !window.zoteroEnabled},
+				{name: _('Refresh Citations'), id: 'zoterorefresh', type: 'action', hidden: !window.zoteroEnabled},
+				{name: _('Unlink Citations'), id: 'zoterounlink', type: 'action', hidden: !window.zoteroEnabled},
+				{name: _('Citation Preferences'), id: 'zoterosetdocprefs', type: 'action', iosapp: false, hidden: !window.zoteroEnabled}]
+			},
+			{name: _UNO('.uno:TableMenu', 'text'), type: 'menu', id: 'table', menu: [
+				{uno: '.uno:InsertTable'},
+				{name: _UNO('.uno:TableInsertMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:InsertRowsBefore'},
+					{uno: '.uno:InsertRowsAfter'},
+					{type: 'separator'},
+					{uno: '.uno:InsertColumnsBefore'},
+					{uno: '.uno:InsertColumnsAfter'}]},
+				{name: _UNO('.uno:TableDeleteMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:DeleteRows'},
+					{uno: '.uno:DeleteColumns'},
+					{uno: '.uno:DeleteTable'}]},
+				{name: _UNO('.uno:TableSelectMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:SelectTable'},
+					{uno: '.uno:EntireRow'},
+					{uno: '.uno:EntireColumn'},
+					{uno: '.uno:EntireCell'}]},
+				{uno: '.uno:SplitCell'},
+				{uno: '.uno:MergeCells'},
+				{type: 'separator'},
+				{uno: '.uno:Protect'},
+				{uno: '.uno:UnsetCellsReadOnly'},
+				{type: 'separator'},
+				{uno: '.uno:TableDialog'}
+			]},
+			{name: _UNO('.uno:FormatFormMenu', 'text'), id: 'form', type: 'menu', menu: [
+				{name: _('Insert Rich Text'), uno: '.uno:InsertContentControl'},
+				{name: _('Insert Checkbox'), uno: '.uno:InsertCheckboxContentControl'},
+				{name: _('Insert Dropdown'), uno: '.uno:InsertDropdownContentControl'},
+				{name: _('Insert Picture'), uno: '.uno:InsertPictureContentControl'},
+				{name: _('Insert Date'), uno: '.uno:InsertDateContentControl'},
+				{name: _('Properties'), uno: '.uno:ContentControlProperties'},
+			]},
+			{name: _UNO('.uno:ToolsMenu', 'text'), id: 'tools', type: 'menu', menu: [
+				{uno: '.uno:SpellingAndGrammarDialog'},
+				{uno: '.uno:SpellOnline'},
+				window.deeplEnabled ?
+					{
+						uno: '.uno:Translate'
+					}: {},
+				{uno: '.uno:ThesaurusDialog'},
+				{name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
+					{name: _UNO('.uno:SetLanguageSelectionMenu', 'text'), type: 'menu', menu: [
+						{name: _('None (Do not check spelling)'), id: 'noneselection', uno: '.uno:LanguageStatus?Language:string=Current_LANGUAGE_NONE'} ]},
+					{name: _UNO('.uno:SetLanguageParagraphMenu', 'text'), type: 'menu', menu: [
+						{name: _('None (Do not check spelling)'), id: 'noneparagraph', uno: '.uno:LanguageStatus?Language:string=Paragraph_LANGUAGE_NONE'} ]},
+					{name: _UNO('.uno:SetLanguageAllTextMenu', 'text'), type: 'menu', menu: [
+						{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]}
+				]},
+				{uno: '.uno:WordCountDialog'},
+				{uno: '.uno:AccessibilityCheck'},
+				{type: 'separator'},
+				{name: _UNO('.uno:AutoFormatMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:OnlineAutoFormat'}]},
+				{type: 'separator'},
+				{uno: '.uno:ChapterNumberingDialog'},
+				{uno: '.uno:LineNumberingDialog'},
+				{uno: '.uno:FootnoteDialog'},
+				{type: 'separator'},
+				{name: _UNO('.uno:RunMacro'), id: 'runmacro', uno: '.uno:RunMacro'}
+			]},
+			{name: _UNO('.uno:HelpMenu', 'text'), id: 'help', type: 'menu', menu: [
+				{name: _('Forum'), id: 'forum', type: 'action'},
+				{name: _('Online Help'), id: 'online-help', type: 'action', iosapp: false},
+				{name: L.Control.MenubarShortcuts.addShortcut(_('Keyboard shortcuts'), L.Control.MenubarShortcuts.shortcuts.KEYBOARD_SHORTCUTS), id: 'keyboard-shortcuts', type: 'action', iosapp: false},
+				{name: _('Report an issue'), id: 'report-an-issue', type: 'action', iosapp: false},
+				{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
+				{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
+				{name: _('About'), id: 'about', type: 'action'}]
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', tablet: false}
+		],
+
+		presentation: [
+			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Save', 'presentation'), L.Control.MenubarShortcuts.shortcuts.SAVE), id: 'save', type: 'action'},
+				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: window.uiDefaults && window.uiDefaults.saveAsMode === 'group' ? 'menu' : 'action', menu: [
+					{name: _('ODF presentation (.odp)'), id: 'saveas-odp', type: 'action'},
+					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'saveas-ppt', type: 'action'},
+					{name: _('PowerPoint Presentation (.pptx)'), id: 'saveas-pptx', type: 'action'},
+				]},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'}
+				]},
+				{name: _('Save Comments'), id: 'savecomments', type: 'action'},
+				{name: _('Share...'), id:'shareas', type: 'action'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id: 'downloadas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
+					{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action'},
+					{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action'},
+					{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action'},
+				]},
+				{name: _UNO('.uno:SetDocumentProperties', 'presentation'), uno: '.uno:SetDocumentProperties', id: 'properties'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Print', 'presentation'), L.Control.MenubarShortcuts.shortcuts.PRINT), id: 'print', type: 'action'},
+				{name: _('Close document'), id: 'closedocument', type: 'action'}
+			]},
+			{name: _UNO('.uno:EditMenu', 'presentation'), id: 'editmenu', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Undo', 'presentation'), L.Control.MenubarShortcuts.shortcuts.UNDO), uno: '.uno:Undo'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Redo', 'presentation'), L.Control.MenubarShortcuts.shortcuts.REDO), uno: '.uno:Redo'},
+				{name: _('Repair'), id: 'repair',  type: 'action'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Cut', 'presentation'), L.Control.MenubarShortcuts.shortcuts.CUT), uno: '.uno:Cut'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Copy', 'presentation'), L.Control.MenubarShortcuts.shortcuts.COPY), uno: '.uno:Copy'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Paste', 'presentation'), L.Control.MenubarShortcuts.shortcuts.PASTE), uno: '.uno:Paste'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:PasteSpecial', 'presentation'), L.Control.MenubarShortcuts.shortcuts.PASTE_SPECIAL), uno: '.uno:PasteSpecial'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SelectAll', 'presentation'), L.Control.MenubarShortcuts.shortcuts.SELECT_ALL), uno: '.uno:SelectAll'},
+				{type: 'separator'},
+				{uno: '.uno:SearchDialog'}
+			]},
+			{name: _UNO('.uno:ViewMenu', 'presentation'), id: 'view', type: 'menu',
+			 menu: (window.mode.isTablet() ? [
+					{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				] : [
+				   {name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen', type: 'action'},
+				   {type: 'separator'},
+				   {name: _UNO('.uno:ZoomPlus', 'presentation'), id: 'zoomin', type: 'action'},
+				   {name: _UNO('.uno:ZoomMinus', 'presentation'), id: 'zoomout', type: 'action'},
+				   {name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				]).concat([
+				   {type: 'separator'},
+				   {name: _('Toggle UI Mode'), id: 'toggleuimode', type: 'action'},
+				   {name: _('Show Ruler'), id: 'showruler', type: 'action'},
+				   {name: _('Show Status Bar'), id: 'showstatusbar', type: 'action'},
+				   {name: _('Dark Mode'), id: 'toggledarktheme', type: 'action'},
+				   {uno: '.uno:Sidebar'},
+				   {type: 'separator'},
+				   {uno: '.uno:SlideMasterPage'},
+				   {uno: '.uno:ModifyPage'},
+				   {uno: '.uno:SlideChangeWindow'},
+				   {uno: '.uno:CustomAnimation'},
+				   {uno: '.uno:MasterSlidesPanel'},
+				])},
+			{name: _UNO('.uno:InsertMenu', 'presentation'), id: 'insert', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action'},
+				{name: _UNO('.uno:SelectBackground', 'presentation'), id: 'selectbackground', type: 'action'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:InsertAnnotation', 'presentation'), L.Control.MenubarShortcuts.shortcuts.COMMENT), id: 'insertcomment', type: 'action'},
+				{uno: '.uno:InsertObjectChart'},
+				{name: _UNO('.uno:FontworkGalleryFloater'), uno: '.uno:FontworkGalleryFloater', id: 'fontworkgalleryfloater'},
+				{name: _UNO('.uno:DrawText'), uno: '.uno:DrawText'},
+				{name: _UNO('.uno:VerticalText'), uno: '.uno:VerticalText'},
+				{type: 'separator'},
+				{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+				{name: _('Smart Picker'), id: 'remotelink', type: 'action'},
+				{type: 'separator'},
+				{uno: '.uno:InsertSymbol'},
+				{type: 'separator'},
+				{uno: '.uno:HeaderAndFooter'},
+				{type: 'separator'},
+				{name: _UNO('.uno:InsertField', 'text'), id: 'insertfield', type: 'menu', menu: [
+					{uno: '.uno:InsertDateFieldFix'},
+					{uno: '.uno:InsertDateFieldVar'},
+					{uno: '.uno:InsertTimeFieldFix'},
+					{uno: '.uno:InsertTimeFieldVar'},
+					{type: 'separator'},
+					{name: _UNO('.uno:InsertSlideField', 'presentation'), uno: '.uno:InsertPageField'},
+					{name: _UNO('.uno:InsertSlideTitleField', 'presentation'), uno: '.uno:InsertPageTitleField'},
+					{name: _UNO('.uno:InsertSlidesField', 'presentation'), uno: '.uno:InsertPagesField'},
+				]},
+			]},
+			{name: _UNO('.uno:FormatMenu', 'presentation'), id: 'format', type: 'menu', menu: [
+				{uno: '.uno:FontDialog'},
+				{uno: '.uno:ParagraphDialog'},
+				{name: _UNO('.uno:SlideSetup', 'presentation'), uno: '.uno:PageSetup'},
+				{type: 'separator'},
+				{uno: '.uno:TransformDialog'},
+				{uno: '.uno:FormatLine'},
+				{uno: '.uno:FormatArea'},
+				{type: 'separator'},
+				{uno: '.uno:OutlineBullet'}]
+			},
+			{name: _UNO('.uno:TableMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), id:'table', type: 'menu', menu: [
+				{name: _UNO('.uno:InsertTable', 'text'), uno: '.uno:InsertTable'},
+				{name: _UNO('.uno:TableInsertMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+					{uno: '.uno:InsertRowsBefore'},
+					{uno: '.uno:InsertRowsAfter'},
+					{type: 'separator'},
+					{uno: '.uno:InsertColumnsBefore'},
+					{uno: '.uno:InsertColumnsAfter'}]},
+				{name: _UNO('.uno:TableDeleteMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+					{uno: '.uno:DeleteRows'},
+					{uno: '.uno:DeleteColumns'},
+					{uno: '.uno:DeleteTable'}]},
+				{name: _UNO('.uno:TableSelectMenu', 'text'), type: 'menu', menu: [
+					{uno: '.uno:SelectTable'},
+					{uno: '.uno:EntireRow'},
+					{uno: '.uno:EntireColumn'}]},
+				{uno: '.uno:MergeCells'},
+				{uno: '.uno:TableDialog'}]
+			},
+			{name: _UNO('.uno:SlideMenu', 'presentation'), id: 'slide', type: 'menu', menu: [
+				{name: _UNO('.uno:InsertSlide', 'presentation'), id: 'insertpage', type: 'action'},
+				{name: _UNO('.uno:DuplicateSlide', 'presentation'), id: 'duplicatepage', type: 'action'},
+				{name: _UNO('.uno:DeleteSlide', 'presentation'), id: 'deletepage', type: 'action'},
+				{type: 'separator', id: 'fullscreen-presentation-separator'},
+				{name: _('Fullscreen presentation'), id: 'fullscreen-presentation', type: 'action'},
+				{name: _('Present current slide'), id: 'presentation-currentslide', type: 'action'}]
+			},
+			{name: _UNO('.uno:ToolsMenu', 'presentation'), id: 'tools', type: 'menu', menu: [
+				{uno: '.uno:SpellDialog'},
+				{uno: '.uno:SpellOnline'},
+				{name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
+					{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]},
+				{type: 'separator'},
+				{name: _UNO('.uno:RunMacro'), id: 'runmacro', uno: '.uno:RunMacro'}
+
+			]},
+			{name: _UNO('.uno:HelpMenu', 'presentation'), id: 'help', type: 'menu', menu: [
+				{name: _('Online Help'), id: 'online-help', type: 'action', iosapp: false},
+				{name: L.Control.MenubarShortcuts.addShortcut(_('Keyboard shortcuts'), L.Control.MenubarShortcuts.shortcuts.KEYBOARD_SHORTCUTS), id: 'keyboard-shortcuts', type: 'action', iosapp: false},
+				{name: _('Report an issue'), id: 'report-an-issue', type: 'action', iosapp: false},
+				{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
+				{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
+				{name: _('About'), id: 'about', type: 'action'}]
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', tablet: false}
+		],
+
+		drawing: [
+			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Save', 'presentation'), L.Control.MenubarShortcuts.shortcuts.SAVE), id: 'save', type: 'action'},
+				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action'},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'}
+				]},
+				{name: _('Save Comments'), id: 'savecomments', type: 'action'},
+				{name: _('Share...'), id:'shareas', type: 'action'},
+				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id: 'downloadas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
+					{name: _('ODF Drawing (.odg)'), id: 'downloadas-odg', type: 'action'}
+				]},
+				{name: _UNO('.uno:SetDocumentProperties', 'presentation'), uno: '.uno:SetDocumentProperties', id: 'properties'},
+				{type: 'separator'},
+				{name: _('Close document'), id: 'closedocument', type: 'action'}
+			]},
+			{name: _UNO('.uno:EditMenu', 'presentation'), id: 'editmenu', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Undo', 'presentation'), L.Control.MenubarShortcuts.shortcuts.UNDO), uno: '.uno:Undo'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Redo', 'presentation'), L.Control.MenubarShortcuts.shortcuts.REDO), uno: '.uno:Redo'},
+				{name: _('Repair'), id: 'repair',  type: 'action'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Cut', 'presentation'), L.Control.MenubarShortcuts.shortcuts.CUT), uno: '.uno:Cut'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Copy', 'presentation'), L.Control.MenubarShortcuts.shortcuts.COPY), uno: '.uno:Copy'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Paste', 'presentation'), L.Control.MenubarShortcuts.shortcuts.PASTE), uno: '.uno:Paste'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:PasteSpecial', 'presentation'), L.Control.MenubarShortcuts.shortcuts.PASTE_SPECIAL), uno: '.uno:PasteSpecial'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SelectAll', 'presentation'), L.Control.MenubarShortcuts.shortcuts.SELECT_ALL), uno: '.uno:SelectAll'},
+				{type: 'separator'},
+				{uno: '.uno:SearchDialog'}
+			]},
+			{name: _UNO('.uno:ViewMenu', 'presentation'), id: 'view', type: 'menu',
+			 menu: (window.mode.isTablet() ? [
+					{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				] : [
+					{name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen', type: 'action'},
+					{type: 'separator'},
+					{name: _UNO('.uno:ZoomPlus', 'presentation'), id: 'zoomin', type: 'action'},
+					{name: _UNO('.uno:ZoomMinus', 'presentation'), id: 'zoomout', type: 'action'},
+					{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				]).concat([
+					{type: 'separator'},
+					{name: _('Toggle UI Mode'), id: 'toggleuimode', type: 'action'},
+					{name: _('Dark Mode'), id: 'toggledarktheme', type: 'action'},
+					{uno: '.uno:Sidebar'},
+					{name: _('Show Status Bar'), id: 'showstatusbar', type: 'action'}
+				])},
+			{name: _UNO('.uno:InsertMenu', 'presentation'), id: 'insert', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action'},
+				{name: _UNO('.uno:SelectBackground', 'presentation'), id: 'selectbackground', type: 'action'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:InsertAnnotation', 'presentation'), L.Control.MenubarShortcuts.shortcuts.COMMENT), id: 'insertcomment', type: 'action'},
+				{uno: '.uno:InsertObjectChart'},
+				{type: 'separator'},
+				{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+				{name: _('Smart Picker'), id: 'remotelink', type: 'action'},
+				{type: 'separator'},
+				{uno: '.uno:InsertSymbol'},
+				{type: 'separator'},
+				{name: _UNO('.uno:InsertField', 'text'), id: 'insertfield', type: 'menu', menu: [
+					{name: _UNO('.uno:InsertDateFieldFix', 'presentation'), uno: '.uno:InsertDateFieldFix'},
+					{name: _UNO('.uno:InsertDateFieldVar', 'presentation'), uno: '.uno:InsertDateFieldVar'},
+					{name: _UNO('.uno:InsertTimeFieldFix', 'presentation'), uno: '.uno:InsertTimeFieldFix'},
+					{name: _UNO('.uno:InsertTimeFieldVar', 'presentation'), uno: '.uno:InsertTimeFieldVar'},
+					{type: 'separator'},
+					{name: _UNO('.uno:InsertPageField', 'presentation'), uno: '.uno:InsertPageField'},
+					{name: _UNO('.uno:InsertPageTitleField', 'presentation'), uno: '.uno:InsertPageTitleField'},
+					{name: _UNO('.uno:InsertPagesField', 'presentation'), uno: '.uno:InsertPagesField'},
+				]},
+			]},
+			{name: _UNO('.uno:FormatMenu', 'presentation'), id: 'format', type: 'menu', menu: [
+				{uno: '.uno:FontDialog'},
+				{uno: '.uno:ParagraphDialog'},
+				{name: _UNO('.uno:PageSetup', 'presentation'), uno: '.uno:PageSetup'},
+				{type: 'separator'},
+				{uno: '.uno:TransformDialog'},
+				{uno: '.uno:FormatLine'},
+				{uno: '.uno:FormatArea'},
+				{type: 'separator'},
+				{uno: '.uno:OutlineBullet'}]
+			},
+			{name: _UNO('.uno:TableMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+				{name: _UNO('.uno:InsertTable', 'text'), uno: '.uno:InsertTable'},
+				{name: _UNO('.uno:TableInsertMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+					{name: _UNO('.uno:InsertRowsBefore', 'presentation'), uno: '.uno:InsertRowsBefore'},
+					{name: _UNO('.uno:InsertRowsAfter', 'presentation'), uno: '.uno:InsertRowsAfter'},
+					{type: 'separator'},
+					{name: _UNO('.uno:InsertColumnsBefore', 'presentation'), uno: '.uno:InsertColumnsBefore'},
+					{name: _UNO('.uno:InsertColumnsAfter', 'presentation'), uno: '.uno:InsertColumnsAfter'}]},
+				{name: _UNO('.uno:TableDeleteMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), type: 'menu', menu: [
+					{name: _UNO('.uno:DeleteRows', 'presentation'), uno: '.uno:DeleteRows'},
+					{name: _UNO('.uno:DeleteColumns', 'presentation'), uno: '.uno:DeleteColumns'},
+					{name: _UNO('.uno:DeleteTable', 'presentation'), uno: '.uno:DeleteTable'}]},
+				{name: _UNO('.uno:TableSelectMenu', 'text'), type: 'menu', menu: [
+					{name: _UNO('.uno:SelectTable', 'presentation'), uno: '.uno:SelectTable'},
+					{name: _UNO('.uno:EntireRow', 'presentation'), uno: '.uno:EntireRow'},
+					{name: _UNO('.uno:EntireColumn', 'presentation'), uno: '.uno:EntireColumn'}]},
+				{name: _UNO('.uno:MergeCells', 'presentation'), uno: '.uno:MergeCells'},
+				{name: _UNO('.uno:TableDialog', 'presentation'), uno: '.uno:TableDialog'}]
+			},
+			{name: _UNO('.uno:PageMenu', 'presentation'), type: 'menu', menu: [
+				{name: _UNO('.uno:InsertPage', 'presentation'), id: 'insertpage', type: 'action'},
+				{name: _UNO('.uno:DuplicatePage', 'presentation'), id: 'duplicatepage', type: 'action'},
+				{name: _UNO('.uno:DeletePage', 'presentation'), id: 'deletepage', type: 'action'}]
+			},
+			{name: _UNO('.uno:ToolsMenu', 'presentation'), id: 'tools', type: 'menu', menu: [
+				{uno: '.uno:SpellDialog'},
+				{uno: '.uno:SpellOnline'},
+				{name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
+					{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]}
+			]},
+			{name: _UNO('.uno:HelpMenu', 'presentation'), id: 'help', type: 'menu', menu: [
+				{name: _('Online Help'), id: 'online-help', type: 'action', iosapp: false},
+				{name: L.Control.MenubarShortcuts.addShortcut(_('Keyboard shortcuts'), L.Control.MenubarShortcuts.shortcuts.KEYBOARD_SHORTCUTS), id: 'keyboard-shortcuts', type: 'action', iosapp: false},
+				{name: _('Report an issue'), id: 'report-an-issue', type: 'action', iosapp: false},
+				{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
+				{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
+				{name: _('About'), id: 'about', type: 'action'}]
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', tablet: false}
+		],
+
+		spreadsheet: [
+			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Save', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.SAVE), id: 'save', type: 'action'},
+				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: window.uiDefaults && window.uiDefaults.saveAsMode === 'group' ? 'menu' : 'action', menu: [
+					{name: _('ODF spreadsheet (.ods)'), id: 'saveas-ods', type: 'action'},
+					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'saveas-xls', type: 'action'},
+					{name: _('Excel Spreadsheet (.xlsx)'), id: 'saveas-xlsx', type: 'action'},
+				]},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'}
+				]},
+				{name: _('Share...'), id:'shareas', type: 'action'},
+				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id:'downloadas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
+					{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action'},
+					{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action'},
+					{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action'},
+					{name: _('CSV file (.csv)'), id: 'downloadas-csv', type: 'action'}]},
+				{name: _UNO('.uno:SetDocumentProperties', 'spreadsheet'), uno: '.uno:SetDocumentProperties', id: 'properties'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Print', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.PRINT), id: 'print', type: 'action'},
+				{name: _('Close document'), id: 'closedocument', type: 'action'}
+			]},
+			{name: _UNO('.uno:EditMenu', 'spreadsheet'), id: 'editmenu', type: 'menu', menu: [
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Undo', 'text'), L.Control.MenubarShortcuts.shortcuts.UNDO), uno: '.uno:Undo'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Redo', 'text'), L.Control.MenubarShortcuts.shortcuts.REDO), uno: '.uno:Redo'},
+				{name: _('Repair'), id: 'repair',  type: 'action'},
+				{type: 'separator'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Cut', 'text'), L.Control.MenubarShortcuts.shortcuts.CUT), uno: '.uno:Cut'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Copy', 'text'), L.Control.MenubarShortcuts.shortcuts.COPY), uno: '.uno:Copy'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Paste', 'text'), L.Control.MenubarShortcuts.shortcuts.PASTE), uno: '.uno:Paste'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:PasteSpecial', 'text'), L.Control.MenubarShortcuts.shortcuts.PASTE_SPECIAL), uno: '.uno:PasteSpecial'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SelectAll', 'text'), L.Control.MenubarShortcuts.shortcuts.SELECT_ALL), uno: '.uno:SelectAll'},
+				{type: 'separator'},
+				{uno: '.uno:SearchDialog'}
+			]},
+			{name: _UNO('.uno:ViewMenu', 'spreadsheet'), id: 'view', type: 'menu',
+			 menu: (window.mode.isTablet() ? [
+					{name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				] : [
+				   {name: _UNO('.uno:FullScreen', 'spreadsheet'), id: 'fullscreen', type: 'action'},
+				   {type: 'separator'},
+				   {name: _UNO('.uno:ZoomPlus', 'text'), id: 'zoomin', type: 'action'},
+				   {name: _UNO('.uno:ZoomMinus', 'text'), id: 'zoomout', type: 'action',},
+				   {name: _('Reset zoom'), id: 'zoomreset', type: 'action'},
+				]).concat([
+				   {type: 'separator'},
+				   {name: _('Toggle UI Mode'), id: 'toggleuimode', type: 'action'},
+				   {name: _('Show Status Bar'), id: 'showstatusbar', type: 'action'},
+				   {name: _('Dark Mode'), id: 'toggledarktheme', type: 'action'},
+				   {uno: '.uno:Sidebar'},
+				   {name: _UNO('.uno:FreezePanes', 'spreadsheet', true), id: 'FreezePanes', type: 'action', uno: '.uno:FreezePanes'},
+				   {name: _UNO('.uno:FreezeCellsMenu', 'spreadsheet', true), id: 'FreezeCellsMenu', type: 'menu', uno: '.uno:FreezeCellsMenu', menu: [
+					   {name: _UNO('.uno:FreezePanesColumn', 'spreadsheet', true), id: 'FreezePanesColumn', type: 'action', uno: '.uno:FreezePanesColumn'},
+					   {name: _UNO('.uno:FreezePanesRow', 'spreadsheet', true), id: 'FreezePanesRow', type: 'action', uno: '.uno:FreezePanesRow'}
+				   ]},
+				])},
+			{name: _UNO('.uno:InsertMenu', 'spreadsheet'), id: 'insert', type: 'menu', menu: [
+				{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+				{name: _UNO('.uno:InsertGraphic', 'spreadsheet'), id: 'insertgraphicremote', type: 'action'},
+				{name: _UNO('.uno:DataDataPilotRun', 'spreadsheet'), uno: '.uno:DataDataPilotRun'},
+				{name: _UNO('.uno:InsertSparkline', 'spreadsheet'), uno: '.uno:InsertSparkline'},
+				{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:InsertAnnotation', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.COMMENT), id: 'insertcomment', type: 'action'},
+				{uno: '.uno:InsertObjectChart'},
+				{name: _UNO('.uno:FontworkGalleryFloater'), uno: '.uno:FontworkGalleryFloater', id: 'fontworkgalleryfloater'},
+				{name: _UNO('.uno:DrawText'), uno: '.uno:DrawText'},
+				{name: _UNO('.uno:VerticalText'), uno: '.uno:VerticalText'},
+				{uno: '.uno:FunctionDialog'},
+				{type: 'separator'},
+				{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+				{name: _('Smart Picker'), id: 'remotelink', type: 'action'},
+				{uno: '.uno:InsertSymbol'},
+				{type: 'separator'},
+				{name: _UNO('.uno:InsertField', 'text'), type: 'menu', menu: [
+					{uno: '.uno:InsertCurrentDate'},
+					{uno: '.uno:InsertCurrentTime'}
+				]},
+				{uno: '.uno:EditHeaderAndFooter'} /*todo: add to Control.Notebookbar.Calc.js (as Insert tab)*/
+			]},
+			{name: _UNO('.uno:FormatMenu', 'spreadsheet'), id: 'format', type: 'menu', menu: [
+				{name: _UNO('.uno:FormatTextMenu', 'spreadsheet'), type: 'menu', menu: [
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Bold', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.BOLD), uno: '.uno:Bold'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Italic', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.ITALIC), uno: '.uno:Italic'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Underline', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.UNDERLINE), uno: '.uno:Underline'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:UnderlineDouble', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.DOUBLE_UNDERLINE), uno: '.uno:UnderlineDouble'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:Strikeout', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.STRIKETHROUGH), uno: '.uno:Strikeout'},
+					{uno: '.uno:Overline'},
+					{type: 'separator'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SuperScript', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.SUPERSCRIPT), uno: '.uno:SuperScript'},
+					{name: L.Control.MenubarShortcuts.addShortcut(_UNO('.uno:SubScript', 'spreadsheet'), L.Control.MenubarShortcuts.shortcuts.SUBSCRIPT), uno: '.uno:SubScript'},
+					{type: 'separator'},
+					{uno: '.uno:Shadowed'},
+					{uno: '.uno:OutlineFont'},
+					{type: 'separator'},
+					{uno: '.uno:WrapText'},
+					{type: 'separator'},
+					{uno: '.uno:ChangeCaseToUpper'},
+					{uno: '.uno:ChangeCaseToLower'},
+					{uno: '.uno:ChangeCaseRotateCase'},
+					{type: 'separator'},
+					{uno: '.uno:ChangeCaseToSentenceCase'},
+					{uno: '.uno:ChangeCaseToTitleCase'},
+					{uno: '.uno:ChangeCaseToToggleCase'}]},
+				{name: _UNO('.uno:TextAlign', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:CommonAlignLeft'},
+					{uno: '.uno:CommonAlignHorizontalCenter'},
+					{uno: '.uno:CommonAlignRight'},
+					{uno: '.uno:CommonAlignJustified'},
+					{type: 'separator'},
+					{uno: '.uno:CommonAlignTop'},
+					{uno: '.uno:CommonAlignVerticalCenter'},
+					{uno: '.uno:CommonAlignBottom'},
+					{type: 'separator'},
+					{uno: '.uno:ParaLeftToRight'},
+					{uno: '.uno:ParaRightToLeft'}]},
+				{name: _UNO('.uno:NumberFormatMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:NumberFormatStandard'},
+					{uno: '.uno:NumberFormatDecimal'},
+					{uno: '.uno:NumberFormatPercent'},
+					{uno: '.uno:NumberFormatCurrency'},
+					{uno: '.uno:NumberFormatDate'},
+					{uno: '.uno:NumberFormatTime'},
+					{uno: '.uno:NumberFormatScientific'},
+					{type: 'separator'},
+					{uno: '.uno:NumberFormatThousands'}]},
+				{type: 'separator'},
+				{uno: '.uno:FormatPaintbrush'},
+				{uno: '.uno:ResetAttributes'},
+				{name: _UNO('.uno:PrintRangesMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:DefinePrintArea'},
+					{uno: '.uno:AddPrintArea'},
+					{uno: '.uno:EditPrintArea'},
+					{uno: '.uno:DeletePrintArea'}]},
+				{name: _UNO('.uno:FormatSparklineMenu', 'spreadsheet'), type: 'menu', menu: [
+				    {uno: '.uno:InsertSparkline'},
+				    {uno: '.uno:DeleteSparkline'},
+				    {uno: '.uno:DeleteSparklineGroup'},
+				    {uno: '.uno:EditSparklineGroup'},
+				    {uno: '.uno:EditSparkline'},
+				    {uno: '.uno:GroupSparklines'},
+				    {uno: '.uno:UngroupSparklines'}
+				]},
+				{name: _UNO('.uno:ConditionalFormatMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:ConditionalFormatDialog'},
+					{uno: '.uno:ColorScaleFormatDialog'},
+					{uno: '.uno:DataBarFormatDialog'},
+					{uno: '.uno:IconSetFormatDialog'},
+					{uno: '.uno:CondDateFormatDialog'},
+					{type: 'separator'},
+					{uno: '.uno:ConditionalFormatManagerDialog'}]},
+				{type: 'separator'},
+				{uno: '.uno:FormatCellDialog'},
+				{name: _('Rows'), type: 'menu', menu: [
+					{uno: '.uno:RowHeight'},
+					{uno: '.uno:SetOptimalRowHeight'}]},
+				{name: _('Columns'), type: 'menu', menu: [
+					{uno: '.uno:ColumnWidth'},
+					{uno: '.uno:SetOptimalColumnWidth'}]},
+				{uno: '.uno:FontDialog'},
+				{uno: '.uno:ParagraphDialog'},
+				{uno: '.uno:PageFormatDialog'},
+				{type: 'separator'},
+				{uno: '.uno:TransformDialog'},
+				{uno: '.uno:FormatLine'},
+				{uno: '.uno:FormatArea'}
+			]},
+			{name: _UNO('.uno:SheetMenu', 'spreadsheet'), id: 'sheet', type: 'menu', menu: [
+				{uno: '.uno:InsertCell'},
+				{name: _UNO('.uno:InsertRowsMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:InsertRowsBefore'},
+					{uno: '.uno:InsertRowsAfter'}]},
+				{name: _UNO('.uno:InsertColumnsMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:InsertColumnsBefore'},
+					{uno: '.uno:InsertColumnsAfter'}]},
+				{type: 'separator'},
+				{uno: '.uno:DeleteCell'},
+				{uno: '.uno:DeleteRows'},
+				{uno: '.uno:DeleteColumns'},
+				{uno: '.uno:SheetRightToLeft'},
+			]},
+			{name: _UNO('.uno:DataMenu', 'spreadsheet'), id: 'data', type: 'menu', menu: [
+				{uno: '.uno:DataSort'},
+				{uno: '.uno:SortAscending'},
+				{uno: '.uno:SortDescending'},
+				{uno: '.uno:Validation'},
+				{uno: '.uno:Calculate'},
+				{type: 'separator'},
+				{uno: '.uno:DataFilterAutoFilter'},
+				{name: _UNO('.uno:FilterMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:DataFilterStandardFilter'},
+					{uno: '.uno:DataFilterSpecialFilter'},
+					{type: 'separator'},
+					{uno: '.uno:DataFilterRemoveFilter'},
+					{uno: '.uno:DataFilterHideAutoFilter'}]},
+				{type: 'separator'},
+				{name: _UNO('.uno:DataPilotMenu', 'spreadsheet'), type: 'menu', menu: [
+					{name: _UNO('.uno:InsertPivotTable', 'spreadsheet'), uno: '.uno:DataDataPilotRun'},
+					{name: _UNO('.uno:RecalcPivotTable', 'spreadsheet'), uno: '.uno:RecalcPivotTable'},
+					{name: _UNO('.uno:DeletePivotTable', 'spreadsheet'), uno: '.uno:DeletePivotTable'}]},
+				{type: 'separator'},
+				{name: _UNO('.uno:NamesMenu', 'spreadsheet'), type: 'menu', menu: [
+					{name: _UNO('.uno:AddName', 'spreadsheet'), uno: '.uno:AddName'},
+					{name: _UNO('.uno:DefineName', 'spreadsheet'), uno: '.uno:DefineName'}]},
+				{type: 'separator'},
+				{name: _UNO('.uno:GroupOutlineMenu', 'spreadsheet'), type: 'menu', menu: [
+					{uno: '.uno:Group'},
+					{uno: '.uno:Ungroup'},
+					{type: 'separator'},
+					{uno: '.uno:ClearOutline'},
+					{type: 'separator'},
+					{uno: '.uno:HideDetail'},
+					{uno: '.uno:ShowDetail'}]},
+				{type: 'separator'},
+				{name: _UNO('.uno:StatisticsMenu', 'spreadsheet'), type: 'menu', menu: [
+					{name: _UNO('.uno:SamplingDialog', 'spreadsheet'), uno: '.uno:SamplingDialog'},
+					{name: _UNO('.uno:DescriptiveStatisticsDialog', 'spreadsheet'), uno: '.uno:DescriptiveStatisticsDialog'},
+					{name: _UNO('.uno:AnalysisOfVarianceDialog', 'spreadsheet'), uno: '.uno:AnalysisOfVarianceDialog'},
+					{name: _UNO('.uno:CorrelationDialog', 'spreadsheet'), uno: '.uno:CorrelationDialog'},
+					{name: _UNO('.uno:CovarianceDialog', 'spreadsheet'), uno: '.uno:CovarianceDialog'},
+					{name: _UNO('.uno:ExponentialSmoothingDialog', 'spreadsheet'), uno: '.uno:ExponentialSmoothingDialog'},
+					{name: _UNO('.uno:MovingAverageDialog', 'spreadsheet'), uno: '.uno:MovingAverageDialog'},
+					{name: _UNO('.uno:RegressionDialog', 'spreadsheet'), uno: '.uno:RegressionDialog'},
+					{name: _UNO('.uno:TTestDialog', 'spreadsheet'), uno: '.uno:TTestDialog'},
+					{name: _UNO('.uno:FTestDialog', 'spreadsheet'), uno: '.uno:FTestDialog'},
+					{name: _UNO('.uno:ZTestDialog', 'spreadsheet'), uno: '.uno:ZTestDialog'},
+					{name: _UNO('.uno:ChiSquareTestDialog', 'spreadsheet'), uno: '.uno:ChiSquareTestDialog'},
+					{name: _UNO('.uno:FourierAnalysisDialog', 'spreadsheet'), uno: '.uno:FourierAnalysisDialog'}]},
+			]},
+			{name: _UNO('.uno:ToolsMenu', 'spreadsheet'), id: 'tools', type: 'menu', menu: [
+				{uno: '.uno:SpellDialog'},
+				{uno: '.uno:SpellOnline'},
+				{name: _UNO('.uno:LanguageMenu'), type: 'menu', menu: [
+					{name: _('None (Do not check spelling)'), id: 'nonelanguage', uno: '.uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE'}]},
+				{uno: '.uno:GoalSeekDialog'},
+				{type: 'separator'},
+				{name: _UNO('.uno:RunMacro'), id: 'runmacro', uno: '.uno:RunMacro'}
+			]},
+			{name: _UNO('.uno:HelpMenu', 'spreadsheet'), id: 'help', type: 'menu', menu: [
+				{name: _('Online Help'), id: 'online-help', type: 'action', iosapp: false},
+				{name: L.Control.MenubarShortcuts.addShortcut(_('Keyboard shortcuts'), L.Control.MenubarShortcuts.shortcuts.KEYBOARD_SHORTCUTS), id: 'keyboard-shortcuts', type: 'action', iosapp: false},
+				{name: _('Report an issue'), id: 'report-an-issue', type: 'action', iosapp: false},
+				{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
+				{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
+				{name: _('About'), id: 'about', type: 'action'}]
+			},
+			{name: _('Last modification'), id: 'last-mod', type: 'action', tablet: false}
+		],
+
 		mobiletext:  [
 			{name: _('Search'), id: 'searchdialog', type: 'action'},
 			{name: _UNO('.uno:PickList', 'text'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'text'), id: 'save', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'text'), id: 'saveas', type: 'action'},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'},
+					{name: _('EPUB (.epub)'), id: 'exportas-epub', type: 'action'}
+				]},
 				{name: _('Share...'), id:'shareas', type: 'action'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{name: _('Sign document'), id: 'signdocument', type: 'action'},
 				{type: 'separator'},
-				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action'}
+				{name: _UNO('.uno:Print', 'text'), id: 'print', type: 'action'},
+				{name: _UNO('.uno:SetDocumentProperties', 'text'), uno: '.uno:SetDocumentProperties', id: 'properties'}
+
 			]},
 			{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id: 'downloadas', type: 'menu', menu: [
-				{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+				{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
 				{name: _('ODF text document (.odt)'), id: 'downloadas-odt', type: 'action'},
 				{name: _('Word 2003 Document (.doc)'), id: 'downloadas-doc', type: 'action'},
 				{name: _('Word Document (.docx)'), id: 'downloadas-docx', type: 'action'},
 				{name: _('Rich Text (.rtf)'), id: 'downloadas-rtf', type: 'action'},
-				{name: _('EPUB (.epub)'), id: 'downloadas-epub', type: 'action'}
+				{name: _('EPUB (.epub)'), id: !window.ThisIsAMobileApp ? 'exportepub' : 'downloadas-epub', type: 'action'},
 			]},
 			{name: _UNO('.uno:EditMenu', 'text'), id: 'editmenu', type: 'menu', menu: [
 				{uno: '.uno:Undo'},
@@ -47,7 +926,7 @@ L.Control.Menubar = L.Control.extend({
 			]},
 			{name: _UNO('.uno:ViewMenu', 'text'), id: 'view', type: 'menu', menu: [
 				{name: _UNO('.uno:FullScreen', 'text'), id: 'fullscreen', type: 'action', mobileapp: false},
-				{uno: '.uno:ControlCodes'},
+				{uno: '.uno:ControlCodes', id: 'formattingmarks'},
 				{uno: '.uno:SpellOnline'},
 				{name: _UNO('.uno:ShowResolvedAnnotations', 'text'), id: 'showresolved', type: 'action', uno: '.uno:ShowResolvedAnnotations'},
 			]
@@ -55,9 +934,13 @@ L.Control.Menubar = L.Control.extend({
 			{id: 'watermark', uno: '.uno:Watermark'},
 			{name: _('Page Setup'), id: 'pagesetup', type: 'action'},
 			{uno: '.uno:WordCountDialog'},
+			window.deeplEnabled ?
+				{
+					uno: '.uno:Translate'
+				} : {},
 			{name: _UNO('.uno:RunMacro'), id: 'runmacro', uno: '.uno:RunMacro'},
 			{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
-			{name: _('Send Feedback'), id: 'feedback', type: 'action'},
+			{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
 			{name: _('About'), id: 'about', type: 'action'},
 		],
 
@@ -66,13 +949,17 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action'},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'}
+				]},
 				{name: _('Share...'), id:'shareas', type: 'action'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{type: 'separator'},
-				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action'}
+				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action'},
+				{name: _UNO('.uno:SetDocumentProperties', 'presentation'), uno: '.uno:SetDocumentProperties', id: 'properties'}
 			]},
 			{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id:'downloadas', type: 'menu', menu: [
-				{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+				{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
 				{name: _('ODF presentation (.odp)'), id: 'downloadas-odp', type: 'action'},
 				{name: _('PowerPoint 2003 Presentation (.ppt)'), id: 'downloadas-ppt', type: 'action'},
 				{name: _('PowerPoint Presentation (.pptx)'), id: 'downloadas-pptx', type: 'action'},
@@ -113,7 +1000,7 @@ L.Control.Menubar = L.Control.extend({
 			{name: _('Fullscreen presentation'), id: 'fullscreen-presentation', type: 'action'},
 			{name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen', type: 'action', mobileapp: false},
 			{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
-			{name: _('Send Feedback'), id: 'feedback', type: 'action'},
+			{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
 			{name: _('About'), id: 'about', type: 'action'},
 		],
 
@@ -122,12 +1009,16 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'presentation'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'presentation'), id: 'save', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'presentation'), id: 'saveas', type: 'action'},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'}
+				]},
 				{name: _('Share...'), id:'shareas', type: 'action'},
 				{name: _UNO('.uno:Print', 'presentation'), id: 'print', type: 'action'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
+				{name: _UNO('.uno:SetDocumentProperties', 'presentation'), uno: '.uno:SetDocumentProperties', id: 'properties'}
 			]},
 			{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id:'downloadas', type: 'menu', menu: [
-				{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+				{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
 				{name: _('ODF Drawing (.odg)'), id: 'downloadas-odg', type: 'action'}
 			]},
 			{name: _UNO('.uno:EditMenu', 'presentation'), id: 'editmenu', type: 'menu', menu: [
@@ -141,25 +1032,25 @@ L.Control.Menubar = L.Control.extend({
 				{uno: '.uno:SelectAll'}
 			]},
 			{name: _UNO('.uno:TableMenu', 'text'/*HACK should be 'presentation', but not in xcu*/), id: 'tablemenu', type: 'menu', menu: [
-				{uno: '.uno:InsertRowsBefore'},
-				{uno: '.uno:InsertRowsAfter'},
+				{name: _UNO('.uno:InsertRowsBefore', 'presentation'), uno: '.uno:InsertRowsBefore'},
+				{name: _UNO('.uno:InsertRowsAfter', 'presentation'), uno: '.uno:InsertRowsAfter'},
 				{type: 'separator'},
-				{uno: '.uno:InsertColumnsBefore'},
-				{uno: '.uno:InsertColumnsAfter'},
-				{uno: '.uno:DeleteRows'},
-				{uno: '.uno:DeleteColumns'},
-				{uno: '.uno:MergeCells'}]
+				{name: _UNO('.uno:InsertColumnsBefore', 'presentation'), uno: '.uno:InsertColumnsBefore'},
+				{name: _UNO('.uno:InsertColumnsAfter', 'presentation'), uno: '.uno:InsertColumnsAfter'},
+				{name: _UNO('.uno:DeleteRows', 'presentation'), uno: '.uno:DeleteRows'},
+				{name: _UNO('.uno:DeleteColumns', 'presentation'), uno: '.uno:DeleteColumns'},
+				{name: _UNO('.uno:MergeCells', 'presentation'), uno: '.uno:MergeCells'}]
 			},
-			{name: _UNO('.uno:SlideMenu', 'presentation'), id: 'slidemenu', type: 'menu', menu: [
-				{name: _UNO('.uno:InsertSlide', 'presentation'), id: 'insertpage', type: 'action'},
-				{name: _UNO('.uno:DuplicateSlide', 'presentation'), id: 'duplicatepage', type: 'action'},
-				{name: _UNO('.uno:DeleteSlide', 'presentation'), id: 'deletepage', type: 'action'}]
+			{name: _UNO('.uno:PageMenu', 'presentation'), id: 'pagemenu', type: 'menu', menu: [
+				{name: _UNO('.uno:InsertPage', 'presentation'), id: 'insertpage', type: 'action'},
+				{name: _UNO('.uno:DuplicatePage', 'presentation'), id: 'duplicatepage', type: 'action'},
+				{name: _UNO('.uno:DeletePage', 'presentation'), id: 'deletepage', type: 'action'}]
 			},
 			{uno: '.uno:SpellOnline'},
 			{name: _UNO('.uno:RunMacro'), id: 'runmacro', uno: '.uno:RunMacro'},
 			{name: _UNO('.uno:FullScreen', 'presentation'), id: 'fullscreen', type: 'action', mobileapp: false},
 			{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
-			{name: _('Send Feedback'), id: 'feedback', type: 'action'},
+			{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
 			{name: _('About'), id: 'about', type: 'action'},
 		],
 
@@ -168,13 +1059,19 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:PickList', 'spreadsheet'), id: 'file', type: 'menu', menu: [
 				{name: _UNO('.uno:Save', 'spreadsheet'), id: 'save', type: 'action'},
 				{name: _UNO('.uno:SaveAs', 'spreadsheet'), id: 'saveas', type: 'action'},
+				{name: _('Export as'), id: 'exportas', type: 'menu', menu: [
+					{name: _('PDF Document (.pdf)'), id: 'exportas-pdf', type: 'action'}
+				]},
 				{name: _('Share...'), id:'shareas', type: 'action'},
 				{name: _('See revision history'), id: 'rev-history', type: 'action'},
 				{type: 'separator'},
-				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action'}
+				{name: _UNO('.uno:Print', 'spreadsheet'), id: 'print', type: 'action'},
+				{name: _('Define print area', 'spreadsheet'), uno: '.uno:DefinePrintArea' },
+				{name: _('Remove print area', 'spreadsheet'), uno: '.uno:DeletePrintArea' },
+				{name: _UNO('.uno:SetDocumentProperties', 'spreadsheet'), uno: '.uno:SetDocumentProperties', id: 'properties'}
 			]},
 			{name: !window.ThisIsAMobileApp ? _('Download as') : _('Export as'), id:'downloadas', type: 'menu', menu: [
-				{name: _('PDF Document (.pdf)'), id: 'downloadas-pdf', type: 'action'},
+				{name: _('PDF Document (.pdf)'), id: !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', type: 'action'},
 				{name: _('ODF spreadsheet (.ods)'), id: 'downloadas-ods', type: 'action'},
 				{name: _('Excel 2003 Spreadsheet (.xls)'), id: 'downloadas-xls', type: 'action'},
 				{name: _('Excel Spreadsheet (.xlsx)'), id: 'downloadas-xlsx', type: 'action'}
@@ -196,15 +1093,9 @@ L.Control.Menubar = L.Control.extend({
 				{name: _UNO('.uno:InsertColumnsMenu', 'spreadsheet'), id: 'insertcolumnsmenu', type: 'menu', menu: [
 					{uno: '.uno:InsertColumnsBefore'},
 					{uno: '.uno:InsertColumnsAfter'}]},
-				{name: _UNO('.uno:InsertBreakMenu', 'spreadsheet'), id: 'insertbreakmenu', type: 'menu', menu: [
-					{uno: '.uno:InsertRowBreak'},
-					{uno: '.uno:InsertColumnBreak'}]},
 				{type: 'separator'},
 				{uno: '.uno:DeleteRows'},
 				{uno: '.uno:DeleteColumns'},
-				{name: _UNO('.uno:DelBreakMenu', 'spreadsheet'), id: 'delbreakmenu', type: 'menu', menu: [
-					{uno: '.uno:DeleteRowbreak'},
-					{uno: '.uno:DeleteColumnbreak'}]},
 				{type: 'separator'},
 				{name: _UNO('.uno:FreezePanes', 'spreadsheet'), uno: '.uno:FreezePanes'},
 				{name: _UNO('.uno:FreezePanesColumn', 'spreadsheet'), uno: '.uno:FreezePanesColumn'},
@@ -229,97 +1120,118 @@ L.Control.Menubar = L.Control.extend({
 			{name: _UNO('.uno:RunMacro'), id: 'runmacro', uno: '.uno:RunMacro'},
 			{name: _UNO('.uno:FullScreen', 'spreadsheet'), id: 'fullscreen', type: 'action', mobileapp: false},
 			{name: _('Latest Updates'), id: 'latestupdates', type: 'action', iosapp: false},
-			{name: _('Send Feedback'), id: 'feedback', type: 'action'},
+			{name: _('Send Feedback'), id: 'feedback', type: 'action', mobileapp: false},
 			{name: _('About'), id: 'about', type: 'action'},
 		],
 
 		mobileInsertMenu : {
 			text : {
-				id: '.uno:InsertMenu', menu: [
-					{id: '.uno:InsertGraphic'},
-					{name: _('Remote image'), id: 'insertgraphicremote', icon: 'res:insertgraphicremote'},
-					{id: '.uno:InsertObjectChart'},
-					{id: '.uno:InsertAnnotation'},
-					{name: '.uno:InsertTable', id: 'inserttable'},
+				name: _UNO('.uno:InsertMenu', 'text'), id: 'insert', type: 'menu', menu: [
+					{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+					{name: _UNO('.uno:InsertGraphic', 'text'), id: 'insertgraphicremote', type: 'action'},
+					{uno: '.uno:InsertObjectChart'},
+					{name: _UNO('.uno:InsertAnnotation', 'text'), id: 'insertcomment', type: 'action'},
+					{name: _UNO('.uno:TableMenu'), id: 'inserttable', type: 'action'},
 					{type: 'separator'},
-					{id: '.uno:InsertField', menu: [
-						{id: '.uno:InsertPageNumberField'},
-						{id: '.uno:InsertPageCountField'},
-						{id: '.uno:InsertDateField'},
-						{id: '.uno:InsertTimeField'},
-						{id: '.uno:InsertTitleField'},
-						{id: '.uno:InsertAuthorField'},
-						{id: '.uno:InsertTopicField'}
+					{name: _UNO('.uno:InsertField', 'text'), id: 'insertfield', type: 'menu', menu: [
+						{uno: '.uno:InsertPageNumberField'},
+						{uno: '.uno:InsertPageCountField'},
+						{uno: '.uno:InsertDateField'},
+						{uno: '.uno:InsertTimeField'},
+						{uno: '.uno:InsertTitleField'},
+						{uno: '.uno:InsertAuthorField'},
+						{uno: '.uno:InsertTopicField'}
 					]},
-					{id: '.uno:InsertFootnote'},
-					{id: '.uno:InsertEndnote'},
+					{name: _UNO('.uno:InsertHeaderFooterMenu', 'text'), id: 'insertheaderfooter', type: 'menu', menu: [
+						{name: _UNO('.uno:InsertPageHeader', 'text'), id: 'insertpageheader', type: 'menu', menu: [
+							{name: _('All'), disabled: true, id: 'insertheader', tag: '_ALL_', uno: '.uno:InsertPageHeader?On:bool=true'}]},
+						{name: _UNO('.uno:InsertPageFooter', 'text'), id: 'insertpagefooter', type: 'menu', menu: [
+							{name: _('All'), disabled: true, id: 'insertfooter', tag: '_ALL_', uno: '.uno:InsertPageFooter?On:bool=true'}]}
+					]},
+					{uno: '.uno:InsertFootnote'},
+					{uno: '.uno:InsertEndnote'},
 					{type: 'separator'},
-					{id: '.uno:InsertPagebreak'},
-					{id: '.uno:InsertColumnBreak'},
+					{uno: '.uno:InsertPagebreak'},
+					{name: _UNO('.uno:InsertColumnBreak', 'spreadsheet'), uno: '.uno:InsertColumnBreak'},
 					{type: 'separator'},
-					{id: '.uno:HyperlinkDialog'},
-					{id: '.uno:ShapesMenu'},
-					{id: '.uno:FontworkGalleryFloater'},
+					{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+					{name: _UNO('.uno:ShapesMenu'), id: 'insertshape', type: 'action'},
+					{name: _UNO('.uno:FontworkGalleryFloater'), uno: '.uno:FontworkGalleryFloater', id: 'fontworkgalleryfloater'},
+					{name: _UNO('.uno:FormattingMarkMenu', 'text'), id: 'formattingmark', type: 'menu', menu: [
+						{uno: '.uno:InsertNonBreakingSpace'},
+						{uno: '.uno:InsertHardHyphen'},
+						{uno: '.uno:InsertSoftHyphen'},
+						{uno: '.uno:InsertZWSP'},
+						{uno: '.uno:InsertWJ'},
+						{uno: '.uno:InsertLRM'},
+						{uno: '.uno:InsertRLM'}]},
+					{name: _UNO('.uno:FormatFormMenu', 'text'), id: 'formatformmenu', type: 'menu', menu: [
+						{name: _('Insert Rich Text'), uno: '.uno:InsertContentControl'},
+						{name: _('Insert Checkbox'), uno: '.uno:InsertCheckboxContentControl'},
+						{name: _('Insert Dropdown'), uno: '.uno:InsertDropdownContentControl'},
+						{name: _('Insert Picture'), uno: '.uno:InsertPictureContentControl'},
+						{name: _('Insert Date'), uno: '.uno:InsertDateContentControl'},
+						{name: _('Properties'), uno: '.uno:ContentControlProperties'},
+					]},
 				]
 			},
 			spreadsheet : {
-				id: '.uno:InsertMenu', menu: [
-					{id: '.uno:InsertGraphic'},
-					{name: _('Remote image'), id: 'insertgraphicremote', icon: 'res:insertgraphicremote'},
-					{id: '.uno:InsertObjectChart'},
-					{id: '.uno:InsertAnnotation'},
+				name: _UNO('.uno:InsertMenu', 'spreadsheet'), id: 'insert', type: 'menu', menu: [
+					{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+					{name: _UNO('.uno:InsertGraphic', 'spreadsheet'), id: 'insertgraphicremote', type: 'action'},
+					{uno: '.uno:InsertObjectChart'},
+					{name: _UNO('.uno:InsertAnnotation', 'spreadsheet'), id: 'insertcomment', type: 'action'},
 					{type: 'separator'},
-					{id: '.uno:HyperlinkDialog'},
-					{id: '.uno:ShapesMenu'},
-					{id: '.uno:FontworkGalleryFloater'},
-					{id: '.uno:InsertCurrentDate'},
-					{id: '.uno:InsertCurrentTime'},
+					{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+					{name: _UNO('.uno:ShapesMenu'), id: 'insertshape', type: 'action'},
+					{uno: '.uno:InsertCurrentDate'},
+					{uno: '.uno:InsertCurrentTime'},
 					// other fields need EditEngine context & can't be disabled in the menu.
 				]
 			},
 			presentation : {
-				id: '.uno:InsertMenu', menu: [
-					{id: '.uno:InsertGraphic'},
-					{name: _('Remote image'), id: 'insertgraphicremote', icon: 'res:insertgraphicremote'},
-					{id: '.uno:InsertObjectChart'},
-					{id: '.uno:InsertAnnotation'},
-					{name: '.uno:InsertTable', id: 'inserttable'},
-					{id: '.uno:HyperlinkDialog'},
-					{id: '.uno:ShapesMenu'},
-					{id: '.uno:FontworkGalleryFloater'},
-					{name: '.uno:Text', id: '.uno:Text?CreateDirectly:bool=true'},
-					{id: '.uno:InsertField', menu: [
-						{id: '.uno:InsertDateFieldFix'},
-						{id: '.uno:InsertDateFieldVar'},
-						{id: '.uno:InsertTimeFieldFix'},
-						{id: '.uno:InsertTimeFieldVar'},
+				name: _UNO('.uno:InsertMenu', 'presentation'), id: 'insert', type: 'menu', menu: [
+					{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+					{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action'},
+					{uno: '.uno:InsertObjectChart'},
+					{name: _UNO('.uno:InsertAnnotation', 'presentation'), id: 'insertcomment', type: 'action'},
+					{name: _UNO('.uno:TableMenu'), id: 'inserttable', type: 'action'},
+					{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+					{name: _UNO('.uno:ShapesMenu'), id: 'insertshape', type: 'action'},
+					{name: _UNO('.uno:FontworkGalleryFloater'), uno: '.uno:FontworkGalleryFloater', id: 'fontworkgalleryfloater'},
+					{name: _UNO('.uno:Text', 'presentation'), id: 'inserttextbox', type: 'action'},
+					{name: _UNO('.uno:InsertField', 'text'), id: 'insertfield', type: 'menu', menu: [
+						{uno: '.uno:InsertDateFieldFix'},
+						{uno: '.uno:InsertDateFieldVar'},
+						{uno: '.uno:InsertTimeFieldFix'},
+						{uno: '.uno:InsertTimeFieldVar'},
 						{type: 'separator'},
-						{id: '.uno:InsertSlideField'},
-						{id: '.uno:InsertSlideTitleField'},
-						{id: '.uno:InsertSlidesField'},
+						{name: _UNO('.uno:InsertSlideField', 'presentation'), uno: '.uno:InsertPageField'},
+						{name: _UNO('.uno:InsertSlideTitleField', 'presentation'), uno: '.uno:InsertPageTitleField'},
+						{name: _UNO('.uno:InsertSlidesField', 'presentation'), uno: '.uno:InsertPagesField'},
 					]},
 				]
 			},
 			drawing : {
-				id: '.uno:InsertMenu', menu: [
-					{id: '.uno:InsertGraphic'},
-					{name: _('Remote image'), id: 'insertgraphicremote', icon: 'res:insertgraphicremote'},
-					{id: '.uno:InsertObjectChart'},
-					{id: '.uno:InsertAnnotation'},
-					{name: '.uno:InsertTable', id: 'inserttable'},
-					{id: '.uno:HyperlinkDialog'},
-					{id: '.uno:ShapesMenu'},
-					{id: '.uno:FontworkGalleryFloater'},
-					{name: '.uno:Text', id: '.uno:Text?CreateDirectly:bool=true'},
-					{id: '.uno:InsertField', menu: [
-						{id: '.uno:InsertDateFieldFix'},
-						{id: '.uno:InsertDateFieldVar'},
-						{id: '.uno:InsertTimeFieldFix'},
-						{id: '.uno:InsertTimeFieldVar'},
+				name: _UNO('.uno:InsertMenu', 'presentation'), id: 'insert', type: 'menu', menu: [
+					{name: _('Local Image...'), id: 'insertgraphic', type: 'action'},
+					{name: _UNO('.uno:InsertGraphic', 'presentation'), id: 'insertgraphicremote', type: 'action'},
+					{uno: '.uno:InsertObjectChart'},
+					{name: _UNO('.uno:InsertAnnotation', 'presentation'), id: 'insertcomment', type: 'action'},
+					{name: _UNO('.uno:TableMenu'), id: 'inserttable', type: 'action'},
+					{name: _UNO('.uno:HyperlinkDialog'), id: 'inserthyperlink', type: 'action'},
+					{name: _UNO('.uno:ShapesMenu'), id: 'insertshape', type: 'action'},
+					{name: _UNO('.uno:FontworkGalleryFloater'), uno: '.uno:FontworkGalleryFloater', id: 'fontworkgalleryfloater'},
+					{name: _UNO('.uno:Text', 'presentation'), id: 'inserttextbox', type: 'action'},
+					{name: _UNO('.uno:InsertField', 'text'), id: 'insertfield', type: 'menu', menu: [
+						{name: _UNO('.uno:InsertDateFieldFix', 'presentation'), uno: '.uno:InsertDateFieldFix'},
+						{name: _UNO('.uno:InsertDateFieldVar', 'presentation'), uno: '.uno:InsertDateFieldVar'},
+						{name: _UNO('.uno:InsertTimeFieldFix', 'presentation'), uno: '.uno:InsertTimeFieldFix'},
+						{name: _UNO('.uno:InsertTimeFieldVar', 'presentation'), uno: '.uno:InsertTimeFieldVar'},
 						{type: 'separator'},
-						{id: '.uno:InsertSlideField'},
-						{id: '.uno:InsertSlideTitleField'},
-						{id: '.uno:InsertSlidesField'},
+						{name: _UNO('.uno:InsertPageField', 'presentation'), uno: '.uno:InsertPageField'},
+						{name: _UNO('.uno:InsertPageTitleField', 'presentation'), uno: '.uno:InsertPageTitleField'},
+						{name: _UNO('.uno:InsertPagesField', 'presentation'), uno: '.uno:InsertPagesField'},
 					]},
 				]
 			}
@@ -332,72 +1244,44 @@ L.Control.Menubar = L.Control.extend({
 
 		allowedViewModeActions: [
 			'savecomments', 'shareas', 'print', // file menu
-			'downloadas-pdf', 'downloadas-odt', 'downloadas-doc', 'downloadas-docx', 'downloadas-rtf', 'downloadas-epub', // file menu
-			'downloadas-odp', 'downloadas-ppt', 'downloadas-pptx', 'downloadas-odg', 'print', // file menu
+			'downloadas-odt', 'downloadas-doc', 'downloadas-docx', 'downloadas-rtf', // file menu
+			'downloadas-odp', 'downloadas-ppt', 'downloadas-pptx', 'downloadas-odg', !window.ThisIsAMobileApp ? 'exportpdf' : 'downloadas-pdf', !window.ThisIsAMobileApp ? 'exportepub' : 'downloadas-epub', // file menu
 			'downloadas-ods', 'downloadas-xls', 'downloadas-xlsx', 'downloadas-csv', 'closedocument', // file menu
-			'fullscreen', 'zoomin', 'zoomout', 'zoomreset', 'showresolved', // view menu
-			'about', 'keyboard-shortcuts', 'online-help', 'report-an-issue', // help menu
+			'fullscreen', 'zoomin', 'zoomout', 'zoomreset', 'showstatusbar', 'showresolved', 'toggledarktheme', // view menu
+			'about', 'keyboard-shortcuts', 'latestupdates', 'feedback', 'online-help', 'report-an-issue', // help menu
 			'insertcomment'
-		],
-
-		// 具有動態選單的選項
-		dynamicMenu: {
-			'.uno:InsertPageHeader': {type: 'pageheader'}, // 插入/頁首與頁尾/頁首
-			'.uno:InsertPageFooter': {type: 'pagefooter'}, // 插入/頁首與頁尾/頁尾
-			'.uno:SetLanguageSelectionMenu': {type: 'languageselection'}, // 工具/語言/選取
-			'.uno:SetLanguageParagraphMenu': {type: 'languageparagraph'}, // 工具/語言/段落
-			'.uno:SetLanguageAllTextMenu': {type: 'languagealltext'}, // 工具/語言/所有文字
-		},
+		]
 	},
-
-	languages: [],
 
 	onAdd: function (map) {
 		this._initialized = false;
-
-		// 全螢幕在 IE 11 和 Edge 上不正常
-		if (L.Browser.ie || L.Browser.edge) {
-			// 把 fullscreen 從允許唯讀列表中移除
-			var index = this.options.allowedViewModeActions.indexOf('fullscreen');
-			if (index > 0) {
-				this.options.allowedViewModeActions.splice(index, 1);
-			}
-		}
-
 		this._hiddenItems = [];
 		this._menubarCont = L.DomUtil.get('main-menu');
+		this._isFileODF = true;
 		// In case it contains garbage
 		if (this._menubarCont)
 			this._menubarCont.remove();
 		// Use original template as provided by server
 		this._menubarCont = map.mainMenuTemplate.cloneNode(true);
 		$('#main-menu-state').after(this._menubarCont);
+		this._initializeMenu(this.options.initial);
 
 		map.on('doclayerinit', this._onDocLayerInit, this);
-		//map.on('updatepermission', this._onRefresh, this);
+		map.on('updatepermission', this._onRefresh, this);
 		map.on('addmenu', this._addMenu, this);
-		map.on('commandvalues', this._onInitLanguagesMenu, this);
+		map.on('languagesupdated', this._onInitLanguagesMenu, this);
 		map.on('updatetoolbarcommandvalues', this._onStyleMenu, this);
-
-		// 監控指定的指令狀態
-		/* .uno:Undo, .uno:Redo, .uno:Repeat 會隨著編輯狀態改變，需要反應在選單名稱上 */
-		this._map.stateChangeHandler.on('.uno:Undo', this._onChangeItemName, this);
-		this._map.stateChangeHandler.on('.uno:Redo', this._onChangeItemName, this);
-		this._map.stateChangeHandler.on('.uno:Repeat', this._onChangeItemName, this);
 
 		this._resetOverflow();
 	},
 
 	onRemove: function() {
-		this._map.off('doclayerinit', this._onDocLayerInit, this);
-		//this._map.off('updatepermission', this._onRefresh, this);
-		this._map.off('addmenu', this._addMenu, this);
-		this._map.off('commandvalues', this._onInitLanguagesMenu, this);
-		this._map.off('updatetoolbarcommandvalues', this._onStyleMenu, this);
 
-		this._map.stateChangeHandler.off('.uno:Undo', this._onChangeItemName, this);
-		this._map.stateChangeHandler.off('.uno:Redo', this._onChangeItemName, this);
-		this._map.stateChangeHandler.off('.uno:Repeat', this._onChangeItemName, this);
+		this._map.off('doclayerinit', this._onDocLayerInit, this);
+		this._map.off('updatepermission', this._onRefresh, this);
+		this._map.off('addmenu', this._addMenu, this);
+		this._map.off('languagesupdated', this._onInitLanguagesMenu, this);
+		this._map.off('updatetoolbarcommandvalues', this._onStyleMenu, this);
 
 		this._menubarCont.remove();
 		this._menubarCont = null;
@@ -405,55 +1289,105 @@ L.Control.Menubar = L.Control.extend({
 		this._resetOverflow();
 	},
 
-	/**
-	 * 動態改變選項文字
-	 * @param {event} e - statechangehandler 產生的事件
-	 */
-	_onChangeItemName: function(e) {
-		// 以 id 找這個 item
-		var liItem = document.getElementById('menu-' + e.commandName);
-		if (liItem && liItem.mgr) {
-			// 確實有值就改變選行名稱
-			if (e.hasValue()) {
-				var text = window.removeAccessKey(e.value());
-				liItem.mgr.setText(text);
-			} else { // 否則恢復預設名稱
-				liItem.mgr.setDefaultText();
-			}
-		}
-	},
-
 	_addMenu: function (e) {
 		var alreadyExists = L.DomUtil.get('menu-' + e.id);
 		if (alreadyExists)
 			return;
 
-		var liItem = this._createItem({
-			text: e.label,
-			id: e.id
-		});
-
-		liItem.mgr.data('postmessage', true);
-
+		var liItem = L.DomUtil.create('li', '');
+		liItem.setAttribute('role', 'menuitem');
+		liItem.id = 'menu-' + e.id;
+		if (this._map.isReadOnlyMode()) {
+			L.DomUtil.addClass(liItem, 'readonly');
+		}
+		var aItem = L.DomUtil.create('a', '', liItem);
+		$(aItem).text(e.label);
+		$(aItem).data('id', e.id);
+		$(aItem).data('type', 'action');
+		$(aItem).data('postmessage', 'true');
+		aItem.tabIndex = 0;
 		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
 	},
 
-	_onInitLanguagesMenu: function (e) {
-		if (e.commandName === '.uno:LanguageStatus' && L.Util.isArray(e.commandValues)) {
-			this.languages = [];
-			e.commandValues.forEach(function(language) {
-				var split = language.split(';');
-				language = split[0];
-				var isoCode = '';
-				if (split.length > 1)
-					isoCode = split[1];
-				this.languages.push({translated: _(language), neutral: language, iso: isoCode});
-			}.bind(this));
+	_createUnoMenuItem: function (caption, command, tag) {
+		var liItem, aItem;
+		liItem = L.DomUtil.create('li', '');
+		liItem.setAttribute('role', 'menuitem');
+		aItem = L.DomUtil.create('a', '', liItem);
+		$(aItem).text(caption);
+		$(aItem).data('type', 'unocommand');
+		$(aItem).data('uno', command);
+		$(aItem).data('tag', tag);
+		aItem.tabIndex = 0;
+		return liItem;
+	},
 
-			this.languages.sort(function(a, b) {
-				return a.translated < b.translated ? -1 : a.translated > b.translated ? 1 : 0;
-			});
+	_createActionMenuItem: function (caption, id) {
+		var liItem, aItem;
+		liItem = L.DomUtil.create('li', '');
+		liItem.setAttribute('role', 'menuitem');
+		aItem = L.DomUtil.create('a', '', liItem);
+		$(aItem).text(caption);
+		$(aItem).data('type', 'action');
+		$(aItem).data('id', id);
+		aItem.tabIndex = 0;
+		return liItem;
+	},
+
+	_onInitLanguagesMenu: function () {
+		var translated, neutral;
+		var constDefa = 'Default_RESET_LANGUAGES';
+		var constCurr = 'Current_RESET_LANGUAGES';
+		var constPara = 'Paragraph_RESET_LANGUAGES';
+		var constLang = '.uno:LanguageStatus?Language:string=';
+		var resetLang = _('Reset to Default Language');
+		var languages  = app.languages;
+
+		var $menuSelection = $('#menu-noneselection').parent();
+		var $menuParagraph = $('#menu-noneparagraph').parent();
+		var $menuDefault = $('#menu-nonelanguage').parent();
+
+		var noneselection = $('#menu-noneselection').detach();
+		var fontlanguage = $('#menu-fontlanguage').detach();
+		var noneparagraph = $('#menu-noneparagraph').detach();
+		var paragraphlanguage = $('#menu-paragraphlanguage').detach();
+		var nonelanguage = $('#menu-nonelanguage').detach();
+
+		// clear old entries
+
+		$menuSelection.empty();
+		$menuParagraph.empty();
+		$menuDefault.empty();
+
+		for (var lang in languages) {
+			if (languages.length > 10 && app.favouriteLanguages.indexOf(languages[lang].iso) < 0)
+				continue;
+
+			translated = languages[lang].translated;
+			neutral = languages[lang].neutral;
+
+			$menuSelection.append(this._createUnoMenuItem(translated, constLang + encodeURIComponent('Current_' + neutral)));
+			$menuParagraph.append(this._createUnoMenuItem(translated, constLang + encodeURIComponent('Paragraph_' + neutral)));
+			$menuDefault.append(this._createUnoMenuItem(translated, constLang + encodeURIComponent('Default_' + neutral)));
 		}
+
+		$menuSelection.append(this._createActionMenuItem(_('More...'), 'morelanguages-selection'));
+		$menuParagraph.append(this._createActionMenuItem(_('More...'), 'morelanguages-paragraph'));
+		$menuDefault.append(this._createActionMenuItem(_('More...'), 'morelanguages-all'));
+
+		$menuSelection.append(this._createMenu([{type: 'separator'}]));
+		$menuParagraph.append(this._createMenu([{type: 'separator'}]));
+		$menuDefault.append(this._createMenu([{type: 'separator'}]));
+
+		$menuSelection.append(this._createUnoMenuItem(resetLang, constLang + constCurr));
+		$menuParagraph.append(this._createUnoMenuItem(resetLang, constLang + constPara));
+		$menuDefault.append(this._createUnoMenuItem(resetLang, constLang + constDefa));
+
+		$menuSelection.append(noneselection);
+		$menuSelection.append(fontlanguage);
+		$menuParagraph.append(noneparagraph);
+		$menuParagraph.append(paragraphlanguage);
+		$menuDefault.append(nonelanguage);
 	},
 
 	_addTabIndexPropsToMainMenu: function () {
@@ -466,37 +1400,20 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_onRefresh: function() {
-		// 選單列已初始化完畢，就結束，避免重複執行
-		if (this._menubarInitialized === true) {
-			return;
-		}
-
-		// 取得選單資料
-		var menu = this._map.getMenubarData();
-		// 不是 Array 型態的話，表示還沒載入完成，稍候一下再試
-		if (!L.Util.isArray(menu)) {
-			setTimeout(function() {
-				this._onRefresh();
-			}.bind(this), 50);
-			return;
-		}
-
-		this._map.createFileIcon();
-
 		// clear initial menu
 		L.DomUtil.removeChildNodes(this._menubarCont);
 
-		var menuHtml = this._createMenu(menu); // 建立主選單
-		menuHtml.forEach(function(menu) {
-			// 第一階選項需移除 icon
-			if (menu.mgr) {
-				var aItem = menu.mgr.getItem();
-				if (aItem.firstChild.classList.contains('menuicon')) {
-					aItem.removeChild(aItem.firstChild);
-				}
-			}
-			this._menubarCont.appendChild(menu);
-		}.bind(this));
+		// Add document specific menu
+		var docType = this._map.getDocType();
+		if (docType === 'text') {
+			this._initializeMenu(this.options.text);
+		} else if (docType === 'spreadsheet') {
+			this._initializeMenu(this.options.spreadsheet);
+		} else if (docType === 'presentation') {
+			this._initializeMenu(this.options.presentation);
+		} else if (docType === 'drawing') {
+			this._initializeMenu(this.options.drawing);
+		}
 
 		// initialize menubar plugin
 		$('#main-menu').smartmenus({
@@ -509,49 +1426,47 @@ L.Control.Menubar = L.Control.extend({
 			showFunction: null,
 			showTimeout: 0,
 			collapsibleHideDuration: 0,
-			subMenusMinWidth: '8em',
-			subMenusMaxWidth: '25em',
+			collapsibleHideFunction: null,
 			subIndicatorsPos: 'append',
 			subIndicatorsText: '&#8250;'
-		}).attr('tabindex', 0)
-			.on('select.smapi', this._onItemSelected.bind(this))
-			.on('beforeshow.smapi', this._beforeShow.bind(this))
-			.on('click.smapi', this._onItemClicked.bind(this));
+		});
+		$('#main-menu').attr('tabindex', 0);
 
 		document.getElementById('main-menu').setAttribute('role', 'menubar');
 		this._addTabIndexPropsToMainMenu();
-		this._menubarInitialized = true;
+		this._createFileIcon();
 	},
 
-	/**
-	 * 目前只有在手機模式才用
-	 * @param {event} e
-	 */
 	_onStyleMenu: function (e) {
-		if (window.mode.isMobile() && e.commandName === '.uno:StyleApply') {
+		if (e.commandName === '.uno:StyleApply') {
 			var style;
 			var constArg = '&';
 			var constHeader = '.uno:InsertPageHeader?PageStyle:string=';
 			var constFooter = '.uno:InsertPageFooter?PageStyle:string=';
+			var $menuHeader = $('#menu-insertheader').parent();
+			var $menuFooter = $('#menu-insertfooter').parent();
 			var pageStyles = e.commandValues['HeaderFooter'];
 			for (var iterator in pageStyles) {
 				style = pageStyles[iterator];
+				if (!window.mode.isMobile()) {
+					$menuHeader.append(this._createUnoMenuItem(_(style), constHeader + encodeURIComponent(style) + constArg, style));
+					$menuFooter.append(this._createUnoMenuItem(_(style), constFooter + encodeURIComponent(style) + constArg, style));
+				} else {
+					var docType = this._map.getDocType();
+					var target = this.options['mobileInsertMenu'][docType];
 
-				var docType = this._map.getDocType();
-				var target = this.options['mobileInsertMenu'][docType];
+					var findFunction = function(item) {
+						return item.name === _(style);
+					};
 
-				var findFunction = function(item) {
-					return item.name === _(style);
-				};
+					var foundMenu = this._findSubMenuByName(target, _UNO('.uno:InsertPageHeader', 'text'));
+					if (foundMenu && foundMenu.menu.find(findFunction) === undefined)
+						foundMenu.menu.push({name: _(style), tag: style, uno: constHeader + encodeURIComponent(style) + constArg});
 
-				var foundMenu = this._findSubMenuByName(target, _UNO('.uno:InsertPageHeader', 'text'));
-				if (foundMenu && foundMenu.menu.find(findFunction) === undefined)
-					foundMenu.menu.push({name: _(style), tag: style, uno: constHeader + encodeURIComponent(style) + constArg});
-
-				foundMenu = this._findSubMenuByName(target, _UNO('.uno:InsertPageFooter', 'text'));
-				if (foundMenu && foundMenu.menu.find(findFunction) === undefined)
-					foundMenu.menu.push({name: _(style), tag: style, uno: constFooter + encodeURIComponent(style) + constArg});
-
+					foundMenu = this._findSubMenuByName(target, _UNO('.uno:InsertPageFooter', 'text'));
+					if (foundMenu && foundMenu.menu.find(findFunction) === undefined)
+						foundMenu.menu.push({name: _(style), tag: style, uno: constFooter + encodeURIComponent(style) + constArg});
+				}
 			}
 		}
 	},
@@ -565,9 +1480,15 @@ L.Control.Menubar = L.Control.extend({
 	_onDocLayerInit: function() {
 		this._onRefresh();
 
+		$('#main-menu').bind('select.smapi', {self: this}, this._onItemSelected);
+
+		$('#main-menu').bind('beforeshow.smapi', {self: this}, this._beforeShow);
+		$('#main-menu').bind('click.smapi', {self: this}, this._onClicked);
+
+		$('#main-menu').bind('keydown', {self: this}, this._onKeyDown);
+
 		if (window.mode.isMobile()) {
 			$('#main-menu').parent().css('height', '0');
-			$('#toolbar-wrapper').removeClass('readonly');
 			$('#toolbar-wrapper').addClass('mobile');
 		}
 
@@ -597,7 +1518,7 @@ L.Control.Menubar = L.Control.extend({
 							self._map.fire('mobilewizard', {data: menuData});
 							$('#toolbar-hamburger').removeClass('menuwizard-closed').addClass('menuwizard-opened');
 							$('#mobile-wizard-header').hide();
-							$('#toolbar-mobile-back').hide();
+							$('#toolbar-mobile-back').css('visibility', 'hidden');
 							$('#formulabar').hide();
 						}
 					} else if (!window.mode.isMobile()) {
@@ -609,8 +1530,9 @@ L.Control.Menubar = L.Control.extend({
 						window.mobileMenuWizard = false;
 						self._map.fire('closemobilewizard');
 						$('#toolbar-hamburger').removeClass('menuwizard-opened').addClass('menuwizard-closed');
-						$('#toolbar-mobile-back').show();
-						$('#formulabar').show();
+						$('#toolbar-mobile-back').css('visibility', '');
+						if (self._map.getDocType() === 'spreadsheet')
+							$('#formulabar').show();
 					}
 				});
 				// hide mobile menu beforeunload
@@ -625,6 +1547,17 @@ L.Control.Menubar = L.Control.extend({
 		this._initialized = true;
 	},
 
+	_onClicked: function(e, menu) {
+		if ($(menu).hasClass('highlighted')) {
+			$('#main-menu').smartmenus('menuHideAll');
+		}
+
+		var $mainMenuState = $('#main-menu-state');
+		if (!$(menu).hasClass('has-submenu') && $mainMenuState[0].checked) {
+			$mainMenuState[0].click();
+		}
+	},
+
 	// needed for smartmenus to work inside notebookbar
 	_setupOverflow: function() {
 		$('.main-nav.hasnotebookbar').css('overflow', 'visible');
@@ -636,175 +1569,174 @@ L.Control.Menubar = L.Control.extend({
 		$('.notebookbar-scroll-wrapper').css('overflow', '');
 	},
 
-	 _onMouseOut: function(e) {
+	_onMouseOut: function(e) {
 		var self = e.data.self;
 		self._resetOverflow();
 	},
 
-	/**
-	 *
-	 * @param {object} e - The jQuery.Event object
-	 * @param {DOMElement} item -  The menu item <a> element.
-	 * @returns true: 該選項可執行, false: 不可執行
-	 */
-	_onItemClicked: function(e, item) {
-		if (item === undefined) {return true;} // item 有時會是 undefined?(怪怪)
-
-		// 檢查該選項是否禁用？
-		var disabled = item.mgr ? item.mgr.isDisabled() : false;
-		// 未禁用且非子選單就關閉選單
-		if (!disabled) {
-			//$('#main-menu').smartmenus('menuHideAll');
-			$.SmartMenus.hideAll();
-		}
-
-		var $mainMenuState = $('#main-menu-state');
-		if (!$(item).hasClass('has-submenu') && $mainMenuState[0].checked) {
-			$mainMenuState[0].click();
-		}
-
-		return (!disabled);
-	},
-
-	_createDynamicItem: function(item) {
-		item.dynamic = true;
-		return this._createItem(item);
-	},
-
-	/**
-	 * 建立動態選單
-	 * @param {string} menuId - 具有動態選項的 ID
-	 */
-	_createDynamicMenu: function(menuId, liItem) {
-		var subMenu = liItem.lastChild;
-		// 清除子選單
-		if (subMenu.nodeName === 'UL') {
-			while (subMenu.firstChild) {
-				subMenu.removeChild(subMenu.firstChild);
-			}
+	_checkedMenu: function(uno, item) {
+		var constChecked = 'lo-menu-item-checked';
+		var state = this._map['stateChangeHandler'].getItemValue(uno);
+		var data = $(item).data('tag');
+		state = state[data] || false;
+		if (state) {
+			$(item).addClass(constChecked);
 		} else {
-			window.app.console.debug('Warning! This item has no submenu.', liItem);
-			return;
+			$(item).removeClass(constChecked);
 		}
-		var type = this.options.dynamicMenu[menuId].type;
-
-		switch (type) {
-		case 'pageheader':
-		case 'pagefooter':
-			var styles = this._map.getStyleFamilies(); // 取得所有式樣表
-			if (styles) {
-				var headerfooter = styles['HeaderFooter']; // 頁首頁尾式樣表
-				if (headerfooter) {
-					// 有頁首頁尾的的式樣
-					var checkedHeaders = this._map['stateChangeHandler'].getItemValue(menuId);
-					var checkedCnt = 0, uncheckedCnt = 0;
-
-					headerfooter.forEach(function(name) {
-						var isChecked = (checkedHeaders[name] === true);
-						var item = {
-							name: name,
-							id: menuId + '?PageStyle:string=' + name + '&On:bool=' + (isChecked ? 'false' : 'true')
-						};
-
-						var dynaItem = this._createDynamicItem(item);
-						dynaItem.mgr.setChecked(isChecked);
-						subMenu.appendChild(dynaItem); // 加入選單
-
-						// 統計選取及未選取的數量
-						if (isChecked)
-							checkedCnt ++;
-						else
-							uncheckedCnt ++;
-					}.bind(this));
-				}
-				// 如果頁首頁尾式樣大於一，且全部選取或全部未選取
-				if (headerfooter.length > 1 &&
-					(checkedCnt === headerfooter.length || uncheckedCnt === headerfooter.length)) {
-					var isCheckedAll = (checkedCnt === headerfooter.length); // 已經全部選取
-					var item = {
-						name: 'All',
-						id: menuId + '?On:bool=' + (isCheckedAll ? 'false' : 'true')
-					};
-					var allItem = this._createDynamicItem(item);
-					allItem.mgr.setChecked(isCheckedAll);
-					subMenu.insertBefore(this._createItem({type: '--'}), subMenu.firstChild);
-					subMenu.insertBefore(allItem, subMenu.firstChild);
-				}
-			}
-			break;
-
-		case 'languageselection':
-		case 'languageparagraph':
-		case 'languagealltext':
-			var constLang = '.uno:LanguageStatus?Language:string=';
-			var langState = this._map.stateChangeHandler.getItemProperty('.uno:LanguageStatus');
-			var menuType;
-			var constLangNone = 'LANGUAGE_NONE';
-			var constResetLang = 'RESET_LANGUAGES';
-			if (type === 'languageselection') {
-				menuType = 'Current_';
-			} else if (type === 'languageparagraph') {
-				menuType = 'Paragraph_';
-			} else {
-				menuType = 'Default_';
-			}
-
-			for (var lang in this.languages) {
-				var item = {
-					name: this.languages[lang].translated,
-					id: constLang + menuType + this.languages[lang].neutral,
-					disabled: langState.disabled()
-				};
-				var dynaItem = this._createDynamicItem(item);
-				subMenu.appendChild(dynaItem); // 加入選單
-
-				// 如果未禁用，比對哪一個被勾選
-				if (!langState.disabled()) {
-					var split = langState.value().split(';');
-					if (split[0] === this.languages[lang].neutral) {
-						dynaItem.mgr.setChecked(true);
-					}
-				}
-			}
-			subMenu.appendChild(this._createDynamicItem({type: '--'})); // 分隔線
-			// 無 (不檢查拼字)
-			subMenu.appendChild(this._createDynamicItem({
-				name: _('None (Do not check spelling)'),
-				id: constLang + menuType + constLangNone,
-				disabled: langState.disabled()
-			}));
-			// 重回預設語言
-			subMenu.appendChild(this._createDynamicItem({
-				name: _('Reset to Default Language'),
-				id: constLang + menuType + constResetLang,
-				disabled: langState.disabled()
-			}));
-
-			break;
-		default:
-			break;
-		}
-
 	},
 
 	_beforeShow: function(e, menu) {
-		if (e.data && e.data.self) {
-			var self = e.data.self;
-			self._setupOverflow();
-		}
-		var liItems = menu.children;
-		// 如果沒有任何選項(空選單)，就不顯示該選單
-		if (liItems.length === 0) {
-			return false;
-		}
-		// liItems 是 HTMLCollection，所以只能用 for loop
-		for (var i = 0;  i < liItems.length; i++) {
-			if (liItems[i].mgr !== undefined) {
-				liItems[i].mgr.updateState();
-			} else {
-				window.app.console.debug('Warning! this item has not mgr.', liItems[i]);
+		var self = e.data.self;
+		self._setupOverflow();
+		var items = $(menu).children().children('a').not('.has-submenu');
+		$(items).each(function() {
+			var aItem = this;
+			var type = $(aItem).data('type');
+			var id = $(aItem).data('id');
+			var constChecked = 'lo-menu-item-checked';
+			if (self._map.isEditMode()) {
+				if (type === 'unocommand') { // enable all depending on stored commandStates
+					var data, lang, languageAndCode;
+					var constUno = 'uno';
+					var constState = 'stateChangeHandler';
+					var constLanguage = '.uno:LanguageStatus';
+					var constPageHeader = '.uno:InsertPageHeader';
+					var constPageFooter = '.uno:InsertPageFooter';
+					var unoCommand = $(aItem).data(constUno);
+					var itemState = self._map[constState].getItemValue(unoCommand);
+					if (itemState === 'disabled') {
+						if (unoCommand.startsWith('.uno:Paste')) {
+							window.app.console.log('do not disable paste based on server side data');
+						} else {
+							$(aItem).addClass('disabled');
+						}
+					} else {
+						$(aItem).removeClass('disabled');
+					}
+					if (unoCommand.startsWith(constLanguage)) {
+						unoCommand = constLanguage;
+						languageAndCode = self._map[constState].getItemValue(unoCommand);
+						lang = languageAndCode.split(';')[0];
+						data = decodeURIComponent($(aItem).data(constUno));
+						if (data.indexOf(lang) !== -1) {
+							$(aItem).addClass(constChecked);
+						} else if (data.indexOf('LANGUAGE_NONE') !== -1 && lang === '[None]') {
+							$(aItem).addClass(constChecked);
+						} else {
+							$(aItem).removeClass(constChecked);
+						}
+					}
+					else if (unoCommand.startsWith(constPageHeader)) {
+						unoCommand = constPageHeader;
+						self._checkedMenu(unoCommand, this);
+					}
+					else if (unoCommand.startsWith(constPageFooter)) {
+						unoCommand = constPageFooter;
+						self._checkedMenu(unoCommand, this);
+					}
+					else if (itemState === 'true') {
+						$(aItem).addClass(constChecked);
+					} else {
+						$(aItem).removeClass(constChecked);
+					}
+				} else if (type === 'action') { // enable all except fullscreen on windows
+					if (id === 'fullscreen') { // Full screen works weirdly on IE 11 and on Edge
+						if (L.Browser.ie || L.Browser.edge) {
+							$(aItem).addClass('disabled');
+							var index = self.options.allowedViewModeActions.indexOf('fullscreen');
+							if (index > 0) {
+								self.options.allowedViewModeActions.splice(index, 1);
+							}
+						} else if (self._map.uiManager.isFullscreen()) {
+							$(aItem).addClass(constChecked);
+						} else {
+							$(aItem).removeClass(constChecked);
+						}
+					} else if (id === 'showruler') {
+						if (self._map.uiManager.isRulerVisible()) {
+							$(aItem).addClass(constChecked);
+						} else {
+							$(aItem).removeClass(constChecked);
+						}
+					} else if (id == 'toggledarktheme') {
+						if (self._map.uiManager.getDarkModeState()) {
+							$(aItem).addClass(constChecked);
+						} else {
+							$(aItem).removeClass(constChecked);
+						}
+					} else if (id === 'showstatusbar') {
+						if (self._map.uiManager.isStatusBarVisible()) {
+							$(aItem).addClass(constChecked);
+						} else {
+							$(aItem).removeClass(constChecked);
+						}
+
+					} else if (id === 'toggleuimode') {
+						if (self._map.uiManager.shouldUseNotebookbarMode()) {
+							$(aItem).text(_('Use Compact view'));
+						} else {
+							$(aItem).text(_('Use Tabbed view'));
+						}
+					} else if (self._map.getDocType() === 'presentation' && (id === 'deletepage' || id === 'insertpage' || id === 'duplicatepage')) {
+						if (id === 'deletepage') {
+							itemState = self._map['stateChangeHandler'].getItemValue('.uno:DeletePage');
+						} else if (id === 'insertpage') {
+							itemState = self._map['stateChangeHandler'].getItemValue('.uno:InsertPage');
+						} else {
+							itemState = self._map['stateChangeHandler'].getItemValue('.uno:DuplicatePage');
+						}
+						if (itemState === 'disabled') {
+							$(aItem).addClass('disabled');
+						} else {
+							$(aItem).removeClass('disabled');
+						}
+					} else if (id === 'showresolved') {
+						var section = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name);
+						if (section) {
+							if (section.sectionProperties.commentList.length === 0) {
+								$(aItem).addClass('disabled');
+							} else if (section.sectionProperties.showResolved) {
+								$(aItem).removeClass('disabled');
+								$(aItem).addClass(constChecked);
+							} else {
+								$(aItem).removeClass('disabled');
+								$(aItem).removeClass(constChecked);
+							}
+						}
+					} else {
+						$(aItem).removeClass('disabled');
+					}
+				}
+				if (id && id.indexOf('zotero') >= 0) {
+					if (window.zoteroEnabled && self._map.zotero)
+						$(aItem).show();
+					else
+						$(aItem).hide();
+				}
+			} else { // eslint-disable-next-line no-lonely-if
+				if (type === 'unocommand') { // disable all uno commands
+					$(aItem).addClass('disabled');
+					aItem.title = _('Read-only mode');
+				} else if (type === 'action') { // disable all except allowedViewModeActions
+					var found = false;
+					for (var i in self.options.allowedViewModeActions) {
+						if (self.options.allowedViewModeActions[i] === id) {
+							found = true;
+							break;
+						}
+					}
+					if (id === 'insertcomment' && self._map.getDocType() !== 'drawing')
+						found = false;
+					if (!found) {
+						$(aItem).addClass('disabled');
+						aItem.title = _('Read-only mode');
+					} else {
+						$(aItem).removeClass('disabled');
+					}
+				}
 			}
-		}
+		});
 	},
 
 	_openInsertShapesWizard: function() {
@@ -828,19 +1760,18 @@ L.Control.Menubar = L.Control.extend({
 		this._map._docLayer._openMobileWizard(data);
 	},
 
-	// 以下僅供參考，實際不會也不要到這裡執行，若有需要新增類似程序，
-	// 請在 Control.AlternativeCommand.js 中實作
 	_executeAction: function(itNode, itWizard) {
-		var id, postmessage;
+		var id, postmessage, type;
 		if (itNode === undefined)
-		{ // called from JSDialogBuilder/NotebookbarBuilder
+		{ // called from JSDialogBuilder
 			id = itWizard.id;
 			postmessage = false;
 		}
 		else
-		{ // called from menu item
-			id = itNode.mgr.getId();
-			postmessage = (itNode.mgr.data('postmessage') === true);
+		{ // called from
+			id = $(itNode).data('id');
+			type = $(itNode).data('type');
+			postmessage = ($(itNode).data('postmessage') === 'true');
 		}
 
 		if (id === 'save') {
@@ -852,7 +1783,7 @@ L.Control.Menubar = L.Control.extend({
 					this._map.save(false, false);
 				}
 			}
-		} else if (id === 'saveas') {
+		} else if (id === 'saveas' && type !== 'menu') { // jsdialog has no type='action'
 			this._map.openSaveAs();
 		} else if (id === 'savecomments') {
 			if (this._map.isPermissionEditForComments()) {
@@ -862,15 +1793,17 @@ L.Control.Menubar = L.Control.extend({
 				}
 			}
 		} else if (id === 'shareas' || id === 'ShareAs') {
-			this._map.openShare();
+			this._map.dispatch('shareas');
 		} else if (id === 'print') {
 			this._map.print();
-		} else if (id.startsWith('downloadas-')) {
-			var format = id.substring('downloadas-'.length);
-			var fileName = this._map['wopi'].BaseFileName;
-			fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-			fileName = fileName === '' ? 'document' : fileName;
-			this._map.downloadAs(fileName + '.' + format, format);
+		} else if (id.startsWith('downloadas-')
+			|| id.startsWith('saveas-')
+			|| id.startsWith('export')
+			|| id.startsWith('zotero')
+			|| id === 'deletepage'
+			|| id === 'remotelink'
+			|| id === 'toggledarktheme') {
+			this._map.dispatch(id);
 		} else if (id === 'signdocument') {
 			this._map.showSignDocument();
 		} else if (id === 'insertcomment') {
@@ -884,19 +1817,23 @@ L.Control.Menubar = L.Control.extend({
 		} else if (id === 'zoomin' && this._map.getZoom() < this._map.getMaxZoom()) {
 			this._map.zoomIn(1, null, true /* animate? */);
 		} else if (id === 'showresolved') {
-			this._map.showResolvedComments(!$(itNode).hasClass('lo-menu-item-checked'));
+			this._map.dispatch('showresolvedannotations');
 		} else if (id === 'zoomout' && this._map.getZoom() > this._map.getMinZoom()) {
 			this._map.zoomOut(1, null, true /* animate? */);
 		} else if (id === 'zoomreset') {
-			this._map.setZoom(this._map.options.zoom, null, true);
+			this._map.setZoom(this._map.options.zoom);
 		} else if (id === 'fullscreen') {
 			L.toggleFullScreen();
+		} else if (id === 'showruler') {
+			this._map.uiManager.toggleRuler();
 		} else if (id === 'toggleuimode') {
 			if (this._map.uiManager.shouldUseNotebookbarMode()) {
 				this._map.uiManager.onChangeUIMode({mode: 'classic', force: true});
 			} else {
 				this._map.uiManager.onChangeUIMode({mode: 'notebookbar', force: true});
 			}
+		} else if (id === 'showstatusbar') {
+			this._map.uiManager.toggleStatusBar();
 		} else if (id === 'fullscreen-presentation' && this._map.getDocType() === 'presentation') {
 			this._map.fire('fullscreen');
 		} else if (id === 'presentation-currentslide' && this._map.getDocType() === 'presentation') {
@@ -907,20 +1844,6 @@ L.Control.Menubar = L.Control.extend({
 			this._openInsertShapesWizard();
 		} else if (id === 'duplicatepage') {
 			this._map.duplicatePage();
-		} else if (id === 'deletepage') {
-			var map = this._map;
-			vex.dialog.open({
-				message: _('Are you sure you want to delete this slide?'),
-				buttons: [
-					$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
-					$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
-				],
-				callback: function(e) {
-					if (e === true) {
-						map.deletePage();
-					}
-				}
-			});
 		} else if (id === 'about') {
 			this._map.showLOAboutDialog();
 		} else if (id === 'latestupdates' && this._map.welcome) {
@@ -928,11 +1851,15 @@ L.Control.Menubar = L.Control.extend({
 		} else if (id === 'feedback' && this._map.feedback) {
 			this._map.feedback.showFeedbackDialog();
 		} else if (id === 'report-an-issue') {
-			window.open('https://github.com/OSSII/oxool-community/issues', '_blank');
+			window.open('https://github.com/CollaboraOnline/online/issues', '_blank');
+		} else if (id === 'forum') {
+			window.open('https://forum.collaboraonline.com', '_blank');
 		} else if (id === 'inserthyperlink') {
-			this._map.showHyperlinkDialog();
+			this._map.dispatch('hyperlinkdialog');
+		} else if (id === 'keyboard-shortcuts' || id === 'online-help') {
+			this._map.showHelp(id);
 		} else if (L.Params.revHistoryEnabled && (id === 'rev-history' || id === 'Rev-History' || id === 'last-mod')) {
-			this._map.openRevisionHistory();
+			this._map.dispatch('rev-history');
 		} else if (id === 'closedocument') {
 			window.onClose();
 		} else if (id === 'repair') {
@@ -948,73 +1875,107 @@ L.Control.Menubar = L.Control.extend({
 			}
 		} else if (id === 'inserttextbox') {
 			this._map.sendUnoCommand('.uno:Text?CreateDirectly:bool=true');
-		} else if (id === 'insertslidefield') {
-			this._map.sendUnoCommand('.uno:InsertPageField');
-		} else if (id === 'insertslidetitlefield') {
-			this._map.sendUnoCommand('.uno:InsertPageTitleField');
-		} else if (id === 'insertslidesfield') {
-			this._map.sendUnoCommand('.uno:InsertPagesField');
 		} else if (id === 'pagesetup') {
 			this._map.sendUnoCommand('.uno:SidebarShow');
 			this._map.sendUnoCommand('.uno:LOKSidebarWriterPage');
 			this._map.fire('showwizardsidebar', {noRefresh: true});
 			window.pageMobileWizard = true;
-		} else {
-			window.app.console.debug('Warning! "%s" no action.', id);
+		} else if (id.indexOf('morelanguages-') != -1) {
+			this._map.fire('morelanguages', { applyto: id.substr('morelanguages-'.length) });
 		}
 		// Inform the host if asked
 		if (postmessage)
 			this._map.fire('postMessage', {msgId: 'Clicked_Button', args: {Id: id} });
 	},
 
-	_onItemSelected: function(e, item) {
-		var mgr = item.mgr;
-		var itemId = '';
-		if (mgr) {
-			mgr.execute();
-			itemId = mgr.getId();
-		} else {
-			itemId = $(item).data('id');
-			window.app.console.debug('Warning! item manager object not found.', item);
+	_sendCommand: function (item) {
+		var unoCommand = $(item).data('uno');
+		if (unoCommand.startsWith('.uno:InsertPageHeader') || unoCommand.startsWith('.uno:InsertPageFooter')) {
+			unoCommand = unoCommand + ($(item).hasClass('lo-menu-item-checked') ? 'On:bool=false' : 'On:bool=true');
+		}
+		else if (unoCommand.startsWith('.uno:SlideMasterPage')) {
+			// Toggle between showing master page and closing it.
+			unoCommand = ($(item).hasClass('lo-menu-item-checked') ? '.uno:CloseMasterView' : '.uno:SlideMasterPage');
+		}
+		else if (this._map._clip && this._map._clip.filterExecCopyPaste(unoCommand)) {
+			return;
 		}
 
-		if (!window.mode.isMobile() && !(itemId === '.uno:InsertAnnotation' || itemId === 'insertcomment') && this && this._map) {
-			this._map.focus();
+		this._map.sendUnoCommand(unoCommand);
+	},
+
+	_onItemSelected: function(e, item) {
+		// TODO: Find a way to disable click/select events for locked elements in disableLockedItem
+		if ($(item).data('locked') === true)
+			return;
+
+		var self = e.data.self;
+		var type = $(item).data('type');
+		if (type === 'unocommand') {
+			self._sendCommand(item);
+		} else if (type === 'action') {
+			self._executeAction(item);
+		}
+
+		if (!window.mode.isMobile() && $(item).data('id') !== 'insertcomment' && self && self._map)
+			self._map.focus();
+	},
+
+	_onKeyDown: function(e) {
+		var self = e.data.self;
+
+		// handle help - F1
+		if (e.type === 'keydown' && !e.shiftKey && !e.ctrlKey && !e.altKey && e.keyCode == 112) {
+			self._map.showHelp('online-help');
 		}
 	},
 
-	/**
-	 * 檢查選項是否可以顯示在選單中
-	 * @param {object} menuItem
-	 * @returns {boolean} true:yes, false:no
-	 */
+	_createFileIcon: function() {
+		var iconClass = 'document-logo';
+		var docType = this._map.getDocType();
+		if (docType === 'text') {
+			iconClass += ' writer-icon-img';
+		} else if (docType === 'spreadsheet') {
+			iconClass += ' calc-icon-img';
+		} else if (docType === 'presentation') {
+			iconClass += ' impress-icon-img';
+		} else if (docType === 'drawing') {
+			iconClass += ' draw-icon-img';
+		}
+		$('.main-nav').addClass(docType + '-color-indicator');
+
+		var liItem = L.DomUtil.create('li', '');
+		liItem.id = 'document-header';
+		liItem.setAttribute('role', 'menuitem');
+		var aItem = L.DomUtil.create('div', iconClass, liItem);
+		$(aItem).data('id', 'document-logo');
+		$(aItem).data('type', 'action');
+		aItem.setAttribute('role', 'img');
+		aItem.setAttribute('aria-label', _('file type icon'));
+
+		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
+
+		var $docLogo = $(aItem);
+		$docLogo.bind('click', {self: this}, this._createDocument);
+
+	},
+
 	_checkItemVisibility: function(menuItem) {
-		// 禁用不在系統白名單的指令
-		if (menuItem.id && !this._map.isAllowedCommand(menuItem.id)) {
+		if (window.ThisIsAMobileApp && menuItem.mobileapp === false) {
 			return false;
 		}
-
-		// iOS 裝置禁用
 		if (window.ThisIsTheiOSApp && menuItem.iosapp === false) {
 			return false;
 		}
-		// 平板裝置禁用
-		if (menuItem.tablet === false && window.mode.isTablet()) {
+		if (menuItem.id === 'about' && (L.DomUtil.get('about-dialog') === null)) {
 			return false;
 		}
-		// 被隱藏
-		if (menuItem.hide === true || menuItem.hidden === true) {
+		if (menuItem.id === 'signdocument' && (L.DomUtil.get('document-signing-bar') === null)) {
 			return false;
 		}
-		/* if (menuItem.id === 'about' && (L.DomUtil.get('about-dialog') === null)) {
+		if (menuItem.id === 'fontworkgalleryfloater' && !this._isFileODF) {
 			return false;
-		} */
-		/* if (menuItem.id === 'signdocument' && (L.DomUtil.get('document-signing-bar') === null)) {
-			return false;
-		} */
-		// TODO: 若 OxOOL 專屬 preview/readonly 模式完成後，該段程式碼可廢棄不用
-		// (包含 this.options.allowedReadonlyMenus)
-		// 唯讀模式且該選項是子選單
+		}
 		if (this._map.isReadOnlyMode() && menuItem.type === 'menu') {
 			var found = false;
 			for (var j in this.options.allowedReadonlyMenus) {
@@ -1033,6 +1994,8 @@ L.Control.Menubar = L.Control.extend({
 			case 'runmacro':
 			case 'pagesetup':
 			case 'watermark':
+			case 'properties':
+			case 'formattingmarks':
 				return false;
 			case 'insertcomment':
 			case 'savecomments':
@@ -1049,49 +2012,66 @@ L.Control.Menubar = L.Control.extend({
 			}
 		}
 
-		/* if (menuItem.id === 'runmacro' && window.enableMacrosExecution === 'false')
-			return false; */
+		if (menuItem.id === 'runmacro' && window.enableMacrosExecution === 'false')
+			return false;
 
-		/* if (menuItem.type === 'action') {
+		if (menuItem.type === 'action') {
 			if (((menuItem.id === 'rev-history' || menuItem.id === 'Rev-History') && !L.Params.revHistoryEnabled) ||
 				(menuItem.id === 'closedocument' && !L.Params.closeButtonEnabled) ||
 				(menuItem.id === 'latestupdates' && !window.enableWelcomeMessage)) {
 				return false;
 			}
-		} */
+		}
 
-		/* if (menuItem.id === '.uno:Print' && this._map['wopi'].HidePrintOption)
-			return false; */
+		if (menuItem.id === 'print' && this._map['wopi'].HidePrintOption)
+			return false;
 
-		/* if (menuItem.id === '.uno:Save' && this._map['wopi'].HideSaveOption)
-			return false; */
+		if (menuItem.id === 'save' && this._map['wopi'].HideSaveOption)
+			return false;
 
-		/* if (menuItem.id === '.uno:SaveAs' && this._map['wopi'].UserCanNotWriteRelative)
-			return false; */
+		if (menuItem.id && (menuItem.id === 'saveas' || menuItem.id.startsWith('saveas-')) && this._map['wopi'].UserCanNotWriteRelative)
+			return false;
 
-		/* if ((menuItem.id === 'shareas' || menuItem.id === 'ShareAs') && !this._map['wopi'].EnableShare)
-			return false; */
+		if (menuItem.id && (menuItem.id.startsWith('exportas')) && this._map['wopi'].UserCanNotWriteRelative)
+			return false;
 
-		/* if (menuItem.id === 'insertgraphicremote' && !this._map['wopi'].EnableInsertRemoteImage)
-			return false; */
+		if ((menuItem.id === 'shareas' || menuItem.id === 'ShareAs') && !this._map['wopi'].EnableShare)
+			return false;
 
-		/* if (menuItem.id && menuItem.id.startsWith('fullscreen-presentation') && this._map['wopi'].HideExportOption)
-			return false; */
+		if (menuItem.id === 'insertgraphicremote' && !this._map['wopi'].EnableInsertRemoteImage)
+			return false;
 
-		/* if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
-			return false; */
+		if (menuItem.id && menuItem.id.startsWith('fullscreen-presentation') && this._map['wopi'].HideExportOption)
+			return false;
+
+		if (menuItem.id === 'repair' && this._map['wopi'].HideRepairOption)
+			return false;
+
+		if (menuItem.id === 'changesmenu' && this._map['wopi'].HideChangeTrackingControls)
+			return false;
+
 
 		// Keep track of all 'downloadas-' options and register them as
 		// export formats with docLayer which can then be publicly accessed unlike
 		// this Menubar control for which there doesn't seem to be any easy way
 		// to get access to.
-		/* if (menuItem.id && menuItem.id.startsWith('downloadas-')) {
+		if (menuItem.id && menuItem.id.startsWith('downloadas-')) {
 			var format = menuItem.id.substring('downloadas-'.length);
 			this._map._docLayer.registerExportFormat(menuItem.name, format);
 
 			if (this._map['wopi'].HideExportOption)
 				return false;
-		} */
+		}
+
+		if (menuItem.id && menuItem.id.startsWith('export')) {
+			if (!menuItem.id.startsWith('exportas-')) {
+				var format = menuItem.id.substring('export'.length);
+				this._map._docLayer.registerExportFormat(menuItem.name, format);
+			}
+
+			if (this._map['wopi'].HideExportOption)
+				return false;
+		}
 
 		if (this._hiddenItems &&
 		    $.inArray(menuItem.id, this._hiddenItems) !== -1)
@@ -1100,368 +2080,78 @@ L.Control.Menubar = L.Control.extend({
 		return true;
 	},
 
-	/**
-	 * 把處理選項的方法，全部封裝在一起
-	 * @param {object} item - 選單物件
-	 * @returns
-	 */
-	_createItemManager: function(item) {
-		var manager = {
-			_self: this,
-			_map: this._map,
-			_data: item, // 完整紀錄 item
-			_liItem: null, /*L.DomUtil.create('li', ''), // 建立 li element*/
-			_aItem: null,
-			_executeReadonly: false, // 預設唯讀模式不能執行
+	_createMenu: function(menu) {
+		var itemList = [];
+		var docType = this._map.getDocType();
+		var isReadOnly = this._map.isReadOnlyMode();
 
-			initialize: function() {
-				var self = this._self;
-				var tagName = 'a';
-				var className = '';
-				var tabIndex = 0;
-				var role = 'menuitem';
+		if (isReadOnly && !app.file.editComment) {
+			this._hiddenItems.push('insert');
+		}
+		for (var i in menu) {
+			if (this._checkItemVisibility(menu[i]) === false)
+				continue;
 
-				// 建立 <li> Html element
-				this._liItem = L.DomUtil.create('li',
-					(this._map.isReadOnlyMode() ? 'readonly' : ''));
-				// 賦予 <li> mgr 物件，指向自己
-				this._liItem.mgr = this;
-
-				// 選項被禁用
-				if (this.data('disabled') === true) {
-					className += 'disabled';
+			var liItem = L.DomUtil.create('li', '');
+			liItem.setAttribute('role', 'menuitem');
+			if (menu[i].id) {
+				liItem.id = 'menu-' + menu[i].id;
+				if (menu[i].id === 'closedocument' && this._map.isReadOnlyMode()) {
+					// see corresponding css rule for readonly class usage
+					L.DomUtil.addClass(liItem, 'readonly');
 				}
+			}
+			var aItem = L.DomUtil.create('a', menu[i].disabled ? 'disabled' : '', liItem);
+			if (menu[i].name !== undefined) {
+				aItem.innerHTML = menu[i].name;
+			} else if (menu[i].uno !== undefined) {
+				aItem.innerHTML = _UNO(menu[i].uno, docType);
+			} else {
+				aItem.innerHTML = '';
+			}
 
-				// 分隔線和一般選項不一樣
-				if (this.isSeparator()) {
-					tagName = 'i'; // html tag
-					className += (className.length > 0 ? ' ' : '') + 'separator';
-					tabIndex = -1;
-					role = 'menuseparator';
-				}
-
-				this._liItem.setAttribute('role', role);
-
-				this._aItem = L.DomUtil.create(tagName, className, this._liItem);
-				// 賦予 aItem mgr 屬性，指向自己
-				this._aItem.mgr = this;
-				this._aItem.tabIndex = tabIndex;
-
-				var id = this.getId();
-				if (id !== undefined) {
-					this._liItem.id = 'menu-' + id; // 指定 dom id
-					// 若開啟 debug 模式，則加上 title
-					if (window.protocolDebug === true) {
-						this._liItem.title = id;
-					}
-					// id 沒有 ':' 字元，表示一般 action
-					// 須檢查該 action 是否能在 readonly 被執行
-					if (id.indexOf(':') < 0) {
-						if (id === 'insertcomment' && this._map.getDocType() !== 'drawing') {
-							this._executeReadonly = true;
-						} else {
-							this._executeReadonly = (self.options.allowedViewModeActions.indexOf(id) >= 0);
-						}
-					}
-
-					// 選項圖示
-					var iconItem = L.DomUtil.create('i', 'menuicon img-icon');
-					var iconURL = 'url("' + this._map.getIconURL(
-						this._data.icon ? this._data.icon : (this._map.isUnoCommand(this._data.name) ? this._data.name : id)
-					) + '")';
-					iconItem.style.backgroundImage = iconURL;
-					this._aItem.appendChild(iconItem);
-
-					// 建立選項名稱專用 node，並指定 class name 為 item-text
-					L.DomUtil.create('span', 'item-text', this._aItem);
-					this.setDefaultText(); // 設定選項名稱
-
-					// 選項 hot key(只有桌面版才需要)
-					if (this.hasHotkey() && window.mode.isDesktop()) {
-						// 計算hotkey寬度
-						var keys = this._data.hotkey.split('+');
-						var paddingRight = (this._data.hotkey.length * 5) + (keys.length * 5) + 32;
-						this._aItem.style.paddingRight = paddingRight + 'px';
-						this._aItem.appendChild(this._map.createItemHotkey(this._data.hotkey));
-					}
-
-					// 如果該選項是動態選單的話，先建立一個空陣列
-					if (this._self.options.dynamicMenu[id] !== undefined) {
-						this._data.menu = [];
-					}
-				}
-				return this;
-			},
-			getLiItem: function() {
-				return this._liItem;
-			},
-			getItem: function() {
-				return this._aItem;
-			},
-			getId: function() {
-				return (this._data.id ? this._data.id : undefined);
-			},
-			/**
-			 * 取得或設定 item 的值
-			 *
-			 * @param {string} varName
-			 * @param {any} value
-			 * @returns 最後變更前的值
-			 *
-			 * @example:
-			 *	// 取值
-			 *	var postmessage = liItem.mgr.data('postmessage');
-			 *
-			 *  // 設定值
-			 * 	liItem.mgr.data('postmessage', true);
-			 */
-			data: function(varName, value) {
-				var recentValue = this._data[varName];
-				if (value !== undefined) {
-					this._data[varName] = value;
-				}
-				return recentValue;
-			},
-			getType: function() {
-				if (this.getId() !== undefined)
-					return 'menuitem';
-
-				if (this.isSeparator())
-					return 'separator';
-
-				return '';
-			},
-			/**
-			 * 該選項是否有子選單
-			 * @returns {boolean} true: 是, false:否
-			 */
-			hasMenu: function() {
-				return (this._data.menu && Array.isArray(this._data.menu));
-			},
-			hasHotkey: function() {
-				return (this._data.hotkey !== undefined);
-			},
-			/** 該選項是否為分隔線 */
-			isSeparator: function() {
-				return (this._data.type === '--' ||
-						this._data.type === 'separator' ||
-						Object.keys(this._data).length === 0);
-			},
-			/**
-			 * 選項是否禁用
-			 * @returns {boolean} true: 是, false: 否
-			 */
-			isDisabled: function() {
-				return L.DomUtil.hasClass(this.getItem(), 'disabled');
-			},
-			/**
-			 * 是否動態產生的選項
-			 * @returns true: 是, false: 否
-			 */
-			isDynamicItem: function() {
-				return this._data.dynamic === true;
-			},
-			/**
-			 * 設定選項預設名稱
-			 */
-			setDefaultText: function() {
-				var docType = this._map.getDocType();
-				if (docType === 'drawing') {
-					docType = 'presentation';
-				}
-				// 若同時指定 name 和 id，則選項名稱以 name 為準
-				var text = (this._data.name ? this._data.name : this._data.id);
-				// 若選項名稱是 uno 指令，則以 _UNO() 翻譯，否則以 _() 翻譯
-				this.setText(this._map.isUnoCommand(text) ? _UNO(text, docType, true) : _(text));
-			},
-			/**
-			 * 設定選項為指定名稱
-			 * @param {string} text - 選項名稱
-			 */
-			setText: function(text) {
-				// 找第一個 class name 是 item-text 的 node
-				var textNode = this._aItem.querySelector('.item-text');
-				if (textNode) {
-					textNode.textContent = text; // 改變文字內容
-				}
-			},
-			setDisabled: function(isDisabled) {
-				var constDisabled = 'disabled';
-				var aItem = this.getItem();
-
-				if (isDisabled) {
-					// 原先沒有 disabled
-					if (!L.DomUtil.hasClass(aItem, constDisabled)) {
-						// 編輯模式，不要關閉貼上指令
-						if (this._data.id === '.uno:Paste' && this._map.isEditMode()) {
-							window.app.console.debug('Do not disable paste based on server side data.');
-						} else {
-							L.DomUtil.addClass(aItem, constDisabled);
-						}
-					}
-				} else {
-					L.DomUtil.removeClass(aItem, constDisabled);
-				}
-			},
-			setChecked: function(isChecked) {
-				var constCheckedClass = 'lo-menu-item-checked';
-				var aItem = this.getItem();
-
-				if (isChecked) {
-					if (!L.DomUtil.hasClass(aItem, constCheckedClass)) {
-						L.DomUtil.addClass(aItem, constCheckedClass);
-					}
-				} else {
-					L.DomUtil.removeClass(aItem, constCheckedClass);
-				}
-			},
-			updateState: function() {
-				var self = this._self;
-				var id = this.getId();
-				// 沒有 ID 或是動態產生的選項就不處理
-				if (id === undefined || this.isDynamicItem()) {
-					return;
-				}
-				// 如果有名稱，且名稱是 .uno: 開頭，就以名稱作為命令查詢
-				// 否則以 id 作為命令查詢，不管 id 是否有 .uno: 開頭
-				var command = this._map.isUnoCommand(this._data.name) ? this._data.name : id;
-				var state = self._map['stateChangeHandler'].getItemProperty(command);
-				if (this._map.isEditMode()) {
-					this.setDisabled(state.disabled()); // 是否禁用
-					this.setChecked(state.checked()); // 是否勾選
-
-					// 該選項是否有動態選單
-					if (self.options.dynamicMenu[command] !== undefined) {
-						// 建立該選項的子選單
-						self._createDynamicMenu(command, this._liItem);
-					}
-
-					if (id === 'showresolved') {
-						var section = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name);
-						if (section) {
-							if (section.sectionProperties.commentList.length === 0) {
-								this.setDisabled(true);
-							} else if (section.sectionProperties.showResolved) {
-								this.setDisabled(false);
-								this.setChecked(true);
-							} else {
-								this.setDisabled(false);
-								this.setChecked(false);
-							}
-						}
-					} else if (id === 'fullscreen') {
-						this.setChecked(self._map.uiManager.isFullscreen());
-					}
-				} else {
-					this.setDisabled(!this._executeReadonly);
-					this.setChecked(state.checked()); // 是否勾選
-				}
-			},
-			/**
-			 * 執行該選項功能
-			 */
-			execute: function() {
-				var self = this._self;
-				var id = this._data.id;
-				if (id) {
-					var state = self._map['stateChangeHandler'].getItemValue(id);
-					if (id.startsWith('.uno:SlideMasterPage')) {
-						// Toggle between showing master page and closing it.
-						id = (state === 'true' ? '.uno:CloseMasterView' : '.uno:SlideMasterPage');
-					} else if (self._map._clip && self._map._clip.filterExecCopyPaste(id)) {
-						return;
-					}
-
-					if (!self._map.executeAllowedCommand(id)) {
-						// self._executeAction(undefined, {id: id});
-						console.debug('Error! can not execute action: ' + id);
-					}
-				}
-			},
-		};
-
-		return manager.initialize(); // 初始化選項
-	},
-
-	/**
-	 * 建立選項
-	 * @param {object} item - 選項物件
-	 * @returns DOMElement
-	 */
-	_createItem: function(item) {
-		var manager = this._createItemManager(item);
-		var liItem = manager.getLiItem();
-
-		switch (manager.getType()) {
-		case 'menuitem': // 選項
-			if (manager.hasMenu()) {
-				// 遞迴呼叫自己
-				var subMenu = this._createMenu(item.menu);
-				// 建立子選單結構
+			if (menu[i].type === 'menu') {
 				var ulItem = L.DomUtil.create('ul', '', liItem);
-				// 加入子選單
-				subMenu.forEach(function (item) {
-					ulItem.appendChild(item);
-				});
-			}
-			break;
-		case 'separator':
-			// do nothing.
-			break;
-		default:
-			window.app.console.debug('Warning! Unknown menu option :', item);
-			break;
-		}
-
-		return liItem;
-	},
-
-	/**
-	 * 利用 json 資料，建立 html 結構的選單
-	 */
-	 _createMenu: function(menu) {
-		var itemList = []; // 每個 item 的 html element
-		var isLastItemText = false;
-
-		// 依序處理每個選項
-		menu.forEach(function(item) {
-			// 忽略被隱藏的選項
-			if (this._checkItemVisibility(item) === false) {
-				return;
-			}
-
-			var liItem = this._createItem(item);
-			if (!liItem) {
-				return;
-			}
-
-			if (liItem.mgr.isSeparator()) {
-				// 前一個是文字選項
-				if (isLastItemText) {
-					isLastItemText = false;
-				// 不需要連續兩個分隔線
-				} else {
-					return;
+				var subitemList = this._createMenu(menu[i].menu);
+				if (!subitemList.length) {
+					continue;
 				}
-			} else {
-				isLastItemText = true;
+				for (var idx in subitemList) {
+					ulItem.appendChild(subitemList[idx]);
+				}
+				aItem.tabIndex = 0;
+			} else if (menu[i].type === 'unocommand' || menu[i].uno !== undefined) {
+				$(aItem).data('type', 'unocommand');
+				$(aItem).data('uno', menu[i].uno);
+				$(aItem).data('tag', menu[i].tag);
+				aItem.tabIndex = 0;
+			} else if (menu[i].type === 'separator') {
+				$(aItem).addClass('separator');
+				aItem.tabIndex = -1;
+			} else if (menu[i].type === 'action') {
+				if (menu[i].id == 'feedback' && !this._map.feedback)
+					continue;
+				$(aItem).data('type', 'action');
+				$(aItem).data('id', menu[i].id);
+				aItem.tabIndex = 0;
 			}
 
-			// 第一項不能是分隔線
-			if (itemList.length === 0 && !isLastItemText) {
-				return;
-			} else {
-				itemList.push(liItem);
-			}
-		}.bind(this));
+			if (menu[i].hidden == true)
+				$(aItem).css('display', 'none');
 
-		// 檢查最後一個選項，是否是分隔線
-		if (itemList.length) {
-			// 從列表移除
-			if (itemList[itemList.length - 1].mgr.isSeparator()) {
-				itemList.pop();
+			if (menu[i].tablet == false && window.mode.isTablet()) {
+				$(aItem).css('display', 'none');
 			}
+
+			if (this._hiddenItems && $.inArray(menu[i].id, this._hiddenItems) !== -1) {
+				$(aItem).css('display', 'none');
+			}
+
+			this._map.hideRestrictedItems(menu[i], aItem, aItem);
+			this._map.disableLockedItem(menu[i], aItem, aItem);
+			itemList.push(liItem);
 		}
+
 		return itemList;
 	},
 
@@ -1501,6 +2191,14 @@ L.Control.Menubar = L.Control.extend({
 			if ($.inArray(targetId, this._hiddenItems) !== -1)
 				this._hiddenItems.splice(this._hiddenItems.indexOf(targetId), 1);
 			$(item).css('display', '');
+		}
+	},
+
+	_initializeMenu: function(menu) {
+		this._isFileODF = L.LOUtil.isFileODF(this._map);
+		var menuHtml = this._createMenu(menu);
+		for (var i in menuHtml) {
+			this._menubarCont.appendChild(menuHtml[i]);
 		}
 	},
 
@@ -1551,51 +2249,43 @@ L.Control.Menubar = L.Control.extend({
 		if (item.id === 'feedback' && !this._map.feedback)
 			return undefined;
 
-		// 處理選項名稱
 		var itemName;
-		// 有指定選項名稱
-		if (item.name) {
-			// 選項名稱若是 uno 指令，就翻譯，否則不變
-			itemName = this._map.isUnoCommand(item.name) ? _UNO(item.name, docType) : item.name;
-		// 若 id 是 uno 指令，翻譯 id
-		} else if (this._map.isUnoCommand(item.id)) {
-			itemName = _UNO(item.id, docType);
-		} else {
+		if (item.name)
+			itemName = item.name;
+		else if (item.uno)
+			itemName = _UNO(item.uno, docType);
+		else
 			return undefined; // separator
-		}
 
 		var menuStructure = {
 			id : item.id,
 			type : itemType,
 			enabled : !item.disabled,
 			text : itemName,
+			command : item.uno,
+			executionType : item.type,
 			data : item,
 			children : []
 		};
 
-		if (item.icon) {
-			menuStructure.icon = item.icon;
-		} else if (this._map.isUnoCommand(item.name)) {
-			menuStructure.icon = item.name;
-		}
-
 		// Checked state for insert header / footer
 		var insertHeaderString = '.uno:InsertPageHeader?PageStyle:string=';
 		var insertFooterString = '.uno:InsertPageFooter?PageStyle:string=';
-		if (item.id && (item.id.startsWith(insertHeaderString) || item.id.startsWith(insertFooterString))) {
-			var style = decodeURIComponent(item.id.slice(item.id.search('=') + 1));
+		if (item.uno && (item.uno.startsWith(insertHeaderString) || item.uno.startsWith(insertFooterString))) {
+			var style = decodeURIComponent(item.uno.slice(item.uno.search('=') + 1));
 			style = style.slice(0, style.length - 1);
-			var shortUno = item.id.slice(0, item.id.search('\\?'));
+			var shortUno = item.uno.slice(0, item.uno.search('\\?'));
 			var state = this._map['stateChangeHandler'].getItemValue(shortUno);
 			if (state && state[style]) {
 				menuStructure['checked'] = true;
 			}
-		} else if (item.id === '.uno:TrackChanges' ||
-			item.id === '.uno:ShowTrackedChanges' ||
-			item.id === '.uno:ControlCodes' ||
-			item.id === '.uno:SpellOnline' ||
-			item.id === '.uno:ShowResolvedAnnotations') {
-			if (this._map['stateChangeHandler'].getItemValue(item.id) === 'true') {
+		} else if (item.uno === '.uno:TrackChanges' ||
+			item.uno === '.uno:ShowTrackedChanges' ||
+			item.uno === '.uno:ControlCodes' ||
+			item.uno === '.uno:SpellOnline' ||
+			item.uno === '.uno:ShowResolvedAnnotations' ||
+			item.uno === '.uno:FreezePanes') {
+			if (this._map['stateChangeHandler'].getItemValue(item.uno) === 'true') {
 				menuStructure['checked'] = true;
 			}
 		}

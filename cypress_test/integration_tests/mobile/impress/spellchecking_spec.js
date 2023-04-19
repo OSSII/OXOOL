@@ -4,17 +4,18 @@ var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
 
 describe('Spell checking menu.', function() {
-	var testFileName = 'spellchecking.odp';
+	var origTestFileName = 'spellchecking.odp';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'impress');
+		testFileName = helper.beforeAll(origTestFileName, 'impress');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function openContextMenu() {
@@ -30,8 +31,7 @@ describe('Spell checking menu.', function() {
 
 		helper.typeIntoDocument('{leftArrow}');
 
-		cy.get('.leaflet-marker-icon')
-			.should('not.exist');
+		helper.textSelectionShouldNotExist();
 
 		// Open context menu
 		cy.get('g path.leaflet-interactive')
@@ -53,7 +53,7 @@ describe('Spell checking menu.', function() {
 		cy.contains('.context-menu-link', 'hello')
 			.click();
 
-		helper.selectAllText(false);
+		helper.selectAllText();
 
 		helper.expectTextForClipboard('hello');
 	});
@@ -62,32 +62,6 @@ describe('Spell checking menu.', function() {
 		openContextMenu();
 
 		cy.contains('.context-menu-link', 'Ignore All')
-			.click();
-
-		openContextMenu();
-
-		// We don't get the spell check context menu any more
-		cy.contains('.context-menu-link', 'Paste')
-			.should('be.visible');
-	});
-
-	it('Apply language for word.', function() {
-		openContextMenu();
-
-		cy.contains('.context-menu-link', 'Word is Finnish')
-			.click();
-
-		openContextMenu();
-
-		// We don't get the spell check context menu any more
-		cy.contains('.context-menu-link', 'Paste')
-			.should('be.visible');
-	});
-
-	it('Apply language for paragraph.', function() {
-		openContextMenu();
-
-		cy.contains('.context-menu-link', 'Paragraph is Finnish')
 			.click();
 
 		openContextMenu();

@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,6 +8,7 @@
 package org.libreoffice.androidlib;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -24,6 +23,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,12 +36,14 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -50,6 +52,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -90,10 +93,14 @@ public class LOActivity extends AppCompatActivity {
     private static final String KEY_IS_EDITABLE = "isEditable";
     private static final String KEY_INTENT_URI = "intentUri";
     private static final String CLIPBOARD_FILE_PATH = "LibreofficeClipboardFile.data";
-    private static final String CLIPBOARD_LOOL_SIGNATURE = "lool-clip-magic-4a22437e49a8-";
+    private static final String CLIPBOARD_COOL_SIGNATURE = "cool-clip-magic-4a22437e49a8-";
+    public static final String RECENT_DOCUMENTS_KEY = "RECENT_DOCUMENTS_LIST";
+    private static String USER_NAME_KEY = "USER_NAME";
+
     private File mTempFile = null;
 
     private int providerId;
+    private Activity mActivity;
 
     /// Unique number identifying this app + document.
     private long loadDocumentMillis = 0;
@@ -102,7 +109,7 @@ public class LOActivity extends AppCompatActivity {
     private URI documentUri;
 
     private String urlToLoad;
-    private WebView mWebView = null;
+    private COWebView mWebView = null;
     private SharedPreferences sPrefs;
     private Handler mMainHandler = null;
     private RateAppController rateAppController;
@@ -139,6 +146,7 @@ public class LOActivity extends AppCompatActivity {
     public static final int REQUEST_SAVEAS_PPT = 510;
     public static final int REQUEST_SAVEAS_XLS = 511;
     public static final int REQUEST_SAVEAS_EPUB = 512;
+    public static final int REQUEST_COPY = 600;
 
     /** Broadcasting event for passing info back to the shell. */
     public static final String LO_ACTIVITY_BROADCAST = "LOActivityBroadcast";
@@ -148,6 +156,9 @@ public class LOActivity extends AppCompatActivity {
 
     /** Data description for passing info back to the shell. */
     public static final String LO_ACTION_DATA = "LOData";
+
+    /** shared pref key for recent files. */
+    public static final String EXPLORER_PREFS_KEY = "EXPLORER_PREFS";
 
     private static boolean copyFromAssets(AssetManager assetManager,
                                           String fromAssetPath, String targetDir) {
@@ -230,7 +241,7 @@ public class LOActivity extends AppCompatActivity {
             this.rateAppController = new RateAppController(this);
         else
             this.rateAppController = null;
-
+        this.mActivity = this;
         init();
     }
 
@@ -293,8 +304,9 @@ public class LOActivity extends AppCompatActivity {
                     urlToLoad = documentUri.toString();
                     Log.d(TAG, "SCHEME_CONTENT: getPath(): " + getIntent().getData().getPath());
                 } else {
-                    // TODO: can't open the file
                     Log.e(TAG, "couldn't create temporary file from " + getIntent().getData());
+                    Toast.makeText(this, R.string.cant_open_the_document, Toast.LENGTH_SHORT).show();
+                    finish();
                 }
             } else if (getIntent().getData().getScheme().equals(ContentResolver.SCHEME_FILE)) {
                 isDocEditable = true;
@@ -325,64 +337,70 @@ public class LOActivity extends AppCompatActivity {
             Toast.makeText(this, getString(R.string.failed_to_load_file), Toast.LENGTH_SHORT).show();
             finish();
         }
+        // some types don't have export filter so we cannot edit them
+        // only set it to false if it returns false otherwise it can break previous controls
+        if (!canDocumentBeExported())
+            isDocEditable = false;
+        if (mTempFile != null)
+        {
+            mWebView = (COWebView) findViewById(R.id.browser);
 
-        mWebView = findViewById(R.id.browser);
+            WebSettings webSettings = mWebView.getSettings();
+            webSettings.setJavaScriptEnabled(true);
+            mWebView.addJavascriptInterface(this, "COOLMessageHandler");
 
-        WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        mWebView.addJavascriptInterface(this, "LOOLMessageHandler");
-
-        // allow debugging (when building the debug version); see details in
-        // https://developers.google.com/web/tools/chrome-devtools/remote-debugging/webviews
-        boolean isChromeDebugEnabled = sPrefs.getBoolean("ENABLE_CHROME_DEBUGGING", false);
-        if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 || isChromeDebugEnabled) {
-            WebView.setWebContentsDebuggingEnabled(true);
-        }
-
-        getMainHandler();
-
-        clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        nativeMsgThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                nativeLooper = Looper.myLooper();
-                nativeHandler = new Handler(nativeLooper);
-                Looper.loop();
+            // allow debugging (when building the debug version); see details in
+            // https://developers.google.com/web/tools/chrome-devtools/remote-debugging/webviews
+            boolean isChromeDebugEnabled = sPrefs.getBoolean("ENABLE_CHROME_DEBUGGING", false);
+            if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 || isChromeDebugEnabled) {
+                WebView.setWebContentsDebuggingEnabled(true);
             }
-        });
-        nativeMsgThread.start();
 
-        mWebView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
-                if (valueCallback != null) {
-                    valueCallback.onReceiveValue(null);
-                    valueCallback = null;
+            getMainHandler();
+
+            clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            nativeMsgThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Looper.prepare();
+                    nativeLooper = Looper.myLooper();
+                    nativeHandler = new Handler(nativeLooper);
+                    Looper.loop();
                 }
+            });
+            nativeMsgThread.start();
 
-                valueCallback = filePathCallback;
-                Intent intent = fileChooserParams.createIntent();
+            mWebView.setWebChromeClient(new WebChromeClient() {
+                @Override
+                public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+                    if (valueCallback != null) {
+                        valueCallback.onReceiveValue(null);
+                        valueCallback = null;
+                    }
 
-                try {
-                    intent.setType("image/*");
-                    startActivityForResult(intent, REQUEST_SELECT_IMAGE_FILE);
-                } catch (ActivityNotFoundException e) {
-                    valueCallback = null;
-                    Toast.makeText(LOActivity.this, getString(R.string.cannot_open_file_chooser), Toast.LENGTH_LONG).show();
-                    return false;
+                    valueCallback = filePathCallback;
+                    Intent intent = fileChooserParams.createIntent();
+
+                    try {
+                        intent.setType("image/*");
+                        startActivityForResult(intent, REQUEST_SELECT_IMAGE_FILE);
+                    } catch (ActivityNotFoundException e) {
+                        valueCallback = null;
+                        Toast.makeText(LOActivity.this, getString(R.string.cannot_open_file_chooser), Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                    return true;
                 }
-                return true;
+            });
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "asking for read storage permission");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_WRITE_EXTERNAL_STORAGE);
+            } else {
+                loadDocument();
             }
-        });
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "asking for read storage permission");
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    PERMISSION_WRITE_EXTERNAL_STORAGE);
-        } else {
-            loadDocument();
         }
     }
 
@@ -402,7 +420,7 @@ public class LOActivity extends AppCompatActivity {
             public void run() {
                 documentLoaded = false;
                 postMobileMessageNative("BYE");
-                copyTempBackToIntent();
+                //copyTempBackToIntent();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -447,49 +465,72 @@ public class LOActivity extends AppCompatActivity {
 
     /** When we get the file via a content: URI, we need to put it to a temp file. */
     private boolean copyFileToTemp() {
-        ContentResolver contentResolver = getContentResolver();
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-
-        // CSV files need a .csv suffix to be opened in Calc.
-        String suffix = null;
-        String intentType = getIntent().getType();
-        // K-9 mail uses the first, GMail uses the second variant.
-        if ("text/comma-separated-values".equals(intentType) || "text/csv".equals(intentType))
-            suffix = ".csv";
-
-        try {
-            try {
-                Uri uri = getIntent().getData();
-                inputStream = contentResolver.openInputStream(uri);
-
-                mTempFile = File.createTempFile("LibreOffice", suffix, this.getCacheDir());
-                outputStream = new FileOutputStream(mTempFile);
-
-                byte[] buffer = new byte[1024];
-                int length;
-                long bytes = 0;
-                while ((length = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, length);
-                    bytes += length;
+        final ContentResolver contentResolver = getContentResolver();
+        class CopyThread extends Thread {
+            /** Whether copy operation was successful. */
+            private boolean result = false;
+            @Override
+            public void run() {
+                InputStream inputStream = null;
+                OutputStream outputStream = null;
+                // CSV files need a .csv suffix to be opened in Calc.
+                String suffix = null;
+                String intentType = mActivity.getIntent().getType();
+                if (mActivity.getIntent().getType() == null) {
+                    intentType = getMimeType();
                 }
+                // K-9 mail uses the first, GMail uses the second variant.
+                if ("text/comma-separated-values".equals(intentType) || "text/csv".equals(intentType))
+                    suffix = ".csv";
+                else if ("application/pdf".equals(intentType))
+                    suffix = ".pdf";
+                else if ("application/vnd.ms-excel".equals(intentType))
+                    suffix = ".xls";
+                else if ("application/vnd.ms-powerpoint".equals(intentType))
+                    suffix = ".ppt";
+                try {
+                    try {
+                        Uri uri = mActivity.getIntent().getData();
+                        inputStream = contentResolver.openInputStream(uri);
 
-                Log.i(TAG, "Success copying " + bytes + " bytes from " + uri + " to " + mTempFile);
-            } finally {
-                if (inputStream != null)
-                    inputStream.close();
-                if (outputStream != null)
-                    outputStream.close();
+                        mTempFile = File.createTempFile("LibreOffice", suffix, mActivity.getCacheDir());
+                        outputStream = new FileOutputStream(mTempFile);
+
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        long bytes = 0;
+                        while ((length = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, length);
+                            bytes += length;
+                        }
+
+                        Log.i(TAG, "Success copying " + bytes + " bytes from " + uri + " to " + mTempFile);
+                    } finally {
+                        if (inputStream != null)
+                            inputStream.close();
+                        if (outputStream != null)
+                            outputStream.close();
+                        result = true;
+                    }
+                } catch (FileNotFoundException e) {
+                    Log.e(TAG, "file not found: " + e.getMessage());
+                    result = false;
+                } catch (IOException e) {
+                    Log.e(TAG, "exception: " + e.getMessage());
+                    result = false;
+                }
             }
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, "file not found: " + e.getMessage());
-            return false;
-        } catch (IOException e) {
-            Log.e(TAG, "exception: " + e.getMessage());
-            return false;
         }
-
-        return true;
+        CopyThread copyThread = new CopyThread();
+        copyThread.start();
+        try {
+            // wait for copy operation to finish
+            // NOTE: might be useful to add some indicator in UI for long copy operations involving network...
+            copyThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return copyThread.result;
     }
 
     /** Check that we have created a temp file, and if yes, copy it back to the content: URI. */
@@ -497,42 +538,57 @@ public class LOActivity extends AppCompatActivity {
         if (!isDocEditable || mTempFile == null || getIntent().getData() == null || !getIntent().getData().getScheme().equals(ContentResolver.SCHEME_CONTENT))
             return;
 
-        ContentResolver contentResolver = getContentResolver();
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-
+        final ContentResolver contentResolver = getContentResolver();
         try {
-            try {
-                inputStream = new FileInputStream(mTempFile);
+            Thread copyThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    InputStream inputStream = null;
+                    OutputStream outputStream = null;
+                    try {
+                        try {
+                            inputStream = new FileInputStream(mTempFile);
 
-                Uri uri = getIntent().getData();
-                try {
-                    outputStream = contentResolver.openOutputStream(uri, "wt");
-                }
-                catch (FileNotFoundException e) {
-                    Log.i(TAG, "failed with the 'wt' mode, trying without: " + e.getMessage());
-                    outputStream = contentResolver.openOutputStream(uri);
-                }
+                            int len = inputStream.available();
+                            if (len <= 0)
+                                // empty for some reason & do not write it back
+                                return;
 
-                byte[] buffer = new byte[1024];
-                int length;
-                long bytes = 0;
-                while ((length = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, length);
-                    bytes += length;
-                }
+                            Uri uri = getIntent().getData();
+                            try {
+                                outputStream = contentResolver.openOutputStream(uri, "wt");
+                            }
+                            catch (FileNotFoundException e) {
+                                Log.i(TAG, "failed with the 'wt' mode, trying without: " + e.getMessage());
+                                outputStream = contentResolver.openOutputStream(uri);
+                            }
 
-                Log.i(TAG, "Success copying " + bytes + " bytes from " + mTempFile + " to " + uri);
-            } finally {
-                if (inputStream != null)
-                    inputStream.close();
-                if (outputStream != null)
-                    outputStream.close();
-            }
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, "file not found: " + e.getMessage());
+                            byte[] buffer = new byte[1024];
+                            int length;
+                            long bytes = 0;
+                            while ((length = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, length);
+                                bytes += length;
+                            }
+
+                            Log.i(TAG, "Success copying " + bytes + " bytes from " + mTempFile + " to " + uri);
+                        } finally {
+                            if (inputStream != null)
+                                inputStream.close();
+                            if (outputStream != null)
+                                outputStream.close();
+                        }
+                    } catch (FileNotFoundException e) {
+                        Log.e(TAG, "file not found: " + e.getMessage());
+                    } catch (Exception e) {
+                        Log.e(TAG, "exception: " + e.getMessage());
+                    }
+                }
+            });
+            copyThread.start();
+            copyThread.join();
         } catch (Exception e) {
-            Log.e(TAG, "exception: " + e.getMessage());
+            Log.i(TAG, "copyTempBackToIntent: " + e.getMessage());
         }
     }
 
@@ -554,6 +610,10 @@ public class LOActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (!documentLoaded) {
+            super.onDestroy();
+            return;
+        }
         nativeLooper.quit();
 
         // Remove the webview from the hierarchy & destroy
@@ -585,6 +645,30 @@ public class LOActivity extends AppCompatActivity {
             return;
         }
 
+        /*
+            Copy is just save-as in general but with TakeOwnership.
+            Meaning that we will switch to the copied (saved-as) document in the bg
+            this way we don't need to reload the activity.
+        */
+        boolean requestCopy = false;
+        if (requestCode == REQUEST_COPY) {
+            requestCopy = true;
+            if (getMimeType().equals("text/plain")) {
+                requestCode = REQUEST_SAVEAS_ODT;
+            }
+            else if (getMimeType().equals("text/comma-separated-values")) {
+                requestCode = REQUEST_SAVEAS_ODS;
+            }
+            else if (getMimeType().equals("application/vnd.ms-excel.sheet.binary.macroenabled.12")) {
+                requestCode = REQUEST_SAVEAS_ODS;
+            }
+            else {
+                String filename = getFileName(true);
+                String extension = filename.substring(filename.lastIndexOf('.') + 1);
+                requestCode = getRequestIDForFormat(extension);
+                assert(requestCode != 0);
+            }
+        }
         switch (requestCode) {
             case REQUEST_SELECT_IMAGE_FILE:
                 if (valueCallback == null)
@@ -608,12 +692,13 @@ public class LOActivity extends AppCompatActivity {
                     return;
                 }
                 String format = getFormatForRequestCode(requestCode);
+                File _tempFile = null;
                 if (format != null) {
                     InputStream inputStream = null;
                     OutputStream outputStream = null;
                     try {
                         final File tempFile = File.createTempFile("LibreOffice", "." + format, this.getCacheDir());
-                        LOActivity.this.saveAs(tempFile.toURI().toString(), format);
+                        LOActivity.this.saveAs(tempFile.toURI().toString(), format, requestCopy ? "TakeOwnership" : null);
 
                         inputStream = new FileInputStream(tempFile);
                         try {
@@ -630,6 +715,7 @@ public class LOActivity extends AppCompatActivity {
                             outputStream.write(buffer, 0, len);
                         }
                         outputStream.flush();
+                        _tempFile = tempFile;
                     } catch (Exception e) {
                         Toast.makeText(this, "Something went wrong while Saving as: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
@@ -642,10 +728,31 @@ public class LOActivity extends AppCompatActivity {
                         } catch (Exception e) {
                         }
                     }
+                    if (requestCopy == true) {
+                        assert(_tempFile != null);
+                        mTempFile = _tempFile;
+                        getIntent().setData(intent.getData());
+                        /** add the document to recents */
+                        addIntentToRecents(intent);
+                        // This will actually change the doc permission to write
+                        // It's a toggle for blue edit button, but also changes permission
+                        // Toggle is achieved by calling setPermission('edit') in javascript
+                        callFakeWebsocketOnMessage("'mobile: readonlymode'");
+                        isDocEditable = true;
+                    }
                     return;
                 }
+                break;
         }
         Toast.makeText(this, "Unknown request", Toast.LENGTH_LONG).show();
+    }
+
+    private void addIntentToRecents(Intent intent) {
+        Uri treeFileUri = intent.getData();
+        SharedPreferences recentPrefs = getSharedPreferences(EXPLORER_PREFS_KEY, MODE_PRIVATE);
+        String recentList =  recentPrefs.getString(RECENT_DOCUMENTS_KEY, "");
+        recentList = treeFileUri.toString() + "\n" + recentList;
+        recentPrefs.edit().putString(RECENT_DOCUMENTS_KEY, recentList).apply();
     }
 
     private String getFormatForRequestCode(int requestCode) {
@@ -668,6 +775,10 @@ public class LOActivity extends AppCompatActivity {
 
     /** Show the Saving progress and finish the app. */
     private void finishWithProgress() {
+        if (!documentLoaded) {
+            finishAndRemoveTask();
+            return;
+        }
         mProgressDialog.indeterminate(R.string.exiting);
 
         // The 'BYE' takes a considerable amount of time, we need to post it
@@ -677,7 +788,7 @@ public class LOActivity extends AppCompatActivity {
             public void run() {
                 documentLoaded = false;
                 postMobileMessageNative("BYE");
-                copyTempBackToIntent();
+                //copyTempBackToIntent();
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -685,7 +796,6 @@ public class LOActivity extends AppCompatActivity {
                         mProgressDialog.dismiss();
                     }
                 });
-
                 finishAndRemoveTask();
             }
         });
@@ -693,8 +803,12 @@ public class LOActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (mMobileWizardVisible)
-        {
+        if (!documentLoaded) {
+            finishAndRemoveTask();
+            return;
+        }
+
+        if (mMobileWizardVisible) {
             // just return one level up in the mobile-wizard (or close it)
             callFakeWebsocketOnMessage("'mobile: mobilewizardback'");
             return;
@@ -709,7 +823,7 @@ public class LOActivity extends AppCompatActivity {
     private void loadDocument() {
         mProgressDialog.determinate(R.string.loading);
 
-        // setup the LOOLWSD
+        // setup the COOLWSD
         ApplicationInfo applicationInfo = getApplicationInfo();
         String dataDir = applicationInfo.dataDir;
         Log.i(TAG, String.format("Initializing LibreOfficeKit, dataDir=%s\n", dataDir));
@@ -717,11 +831,12 @@ public class LOActivity extends AppCompatActivity {
         String cacheDir = getApplication().getCacheDir().getAbsolutePath();
         String apkFile = getApplication().getPackageResourcePath();
         AssetManager assetManager = getResources().getAssets();
-
-        createLOOLWSD(dataDir, cacheDir, apkFile, assetManager, urlToLoad);
+        String uiMode = (isLargeScreen() && !isChromeOS()) ? "notebookbar" : "classic";
+        String userName = getPrefs().getString(USER_NAME_KEY, "Guest User");
+        createCOOLWSD(dataDir, cacheDir, apkFile, assetManager, urlToLoad, uiMode, userName);
 
         // trigger the load of the document
-        String finalUrlToLoad = "file:///android_asset/dist/loleaflet.html?file_path=" +
+        String finalUrlToLoad = "file:///android_asset/dist/cool.html?file_path=" +
                 urlToLoad + "&closebutton=1";
 
         // set the language
@@ -741,6 +856,8 @@ public class LOActivity extends AppCompatActivity {
             finalUrlToLoad += "&debug=true";
         }
 
+        if (isLargeScreen() && !isChromeOS())
+            finalUrlToLoad += "&userinterfacemode=notebookbar";
         // load the page
         mWebView.loadUrl(finalUrlToLoad);
 
@@ -753,14 +870,21 @@ public class LOActivity extends AppCompatActivity {
         System.loadLibrary("androidapp");
     }
 
+    /**
+     * Used for determining tablets
+     */
+    public boolean isLargeScreen() {
+        return getResources().getBoolean(R.bool.isLargeScreen);
+    }
+
     public SharedPreferences getPrefs() {
         return sPrefs;
     }
 
     /**
-     * Initialize the LOOLWSD to load 'loadFileURL'.
+     * Initialize the COOLWSD to load 'loadFileURL'.
      */
-    public native void createLOOLWSD(String dataDir, String cacheDir, String apkFile, AssetManager assetManager, String loadFileURL);
+    public native void createCOOLWSD(String dataDir, String cacheDir, String apkFile, AssetManager assetManager, String loadFileURL, String uiMode, String userName);
 
     /**
      * Passing messages from JS (instead of the websocket communication).
@@ -936,6 +1060,8 @@ public class LOActivity extends AppCompatActivity {
                 switch (messageAndParam[1]) {
                     case "on":
                         mIsEditModeActive = true;
+                        // prompt for file conversion
+                        requestForOdf();
                         break;
                     case "off":
                         mIsEditModeActive = false;
@@ -943,12 +1069,120 @@ public class LOActivity extends AppCompatActivity {
                 }
                 return false;
             }
+            case "hideProgressbar": {
+                if (mProgressDialog != null)
+                    mProgressDialog.dismiss();
+                return false;
+            }
             case "loadwithpassword": {
                 mProgressDialog.determinate(R.string.loading);
                 return true;
             }
+            case "REQUESTFILECOPY": {
+                requestForCopy();
+                return false;
+            }
         }
         return true;
+    }
+
+    public static void createNewFileInputDialog(Activity activity, final String defaultFileName, final String mimeType, final int requestCode) {
+        Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+
+        // The mime type and category must be set
+        i.setType(mimeType);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+
+        i.putExtra(Intent.EXTRA_TITLE, defaultFileName);
+
+        // Try to default to the Documents folder
+        Uri documentsUri = Uri.parse("content://com.android.externalstorage.documents/document/home%3A");
+        i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, documentsUri);
+
+        activity.startActivityForResult(i, requestCode);
+    }
+
+    private AlertDialog.Builder buildPrompt(final String mTitle, final String mMessage, final String mPositiveBtnText, final String mNegativeBtnText, DialogInterface.OnClickListener callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(mTitle);
+        if (mMessage.length() > 0)
+            builder.setMessage(mMessage);
+        builder.setPositiveButton(mPositiveBtnText, callback);
+        builder.setNegativeButton(mNegativeBtnText, null);
+        builder.setCancelable(false);
+        return builder;
+    }
+
+    private String getMimeType() {
+        ContentResolver cR = getContentResolver();
+        return cR.getType(getIntent().getData());
+    }
+
+    private String getFileName(boolean withExtension) {
+        Cursor cursor = null;
+        String filename = null;
+        try {
+            cursor = getContentResolver().query(getIntent().getData(), null, null, null, null);
+            if (cursor != null && cursor.moveToFirst())
+                filename = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        } catch (Exception e) {
+            return null;
+        }
+        if (!withExtension)
+            filename = filename.substring(0, filename.lastIndexOf("."));
+        return filename;
+    }
+
+    private void requestForCopy() {
+        final boolean canBeExported = canDocumentBeExported();
+        buildPrompt(getString(R.string.ask_for_copy), "", canBeExported ? getString(R.string.edit_copy) : getString(R.string.use_odf), getString(R.string.view_only), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (canBeExported)
+                    createNewFileInputDialog(mActivity, getFileName(true), getMimeType(), REQUEST_COPY);
+                else {
+                    String extension = getOdfExtensionForDocType(getMimeType());
+                    createNewFileInputDialog(mActivity, getFileName(false) + "." + extension, getMimeForFormat(extension), REQUEST_COPY);
+                }
+
+            }
+        }).show();
+    }
+
+    // readonly formats here
+    private boolean canDocumentBeExported() {
+        if (getMimeType().equals("application/vnd.ms-excel.sheet.binary.macroenabled.12")) {
+            return false;
+        }
+        return true;
+    }
+
+    private String getOdfExtensionForDocType(String mimeType)
+    {
+        String extTemp = null;
+        if (mimeType.equals("text/plain")) {
+            extTemp = "odt";
+        }
+        else if (mimeType.equals("text/comma-separated-values")) {
+            extTemp = "ods";
+        } else if (mimeType.equals("application/vnd.ms-excel.sheet.binary.macroenabled.12")) {
+            extTemp = "ods";
+        }
+        return extTemp;
+    }
+
+    private void requestForOdf() {
+        String extTemp = getOdfExtensionForDocType(getMimeType());
+        if (extTemp == null)
+            // this means we don't need to request for odf type.
+            return;
+        final String ext = extTemp;
+        buildPrompt(getString(R.string.ask_for_convert_odf), getString(R.string.convert_odf_message), getString(R.string.use_odf), getString(R.string.use_text), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                createNewFileInputDialog(mActivity, getFileName(false) + "." + ext, getMimeForFormat(ext), REQUEST_COPY);
+            }
+        }).show();
     }
 
     private void initiateSaveAs(String optionsString) {
@@ -1045,7 +1279,7 @@ public class LOActivity extends AppCompatActivity {
             public void run() {
                 Log.v(TAG, "saving svg for slideshow by " + Thread.currentThread().getName());
                 final String slideShowFileUri = new File(LOActivity.this.getCacheDir(), "slideShow.svg").toURI().toString();
-                LOActivity.this.saveAs(slideShowFileUri, "svg");
+                LOActivity.this.saveAs(slideShowFileUri, "svg", null);
                 LOActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1067,7 +1301,7 @@ public class LOActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public native void saveAs(String fileUri, String format);
+    public native void saveAs(String fileUri, String format, String options);
 
     public native boolean getClipboardContent(LokClipboardData aData);
 
@@ -1079,7 +1313,7 @@ public class LOActivity extends AppCompatActivity {
 
     /// Returns a magic that specifies this application - and this document.
     private final String getClipboardMagic() {
-        return CLIPBOARD_LOOL_SIGNATURE + Long.toString(loadDocumentMillis);
+        return CLIPBOARD_COOL_SIGNATURE + Long.toString(loadDocumentMillis);
     }
 
     /// Needs to be executed after the .uno:Copy / Paste has executed
@@ -1120,16 +1354,24 @@ public class LOActivity extends AppCompatActivity {
         }
     }
 
-    /// Do the paste, and return true if we should short-circuit the paste locally
+    /// Do the paste, and return true if we should short-circuit the paste locally (ie. let the core handle that)
     private final boolean performPaste()
     {
         clipData = clipboardManager.getPrimaryClip();
-        ClipDescription clipDesc = clipData != null ? clipData.getDescription() : null;
-        if (clipDesc != null) {
-            if (clipDesc.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML)) {
-                final String html = clipData.getItemAt(0).getHtmlText();
+        if (clipData == null)
+            return false;
+
+        ClipDescription clipDesc = clipData.getDescription();
+        if (clipDesc == null)
+            return false;
+
+        for (int i = 0; i < clipDesc.getMimeTypeCount(); ++i) {
+            Log.d(TAG, "Pasting mime " + i + ": " + clipDesc.getMimeType(i));
+
+            if (clipDesc.getMimeType(i).equals(ClipDescription.MIMETYPE_TEXT_HTML)) {
+                final String html = clipData.getItemAt(i).getHtmlText();
                 // Check if the clipboard content was made with the app
-                if (html.contains(CLIPBOARD_LOOL_SIGNATURE)) {
+                if (html.contains(CLIPBOARD_COOL_SIGNATURE)) {
                     // Check if the clipboard content is from the same app instance
                     if (html.contains(getClipboardMagic())) {
                         Log.i(TAG, "clipboard comes from us - same instance: short circuit it " + html);
@@ -1144,26 +1386,54 @@ public class LOActivity extends AppCompatActivity {
 
                         if (clipboardData != null) {
                             LOActivity.this.setClipboardContent(clipboardData);
-                            LOActivity.this.postUnoCommand(".uno:Paste", null, false);
+                            return true;
                         } else {
                             // Couldn't get data from the clipboard file, but we can still paste html
                             byte[] htmlByteArray = html.getBytes(Charset.forName("UTF-8"));
                             LOActivity.this.paste("text/html", htmlByteArray);
                         }
+                        return false;
                     }
                 } else {
                     Log.i(TAG, "foreign html '" + html + "'");
                     byte[] htmlByteArray = html.getBytes(Charset.forName("UTF-8"));
                     LOActivity.this.paste("text/html", htmlByteArray);
+                    return false;
                 }
             }
-            else if (clipDesc.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                final ClipData.Item clipItem = clipData.getItemAt(0);
-                String text = clipItem.getText().toString();
-                byte[] textByteArray = text.getBytes(Charset.forName("UTF-16"));
-                LOActivity.this.paste("text/plain;charset=utf-16", textByteArray);
+            else if (clipDesc.getMimeType(i).startsWith("image/")) {
+                ClipData.Item item = clipData.getItemAt(i);
+                Uri uri = item.getUri();
+                try {
+                    InputStream imageStream = getContentResolver().openInputStream(uri);
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+                    int nRead;
+                    byte[] data = new byte[16384];
+                    while ((nRead = imageStream.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, nRead);
+                    }
+
+                    LOActivity.this.paste(clipDesc.getMimeType(i), buffer.toByteArray());
+                    return false;
+                } catch (Exception e) {
+                    Log.d(TAG, "Failed to paste image: " + e.getMessage());
+                }
             }
         }
+
+        // try the plaintext as the last resort
+        for (int i = 0; i < clipDesc.getMimeTypeCount(); ++i) {
+            Log.d(TAG, "Plain text paste attempt " + i + ": " + clipDesc.getMimeType(i));
+
+            if (clipDesc.getMimeType(i).equals(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+                final ClipData.Item clipItem = clipData.getItemAt(i);
+                String text = clipItem.getText().toString();
+                byte[] textByteArray = text.getBytes(Charset.forName("UTF-8"));
+                LOActivity.this.paste("text/plain;charset=utf-8", textByteArray);
+            }
+        }
+
         return false;
     }
 }

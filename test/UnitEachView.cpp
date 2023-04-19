@@ -1,11 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include <config.h>
 
 #include <memory>
 #include <string>
@@ -17,11 +17,6 @@
 #include <Util.hpp>
 #include <helpers.hpp>
 
-// Include config.h last, so the test server URI is still HTTP, even in SSL builds.
-#include <config.h>
-
-class LOOLWebSocket;
-
 namespace
 {
 void testEachView(const std::string& doc, const std::string& type, const std::string& protocol,
@@ -30,15 +25,22 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
     const std::string view = testname + "view %d -> ";
     const std::string error = testname + "view %d, did not receive a %s message as expected";
 
+    TST_LOG("testEachView for " << testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("UnitEachView");
+    socketPoll->startThread();
+
     try
     {
         // Load a document
         std::string documentPath, documentURL;
         helpers::getDocumentPathAndURL(doc, documentPath, documentURL, testname);
 
+        TST_LOG("Loading " << documentURL);
         int itView = 0;
-        std::shared_ptr<LOOLWebSocket> socket = helpers::loadDocAndGetSocket(
-            Poco::URI(helpers::getTestServerURI()), documentURL, Poco::format(view, itView));
+        std::shared_ptr<http::WebSocketSession> socket =
+            helpers::loadDocAndGetSession(socketPoll, Poco::URI(helpers::getTestServerURI()),
+                                          documentURL, Poco::format(view, itView));
 
         // Check document size
         helpers::sendTextFrame(socket, "status", Poco::format(view, itView));
@@ -50,7 +52,7 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
         int docWidth = 0;
         int docViewId = -1;
         helpers::parseDocSize(response.substr(7), type, docPart, docParts, docWidth, docHeight,
-                              docViewId);
+                              docViewId, testname);
 
         // Send click message
         std::string text;
@@ -63,18 +65,20 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
                      std::string("buttonup"), docWidth / 2, docHeight / 6);
         helpers::sendTextFrame(socket, text, Poco::format(view, itView));
         // Double of the default.
-        size_t timeoutMs = 20000;
+        constexpr std::chrono::milliseconds timeoutMs{ 20000 };
         response = helpers::getResponseString(socket, protocol, Poco::format(view, itView), timeoutMs);
         LOK_ASSERT_MESSAGE(Poco::format(error, itView, protocol), !response.empty());
 
         // Connect and load 0..N Views, where N<=limit
-        std::vector<std::shared_ptr<LOOLWebSocket>> views;
+        std::vector<std::shared_ptr<http::WebSocketSession>> views;
         static_assert(MAX_DOCUMENTS >= 2, "MAX_DOCUMENTS must be at least 2");
         const int limit = std::min(4, MAX_DOCUMENTS - 1); // +1 connection above
         for (itView = 0; itView < limit; ++itView)
         {
-            views.emplace_back(helpers::loadDocAndGetSocket(
-                Poco::URI(helpers::getTestServerURI()), documentURL, Poco::format(view, itView)));
+            TST_LOG("loadDocAndGetSession #" << (itView + 1) << ": " << documentURL);
+            views.emplace_back(
+                helpers::loadDocAndGetSession(socketPoll, Poco::URI(helpers::getTestServerURI()),
+                                              documentURL, Poco::format(view, itView)));
         }
 
         // main view should receive response each view
@@ -86,6 +90,7 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
         itView = 0;
         for (const auto& socketView : views)
         {
+            TST_LOG("getResponse #" << (itView + 1) << ": " << protocolView);
             response = helpers::getResponseString(socket, protocolView, Poco::format(view, itView), timeoutMs);
             LOK_ASSERT_MESSAGE(Poco::format(error, itView, protocolView), !response.empty());
             ++itView;
@@ -100,6 +105,8 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
     {
         LOK_ASSERT_FAIL(exc.what());
     }
+
+    TST_LOG("Done testEachView for " << testname);
 }
 }
 
@@ -115,7 +122,7 @@ class UnitEachView : public UnitWSD
 
 public:
     UnitEachView();
-    void invokeTest() override;
+    void invokeWSDTest() override;
 };
 
 UnitBase::TestResult UnitEachView::testInvalidateViewCursor()
@@ -134,7 +141,7 @@ UnitBase::TestResult UnitEachView::testViewCursorVisible()
 
 UnitBase::TestResult UnitEachView::testCellViewCursor()
 {
-    testEachView("empty.ods", "spreadsheet", "cellcursor:", "cellviewcursor:", "cellViewCursor");
+    testEachView("empty.ods", "spreadsheet", "cellcursor:", "cellviewcursor:", "cellViewCursor ");
     return TestResult::Ok;
 }
 
@@ -160,12 +167,13 @@ UnitBase::TestResult UnitEachView::testGraphicViewSelectionImpress()
 }
 
 UnitEachView::UnitEachView()
+    : UnitWSD("UnitEachView")
 {
     // 8 times larger then the default.
-    setTimeout(240 * 1000);
+    setTimeout(std::chrono::seconds(240));
 }
 
-void UnitEachView::invokeTest()
+void UnitEachView::invokeWSDTest()
 {
     UnitBase::TestResult result = testInvalidateViewCursor();
     if (result != TestResult::Ok)

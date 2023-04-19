@@ -1,7 +1,5 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,7 +18,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#ifndef __FreeBSD__
 #include <error.h>
+#endif
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +30,19 @@
 #include <math.h>
 
 #include <Util.hpp>
+
+#ifdef __FreeBSD__
+void error(int status, int errnum, const char *format, ...)
+{
+    va_list args;
+    (void)status;
+    (void)errnum;
+
+    va_start(args, format);
+    printf(format, args);
+    va_end(args);
+}
+#endif
 
 typedef unsigned long long addr_t;
 
@@ -204,16 +217,24 @@ public:
     }
 
     bool isCStringAtOffset(const std::vector<unsigned char> &data, size_t i,
-                           std::string &str)
+                           std::string &str, size_t &skip)
     {
         str = "C_";
-        for (size_t j = i; j < data.size(); j++)
+        size_t j;
+        for (j = i; j < data.size(); j++)
         {
             if (isascii(data[j]) && !iscntrl(data[j]))
                 str += static_cast<char>(data[j]);
             else
-                return data[j] == '\0' && str.length() > 7;
+                break;
         }
+        if (data[j] == '\0' && str.length() > 7)
+            return true;
+
+        // avoid large chunks of non-null-terminated ASCII creating work.
+        if (j > i + 4)
+            skip = j - i - 4;
+
         return false;
     }
 
@@ -239,7 +260,8 @@ public:
                     i += ((4 + str.length() * (isUnicode ? 2 : 1)) >>2 ) * 4;
                 }
             }
-            if ((i%8 == 0) && isCStringAtOffset(data, i, str))
+            size_t skip = 0;
+            if ((i%8 == 0) && isCStringAtOffset(data, i, str, skip))
             {
                 StringData &sdata = _strings[2];
                 sdata.setCount(sdata.getCount() + 1);
@@ -247,6 +269,8 @@ public:
                 _addrToStr[map.getStart() + i] = str;
                 i += (str.length() >> 2) * 4;
             }
+            else
+                i += skip;
         }
     }
 
@@ -666,7 +690,7 @@ int main(int argc, char **argv)
 
     if (help)
     {
-        fprintf(stderr, "Usage: oxoolmap --hex <name of process|pid>\n");
+        fprintf(stderr, "Usage: coolmap --hex <name of process|pid>\n");
         fprintf(stderr, "Dump memory map information for a given process\n");
         fprintf(stderr, "    --hex           Hex dump relevant page contents and diff to parent process\n");
         fprintf(stderr, "    --strings       Print all detected strings\n");

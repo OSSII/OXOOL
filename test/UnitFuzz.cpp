@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,11 +13,9 @@
 
 #include <Common.hpp>
 #include <Protocol.hpp>
-#include <LOOLWebSocket.hpp>
 #include <Unit.hpp>
 #include <Util.hpp>
 
-#include <Poco/Timestamp.h>
 #include <Poco/Net/HTTPServerRequest.h>
 
 // Inside the WSD process
@@ -30,12 +26,13 @@ class UnitFuzz : public UnitWSD
     std::uniform_int_distribution<> _dist;
 public:
     UnitFuzz() :
+        UnitWSD("fuzz"),
         _mt(_rd()),
         _dist(0, 1000)
     {
         std::cerr << "\n\nYour WSD process is being randomly fuzzed\n\n\n";
         setHasKitHooks();
-        setTimeout(3600 * 1000); /* one hour */
+        setTimeout(std::chrono::hours(1));
     }
 
     std::string corruptString(const std::string &str)
@@ -122,10 +119,10 @@ public:
 class UnitKitFuzz : public UnitKit
 {
 public:
-    UnitKitFuzz()
+    UnitKitFuzz() : UnitKit("fuzz")
     {
-        std::cerr << "\n\nYour KIT process has fuzzing hooks\n\n\n";
-        setTimeout(3600 * 1000); /* one hour */
+        std::cerr << "\n\nYour Kit process has fuzzing hooks\n\n\n";
+        setTimeout(std::chrono::hours(1));
     }
     virtual bool filterKitMessage(WebSocketHandler *, std::string & /* message */) override
     {

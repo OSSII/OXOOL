@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,8 +11,9 @@
 
 #include <config.h>
 
+#define TST_LOG_REDIRECT
 #include <Unit.hpp>
-#include <wsd/LOOLWSD.hpp>
+#include <wsd/COOLWSD.hpp>
 
 #include <test.hpp>
 
@@ -25,11 +24,12 @@ class UnitClient : public UnitWSD
     std::thread _worker;
 
 public:
-    UnitClient() :
-        _workerStarted(false)
+    UnitClient()
+        : UnitWSD("UnitClient")
+        , _workerStarted(false)
     {
-        int timeout_minutes = 5;
-        setTimeout(timeout_minutes * 60 * 1000);
+        constexpr std::chrono::minutes timeout_minutes(5);
+        setTimeout(timeout_minutes);
     }
     ~UnitClient()
     {
@@ -50,7 +50,7 @@ public:
         config.setBool("ssl.enable", true);
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
         // this method gets called every few seconds.
         if (_workerStarted)
@@ -58,7 +58,7 @@ public:
         _workerStarted = true;
 
         _worker = std::thread([this]{
-                if (runClientTests(false, true))
+                if (runClientTests("", false, true))
                     exitTest(TestResult::Ok);
                 else
                     exitTest(TestResult::Failed);

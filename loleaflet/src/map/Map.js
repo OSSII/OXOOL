@@ -3,15 +3,8 @@
  * L.Map is the central class of the API - it is used to create a map.
  */
 
-function isAnyVexDialogActive() {
-	var res = false;
-	for (var vexId in vex.getAll()) {
-		res = res || vex.getById(vexId).isOpen;
-	}
-	return res;
-}
+/* global app _ Cursor */
 
-/* global app vex $ _ Cursor */
 L.Map = L.Evented.extend({
 
 	statics: {
@@ -51,20 +44,15 @@ L.Map = L.Evented.extend({
 		// 256x256 pixels tile).Unless you know what you are doing, this should not be modified;
 		// this means twips value for 256 pixels at 96dpi.
 		tileHeightTwips: window.tileSize * 15,
-		urlPrefix: 'lool',
+		urlPrefix: 'cool',
 		wopiSrc: '',
-		cursorURL: L.LOUtil.getURL('images/cursors'),
+		cursorURL: L.LOUtil.getURL('cursors'),
 		// cursorURL
 		// The path (local to the server) where custom cursor files are stored.
 	},
 
 	// Control.UIManager instance, set in main.js
 	uiManager: null,
-
-	// Added by Firefly <firefly@ossii.com.tw>
-	// 替代指令集
-	// Control.AlternativeCommand instance, set in main.js
-	alternativeCommand: null,
 
 	// Control.LokDialog instance, is set in Control.UIManager.js
 	dialog: null,
@@ -74,8 +62,6 @@ L.Map = L.Evented.extend({
 
 	context: {context: ''},
 
-	lastActiveTime: Date.now(),
-
 	initialize: function (id, options) { // (HTMLElement or String, Object)
 		options = L.setOptions(this, options);
 
@@ -84,7 +70,7 @@ L.Map = L.Evented.extend({
 			this.options.documentContainer = L.DomUtil.get(this.options.documentContainer);
 		}
 
-		if (!window.ThisIsTheiOSApp && !window.ThisIsTheAndroidApp)
+		if (!window.ThisIsAMobileApp)
 			this._clip = L.clipboard(this);
 		this._initContainer(id);
 		this._initLayout();
@@ -120,12 +106,9 @@ L.Map = L.Evented.extend({
 		this._zoomBoundLayers = {};
 		this._sizeChanged = true;
 		this._bDisableKeyboard = false;
-		this._active = true;
 		this._fatal = false;
 		this._enabled = true;
 		this._debugAlwaysActive = false; // disables the dimming / document inactivity when true
-		this._serverRecycling = false;
-		this._documentIdle = false;
 		this._disableDefaultAction = {}; // The events for which the default handler is disabled and only issues postMessage.
 		this.showSidebar = false;
 		this._previewQueue = [];
@@ -143,8 +126,6 @@ L.Map = L.Evented.extend({
 		// True only when searching within the doc, as we need to use winId==0.
 		this._isSearching = false;
 
-
-		vex.dialogID = -1;
 
 		this.callInitHooks();
 
@@ -169,17 +150,7 @@ L.Map = L.Evented.extend({
 
 		this._progressBar = L.progressOverlay(new L.point(150, 25));
 
-		// 如果是桌面模式或者是 iOS 系統
-		if (window.mode.isDesktop() ||
-			(/iOS|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
-			window.app.console.debug('Text input using Desktop/iOS method.');
-			// 使用為桌面及iOS特製的輸入方法
-			this._textInput = L.textInputDesktopIOS();
-		} else {
-			window.app.console.debug('Text input using complex method.');
-			// 否則就用難以理解的輸入方法 XD
-			this._textInput = L.textInput();
-		}
+		this._textInput = L.textInput();
 		this.addLayer(this._textInput);
 
 		// When all these conditions are met, fire statusindicator:initializationcomplete
@@ -197,21 +168,20 @@ L.Map = L.Evented.extend({
 				this._fireInitComplete('updatepermission');
 			}
 
-			// 不是編輯權限的話，一律設為 readonly 狀態
-			if (e.perm === 'edit') {
-				L.DomUtil.removeClass(this._container.parentElement, 'readonly');
-				if (window.mode.isDesktop() || window.mode.isTablet()) {
-					L.DomUtil.removeClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
-				}
-				L.DomUtil.removeClass(L.DomUtil.get('main-menu'), 'readonly');
-				L.DomUtil.removeClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
-			} else {
+			if (e.perm === 'readonly') {
 				L.DomUtil.addClass(this._container.parentElement, 'readonly');
 				if (window.mode.isDesktop() || window.mode.isTablet()) {
 					L.DomUtil.addClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
 				}
 				L.DomUtil.addClass(L.DomUtil.get('main-menu'), 'readonly');
 				L.DomUtil.addClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
+			} else {
+				L.DomUtil.removeClass(this._container.parentElement, 'readonly');
+				if (window.mode.isDesktop() || window.mode.isTablet()) {
+					L.DomUtil.removeClass(L.DomUtil.get('toolbar-wrapper'), 'readonly');
+				}
+				L.DomUtil.removeClass(L.DomUtil.get('main-menu'), 'readonly');
+				L.DomUtil.removeClass(L.DomUtil.get('presentation-controls-wrapper'), 'readonly');
 			}
 		}, this);
 		this.on('doclayerinit', function() {
@@ -258,7 +228,6 @@ L.Map = L.Evented.extend({
 		// View info (user names and view ids)
 		this._viewInfo = {};
 		this._viewInfoByUserName = {};
-		this._viewCount = 0;
 
 		// View color map
 		this._viewColors = {};
@@ -278,23 +247,43 @@ L.Map = L.Evented.extend({
 
 		this._isNotebookbarLoadedOnCore = false;
 
-		// 監控單一指令，不需回報全部指令，提昇效率
-		this.stateChangeHandler.on('.uno:ModifiedStatus', function(e) {
-			this._everModified = this._everModified || (e.state === 'true');
-			// Fire an event to let the client know whether the document needs saving or not.
-			this.fire('postMessage', {msgId: 'Doc_ModifiedStatus', args: { Modified: e.state === 'true' }});
+		this.on('commandstatechanged', function(e) {
+			if (e.commandName === '.uno:ModifiedStatus') {
+				this._everModified = this._everModified || (e.state === 'true');
+
+				// Fire an event to let the client know whether the document needs saving or not.
+				this.fire('postMessage', {msgId: 'Doc_ModifiedStatus', args: { Modified: e.state === 'true' }});
+			}
 		}, this);
+
+		this.on('commandvalues', function(e) {
+			if (e.commandName === '.uno:LanguageStatus' && L.Util.isArray(e.commandValues)) {
+				app.languages = [];
+				e.commandValues.forEach(function(language) {
+					var split = language.split(';');
+					language = split[0];
+					var code = '';
+					if (split.length > 1)
+						code = split[1];
+					app.languages.push({translated: _(language), neutral: language, iso: code});
+				});
+				app.languages.sort(function(a, b) {
+					return a.translated < b.translated ? -1 : a.translated > b.translated ? 1 : 0;
+				});
+				this.fire('languagesupdated');
+			}
+		});
 
 		this.on('docloaded', function(e) {
 			this._docLoaded = e.status;
 			if (this._docLoaded) {
-				//app.socket.sendMessage('blockingcommandstatus isRestrictedUser=' + this.Restriction.isRestrictedUser + ' isLockedUser=' + this.Locking.isLockedUser);
-				this.notifyActive();
+				app.socket.sendMessage('blockingcommandstatus isRestrictedUser=' + this.Restriction.isRestrictedUser + ' isLockedUser=' + this.Locking.isLockedUser);
+				app.idleHandler.notifyActive();
 				if (!document.hasFocus()) {
 					this.fire('editorgotfocus');
 					this.focus();
 				}
-				this._activate();
+				app.idleHandler._activate();
 				if (window.ThisIsTheAndroidApp) {
 					window.postMobileMessage('hideProgressbar');
 				}
@@ -305,7 +294,8 @@ L.Map = L.Evented.extend({
 					commentSection.clearList();
 			}
 
-			this.initializeModificationIndicator();
+			if (!window.mode.isMobile())
+				this.initializeModificationIndicator();
 
 			// Show sidebar.
 			if (this._docLayer && !this._docLoadedOnce) {
@@ -331,7 +321,11 @@ L.Map = L.Evented.extend({
 		app.socket.sendMessage('commandvalues command=.uno:LanguageStatus');
 		app.socket.sendMessage('commandvalues command=.uno:ViewAnnotations');
 		if (this._docLayer._docType === 'spreadsheet') {
+			this._docLayer._gotFirstCellCursor = false;
+			if (this._docLayer.options.sheetGeometryDataEnabled)
+				this._docLayer.requestSheetGeometryData();
 			this._docLayer.refreshViewData();
+			this._docLayer._update();
 		}
 		this._docLayer._getToolbarCommandsValues();
 	},
@@ -349,7 +343,6 @@ L.Map = L.Evented.extend({
 
 	addView: function(viewInfo) {
 		this._viewInfo[viewInfo.id] = viewInfo;
-		this._viewCount++;
 		if (viewInfo.userextrainfo !== undefined && viewInfo.userextrainfo.avatar !== undefined) {
 			this._viewInfoByUserName[viewInfo.username] = viewInfo;
 		}
@@ -365,7 +358,6 @@ L.Map = L.Evented.extend({
 		var username = this._viewInfo[viewid].username;
 		delete this._viewInfoByUserName[this._viewInfo[viewid].username];
 		delete this._viewInfo[viewid];
-		this._viewCount--;
 		this.fire('postMessage', {msgId: 'View_Removed', args: {Deprecated: true, ViewId: viewid}});
 
 		// Fire last, otherwise not all events are handled correctly.
@@ -807,7 +799,7 @@ L.Map = L.Evented.extend({
 		}
 
 		// Check for the special proof-of-concept case where no WOPI is involved but we
-		// still run OXOOL in an iframe of its own and thus need to receive the
+		// still run COOL in an iframe of its own and thus need to receive the
 		// postMessage things.
 		if (name === 'wopi' && this.options['notWopiButIframe']) {
 			handler.addHooks();
@@ -869,10 +861,6 @@ L.Map = L.Evented.extend({
 
 	getViewColor: function(viewid) {
 		return this._viewInfo[viewid].color;
-	},
-
-	getViewCount: function() {
-		return this._viewCount;
 	},
 
 	isViewReadOnly: function(viewid) {
@@ -967,18 +955,20 @@ L.Map = L.Evented.extend({
 
 	// Getter for the winId, see setWinId() for more.
 	getWinId: function () {
+		if (this.formulabar && this.formulabar.hasFocus())
+			return 0;
 		return this._winId;
 	},
 
 	// Returns true iff the document has input focus,
 	// as opposed to a dialog, sidebar, formula bar, etc.
 	editorHasFocus: function () {
-		return this.getWinId() === 0;
+		return this.getWinId() === 0 && !this.calcInputBarHasFocus();
 	},
 
 	// Returns true iff the formula-bar has the focus.
 	calcInputBarHasFocus: function () {
-		return !this.editorHasFocus() && this._activeDialog && this._activeDialog.isCalcInputBar(this.getWinId());
+		return this.formulabar && this.formulabar.hasFocus();
 	},
 
 	// TODO replace with universal implementation after refactoring projections
@@ -1340,230 +1330,13 @@ L.Map = L.Evented.extend({
 		if (this.sidebar)
 			this.sidebar.onResize();
 
-		var deckOffset = 0;
-		var sidebar = L.DomUtil.get('#sidebar-dock-wrapper');
-		if (sidebar)
-			deckOffset = sidebar.width;
-
-		this.showCalcInputBar(deckOffset);
+		this.showCalcInputBar();
 	},
 
-	showCalcInputBar: function(deckOffset) {
-		if (this.dialog && this.dialog._calcInputBar && !this.dialog._calcInputBar.isPainting) {
-			var id = this.dialog._calcInputBar.id;
-			var calcInputbar = L.DomUtil.get('calc-inputbar');
-			if (calcInputbar) {
-				var calcInputbarContainer = calcInputbar.children[0];
-				if (calcInputbarContainer) {
-					var sizeChanged = true;
-					var width = calcInputbarContainer.clientWidth - deckOffset;
-					var height = calcInputbarContainer.clientHeight;
-					if (calcInputbarContainer.children && calcInputbarContainer.children.length) {
-						var inputbarCanvas = calcInputbarContainer.children[0];
-						var currentWidth = inputbarCanvas.clientWidth;
-						var currentHeight = inputbarCanvas.clientHeight;
-						sizeChanged = (currentWidth !== width || currentHeight !== height);
-					}
-					if (width > 0 && height > 0 && sizeChanged) {
-						window.app.console.log('_onResize: container width: ' + width + ', container height: ' + height + ', _calcInputBar width: ' + this.dialog._calcInputBar.width);
-						if (width != this.dialog._calcInputbarContainerWidth || height != this.dialog._calcInputbarContainerHeight) {
-							app.socket.sendMessage('resizewindow ' + id + ' size=' + width + ',' + height);
-							this.dialog._calcInputbarContainerWidth = width;
-							this.dialog._calcInputbarContainerHeight = height;
-						}
-					}
-				}
-			}
-		}
-	},
-
-	makeActive: function() {
-		// window.app.console.log('Force active');
-		this.lastActiveTime = Date.now();
-		return this._activate();
-	},
-
-	_activate: function () {
-		if (this._serverRecycling || this._documentIdle) {
-			return false;
-		}
-
-		// window.app.console.debug('_activate:');
-		clearTimeout(vex.timer);
-
-		if (!this._active) {
-			// Only activate when we are connected.
-			if (app.socket.connected()) {
-				// window.app.console.debug('sending useractive');
-				app.socket.sendMessage('useractive');
-				this._active = true;
-				var docLayer = this._docLayer;
-				if (docLayer && docLayer.isCalc() && docLayer.options.sheetGeometryDataEnabled) {
-					docLayer.requestSheetGeometryData();
-				}
-				app.socket.sendMessage('commandvalues command=.uno:ViewAnnotations');
-
-				if (isAnyVexDialogActive()) {
-					for (var vexId in vex.getAll()) {
-						var opts = vex.getById(vexId).options;
-						if (!opts.overlayClosesOnClick || !opts.escapeButtonCloses) {
-							return false;
-						}
-					}
-
-					this._startInactiveTimer();
-					if (window.mode.isDesktop()) {
-						this.focus();
-					}
-					return vex.closeAll();
-				}
-			} else {
-				this.loadDocument();
-			}
-		}
-
-		this._startInactiveTimer();
-		if (window.mode.isDesktop() && !isAnyVexDialogActive()) {
-			this.focus();
-		}
-		return false;
-	},
-
-	documentHidden: function(unknownValue) {
-		var hidden = unknownValue;
-		if (typeof document.hidden !== 'undefined') {
-			hidden = document.hidden;
-		} else if (typeof document.msHidden !== 'undefined') {
-			hidden = document.msHidden;
-		} else if (typeof document.webkitHidden !== 'undefined') {
-			hidden = document.webkitHidden;
-		} else {
-			window.app.console.debug('Unusual browser, cant determine if hidden');
-		}
-		return hidden;
-	},
-
-	_dim: function() {
-		if (this.options.alwaysActive || this._debugAlwaysActive === true) {
-			return;
-		}
-
-		// window.app.console.debug('_dim:');
-		if (!app.socket.connected() || isAnyVexDialogActive()) {
-			return;
-		}
-
-		clearTimeout(vex.timer);
-
-		if (window.ThisIsTheAndroidApp) {
-			window.postMobileMessage('DIM_SCREEN');
-			return;
-		}
-
-		var map = this;
-		var inactiveMs = Date.now() - this.lastActiveTime;
-		var multiplier = 1;
-		if (!this.documentHidden(true))
-		{
-			// window.app.console.debug('document visible');
-			multiplier = 4; // quadruple the grace period
-		}
-		if (inactiveMs <= this.options.outOfFocusTimeoutSecs * 1000 * multiplier) {
-			// window.app.console.debug('had activity ' + inactiveMs + 'ms ago vs. threshold ' +
-			//	      (this.options.outOfFocusTimeoutSecs * 1000 * multiplier) +
-			//	      ' - so fending off the dim');
-			vex.timer = setTimeout(function() {
-				map._dim();
-			}, map.options.outOfFocusTimeoutSecs * 1000);
-			return;
-		}
-
-		this._active = false;
-
-		var message = '';
-		if (!map['wopi'].DisableInactiveMessages) {
-			message = '<h3 class="title">' + vex._escapeHtml(_('Inactive document')) + '</h3>';
-			message += '<p class="content">' + vex._escapeHtml(_('Please click to resume editing')) + '</p>';
-		}
-
-		vex.open({
-			unsafeContent: message,
-			contentClassName: 'oxool-user-idle',
-			afterOpen: function() {
-				var $vexContent = $(this.contentEl);
-				$vexContent.bind('click.vex', function() {
-					// window.app.console.debug('_dim: click.vex function');
-					return map._activate();
-				});
-			},
-			showCloseButton: false
-		});
-
-		$('.vex-overlay').addClass('oxool-user-idle-overlay');
-		if (message === '')
-			$('.oxool-user-idle').css('display', 'none');
-
-		this._doclayer && this._docLayer._onMessage('textselection:', null);
-		// window.app.console.debug('_dim: sending userinactive');
-		map.fire('postMessage', {msgId: 'User_Idle'});
-		app.socket.sendMessage('userinactive');
-	},
-
-	notifyActive : function() {
-		this.lastActiveTime = Date.now();
-		if (window.ThisIsTheAndroidApp) {
-			window.postMobileMessage('LIGHT_SCREEN');
-		}
-	},
-
-	_dimIfInactive: function () {
-		// window.app.console.debug('_dimIfInactive: diff=' + (Date.now() - this.lastActiveTime));
-		if (this._docLoaded && // don't dim if document hasn't been loaded yet
-		    (Date.now() - this.lastActiveTime) >= this.options.idleTimeoutSecs * 1000) {
-			this._dim();
-		} else {
-			this._startInactiveTimer();
-		}
-	},
-
-	_startInactiveTimer: function () {
-		if (this._serverRecycling || this._documentIdle || !this._docLoaded) {
-			return;
-		}
-
-		// window.app.console.debug('_startInactiveTimer:');
-		clearTimeout(vex.timer);
-		var map = this;
-		vex.timer = setTimeout(function() {
-			map._dimIfInactive();
-		}, 1 * 60 * 1000); // Check once a minute
-	},
-
-	_deactivate: function () {
-		if (this._serverRecycling || this._documentIdle || !this._docLoaded) {
-			return;
-		}
-
-		// window.app.console.debug('_deactivate:');
-		clearTimeout(vex.timer);
-
-		if (!this._active || isAnyVexDialogActive()) {
-			// A dialog is already dimming the screen and probably
-			// shows an error message. Leave it alone.
-			this._active = false;
-			this._docLayer && this._docLayer._onMessage('textselection:', null);
-			if (app.socket.connected()) {
-				// window.app.console.debug('_deactivate: sending userinactive');
-				app.socket.sendMessage('userinactive');
-			}
-
-			return;
-		}
-
-		var map = this;
-		vex.timer = setTimeout(function() {
-			map._dim();
-		}, map.options.outOfFocusTimeoutSecs * 1000);
+	showCalcInputBar: function() {
+		var wrapper = document.getElementById('calc-inputbar-wrapper');
+		if (wrapper)
+			wrapper.style.display = 'block';
 	},
 
 	// Change the focus to a dialog or editor.
@@ -1591,17 +1364,14 @@ L.Map = L.Evented.extend({
 
 	// Our browser tab lost focus.
 	_onLostFocus: function () {
-		this._deactivate();
+		app.idleHandler._deactivate();
 	},
 
 	// The editor got focus (probably a dialog closed or user clicked to edit).
 	_onEditorGotFocus: function() {
 		this._changeFocusWidget(null, 0);
-		if (this.dialog && this.dialog._calcInputBar) {
-			var inputBarId = this.dialog._calcInputBar.id;
-			this.dialog._updateTextSelection(inputBarId);
+		if (this.formulabar)
 			this.onFormulaBarBlur();
-		}
 	},
 
 	// Our browser tab got focus.
@@ -1613,7 +1383,7 @@ L.Map = L.Evented.extend({
 			this._activeDialog.focus(this.getWinId());
 		}
 
-		this._activate();
+		app.idleHandler._activate();
 	},
 
 	// Event to change the focus to dialog or editor.
@@ -1639,7 +1409,7 @@ L.Map = L.Evented.extend({
 		else if (e.statusType === 'setvalue') {
 			this._progressBar.setValue(e.value);
 		}
-		else if (e.statusType === 'finish' || e.statusType === 'oxoolloaded' || e.statusType === 'reconnected') {
+		else if (e.statusType === 'finish' || e.statusType === 'coolloaded' || e.statusType === 'reconnected') {
 			this.hideBusy();
 		}
 	},
@@ -1656,7 +1426,7 @@ L.Map = L.Evented.extend({
 	},
 
 	_handleDOMEvent: function (e) {
-		this.notifyActive();
+		app.idleHandler.notifyActive();
 
 		if (!this._docLayer || !this._loaded || !this._enabled || L.DomEvent._skipped(e)) { return; }
 
@@ -1845,14 +1615,10 @@ L.Map = L.Evented.extend({
 		if (id === -1)
 			return;
 
-		var docLayer = this._docLayer;
 		if (this.getDocType() === 'spreadsheet') {
-			if (docLayer._selectedPart !== docLayer._cellViewCursors[id].part) {
-				this.setPart(docLayer._cellViewCursors[id].part);
-			}
-			docLayer.goToCellViewCursor(id);
+			this._docLayer.goToCellViewCursor(id);
 		} else if (this.getDocType() === 'text' || this.getDocType() === 'presentation') {
-			docLayer.goToViewCursor(id);
+			this._docLayer.goToViewCursor(id);
 		}
 	},
 

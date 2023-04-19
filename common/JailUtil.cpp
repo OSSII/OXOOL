@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,48 +23,67 @@
 #include <string>
 
 #include "Log.hpp"
+#include <SigUtil.hpp>
 
 namespace JailUtil
 {
-bool oxoolmount(const std::string& arg, std::string source, std::string target)
+bool coolmount(const std::string& arg, std::string source, std::string target)
 {
     source = Util::trim(source, '/');
     target = Util::trim(target, '/');
-    const std::string cmd = Poco::Path(Util::getApplicationPath(), "oxoolmount").toString() + ' '
+    const std::string cmd = Poco::Path(Util::getApplicationPath(), "coolmount").toString() + ' '
                             + arg + ' ' + source + ' ' + target;
-    LOG_TRC("Executing oxoolmount command: " << cmd);
+    LOG_TRC("Executing coolmount command: " << cmd);
     return !system(cmd.c_str());
 }
 
 bool bind(const std::string& source, const std::string& target)
 {
-    LOG_DBG("Mounting [" << source << "] -> [" << target << "].");
-    Poco::File(target).createDirectory();
-    const bool res = oxoolmount("-b", source, target);
-    if (res)
-        LOG_TRC("Bind-mounted [" << source << "] -> [" << target << "].");
-    else
-        LOG_ERR("Failed to bind-mount [" << source << "] -> [" << target << "].");
-    return res;
+    LOG_DBG("Mounting [" << source << "] -> [" << target << ']');
+    try
+    {
+        Poco::File(target).createDirectory();
+        const bool res = coolmount("-b", source, target);
+        if (res)
+            LOG_TRC("Bind-mounted [" << source << "] -> [" << target << ']');
+        else
+            LOG_ERR("Failed to bind-mount [" << source << "] -> [" << target << ']');
+        return res;
+    }
+    catch (const std::exception& exc)
+    {
+        LOG_ERR("Failed to mount [" << source << "] -> [" << target << "]: " << exc.what());
+    }
+
+    return false;
 }
 
 bool remountReadonly(const std::string& source, const std::string& target)
 {
-    LOG_DBG("Remounting [" << source << "] -> [" << target << "].");
-    Poco::File(target).createDirectory();
-    const bool res = oxoolmount("-r", source, target);
-    if (res)
-        LOG_TRC("Mounted [" << source << "] -> [" << target << "] readonly.");
-    else
-        LOG_ERR("Failed to mount [" << source << "] -> [" << target << "] readonly.");
-    return res;
+    LOG_DBG("Remounting [" << source << "] -> [" << target << ']');
+    try
+    {
+        Poco::File(target).createDirectory();
+        const bool res = coolmount("-r", source, target);
+        if (res)
+            LOG_TRC("Mounted [" << source << "] -> [" << target << "] readonly");
+        else
+            LOG_ERR("Failed to mount [" << source << "] -> [" << target << "] readonly");
+        return res;
+    }
+    catch (const std::exception& exc)
+    {
+        LOG_ERR("Failed to remount [" << source << "] -> [" << target << "]: " << exc.what());
+    }
+
+    return false;
 }
 
 /// Unmount a bind-mounted jail directory.
 static bool unmount(const std::string& target)
 {
     LOG_DBG("Unmounting [" << target << ']');
-    const bool res = oxoolmount("-u", "", target);
+    const bool res = coolmount("-u", "", target);
     if (res)
         LOG_TRC("Unmounted [" << target << "] successfully.");
     else
@@ -86,7 +103,7 @@ static bool unmount(const std::string& target)
 
 // This file signifies that we copied instead of mounted.
 // NOTE: jail cleanup helpers are called from forkit and
-// oxoolwsd, and they may have bind-mounting enabled, but the
+// coolwsd, and they may have bind-mounting enabled, but the
 // kit could have had it removed when falling back to copying.
 // In such cases, we cannot safely know whether the jail was
 // copied or not, since the bind envar will be present and
@@ -134,7 +151,7 @@ static bool safeRemoveDir(const std::string& path)
 
 void removeJail(const std::string& root)
 {
-    LOG_INF("Removing jail [" << root << "].");
+    LOG_INF("Removing jail [" << root << ']');
 
     // Unmount the tmp directory. Don't care if we fail.
     const std::string tmpPath = Poco::Path(root, "tmp").toString();
@@ -144,11 +161,8 @@ void removeJail(const std::string& root)
     FileUtil::removeFile(tmpPath, true); // Delete tmp contents with prejudice.
     unmount(tmpPath);
 
-    // Unmount the loTemplate' extensions directory.
-    unmount(Poco::Path(root, "lo/share/extensions").toString());
-
     // Unmount the loTemplate directory.
-    // FIXME: technically, the loTemplate directory may have any name.
+    //FIXME: technically, the loTemplate directory may have any name.
     unmount(Poco::Path(root, "lo").toString());
 
     // Unmount/delete the jail (sysTemplate).
@@ -171,8 +185,7 @@ void cleanupJails(const std::string& root)
         return;
     }
 
-    // FIXME: technically, the loTemplate directory may have any name.
-    if (FileUtil::Stat(root + "/lo").exists())
+    if (FileUtil::Stat(root + '/' + LO_JAIL_SUBPATH).exists())
     {
         // This is a jail.
         removeJail(root);
@@ -189,7 +202,7 @@ void cleanupJails(const std::string& root)
             const Poco::Path path(root, jail);
             // Postpone deleting "tmp" directory until we clean all the jails
             // On FreeBSD the "tmp" dir contains a devfs moint point. Normally,
-            // it gets unmounted by oxoolmount during shutdown, but oxoolmount
+            // it gets unmounted by coolmount during shutdown, but coolmount
             // does nothing if it is called on the non-existing path.
             // Removing this dir there prevents clean unmounting of devfs later.
             if (jail == "tmp")
@@ -211,11 +224,18 @@ void cleanupJails(const std::string& root)
         LOG_WRN("Jails root directory [" << root << "] is not empty. Will not remove it.");
 }
 
-void setupJails(bool bindMount, const std::string& jailRoot, const std::string& sysTemplate)
+void createJailPath(const std::string& path)
+{
+    LOG_INF("Creating jail path (if missing): " << path);
+    Poco::File(path).createDirectories();
+    chmod(path.c_str(), S_IXUSR | S_IWUSR | S_IRUSR);
+}
+
+void setupChildRoot(bool bindMount, const std::string& childRoot, const std::string& sysTemplate)
 {
     // Start with a clean slate.
-    cleanupJails(jailRoot);
-    Poco::File(jailRoot + JAIL_TMP_INCOMING_PATH).createDirectories();
+    cleanupJails(childRoot);
+    createJailPath(childRoot + CHILDROOT_TMP_INCOMING_PATH);
 
     disableBindMounting(); // Clear to avoid surprises.
 
@@ -224,21 +244,23 @@ void setupJails(bool bindMount, const std::string& jailRoot, const std::string& 
     {
         // Test mounting to verify it actually works,
         // as it might not function in some systems.
-        const std::string target = Poco::Path(jailRoot, "lool_test_mount").toString();
-        if (bind(sysTemplate, target))
+        const std::string target = Poco::Path(childRoot, "cool_test_mount").toString();
+
+        // Make sure that we can both mount and unmount before enabling bind-mounting.
+        if (bind(sysTemplate, target) && unmount(target))
         {
             enableBindMounting();
             safeRemoveDir(target);
             LOG_INF("Enabling Bind-Mounting of jail contents for better performance per "
-                    "mount_jail_tree config in oxoolwsd.xml.");
+                    "mount_jail_tree config in coolwsd.xml.");
         }
         else
             LOG_ERR("Bind-Mounting fails and will be disabled for this run. To disable permanently "
-                    "set mount_jail_tree config entry in oxoolwsd.xml to false.");
+                    "set mount_jail_tree config entry in coolwsd.xml to false.");
     }
     else
         LOG_INF("Disabling Bind-Mounting of jail contents per "
-                "mount_jail_tree config in oxoolwsd.xml.");
+                "mount_jail_tree config in coolwsd.xml.");
 }
 
 // This is the second stage of setting up /dev/[u]random
@@ -293,7 +315,7 @@ void setupJailDevNodes(const std::string& root)
 #else
     if (!Poco::File(root + "/dev/random").exists())
     {
-         const bool res = oxoolmount("-d", "", root + "/dev");
+         const bool res = coolmount("-d", "", root + "/dev");
          if (res)
             LOG_TRC("Mounted devfs hierarchy -> [" << root << "/dev].");
         else
@@ -303,7 +325,7 @@ void setupJailDevNodes(const std::string& root)
 }
 
 /// The envar name used to control bind-mounting of systemplate/jails.
-constexpr const char* BIND_MOUNTING_ENVAR_NAME = "LOOL_BIND_MOUNT";
+constexpr const char* BIND_MOUNTING_ENVAR_NAME = "COOL_BIND_MOUNT";
 
 void enableBindMounting()
 {
@@ -371,7 +393,9 @@ void setupDynamicFiles(const std::string& sysTemplate)
 
 bool updateDynamicFilesImpl(const std::string& sysTemplate)
 {
-    LOG_INF("Updating systemplate dynamic files in [" << sysTemplate << "].");
+    LOG_INF("Updating systemplate dynamic files in [" << sysTemplate << ']');
+
+    bool checkWritableSysTemplate = true;
     for (const auto& dynFilename : DynamicFilePaths)
     {
         if (!FileUtil::Stat(dynFilename).exists())
@@ -403,8 +427,7 @@ bool updateDynamicFilesImpl(const std::string& sysTemplate)
             continue;
         }
 
-        // Check that sysTemplate is in fact writable to avoid predictable errors.
-        if (!FileUtil::isWritable(sysTemplate))
+        if (checkWritableSysTemplate && !FileUtil::isWritable(sysTemplate))
         {
             disableBindMounting(); // We can't mount from incomplete systemplate that can't be updated.
             LinkDynamicFiles = false;
@@ -415,6 +438,8 @@ bool updateDynamicFilesImpl(const std::string& sysTemplate)
                     << sysTemplate << "/etc] are up-to-date.");
             return false;
         }
+
+        checkWritableSysTemplate = false; // We've checked and is writable.
 
         LOG_INF("File [" << dstFilename << "] needs to be updated.");
         if (LinkDynamicFiles)
@@ -449,7 +474,7 @@ bool updateDynamicFilesImpl(const std::string& sysTemplate)
         // Linking failed, just copy.
         if (!LinkDynamicFiles)
         {
-            LOG_INF("Copying [" << srcFilename << "] -> [" << dstFilename << "].");
+            LOG_INF("Copying [" << srcFilename << "] -> [" << dstFilename << ']');
             if (!FileUtil::copyAtomic(srcFilename, dstFilename, true))
             {
                 FileUtil::Stat dstStat2(dstFilename); // Stat again.

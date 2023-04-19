@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-CYPRESS_BINARY="${DIR}/node_modules/cypress/bin/cypress"
+
+if [ -z "${NODE_PATH}" ]; then
+    BUILDDIR=${DIR}
+else
+    BUILDDIR=$(dirname ${NODE_PATH})
+fi
+
+CYPRESS_BINARY="${BUILDDIR}/node_modules/cypress/bin/cypress"
 DESKTOP_TEST_FOLDER="${DIR}/integration_tests/desktop/"
 MOBILE_TEST_FOLDER="${DIR}/integration_tests/mobile/"
 MULTIUSER_TEST_FOLDER="${DIR}/integration_tests/multiuser/"
-ERROR_LOG="${DIR}/workdir/error.log"
+ERROR_LOG="${BUILDDIR}/workdir/error.log"
 
 print_help ()
 {
@@ -45,12 +52,14 @@ done
 TEST_ERROR="${TEST_LOG}.error"
 
 TEST_FILE_PATH=
-if [ "${TEST_TYPE}" = "desktop" ]; then
+if [ "${TEST_TYPE}" = "desktop" -o "${TEST_TYPE}" = "interfer-desktop" ]; then
     TEST_FILE_PATH=${DESKTOP_TEST_FOLDER}${TEST_FILE};
+elif [ "${TEST_TYPE}" = "mobile" -o "${TEST_TYPE}" = "interfer-mobile" ]; then
+    TEST_FILE_PATH=${MOBILE_TEST_FOLDER}${TEST_FILE};
 elif [ "${TEST_TYPE}" = "multi-user" ]; then
     TEST_FILE_PATH=${MULTIUSER_TEST_FOLDER}${TEST_FILE};
-else
-    TEST_FILE_PATH=${MOBILE_TEST_FOLDER}${TEST_FILE};
+elif [ "${TEST_TYPE}" = "interfer" ]; then
+    TEST_FILE_PATH="${DIR}/integration_tests/common/"${TEST_FILE};
 fi
 
 RUN_COMMAND="${CYPRESS_BINARY} run \
@@ -63,27 +72,61 @@ RUN_COMMAND="${CYPRESS_BINARY} run \
 print_error() {
     SPEC=${TEST_FILE}
     COMMAND=${TEST_TYPE}
+    if [ "${TEST_TYPE}" = "interfer" ]; then
+        echo -e "\n\
+        CypressError: the interference user failed.\n\n\
+        For running this test again, you need to find the related test user.\n" >> ${ERROR_LOG}
+        return
+    fi
+
     if [ "${TEST_TYPE}" = "multi-user" ]; then
         COMMAND="multi"
         SPEC=${SPEC%"_user1_spec.js"}
         SPEC=${SPEC%"_user2_spec.js"}
     fi
-    echo -e "\n\
-    CypressError: a test failed, please do one of the following:\n\n\
-    Run the failing test in headless mode:\n\
-    \tcd cypress_test && make check-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+
+    if [ "${USER_INTERFACE}" == "notebookbar" ] && [ "${TEST_TYPE}" == "desktop" ]; then
+        echo -e "\n\
+        CypressError: a test failed, please do one of the following:\n\n\
+        Run the failing test in headless mode:\n\
+        \tmake -C cypress_test USER_INTERFACE=notebookbar check-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+    else
+        echo -e "\n\
+        CypressError: a test failed, please do one of the following:\n\n\
+        Run the failing test in headless mode:\n\
+        \tmake -C cypress_test check-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+    fi
+
+    if [ "${TEST_TYPE}" == "mobile" -o "${TEST_TYPE}" == "desktop" ]; then
+        if [ "${USER_INTERFACE}" == "notebookbar" ]; then
+            echo -e "\
+        Run the failing test with video recording:\n\
+            \tmake -C cypress_test ENABLE_VIDEO_REC="1" USER_INTERFACE=notebookbar check-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+        else
+            echo -e "\
+            Run the failing test with video recording:\n\
+            \tmake -C cypress_test ENABLE_VIDEO_REC="1" check-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+        fi
+    fi
+
     if [ "${TEST_TYPE}" != "multi-user" ]; then
-    echo -e "\
-    Open the failing test in the interactive test runner:\n\
-    \tcd cypress_test && make run-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+    if [ "${USER_INTERFACE}" == "notebookbar" ]; then
+        echo -e "\
+        Open the failing test in the interactive test runner:\n\
+        \tmake -C cypress_test USER_INTERFACE=notebookbar run-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+    else
+        echo -e "\
+        Open the failing test in the interactive test runner:\n\
+        \tmake -C cypress_test run-${COMMAND} spec=${SPEC}\n" >> ${ERROR_LOG}
+    fi
     elif [[ ${TEST_FILE} == *"user1"* ]]; then
     echo -e "\
     Open the failing test in the interactive test runner:\n\
-    \tcd cypress_test && make run-${COMMAND} spec=${SPEC} user=1\n" >> ${ERROR_LOG}
+    \tmake -C cypress_test run-${COMMAND} spec=${SPEC} user=1\n" >> ${ERROR_LOG}
     else
     echo -e "\
     Open the failing test in the interactive test runner:\n\
-    \tcd cypress_test && make run-${COMMAND} spec=${SPEC} user=2\n" >> ${ERROR_LOG}
+    \tmake -C cypress_test run-${COMMAND} spec=${SPEC} user=2\n" >> ${ERROR_LOG}
     fi
 }
 
@@ -93,7 +136,8 @@ rm -rf ${TEST_ERROR}
 echo "`echo ${RUN_COMMAND} && ${RUN_COMMAND} || touch ${TEST_ERROR}`" > ${TEST_LOG} 2>&1
 if [ ! -f ${TEST_ERROR} ];
     then cat ${TEST_LOG};
-    else cat ${TEST_LOG} >> ${ERROR_LOG} && \
+    else echo -e "Cypress test failed: ${TEST_FILE}\n" && \
+        cat ${TEST_LOG} >> ${ERROR_LOG} && \
         print_error;
 fi;
 

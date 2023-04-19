@@ -13,12 +13,28 @@
 	margin-left: -20px !important;
 }
 
-#oxoolwsd-version span:before,
+#coolwsd-version span:before,
 #lokit-version > span:before {
 	content: ' (';
 	white-space: pre;
 }
-#oxoolwsd-version span:after,
+#coolwsd-version span:after,
 #lokit-version > span:after {
 	content: ')';
+}
+
+/* btns hover status
+   Rules not intended for touch devices */
+
+.button-secondary:hover,
+button:not(.ui-corner-all):not(.button-primary):hover {
+	cursor: pointer;
+	color: var(--color-text-darker) !important;
+	background-color: var(--color-background-lighter) !important;
+	border: 0px solid var(--color-border-darker);
+}
+
+.button-primary:hover {
+	background-color: var(--color-primary-lighter);
+	color: var(--color-primary-dark);
 }

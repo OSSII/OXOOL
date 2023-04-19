@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,32 +11,28 @@
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 #include <LibreOfficeKit/LibreOfficeKit.hxx>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
-#include <Poco/JSON/Object.h>
 #include <vector>
 #include <Log.hpp>
 #include <cstdlib>
 #include <string>
 #include <cmath>
 #include <unordered_map>
-#include "ChildSession.hpp"
 
 class Watermark final
 {
 public:
-    Watermark(const std::shared_ptr<lok::Document>& loKitDoc,
-              const std::shared_ptr<ChildSession> & session)
+    Watermark(const std::shared_ptr<lok::Document>& loKitDoc, const std::string& text,
+              double opacity)
         : _loKitDoc(loKitDoc)
-        , _text(session->getConvertedWatermarkText())
-        , _alphaLevel(session->getWatermarkOpacity())
+        , _text(Util::replace(text, "\\n", "\n"))
+        , _font("Carlito")
+        , _alphaLevel(opacity)
     {
         if (_loKitDoc == nullptr)
         {
             LOG_ERR("Watermark rendering requested without a valid document. Watermarking will be disabled.");
             assert(_loKitDoc && "Valid loKitDoc is required for Watermark.");
         }
-        session->getWatermarkFont().stringify(_font);
-        // 未設定角度，預設為 45°
-        _angle = session->getWatermarkFont().optValue<int>("angle", 45);
     }
 
     void blending(unsigned char* tilePixmap,
@@ -48,8 +42,8 @@ public:
                    LibreOfficeKitTileMode /*mode*/)
     {
         // set requested watermark size a little bit smaller than tile size
-        const int width = tileWidth * 0.9;
-        const int height = tileHeight * 0.9;
+        const int width = tileWidth * 0.8;
+        const int height = tileHeight * 0.8;
 
         const std::vector<unsigned char>* pixmap = getPixmap(width, height);
 
@@ -116,11 +110,11 @@ private:
             return &_pixmaps[key];
         }
 
-        // renderFont returns a buffer based on RGBA mode,
-        // the alpha level is 0 everywhere except on the text area;
-        // the alpha level take into account of
+        // renderFont returns a buffer based on RGBA mode, where r, g, b
+        // are always set to 0 (black) and the alpha level is 0 everywhere
+        // except on the text area; the alpha level take into account of
         // performing anti-aliasing over the text edges.
-        unsigned char* textPixels = _loKitDoc->renderFont(_font.str().c_str(), _text.c_str(), &width, &height, 0);
+        unsigned char* textPixels = _loKitDoc->renderFont(_font.c_str(), _text.c_str(), &width, &height, 0);
 
         if (!textPixels)
         {
@@ -144,11 +138,10 @@ private:
         */
         // Create the white blurred background
         // Use box blur, it's enough for our purposes
-        const double PI = 3.14159265359;
-        // 角度轉成弧度(角度 × π / 180°)
-        const double RADIAN = _angle * PI / 180;
-        const double sin = std::sin(RADIAN);
-        const double cos = std::cos(RADIAN);
+
+        // PI / 4 (45 degrees): sin = cos = 1/sqrt(2)
+        const double sin = 0.707106781186547524;
+        const double cos = sin;
 
         const double x0 = width / 2.0;
         const double y0 = height / 2.0;
@@ -223,9 +216,8 @@ private:
 private:
     const std::shared_ptr<lok::Document> _loKitDoc;
     const std::string _text;
+    const std::string _font;
     const double _alphaLevel;
-    int _angle;
-    std::ostringstream _font;
     std::unordered_map<size_t, std::vector<unsigned char>> _pixmaps;
 };
 

@@ -1,7 +1,5 @@
 // -*- Mode: ObjC; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*-
 //
-// This file is part of the LibreOffice project.
-//
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -36,12 +34,39 @@
     // Do any additional setup after loading the view, typically from a nib.
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+#if 0
+    NSLog(@"Contents of NSHomeDirectory:");
+    auto enumerator = [[NSFileManager defaultManager] enumeratorAtPath:NSHomeDirectory()];
+    NSString *file;
+    long long total = 0;
+    while ((file = [enumerator nextObject])) {
+        NSString *suffix = @"";
+        if ([enumerator fileAttributes][NSFileType] == NSFileTypeRegular) {
+            suffix = [NSString stringWithFormat:@"  %@", [enumerator fileAttributes][NSFileSize]];
+            total += [[enumerator fileAttributes][NSFileSize] longLongValue];
+        } else if ([enumerator fileAttributes][NSFileType] == NSFileTypeDirectory) {
+            suffix = @"/";
+        }
+        NSLog(@"%@%@%@", [NSString stringWithFormat:@"%*s", (int)[enumerator level] * 2, ""], [file lastPathComponent], suffix);
+    }
+    NSLog(@"==== Total size of app home directory: %lld", total);
+#endif
+}
+
 - (void)documentBrowser:(UIDocumentBrowserViewController *)controller didRequestDocumentCreationWithHandler:(void (^)(NSURL * _Nullable, UIDocumentBrowserImportMode))importHandler {
     UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     TemplateCollectionViewController *templateCollectionViewController = [storyBoard instantiateViewControllerWithIdentifier:@"TemplateCollectionViewController"];
-
+    [templateCollectionViewController removeFromParentViewController];
     templateCollectionViewController.importHandler = importHandler;
-    [self presentViewController:templateCollectionViewController animated:YES completion:nil];
+
+    // Fix issue #1962 Use UINavigationController to add a cancel button
+    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:templateCollectionViewController];
+    templateCollectionViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:templateCollectionViewController action:@selector(cancel)];
+    [self.view addSubview:navController.view];
+    [self presentViewController:navController animated:YES completion:nil];
 }
 
 -(void)documentBrowser:(UIDocumentBrowserViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)documentURLs {
@@ -69,6 +94,7 @@
     DocumentViewController *documentViewController = [storyBoard instantiateViewControllerWithIdentifier:@"DocumentViewController"];
     documentViewController.document = [[CODocument alloc] initWithFileURL:documentURL];
     documentViewController.document->fakeClientFd = -1;
+    documentViewController.document->readOnly = false;
     documentViewController.document.viewController = documentViewController;
     [self presentViewController:documentViewController animated:YES completion:nil];
 }

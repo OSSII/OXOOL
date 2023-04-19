@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,11 +17,8 @@
 
 class UnitWopiHttpHeaders : public WopiTestServer
 {
-    enum class Phase
-    {
-        Load,
-        Polling
-    } _phase;
+    STATE_ENUM(Phase, Load, Done)
+    _phase;
 
 protected:
     void assertCheckFileInfoRequest(const Poco::Net::HTTPRequest& request) override
@@ -37,10 +32,12 @@ protected:
         exitTest(TestResult::Ok); //TODO: Remove when we add put/rename cases.
     }
 
-    void assertPutFileRequest(const Poco::Net::HTTPRequest& request) override
+    std::unique_ptr<http::Response>
+    assertPutFileRequest(const Poco::Net::HTTPRequest& request) override
     {
         assertHeaders(request);
         exitTest(TestResult::Ok);
+        return nullptr;
     }
 
     void assertPutRelativeFileRequest(const Poco::Net::HTTPRequest& request) override
@@ -64,25 +61,26 @@ protected:
 
         for (const auto& pair : Headers)
         {
-            LOK_ASSERT_MESSAGE("Request must have [" + pair.first + "]", request.has(pair.first));
+            LOK_ASSERT_MESSAGE("Request must have [" + pair.first + ']', request.has(pair.first));
             LOK_ASSERT_EQUAL(pair.second, request[pair.first]);
         }
     }
 
 public:
     UnitWopiHttpHeaders()
-        : _phase(Phase::Load)
+        : WopiTestServer("UnitWOPIHttpHeaders")
+        , _phase(Phase::Load)
     {
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
-        constexpr char testName[] = "UnitWopiHttpHeaders";
-
         switch (_phase)
         {
             case Phase::Load:
             {
+                TRANSITION_STATE(_phase, Phase::Done);
+
                 // Technically, having an empty line in the header
                 // is invalid (it signifies the end of headers), but
                 // this is to illustrate that we are able to overcome
@@ -95,14 +93,11 @@ public:
 
                 initWebsocket("/wopi/files/0?" + params);
 
-                helpers::sendTextFrame(*getWs()->getLOOLWebSocket(), "load url=" + getWopiSrc(),
-                                       testName);
-                SocketPoll::wakeupWorld();
+                WSD_CMD("load url=" + getWopiSrc());
 
-                _phase = Phase::Polling;
                 break;
             }
-            case Phase::Polling:
+            case Phase::Done:
             {
                 // Just wait for the results.
                 break;

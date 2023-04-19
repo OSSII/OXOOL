@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,8 +15,14 @@
 namespace JailUtil
 {
 
+/// General temporary directory owned by us.
+constexpr const char CHILDROOT_TMP_PATH[] = "/tmp";
+
 /// Files uploaded by users are stored in this sub-directory of child-root.
-constexpr const char JAIL_TMP_INCOMING_PATH[] = "/tmp/incoming";
+constexpr const char CHILDROOT_TMP_INCOMING_PATH[] = "/tmp/incoming";
+
+/// The LO installation directory with jail.
+constexpr const char LO_JAIL_SUBPATH[] = "lo";
 
 /// Bind mount a jail directory.
 bool bind(const std::string& source, const std::string& target);
@@ -38,8 +42,11 @@ void removeJail(const std::string& root);
 /// Remove all jails.
 void cleanupJails(const std::string& jailRoot);
 
-/// Setup the jails.
-void setupJails(bool bindMount, const std::string& jailRoot, const std::string& sysTemplate);
+/// Creates the jail directory path recursively.
+void createJailPath(const std::string& path);
+
+/// Setup the Child-Root directory.
+void setupChildRoot(bool bindMount, const std::string& jailRoot, const std::string& sysTemplate);
 
 /// Setup /dev/random and /dev/urandom in the given jail path.
 void setupJailDevNodes(const std::string& root);

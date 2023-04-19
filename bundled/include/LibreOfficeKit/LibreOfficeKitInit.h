@@ -12,11 +12,6 @@
 
 #include <LibreOfficeKit/LibreOfficeKit.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #if defined __GNUC__ || defined __clang__
 #  define LOK_TOLERATE_UNUSED __attribute__((used))
 #else
@@ -25,7 +20,7 @@ extern "C"
 
 #if defined(__linux__) || defined (__FreeBSD__) || defined(_AIX) ||\
     defined(_WIN32) || defined(__APPLE__) || defined (__NetBSD__) ||\
-    defined (__sun) || defined(__OpenBSD__)
+    defined (__sun) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +42,28 @@ extern "C"
         #define TARGET_MERGED_LIB "lib" "mergedlo" ".so"
     #endif
     #define SEPARATOR         '/'
+
+#else
+
+    #if !defined WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include  <windows.h>
+    #define TARGET_LIB        "sofficeapp" ".dll"
+    #define TARGET_MERGED_LIB "mergedlo" ".dll"
+    #define SEPARATOR         '\\'
+    #define UNOPATH           "\\..\\URE\\bin"
+
+    #undef DELETE
+
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#ifndef _WIN32
 
 #if !defined(IOS)
         static void *lok_loadlib(const char *pFN)
@@ -88,15 +105,6 @@ extern "C"
 
 
 #else
-    #if !defined WIN32_LEAN_AND_MEAN
-        #define WIN32_LEAN_AND_MEAN
-    #endif
-    #include  <windows.h>
-    #define TARGET_LIB        "sofficeapp" ".dll"
-    #define TARGET_MERGED_LIB "mergedlo" ".dll"
-    #define SEPARATOR         '\\'
-    #define UNOPATH           "\\..\\URE\\bin"
-
     static void *lok_loadlib(const char *pFN)
     {
         return (void *) LoadLibraryA(pFN);
@@ -251,13 +259,13 @@ typedef int             (LokHookPreInit)  ( const char *install_path, const char
 
 typedef int             (LokHookPreInit2) ( const char *install_path, const char *user_profile_url, LibreOfficeKit** kit);
 
-#if defined(IOS) || defined(ANDROID)
+#if defined(IOS) || defined(ANDROID) || defined(__EMSCRIPTEN__)
 LibreOfficeKit *libreofficekit_hook_2(const char* install_path, const char* user_profile_path);
 #endif
 
 static LibreOfficeKit *lok_init_2( const char *install_path,  const char *user_profile_url )
 {
-#if !defined(IOS) && !defined(ANDROID)
+#if !defined(IOS) && !defined(ANDROID) && !defined(__EMSCRIPTEN__)
     void *dlhandle;
     char *imp_lib;
     LokHookFunction *pSym;
@@ -347,11 +355,11 @@ int lok_preinit( const char *install_path,  const char *user_profile_url )
 
 #undef SEPARATOR // It is used at least in enum class MenuItemType
 
-#endif // defined(__linux__) || defined (__FreeBSD__) || defined(_AIX) || defined(_WIN32) || defined(__APPLE__)
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif // defined(__linux__) || defined (__FreeBSD__) || defined(_AIX) || defined(_WIN32) || defined(__APPLE__)
 
 #endif // INCLUDED_LIBREOFFICEKIT_LIBREOFFICEKITINIT_H
 

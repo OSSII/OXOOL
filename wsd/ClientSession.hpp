@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,7 +23,7 @@
 
 class DocumentBroker;
 
-/// Represents a session to a LOOL client, in the WSD process.
+/// Represents a session to a COOL client, in the WSD process.
 class ClientSession final : public Session
 {
 public:
@@ -67,11 +65,8 @@ public:
     /// from either the client or the Kit.
     bool isLive() const { return _state == SessionState::LIVE && !isCloseFrame(); }
 
-    /// Returns true iff the view is either not readonly or can change comments.
-    bool isWritable() const { return !isReadOnly() || isAllowChangeComments(); }
-
     /// Handle kit-to-client message.
-    bool handleKitToClientMessage(const char* data, const int size);
+    bool handleKitToClientMessage(const std::shared_ptr<Message>& payload);
 
     /// Integer id of the view in the kit process, or -1 if unknown
     int getKitViewId() const { return _kitViewId; }
@@ -93,14 +88,45 @@ public:
         return false;
     }
 
-    bool sendTile(const std::string &header, const TileCache::Tile &tile)
+    ClientDeltaTracker _tracker;
+
+    void resetTileSeq(const TileDesc &desc)
+    {
+        _tracker.resetTileSeq(desc);
+    }
+
+    bool sendTile(const TileDesc &desc, const Tile &tile)
+    {
+        TileWireId lastSentId = _tracker.updateTileSeq(desc);
+
+        std::string header;
+        if (tile->needsKeyframe(lastSentId) || tile->isPng())
+            header = desc.serialize("tile:", "\n");
+        else
+            header = desc.serialize("delta:", "\n");
+
+        // FIXME: performance - optimize away this copy ...
+        std::vector<char> output;
+
+        output.resize(header.size());
+        std::memcpy(output.data(), header.data(), header.size());
+        if (tile->appendChangesSince(output, tile->isPng() ? 0 : lastSentId))
+        {
+            LOG_TRC(" Sending tile message: " << header << " lastSendId " << lastSentId);
+            return sendBinaryFrame(output.data(), output.size());
+        }
+        LOG_TRC("redundant tile request: " << lastSentId);
+        return true;
+    }
+
+    bool sendBlob(const std::string &header, const Blob &blob)
     {
         // FIXME: performance - optimize away this copy ...
         std::vector<char> output;
 
-        output.resize(header.size() + tile->size());
+        output.resize(header.size() + blob->size());
         std::memcpy(output.data(), header.data(), header.size());
-        std::memcpy(output.data() + header.size(), tile->data(), tile->size());
+        std::memcpy(output.data() + header.size(), blob->data(), blob->size());
 
         return sendBinaryFrame(output.data(), output.size());
     }
@@ -115,7 +141,6 @@ public:
 
         return false;
     }
-
 
     void enqueueSendMessage(const std::shared_ptr<Message>& data);
 
@@ -136,7 +161,13 @@ public:
     const Poco::URI& getPublicUri() const { return _uriPublic; }
 
     /// The access token of this session.
-    Authorization getAuthorization() const { return _auth; }
+    const Authorization& getAuthorization() const { return _auth; }
+
+    void invalidateAuthorizationToken()
+    {
+        LOG_DBG("Session [" << getId() << "] expiring its authorization token");
+        _auth.expire();
+    }
 
     /// Set WOPI fileinfo object
     void setWopiFileInfo(std::unique_ptr<WopiStorage::WOPIFileInfo>& wopiFileInfo) { _wopiFileInfo = std::move(wopiFileInfo); }
@@ -181,6 +212,14 @@ public:
 
     bool isTextDocument() const { return _isTextDocument; }
 
+    void setThumbnailSession(const bool val) { _thumbnailSession = val; }
+
+    void setThumbnailTarget(const std::string& target) { _thumbnailTarget = target; }
+
+    const std::string& getThumbnailTarget() const { return _thumbnailTarget; }
+
+    bool thumbnailSession() { return _thumbnailSession; }
+
     /// Do we recognize this clipboard ?
     bool matchesClipboardKeys(const std::string &viewId, const std::string &tag);
 
@@ -193,6 +232,9 @@ public:
     /// Create URI for transient clipboard content.
     std::string getClipboardURI(bool encode = true);
 
+    /// Utility to create a publicly accessible URI.
+    std::string createPublicURI(const std::string& subPath, const std::string& tag, bool encode);
+
     /// Adds and/or modified the copied payload before sending on to the client.
     void postProcessCopyPayload(const std::shared_ptr<Message>& payload);
 
@@ -204,6 +246,15 @@ public:
 
     /// Generate an access token for this session via proxy protocol.
     const std::string &getOrCreateProxyAccess();
+
+#if ENABLE_FEATURE_LOCK
+    void sendLockedInfo();
+#endif
+
+    /// Process an SVG to replace embedded file:/// media URIs with public http URLs.
+    std::string processSVGContent(const std::string& svg);
+
+    int  getCanonicalViewId() { return _canonicalViewId; }
 
 private:
     std::shared_ptr<ClientSession> client_from_this()
@@ -258,7 +309,7 @@ private:
 
     /// Removes the <meta name="origin" ...> tag which was added in
     /// ClientSession::postProcessCopyPayload().
-    static void preProcessSetClipboardPayload(std::string& payload);
+    void preProcessSetClipboardPayload(std::string& payload);
 
 private:
     std::weak_ptr<DocumentBroker> _docBroker;
@@ -303,6 +354,9 @@ private:
     /// Selected part of the document viewed by the client (no parts in Writer)
     int _clientSelectedPart;
 
+    /// Selected mode of the presentation viewed by the client (in Impress)
+    int _clientSelectedMode;
+
     /// Zoom properties of the client
     int _tileWidthPixel;
     int _tileHeightPixel;
@@ -317,6 +371,12 @@ private:
 
     /// Client is using a text document?
     bool _isTextDocument;
+
+    /// Session used to generate thumbnail
+    bool _thumbnailSession;
+
+    /// Target used for thumbnail rendering
+    std::string _thumbnailTarget;
 
     /// Rotating clipboard remote access identifiers - protected by GlobalSessionMapMutex
     std::string _clipboardKeys[2];
@@ -342,8 +402,14 @@ private:
     /// Store last sent payload of form field button, so we can filter out redundant messages.
     std::string _lastSentFormFielButtonMessage;
 
-    /// Epoch of the client's performance.now() function, as microseconds sinze Unix epoch
+    /// Epoch of the client's performance.now() function, as microseconds since Unix epoch
     uint64_t _performanceCounterEpoch;
+
+    // Saves time from setting/fetching user info multiple times using zotero API
+    bool _isZoteroUserInfoSet = false;
+
+    /// the canonical id unique to the set of rendering properties of this session
+    int _canonicalViewId;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

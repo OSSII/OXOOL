@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -29,6 +27,7 @@ class UnitHTTP : public UnitWSD
 {
 public:
     UnitHTTP()
+        : UnitWSD("UnitHTTP")
     {
     }
 
@@ -42,14 +41,14 @@ public:
     void testContinue()
     {
         //FIXME: use logging
-        std::cerr << "testContinue\n";
+        LOG_TST("testContinue");
         for (int i = 0; i < 3; ++i)
         {
             std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(Poco::URI(helpers::getTestServerURI())));
 
             std::string sent = "Hello world test\n";
 
-            Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/lool/convert-to/txt");
+            Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to/txt");
 
             switch(i)
             {
@@ -79,7 +78,8 @@ public:
 
             if (sent != responseStr)
             {
-                std::cerr << "Test " << i << " failed - mismatching string '" << responseStr << " vs. '" << sent << "'\n";
+                LOG_TST("Test " << i << " failed - mismatching string '" << responseStr << "' vs. '"
+                                << sent << "'");
                 exitTest(TestResult::Failed);
                 return;
             }
@@ -88,11 +88,14 @@ public:
 
     void writeString(const std::shared_ptr<Poco::Net::StreamSocket> &socket, const std::string& str)
     {
+        LOG_TST("Sending " << str.size() << " bytes:\n" << str);
         socket->sendBytes(str.c_str(), str.size());
     }
 
     bool expectString(const std::shared_ptr<Poco::Net::StreamSocket> &socket, const std::string& str)
     {
+        LOG_TST("Expecting " << str.size() << " bytes:\n" << str);
+
         std::vector<char> buffer(str.size() + 64);
         const int got = socket->receiveBytes(buffer.data(), str.size());
         LOK_ASSERT_EQUAL(str, std::string(buffer.data(), got));
@@ -100,7 +103,8 @@ public:
         if (got != (int)str.size() ||
             strncmp(buffer.data(), str.c_str(), got))
         {
-            std::cerr << "testChunks got " << got << " mismatching strings '" << buffer.data() << " vs. expected '" << str << "'\n";
+            LOG_TST("testChunks got " << got << " mismatching strings '" << buffer.data()
+                                      << " vs. expected '" << str << "'");
             exitTest(TestResult::Failed);
             return false;
         }
@@ -110,15 +114,15 @@ public:
 
     void testChunks()
     {
-        std::cerr << "testChunks\n";
+        LOG_TST("testChunks");
 
         std::shared_ptr<Poco::Net::StreamSocket> socket = helpers::createRawSocket();
 
         writeString(
             socket,
-            "POST /lool/convert-to/txt HTTP/1.1\r\n"
+            "POST /cool/convert-to/txt HTTP/1.1\r\n"
             "Host: localhost:9980\r\n"
-            "User-Agent: looltests/1.2.3\r\n"
+            "User-Agent: cooltests/1.2.3\r\n"
             "Accept: */*\r\n"
             "Expect: 100-continue\r\n"
             "Transfer-Encoding: chunked\r\n"
@@ -169,16 +173,18 @@ public:
 
         writeString(socket, START_CHUNK_HEX("0"));
 
+        LOG_TST("Receiving...");
         char buffer[4096] = { 0, };
         int got = socket->receiveBytes(buffer, 4096);
         static const std::string start =
             "HTTP/1.0 200 OK\r\n"
             "Content-Disposition: attachment; filename=\"test.txt\"\r\n";
-        LOK_ASSERT(Util::startsWith(std::string(buffer), start));
 
         if (strncmp(buffer, start.c_str(), start.size()))
         {
-            std::cerr << "missing pre-amble " << got << " '" << buffer << " vs. expected '" << start << "'\n";
+            LOG_TST("missing pre-amble " << got << " [" << buffer << "] vs. expected [" << start
+                                         << ']');
+            LOK_ASSERT(Util::startsWith(std::string(buffer), start));
             exitTest(TestResult::Failed);
             return;
         }
@@ -189,7 +195,7 @@ public:
         LOK_ASSERT_MESSAGE("Missing separator, got " + std::string(buffer), ptr);
         if (!ptr)
         {
-            std::cerr << "missing separator " << got << " '" << buffer << '\n';
+            LOG_TST("missing separator " << got << " '" << buffer);
             exitTest(TestResult::Failed);
             return;
         }
@@ -201,30 +207,31 @@ public:
         }
 
         // Oddly we need another read to get the content.
+        LOG_TST("Receiving...");
         got = socket->receiveBytes(buffer, 4096);
         LOK_ASSERT_MESSAGE("No content returned.", got >= 0);
         if (got >=0 )
             buffer[got] = '\0';
         else
         {
-            std::cerr << "No content returned " << got << '\n';
+            LOG_TST("No content returned " << got);
             exitTest(TestResult::Failed);
             return;
         }
 
         if (strcmp(buffer, "\357\273\277This is some text.\nAnd some more.\n"))
         {
-            std::cerr << "unexpected file content " << got << " '" << buffer << '\n';
+            LOG_TST("unexpected file content " << got << " '" << buffer);
             exitTest(TestResult::Failed);
             return;
         }
     }
 
-    void invokeTest() override
+    void invokeWSDTest() override
     {
         testChunks();
         testContinue();
-        std::cerr << "All tests passed.\n";
+        LOG_TST("All tests passed.");
         exitTest(TestResult::Ok);
     }
 };

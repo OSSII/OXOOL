@@ -7,12 +7,22 @@ tmp/**/*
 index.html
 bower.json
 component.json
-npm-shrinkwrap.json
 
 mocha_tests/*.js
 tscompile.done
 
 _site
-dist/
-debug/
-release/
+dist/*.js
+dist/*.map
+dist/branding.css
+!dist/errormessages.js
+dist/images/toolbar-bg.png
+dist/admin/*.js
+dist/plugins/
+plugins/draw-0.2.4/dist/*.js
+plugins/draw-0.2.4/npm-debug.log
+coverage/
+/load_test_out
+*.tar.gz
+dist/l10n/ui-*json
+dist/l10n/help-*.json

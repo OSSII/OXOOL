@@ -12,13 +12,6 @@ window.app = {
 
 (function (global) {
 
-	// Added by Firefly <firefly@ossii.com.tw>
-	// 預設產品相關資訊
-	global.brandProductName = 'OxOffice Online';
-	global.brandProductURL = 'https://www.ossii.com.tw/product';
-	global.brandProductFAQURL = 'https://www.facebook.com/OSSIITW/';
-	//------------------------------------------------------
-
 	global.logServer = function (log) {
 		if (window.ThisIsAMobileApp) {
 			window.postMobileError(log);
@@ -52,7 +45,7 @@ window.app = {
 					continue;
 				}
 				(function(method) {
-					window.app.console[method] = function logWithOxOOL() {
+					window.app.console[method] = function logWithCool() {
 						var args = Array.prototype.slice.call(arguments);
 
 						return window.console[method].apply(console, args);
@@ -77,7 +70,7 @@ window.app = {
 		}
 	};
 
-	global.setLogging(global.oxoolLogging == 'true');
+	global.setLogging(global.coolLogging == 'true');
 
 	global.getParameterByName = function (name) {
 		name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -111,7 +104,7 @@ window.app = {
 	    gecko3d = 'MozPerspective' in doc.style,
 	    opera12 = 'OTransition' in doc.style;
 
-	var chromebook = window.ThisIsTheAndroidApp && window.OXOOLMessageHandler.isChromeOS();
+	var chromebook = window.ThisIsTheAndroidApp && window.COOLMessageHandler.isChromeOS();
 
 	var touch = !window.L_NO_TOUCH && (pointer || 'ontouchstart' in window ||
 			(window.DocumentTouch && document instanceof window.DocumentTouch)) && !chromebook;
@@ -296,7 +289,6 @@ window.app = {
 		this.protocol = '';
 		this.readyState = 1;
 		this.id = window.fakeWebSocketCounter++;
-		this.sendCounter = 0;
 		this.onclose = function() {
 		};
 		this.onerror = function() {
@@ -309,7 +301,6 @@ window.app = {
 		};
 	};
 	global.FakeWebSocket.prototype.send = function(data) {
-		this.sendCounter++;
 		window.postMobileMessage(data);
 	};
 
@@ -326,7 +317,6 @@ window.app = {
 		this.readyState = 0; // connecting
 		this.sessionId = 'open';
 		this.id = window.proxySocketCounter++;
-		this.sendCounter = 0;
 		this.msgInflight = 0;
 		this.openInflight = 0;
 		this.inSerial = 0;
@@ -582,7 +572,7 @@ window.app = {
 			var hadData = this.sendQueue.length > 0;
 			this.sendQueue = this.sendQueue.concat(
 				'B0x' + this.outSerial.toString(16) + '\n' +
-				'0x' + msg.length.toString(16) + '\n' + msg + '\n');
+				'0x' + (new TextEncoder().encode(msg)).length.toString(16) + '\n' + msg + '\n');
 			this.outSerial++;
 
 			// Send ASAP, if we have throttled.
@@ -655,15 +645,26 @@ window.app = {
 					if (img.startsWith('url("images/'))
 					{
 						rules[r].style.backgroundImage =
-							img.replace('url("images/', replaceBase);
+							img.replace('url("images/', replaceBase + '/images/');
+					}
+					if (img.startsWith('url("remote/'))
+					{
+						rules[r].style.backgroundImage =
+							img.replace('url("remote/', replaceBase + '/remote/');
 					}
 				}
 			};
 			var sheets = document.styleSheets;
 			for (var i = 0; i < sheets.length; ++i) {
-				var relBases = sheets[i].href.split('/');
+				var relBases;
+				try {
+					relBases = sheets[i].href.split('/');
+				} catch (err) {
+					window.app.console.log('Missing href from CSS number ' + i);
+					continue;
+				}
 				relBases.pop(); // bin last - css name.
-				var replaceBase = 'url("' + relBases.join('/') + '/images/';
+				var replaceBase = 'url("' + relBases.join('/');
 
 				var rules;
 				try {
@@ -677,14 +678,79 @@ window.app = {
 		}, false);
 	}
 
+	// indirect socket to wrap the asyncness around fetching the routetoken from indirection url endpoint
+	global.IndirectSocket = function(uri) {
+		var that = this;
+		this.uri = uri;
+		this.binaryType = '';
+		this.unloading = false;
+		this.readyState = 0; // connecting
+		this.innerSocket = undefined;
+
+		this.onclose = function() {};
+		this.onerror = function () {};
+		this.onmessage = function () {};
+		this.onopen = function () {};
+
+		this.close = function() {
+			this.innerSocket.close();
+		};
+
+		this.send = function(msg) {
+			this.innerSocket.send(msg);
+		};
+
+		this.setUnloading = function() {
+			this.unloading = true;
+		};
+
+		var http = new XMLHttpRequest();
+		http.open('GET', global.indirectionUrl + '?Uri=' + encodeURIComponent(that.uri), true);
+		http.responseType = 'json';
+		http.addEventListener('load', function() {
+			if (this.status === 200) {
+				var uriWithRouteToken = http.response.uri;
+				var params = (new URL(uriWithRouteToken)).searchParams;
+				global.routeToken = params.get('RouteToken');
+				that.innerSocket = new WebSocket(uriWithRouteToken);
+				that.innerSocket.binaryType = that.binaryType;
+				that.innerSocket.onerror = function() {
+					that.readyState = that.innerSocket.readyState;
+					that.onerror();
+				};
+				that.innerSocket.onclose = function() {
+					that.readyState = 3;
+					that.onclose();
+					that.innerSocket.onerror = function () {};
+					that.innerSocket.onclose = function () {};
+					that.innerSocket.onmessage = function () {};
+				};
+				that.innerSocket.onopen = function() {
+					that.readyState = 1;
+					that.onopen();
+				};
+				that.innerSocket.onmessage = function(e) {
+					that.readyState = that.innerSocket.readyState;
+					that.onmessage(e);
+				};
+			} else {
+				window.app.console.debug('Indirection url: error on incoming response ' + this.status);
+			}
+		});
+		http.send();
+	};
+
 	global.createWebSocket = function(uri) {
-		if ('processOxoolUrl' in window) {
-			uri = window.processOxoolUrl({ url: uri, type: 'ws' });
+		if ('processCoolUrl' in window) {
+			uri = window.processCoolUrl({ url: uri, type: 'ws' });
 		}
 
 		if (global.socketProxy) {
 			window.socketProxy = true;
 			return new global.ProxySocket(uri);
+		} else if (global.indirectionUrl != '') {
+			window.indirectSocket = true;
+			return new global.IndirectSocket(uri);
 		} else {
 			return new WebSocket(uri);
 		}
@@ -710,7 +776,7 @@ window.app = {
 		}
 	};
 
-	// Some global variables are defined in loleaflet.html, among them:
+	// Some global variables are defined in cool.html, among them:
 	// global.host: the host URL, with ws(s):// protocol
 	// global.serviceRoot: an optional root path on the server, typically blank.
 
@@ -738,13 +804,11 @@ window.app = {
 				return encodeURIComponent(key) + '=' + encodeURIComponent(wopiParams[key]);
 			}).join('&');
 		}
+	} else if (window.ThisIsTheEmscriptenApp) {
+		// This is of course just a horrible temporary hack
+		global.docURL = 'file:///sample.docx';
 	} else {
 		global.docURL = filePath;
-		if (global.getParameterByName('permission') != '')
-		{
-			var permissionParams = 'permission=' + global.getParameterByName('permission');
-			docParams = permissionParams;
-		}
 	}
 
 	// Form a valid WS URL to the host with the given path.
@@ -755,10 +819,14 @@ window.app = {
 
 	// Form a URI from the docUrl and wopiSrc and encodes.
 	// The docUrlParams, suffix, and wopiSrc are optionally hexified.
+	global.routeToken = '';
 	global.makeDocAndWopiSrcUrl = function (root, docUrlParams, suffix, wopiSrcParam) {
 		var wopiSrc = '';
 		if (global.wopiSrc != '') {
-			wopiSrc = '?WOPISrc=' + global.wopiSrc + '&compat=';
+			wopiSrc = '?WOPISrc=' + global.wopiSrc;
+			if (global.routeToken != '')
+				wopiSrc += '&RouteToken=' + global.routeToken;
+			wopiSrc += '&compat=';
 			if (wopiSrcParam && wopiSrcParam.length > 0)
 				wopiSrc += '&' + wopiSrcParam;
 		}
@@ -770,10 +838,7 @@ window.app = {
 		var encodedDocUrl = encodeURIComponent(docUrlParams) + suffix + wopiSrc;
 		if (global.hexifyUrl)
 			encodedDocUrl = global.hexEncode(encodedDocUrl);
-		if (encodedDocUrl.endsWith('/ws'))
-			return root + encodedDocUrl;
-		else
-			return root + encodedDocUrl + '/ws';
+		return root + encodedDocUrl + '/ws';
 	};
 
 	// Form a valid WS URL to the host with the given path and
@@ -823,7 +888,7 @@ window.app = {
 	} else {
 		// The URL may already contain a query (e.g., 'http://server.tld/foo/wopi/files/bar?desktop=baz') - then just append more params
 		var docParamsPart = docParams ? (global.docURL.includes('?') ? '&' : '?') + docParams : '';
-		var websocketURI = global.makeWsUrlWopiSrc('/lool/', global.docURL + docParamsPart);
+		var websocketURI = global.makeWsUrlWopiSrc('/cool/', global.docURL + docParamsPart);
 		try {
 			global.socket = global.createWebSocket(websocketURI);
 		} catch (err) {
@@ -832,8 +897,12 @@ window.app = {
 	}
 
 	var lang = encodeURIComponent(global.getParameterByName('lang'));
+	window.langParam = lang;
 	global.queueMsg = [];
-	if (window.ThisIsAMobileApp)
+	if (window.ThisIsTheEmscriptenApp)
+		// Temporary hack
+		window.LANG = 'en-US';
+	else if (window.ThisIsAMobileApp)
 		window.LANG = lang;
 	if (global.socket && global.socket.readyState !== 3) {
 		global.socket.onopen = function () {
@@ -845,7 +914,7 @@ window.app = {
 				var now0 = Date.now();
 				var now1 = performance.now();
 				var now2 = Date.now();
-				global.socket.send('loolclient ' + ProtocolVersionNumber + ' ' + ((now0 + now2) / 2) + ' ' + now1);
+				global.socket.send('coolclient ' + ProtocolVersionNumber + ' ' + ((now0 + now2) / 2) + ' ' + now1);
 
 				if (window.ThisIsAMobileApp) {
 					msg += ' lang=' + window.LANG;
@@ -854,13 +923,8 @@ window.app = {
 					if (timestamp) {
 						msg += ' timestamp=' + timestamp;
 					}
-
 					if (lang) {
 						msg += ' lang=' + lang;
-					} else if (String.locale) {
-						msg += ' lang=' + String.locale;
-					} else if (window.navigator.language) {
-						msg += ' lang=' + window.navigator.language;
 					}
 					// renderingOptions?
 				}
@@ -874,12 +938,9 @@ window.app = {
 						msg += ' spellOnline=' + spellOnline;
 					}
 				}
-				// Add by Firefly <firefly@ossii.com.tw>
-				// 增加時區和時差參數
+
 				msg += ' timezone=' + Intl.DateTimeFormat().resolvedOptions().timeZone;
-				var timezoneOffset = new Date().getTimezoneOffset();
-				msg += ' timezoneOffset=' + timezoneOffset;
-				//-------------------------------------------
+
 				global.socket.send(msg);
 			}
 		};
@@ -903,7 +964,7 @@ window.app = {
 
 		global.socket.binaryType = 'arraybuffer';
 
-		if (window.ThisIsAMobileApp) {
+		if (window.ThisIsAMobileApp && !window.ThisIsTheEmscriptenApp) {
 			// This corresponds to the initial GET request when creating a WebSocket
 			// connection and tells the app's code that it is OK to start invoking
 			// TheFakeWebSocket's onmessage handler. The app code that handles this

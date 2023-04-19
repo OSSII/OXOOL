@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <config.h>
+
 #include <cassert>
 #include <cerrno>
 #include <chrono>
@@ -41,6 +43,15 @@
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
 #include <StringVector.hpp>
+
+#if CODE_COVERAGE
+extern "C"
+{
+    void __gcov_reset(void);
+    void __gcov_flush(void);
+    void __gcov_dump(void);
+}
+#endif
 
 /// Format seconds with the units suffix until we migrate to C++20.
 inline std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& s)
@@ -83,6 +94,36 @@ namespace Util
         /// file/directory names.
         std::string getFilename(const size_t length);
     }
+
+    /// A utility class to track relative time from some arbitrary
+    /// origin, and to check if a certain amount has elapsed or not.
+    class Stopwatch
+    {
+    public:
+        Stopwatch()
+            : _startTime(std::chrono::steady_clock::now())
+        {
+        }
+
+        void restart() { _startTime = std::chrono::steady_clock::now(); }
+
+        /// Returns true iff at least the given amount of time has elapsed.
+        template <typename T>
+        T
+        elapsed(std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now()) const
+        {
+            return std::chrono::duration_cast<T>(now - _startTime);
+        }
+
+        /// Returns true iff at least the given amount of time has elapsed.
+        template <typename T> bool elapsed(T duration) const
+        {
+            return elapsed<std::chrono::nanoseconds>() >= duration;
+        }
+
+    private:
+        std::chrono::steady_clock::time_point _startTime;
+    };
 
 #if !MOBILEAPP
     /// Get number of threads in this process or -1 on error
@@ -154,9 +195,9 @@ namespace Util
     void alertAllUsers(const std::string& msg);
 
     /// Send a 'error:' message with the specified cmd and kind parameters to all connected
-    /// clients. This function can be called either in oxoolwsd or oxoolkit processes, even if only
-    /// oxoolwsd obviously has contact with the actual clients; in oxoolkit it will be forwarded to
-    /// oxoolwsd for redistribution. (This function must be implemented separately in each program
+    /// clients. This function can be called either in coolwsd or coolkit processes, even if only
+    /// coolwsd obviously has contact with the actual clients; in coolkit it will be forwarded to
+    /// coolwsd for redistribution. (This function must be implemented separately in each program
     /// that uses it, it is not in Util.cpp.)
     void alertAllUsers(const std::string& cmd, const std::string& kind);
 #else
@@ -238,14 +279,10 @@ namespace Util
     /// Get version information
     void getVersionInfo(std::string& version, std::string& hash);
 
-    /// Added by Firefly <firefly@ossii.com.tw>
-    /// Get version & branch information
-    void getVersionInfo(std::string& version, std::string& hash, std::string& branch);
-
     ///< A random hex string that identifies the current process.
     std::string getProcessIdentifier();
 
-    std::string getVersionJSON();
+    std::string getVersionJSON(bool enableExperimental);
 
     /// Return a string that is unique across processes and calls.
     std::string UniqueId();
@@ -295,6 +332,39 @@ namespace Util
         else
             return -1;
     }
+
+#if ENABLE_DEBUG
+    // for debugging validation only.
+    inline size_t isValidUtf8(const unsigned char *data, size_t len)
+    {
+        for (size_t i = 0; i < len; ++i)
+        {
+            if (data[i] < 0x80)
+                continue;
+            if (data[i] >> 6 != 0x3)
+                return i;
+            int chunkLen = 1;
+            for (; data[i] & (1 << (7-chunkLen)); chunkLen++)
+                if (chunkLen > 4)
+                    return i;
+
+            // Allow equality as the lower limit of the loop below is not zero.
+            if (i + chunkLen > len)
+                return i;
+
+            for (; chunkLen > 1; --chunkLen)
+                if (data[++i] >> 6 != 0x2)
+                    return i;
+        }
+        return len + 1;
+    }
+
+    // for debugging validation only.
+    inline bool isValidUtf8(const std::string& s)
+    {
+        return Util::isValidUtf8((unsigned char *)s.c_str(), s.size()) > s.size();
+    }
+#endif
 
     inline std::string hexStringToBytes(const uint8_t* data, size_t size)
     {
@@ -406,11 +476,11 @@ namespace Util
     /// Dump data as hex and chars into a string.
     /// Primarily used for logging.
     template <typename T>
-    inline std::string dumpHex(const T& buffer, const char* prefix = "", bool skipDup = true,
-                               const unsigned int width = 32)
+    inline std::string dumpHex(const T& buffer, const char* legend = "", const char* prefix = "",
+                               bool skipDup = true, const unsigned int width = 32)
     {
         std::ostringstream oss;
-        dumpHex(oss, buffer, "", prefix, skipDup, width);
+        dumpHex(oss, buffer, legend, prefix, skipDup, width);
         return oss.str();
     }
 
@@ -630,6 +700,7 @@ int main(int argc, char**argv)
     /// Return the symbolic name for an errno value, or in decimal if not handled here.
     inline std::string symbolicErrno(int e)
     {
+        // LCOV_EXCL_START Coverage for these is not very useful.
         // Errnos from <asm-generic/errno-base.h> and <asm-generic/errno.h> on Linux.
         switch (e)
         {
@@ -854,6 +925,7 @@ int main(int argc, char**argv)
 #endif
         default: return std::to_string(e);
         }
+        // LCOV_EXCL_STOP Coverage for these is not very useful.
     }
 
     inline size_t getDelimiterPosition(const char* message, const int length, const char delim)
@@ -872,7 +944,8 @@ int main(int argc, char**argv)
     inline int findSubArray(const char* data, const std::size_t dataLen, const char* sub,
                             const std::size_t subLen)
     {
-        assert(subLen < std::numeric_limits<int>::max() && "Invalid sub-array length to find");
+        assert(subLen < std::numeric_limits<unsigned int>::max() &&
+               "Invalid sub-array length to find");
         if (sub && subLen && dataLen >= subLen)
         {
             for (std::size_t i = 0; i < dataLen; ++i)
@@ -997,6 +1070,13 @@ int main(int argc, char**argv)
     /// Check for the URI host validity.
     /// For now just a basic sanity check, can be extended if necessary.
     bool isValidURIHost(const std::string& host);
+
+    /// Encode a URI with the JS-compatible reserved characters.
+    std::string encodeURIComponent(const std::string& uri,
+                                   const std::string& reserved = ",/?:@&=+$#");
+
+    /// Decode a URI encoded with encodeURIComponent.
+    std::string decodeURIComponent(const std::string& uri);
 
     /// Anonymize a sensitive string to avoid leaking it.
     /// Called on strings to be logged or exposed.
@@ -1251,7 +1331,7 @@ int main(int argc, char**argv)
 #endif
 
     /// Convert a string to 32-bit signed int.
-    /// Returns the parsed value and a boolean indiciating success or failure.
+    /// Returns the parsed value and a boolean indicating success or failure.
     inline std::pair<std::int32_t, bool> i32FromString(const std::string& input)
     {
         const char* str = input.data();
@@ -1271,7 +1351,7 @@ int main(int argc, char**argv)
     }
 
     /// Convert a string to 64-bit unsigned int.
-    /// Returns the parsed value and a boolean indiciating success or failure.
+    /// Returns the parsed value and a boolean indicating success or failure.
     inline std::pair<std::uint64_t, bool> u64FromString(const std::string& input)
     {
         const char* str = input.data();
@@ -1281,7 +1361,7 @@ int main(int argc, char**argv)
         return std::make_pair(value, endptr > str && errno != ERANGE);
     }
 
-    /// Convert a string to 64-bit usigned int. On failure, returns the default
+    /// Convert a string to 64-bit unsigned int. On failure, returns the default
     /// value, and sets the bool to false (to signify that parsing had failed).
     inline std::pair<std::uint64_t, bool> u64FromString(const std::string& input,
                                                         const std::uint64_t def)
@@ -1319,7 +1399,7 @@ int main(int argc, char**argv)
         return iequal(lhs.c_str(), lhs.size(), rhs.c_str(), rhs.size());
     }
 
-    /// Get system_clock now in miliseconds.
+    /// Get system_clock now in milliseconds.
     inline int64_t getNowInMS()
     {
         return std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
@@ -1357,6 +1437,15 @@ int main(int argc, char**argv)
     typename std::unique_ptr<T> make_unique(Args&& ... args)
     {
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
+    /// Dump an object that supports .dumpState into a string.
+    /// Helpful for logging.
+    template <typename T> std::string dump(const T& object, const std::string& indent = ", ")
+    {
+        std::ostringstream oss;
+        object.dumpState(oss, indent);
+        return oss.str().substr(indent.size());
     }
 
     /**

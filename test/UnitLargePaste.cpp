@@ -1,11 +1,11 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include <config.h>
 
 #include <memory>
 #include <string>
@@ -17,29 +17,32 @@
 #include <Util.hpp>
 #include <helpers.hpp>
 
-class LOOLWebSocket;
-
 /// Large paste testcase.
 class UnitLargePaste : public UnitWSD
 {
 public:
     UnitLargePaste();
 
-    void invokeTest() override;
+    void invokeWSDTest() override;
 };
 
-UnitLargePaste::UnitLargePaste() {}
-
-void UnitLargePaste::invokeTest()
+UnitLargePaste::UnitLargePaste()
+    : UnitWSD("UnitLargePaste")
 {
-    const char testname[] = "UnitLargePaste";
+}
 
+void UnitLargePaste::invokeWSDTest()
+{
     // Load a document and make it empty, then paste some text into it.
     std::string documentPath;
     std::string documentURL;
     helpers::getDocumentPathAndURL("hello.odt", documentPath, documentURL, testname);
-    std::shared_ptr<LOOLWebSocket> socket = helpers::loadDocAndGetSocket(
-        Poco::URI(helpers::getTestServerURI()), documentURL, testname);
+
+    std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("LargePastePoll");
+    socketPoll->startThread();
+
+    std::shared_ptr<http::WebSocketSession> socket = helpers::loadDocAndGetSession(
+        socketPoll, Poco::URI(helpers::getTestServerURI()), documentURL, testname);
 
     helpers::sendTextFrame(socket, "uno .uno:SelectAll", testname);
     helpers::sendTextFrame(socket, "uno .uno:Delete", testname);

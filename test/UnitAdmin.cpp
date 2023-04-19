@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -28,7 +26,7 @@
 #include <Util.hpp>
 #include <helpers.hpp>
 
-#define UNIT_URI "/loolwsd/unit-admin"
+#define UNIT_URI "/coolwsd/unit-admin"
 
 using Poco::Net::HTTPBasicCredentials;
 using Poco::Net::HTTPCookie;
@@ -44,14 +42,14 @@ private:
     std::string _jwtCookie;
     bool _isTestRunning = false;
     const Poco::URI _uri;
-    std::shared_ptr<LOOLWebSocket> _adminWs;
+    std::shared_ptr<COOLWebSocket> _adminWs;
 
     typedef TestResult (UnitAdmin::*AdminTest)(void);
     std::vector<AdminTest> _tests;
 
-    std::shared_ptr<LOOLWebSocket> _docWs1;
-    std::shared_ptr<LOOLWebSocket> _docWs2;
-    std::shared_ptr<LOOLWebSocket> _docWs3;
+    std::shared_ptr<COOLWebSocket> _docWs1;
+    std::shared_ptr<COOLWebSocket> _docWs2;
+    std::shared_ptr<COOLWebSocket> _docWs3;
     int _docPid1;
     int _docPid2;
     int _docPid3;
@@ -106,7 +104,7 @@ private:
         bool secure = cookies[0].getSecure();
         std::string value = cookies[0].getValue();
         TestResult res = TestResult::Failed;
-        if (cookiePath.find_first_of("/loleaflet/dist/admin/") == 0 &&
+        if (cookiePath.find_first_of("/browser/dist/admin/") == 0 &&
             value != "" &&
             secure)
         {
@@ -127,10 +125,10 @@ private:
     {
         // try connecting without authentication; should result in NotAuthenticated
         HTTPResponse response;
-        HTTPRequest request(HTTPRequest::HTTP_GET, "/lool/adminws/");
+        HTTPRequest request(HTTPRequest::HTTP_GET, "/cool/adminws/");
         std::unique_ptr<HTTPClientSession> session(UnitHTTP::createSession());
 
-        _adminWs = std::make_shared<LOOLWebSocket>(*session, request, response);
+        _adminWs = std::make_shared<COOLWebSocket>(*session, request, response);
         const std::string testMessage = "documents";
         std::unique_lock<std::mutex> lock(_messageReceivedMutex);
         _messageReceived.clear();
@@ -158,10 +156,10 @@ private:
     {
         // try connecting with incorrect auth token; should result in InvalidToken
         HTTPResponse response;
-        HTTPRequest request(HTTPRequest::HTTP_GET, "/lool/adminws/");
+        HTTPRequest request(HTTPRequest::HTTP_GET, "/cool/adminws/");
         std::unique_ptr<HTTPClientSession> session(UnitHTTP::createSession());
 
-        _adminWs = std::make_shared<LOOLWebSocket>(*session, request, response);
+        _adminWs = std::make_shared<COOLWebSocket>(*session, request, response);
         const std::string testMessage = "auth jwt=incorrectJWT";
         std::unique_lock<std::mutex> lock(_messageReceivedMutex);
         _messageReceived.clear();
@@ -189,10 +187,10 @@ private:
     {
         // Authenticate first
         HTTPResponse response;
-        HTTPRequest request(HTTPRequest::HTTP_GET, "/lool/adminws/");
+        HTTPRequest request(HTTPRequest::HTTP_GET, "/cool/adminws/");
         std::unique_ptr<HTTPClientSession> session(UnitHTTP::createSession());
 
-        _adminWs = std::make_shared<LOOLWebSocket>(*session, request, response);
+        _adminWs = std::make_shared<COOLWebSocket>(*session, request, response);
         const std::string authMessage = "auth jwt=" + _jwtCookie;
         _adminWs->sendFrame(authMessage.data(), authMessage.size());
 
@@ -215,7 +213,7 @@ private:
 
         std::unique_lock<std::mutex> lock(_messageReceivedMutex);
         _messageReceived.clear();
-        _docWs1 = std::make_shared<LOOLWebSocket>(*session1, request1, response1);
+        _docWs1 = std::make_shared<COOLWebSocket>(*session1, request1, response1);
         _docWs1->sendFrame(loadMessage1.data(), loadMessage1.size());
         if (_messageReceivedCV.wait_for(lock, std::chrono::milliseconds(_messageTimeoutMilliSeconds)) == std::cv_status::timeout)
         {
@@ -243,7 +241,7 @@ private:
         // Open another view of same document
         lock.lock(); // lock _messageReceivedMutex
         _messageReceived.clear();
-        _docWs2 = std::make_shared<LOOLWebSocket>(*session2, request1, response1);
+        _docWs2 = std::make_shared<COOLWebSocket>(*session2, request1, response1);
         _docWs2->sendFrame(loadMessage1.data(), loadMessage1.size());
         if (_messageReceivedCV.wait_for(lock, std::chrono::milliseconds(_messageTimeoutMilliSeconds)) == std::cv_status::timeout)
         {
@@ -278,7 +276,7 @@ private:
 
         lock.lock(); // lock _messageReceivedMutex
         _messageReceived.clear();
-        _docWs3 = std::make_shared<LOOLWebSocket>(*session3, request2, response2);
+        _docWs3 = std::make_shared<COOLWebSocket>(*session3, request2, response2);
         _docWs3->sendFrame(loadMessage2.data(), loadMessage2.size());
         if (_messageReceivedCV.wait_for(lock, std::chrono::milliseconds(_messageTimeoutMilliSeconds)) == std::cv_status::timeout)
         {
@@ -406,9 +404,9 @@ private:
 
 public:
     UnitAdmin()
-        : _uri(helpers::getTestServerURI() + "/loleaflet/dist/admin/admin.html")
+        : _uri(helpers::getTestServerURI() + "/browser/dist/admin/admin.html")
     {
-        setTimeout(60 * 1000);
+        setTimeout(std::chrono::seconds(60));
 
         // Register tests here.
         _tests.push_back(&UnitAdmin::testIncorrectPassword);
@@ -428,7 +426,7 @@ public:
     }
 
     // Runs tests sequentially in _tests
-    virtual void invokeTest()
+    virtual void invokeWSDTest()
     {
         if (!_isTestRunning)
         {

@@ -1,7 +1,5 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -27,11 +25,15 @@ class FileServerRequestHandler
                                const RequestDetails &requestDetails,
                                Poco::MemoryInputStream& message,
                                const std::shared_ptr<StreamSocket>& socket);
+    static void preprocessWelcomeFile(const Poco::Net::HTTPRequest& request,
+                                      const RequestDetails &requestDetails,
+                                      Poco::MemoryInputStream& message,
+                                      const std::shared_ptr<StreamSocket>& socket);
     static void preprocessAdminFile(const Poco::Net::HTTPRequest& request,
                                     const RequestDetails &requestDetails,
                                     const std::shared_ptr<StreamSocket>& socket);
 
-    /// Construct a JSON to be accepted by the loleflet.html from a list like
+    /// Construct a JSON to be accepted by the cool.html from a list like
     /// UIMode=classic;TextRuler=true;PresentationStatusbar=false
     /// that is passed as "ui_defaults" hidden input during the iframe setup.
     /// Also returns the UIMode from uiDefaults in uiMode output param
@@ -48,11 +50,6 @@ class FileServerRequestHandler
 public:
     /// Evaluate if the cookie exists, and if not, ask for the credentials.
     static bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, Poco::Net::HTTPResponse& response);
-
-    /// Added by Firefly <firefly@ossii.com.tw>
-    /// 檢查管理帳號及密碼是否與 oxoolwsd.xml 中的相符
-    static bool isConfigAuthMatch(const std::string& userProvidedUsr,
-                                  const std::string& userProvidedPwd);
 
     static void handleRequest(const Poco::Net::HTTPRequest& request,
                               const RequestDetails &requestDetails,

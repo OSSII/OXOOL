@@ -1,6 +1,6 @@
 /* -*- js-indent-level: 8 -*- */
-/* global errorMessages getParameterByName accessToken accessTokenTTL accessHeader */
-/* global app L vex host idleTimeoutSecs outOfFocusTimeoutSecs _ */
+/* global errorMessages getParameterByName accessToken accessTokenTTL accessHeader createOnlineModule */
+/* global app L host idleTimeoutSecs outOfFocusTimeoutSecs _ */
 /*eslint indent: [error, "tab", { "outerIIFEBody": 0 }]*/
 (function (global) {
 
@@ -15,19 +15,20 @@ else if (wopiSrc !== '' && accessHeader !== '') {
 	wopiParams = { 'access_header': accessHeader };
 }
 
-var filePath = getParameterByName('file_path');
-var permission = getParameterByName('permission') || 'edit';
+if (window.ThisIsTheEmscriptenApp)
+	// Temporary hack
+	var filePath = 'file:///sample.docx';
+else
+	var filePath = getParameterByName('file_path');
+
+app.file.permission = getParameterByName('permission') || 'edit';
+
 var timestamp = getParameterByName('timestamp');
+var target = getParameterByName('target') || '';
 // Should the document go inactive or not
 var alwaysActive = getParameterByName('alwaysactive');
-// oxool Debug mode
+// Cool Debug mode
 var debugMode = getParameterByName('debug');
-if (wopiSrc === '' && filePath === '' && !window.ThisIsAMobileApp) {
-	vex.dialog.alert(errorMessages.wrongwopisrc);
-}
-if (host === '' && !window.ThisIsAMobileApp) {
-	vex.dialog.alert(errorMessages.emptyhosturl);
-}
 
 var docURL, docParams;
 var isWopi = false;
@@ -45,8 +46,8 @@ var map = L.map('map', {
 	server: host,
 	doc: docURL,
 	docParams: docParams,
-	permission: permission,
 	timestamp: timestamp,
+	docTarget: target,
 	documentContainer: 'document-container',
 	debug: debugMode,
 	// the wopi and wopiSrc properties are in sync: false/true : empty/non-empty
@@ -56,9 +57,6 @@ var map = L.map('map', {
 	alwaysActive: alwaysActive,
 	idleTimeoutSecs: idleTimeoutSecs,  // Dim when user is idle.
 	outOfFocusTimeoutSecs: outOfFocusTimeoutSecs, // Dim after switching tabs.
-
-	timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-	timezoneOffset: new Date().getTimezoneOffset(),
 });
 
 ////// Controls /////
@@ -68,14 +66,32 @@ map.addControl(map.uiManager);
 
 map.uiManager.initializeBasicUI();
 
-map.alternativeCommand = L.control.alternativeCommand();
-map.addControl(map.alternativeCommand);
+if (wopiSrc === '' && filePath === '' && !window.ThisIsAMobileApp) {
+	map.uiManager.showInfoModal('wrong-wopi-src-modal', '', errorMessages.wrongwopisrc, '', _('OK'), null, false);
+}
+if (host === '' && !window.ThisIsAMobileApp) {
+	map.uiManager.showInfoModal('empty-host-url-modal', '', errorMessages.emptyhosturl, '', _('OK'), null, false);
+}
+
+if (L.Map.versionBar)
+	map.addControl(L.Map.versionBar);
 
 L.Map.THIS = map;
+app.idleHandler.map = map;
 
-map.loadDocument(global.socket);
+if (window.ThisIsTheEmscriptenApp) {
+	var Module = {
+		onRuntimeInitialized: function() {
+			map.loadDocument(global.socket);
+		},
+	};
+	createOnlineModule(Module);
+	app.HandleCOOLMessage = Module['_handle_cool_message'];
+	app.AllocateUTF8 = Module['allocateUTF8'];
+} else {
+	map.loadDocument(global.socket);
+}
 
-global.socket = app.socket;
 window.addEventListener('beforeunload', function () {
 	if (map && app.socket) {
 		if (app.socket.setUnloading)
@@ -84,14 +100,13 @@ window.addEventListener('beforeunload', function () {
 	}
 });
 
-window.docPermission = permission;
 window.bundlejsLoaded = true;
 
 
 ////// Unsupported Browser Warning /////
 
 if (L.Browser.isInternetExplorer) {
-	vex.dialog.alert(_('Warning! The browser you are using is not supported.'));
+	map.uiManager.showInfoModal('browser-not-supported-modal', '', _('Warning! The browser you are using is not supported.'), '', _('OK'), null, false);
 }
 
 }(window));

@@ -2,15 +2,13 @@
 /*
  * Document permission handler
  */
-/* global app $ _ vex */
+/* global app $ _ */
 L.Map.include({
 	readonlyStartingFormats: {
 		'txt': { canEdit: true, odfFormat: 'odt' },
 		'csv': { canEdit: true, odfFormat: 'ods' },
 		'xlsb': { canEdit: false, odfFormat: 'ods' }
 	},
-
-	readonlyBar: null,
 
 	setPermission: function (perm) {
 		var button = $('#mobile-edit-button');
@@ -24,7 +22,7 @@ L.Map.include({
 		// For mobile we need to display the edit button for all the cases except for PDF
 		// we offer save-as to another place where the user can edit the document
 		var isPDF = app.file.fileBasedView && app.file.editComment;
-		if (perm === 'edit' && !isPDF && (this._shouldStartReadOnly() || window.mode.isMobile() || window.mode.isTablet())) {
+		if (!isPDF && (this._shouldStartReadOnly() || window.mode.isMobile() || window.mode.isTablet())) {
 			button.show();
 		} else {
 			button.hide();
@@ -48,7 +46,12 @@ L.Map.include({
 			}
 		}
 		else if (perm === 'view' || perm === 'readonly') {
-			if (window.ThisIsTheAndroidApp) {
+			if (this.isLockedReadOnlyUser()) {
+				button.on('click', function () {
+					that.openUnlockPopup();
+				});
+			}
+			else if (window.ThisIsTheAndroidApp) {
 				button.on('click', function () {
 					that._requestFileCopy();
 				});
@@ -70,16 +73,9 @@ L.Map.include({
 			if (reason) {
 				alertMsg += '\n' + _('Server returned this reason:') + '\n"' + reason + '"';
 			}
-			vex.dialog.alert({ message: alertMsg });
-
-			var button = $('#mobile-edit-button');
-			// TODO: modify the icon here
-			button.show();
-			button.off('click');
-
-			button.on('click', function () {
+			this.uiManager.showConfirmModal('lock_failed_message', '', alertMsg, _('OK'), function() {
 				app.socket.sendMessage('attemptlock');
-			});
+			}, true);
 		}
 		else if (this.options.canTryLock) {
 			// This is a failed response to an attempt to lock using mobile-edit-button
@@ -87,7 +83,7 @@ L.Map.include({
 			if (reason) {
 				alertMsg += '\n' + _('Server returned this reason:') + '\n"' + reason + '"';
 			}
-			vex.dialog.alert({ message: alertMsg });
+			this.uiManager.showConfirmModal('lock_failed_message', '', alertMsg, _('OK'), null, true);
 		}
 		// do nothing if this.options.canTryLock is defined and is false
 	},
@@ -97,18 +93,12 @@ L.Map.include({
 	},
 
 	_shouldStartReadOnly: function () {
+		if (this.isLockedReadOnlyUser())
+			return true;
 		var fileName = this['wopi'].BaseFileName;
 		// use this feature for only integration.
 		if (!fileName) return false;
 		var extension = this._getFileExtension(fileName);
-
-		// 如果該檔案只能以 ODF 格式編輯的話
-		if (this.isOnlySaveAsODF() && this.readonlyStartingFormats[extension] === undefined) {
-			var odfFormat = this.wopi.UserExtraInfo.SaveToOdf;
-			// 將該檔案類別設成不能編輯，只能唯讀
-			this.readonlyStartingFormats[extension] = {canEdit: false, odfFormat: odfFormat};
-		}
-
 		if (!Object.prototype.hasOwnProperty.call(this.readonlyStartingFormats, extension))
 			return false;
 		return true;
@@ -136,58 +126,53 @@ L.Map.include({
 	},
 
 	_offerSaveAs: function() {
-		var that = this;
 		var fileName = this['wopi'].BaseFileName;
 		if (!fileName) return false;
 		var extension = this._getFileExtension(fileName);
 		var extensionInfo = this.readonlyStartingFormats[extension];
 		var saveAsFormat = extensionInfo.odfFormat;
-		var buttonList = [];
-		buttonList.push($.extend({}, vex.dialog.buttons.YES, {text: _('OK')}));
-		buttonList.push($.extend({}, vex.dialog.buttons.NO, {text: _('Cancel')}));
-		vex.dialog.prompt({
-			message: _('Enter a file name'),
-			placeholder: _('filename'),
-			value: fileName.substring(0, fileName.lastIndexOf('.')) + '.' + saveAsFormat,
-			buttons: buttonList,
-			callback: function (value) {
-				if (!value) return;
-				if (value.substring(value.lastIndexOf('.') + 1) !== saveAsFormat)
-					value = value + '.' + saveAsFormat;
-				that.saveAs(value, saveAsFormat);
+
+		var defaultValue = fileName.substring(0, fileName.lastIndexOf('.')) + '.' + saveAsFormat;
+		this.uiManager.showInputModal('save-as-modal', '', _('Enter a file name'), defaultValue, _('OK'), function() {
+			var value = document.getElementById('save-as-modal').querySelectorAll('#input-modal-input')[0].value;
+			if (!value)
+				return;
+			else if (value.substring(value.lastIndexOf('.') + 1) !== saveAsFormat) {
+				value += '.' + saveAsFormat;
 			}
-		});
+			this.saveAs(value, saveAsFormat);
+		}.bind(this));
 	},
 
 	// from read-only to edit mode
 	_switchToEditMode: function () {
 		// This will be handled by the native mobile app instead
 		if (this._shouldStartReadOnly() && !window.ThisIsAMobileApp) {
-			var that = this;
 			var fileName = this['wopi'].BaseFileName;
 			var extension = this._getFileExtension(fileName);
 			var extensionInfo = this.readonlyStartingFormats[extension];
 
-			var buttonList = [];
-			// 如果是檔案擁有者，而且沒有禁止另存新檔的話，才能存成 ODF 格式
-			if (!this['wopi'].UserCanNotWriteRelative && this['wopi'].DocumentOwner) {
-				buttonList.push($.extend({}, vex.dialog.buttons.YES, { text: _('Save as ODF format') }));
-			}
-			buttonList.push($.extend({}, vex.dialog.buttons.NO, { text: extensionInfo.canEdit ? _('Continue editing') : _('Continue read only')}));
+			var yesButtonText = !this['wopi'].UserCanNotWriteRelative ? _('Save as ODF format'): null;
+			var noButtonText = extensionInfo.canEdit ? _('Continue editing') : _('Continue read only');
 
-			vex.dialog.open({
-				message: _('This document may contain formatting or content that cannot be saved in the current file format.'),
-				overlayClosesOnClick: false,
-				callback: L.bind(function (value) {
-					if (value) {
-						// offer save-as instead
-						this._offerSaveAs();
-					} else {
-						this._proceedEditMode();
-					}
-				}, that),
-				buttons: buttonList
-			});
+			if (!yesButtonText) {
+				yesButtonText = noButtonText;
+				noButtonText = null;
+			}
+
+			var yesFunction = !noButtonText ? function() { this._proceedEditMode(); }.bind(this) : function() { this._offerSaveAs(); }.bind(this);
+			var noFunction = function() { this._proceedEditMode(); }.bind(this);
+
+			this.uiManager.showYesNoButton(
+				'switch-to-edit-mode-modal', // id.
+				'', // Title.
+				_('This document may contain formatting or content that cannot be saved in the current file format.'), // Message.
+				yesButtonText,
+				noButtonText,
+				yesFunction,
+				noFunction,
+				false // Cancellable.
+			);
 		} else {
 			this._proceedEditMode();
 		}
@@ -203,14 +188,6 @@ L.Map.include({
 
 	_enterEditMode: function (perm) {
 		this._permission = perm;
-
-		// 非手機設備且位於唯讀專用模式
-		if (!window.mode.isMobile()) {
-			if (this.readonlyBar !== null) {
-				this.removeControl(this.readonlyBar);
-				this.readonlyBar = null;
-			}
-		}
 
 		app.socket.sendMessage('requestloksession');
 		if (!L.Browser.touch) {
@@ -232,14 +209,6 @@ L.Map.include({
 
 	_enterReadOnlyMode: function (perm) {
 		this._permission = perm;
-
-		// 非手機設備的話，要使用唯讀專用模式
-		if (!window.mode.isMobile()) {
-			if (this.readonlyBar === null) {
-				this.readonlyBar = L.control.readonlyBar();
-				this.addControl(this.readonlyBar);
-			}
-		}
 
 		this.dragging.enable();
 		// disable all user interaction, will need to add keyboard too
@@ -269,20 +238,16 @@ L.Map.include({
 		}
 		this.dragging.enable();
 	},
-	// If document can be edited or not (i.e: PDF can not be edited)
-	isDocEditable: function() {
-		return this.options.permission === 'edit';
-	},
 
 	// Can user make changes to the document or not
 	// i.e: user can not make changes(even can not add comments) is document is shared as read only
 	canUserWrite: function() {
-		return window.docPermission === 'edit';
+		return app.file.permission === 'edit';
 	},
 
 	// If user has write access he can always add comments
 	isPermissionEditForComments: function() {
-		return this.canUserWrite();
+		return this.canUserWrite() || app.file.editComment;
 	},
 
 	// Is user currently in read only mode (i.e: initial mobile read only view mode, user may have write access)
@@ -293,20 +258,5 @@ L.Map.include({
 	// Is user currently in editing mode
 	isEditMode: function() {
 		return this._permission === 'edit';
-	},
-
-	isViewMode: function() {
-		return this._permission === 'view';
-	},
-
-	/**
-	 * 是否只能存成 ODF 格式
-	 * @returns {boolean} true: Yes, false: No
-	 */
-	isOnlySaveAsODF: function () {
-		if (this.wopi.UserExtraInfo && this.wopi.UserExtraInfo.SaveToOdf) {
-			return (['odt', 'ods', 'odp'].indexOf(this.wopi.UserExtraInfo.SaveToOdf) >= 0);
-		}
-		return false;
 	}
 });

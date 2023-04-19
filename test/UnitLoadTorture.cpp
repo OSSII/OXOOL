@@ -1,28 +1,25 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
- * This file is part of the LibreOffice project.
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <memory>
+#include <config.h>
+
 #include <string>
 
-#include <Poco/URI.h>
 #include <test/lokassert.hpp>
 
 #include <Unit.hpp>
 #include <Util.hpp>
 #include <helpers.hpp>
-
-class LOOLWebSocket;
+#include <net/WebSocketSession.hpp>
 
 /// Load torture testcase.
 class UnitLoadTorture : public UnitWSD
 {
-    int loadTorture(const std::string& testname, const std::string& docName,
+    int loadTorture(const std::string& name, const std::string& docName,
                     const size_t thread_count, const size_t max_jitter_ms);
     TestResult testLoadTortureODT();
     TestResult testLoadTortureODS();
@@ -31,20 +28,24 @@ class UnitLoadTorture : public UnitWSD
 
 public:
     UnitLoadTorture();
-    void invokeTest() override;
+    void invokeWSDTest() override;
 };
 
-int UnitLoadTorture::loadTorture(const std::string& testname, const std::string& docName,
+int UnitLoadTorture::loadTorture(const std::string& name, const std::string& docName,
                                  const size_t thread_count, const size_t max_jitter_ms)
 {
     // Load same document from many threads together.
     std::string documentPath, documentURL;
-    helpers::getDocumentPathAndURL(docName, documentPath, documentURL, testname);
+    helpers::getDocumentPathAndURL(docName, documentPath, documentURL, name);
+
+    TST_LOG("Starting test on " << documentURL << ' ' << documentPath);
 
     std::atomic<int> sum_view_ids;
     sum_view_ids = 0;
     std::atomic<int> num_of_views(0);
     std::atomic<int> num_to_load(thread_count);
+    std::shared_ptr<SocketPoll> poll = std::make_shared<SocketPoll>("WebSocketPoll");
+    poll->startThread();
 
     std::vector<std::thread> threads;
     for (size_t i = 0; i < thread_count; ++i)
@@ -58,16 +59,19 @@ int UnitLoadTorture::loadTorture(const std::string& testname, const std::string&
             try
             {
                 // Load a document and wait for the status.
-                Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, documentURL);
-                Poco::Net::HTTPResponse response;
-                std::shared_ptr<LOOLWebSocket> socket = helpers::connectLOKit(
-                    Poco::URI(helpers::getTestServerURI()), request, response, testname);
-                helpers::sendTextFrame(socket, "load url=" + documentURL, testname);
+                auto wsSession = http::WebSocketSession::create(helpers::getTestServerURI());
+                http::Request req(documentURL);
+                wsSession->asyncRequest(req, poll);
+
+                wsSession->sendMessage("load url=" + documentURL);
 
                 // 20s is double of the default.
-                const auto status = helpers::assertResponseString(socket, "status:", testname, 20000);
+                std::vector<char> message
+                    = wsSession->waitForMessage("status:", std::chrono::seconds(20), name + id + ' ');
+                const std::string status = COOLProtocol::getFirstLine(message);
+
                 int viewid = -1;
-                LOOLProtocol::getTokenIntegerFromMessage(status, "viewid", viewid);
+                COOLProtocol::getTokenIntegerFromMessage(status, "viewid", viewid);
                 sum_view_ids += viewid;
                 ++num_of_views;
                 --num_to_load;
@@ -132,7 +136,6 @@ UnitBase::TestResult UnitLoadTorture::testLoadTortureODT()
     const int thread_count = 6;
     const int max_jitter_ms = 100;
 
-    const char* testname = "loadTortureODT ";
     const int sum_view_ids = loadTorture(testname, "empty.odt", thread_count, max_jitter_ms);
 
     // This only works when the first view-ID is 0 and increments monotonously.
@@ -147,7 +150,6 @@ UnitBase::TestResult UnitLoadTorture::testLoadTortureODS()
     const int thread_count = 6;
     const int max_jitter_ms = 100;
 
-    const char* testname = "loadTortureODS ";
     const int sum_view_ids = loadTorture(testname, "empty.ods", thread_count, max_jitter_ms);
 
     // This only works when the first view-ID is 0 and increments monotonously.
@@ -162,7 +164,6 @@ UnitBase::TestResult UnitLoadTorture::testLoadTortureODP()
     const int thread_count = 6;
     const int max_jitter_ms = 100;
 
-    const char* testname = "loadTortureODP ";
     const int sum_view_ids = loadTorture(testname, "empty.odp", thread_count, max_jitter_ms);
 
     // For ODP the view-id is always odd, and we expect not to skip any ids.
@@ -184,8 +185,8 @@ UnitBase::TestResult UnitLoadTorture::testLoadTorture()
     for (const auto& docName : docNames)
     {
         threads.emplace_back([&] {
-            const auto testname = "loadTorture_" + docName + ' ';
-            loadTorture(testname, docName, thread_count, max_jitter_ms);
+            const auto name = "loadTorture_" + docName + ' ';
+            loadTorture(name, docName, thread_count, max_jitter_ms);
         });
     }
 
@@ -197,13 +198,14 @@ UnitBase::TestResult UnitLoadTorture::testLoadTorture()
 }
 
 UnitLoadTorture::UnitLoadTorture()
+    : UnitWSD("UnitLoadTorture")
 {
     // Double of the default.
-    int timeout_minutes = 1;
-    setTimeout(timeout_minutes * 60 * 1000);
+    constexpr std::chrono::minutes timeout_minutes(1);
+    setTimeout(timeout_minutes);
 }
 
-void UnitLoadTorture::invokeTest()
+void UnitLoadTorture::invokeWSDTest()
 {
     UnitBase::TestResult result = testLoadTortureODT();
     if (result != TestResult::Ok)

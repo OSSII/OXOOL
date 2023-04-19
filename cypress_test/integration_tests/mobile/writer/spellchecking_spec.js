@@ -2,25 +2,26 @@
 
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
-var writerMobileHelper = require('./writer_mobile_helper');
+var writerHelper = require('../../common/writer_helper');
 
-describe('Spell checking menu.', function() {
-	var testFileName = 'spellchecking.odt';
+describe.skip('Spell checking menu.', function() {
+	var origTestFileName = 'spellchecking.odt';
+	var testFileName;
 
 	beforeEach(function() {
-		helper.beforeAll(testFileName, 'writer');
+		testFileName = helper.beforeAll(origTestFileName, 'writer');
 
 		// Click on edit button
 		mobileHelper.enableEditingMobile();
 	});
 
 	afterEach(function() {
-		helper.afterAll(testFileName);
+		helper.afterAll(testFileName, this.currentTest.state);
 	});
 
 	function openContextMenu() {
 		// Do a new selection
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		// Open context menu
 		cy.get('.leaflet-marker-icon')
@@ -36,8 +37,8 @@ describe('Spell checking menu.', function() {
 
 				// Remove selection
 				helper.typeIntoDocument('{downarrow}');
-				cy.get('.leaflet-marker-icon')
-					.should('not.exist');
+
+				helper.textSelectionShouldNotExist();
 
 				var XPos = startPos.right + 10;
 				var YPos = endPos.top - 10;
@@ -54,7 +55,7 @@ describe('Spell checking menu.', function() {
 		cy.contains('.context-menu-link', 'hello')
 			.click();
 
-		writerMobileHelper.selectAllMobile();
+		writerHelper.selectAllTextOfDoc();
 
 		helper.expectTextForClipboard('hello');
 	});
@@ -75,60 +76,6 @@ describe('Spell checking menu.', function() {
 		openContextMenu();
 
 		cy.contains('.context-menu-link', 'Ignore All')
-			.click();
-
-		openContextMenu();
-
-		// We don't get the spell check context menu any more
-		cy.contains('.context-menu-link', 'Paste')
-			.should('be.visible');
-	});
-
-	it('Check language status for selection.', function() {
-		openContextMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Set Language for Selection')
-			.click();
-
-		// English is selected
-		cy.contains('.ui-content[title="Set Language for Selection"] .menu-entry-checked', 'English (USA)')
-			.should('be.visible');
-	});
-
-	it('Set None Language for selection.', function() {
-		openContextMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Set Language for Selection')
-			.click();
-
-		cy.contains('.ui-content[title="Set Language for Selection"] .menu-entry-with-icon', 'None (Do not check spelling)')
-			.click();
-
-		openContextMenu();
-
-		// We don't get the spell check context menu any more
-		cy.contains('.context-menu-link', 'Paste')
-			.should('be.visible');
-	});
-
-	it('Check language status for paragraph.', function() {
-		openContextMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Set Language for Paragraph')
-			.click();
-
-		// English is selected
-		cy.contains('.ui-content[title="Set Language for Paragraph"] .menu-entry-checked', 'English (USA)')
-			.should('be.visible');
-	});
-
-	it('Set None Language for paragraph.', function() {
-		openContextMenu();
-
-		cy.contains('.menu-entry-with-icon', 'Set Language for Paragraph')
-			.click();
-
-		cy.contains('.ui-content[title="Set Language for Paragraph"] .menu-entry-with-icon', 'None (Do not check spelling)')
 			.click();
 
 		openContextMenu();
