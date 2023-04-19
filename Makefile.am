@@ -54,7 +54,7 @@ servicesysconfigdir = ${sysconfdir}/sysconfig
 servicesysconfig_DATA = etc/sysconfig/oxoolwsd
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = oxool.pc
+pkgconfig_DATA = @PACKAGE_NAME@.pc
 
 oxoolwsdconfigdir = @LOOLWSD_CONFIGDIR@
 
@@ -173,16 +173,16 @@ oxoolextra_sources = \
 	src/lib/OxOOL/Util/OptionlValidator.cpp \
 	src/lib/OxOOL/Util/FileValidator.cpp
 
-lib_LTLIBRARIES = libOxOOL.la
+lib_LTLIBRARIES = @LIB_NAME@.la
 
-libOxOOL_la_SOURCES = \
+@LIB_NAME@_la_SOURCES = \
 	$(shared_sources) \
 	$(oxoolwsd_sources) \
 	$(oxoolextra_sources)
 
 oxoolwsd_SOURCES = wsd/MainLOOLWSD.cpp
 
-oxoolwsd_LDADD = libOxOOL.la
+oxoolwsd_LDADD = @LIB_NAME@.la
 
 noinst_PROGRAMS = clientnb \
                   #connect \
@@ -207,7 +207,7 @@ endif
 lokitclient_SOURCES = tools/KitClient.cpp \
                       common/DummyTraceEventEmitter.cpp
 
-lokitclient_LDADD = libOxOOL.la
+lokitclient_LDADD = @LIB_NAME@.la
 
 oxoolforkit_sources = kit/ChildSession.cpp \
                      kit/ForKit.cpp \
@@ -217,7 +217,7 @@ oxoolforkit_json = $(patsubst %.cpp,%.cmd,$(oxoolforkit_sources))
 
 oxoolforkit_SOURCES = $(oxoolforkit_sources)
 
-oxoolforkit_LDADD = libOxOOL.la
+oxoolforkit_LDADD = @LIB_NAME@.la
 
 admin_fuzzer_CPPFLAGS = \
 			-DKIT_IN_PROCESS=1 \
@@ -241,10 +241,10 @@ clientsession_fuzzer_LDFLAGS = -fsanitize=fuzzer $(AM_LDFLAGS)
 
 clientnb_SOURCES = net/clientnb.cpp \
                    common/DummyTraceEventEmitter.cpp
-clientnb_LDADD = libOxOOL.la
+clientnb_LDADD = @LIB_NAME@.la
 
 oxoolmount_SOURCES = tools/mount.cpp
-oxoolmount_LDADD = libOxOOL.la
+oxoolmount_LDADD = @LIB_NAME@.la
 
 oxoolmap_SOURCES = tools/map.cpp
 
@@ -260,7 +260,7 @@ oxoolconvert_SOURCES = tools/Tool.cpp
 
 oxoolconfig_SOURCES = tools/Config.cpp \
              common/DummyTraceEventEmitter.cpp
-oxoolconfig_LDADD = libOxOOL.la
+oxoolconfig_LDADD = @LIB_NAME@.la
 
 #oxoolsocketdump_SOURCES = tools/WebSocketDump.cpp \
 #             common/DummyTraceEventEmitter.cpp \
@@ -360,7 +360,7 @@ dist-hook:
 EXTRA_DIST = discovery.xml \
              favicon.ico \
              oxoolkitconfig.xcu \
-             oxoolwsd.spec \
+             @PACKAGE_NAME@.spec \
              oxoolwsd.xml.in \
              oxoolwsd.service \
              debian/changelog \
