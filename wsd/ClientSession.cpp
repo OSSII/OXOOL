@@ -1002,6 +1002,13 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         }
         return true;
     }
+    else if (tokens.equals(0, "a11ystate"))
+    {
+        if (OXOOLWSD::getConfigValue<bool>("accessibility.enable", false))
+        {
+            return forwardToChild(std::string(buffer, length), docBroker);
+        }
+    }
     else if (tokens.equals(0, "completefunction"))
     {
         return forwardToChild(std::string(buffer, length), docBroker);
@@ -1199,10 +1206,9 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             oss << " macroSecurityLevel=" << OXOOLWSD::getConfigValue<int>("security.macro_security_level", 1);
         }
 
-        if (OXOOLWSD::hasProperty("accessibility.enable"))
+        if (OXOOLWSD::getConfigValue<bool>("accessibility.enable", false))
         {
-            oss << " enableAccessibility=" << std::boolalpha
-                << OXOOLWSD::getConfigValue<bool>("accessibility.enable", false);
+            oss << " accessibilityState=" << std::boolalpha << getAccessibilityState();
         }
 
         if (!getDocOptions().empty())

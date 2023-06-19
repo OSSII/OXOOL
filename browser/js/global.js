@@ -963,6 +963,10 @@ window.app = {
 					if (spellOnline) {
 						msg += ' spellOnline=' + spellOnline;
 					}
+
+					var accessibilityState = window.localStorage.getItem('accessibilityState') === 'true';
+					accessibilityState = accessibilityState || L.Browser.cypressTest;
+					msg += ' accessibilityState=' + accessibilityState;
 				}
 
 				msg += ' timezone=' + Intl.DateTimeFormat().resolvedOptions().timeZone;
