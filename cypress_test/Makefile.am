@@ -15,6 +15,9 @@ SERVER_ARG = $(subst :, ,$(shell basename $(if $(oxoolwsd),$(oxoolwsd),http://lo
 OXOOLWSD_SERVER = $(firstword $(SERVER_ARG))
 FREE_PORT = $(lastword $(SERVER_ARG))
 
+export OXOOLWSD_SERVER
+export FREE_PORT
+
 PARALLEL_SCRIPT = $(abs_srcdir)/run_parallel.sh
 
 PID_FILE=$(abs_builddir)/workdir/oxoolwsd.pid
@@ -144,6 +147,7 @@ endef
 
 define start_oxoolwsd_instance
 	$(eval FREE_PORT:=$(shell $(GET_PORT_BINARY) --host=127.0.0.1 $(ALLOWED_PORTS)))
+	export $FREE_PORT
 	$(if $(findstring php-proxy, $(CYPRESS_INTEGRATION)),\
 		$(if $(findstring $(PHP_PROXY_PORT),$(FREE_PORT)),,$(error CypressError: $(PHP_PROXY_PORT) port is unavailable!)))
 	$(if $(findstring nextcloud, $(CYPRESS_INTEGRATION)),\
