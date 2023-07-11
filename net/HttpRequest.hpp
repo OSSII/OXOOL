@@ -178,7 +178,9 @@ enum class StatusCode : unsigned
     SeeOther = 303,
     NotModified = 304,
     UseProxy = 305,
+    // Unused: 306
     TemporaryRedirect = 307,
+    PermanentRedirect = 308,
 
     // Client Error
     BadRequest = 400,
@@ -313,6 +315,11 @@ static inline const char* getReasonPhraseForCode(int code)
 #undef CASE
 
     return "Unknown";
+}
+
+static inline const char* getReasonPhraseForCode(StatusCode statusCode)
+{
+    return getReasonPhraseForCode(static_cast<unsigned>(statusCode));
 }
 
 /// The callback signature for handling IO writes.
@@ -749,7 +756,7 @@ public:
     const std::string& httpVersion() const { return _httpVersion; }
     unsigned versionMajor() const { return _versionMajor; }
     unsigned versionMinor() const { return _versionMinor; }
-    unsigned statusCode() const { return _statusCode; }
+    StatusCode statusCode() const { return static_cast<StatusCode>(_statusCode); }
     const std::string& reasonPhrase() const { return _reasonPhrase; }
 
 private:
@@ -790,6 +797,9 @@ public:
     /// Used for generating an outgoing response.
     explicit Response(StatusLine statusLineObj, int fd = -1)
         : _statusLine(std::move(statusLineObj))
+        , _state(State::New)
+        , _parserStage(ParserStage::StatusLine)
+        , _recvBodySize(0)
         , _fd(fd)
     {
         _header.add("Date", Util::getHttpTimeNow());
@@ -1088,7 +1098,7 @@ public:
     std::chrono::microseconds getTimeout() const { return _timeout; }
 
     std::shared_ptr<Response> response() { return _response; }
-    std::shared_ptr<const Response> response() const { return _response; }
+    const std::shared_ptr<Response>& response() const { return _response; }
     const std::string& getUrl() const { return _request.getUrl(); }
 
     /// The onFinished callback handler signature.
@@ -1279,7 +1289,7 @@ private:
         // doesn't have our (Session) reference. Also,
         // it's good that we are notified that the request
         // has retired, so we can perform housekeeping.
-        Response::FinishedCallback onFinished = [&]()
+        Response::FinishedCallback onFinished = [this]()
         {
             LOG_TRC("onFinished");
             assert(_response && "Must have response object");
@@ -1291,7 +1301,14 @@ private:
             if (_onFinished)
             {
                 LOG_TRC("onFinished calling client");
-                _onFinished(std::static_pointer_cast<Session>(shared_from_this()));
+                try
+                {
+                    _onFinished(std::static_pointer_cast<Session>(shared_from_this()));
+                }
+                catch (const std::exception& exc)
+                {
+                    LOG_ERR("Error while invoking onFinished client callback: " << exc.what());
+                }
             }
 
             if (_response->get("Connection", "") == "close")
@@ -1363,48 +1380,42 @@ private:
         return events;
     }
 
-    virtual void handleIncomingMessage(SocketDisposition& disposition) override
+    void handleIncomingMessage(SocketDisposition& disposition) override
     {
+        LOG_TRC("handleIncomingMessage");
         std::shared_ptr<StreamSocket> socket = _socket.lock();
-        if (!isConnected())
+        if (isConnected() && socket)
         {
-            LOG_ERR("handleIncomingMessage called when not connected.");
-            assert(!socket && "Expected no socket when not connected.");
-            return;
+            // Consume the incoming data by parsing and processing the body.
+            Buffer& data = socket->getInBuffer();
+            if (data.empty())
+            {
+                LOG_DBG("No data to process from the socket");
+                return;
+            }
+
+            LOG_TRC("HandleIncomingMessage: buffer has:\n"
+                    << Util::dumpHex(std::string(data.data(), std::min<size_t>(data.size(), 256UL))));
+
+            const int64_t read = _response->readData(data.data(), data.size());
+            if (read >= 0)
+            {
+                // Remove consumed data.
+                if (read)
+                    data.eraseFirst(read);
+                return;
+            }
+        }
+        else
+        {
+            LOG_ERR("handleIncomingMessage called when not connected");
+            assert(!socket && "Expected no socket when not connected");
+            assert(!isConnected() && "Expected not connected when no socket");
         }
 
-        assert(socket && "No valid socket to handleIncomingMessage.");
-
-        Buffer& data = socket->getInBuffer();
-        if (data.empty())
-        {
-            LOG_DBG("No data to process from the socket");
-            return;
-        }
-
-        LOG_TRC("HandleIncomingMessage: buffer has:\n"
-                << Util::dumpHex(std::string(data.data(), std::min(data.size(), 256UL))));
-
-        // Consume the incoming data by parsing and processing the body.
-        bool close = false;
-        const int64_t read = _response->readData(data.data(), data.size());
-        if (read > 0)
-        {
-            // Remove consumed data.
-            data.eraseFirst(read);
-            close = !isConnected();
-        }
-        else if (read < 0)
-        {
-            // Protocol error: Interrupt the transfer.
-            close = true;
-        }
-
-        if (close)
-        {
-            disposition.setClosed();
-            onDisconnect();
-        }
+        // Protocol error: Interrupt the transfer.
+        disposition.setClosed();
+        onDisconnect();
     }
 
     void performWrites(std::size_t capacity) override
@@ -1751,7 +1762,27 @@ private:
 };
 }
 
-} // namespace http
+inline std::ostream& operator<<(std::ostream& os, const http::Header& header)
+{
+    for (const auto& pair : header)
+    {
+        os << '\t' << pair.first << ": " << pair.second << " / ";
+    }
+
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const http::StatusCode& statusCode)
+{
+    os << static_cast<int>(statusCode) << " (" << getReasonPhraseForCode(statusCode) << ')';
+    return os;
+}
+
+inline std::ostringstream& operator<<(std::ostringstream& os, const http::StatusCode& statusCode)
+{
+    os << static_cast<int>(statusCode) << " (" << getReasonPhraseForCode(statusCode) << ')';
+    return os;
+}
 
 inline std::ostream& operator<<(std::ostream& os, const http::FieldParseState& fieldParseState)
 {
@@ -1770,5 +1801,28 @@ inline std::ostream& operator<<(std::ostream& os, const http::Response::State& s
     os << http::Response::name(state);
     return os;
 }
+
+/// Format seconds with the units suffix until we migrate to C++20.
+inline std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& s)
+{
+    os << s.count() << 's';
+    return os;
+}
+
+/// Format milliseconds with the units suffix until we migrate to C++20.
+inline std::ostream& operator<<(std::ostream& os, const std::chrono::milliseconds& ms)
+{
+    os << ms.count() << "ms";
+    return os;
+}
+
+/// Format microseconds with the units suffix until we migrate to C++20.
+inline std::ostream& operator<<(std::ostream& os, const std::chrono::microseconds& ms)
+{
+    os << ms.count() << "us";
+    return os;
+}
+
+} // namespace http
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

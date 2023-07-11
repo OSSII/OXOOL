@@ -1,2 +1,0 @@
-
-SUBDIRS = Alive Announce ModuleTesting

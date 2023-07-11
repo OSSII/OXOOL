@@ -79,11 +79,11 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
-/* Collabora Online WebSocket server version */
-#define COOLWSD_VERSION "@COOLWSD_VERSION@"
+/* OxOffice Online WebSocket server version */
+#define OXOOLWSD_VERSION "@OXOOLWSD_VERSION@"
 
-/* Collabora Online git hash if present */
-#define COOLWSD_VERSION_HASH "@COOLWSD_VERSION_HASH@"
+/* OxOffice Online git hash if present */
+#define OXOOLWSD_VERSION_HASH "@OXOOLWSD_VERSION_HASH@"
 
 /* Path to LibreOffice installation */
 #define LO_PATH "."
@@ -123,9 +123,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
-
-/* Default value of per_documents.document_signing_url */
-#define VEREIGN_URL ""
 
 /* Version number of package */
 /* #undef VERSION */

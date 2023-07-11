@@ -68,10 +68,10 @@ int UnitLoadTorture::loadTorture(const std::string& name, const std::string& doc
                 // 20s is double of the default.
                 std::vector<char> message
                     = wsSession->waitForMessage("status:", std::chrono::seconds(20), name + id + ' ');
-                const std::string status = COOLProtocol::getFirstLine(message);
+                const std::string status = OXOOLProtocol::getFirstLine(message);
 
                 int viewid = -1;
-                COOLProtocol::getTokenIntegerFromMessage(status, "viewid", viewid);
+                OXOOLProtocol::getTokenIntegerFromMessage(status, "viewid", viewid);
                 sum_view_ids += viewid;
                 ++num_of_views;
                 --num_to_load;

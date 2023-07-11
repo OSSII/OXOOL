@@ -66,7 +66,7 @@ sub randstr()
 }
 
 
-sub testCoolCluster()
+sub testOxoolCluster()
 {
     my @ids;
     my %serverId_by_src;
@@ -108,4 +108,4 @@ sub testCoolCluster()
     print ("WOPISrc check with $iters iterations and $tests keys passed cleanly.\n");
 }
 
-testCoolCluster();
+testOxoolCluster();

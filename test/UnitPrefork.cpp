@@ -8,7 +8,7 @@
 #include <config.h>
 
 #include <Unit.hpp>
-#include <wsd/COOLWSD.hpp>
+#include <wsd/OXOOLWSD.hpp>
 
 const int NumToPrefork = 20;
 
@@ -32,7 +32,7 @@ public:
         UnitWSD::configure(config);
     }
 
-    virtual void newChild(WebSocketHandler &) override
+    void newChild(const std::shared_ptr<ChildProcess>& /*child*/) override
     {
         _childSockets++;
         LOG_INF("Unit-prefork: got new child, have " << _childSockets << " of " << NumToPrefork);

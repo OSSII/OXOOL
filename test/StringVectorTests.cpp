@@ -101,7 +101,7 @@ void StringVectorTests::testTokenizer()
     LOK_ASSERT_EQUAL(std::string("XYZ"), tokens[2]);
 
     static const std::string URI
-        = "/cool/"
+        = "/oxool/"
           "http%3A%2F%2Flocalhost%2Fnextcloud%2Findex.php%2Fapps%2Frichdocuments%2Fwopi%2Ffiles%"
           "2F593_ocqiesh0cngs%3Faccess_token%3DMN0KXXDv9GJ1wCCLnQcjVQT2T7WrfYpA%26access_token_ttl%"
           "3D0%26reuse_cookies%3Doc_sessionPassphrase%"

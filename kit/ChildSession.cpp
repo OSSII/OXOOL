@@ -7,6 +7,7 @@
 
 #include <config.h>
 
+#include "Kit.hpp"
 #include "ChildSession.hpp"
 #include "MobileApp.hpp"
 
@@ -55,7 +56,7 @@ using Poco::JSON::Object;
 using Poco::JSON::Parser;
 using Poco::URI;
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
 bool ChildSession::NoCapsForKit = false;
 
@@ -108,7 +109,8 @@ ChildSession::ChildSession(
     _viewId(-1),
     _isDocLoaded(false),
     _copyToClipboard(false),
-    _canonicalViewId(-1)
+    _canonicalViewId(-1),
+    _isDumpingTiles(false)
 {
     LOG_INF("ChildSession ctor [" << getName() << "]. JailRoot: [" << _jailRoot << ']');
 }
@@ -147,7 +149,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
     const std::string firstLine = getFirstLine(buffer, length);
     const StringVector tokens = StringVector::tokenize(firstLine.data(), firstLine.size());
 
-    if (COOLProtocol::tokenIndicatesUserInteraction(tokens[0]))
+    if (OXOOLProtocol::tokenIndicatesUserInteraction(tokens[0]))
     {
         // Keep track of timestamps of incoming client messages that indicate user activity.
         updateLastActivityTime();
@@ -309,7 +311,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         constexpr int height = 630;
 
         // Unclear what this "zoom" level means
-        constexpr float zoom = 1;
+        constexpr float zoom = 2;
 
         // The magic number 15 is the number of twips per pixel for a resolution of 96 pixels per
         // inch, which apparently is some "standard".
@@ -384,11 +386,9 @@ bool ChildSession::_handleInput(const char *buffer, int length)
     {
         assert(false && "Tile traffic should go through the DocumentBroker-LoKit WS.");
     }
-    else if (tokens.equals(0, "requestloksession") ||
-             tokens.equals(0, "canceltiles"))
+    else if (tokens.equals(0, "requestloksession"))
     {
         // Just ignore these.
-        // FIXME: We probably should do something for "canceltiles" at least?
     }
     else if (tokens.equals(0, "blockingcommandstatus"))
     {
@@ -428,9 +428,6 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                tokens.equals(0, "userinactive") ||
                tokens.equals(0, "windowcommand") ||
                tokens.equals(0, "asksignaturestatus") ||
-               tokens.equals(0, "signdocument") ||
-               tokens.equals(0, "uploadsigneddocument") ||
-               tokens.equals(0, "exportsignanduploaddocument") ||
                tokens.equals(0, "rendershapeselection") ||
                tokens.equals(0, "removetextcontext") ||
                tokens.equals(0, "dialogevent") ||
@@ -439,7 +436,10 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                tokens.equals(0, "traceeventrecording") ||
                tokens.equals(0, "sallogoverride") ||
                tokens.equals(0, "rendersearchresult") ||
-               tokens.equals(0, "contentcontrolevent"));
+               tokens.equals(0, "contentcontrolevent") ||
+               tokens.equals(0, "geta11yfocusedparagraph") ||
+               tokens.equals(0, "geta11ycaretposition") ||
+               tokens.equals(0, "toggletiledumping"));
 
         std::string pzName("ChildSession::_handleInput:" + tokens[0]);
         ProfileZone pz(pzName.c_str());
@@ -564,24 +564,10 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         {
             sendWindowCommand(tokens);
         }
-        else if (tokens.equals(0, "signdocument"))
-        {
-            signDocumentContent(buffer, length, tokens);
-        }
         else if (tokens.equals(0, "asksignaturestatus"))
         {
             askSignatureStatus(buffer, length, tokens);
         }
-#if !MOBILEAPP
-        else if (tokens.equals(0, "uploadsigneddocument"))
-        {
-            return uploadSignedDocument(buffer, length, tokens);
-        }
-        else if (tokens.equals(0, "exportsignanduploaddocument"))
-        {
-            return exportSignAndUploadDocument(buffer, length, tokens);
-        }
-#endif
         else if (tokens.equals(0, "rendershapeselection"))
         {
             return renderShapeSelection(tokens);
@@ -643,6 +629,18 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         {
             return renderSearchResult(buffer, length, tokens);
         }
+        else if (tokens.equals(0, "geta11yfocusedparagraph"))
+        {
+            return getA11yFocusedParagraph();
+        }
+        else if (tokens.equals(0, "geta11ycaretposition"))
+        {
+            return getA11yCaretPosition();
+        }
+        else if (tokens.equals(0, "toggletiledumping"))
+        {
+            setDumpTiles(tokens[1] == "true");
+        }
         else
         {
             assert(false && "Unknown command token.");
@@ -664,118 +662,6 @@ std::string getMimeFromFileType(const std::string & fileType)
         return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
     return std::string();
-}
-
-bool ChildSession::uploadSignedDocument(const char* buffer, int length, const StringVector& /*tokens*/)
-{
-    std::string filename;
-    std::string wopiUrl;
-    std::string token;
-    std::string filetype;
-
-    { // parse JSON
-        const std::string firstLine = getFirstLine(buffer, length);
-
-        const char* data = buffer + firstLine.size() + 1;
-        const int size = length - firstLine.size() - 1;
-        std::string json(data, size);
-
-        Poco::JSON::Parser parser;
-        Poco::JSON::Object::Ptr root = parser.parse(json).extract<Poco::JSON::Object::Ptr>();
-
-        filename = JsonUtil::getJSONValue<std::string>(root, "filename");
-        wopiUrl = JsonUtil::getJSONValue<std::string>(root, "wopiUrl");
-        token = JsonUtil::getJSONValue<std::string>(root, "token");
-        filetype = JsonUtil::getJSONValue<std::string>(root, "type");
-    }
-
-    if (filetype.empty() || filename.empty() || wopiUrl.empty() || token.empty())
-    {
-        sendTextFrameAndLogError("error: cmd=uploadsigneddocument kind=syntax");
-        return false;
-    }
-
-    std::string mimetype = getMimeFromFileType(filetype);
-    if (mimetype.empty())
-    {
-        sendTextFrameAndLogError("error: cmd=uploadsigneddocument kind=syntax");
-        return false;
-    }
-    const std::string tmpDir = FileUtil::createRandomDir(JAILED_DOCUMENT_ROOT);
-    const Poco::Path filenameParam(filename);
-    const std::string url = JAILED_DOCUMENT_ROOT + tmpDir + '/' + filenameParam.getFileName();
-
-    getLOKitDocument()->saveAs(url.c_str(),
-                               filetype.empty() ? nullptr : filetype.c_str(),
-                               nullptr);
-
-    Authorization authorization(Authorization::Type::Token, token);
-    Poco::URI uriObject(wopiUrl + '/' + filename + "/contents");
-
-    authorization.authorizeURI(uriObject);
-
-    try
-    {
-        Poco::Net::initializeSSL();
-        Poco::Net::Context::Params sslClientParams;
-        sslClientParams.verificationMode = Poco::Net::Context::VERIFY_NONE;
-        Poco::SharedPtr<Poco::Net::PrivateKeyPassphraseHandler> consoleClientHandler = new Poco::Net::KeyConsoleHandler(false);
-        Poco::SharedPtr<Poco::Net::InvalidCertificateHandler> invalidClientCertHandler = new Poco::Net::AcceptCertificateHandler(false);
-        Poco::Net::Context::Ptr sslClientContext = new Poco::Net::Context(Poco::Net::Context::CLIENT_USE, sslClientParams);
-        Poco::Net::SSLManager::instance().initializeClient(consoleClientHandler, invalidClientCertHandler, sslClientContext);
-
-        std::unique_ptr<Poco::Net::HTTPClientSession> psession
-            = Util::make_unique<Poco::Net::HTTPSClientSession>(
-                        uriObject.getHost(),
-                        uriObject.getPort(),
-                        Poco::Net::SSLManager::instance().defaultClientContext());
-
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, uriObject.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
-        request.set("User-Agent", WOPI_AGENT_STRING);
-        authorization.authorizeRequest(request);
-
-        request.set("X-WOPI-Override", "PUT");
-
-        // If we can't access the file, reading it will throw.
-        const FileUtil::Stat fileStat(url);
-        const std::size_t filesize = (fileStat.good() ? fileStat.size() : 0);
-
-        request.setContentType(mimetype);
-        request.setContentLength(filesize);
-
-        std::ostream& httpOutputStream = psession->sendRequest(request);
-
-        std::ifstream inputFileStream(url);
-        Poco::StreamCopier::copyStream(inputFileStream, httpOutputStream);
-
-        Poco::Net::HTTPResponse response;
-        std::istream& responseStream = psession->receiveResponse(response);
-
-        std::ostringstream outputStringStream;
-        Poco::StreamCopier::copyStream(responseStream, outputStringStream);
-        std::string responseString = outputStringStream.str();
-
-        if (response.getStatus() != Poco::Net::HTTPResponse::HTTP_OK &&
-            response.getStatus() != Poco::Net::HTTPResponse::HTTP_CREATED)
-        {
-            LOG_ERR("Upload signed document HTTP Response Error: " << response.getStatus() << ' '
-                                                                   << response.getReason());
-
-            sendTextFrameAndLogError("error: cmd=uploadsigneddocument kind=httpresponse");
-
-            return false;
-        }
-    }
-    catch (const Poco::Exception& pocoException)
-    {
-        LOG_ERR("Upload signed document Exception: " + pocoException.displayText());
-
-        sendTextFrameAndLogError("error: cmd=uploadsigneddocument kind=failure");
-
-        return false;
-    }
-
-    return true;
 }
 
 #endif
@@ -1170,6 +1056,10 @@ bool ChildSession::downloadAs(const StringVector& tokens)
         jailDoc = jailDoc.substr(0, jailDoc.find(JAILED_DOCUMENT_ROOT)) + JAILED_DOCUMENT_ROOT;
     }
 
+#if !MOBILEAPP
+    consistencyCheckJail();
+#endif
+
     // The file is removed upon downloading.
     const std::string tmpDir = FileUtil::createRandomDir(jailDoc);
     const std::string urlToSend = tmpDir + '/' + filenameParam.getFileName();
@@ -1269,6 +1159,7 @@ bool ChildSession::getTextSelection(const StringVector& tokens)
 
 bool ChildSession::getClipboard(const StringVector& tokens)
 {
+    std::string token;
     const char **pMimeTypes = nullptr; // fetch all for now.
     const char  *pOneType[2];
     size_t       nOutCount = 0;
@@ -1277,7 +1168,6 @@ bool ChildSession::getClipboard(const StringVector& tokens)
     char       **pOutStreams = nullptr;
 
     bool hasMimeRequest = tokens.size() > 1;
-    std::string token;
     if (hasMimeRequest)
     {
         pMimeTypes = pOneType;
@@ -1461,7 +1351,15 @@ bool ChildSession::insertFile(const StringVector& tokens)
             url = "file://" + jailDoc + "insertfile/" + name;
         }
         else if (type == "graphicurl")
+        {
             URI::decode(name, url);
+            if (!Util::startsWith(Util::toLower(url), "http"))
+            {
+                // Do not allow arbitrary schemes, especially "file://".
+                sendTextFrameAndLogError("error: cmd=insertfile kind=syntax");
+                return false;
+            }
+        }
 #else
         assert(type == "graphic");
         auto binaryData = decodeBase64(data);
@@ -1619,7 +1517,7 @@ bool ChildSession::mouseEvent(const StringVector& tokens,
 {
     bool success = true;
 
-    // default values for compatibility reasons with older cools
+    // default values for compatibility reasons with older oxools
     int buttons = 1; // left button
     int modifier = 0;
 
@@ -1655,11 +1553,11 @@ bool ChildSession::mouseEvent(const StringVector& tokens,
         success = false;
     }
 
-    // compatibility with older cools
+    // compatibility with older oxools
     if (success && tokens.size() > counter && !getTokenInteger(tokens[counter++], "buttons", buttons))
         success = false;
 
-    // compatibility with older cools
+    // compatibility with older oxools
     if (success && tokens.size() > counter && !getTokenInteger(tokens[counter++], "modifier", modifier))
         success = false;
 
@@ -2127,7 +2025,7 @@ bool ChildSession::resizeWindow(const StringVector& tokens)
     std::string size;
     if (tokens.size() > 2 && getTokenString(tokens[2], "size", size))
     {
-        const std::vector<int> sizeParts = COOLProtocol::tokenizeInts(size, ',');
+        const std::vector<int> sizeParts = OXOOLProtocol::tokenizeInts(size, ',');
         if (sizeParts.size() == 2)
         {
             getLOKitDocument()->resizeWindow(winId, sizeParts[0], sizeParts[1]);
@@ -2177,237 +2075,7 @@ std::string extractCertificate(const std::string & certificate)
     return certificate.substr(pos1, pos2);
 }
 
-std::string extractPrivateKey(const std::string & privateKey)
-{
-    const std::string header("-----BEGIN PRIVATE KEY-----");
-    const std::string footer("-----END PRIVATE KEY-----");
-
-    std::string result;
-
-    size_t pos1 = privateKey.find(header);
-    if (pos1 == std::string::npos)
-        return result;
-
-    size_t pos2 = privateKey.find(footer, pos1 + 1);
-    if (pos2 == std::string::npos)
-        return result;
-
-    pos1 = pos1 + std::string(header).length();
-    pos2 = pos2 - pos1;
-
-    return privateKey.substr(pos1, pos2);
 }
-
-}
-
-bool ChildSession::signDocumentContent(const char* buffer, int length, const StringVector& /*tokens*/)
-{
-    bool bResult = true;
-
-    const std::string firstLine = getFirstLine(buffer, length);
-    const char* data = buffer + firstLine.size() + 1;
-    const int size = length - firstLine.size() - 1;
-    std::string json(data, size);
-
-    Poco::JSON::Parser parser;
-    Poco::JSON::Object::Ptr root = parser.parse(json).extract<Poco::JSON::Object::Ptr>();
-
-    for (auto& rChainPtr : *root->getArray("chain"))
-    {
-        if (!rChainPtr.isString())
-            return false;
-
-        std::string chainCertificate = rChainPtr;
-        std::vector<unsigned char> binaryChainCertificate = decodeBase64(extractCertificate(chainCertificate));
-
-        bResult = getLOKitDocument()->addCertificate(
-            binaryChainCertificate.data(),
-            binaryChainCertificate.size());
-
-        if (!bResult)
-            return false;
-    }
-
-    std::string x509Certificate = JsonUtil::getJSONValue<std::string>(root, "x509Certificate");
-    std::vector<unsigned char> binaryCertificate = decodeBase64(extractCertificate(x509Certificate));
-
-    std::string privateKey = JsonUtil::getJSONValue<std::string>(root, "privateKey");
-    std::vector<unsigned char> binaryPrivateKey = decodeBase64(extractPrivateKey(privateKey));
-
-    bResult = getLOKitDocument()->insertCertificate(
-                    binaryCertificate.data(), binaryCertificate.size(),
-                    binaryPrivateKey.data(), binaryPrivateKey.size());
-
-    return bResult;
-}
-
-#if !MOBILEAPP
-
-bool ChildSession::exportSignAndUploadDocument(const char* buffer, int length, const StringVector& /*tokens*/)
-{
-    bool bResult = false;
-
-    std::string filename;
-    std::string wopiUrl;
-    std::string token;
-    std::string filetype;
-    std::string x509Certificate;
-    std::string privateKey;
-    std::vector<std::string> certificateChain;
-
-    { // parse JSON
-        const std::string firstLine = getFirstLine(buffer, length);
-        const char* data = buffer + firstLine.size() + 1;
-        const int size = length - firstLine.size() - 1;
-        std::string json(data, size);
-
-        Poco::JSON::Parser parser;
-        Poco::JSON::Object::Ptr root = parser.parse(json).extract<Poco::JSON::Object::Ptr>();
-
-        filename = JsonUtil::getJSONValue<std::string>(root, "filename");
-        wopiUrl = JsonUtil::getJSONValue<std::string>(root, "wopiUrl");
-        token = JsonUtil::getJSONValue<std::string>(root, "token");
-        filetype = JsonUtil::getJSONValue<std::string>(root, "type");
-        x509Certificate = JsonUtil::getJSONValue<std::string>(root, "x509Certificate");
-        privateKey = JsonUtil::getJSONValue<std::string>(root, "privateKey");
-
-        for (auto& rChainPtr : *root->getArray("chain"))
-        {
-            if (!rChainPtr.isString())
-            {
-                sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=syntax");
-                return false;
-            }
-            std::string chainCertificate = rChainPtr;
-            certificateChain.push_back(chainCertificate);
-        }
-    }
-
-    if (filetype.empty() || filename.empty() || wopiUrl.empty() || token.empty() || x509Certificate.empty() || privateKey.empty())
-    {
-        sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=syntax");
-        return false;
-    }
-
-    std::string mimetype = getMimeFromFileType(filetype);
-    if (mimetype.empty())
-    {
-        sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=syntax");
-        return false;
-    }
-
-    // add certificate chain
-    for (auto const & certificate : certificateChain)
-    {
-        std::vector<unsigned char> binaryChainCertificate = decodeBase64(extractCertificate(certificate));
-
-        bResult = getLOKitDocument()->addCertificate(
-            binaryChainCertificate.data(),
-            binaryChainCertificate.size());
-
-        if (!bResult)
-        {
-            sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=syntax");
-            return false;
-        }
-    }
-
-    // export document to a temp file
-    const std::string aTempDir = FileUtil::createRandomDir(JAILED_DOCUMENT_ROOT);
-    const Poco::Path filenameParam(filename);
-    const std::string aTempDocumentURL
-        = JAILED_DOCUMENT_ROOT + aTempDir + '/' + filenameParam.getFileName();
-
-    getLOKitDocument()->saveAs(aTempDocumentURL.c_str(), filetype.c_str(), nullptr);
-
-    // sign document
-    {
-        std::vector<unsigned char> binaryCertificate = decodeBase64(extractCertificate(x509Certificate));
-        std::vector<unsigned char> binaryPrivateKey = decodeBase64(extractPrivateKey(privateKey));
-
-        bResult = _docManager->getLOKit()->signDocument(aTempDocumentURL.c_str(),
-                        binaryCertificate.data(), binaryCertificate.size(),
-                        binaryPrivateKey.data(), binaryPrivateKey.size());
-
-        if (!bResult)
-        {
-            sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=syntax");
-            return false;
-        }
-    }
-
-    // upload
-    Authorization authorization(Authorization::Type::Token, token);
-    Poco::URI uriObject(wopiUrl + '/' + filename + "/contents");
-
-    authorization.authorizeURI(uriObject);
-
-    try
-    {
-        Poco::Net::initializeSSL();
-        Poco::Net::Context::Params sslClientParams;
-        sslClientParams.verificationMode = Poco::Net::Context::VERIFY_NONE;
-        Poco::SharedPtr<Poco::Net::PrivateKeyPassphraseHandler> consoleClientHandler = new Poco::Net::KeyConsoleHandler(false);
-        Poco::SharedPtr<Poco::Net::InvalidCertificateHandler> invalidClientCertHandler = new Poco::Net::AcceptCertificateHandler(false);
-        Poco::Net::Context::Ptr sslClientContext = new Poco::Net::Context(Poco::Net::Context::CLIENT_USE, sslClientParams);
-        Poco::Net::SSLManager::instance().initializeClient(consoleClientHandler, invalidClientCertHandler, sslClientContext);
-
-        std::unique_ptr<Poco::Net::HTTPClientSession> psession
-            = Util::make_unique<Poco::Net::HTTPSClientSession>(
-                        uriObject.getHost(),
-                        uriObject.getPort(),
-                        Poco::Net::SSLManager::instance().defaultClientContext());
-
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, uriObject.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
-        request.set("User-Agent", WOPI_AGENT_STRING);
-        authorization.authorizeRequest(request);
-
-        request.set("X-WOPI-Override", "PUT");
-
-        // If we can't access the file, reading it will throw.
-        const FileUtil::Stat fileStat(aTempDocumentURL);
-        const std::size_t filesize = (fileStat.good() ? fileStat.size() : 0);
-
-        request.setContentType(mimetype);
-        request.setContentLength(filesize);
-
-        std::ostream& httpOutputStream = psession->sendRequest(request);
-
-        std::ifstream inputFileStream(aTempDocumentURL);
-        Poco::StreamCopier::copyStream(inputFileStream, httpOutputStream);
-
-        Poco::Net::HTTPResponse response;
-        std::istream& responseStream = psession->receiveResponse(response);
-
-        std::ostringstream outputStringStream;
-        Poco::StreamCopier::copyStream(responseStream, outputStringStream);
-        std::string responseString = outputStringStream.str();
-
-        if (response.getStatus() != Poco::Net::HTTPResponse::HTTP_OK &&
-            response.getStatus() != Poco::Net::HTTPResponse::HTTP_CREATED)
-        {
-            LOG_ERR("Upload signed document HTTP Response Error: " << response.getStatus() << ' ' << response.getReason());
-
-            sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=httpresponse");
-
-            return false;
-        }
-    }
-    catch (const Poco::Exception& pocoException)
-    {
-        LOG_ERR("Upload signed document Exception: " + pocoException.displayText());
-
-        sendTextFrameAndLogError("error: cmd=exportsignanduploaddocument kind=failure");
-
-        return false;
-    }
-
-    sendTextFrame("signeddocumentuploadstatus: OK");
-
-    return true;
-}
-
-#endif
 
 bool ChildSession::askSignatureStatus(const char* buffer, int length, const StringVector& /*tokens*/)
 {
@@ -2559,6 +2227,10 @@ bool ChildSession::saveAs(const StringVector& tokens)
     else
         // url is already encoded
         encodedURL = url;
+
+#if !MOBILEAPP
+    consistencyCheckJail();
+#endif
 
     std::string encodedWopiFilename;
     Poco::URI::encode(wopiFilename, "", encodedWopiFilename);
@@ -2824,6 +2496,26 @@ bool ChildSession::removeTextContext(const StringVector& tokens)
     return true;
 }
 
+bool ChildSession::getA11yFocusedParagraph()
+{
+    getLOKitDocument()->setView(_viewId);
+
+    char* paragraphContent = nullptr;
+    paragraphContent = getLOKitDocument()->getA11yFocusedParagraph();
+    std::string paragraph(paragraphContent);
+    free(paragraphContent);
+    sendTextFrame("a11yfocusedparagraph: " + paragraph);
+    return true;
+}
+
+bool ChildSession::getA11yCaretPosition()
+{
+    getLOKitDocument()->setView(_viewId);
+    int pos = getLOKitDocument()->getA11yCaretPosition();
+    sendTextFrame("a11ycaretposition: " + std::to_string(pos));
+    return true;
+}
+
 /* If the user is inactive we have to remember important events so that when
  * the user becomes active again, we can replay the events.
  */
@@ -2845,7 +2537,10 @@ void ChildSession::rememberEventsForInactiveUser(const int type, const std::stri
              type == LOK_CALLBACK_INVALIDATE_HEADER ||
              type == LOK_CALLBACK_INVALIDATE_SHEET_GEOMETRY ||
              type == LOK_CALLBACK_CELL_ADDRESS ||
-             type == LOK_CALLBACK_REFERENCE_MARKS)
+             type == LOK_CALLBACK_REFERENCE_MARKS ||
+             type == LOK_CALLBACK_A11Y_FOCUS_CHANGED ||
+             type == LOK_CALLBACK_A11Y_CARET_CHANGED ||
+             type == LOK_CALLBACK_A11Y_TEXT_SELECTION_CHANGED)
     {
         _stateRecorder.recordEvent(type, payload);
     }
@@ -2866,7 +2561,7 @@ void ChildSession::rememberEventsForInactiveUser(const int type, const std::stri
     {
         std::string name;
         std::string value;
-        if (COOLProtocol::parseNameValuePair(payload, name, value, '='))
+        if (OXOOLProtocol::parseNameValuePair(payload, name, value, '='))
         {
             _stateRecorder.recordState(name, payload);
         }
@@ -3017,24 +2712,27 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
                               " x=" + std::to_string(x) +
                               " y=" + std::to_string(y) +
                               " width=" + std::to_string(width) +
-                              " height=" + std::to_string(height));
+                              " height=" + std::to_string(height) +
+                              " wid=" + std::to_string(getCurrentWireId()));
             }
             else if (tokens.size() == 2 && tokens.equals(0, "EMPTY"))
             {
-                // without mode: "EMPTY, <part>"
+                // without mode: "EMPTY, <part>, 0"
                 const std::string part = (_docType != "text" ? tokens[1].c_str() : "0"); // Writer renders everything as part 0.
-                sendTextFrame("invalidatetiles: EMPTY, " + part);
+                sendTextFrame("invalidatetiles: EMPTY, " + part + ", 0" + " wid=" + std::to_string(getCurrentWireId()));
             }
             else if (tokens.size() == 3 && tokens.equals(0, "EMPTY"))
             {
                 // with mode:    "EMPTY, <part>, <mode>"
                 const std::string part = (_docType != "text" ? tokens[1].c_str() : "0"); // Writer renders everything as part 0.
                 const std::string mode = (_docType != "text" ? tokens[2].c_str() : "0"); // Writer is not using mode.
-                sendTextFrame("invalidatetiles: EMPTY, " + part + ", " + mode);
+                sendTextFrame("invalidatetiles: EMPTY, " + part + ", " + mode +
+                              " wid=" + std::to_string(getCurrentWireId()));
             }
             else
             {
-                sendTextFrame("invalidatetiles: " + payload);
+                sendTextFrame("invalidatetiles: " + payload +
+                              " wid=" + std::to_string(getCurrentWireId()));
             }
         }
         break;
@@ -3101,6 +2799,8 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
         if (!commandName.isEmpty() && commandName.toString() == ".uno:Save")
         {
 #if !MOBILEAPP
+            consistencyCheckJail();
+
             // Create the 'upload' file regardless of success or failure,
             // because we don't know if the last upload worked or not.
             // DocBroker will have to decide to upload or skip.
@@ -3239,6 +2939,7 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
     case LOK_CALLBACK_PROFILE_FRAME:
     case LOK_CALLBACK_DOCUMENT_PASSWORD:
     case LOK_CALLBACK_DOCUMENT_PASSWORD_TO_MODIFY:
+    case LOK_CALLBACK_DOCUMENT_PASSWORD_RESET:
         // these are not handled here.
         break;
     case LOK_CALLBACK_CELL_SELECTION_AREA:
@@ -3271,6 +2972,9 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
     case LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR:
         sendTextFrame("documentbackgroundcolor: " + payload);
         break;
+    case LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR:
+        sendTextFrame("applicationbackgroundcolor: " + payload);
+        break;
     case LOK_CALLBACK_MEDIA_SHAPE:
         sendTextFrame("mediashape: " + payload);
         break;
@@ -3297,7 +3001,7 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
     case LOK_CALLBACK_FONTS_MISSING:
 #if !MOBILEAPP
         {
-            // This environment variable is always set in COOLWSD::innerInitialize().
+            // This environment variable is always set in OXOOLWSD::innerInitialize().
             static std::string fontsMissingHandling = std::string(std::getenv("FONTS_MISSING_HANDLING"));
             if (fontsMissingHandling == "report" || fontsMissingHandling == "both")
                 sendTextFrame("fontsmissing: " + payload);
@@ -3370,6 +3074,24 @@ void ChildSession::loKitCallback(const int type, const std::string& payload)
         sendTextFrame(message);
         break;
     }
+    case LOK_CALLBACK_A11Y_FOCUS_CHANGED:
+    {
+        sendTextFrame("a11yfocuschanged: " + payload);
+        break;
+    }
+    case LOK_CALLBACK_A11Y_CARET_CHANGED:
+    {
+        sendTextFrame("a11ycaretchanged: " + payload);
+        break;
+    }
+    case LOK_CALLBACK_A11Y_TEXT_SELECTION_CHANGED:
+    {
+        sendTextFrame("a11ytextselectionchanged: " + payload);
+        break;
+    }
+    case LOK_CALLBACK_COLOR_PALETTES:
+        sendTextFrame("colorpalettes: " + payload);
+        break;
     default:
         LOG_ERR("Unknown callback event (" << lokCallbackTypeToString(type) << "): " << payload);
     }

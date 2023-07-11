@@ -4,12 +4,12 @@ apply plugin: 'com.android.library'
 apply from: 'libSettings.gradle'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
     buildDir = "${rootProject.getBuildDir()}/lib"
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
 
@@ -93,9 +93,9 @@ task copyUnpackAssets(type: Copy) {
             includes = ['**']
         }
     }
-    into('etc/coolwsd') {
-        from('/android/coolkitconfig.xcu')
-            includes = [ 'coolkitconfig.xcu' ]
+    into('etc/oxoolwsd') {
+        from('/android/oxoolkitconfig.xcu')
+            includes = [ 'oxoolkitconfig.xcu' ]
     }
     into('user/fonts') {
         from "${liboInstdir}/share/fonts/truetype"
@@ -189,9 +189,9 @@ task copyDocTemplates(type: Copy) {
 }
 
 task copyKitConfig(type: Copy) {
-        from "${file(rootProject.getRootDir()).getParent()}/coolkitconfig-mobile.xcu"
-        into "src/main/assets/etc/coolwsd"
-        rename { "coolkitconfig.xcu" }
+        from "${file(rootProject.getRootDir()).getParent()}/oxoolkitconfig-mobile.xcu"
+        into "src/main/assets/etc/oxoolwsd"
+        rename { "oxoolkitconfig.xcu" }
 }
 
 task createStrippedConfig {
@@ -295,7 +295,7 @@ preBuild.dependsOn 'createRCfiles',
         'createFullConfig',
         'copyBrandTheme'
 
-task generateCoolDebugAssets {
+task generateOxoolDebugAssets {
     doLast {
         exec {
             commandLine 'make', '-C', "${rootProject.getBuildDir()}/../../browser", 'clean'
@@ -306,7 +306,7 @@ task generateCoolDebugAssets {
     }
 }
 
-task generateCoolReleaseAssets {
+task generateOxoolReleaseAssets {
     doLast {
         exec {
             commandLine 'make', '-C', "${rootProject.getBuildDir()}/../../browser", 'clean'
@@ -321,6 +321,6 @@ afterEvaluate {
 	if (!file("${liboBrandingDir}").exists()) {
 		copyBrandTheme.enabled = false
 	}
-	generateDebugAssets.dependsOn copyDocTemplates, copyKitConfig, generateCoolDebugAssets
-	generateReleaseAssets.dependsOn copyDocTemplates, copyKitConfig, generateCoolReleaseAssets
+	generateDebugAssets.dependsOn copyDocTemplates, copyKitConfig, generateOxoolDebugAssets
+	generateReleaseAssets.dependsOn copyDocTemplates, copyKitConfig, generateOxoolReleaseAssets
 }

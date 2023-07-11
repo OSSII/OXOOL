@@ -19,7 +19,7 @@
 
 #include "Auth.hpp"
 #include "HttpRequest.hpp"
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 #include "Log.hpp"
 #include "Util.hpp"
 #include <common/Authorization.hpp>
@@ -55,7 +55,7 @@ struct LockContext
     LockContext()
         : _supportsLocks(false)
         , _isLocked(false)
-        , _refreshSeconds(COOLWSD::getConfigValue<int>("storage.wopi.locking.refresh", 900))
+        , _refreshSeconds(OXOOLWSD::getConfigValue<int>("storage.wopi.locking.refresh", 900))
     {
     }
 
@@ -91,6 +91,25 @@ public:
             , _ownerId(std::move(ownerId))
             , _modifiedTime(std::move(modifiedTime))
         {
+        }
+
+        FileInfo(const FileInfo& fileInfo)
+            : _filename(fileInfo._filename)
+            , _ownerId(fileInfo._ownerId)
+            , _modifiedTime(fileInfo._modifiedTime)
+        {
+        }
+
+        FileInfo& operator=(const FileInfo& rhs)
+        {
+            if (this != &rhs)
+            {
+                _filename = rhs._filename;
+                _ownerId = rhs._ownerId;
+                _modifiedTime = rhs._modifiedTime;
+            }
+
+            return *this;
         }
 
         bool isValid() const
@@ -283,7 +302,7 @@ public:
         UploadResult _result;
     };
 
-    enum class COOLStatusCode
+    enum class OXOOLStatusCode
     {
         DOC_CHANGED = 1010 // Document changed externally in storage
     };
@@ -295,11 +314,11 @@ public:
                 const std::string& jailPath) :
         _localStorePath(localStorePath),
         _jailPath(jailPath),
-        _fileInfo(std::string(), "cool", std::string()),
+        _fileInfo(std::string(), "oxool", std::string()),
         _isDownloaded(false)
     {
         setUri(uri);
-        LOG_DBG("Storage ctor: " << COOLWSD::anonymizeUrl(_uri.toString()));
+        LOG_DBG("Storage ctor: " << OXOOLWSD::anonymizeUrl(_uri.toString()));
     }
 
     virtual ~StorageBase() { LOG_TRC("~StorageBase " << _uri.toString()); }
@@ -342,8 +361,13 @@ public:
     void setFileInfo(const FileInfo& fileInfo) { _fileInfo = fileInfo; }
 
     /// Returns the basic information about the file.
-    FileInfo& getFileInfo() { return _fileInfo; }
     const FileInfo& getFileInfo() const { return _fileInfo; }
+
+    const std::string& getLastModifiedTime() const { return _fileInfo.getLastModifiedTime(); }
+    void setLastModifiedTime(const std::string& modifiedTime)
+    {
+        _fileInfo.setLastModifiedTime(modifiedTime);
+    }
 
     std::string getFileExtension() const { return Poco::Path(_fileInfo.getFilename()).getExtension(); }
 
@@ -390,6 +414,16 @@ public:
 
     /// Must be called at startup to configure.
     static void initialize();
+
+    STATE_ENUM(StorageType,
+               Unsupported, //< An unsupported type.
+               Unauthorized, //< The host is not allowed by the admin.
+               FileSystem, //< File-System storage. Only for testing.
+               Wopi //< WOPI-like storage.
+    );
+
+    /// Validates the given URI.
+    static StorageType validate(const Poco::URI& uri, bool takeOwnership);
 
     /// Storage object creation factory.
     /// @takeOwnership is for local files that are temporary,
@@ -458,7 +492,7 @@ public:
         , _isCopy(false)
     {
         LOG_INF("LocalStorage ctor with localStorePath: [" << localStorePath <<
-                "], jailPath: [" << jailPath << "], uri: [" << COOLWSD::anonymizeUrl(uri.toString()) << "].");
+                "], jailPath: [" << jailPath << "], uri: [" << OXOOLWSD::anonymizeUrl(uri.toString()) << "].");
 #if MOBILEAPP
         (void) isTemporaryFile;
 #endif
@@ -524,10 +558,10 @@ public:
     {
         LOG_INF("WopiStorage ctor with localStorePath: ["
                 << localStorePath << "], jailPath: [" << jailPath << "], uri: ["
-                << COOLWSD::anonymizeUrl(uri.toString()) << ']');
+                << OXOOLWSD::anonymizeUrl(uri.toString()) << ']');
     }
 
-    class WOPIFileInfo
+    class WOPIFileInfo : public FileInfo
     {
         void init();
     public:
@@ -539,8 +573,8 @@ public:
         };
 
         /// warning - removes items from object.
-        WOPIFileInfo(const FileInfo& fileInfo, std::chrono::milliseconds callDurationMs,
-                     Poco::JSON::Object::Ptr& object, Poco::URI &uriObject);
+        WOPIFileInfo(const FileInfo& fileInfo, const Poco::JSON::Object::Ptr& object,
+                     const Poco::URI& uriObject);
 
         const std::string& getUserId() const { return _userId; }
         const std::string& getUsername() const { return _username; }
@@ -551,9 +585,10 @@ public:
         const std::string& getTemplateSource() const { return _templateSource; }
         const std::string& getBreadcrumbDocName() const { return _breadcrumbDocName; }
         const std::string& getFileUrl() const { return _fileUrl; }
+        const std::string& getPostMessageOrigin() { return _postMessageOrigin; }
+        const std::string& getHideUserList() { return _hideUserList; }
 
         bool getUserCanWrite() const { return _userCanWrite; }
-        std::string& getPostMessageOrigin() { return _postMessageOrigin; }
         void setHidePrintOption(bool hidePrintOption) { _hidePrintOption = hidePrintOption; }
         bool getHidePrintOption() const { return _hidePrintOption; }
         bool getHideSaveOption() const { return _hideSaveOption; }
@@ -574,10 +609,11 @@ public:
         bool getSupportsRename() const { return _supportsRename; }
         bool getSupportsLocks() const { return _supportsLocks; }
         bool getUserCanRename() const { return _userCanRename; }
-        std::string& getHideUserList() { return _hideUserList; }
+
         TriState getDisableChangeTrackingShow() const { return _disableChangeTrackingShow; }
         TriState getDisableChangeTrackingRecord() const { return _disableChangeTrackingRecord; }
         TriState getHideChangeTrackingControls() const { return _hideChangeTrackingControls; }
+
     private:
         /// User id of the user accessing the file
         std::string _userId;
@@ -599,54 +635,56 @@ public:
         std::string _breadcrumbDocName;
         /// The optional FileUrl, used to download the document if provided.
         std::string _fileUrl;
-        /// If user accessing the file has write permission
-        bool _userCanWrite;
         /// WOPI Post message property
         std::string _postMessageOrigin;
-        /// Hide print button from UI
-        bool _hidePrintOption;
-        /// Hide save button from UI
-        bool _hideSaveOption;
-        /// Hide 'Download as' button/menubar item from UI
-        bool _hideExportOption;
-        /// Hide the 'Repair' button/item from the UI
-        bool _hideRepairOption;
-        /// If WOPI host has enabled owner termination feature on
-        bool _enableOwnerTermination;
-        /// If WOPI host has allowed the user to print the document
-        bool _disablePrint;
-        /// If WOPI host has allowed the user to export the document
-        bool _disableExport;
-        /// If WOPI host has allowed the user to copy to/from the document
-        bool _disableCopy;
-        /// If WOPI host has allowed the cool to show texts on the overlay informing about inactivity, or if the integration is handling that.
-        bool _disableInactiveMessages;
-        /// For the (mobile) integrations, to indicate that the downloading for printing, exporting or slideshows should be intercepted and sent as a postMessage instead of handling directly.
-        bool _downloadAsPostMessage;
-        /// If set to false, users can access the save-as functionality
-        bool _userCanNotWriteRelative;
-        /// If set to true, users can access the insert remote image functionality
-        bool _enableInsertRemoteImage;
-        /// If set to true, users can access the remote link picker functionality
-        bool _enableRemoteLinkPicker;
-        /// If set to true, users can access the file share functionality
-        bool _enableShare;
         /// If set to "true", user list on the status bar will be hidden
         /// If set to "mobile" | "tablet" | "desktop", will be hidden on a specified device
         /// (may be joint, delimited by commas eg. "mobile,tablet")
         std::string _hideUserList;
         /// If we should disable change-tracking visibility by default (meaningful at loading).
-        TriState _disableChangeTrackingShow;
+        TriState _disableChangeTrackingShow = WOPIFileInfo::TriState::Unset;
         /// If we should disable change-tracking ability by default (meaningful at loading).
-        TriState _disableChangeTrackingRecord;
+        TriState _disableChangeTrackingRecord = WOPIFileInfo::TriState::Unset;
         /// If we should hide change-tracking commands for this user.
-        TriState _hideChangeTrackingControls;
+        TriState _hideChangeTrackingControls = WOPIFileInfo::TriState::Unset;
+        /// If user accessing the file has write permission
+        bool _userCanWrite = false;
+        /// Hide print button from UI
+        bool _hidePrintOption = false;
+        /// Hide save button from UI
+        bool _hideSaveOption = false;
+        /// Hide 'Download as' button/menubar item from UI
+        bool _hideExportOption = false;
+        /// Hide the 'Repair' button/item from the UI
+        bool _hideRepairOption = false;
+        /// If WOPI host has enabled owner termination feature on
+        bool _enableOwnerTermination = false;
+        /// If WOPI host has allowed the user to print the document
+        bool _disablePrint = false;
+        /// If WOPI host has allowed the user to export the document
+        bool _disableExport = false;
+        /// If WOPI host has allowed the user to copy to/from the document
+        bool _disableCopy = false;
+        /// If WOPI host has allowed the oxool to show texts on the overlay informing about
+        /// inactivity, or if the integration is handling that.
+        bool _disableInactiveMessages = false;
+        /// For the (mobile) integrations, to indicate that the downloading for printing, exporting,
+        /// or slideshows should be intercepted and sent as a postMessage instead of handling directly.
+        bool _downloadAsPostMessage = false;
+        /// If set to false, users can access the save-as functionality
+        bool _userCanNotWriteRelative = true;
+        /// If set to true, users can access the insert remote image functionality
+        bool _enableInsertRemoteImage = false;
+        /// If set to true, users can access the remote link picker functionality
+        bool _enableRemoteLinkPicker = false;
+        /// If set to true, users can access the file share functionality
+        bool _enableShare = false;
         /// If WOPI host supports locking
-        bool _supportsLocks;
+        bool _supportsLocks = false;
         /// If WOPI host supports rename
-        bool _supportsRename;
+        bool _supportsRename = false;
         /// If user is allowed to rename the document
-        bool _userCanRename;
+        bool _userCanRename = false;
     };
 
     /// Returns the response of CheckFileInfo WOPI call for URI that was
@@ -692,7 +730,7 @@ protected:
         const std::string filePathAnonym;
         const std::string uriAnonym;
         const std::string httpResponseReason;
-        const long httpResponseCode;
+        const http::StatusCode httpResponseCode;
         const std::size_t size;
         const bool isSaveAs;
         const bool isRename;

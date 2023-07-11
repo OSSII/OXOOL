@@ -39,7 +39,7 @@
 
 #include <common/SigUtil.hpp>
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
 using Poco::Net::HTTPResponse;
 using Poco::Util::Application;
@@ -75,7 +75,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             return;
         }
         std::string jwtToken;
-        COOLProtocol::getTokenString(tokens[1], "jwt", jwtToken);
+        OXOOLProtocol::getTokenString(tokens[1], "jwt", jwtToken);
 
         LOG_INF("Verifying JWT token: " << jwtToken);
         JWTAuth authAgent("admin", "admin", "admin");
@@ -122,10 +122,10 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     }
     else if (tokens.equals(0, "version"))
     {
-        // Send COOL version information
-        sendTextFrame("coolserver " + Util::getVersionJSON(EnableExperimental));
+        // Send OXOOL version information
+        sendTextFrame("oxoolserver " + Util::getVersionJSON(EnableExperimental));
         // Send LOKit version information
-        sendTextFrame("lokitversion " + COOLWSD::LOKitVersion);
+        sendTextFrame("lokitversion " + OXOOLWSD::LOKitVersion);
     }
     else if (tokens.equals(0, "subscribe") && tokens.size() > 1)
     {
@@ -265,7 +265,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
                     model.notify("settings cpu_stats_interval=" + std::to_string(_admin->getCpuStatsInterval()));
                 }
             }
-            else if (COOLProtocol::matchPrefix("limit_", settingName))
+            else if (OXOOLProtocol::matchPrefix("limit_", settingName))
             {
                 DocProcSettings docProcSettings = _admin->getDefDocProcSettings();
                 if (settingName == "limit_virt_mem_mb")
@@ -307,8 +307,8 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
                 JsonUtil::getJSONValue<std::string>(object, Util::getProcessIdentifier());
             if (!routeToken.empty())
             {
-                COOLWSD::alertAllUsersInternal("updateroutetoken " + routeToken);
-                COOLWSD::RouteToken = routeToken;
+                OXOOLWSD::alertAllUsersInternal("updateroutetoken " + routeToken);
+                OXOOLWSD::RouteToken = routeToken;
             }
             else
             {
@@ -321,6 +321,41 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             LOG_ERR("Failed to update the route token, invalid JSON parsing: " << tokens[1]);
         }
     }
+    else if (tokens.equals(0, "migrate") && tokens.size() > 1)
+    {
+        const std::string& docStatus = tokens[1];
+        const std::string& dockey = tokens[2];
+        const std::string& routeToken = tokens[3];
+        if (!dockey.empty() && !routeToken.empty())
+        {
+            std::ostringstream oss;
+            oss << "migrate: {";
+            model.setCurrentMigDoc(dockey);
+            model.setCurrentMigToken(routeToken);
+            oss << "\"afterSave\"" << ":false,";
+            if (docStatus == "unsaved" && !model.isDocSaved(dockey))
+            {
+                OXOOLWSD::autoSave(dockey);
+                oss << "\"saved\"" << ":false,";
+            }
+            else if ((docStatus == "readonly" && model.isDocReadOnly(dockey)) ||
+                     (docStatus == "saved" && model.isDocSaved(dockey)))
+            {
+                oss << "\"saved\"" << ":true,";
+            }
+            oss << "\"routeToken\"" << ':' << "\"" << routeToken << "\"" << '}';
+            OXOOLWSD::alertUserInternal(dockey, oss.str());
+        }
+        else
+        {
+            LOG_WRN("Document migration failed for dockey:" + dockey +
+                        ", reason has been changed");
+        }
+    }
+    else if (tokens.equals(0, "wopiSrcMap"))
+    {
+        sendTextFrame(model.getWopiSrcMap());
+    }
 }
 
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
@@ -331,7 +366,7 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
     , _isAuthenticated(false)
 {
     // Different session id pool for admin sessions (?)
-    _sessionId = Util::decodeId(COOLWSD::GetConnectionId());
+    _sessionId = Util::decodeId(OXOOLWSD::GetConnectionId());
 }
 
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager)
@@ -339,7 +374,7 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager)
       _admin(adminManager),
       _isAuthenticated(true)
 {
-    _sessionId = Util::decodeId(COOLWSD::GetConnectionId());
+    _sessionId = Util::decodeId(OXOOLWSD::GetConnectionId());
 }
 
 void AdminSocketHandler::sendTextFrame(const std::string& message)
@@ -373,7 +408,7 @@ bool AdminSocketHandler::handleInitialRequest(
     const std::weak_ptr<StreamSocket> &socketWeak,
     const Poco::Net::HTTPRequest& request)
 {
-    if (!COOLWSD::AdminEnabled)
+    if (!OXOOLWSD::AdminEnabled)
     {
         LOG_ERR_S("Request for disabled admin console");
         return false;
@@ -427,7 +462,7 @@ Admin::Admin() :
     _totalSysMemKb = Util::getTotalSystemMemoryKb();
     LOG_TRC("Total system memory:  " << _totalSysMemKb << " KB.");
 
-    const auto memLimit = COOLWSD::getConfigValue<double>("memproportion", 0.0);
+    const auto memLimit = OXOOLWSD::getConfigValue<double>("memproportion", 0.0);
     _totalAvailMemKb = _totalSysMemKb;
     if (memLimit != 0.0)
         _totalAvailMemKb = _totalSysMemKb * memLimit / 100.;
@@ -552,11 +587,16 @@ void Admin::modificationAlert(const std::string& dockey, pid_t pid, bool value){
     addCallback([=] { _model.modificationAlert(dockey, pid, value); });
 }
 
+void Admin::uploadedAlert(const std::string& dockey, pid_t pid, bool value)
+{
+    addCallback([=] { _model.uploadedAlert(dockey, pid, value); });
+}
+
 void Admin::addDoc(const std::string& docKey, pid_t pid, const std::string& filename,
                    const std::string& sessionId, const std::string& userName, const std::string& userId,
-                   const int smapsFD, const Poco::URI& wopiSrc)
+                   const int smapsFD, const Poco::URI& wopiSrc, bool readOnly)
 {
-    addCallback([=] { _model.addDocument(docKey, pid, filename, sessionId, userName, userId, smapsFD, wopiSrc); });
+    addCallback([=] { _model.addDocument(docKey, pid, filename, sessionId, userName, userId, smapsFD, wopiSrc, readOnly); });
 }
 
 void Admin::rmDoc(const std::string& docKey, const std::string& sessionId)
@@ -620,19 +660,19 @@ size_t Admin::getTotalCpuUsage()
 
 unsigned Admin::getMemStatsInterval()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD();
     return _memStatsTaskIntervalMs;
 }
 
 unsigned Admin::getCpuStatsInterval()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD();
     return _cpuStatsTaskIntervalMs;
 }
 
 unsigned Admin::getNetStatsInterval()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD();
     return _netStatsTaskIntervalMs;
 }
 
@@ -648,7 +688,7 @@ std::string Admin::getChannelLogLevels()
 
 void Admin::setChannelLogLevel(const std::string& channelName, std::string level)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD();
 
     // Get the list of channels..
     std::vector<std::string> nameList;
@@ -661,19 +701,19 @@ void Admin::setChannelLogLevel(const std::string& channelName, std::string level
         Log::logger().get("wsd").setLevel(level);
     else if (channelName == "kit")
     {
-        COOLWSD::setLogLevelsOfKits(level); // For current kits.
-        COOLWSD::sendMessageToForKit("setloglevel " + level); // For forkit and future kits.
+        OXOOLWSD::setLogLevelsOfKits(level); // For current kits.
+        OXOOLWSD::sendMessageToForKit("setloglevel " + level); // For forkit and future kits.
         _forkitLogLevel = level; // We will remember this setting rather than asking forkit its loglevel.
     }
 }
 
 std::string Admin::getLogLines()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD();
 
     try {
         int lineCount = 500;
-        std::string fName = COOLWSD::getPathFromConfig("logging.file.property[0]");
+        std::string fName = OXOOLWSD::getPathFromConfig("logging.file.property[0]");
         std::ifstream infile(fName);
 
         std::string line;
@@ -759,7 +799,7 @@ void Admin::notifyForkit()
         << "setconfig limit_file_size_mb " << _defDocProcSettings.getLimitFileSizeMb() << '\n'
         << "setconfig limit_num_open_files " << _defDocProcSettings.getLimitNumberOpenFiles() << '\n';
 
-    COOLWSD::sendMessageToForKit(oss.str());
+    OXOOLWSD::sendMessageToForKit(oss.str());
 }
 
 /// Similar to std::clamp(), old libstdc++ doesn't have it.
@@ -771,7 +811,7 @@ template <typename T> T clamp(const T& n, const T& lower, const T& upper)
 void Admin::triggerMemoryCleanup(const size_t totalMem)
 {
     // Trigger mem cleanup when we are consuming too much memory (as configured by sysadmin)
-    static const double memLimit = COOLWSD::getConfigValue<double>("memproportion", 0.0);
+    static const double memLimit = OXOOLWSD::getConfigValue<double>("memproportion", 0.0);
     if (memLimit == 0.0 || _totalSysMemKb == 0)
     {
         LOG_TRC("Total memory consumed: " << totalMem <<
@@ -779,7 +819,7 @@ void Admin::triggerMemoryCleanup(const size_t totalMem)
         return;
     }
 
-    LOG_TRC("Total memory consumed: " << totalMem << " KB. Configured COOL memory proportion: " <<
+    LOG_TRC("Total memory consumed: " << totalMem << " KB. Configured OXOOL memory proportion: " <<
             memLimit << "% (" << static_cast<size_t>(_totalSysMemKb * memLimit / 100.) << " KB).");
 
     const double memToFreePercentage = (totalMem / static_cast<double>(_totalSysMemKb)) - memLimit / 100.;
@@ -801,7 +841,7 @@ void Admin::triggerMemoryCleanup(const size_t totalMem)
             {
                 // Kill the saved documents first.
                 LOG_DBG("OOM: Killing saved document with DocKey [" << doc.getDocKey() << "] with " << doc.getMem() << " KB.");
-                COOLWSD::closeDocument(doc.getDocKey(), "oom");
+                OXOOLWSD::closeDocument(doc.getDocKey(), "oom");
                 memToFreeKb -= doc.getMem();
                 if (memToFreeKb <= 1024)
                     break;
@@ -810,7 +850,7 @@ void Admin::triggerMemoryCleanup(const size_t totalMem)
             {
                 // Save unsaved documents.
                 LOG_TRC("Saving document: DocKey [" << doc.getDocKey() << "].");
-                COOLWSD::autoSave(doc.getDocKey());
+                OXOOLWSD::autoSave(doc.getDocKey());
             }
         }
     }
@@ -835,7 +875,7 @@ void Admin::cleanupLostKits()
     unsigned lostKitsTerminated = 0;
     size_t gracePeriod = _defDocProcSettings.getCleanupSettings().getLostKitGracePeriod();
 
-    internalKitPids = COOLWSD::getKitPids();
+    internalKitPids = OXOOLWSD::getKitPids();
     AdminModel::getKitPidsFromSystem(&kitPids);
 
     for (auto itProc = kitPids.begin(); itProc != kitPids.end(); itProc ++)
@@ -914,14 +954,14 @@ void MonitorSocketHandler::onDisconnect()
 {
     bool reconnect = false;
     // schedule monitor reconnect only if monitor uri exist in configuration
-    for (std::string uri : Admin::instance().getMonitorList())
+    for (auto monitor : Admin::instance().getMonitorList())
     {
         const std::string uriWithoutParam = _uri.substr(0, _uri.find('?'));
-        if (Util::iequal(uri, uriWithoutParam))
+        if (Util::iequal(monitor.first, uriWithoutParam))
         {
-            LOG_ERR("Monitor " << _uri << " dis-connected, re-trying in 20 seconds");
-            Admin::instance().scheduleMonitorConnect(_uri, std::chrono::steady_clock::now() +
-                                                               std::chrono::seconds(20));
+            LOG_ERR("Monitor " << _uri << " dis-connected, re-trying in " << monitor.second  << " seconds");
+            Admin::instance().scheduleMonitorConnect(
+                _uri, std::chrono::steady_clock::now() + std::chrono::seconds(monitor.second));
             Admin::instance().deleteMonitorSocket(uriWithoutParam);
             reconnect = true;
             break;
@@ -950,7 +990,7 @@ void Admin::connectToMonitorSync(const std::string &uri)
 
 void Admin::scheduleMonitorConnect(const std::string &uri, std::chrono::steady_clock::time_point when)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD();
 
     MonitorConnectRecord todo;
     todo.setWhen(when);
@@ -988,21 +1028,22 @@ void Admin::start()
     startThread();
 }
 
-std::vector<std::string> Admin::getMonitorList()
+std::vector<std::pair<std::string, int>> Admin::getMonitorList()
 {
     const auto& config = Application::instance().config();
-    std::vector<std::string> monitorList;
+    std::vector<std::pair<std::string, int>> monitorList;
     for (size_t i = 0;; ++i)
     {
         const std::string path = "monitors.monitor[" + std::to_string(i) + ']';
         const std::string uri = config.getString(path, "");
+        const auto retryInterval = OXOOLWSD::getConfigValue<int>(path + "[@retryInterval]", 20);
         if (!config.has(path))
             break;
         if (!uri.empty())
         {
             Poco::URI monitor(uri);
             if (monitor.getScheme() == "wss" || monitor.getScheme() == "ws")
-                monitorList.push_back(uri);
+                monitorList.push_back(std::make_pair(uri, retryInterval));
             else
                 LOG_ERR("Unhandled monitor URI: '" << uri << "' should be \"wss://foo:1234/baa\"");
         }
@@ -1013,12 +1054,12 @@ std::vector<std::string> Admin::getMonitorList()
 void Admin::startMonitors()
 {
     bool haveMonitors = false;
-    for (std::string uri : getMonitorList())
+    for (auto monitor : getMonitorList())
     {
         addCallback(
             [=]
             {
-                scheduleMonitorConnect(uri + "?ServerId=" + Util::getProcessIdentifier(),
+                scheduleMonitorConnect(monitor.first + "?ServerId=" + Util::getProcessIdentifier(),
                                        std::chrono::steady_clock::now());
             });
         haveMonitors = true;
@@ -1028,7 +1069,7 @@ void Admin::startMonitors()
         LOG_TRC("No monitors configured.");
 }
 
-void Admin::updateMonitors(std::vector<std::string>& oldMonitors)
+void Admin::updateMonitors(std::vector<std::pair<std::string,int>>& oldMonitors)
 {
     if (oldMonitors.empty())
     {
@@ -1037,21 +1078,21 @@ void Admin::updateMonitors(std::vector<std::string>& oldMonitors)
     }
 
     std::unordered_map<std::string, bool> currentMonitorMap;
-    for (std::string uri : getMonitorList())
+    for (auto monitor : getMonitorList())
     {
-        currentMonitorMap[uri] = true;
+        currentMonitorMap[monitor.first] = true;
     }
 
     // shutdown monitors which doesnot not exist in currentMonitorMap
-    for (std::string uri : oldMonitors)
+    for (auto monitor : oldMonitors)
     {
-        if (!currentMonitorMap[uri])
+        if (!currentMonitorMap[monitor.first])
         {
-            auto socketHandler = _monitorSockets[uri];
+            auto socketHandler = _monitorSockets[monitor.first];
             if (socketHandler != nullptr)
             {
                 socketHandler->shutdown();
-                _monitorSockets.erase(uri);
+                _monitorSockets.erase(monitor.first);
             }
         }
     }

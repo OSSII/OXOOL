@@ -45,12 +45,10 @@ private:
     const bool _isClient;
 
     // Last member.
-#ifdef ENABLE_DEBUG
     /// The UnitBase instance. We capture it here since
     /// this is our instance, but the test framework
     /// has a single global instance via UnitWSD::get().
-    UnitBase& _unit;
-#endif
+    UnitBase* const _unit;
 
 protected:
     struct WSFrameMask
@@ -83,9 +81,7 @@ public:
 #endif
         _shuttingDown(false)
         , _isClient(isClient)
-#ifdef ENABLE_DEBUG
-        , _unit(UnitBase::get())
-#endif
+        , _unit(UnitBase::isUnitTesting() ? &UnitBase::get() : nullptr)
     {
 #if MOBILEAPP
         (void) isMasking;
@@ -669,10 +665,10 @@ public:
     /// 0 for closed socket, and -1 for other errors.
     int sendMessage(const char* data, const size_t len, const WSOpCode code, const bool flush) const
     {
-        if (!Util::isFuzzing())
+        if (UnitBase::isUnitTesting() && !Util::isFuzzing())
         {
             int unitReturn = -1;
-            if (_unit.filterSendWebSocketMessage(data, len, code, flush, unitReturn))
+            if (_unit->filterSendWebSocketMessage(data, len, code, flush, unitReturn))
                 return unitReturn;
         }
 
@@ -782,11 +778,16 @@ protected:
             size_t offset = Util::isValidUtf8((unsigned char*)data, len);
             if (offset < len)
             {
-                std::string raw(data, len);
-                std::cerr << "attempting to send invalid UTF-8 message '" << raw << "' "
-                          << " error at offset " << std::hex << "0x" << offset << std::dec
-                          << " bytes, string: " << Util::dumpHex(raw) << "\n";
-                assert("invalid utf-8 - check Message::detectType()" && false);
+                static const char *imgModel = "child-000 paste mimetype=image/";
+                static std::regex imgRegex("^child-[0-9a-f]{3} paste mimetype=image/$");
+                bool isImagePaste = std::regex_match(data, data + strlen(imgModel), imgRegex);
+                if (!isImagePaste) {
+                    std::string raw(data, len);
+                    std::cerr << "attempting to send invalid UTF-8 message '" << raw << "' "
+                            << " error at offset " << std::hex << "0x" << offset << std::dec
+                            << " bytes, string: " << Util::dumpHex(raw) << "\n";
+                    assert("invalid utf-8 - check Message::detectType()" && false);
+                }
             }
         }
 #endif
@@ -937,7 +938,7 @@ protected:
                                       << wsProtocol << ']');
 
 #if ENABLE_DEBUG
-        if (std::getenv("COOL_ZERO_BUFFER_SIZE"))
+        if (std::getenv("OXOOL_ZERO_BUFFER_SIZE"))
             socket->setSocketBufferSize(0);
 #endif
 
@@ -969,8 +970,7 @@ protected:
         http::Response response(
             [&]()
             {
-                if (response.statusLine().statusCode() ==
-                        Poco::Net::HTTPResponse::HTTP_SWITCHING_PROTOCOLS &&
+                if (response.statusLine().statusCode() == http::StatusCode::SwitchingProtocols &&
                     Util::iequal(response.get("Upgrade"), "websocket") &&
                     Util::iequal(response.get("Connection", ""), "Upgrade") &&
                     response.get("Sec-WebSocket-Accept", "") ==

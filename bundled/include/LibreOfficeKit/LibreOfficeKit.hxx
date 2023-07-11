@@ -663,34 +663,6 @@ public:
         mpDoc->pClass->postWindowExtTextInputEvent(mpDoc, nWindowId, nType, pText);
     }
 
-#ifdef IOS
-    /**
-     * Renders a subset of the document to a Core Graphics context.
-     *
-     * Note that the buffer size and the tile size implicitly supports
-     * rendering at different zoom levels, as the number of rendered pixels and
-     * the rendered rectangle of the document are independent.
-     *
-     * @param rCGContext the CGContextRef, cast to a void*.
-     * @param nCanvasHeight number of pixels in a column of pBuffer.
-     * @param nTilePosX logical X position of the top left corner of the rendered rectangle, in TWIPs.
-     * @param nTilePosY logical Y position of the top left corner of the rendered rectangle, in TWIPs.
-     * @param nTileWidth logical width of the rendered rectangle, in TWIPs.
-     * @param nTileHeight logical height of the rendered rectangle, in TWIPs.
-     */
-    void paintTileToCGContext(void* rCGContext,
-                              const int nCanvasWidth,
-                              const int nCanvasHeight,
-                              const int nTilePosX,
-                              const int nTilePosY,
-                              const int nTileWidth,
-                              const int nTileHeight)
-    {
-        return mpDoc->pClass->paintTileToCGContext(mpDoc, rCGContext, nCanvasWidth, nCanvasHeight,
-                                                   nTilePosX, nTilePosY, nTileWidth, nTileHeight);
-    }
-#endif // IOS
-
     /**
      *  Insert certificate (in binary form) to the certificate store.
      */
@@ -884,6 +856,36 @@ public:
     void setViewTimezone(int nId, const char* timezone)
     {
         mpDoc->pClass->setViewTimezone(mpDoc, nId, timezone);
+    }
+
+    /**
+     * Enable/Disable accessibility support for the window with the specified nId.
+     *
+     * @param nId a view ID, returned by createView().
+     * @param nEnabled true/false
+     */
+    void setAccessibilityState(int nId, bool nEnabled)
+    {
+        mpDoc->pClass->setAccessibilityState(mpDoc, nId, nEnabled);
+    }
+
+    /**
+     *  Get the current focused paragraph info:
+     *  {
+     *      "content": paragraph content
+     *      "start": selection start
+     *      "end": selection end
+     *  }
+     */
+    char* getA11yFocusedParagraph()
+    {
+        return mpDoc->pClass->getA11yFocusedParagraph(mpDoc);
+    }
+
+    /// Get the current text cursor position.
+    int getA11yCaretPosition()
+    {
+        return mpDoc->pClass->getA11yCaretPosition(mpDoc);
     }
 
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY

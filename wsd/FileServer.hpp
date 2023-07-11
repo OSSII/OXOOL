@@ -33,11 +33,11 @@ class FileServerRequestHandler
                                     const RequestDetails &requestDetails,
                                     const std::shared_ptr<StreamSocket>& socket);
 
-    /// Construct a JSON to be accepted by the cool.html from a list like
+    /// Construct a JSON to be accepted by the loleaflet.html from a list like
     /// UIMode=classic;TextRuler=true;PresentationStatusbar=false
     /// that is passed as "ui_defaults" hidden input during the iframe setup.
     /// Also returns the UIMode from uiDefaults in uiMode output param
-    static std::string uiDefaultsToJSON(const std::string& uiDefaults, std::string& uiMode);
+    static std::string uiDefaultsToJSON(const std::string& uiDefaults, std::string& uiMode, std::string& uiTheme);
 
     static std::string checkFileInfoToJSON(const std::string& checkfileFileInfo);
 

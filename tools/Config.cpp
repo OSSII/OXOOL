@@ -38,10 +38,10 @@ using Poco::Util::XMLConfiguration;
 #define MIN_PWD_ITERATIONS 1000
 #define MIN_PWD_HASH_LENGTH 20
 
-class CoolConfig final: public XMLConfiguration
+class OxoolConfig final: public XMLConfiguration
 {
 public:
-    CoolConfig()
+    OxoolConfig()
         {}
 };
 
@@ -61,13 +61,13 @@ public:
     unsigned getPwdHashLength() const { return _pwdHashLength; }
 };
 
-// Config tool to change coolwsd configuration (coolwsd.xml)
+// Config tool to change oxoolwsd configuration (oxoolwsd.xml)
 class Config: public Application
 {
     // Display help information on the console
     void displayHelp();
 
-    CoolConfig _coolConfig;
+    OxoolConfig _oxoolConfig;
 
     AdminConfig _adminConfig;
 
@@ -90,9 +90,9 @@ std::string Config::ConfigFile =
 #if ENABLE_DEBUG
     DEBUG_ABSSRCDIR
 #else
-    COOLWSD_CONFIGDIR
+    OXOOLWSD_CONFIGDIR
 #endif
-    "/coolwsd.xml";
+    "/oxoolwsd.xml";
 
 std::string Config::OldConfigFile = "/etc/loolwsd/loolwsd.xml";
 bool Config::Write = false;
@@ -109,7 +109,7 @@ void Config::displayHelp()
     HelpFormatter helpFormatter(options());
     helpFormatter.setCommand(commandName());
     helpFormatter.setUsage("COMMAND [OPTIONS]");
-    helpFormatter.setHeader("coolconfig - Configuration tool for Collabora Online.\n"
+    helpFormatter.setHeader("oxoolconfig - Configuration tool for OxOffice Online.\n"
                             "\n"
                             "Some options make sense only with a specific command.\n\n"
                             "Options:");
@@ -249,7 +249,7 @@ int Config::main(const std::vector<std::string>& args)
 
     int retval = EX_OK;
     bool changed = false;
-    _coolConfig.load(ConfigFile);
+    _oxoolConfig.load(ConfigFile);
 
     if (args[0] == "set-admin-password")
     {
@@ -314,14 +314,14 @@ int Config::main(const std::vector<std::string>& args)
         std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
         pwdConfigValue << std::to_string(_adminConfig.getPwdIterations()) << '.';
         pwdConfigValue << saltHash << '.' << passwordHash;
-        _coolConfig.setString("admin_console.username", adminUser);
-        _coolConfig.setString("admin_console.secure_password[@desc]",
+        _oxoolConfig.setString("admin_console.username", adminUser);
+        _oxoolConfig.setString("admin_console.secure_password[@desc]",
                               "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
-        _coolConfig.setString("admin_console.secure_password", pwdConfigValue.str());
+        _oxoolConfig.setString("admin_console.secure_password", pwdConfigValue.str());
 
         changed = true;
 #else
-        std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/coolwsd/coolwsd.xml." << std::endl;
+        std::cerr << "This application was compiled with old OpenSSL. Operation not supported. You can use plain text password in /etc/oxoolwsd/oxoolwsd.xml." << std::endl;
         return EX_UNAVAILABLE;
 #endif
     }
@@ -349,7 +349,7 @@ int Config::main(const std::vector<std::string>& args)
                 else
                 {
                     std::cerr << "Valid for " << validDays << " days - setting to config\n";
-                    _coolConfig.setString("support_key", supportKeyString);
+                    _oxoolConfig.setString("support_key", supportKeyString);
                     changed = true;
                 }
             }
@@ -357,7 +357,7 @@ int Config::main(const std::vector<std::string>& args)
         else
         {
             std::cerr << "Removing empty support key\n";
-            _coolConfig.remove("support_key");
+            _oxoolConfig.remove("support_key");
             changed = true;
         }
     }
@@ -368,9 +368,9 @@ int Config::main(const std::vector<std::string>& args)
         {
             // args[1] = key
             // args[2] = value
-            if (_coolConfig.has(args[1]))
+            if (_oxoolConfig.has(args[1]))
             {
-                const std::string val = _coolConfig.getString(args[1]);
+                const std::string val = _oxoolConfig.getString(args[1]);
                 std::cout << "Previous value found in config file: \""  << val << '"' << std::endl;
                 std::cout << "Changing value to: \"" << args[2] << '"' << std::endl;
             }
@@ -379,7 +379,7 @@ int Config::main(const std::vector<std::string>& args)
                 std::cout << "No property, \"" << args[1] << "\"," << " found in config file." << std::endl;
                 std::cout << "Adding it as new with value: \"" << args[2] << '"' << std::endl;
             }
-            _coolConfig.setString(args[1], args[2]);
+            _oxoolConfig.setString(args[1], args[2]);
             changed = true;
         }
         else
@@ -390,7 +390,7 @@ int Config::main(const std::vector<std::string>& args)
     }
     else if (args[0] == "update-system-template")
     {
-        const char command[] = "coolwsd-systemplate-setup /opt/cool/systemplate " LO_PATH " >/dev/null 2>&1";
+        const char command[] = "oxoolwsd-systemplate-setup /opt/oxool/systemplate " LO_PATH " >/dev/null 2>&1";
         std::cout << "Running the following command:" << std::endl
                   << command << std::endl;
 
@@ -402,7 +402,7 @@ int Config::main(const std::vector<std::string>& args)
     {
         if (!AnonymizationSaltProvided)
         {
-            const std::string val = _coolConfig.getString("logging.anonymize.anonymization_salt");
+            const std::string val = _oxoolConfig.getString("logging.anonymize.anonymization_salt");
             AnonymizationSalt = std::stoull(val);
             std::cout << "Anonymization Salt: [" << AnonymizationSalt << "]." << std::endl;
         }
@@ -449,7 +449,7 @@ int Config::main(const std::vector<std::string>& args)
     if (changed)
     {
         std::cout << "Saving configuration to : " << ConfigFile << " ..." << std::endl;
-        _coolConfig.save(ConfigFile);
+        _oxoolConfig.save(ConfigFile);
         std::cout << "Saved" << std::endl;
     }
 

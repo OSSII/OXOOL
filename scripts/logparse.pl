@@ -98,37 +98,37 @@ while (my $line = shift @input) {
 	}
     }
 
-    # systemd[1]: coolwsd.service: main process exited, code=killed, status=11/SEGV
-    if ($line =~m/coolwsd.service: main process exited.*status=(.*)$/) {
-	print "coolwsd exit: $1\n";
+    # systemd[1]: oxoolwsd.service: main process exited, code=killed, status=11/SEGV
+    if ($line =~m/oxoolwsd.service.in: main process exited.*status=(.*)$/) {
+        print "oxoolwsd exit: $1\n";
     }
 
     if ($line =~m/Initializing wsd/) {
-	print "Re-started\n";
-	clear_state(\%sessions, \%lok_starting, \%lok_running);
+        print "Re-started\n";
+        clear_state(\%sessions, \%lok_starting, \%lok_running);
     }
 
 
     # different PIDs: ...
-    # [coolbroker     ] Spawned kit [1689].
-    # [coolkit        ] coolkit [1689] is ready.
-    # [coolbroker     ] Child 1536 terminated.
-    # [coolbroker     ] Child process [1689] exited with code: 0.
-    if ($line =~ m/coolbroker.*Forked kit \[(\d+)\]./) {
+    # [oxoolbroker     ] Spawned kit [1689].
+    # [oxoolkit        ] oxoolkit [1689] is ready.
+    # [oxoolbroker     ] Child 1536 terminated.
+    # [oxoolbroker     ] Child process [1689] exited with code: 0.
+    if ($line =~ m/oxoolbroker.*Forked kit \[(\d+)\]./) {
 	my $pid = $1;
 	$lok_starting{$pid} = 1;
 	$pevent = "newkit\t\"$pid\"";
 	$pdetail = '';
     }
-    if ($line =~ m/coolkit \[(\d+)\] is ready./) {
+    if ($line =~ m/oxoolkit \[(\d+)\] is ready./) {
 	my $pid = $1;
 	delete $lok_starting{$pid};
 	$lok_running{$pid} = 1;
 	$pevent = "livekit\t\"$pid\"";
 	$pdetail = '';
     }
-    # [coolbroker     ] Child process [1689] exited with code: 0.
-    if ($line =~ m/coolbroker.*Child process \[(\d+)\]\s+(\S+)\s+.*with /) {
+    # [oxoolbroker     ] Child process [1689] exited with code: 0.
+    if ($line =~ m/oxoolbroker.*Child process \[(\d+)\]\s+(\S+)\s+.*with /) {
 	my $pid = $1;
 	my $code = $2;
 	$code = 'exit' if ($code eq 'exited');
@@ -137,7 +137,7 @@ while (my $line = shift @input) {
 	$pdetail = '';
     }
 
-    # coolwsd:
+    # oxoolwsd:
     if ($line =~ m/Loading new document from URI: \[([^\]]+)\].*for session \[([^\]]+)\]/) {
 	my ($doc_uri, $session) = ($1, $2);
 	$sessions{$session} = $doc_uri;

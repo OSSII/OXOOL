@@ -295,6 +295,8 @@ namespace SigUtil
     static
     void handleTerminationSignal(const int signal)
     {
+        const auto onrre = errno; // Save.
+
         bool hardExit = false;
         const char *domain;
         if (!ShutdownRequestFlag && (signal == SIGINT || signal == SIGTERM))
@@ -329,8 +331,11 @@ namespace SigUtil
 #endif
 
             ::signal (signal, SIG_DFL);
+            errno = onrre; // Restore.
             ::raise (signal);
         }
+
+        errno = onrre; // Restore.
     }
 
     void requestShutdown()
@@ -423,7 +428,7 @@ namespace SigUtil
 #endif
 
 #if !ENABLE_DEBUG
-        if (std::getenv("COOL_DEBUG"))
+        if (std::getenv("OXOOL_DEBUG"))
 #endif
         {
             if (UnattendedRun)
@@ -431,17 +436,14 @@ namespace SigUtil
                 static constexpr auto msg =
                     "Crashed in unattended run and won't wait for debugger. Re-run without "
                     "--unattended to attach a debugger.";
-                LOG_ERR(msg);
-                std::cerr << msg << '\n';
+                std::cerr << msg << std::endl;
             }
             else
             {
                 signalLog(FatalGdbString);
-                LOG_ERR("Sleeping 60s to allow debugging: attach " << getpid());
-                std::cerr << "Sleeping 60s to allow debugging: attach " << getpid() << '\n';
+                std::cerr << "Sleeping 60s to allow debugging: attach " << getpid() << std::endl;
                 sleep(60);
-                LOG_ERR("Finished sleeping to allow debugging of: " << getpid());
-                std::cerr << "Finished sleeping to allow debugging of: " << getpid() << '\n';
+                std::cerr << "Finished sleeping to allow debugging of: " << getpid() << std::endl;
             }
         }
     }

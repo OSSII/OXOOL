@@ -201,10 +201,27 @@ namespace FileUtil
         Poco::File(root).createDirectories();
 
         // Don't const to allow for automatic move on return.
-        std::string newTmp = root + "/cool-" + Util::rng::getFilename(16);
+        std::string newTmp = root + "/oxool-" + Util::rng::getFilename(16);
         if (::mkdir(newTmp.c_str(), S_IRWXU) < 0)
         {
             LOG_SYS("Failed to create random temp directory [" << newTmp << ']');
+            return root;
+        }
+        return newTmp;
+    }
+
+    std::string createTmpDir(std::string dirName, std::string root)
+    {
+        if (root.empty())
+            root = getSysTempDirectoryPath();
+
+        Poco::File(root).createDirectories();
+
+        // Don't const to allow for automatic move on return.
+        std::string newTmp = root + '/' + dirName;
+        if (::mkdir(newTmp.c_str(), S_IRWXU) < 0)
+        {
+            LOG_SYS("Failed to create temp directory [" << newTmp << ']');
             return root;
         }
         return newTmp;

@@ -136,7 +136,7 @@ struct Stats {
         // how much from each command ?
         std::vector<std::string> sortKeys;
         size_t total = 0;
-        for(auto it : map)
+        for(const auto& it : map)
         {
             sortKeys.push_back(it.first);
             total += it.second.size;
@@ -145,7 +145,7 @@ struct Stats {
                   [&](const std::string &a, const std::string &b)
                       { return map[a].size > map[b].size; } );
         std::cout << "size\tcount\tcommand\n";
-        for (auto it : sortKeys)
+        for (const auto& it : sortKeys)
         {
             std::cout << map[it].size << "\t"
                       << map[it].count << "\t" << it << "\n";
@@ -316,7 +316,7 @@ public:
 
     std::string rewriteMessage(const std::string &msg)
     {
-        const std::string firstLine = COOLProtocol::getFirstLine(msg);
+        const std::string firstLine = OXOOLProtocol::getFirstLine(msg);
         StringVector tokens = StringVector::tokenize(firstLine);
 
         std::string out = msg;
@@ -344,7 +344,7 @@ public:
     {
         const auto now = std::chrono::steady_clock::now();
 
-        const std::string firstLine = COOLProtocol::getFirstLine(data.data(), data.size());
+        const std::string firstLine = OXOOLProtocol::getFirstLine(data.data(), data.size());
         StringVector tokens = StringVector::tokenize(firstLine);
         std::cerr << _logPre << "Got msg: " << firstLine << "\n";
 
@@ -415,7 +415,7 @@ public:
         std::string fileabs = Poco::Path(filePath).makeAbsolute().toString();
         Poco::URI::encode("file://" + fileabs, ":/?", file);
         Poco::URI::encode(file, ":/?", wrap); // double encode.
-        std::string uri = server + "/cool/" + wrap + "/ws";
+        std::string uri = server + "/oxool/" + wrap + "/ws";
 
         auto handler = std::make_shared<StressSocketHandler>(poll, optStats, file, tracePath);
         poll.insertNewWebSocketSync(Poco::URI(uri), handler);

@@ -1,7 +1,7 @@
 /* Version-related variables */
 
-/* Collabora Online WebSocket server version */
-#undef COOLWSD_VERSION
+/* OxOffice Online WebSocket server version */
+#undef OXOOLWSD_VERSION
 
-/* Collabora Online git hash if present */
-#undef COOLWSD_VERSION_HASH
+/* OxOffice Online git hash if present */
+#undef OXOOLWSD_VERSION_HASH

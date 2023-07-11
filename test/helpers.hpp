@@ -28,7 +28,7 @@
 #include <Common.hpp>
 #include "Socket.hpp"
 #include "common/FileUtil.hpp"
-#include <tools/COOLWebSocket.hpp>
+#include <tools/OXOOLWebSocket.hpp>
 #include <common/ConfigUtil.hpp>
 #include <common/Util.hpp>
 #include <net/WebSocketSession.hpp>
@@ -47,7 +47,7 @@
 constexpr int COMMAND_RETRY_COUNT = 5;
 
 /// Common helper testing functions.
-/// Avoid the temptation to reuse from COOL code!
+/// Avoid the temptation to reuse from OXOOL code!
 /// These are supposed to be testing the latter.
 namespace helpers
 {
@@ -122,18 +122,18 @@ inline void getDocumentPathAndURL(const std::string& docFilename, std::string& d
     std::string encodedUri;
     Poco::URI::encode("file://" + Poco::Path(documentPath).makeAbsolute().toString(), ":/?",
                       encodedUri);
-    documentURL = "cool/" + encodedUri + "/ws";
+    documentURL = "oxool/" + encodedUri + "/ws";
     TST_LOG("Test file: " << documentPath);
 }
 
 inline
-void sendTextFrame(COOLWebSocket& socket, const std::string& string, const std::string& testname)
+void sendTextFrame(OXOOLWebSocket& socket, const std::string& string, const std::string& testname)
 {
-    TST_LOG("Sending " << string.size() << " bytes: " << COOLProtocol::getAbbreviatedMessage(string));
+    TST_LOG("Sending " << string.size() << " bytes: " << OXOOLProtocol::getAbbreviatedMessage(string));
     socket.sendFrame(string.data(), string.size());
 }
 
-inline void sendTextFrame(const std::shared_ptr<COOLWebSocket>& socket, const std::string& string,
+inline void sendTextFrame(const std::shared_ptr<OXOOLWebSocket>& socket, const std::string& string,
                           const std::string& testname)
 {
     sendTextFrame(*socket, string, testname);
@@ -143,7 +143,7 @@ inline void sendTextFrame(const std::shared_ptr<http::WebSocketSession>& ws,
                           const std::string& string, const std::string& testname = std::string())
 {
     TST_LOG("Sending " << string.size()
-                       << " bytes: " << COOLProtocol::getAbbreviatedMessage(string));
+                       << " bytes: " << OXOOLProtocol::getAbbreviatedMessage(string));
     ws->sendMessage(string);
 }
 
@@ -321,7 +321,7 @@ inline std::string const& getTestServerURI()
 
 
 inline std::vector<char>
-getResponseMessage(COOLWebSocket& ws, const std::string& prefix, const std::string& testname,
+getResponseMessage(OXOOLWebSocket& ws, const std::string& prefix, const std::string& testname,
                    const std::chrono::milliseconds timeoutMs = std::chrono::seconds(10))
 {
     try
@@ -346,13 +346,13 @@ getResponseMessage(COOLWebSocket& ws, const std::string& prefix, const std::stri
                 response.resize(READ_BUFFER_SIZE * 8);
                 const int bytes = ws.receiveFrame(response.data(), response.size(), flags, testname);
                 response.resize(std::max(bytes, 0));
-                const auto message = COOLProtocol::getFirstLine(response);
+                const auto message = OXOOLProtocol::getFirstLine(response);
                 if (bytes > 0 && (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) != Poco::Net::WebSocket::FRAME_OP_CLOSE)
                 {
-                    if (COOLProtocol::matchPrefix(prefix, message))
+                    if (OXOOLProtocol::matchPrefix(prefix, message))
                     {
                         TST_LOG('[' << prefix <<  "] Matched " <<
-                                COOLWebSocket::getAbbreviatedFrameDump(response.data(), bytes, flags));
+                                OXOOLWebSocket::getAbbreviatedFrameDump(response.data(), bytes, flags));
                         return response;
                     }
                 }
@@ -370,13 +370,13 @@ getResponseMessage(COOLWebSocket& ws, const std::string& prefix, const std::stri
                 if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) != Poco::Net::WebSocket::FRAME_OP_CLOSE)
                 {
                     // Don't ignore errors.
-                    if (COOLProtocol::matchPrefix("error:", message))
+                    if (OXOOLProtocol::matchPrefix("error:", message))
                     {
                         throw std::runtime_error(message);
                     }
 
                     TST_LOG('[' << prefix <<  "] Ignored " <<
-                            COOLWebSocket::getAbbreviatedFrameDump(response.data(), bytes, flags));
+                            OXOOLWebSocket::getAbbreviatedFrameDump(response.data(), bytes, flags));
                 }
             }
         }
@@ -454,7 +454,7 @@ inline bool isDocumentLoaded(const std::shared_ptr<http::WebSocketSession>& ws,
         std::chrono::seconds(COMMAND_TIMEOUT_SECS * 4); // Allow longer for loading.
     const std::string message = getResponseString(ws, prefix, testname, timeout);
 
-    const bool success = COOLProtocol::matchPrefix(prefix, message);
+    const bool success = OXOOLProtocol::matchPrefix(prefix, message);
     if (!success)
         TST_LOG("ERROR: Timed out loading document. Did not get [" << prefix << "] in time.");
     return success;
@@ -491,6 +491,12 @@ connectLOKit(const std::shared_ptr<SocketPoll>& socketPoll, const Poco::URI& uri
             if (getResponseString(ws, expected_response, testname) == expected_response)
             {
                 return ws;
+            }
+
+            if (SigUtil::getShutdownRequestFlag())
+            {
+                TST_LOG("Shutdown requested, giving up connectLOKit");
+                break;
             }
 
             TST_LOG("ERROR: Reconnecting (retry #" << (max_retries - retries) << ") to "
@@ -674,7 +680,7 @@ inline void saveTileAs(const std::vector<char> &tileResponse,
                        const std::string &filename,
                        const std::string &testname)
 {
-    const std::string firstLine = COOLProtocol::getFirstLine(tileResponse);
+    const std::string firstLine = OXOOLProtocol::getFirstLine(tileResponse);
     std::vector<char> res(tileResponse.begin() + firstLine.size() + 1, tileResponse.end());
     std::stringstream streamRes;
     std::copy(res.begin(), res.end(), std::ostream_iterator<char>(streamRes));
@@ -694,7 +700,7 @@ std::vector<char> getTileAndSave(T& socket, const std::string& req, const std::s
     const std::vector<char> tile = getResponseMessage(socket, "tile:", testname);
     TST_LOG(" Tile PNG size: " << tile.size());
 
-    const std::string firstLine = COOLProtocol::getFirstLine(tile);
+    const std::string firstLine = OXOOLProtocol::getFirstLine(tile);
     std::vector<char> res(tile.begin() + firstLine.size() + 1, tile.end());
     std::stringstream streamRes;
     std::copy(res.begin(), res.end(), std::ostream_iterator<char>(streamRes));
@@ -708,10 +714,10 @@ std::vector<char> getTileAndSave(T& socket, const std::string& req, const std::s
 template <typename T>
 inline void getServerVersion(T& socket, int& major, int& minor, const std::string& testname)
 {
-    const std::string clientVersion = "coolclient 0.1";
+    const std::string clientVersion = "oxoolclient 0.1";
     sendTextFrame(socket, clientVersion, testname);
     std::vector<char> loVersion = getResponseMessage(socket, "lokitversion", testname);
-    std::string line = COOLProtocol::getFirstLine(loVersion.data(), loVersion.size());
+    std::string line = OXOOLProtocol::getFirstLine(loVersion.data(), loVersion.size());
     line = line.substr(strlen("lokitversion "));
     Poco::JSON::Parser parser;
     Poco::Dynamic::Var loVersionVar = parser.parse(line);
@@ -758,7 +764,7 @@ inline bool svgMatch(const std::string& testname, const std::vector<char>& respo
 }
 
 /// Sends a command and waits for an event in response, with retrying.
-inline void sendAndWait(const std::shared_ptr<http::WebSocketSession>& ws,
+inline bool sendAndWait(const std::shared_ptr<http::WebSocketSession>& ws,
                         const std::string& testname, const std::string& command,
                         const std::string& response,
                         std::chrono::milliseconds timeoutPerAttempt = std::chrono::seconds(10),
@@ -769,8 +775,21 @@ inline void sendAndWait(const std::shared_ptr<http::WebSocketSession>& ws,
         TST_LOG("Sending [" << command << "], waiting for [" << response << "], attempt #" << i);
         sendTextFrame(ws, command, testname);
         if (!getResponseString(ws, response, testname, timeoutPerAttempt).empty())
-            break;
+            return true;
     }
+
+    return false;
+}
+
+/// Drain all events.
+/// Draining happens until nothing is received for @timeoutDrain.
+inline void drain(const std::shared_ptr<http::WebSocketSession>& ws, const std::string& testname,
+                  std::chrono::milliseconds timeoutDrain = std::chrono::milliseconds(300))
+{
+    TST_LOG("Draining events");
+
+    while (!getResponseString(ws, "", testname, timeoutDrain).empty())
+        ; // Skip.
 }
 
 /// Sends a command and drain an event in response.
@@ -800,23 +819,30 @@ inline bool sendAndDrain(const std::shared_ptr<http::WebSocketSession>& ws,
 }
 
 /// Select all and wait for the text selection update.
-inline void selectAll(const std::shared_ptr<http::WebSocketSession>& ws,
+inline bool selectAll(const std::shared_ptr<http::WebSocketSession>& ws,
                       const std::string& testname,
                       std::chrono::milliseconds timeoutPerAttempt = std::chrono::seconds(10),
-                      int repeat = COMMAND_RETRY_COUNT)
+                      int retry = COMMAND_RETRY_COUNT)
 {
-    sendAndWait(ws, testname, "uno .uno:SelectAll", "textselection:", timeoutPerAttempt, repeat);
+    return sendAndWait(ws, testname, "uno .uno:SelectAll", "textselection:", timeoutPerAttempt,
+                       retry);
 }
 
 /// Delete all and wait for the text selection update.
-inline void deleteAll(const std::shared_ptr<http::WebSocketSession>& ws,
+inline bool deleteAll(const std::shared_ptr<http::WebSocketSession>& ws,
                       const std::string& testname,
                       std::chrono::milliseconds timeoutPerAttempt = std::chrono::seconds(10),
-                      int repeat = COMMAND_RETRY_COUNT)
+                      int retry = COMMAND_RETRY_COUNT)
 {
-    selectAll(ws, testname, timeoutPerAttempt, repeat);
+    for (int i = 1; i <= retry; ++i)
+    {
+        selectAll(ws, testname, timeoutPerAttempt, retry);
 
-    sendAndWait(ws, testname, "uno .uno:Delete", "textselection:", timeoutPerAttempt, repeat);
+        if (sendAndWait(ws, testname, "uno .uno:Delete", "textselection:", timeoutPerAttempt, 1))
+            return true;
+    }
+
+    return false;
 }
 
 inline std::string getAllText(const std::shared_ptr<http::WebSocketSession>& socket,

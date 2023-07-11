@@ -96,12 +96,12 @@ public:
 
     bool getTokenInteger(const std::string& name, int& value)
     {
-        return COOLProtocol::getTokenInteger(_tokens, name, value);
+        return OXOOLProtocol::getTokenInteger(_tokens, name, value);
     }
 
     /// Return the abbreviated message for logging purposes.
     std::string abbr() const {
-        return _id + ' ' + COOLProtocol::getAbbreviatedMessage(_data.data(), _data.size());
+        return _id + ' ' + OXOOLProtocol::getAbbreviatedMessage(_data.data(), _data.size());
     }
     const std::string& id() const { return _id; }
 
@@ -137,7 +137,7 @@ public:
         if (func(_data))
         {
             // Check - just the body.
-            assert(_firstLine == COOLProtocol::getFirstLine(_data.data(), _data.size()));
+            assert(_firstLine == OXOOLProtocol::getFirstLine(_data.data(), _data.size()));
             assert(_type == detectType());
         }
     }
@@ -155,7 +155,7 @@ private:
     {
         if(_firstLine.empty())
         {
-            _firstLine = COOLProtocol::getFirstLine(_data.data(), _data.size());
+            _firstLine = OXOOLProtocol::getFirstLine(_data.data(), _data.size());
         }
     }
 
@@ -182,7 +182,7 @@ private:
 
     std::string getForwardToken(const char* buffer, int length)
     {
-        std::string forward = COOLProtocol::getFirstToken(buffer, length);
+        std::string forward = OXOOLProtocol::getFirstToken(buffer, length);
         return (forward.find('-') != std::string::npos ? forward : std::string());
     }
 

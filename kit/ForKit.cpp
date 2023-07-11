@@ -129,17 +129,15 @@ protected:
             return;
 #endif
         StringVector tokens = StringVector::tokenize(message);
-        Log::StreamLogger logger = Log::debug();
-        if (logger.enabled())
-        {
-            logger << _socketName << ": recv [";
-            for (const auto& token : tokens)
-            {
-                logger << tokens.getParam(token) << ' ';
-            }
 
-            LOG_END_FLUSH(logger);
-        }
+        LOG_DBG(_socketName << ": recv [" <<
+                [&](auto& log)
+                {
+                    for (const auto& token : tokens)
+                    {
+                        log << tokens.getParam(token) << ' ';
+                    }
+                });
 
         // Note: Syntax or parsing errors here are unexpected and fatal.
         if (SigUtil::getTerminationFlag())
@@ -162,7 +160,7 @@ protected:
         else if (tokens.size() == 2 && tokens.equals(0, "setloglevel"))
         {
             // Set environment variable so that new children will also set their log levels accordingly.
-            setenv("COOL_LOGLEVEL", tokens[1].c_str(), 1);
+            setenv("OXOOL_LOGLEVEL", tokens[1].c_str(), 1);
             Log::logger().setLevel(tokens[1]);
         }
         else if (tokens.size() == 3 && tokens.equals(0, "setconfig"))
@@ -234,12 +232,12 @@ static bool haveCapability(cap_value_t capability)
     {
         if (cap_name)
         {
-            LOG_ERR("Capability " << cap_name << " is not set for the coolforkit program.");
+            LOG_ERR("Capability " << cap_name << " is not set for the oxoolforkit program.");
             cap_free(cap_name);
         }
         else
         {
-            LOG_ERR("Capability " << capability << " is not set for the coolforkit program.");
+            LOG_ERR("Capability " << capability << " is not set for the oxoolforkit program.");
         }
         return false;
     }
@@ -357,7 +355,7 @@ static void cleanupChildren()
     while (i-- > 0)
     {
         const std::string path = cleanupJailPaths[i];
-        JailUtil::removeJail(path);
+        JailUtil::tryRemoveJail(path);
         const FileUtil::Stat st(path);
         if (st.good() && st.isDirectory())
             LOG_DBG("Could not remove jail path [" << path << "]. Will retry later.");
@@ -380,7 +378,7 @@ static int createLibreOfficeKit(const std::string& childRoot,
     // Used to label the spare kit instances
     static size_t spareKitId = 0;
     ++spareKitId;
-    LOG_DBG("Forking a coolkit process with jailId: " << jailId << " as spare coolkit #"
+    LOG_DBG("Forking a oxoolkit process with jailId: " << jailId << " as spare oxoolkit #"
                                                       << spareKitId << '.');
     const auto startForkingTime = std::chrono::steady_clock::now();
 
@@ -389,7 +387,7 @@ static int createLibreOfficeKit(const std::string& childRoot,
     {
         // Child
 
-        // Close the pipe from coolwsd
+        // Close the pipe from oxoolwsd
         close(0);
 
 #ifndef KIT_IN_PROCESS
@@ -473,9 +471,9 @@ void forkLibreOfficeKit(const std::string& childRoot,
 #ifndef KIT_IN_PROCESS
 static void printArgumentHelp()
 {
-    std::cout << "Usage: coolforkit [OPTION]..." << std::endl;
+    std::cout << "Usage: oxoolforkit [OPTION]..." << std::endl;
     std::cout << "  Single-threaded process that spawns lok instances" << std::endl;
-    std::cout << "  Note: Running this standalone is not possible. It is spawned by coolwsd" << std::endl;
+    std::cout << "  Note: Running this standalone is not possible. It is spawned by oxoolwsd" << std::endl;
     std::cout << "        and is controlled via a pipe." << std::endl;
     std::cout << "" << std::endl;
 }
@@ -484,20 +482,20 @@ int main(int argc, char** argv)
 {
     /*WARNING: PRIVILEGED CODE CHECKING START */
 
-    /*WARNING*/ // early check for avoiding the security check for username 'cool'
+    /*WARNING*/ // early check for avoiding the security check for username 'oxool'
     /*WARNING*/ // (deliberately only this, not moving the entire parameter parsing here)
-    /*WARNING*/ bool checkCoolUser = true;
-    /*WARNING*/ std::string disableCoolUserChecking("--disable-cool-user-checking");
-    /*WARNING*/ for (int i = 1; checkCoolUser && (i < argc); ++i)
+    /*WARNING*/ bool checkOxoolUser = true;
+    /*WARNING*/ std::string disableOxoolUserChecking("--disable-oxool-user-checking");
+    /*WARNING*/ for (int i = 1; checkOxoolUser && (i < argc); ++i)
     /*WARNING*/ {
-    /*WARNING*/     if (disableCoolUserChecking == argv[i])
-    /*WARNING*/         checkCoolUser = false;
+    /*WARNING*/     if (disableOxoolUserChecking == argv[i])
+    /*WARNING*/         checkOxoolUser = false;
     /*WARNING*/ }
 
-    /*WARNING*/ if (!hasCorrectUID("coolforkit"))
+    /*WARNING*/ if (!hasCorrectUID("oxoolforkit"))
     /*WARNING*/ {
     /*WARNING*/     // don't allow if any capability is set (unless root; who runs this
-    /*WARNING*/     // as root or runs this in a container and provides --disable-cool-user-checking knows what they
+    /*WARNING*/     // as root or runs this in a container and provides --disable-oxool-user-checking knows what they
     /*WARNING*/     // are doing)
     /*WARNING*/     if (hasUID("root"))
     /*WARNING*/     {
@@ -509,32 +507,32 @@ int main(int argc, char** argv)
     /*WARNING*/     }
     /*WARNING*/     else if (hasAnyCapability())
     /*WARNING*/     {
-    /*WARNING*/         if (!checkCoolUser)
-    /*WARNING*/             LOG_FTL("Security: --disable-cool-user-checking failed, coolforkit has some capabilities set.");
+    /*WARNING*/         if (!checkOxoolUser)
+    /*WARNING*/             LOG_FTL("Security: --disable-oxool-user-checking failed, oxoolforkit has some capabilities set.");
 
     /*WARNING*/         LOG_FTL("Aborting.");
     /*WARNING*/         return EX_SOFTWARE;
     /*WARNING*/     }
 
     /*WARNING*/     // even without the capabilities, don't run unless the user really knows
-    /*WARNING*/     // what they are doing, and provided a --disable-cool-user-checking
-    /*WARNING*/     if (checkCoolUser)
+    /*WARNING*/     // what they are doing, and provided a --disable-oxool-user-checking
+    /*WARNING*/     if (checkOxoolUser)
     /*WARNING*/     {
     /*WARNING*/         LOG_FTL("Aborting.");
     /*WARNING*/         return EX_SOFTWARE;
     /*WARNING*/     }
 
-    /*WARNING*/     LOG_ERR("Security: Check for the 'cool' username overridden on the command line.");
+    /*WARNING*/     LOG_ERR("Security: Check for the 'oxool' username overridden on the command line.");
     /*WARNING*/ }
 
     /*WARNING: PRIVILEGED CODE CHECKING END */
 
     // Continue in privileged mode, but only if:
-    // * the user is 'cool' (privileged user)
-    // * the user is 'root', and --disable-cool-user-checking was provided
+    // * the user is 'oxool' (privileged user)
+    // * the user is 'root', and --disable-oxool-user-checking was provided
     // Alternatively allow running in non-privileged mode (with --nocaps), if:
     // * the user is a non-priviled user, the binary is not privileged
-    //   either (no caps set), and --disable-cool-user-checking was provided
+    //   either (no caps set), and --disable-oxool-user-checking was provided
 
     if (std::getenv("SLEEPFORDEBUGGER"))
     {
@@ -548,16 +546,16 @@ int main(int argc, char** argv)
         }
     }
 
-    SigUtil::setFatalSignals("forkit startup of " COOLWSD_VERSION " " COOLWSD_VERSION_HASH);
+    SigUtil::setFatalSignals("forkit startup of " OXOOLWSD_VERSION " " OXOOLWSD_VERSION_HASH);
 
     Util::setApplicationPath(Poco::Path(argv[0]).parent().toString());
 
     // Initialization
-    const bool logToFile = std::getenv("COOL_LOGFILE");
-    const char* logFilename = std::getenv("COOL_LOGFILENAME");
-    const char* logLevel = std::getenv("COOL_LOGLEVEL");
-    const char* logLevelStartup = std::getenv("COOL_LOGLEVEL_STARTUP");
-    const char* logColor = std::getenv("COOL_LOGCOLOR");
+    const bool logToFile = std::getenv("OXOOL_LOGFILE");
+    const char* logFilename = std::getenv("OXOOL_LOGFILENAME");
+    const char* logLevel = std::getenv("OXOOL_LOGLEVEL");
+    const char* logLevelStartup = std::getenv("OXOOL_LOGLEVEL_STARTUP");
+    const char* logColor = std::getenv("OXOOL_LOGCOLOR");
     std::map<std::string, std::string> logProperties;
     if (logToFile && logFilename)
     {
@@ -611,7 +609,7 @@ int main(int argc, char** argv)
         {
             std::string version, hash;
             Util::getVersionInfo(version, hash);
-            std::cout << "coolforkit version details: " << version << " - " << hash << std::endl;
+            std::cout << "oxoolforkit version details: " << version << " - " << hash << std::endl;
             DisplayVersion = true;
         }
         else if (std::strstr(cmd, "--rlimits") == cmd)
@@ -677,8 +675,7 @@ int main(int argc, char** argv)
         return EX_USAGE;
     }
 
-    if (!UnitBase::init(UnitBase::UnitType::Kit,
-                        UnitTestLibrary))
+    if (!UnitBase::init(UnitBase::UnitType::Kit, UnitTestLibrary))
     {
         LOG_FTL("Failed to load kit unit test library");
         return EX_USAGE;
@@ -691,7 +688,7 @@ int main(int argc, char** argv)
 
     if (!NoCapsForKit && !haveCorrectCapabilities())
     {
-        LOG_FTL("Capabilities are not set for the coolforkit program.");
+        LOG_FTL("Capabilities are not set for the oxoolforkit program.");
         LOG_FTL("Please make sure that the current partition was *not* mounted with the 'nosuid' option.");
         LOG_FTL("If you are on SLES11, please set 'file_caps=1' as kernel boot option.");
         return EX_SOFTWARE;
@@ -715,7 +712,7 @@ int main(int argc, char** argv)
 
 #if !MOBILEAPP
     // Parse the configuration.
-    const auto conf = std::getenv("COOL_CONFIG");
+    const auto conf = std::getenv("OXOOL_CONFIG");
     config::initialize(std::string(conf ? conf : std::string()));
     EnableExperimental = config::getBool("experimental_features", false);
 #endif
@@ -726,7 +723,7 @@ int main(int argc, char** argv)
 
     // We must have at least one child, more are created dynamically.
     // Ask this first child to send version information to master process and trace startup.
-    ::setenv("COOL_TRACE_STARTUP", "1", 1);
+    ::setenv("OXOOL_TRACE_STARTUP", "1", 1);
     const pid_t forKitPid = createLibreOfficeKit(childRoot, sysTemplate, loTemplate, true);
     if (forKitPid < 0)
     {
@@ -735,7 +732,7 @@ int main(int argc, char** argv)
     }
 
     // No need to trace subsequent children.
-    ::unsetenv("COOL_TRACE_STARTUP");
+    ::unsetenv("OXOOL_TRACE_STARTUP");
     if (LogLevel != LogLevelStartup)
     {
         LOG_INF("Forkit initialization complete: setting log-level to [" << LogLevel << "] as configured.");

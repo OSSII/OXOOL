@@ -30,26 +30,26 @@
  * Example:
  *  convert-to
  *
- * cool URI: used to load cool.html and other static files.
+ * oxool URI: used to load loleaflet.html and other static files.
  * Origin: the page where the document will be embedded.
  * Format:
- *  /browser/<coolwsd-version-hash>/[path/]<filename>.<ext>[?WOPISrc=<encoded-document-URI>]
+ *  /browser/<oxoolwsd-version-hash>/[path/]<filename>.<ext>[?WOPISrc=<encoded-document-URI>]
  * Identifier: /browser/.
  * Examples:
  *  /browser/49c225146/src/map/Clipboard.js
- *  /browser/49c225146/cool.html?WOPISrc=http%3A%2F%2Flocalhost%2Fnextcloud%2Findex.php%2Fapps%2Frichdocuments%2Fwopi%2Ffiles%2F593_ocqiesh0cngs&title=empty.odt&lang=en-us&closebutton=1&revisionhistory=1
+ *  /browser/49c225146/loleaflet.html?WOPISrc=http%3A%2F%2Flocalhost%2Fnextcloud%2Findex.php%2Fapps%2Frichdocuments%2Fwopi%2Ffiles%2F593_ocqiesh0cngs&title=empty.odt&lang=en-us&closebutton=1&revisionhistory=1
  *
- * cool URI: used to load the document.
- * Origin: cool.html
+ * oxool URI: used to load the document.
+ * Origin: loleaflet.html
  * Format:
- *  /cool/<encoded-document-URI+options>/ws?WOPISrc=<encoded-document-URI>&compat=/ws[/<sessionId>/<command>/<serial>]
- * Identifier: /cool/.
+ *  /oxool/<encoded-document-URI+options>/ws?WOPISrc=<encoded-document-URI>&compat=/ws[/<sessionId>/<command>/<serial>]
+ * Identifier: /oxool/.
  *
  * The 'document-URI' is the original URL in the client that is used to load the document page.
  * The optional section at the end, in square-brackets, is for richproxy.
  *
  * Example:
- *  /cool/http%3A%2F%2Flocalhost%2Fowncloud%2Findex.php%2Fapps%2Frichdocuments%2Fwopi%2Ffiles%2F165_ocgdpzbkm39u%3F
+ *  /oxool/http%3A%2F%2Flocalhost%2Fowncloud%2Findex.php%2Fapps%2Frichdocuments%2Fwopi%2Ffiles%2F165_ocgdpzbkm39u%3F
  *  access_token%3DODhIXdJdbsVYQoKKCuaYofyzrovxD3MQ%26access_token_ttl%3D0/ws?
  *  WOPISrc=http%3A%2F%2Flocalhost%2Fowncloud%2Findex.php%2Fapps%2Frichdocuments%2Fwopi%2F
  *  files%2F165_ocgdpzbkm39u&compat=/ws/1c99a7bcdbf3209782d7eb38512e6564/write/2
@@ -81,13 +81,13 @@
  * The different sections are henceforth given names to help both in documenting and
  * communicating them, and to facilitate parsing them.
  *
- * /cool/<encoded-document-URI+options>/ws?WOPISrc=<encoded-document-URI>&compat=/ws[/<sessionId>/<command>/<serial>]
+ * /oxool/<encoded-document-URI+options>/ws?WOPISrc=<encoded-document-URI>&compat=/ws[/<sessionId>/<command>/<serial>]
  *       |--------documentURI---------|            |-------WOPISrc------|        |--------------compat--------------|
  *                            |options|                                               |sessionId| |command| |serial|
  *       |---------------------------LegacyDocumentURI---------------------------|
  *
  * Alternatively, the LegacyDocumentURI (encoded) could be hexified, as follows:
- * /cool/0x123456789/ws?WOPISrc=<encoded-document-URI>&compat=/ws[/<sessionId>/<command>/<serial>]
+ * /oxool/0x123456789/ws?WOPISrc=<encoded-document-URI>&compat=/ws[/<sessionId>/<command>/<serial>]
  */
 class RequestDetails
 {
@@ -140,7 +140,7 @@ public:
     static std::string getDocKey(const std::string& uri) { return getDocKey(sanitizeURI(uri)); }
 
     // matches the WOPISrc if used. For load balancing
-    // must be 2nd element in the path after /cool/<here>
+    // must be 2nd element in the path after /oxool/<here>
     std::string getLegacyDocumentURI() const { return getField(Field::LegacyDocumentURI); }
 
     /// The DocumentURI, decoded. Doesn't contain WOPISrc or any other appendages.

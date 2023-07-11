@@ -54,7 +54,7 @@ public:
 /// A WSD unit-test base class with support
 /// to manage client connections.
 /// This cannot be in UnitWSD or UnitBase because
-/// we use test code that isn't availabe in COOLWSD.
+/// we use test code that isn't availabe in OXOOLWSD.
 class UnitWSDClient : public UnitWSD
 {
 public:
@@ -86,13 +86,13 @@ protected:
         Poco::URI::encode(wopiURL.toString(), ":/?", _wopiSrc);
 
         // This is just a client connection that is used from the tests.
-        LOG_TST("Connecting test client to COOL (#" << (_wsList.size() + 1)
-                                                    << " connection): /cool/" << _wopiSrc << "/ws");
+        LOG_TST("Connecting test client to OXOOL (#" << (_wsList.size() + 1)
+                                                    << " connection): /oxool/" << _wopiSrc << "/ws");
 
         // Insert at the front.
         const auto& _ws = _wsList.emplace(
             _wsList.begin(), Util::make_unique<UnitWebSocket>(
-                                 socketPoll(), "/cool/" + _wopiSrc + "/ws", getTestname()));
+                                 socketPoll(), "/oxool/" + _wopiSrc + "/ws", getTestname()));
 
         assert((*_ws).get());
     }
@@ -100,13 +100,13 @@ protected:
     void addWebSocket()
     {
         // This is just a client connection that is used from the tests.
-        LOG_TST("Connecting test client to COOL (#" << (_wsList.size() + 1)
-                                                    << " connection): /cool/" << _wopiSrc << "/ws");
+        LOG_TST("Connecting test client to OXOOL (#" << (_wsList.size() + 1)
+                                                    << " connection): /oxool/" << _wopiSrc << "/ws");
 
         // Insert at the back.
         const auto& _ws = _wsList.emplace(
             _wsList.end(), Util::make_unique<UnitWebSocket>(
-                               socketPoll(), "/cool/" + _wopiSrc + "/ws", getTestname()));
+                               socketPoll(), "/oxool/" + _wopiSrc + "/ws", getTestname()));
 
         assert((*_ws).get());
     }

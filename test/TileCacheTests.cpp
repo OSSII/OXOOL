@@ -24,7 +24,7 @@
 #include <Unit.hpp>
 #include <Util.hpp>
 
-#include <countcoolkits.hpp>
+#include <countoxoolkits.hpp>
 #include <helpers.hpp>
 #include <test.hpp>
 #include <sstream>
@@ -70,9 +70,6 @@ class TileCacheTests : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST(testSimple);
     CPPUNIT_TEST(testSimpleCombine);
     CPPUNIT_TEST(testSize);
-    CPPUNIT_TEST(testCancelTiles);
-    // unstable
-    // CPPUNIT_TEST(testCancelTilesMultiView);
     CPPUNIT_TEST(testDisconnectMultiView);
     CPPUNIT_TEST(testUnresponsiveClient);
     CPPUNIT_TEST(testImpressTiles);
@@ -110,8 +107,6 @@ class TileCacheTests : public CPPUNIT_NS::TestFixture
     void testSimple();
     void testSimpleCombine();
     void testSize();
-    void testCancelTiles();
-    void testCancelTilesMultiView();
     void testDisconnectMultiView();
     void testUnresponsiveClient();
     void testImpressTiles();
@@ -176,7 +171,7 @@ public:
     void setUp()
     {
         resetTestStartTime();
-        testCountHowManyCoolkits();
+        testCountHowManyOxoolkits();
         resetTestStartTime();
         _socketPoll->startThread();
     }
@@ -185,7 +180,7 @@ public:
     {
         _socketPoll->joinThread();
         resetTestStartTime();
-        testNoExtraCoolKitsLeft();
+        testNoExtraOxoolKitsLeft();
         resetTestStartTime();
     }
 };
@@ -199,9 +194,9 @@ bool TileCacheTests::getPartFromInvalidateMessage(const std::string& message, in
         part = -1;
         return true;
     }
-    if ((tokens.size() == 3 || tokens.size() == 4) && tokens.equals(1, "EMPTY,"))
-        return COOLProtocol::stringToInteger(tokens[2], part);
-    return COOLProtocol::getTokenInteger(tokens, "part", part);
+    if (tokens.size() > 2 && tokens.equals(1, "EMPTY,"))
+        return OXOOLProtocol::stringToInteger(tokens[2], part);
+    return OXOOLProtocol::getTokenInteger(tokens, "part", part);
 }
 
 void TileCacheTests::testDesc()
@@ -343,133 +338,6 @@ void TileCacheTests::testSize()
     LOK_ASSERT_MESSAGE("tile cache too big", tc.getMemorySize() < maxSize);
 }
 
-void TileCacheTests::testCancelTiles()
-{
-    const char* testname = "cancelTiles ";
-
-    // The tile response can race past the canceltiles,
-    // so be forgiving to avoid spurious failures.
-    constexpr size_t repeat = 2;
-    for (size_t i = 1; i <= repeat; ++i)
-    {
-        TST_LOG("cancelTiles try #" << i);
-
-        // Wait to clear previous sessions.
-        countCoolKitProcesses(InitialCoolKitCount);
-
-        std::shared_ptr<http::WebSocketSession> socket
-            = loadDocAndGetSession(_socketPoll, "setclientpart.ods", _uri, testname);
-
-        // Request a huge tile, and cancel immediately.
-        sendTextFrame(socket,
-                      "tilecombine nviewid=0 part=0 width=2560 height=2560 tileposx=0 tileposy=0 "
-                      "tilewidth=38400 tileheight=38400",
-                      testname);
-        sendTextFrame(socket, "canceltiles", testname);
-
-        const auto res = getResponseString(socket, "tile:", testname, std::chrono::seconds(1));
-        if (!res.empty())
-        {
-            if (i == repeat)
-            {
-                LOK_ASSERT_MESSAGE("Did not expect getting message [" + res + "].", res.empty());
-            }
-
-            TST_LOG("Unexpected: [" << res << ']');
-        }
-
-        socket->asyncShutdown();
-        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket 1",
-                           socket->waitForDisconnection(std::chrono::seconds(5)));
-        if (res.empty())
-            break;
-    }
-}
-
-void TileCacheTests::testCancelTilesMultiView()
-{
-    const std::string testname = "testCancelTilesMultiView-";
-
-    // The tile response can race past the canceltiles,
-    // so be forgiving to avoid spurious failures.
-    constexpr size_t repeat = 2;
-    for (size_t j = 1; j <= repeat; ++j)
-    {
-        std::string documentPath, documentURL;
-        getDocumentPathAndURL("setclientpart.ods", documentPath, documentURL, testname);
-
-        TST_LOG("cancelTilesMultiView try #" << j);
-
-        // Wait to clear previous sessions.
-        countCoolKitProcesses(InitialCoolKitCount);
-
-        // Request a huge tile, and cancel immediately.
-        std::shared_ptr<http::WebSocketSession> socket1
-            = loadDocAndGetSession(_socketPoll, _uri, documentURL, testname + "1 ");
-        std::shared_ptr<http::WebSocketSession> socket2
-            = loadDocAndGetSession(_socketPoll, _uri, documentURL, testname + "2 ");
-
-        sendTextFrame(socket1,
-                      "tilecombine nviewid=0 part=0 width=256 height=256 "
-                      "tileposx=0,3840,7680,11520,0,3840,7680,11520 "
-                      "tileposy=0,0,0,0,3840,3840,3840,3840 tilewidth=3840 tileheight=3840",
-                      testname + "1 ");
-        sendTextFrame(socket2,
-                      "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680,0 "
-                      "tileposy=0,0,0,22520 tilewidth=3840 tileheight=3840",
-                      testname + "2 ");
-
-        sendTextFrame(socket1, "canceltiles", testname + "1 ");
-        const auto res1
-            = getResponseString(socket1, "tile:", testname + "1 ", std::chrono::milliseconds(500));
-        if (!res1.empty())
-        {
-            if (j == repeat)
-            {
-                LOK_ASSERT_MESSAGE("Did not expect getting message [" + res1 + "].", res1.empty());
-            }
-
-            TST_LOG("Unexpected: [" << res1 << ']');
-            continue;
-        }
-
-        for (int i = 0; i < 4; ++i)
-        {
-            getTileMessage(socket2, testname + "2 ");
-        }
-
-        // Should never get more than 4 tiles on socket2.
-        // Though in practice we get the rendering result from socket1's request and ours.
-        // This happens because we currently always send back tiles even if they are of old version
-        // because we want to be responsive, since we've rendered them anyway.
-        const auto res2
-            = getResponseString(socket2, "tile:", testname + "2 ", std::chrono::milliseconds(500));
-        if (!res2.empty())
-        {
-            if (j == repeat)
-            {
-                LOK_ASSERT_MESSAGE("Did not expect getting message [" + res2 + "].", res1.empty());
-            }
-
-            TST_LOG("Unexpected: [" << res2 << ']');
-            continue;
-        }
-
-        socket1->asyncShutdown();
-        socket2->asyncShutdown();
-
-        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket 1",
-                           socket1->waitForDisconnection(std::chrono::seconds(5)));
-        LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket 2",
-                           socket2->waitForDisconnection(std::chrono::seconds(5)));
-
-        if (res1.empty() && res2.empty())
-        {
-            break;
-        }
-
-    }
-}
 
 void TileCacheTests::testDisconnectMultiView()
 {
@@ -484,7 +352,7 @@ void TileCacheTests::testDisconnectMultiView()
         TST_LOG("disconnectMultiView try #" << j);
 
         // Wait to clear previous sessions.
-        countCoolKitProcesses(InitialCoolKitCount);
+        countOxoolKitProcesses(InitialOxoolKitCount);
 
         // Request a huge tile, and cancel immediately.
         std::shared_ptr<http::WebSocketSession> socket1
@@ -577,8 +445,7 @@ void TileCacheTests::testUnresponsiveClient()
             LOK_ASSERT_MESSAGE("Did not receive tile #" + std::to_string(i+1) + " of 8: message as expected", !tile.empty());
         }
 
-        /// Send canceltiles message to clear tiles-on-fly list, otherwise wsd waits for tileprocessed messages
-        sendTextFrame(socket2, "canceltiles", testname + "2 ");
+        // FIXME: removed canceltiles here ...
     }
 
     socket1->asyncShutdown();
@@ -669,7 +536,7 @@ void TileCacheTests::testTilesRenderedJustOnce()
         sendTextFrame(socket, "ping", testname);
         const auto ping1 = assertResponseString(socket, "pong", testname);
         int renderCount1 = 0;
-        LOK_ASSERT(COOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
+        LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
         LOK_ASSERT_EQUAL(i * 3, renderCount1);
 
         // Modify.
@@ -686,7 +553,7 @@ void TileCacheTests::testTilesRenderedJustOnce()
         sendTextFrame(socket, "ping", testname);
         const auto ping2 = assertResponseString(socket, "pong", testname);
         int renderCount2 = 0;
-        LOK_ASSERT(COOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
+        LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
         LOK_ASSERT_EQUAL((i+1) * 3, renderCount2);
 
         // Get same 3 tiles.
@@ -695,24 +562,24 @@ void TileCacheTests::testTilesRenderedJustOnce()
 
         // monotonically increasing id.
         std::string wid1;
-        COOLProtocol::getTokenStringFromMessage(tile1, "wid", wid1);
+        OXOOLProtocol::getTokenStringFromMessage(tile1, "wid", wid1);
 
         const auto tile2 = assertResponseString(socket, "tile:", testname);
 
         std::string wid2;
-        COOLProtocol::getTokenStringFromMessage(tile2, "wid", wid2);
+        OXOOLProtocol::getTokenStringFromMessage(tile2, "wid", wid2);
         LOK_ASSERT_EQUAL(wid1, wid2); // shouldn't have changed
 
         const auto tile3 = assertResponseString(socket, "tile:", testname);
         std::string wid3;
-        COOLProtocol::getTokenStringFromMessage(tile3, "wid", wid3);
+        OXOOLProtocol::getTokenStringFromMessage(tile3, "wid", wid3);
         LOK_ASSERT_EQUAL(wid3, wid2);
 
         // Get new rendercount.
         sendTextFrame(socket, "ping", testname);
         const auto ping3 = assertResponseString(socket, "pong", testname);
         int renderCount3 = 0;
-        LOK_ASSERT(COOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
+        LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
         LOK_ASSERT_EQUAL(renderCount2, renderCount3);
     }
 
@@ -757,7 +624,7 @@ void TileCacheTests::testTilesRenderedJustOnceMultiClient()
         sendTextFrame(socket1, "ping", testname1);
         const auto ping1 = assertResponseString(socket1, "pong", testname1);
         int renderCount1 = 0;
-        LOK_ASSERT(COOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
+        LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(ping1, "rendercount", renderCount1));
         LOK_ASSERT_EQUAL(i * 3, renderCount1);
 
         // Modify.
@@ -792,31 +659,31 @@ void TileCacheTests::testTilesRenderedJustOnceMultiClient()
         sendTextFrame(socket1, "ping", testname1);
         const auto ping2 = assertResponseString(socket1, "pong", testname1);
         int renderCount2 = 0;
-        LOK_ASSERT(COOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
+        LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(ping2, "rendercount", renderCount2));
         LOK_ASSERT_EQUAL((i+1) * 3, renderCount2);
 
         // Get same 3 tiles.
         sendTextFrame(socket1, "tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840,7680 tileposy=0,0,0 tilewidth=3840 tileheight=3840", testname1);
         const auto tile1 = assertResponseString(socket1, "tile:", testname1);
         std::string renderId1;
-        COOLProtocol::getTokenStringFromMessage(tile1, "renderid", renderId1);
+        OXOOLProtocol::getTokenStringFromMessage(tile1, "renderid", renderId1);
         LOK_ASSERT_EQUAL(std::string("cached"), renderId1);
 
         const auto tile2 = assertResponseString(socket1, "tile:", testname1);
         std::string renderId2;
-        COOLProtocol::getTokenStringFromMessage(tile2, "renderid", renderId2);
+        OXOOLProtocol::getTokenStringFromMessage(tile2, "renderid", renderId2);
         LOK_ASSERT_EQUAL(std::string("cached"), renderId2);
 
         const auto tile3 = assertResponseString(socket1, "tile:", testname1);
         std::string renderId3;
-        COOLProtocol::getTokenStringFromMessage(tile3, "renderid", renderId3);
+        OXOOLProtocol::getTokenStringFromMessage(tile3, "renderid", renderId3);
         LOK_ASSERT_EQUAL(std::string("cached"), renderId3);
 
         // Get new rendercount.
         sendTextFrame(socket1, "ping", testname1);
         const auto ping3 = assertResponseString(socket1, "pong", testname1);
         int renderCount3 = 0;
-        LOK_ASSERT(COOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
+        LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(ping3, "rendercount", renderCount3));
         LOK_ASSERT_EQUAL(renderCount2, renderCount3);
     }
 
@@ -853,8 +720,8 @@ void TileCacheTests::testSimultaneousTilesRenderedJustOnce()
     assertResponseString(socket1, "statechanged:", "client1 ");
     assertResponseString(socket2, "statechanged:", "client2 ");
 
-    sendTextFrame(socket1, "tile nviewid=0 part=42 width=400 height=400 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
-    sendTextFrame(socket2, "tile nviewid=0 part=42 width=400 height=400 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
+    sendTextFrame(socket1, "tile nviewid=0 part=42 width=256 height=256 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
+    sendTextFrame(socket2, "tile nviewid=0 part=42 width=256 height=256 tileposx=1000 tileposy=2000 tilewidth=3000 tileheight=3000");
 
     const auto response1 = assertResponseString(socket1, "tile:", "client1 ");
     const auto response2 = assertResponseString(socket2, "tile:", "client2 ");
@@ -862,9 +729,9 @@ void TileCacheTests::testSimultaneousTilesRenderedJustOnce()
     if (!response1.empty() && !response2.empty())
     {
         std::string renderId1;
-        COOLProtocol::getTokenStringFromMessage(response1, "renderid", renderId1);
+        OXOOLProtocol::getTokenStringFromMessage(response1, "renderid", renderId1);
         std::string renderId2;
-        COOLProtocol::getTokenStringFromMessage(response2, "renderid", renderId2);
+        OXOOLProtocol::getTokenStringFromMessage(response2, "renderid", renderId2);
 
         LOK_ASSERT(renderId1 == renderId2 ||
                        (renderId1 == "cached" && renderId2 != "cached") ||
@@ -962,7 +829,7 @@ void TileCacheTests::checkBlackTiles(std::shared_ptr<http::WebSocketSession>& so
         return;
     }
 
-    const std::string firstLine = COOLProtocol::getFirstLine(tile);
+    const std::string firstLine = OXOOLProtocol::getFirstLine(tile);
 
 #if 0
     std::fstream outStream("/tmp/black.z", std::ios::out);
@@ -1372,7 +1239,7 @@ void TileCacheTests::requestTiles(std::shared_ptr<http::WebSocketSession>& socke
 
     // Note: this code tests tile requests in the wrong way.
 
-    // This code does NOT match what was the idea how the COOL protocol should/could be used. The
+    // This code does NOT match what was the idea how the OXOOL protocol should/could be used. The
     // intent was never that the protocol would need to be, or should be, used in a strict
     // request/reply fashion. If a client needs n tiles, it should just send the requests, one after
     // another. There is no need to do n roundtrips. A client should all the time be reading

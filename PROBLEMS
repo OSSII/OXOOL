@@ -35,12 +35,12 @@
   poll() calls to be without timeout. Or something similar, depending
   on case.
 
-- Occasionally Control-C (SIGINT) doesn't shut down coolwsd. One has
+- Occasionally Control-C (SIGINT) doesn't shut down oxoolwsd. One has
   to kill it with SIGKILL. Which of course leaves all the chroot jails
   around. Hitting Control-C a second time will attempt a faster, and
   ruder, termination of connections, without waiting for a response.
   A third Control-C will issue SIGKILL, which will kill immediately.
-  To cleanup the jails manually, simply run coolwsd --cleanup.
+  To cleanup the jails manually, simply run oxoolwsd --cleanup.
 
 - There are lots of places where a std::string variable is defined,
   initialised with a value, that is never changed. (In many cases it

@@ -23,7 +23,7 @@
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
-namespace COOLProtocol
+namespace OXOOLProtocol
 {
     // Protocol Version Number.
     // See protocol.txt.
@@ -75,15 +75,15 @@ namespace COOLProtocol
         return false;
     }
 
-    bool getTokenInteger(const std::string& token, const std::string& name, int& value);
-    bool getTokenUInt32(const std::string& token, const std::string& name, uint32_t& value);
-    bool getTokenUInt64(const std::string& token, const std::string& name, uint64_t& value);
-    bool getTokenString(const std::string& token, const std::string& name, std::string& value);
-    bool getTokenKeyword(const std::string& token, const std::string& name, const std::map<std::string, int>& map, int& value);
+    bool getTokenInteger(const std::string& token, const std::string_view name, int& value);
+    bool getTokenUInt32(const std::string& token, const std::string_view name, uint32_t& value);
+    bool getTokenUInt64(const std::string& token, const std::string_view name, uint64_t& value);
+    bool getTokenString(const std::string& token, const std::string_view name, std::string& value);
+    bool getTokenKeyword(const std::string& token, const std::string_view name, const std::map<std::string, int>& map, int& value);
 
-    bool getTokenKeyword(const StringVector& tokens, const std::string& name, const std::map<std::string, int>& map, int& value);
+    bool getTokenKeyword(const StringVector& tokens, const std::string_view name, const std::map<std::string, int>& map, int& value);
 
-    bool getTokenInteger(const StringVector& tokens, const std::string& name, int& value);
+    bool getTokenInteger(const StringVector& tokens, const std::string_view name, int& value);
 
     /// Literal-string token names.
     template <std::size_t N>
@@ -110,7 +110,7 @@ namespace COOLProtocol
     }
 
     inline bool getTokenString(const StringVector& tokens,
-                               const std::string& name,
+                               const std::string_view name,
                                std::string& value)
     {
         for (const auto& token : tokens)
@@ -124,8 +124,8 @@ namespace COOLProtocol
         return false;
     }
 
-    bool getTokenStringFromMessage(const std::string& message, const std::string& name, std::string& value);
-    bool getTokenKeywordFromMessage(const std::string& message, const std::string& name, const std::map<std::string, int>& map, int& value);
+    bool getTokenStringFromMessage(const std::string& message, const std::string_view name, std::string& value);
+    bool getTokenKeywordFromMessage(const std::string& message, const std::string_view name, const std::map<std::string, int>& map, int& value);
 
     inline
     std::vector<int> tokenizeInts(const char* data, const size_t size, const char delimiter = ',')
@@ -161,7 +161,7 @@ namespace COOLProtocol
         return tokenizeInts(s.data(), s.size(), delimiter);
     }
 
-    inline bool getTokenIntegerFromMessage(const std::string& message, const std::string& name, int& value)
+    inline bool getTokenIntegerFromMessage(const std::string& message, const std::string_view name, int& value)
     {
         return getTokenInteger(StringVector::tokenize(message), name, value);
     }
@@ -180,21 +180,21 @@ namespace COOLProtocol
     }
 
     inline
-    bool matchPrefix(const std::string& prefix, const std::string& message)
+    bool matchPrefix(const std::string_view prefix, const std::string_view message)
     {
         return (message.size() >= prefix.size() &&
                 message.compare(0, prefix.size(), prefix) == 0);
     }
 
     inline
-    bool matchPrefix(const std::string& prefix, const std::vector<char>& message)
+    bool matchPrefix(const std::string_view prefix, const std::vector<char>& message)
     {
         return (message.size() >= prefix.size() &&
                 prefix.compare(0, prefix.size(), message.data(), prefix.size()) == 0);
     }
 
     inline
-    bool matchPrefix(const std::string& prefix, const std::string& message, const bool ignoreWhitespace)
+    bool matchPrefix(const std::string_view prefix, const std::string_view message, const bool ignoreWhitespace)
     {
         if (ignoreWhitespace)
         {
@@ -215,9 +215,9 @@ namespace COOLProtocol
     /// Notice that this doesn't guarantee editing activity,
     /// rather just user interaction with the UI.
     inline
-    bool tokenIndicatesUserInteraction(const std::string& token)
+    bool tokenIndicatesUserInteraction(const std::string_view token)
     {
-        // Exclude tokens that include these keywords, such as canceltiles statusindicator.
+        // Exclude tokens that include these keywords, such as statusindicator.
 
         // FIXME: This is wrong. That the token happens to contain (or not) a certain substring is
         // no guarantee that it "indicates user interaction". It might be like that at the moment,
@@ -245,8 +245,7 @@ namespace COOLProtocol
         if (tokens.equals(0, "key") || tokens.equals(0, "outlinestate") ||
             tokens.equals(0, "paste") || tokens.equals(0, "insertfile") ||
             tokens.equals(0, "textinput") || tokens.equals(0, "windowkey") ||
-            tokens.equals(0, "windowmouse") || tokens.equals(0, "windowgesture") ||
-            tokens.equals(0, "signdocument"))
+            tokens.equals(0, "windowmouse") || tokens.equals(0, "windowgesture"))
         {
             return true;
         }
@@ -276,7 +275,7 @@ namespace COOLProtocol
     }
 
     /// Returns an abbreviation of the message (the first line, indicating truncation). We assume
-    /// that it adhers to the COOL protocol, i.e. that there is always a first (or only) line that
+    /// that it adhers to the OXOOL protocol, i.e. that there is always a first (or only) line that
     /// is in printable UTF-8. I.e. no encoding of binary bytes is done. The format of the result is
     /// not guaranteed to be stable. It is to be used for logging purposes only, not for decoding
     /// protocol frames.

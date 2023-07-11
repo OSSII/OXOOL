@@ -16,11 +16,11 @@
 constexpr int DEFAULT_CLIENT_PORT_NUMBER = 9980;
 
 // define to wrap strace around the forkit
-#define STRACE_COOLFORKIT 0
+#define STRACE_OXOOLFORKIT 0
 // define to wrap valgrind around the forkit
-#define VALGRIND_COOLFORKIT 0
+#define VALGRIND_OXOOLFORKIT 0
 
-#if VALGRIND_COOLFORKIT
+#if VALGRIND_OXOOLFORKIT
 constexpr int TRACE_MULTIPLIER = 20;
 #elif CODE_COVERAGE
 constexpr int TRACE_MULTIPLIER = 5;
@@ -47,9 +47,9 @@ constexpr long READ_BUFFER_SIZE = 64 * 1024;
 constexpr int MAX_MESSAGE_SIZE = 2 * 1024 * READ_BUFFER_SIZE;
 
 constexpr const char JAILED_DOCUMENT_ROOT[] = "/tmp/user/docs/";
-constexpr const char CHILD_URI[] = "/coolws/child?";
-constexpr const char NEW_CHILD_URI[] = "/coolws/newchild";
-constexpr const char FORKIT_URI[] = "/coolws/forkit";
+constexpr const char CHILD_URI[] = "/oxoolws/child?";
+constexpr const char NEW_CHILD_URI[] = "/oxoolws/newchild";
+constexpr const char FORKIT_URI[] = "/oxoolws/forkit";
 
 constexpr const char CAPABILITIES_END_POINT[] = "/hosting/capabilities";
 
@@ -60,7 +60,7 @@ constexpr const char UPLOADING_SUFFIX[] = "ing";
 
 /// A shared threadname suffix in both the WSD and Kit processes
 /// is highly helpful for filtering the logs for the same document
-/// by simply grepping for this shared suffix+ID. e.g. 'grep "broker_123" coolwsd.log'
+/// by simply grepping for this shared suffix+ID. e.g. 'grep "broker_123" oxoolwsd.log'
 /// Unfortunately grepping for only "_123" would include more noise than desirable.
 /// This also makes the threadname symmetric and the entries aligned.
 /// The choice of "broker" as the suffix is historic: it implies the controller
@@ -73,15 +73,15 @@ constexpr const char UPLOADING_SUFFIX[] = "ing";
 #define SHARED_DOC_THREADNAME_SUFFIX "broker_"
 
 /// The HTTP request User-Agent. Used only in Requests.
-#define HTTP_AGENT_STRING "COOLWSD HTTP Agent " COOLWSD_VERSION
+#define HTTP_AGENT_STRING "OXOOLWSD HTTP Agent " OXOOLWSD_VERSION
 
 /// The WOPI User-Agent. Depricated: use HTTP_AGENT_STRING.
 #define WOPI_AGENT_STRING HTTP_AGENT_STRING
 
 /// The HTTP response Server. Used only in Responses.
-#define HTTP_SERVER_STRING "COOLWSD HTTP Server " COOLWSD_VERSION
+#define HTTP_SERVER_STRING "OXOOLWSD HTTP Server " OXOOLWSD_VERSION
 
-/// The client port number, both coolwsd and the kits have this.
+/// The client port number, both oxoolwsd and the kits have this.
 extern int ClientPortNumber;
 extern std::string MasterLocation;
 

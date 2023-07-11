@@ -127,7 +127,7 @@ fi
 mkdir -p "$INSTDIR"/opt/
 cp -a core/instdir "$INSTDIR"/opt/lokit
 
-##### coolwsd & cool #####
+##### oxoolwsd & oxool #####
 
 # build
 ( cd online && ./autogen.sh ) || exit 1
@@ -140,8 +140,8 @@ cp -a core/instdir "$INSTDIR"/opt/lokit
 ##### online branding #####
 if test -d online-branding ; then
   cd online-branding
-  ./brand.sh $INSTDIR/opt/lokit $INSTDIR/usr/share/coolwsd/browser/dist 6 # CODE
-  ./brand.sh $INSTDIR/opt/lokit $INSTDIR/usr/share/coolwsd/browser/dist 7 # Nextcloud Office
+  ./brand.sh $INSTDIR/opt/lokit $INSTDIR/usr/share/oxoolwsd/browser/dist 6 # CODE
+  ./brand.sh $INSTDIR/opt/lokit $INSTDIR/usr/share/oxoolwsd/browser/dist 7 # Nextcloud Office
   cd ..
 fi
 

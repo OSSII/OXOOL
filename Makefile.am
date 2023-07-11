@@ -1,5 +1,10 @@
 ETAGS=ctags -e
 
+PRODUCTNAME = @PRODUCTNAME@
+WSD_NAME = @WSD_NAME@
+
+distdir = $(OXOOLWSD_DIST_NAME)
+
 if ENABLE_MOBILEAPP
 
 if ENABLE_GTKAPP
@@ -14,32 +19,32 @@ endif
 
 else
 
-SUBDIRS = . browser test cypress_test
+SUBDIRS = . browser cypress_test
 
 export ENABLE_DEBUG
 
 bin_PROGRAMS = \
-	coolforkit \
-	coolmount \
-        coolstress \
-	coolconvert coolconfig
+	oxoolforkit \
+	oxoolmount \
+  oxoolstress \
+	oxoolconvert oxoolconfig
 
 if ENABLE_LIBFUZZER
 else
-bin_PROGRAMS += coolwsd
+bin_PROGRAMS += oxoolwsd
 endif
 
-dist_bin_SCRIPTS = coolwsd-systemplate-setup \
-                   coolwsd-generate-proof-key
+dist_bin_SCRIPTS = oxoolwsd-systemplate-setup \
+                   oxoolwsd-generate-proof-key
 
-man_MANS = man/coolwsd.1 \
-           man/coolforkit.1 \
-           man/coolconvert.1 \
-           man/coolconfig.1 \
-           man/coolstress.1 \
-           man/coolwsd-systemplate-setup.1 \
-           man/coolwsd-generate-proof-key.1 \
-           man/coolmount.1
+man_MANS = man/oxoolwsd.1 \
+           man/oxoolforkit.1 \
+           man/oxoolconvert.1 \
+           man/oxoolconfig.1 \
+           man/oxoolstress.1 \
+           man/oxoolwsd-systemplate-setup.1 \
+           man/oxoolwsd-generate-proof-key.1 \
+           man/oxoolmount.1
 
 
 dist_doc_DATA = wsd/README \
@@ -48,23 +53,24 @@ dist_doc_DATA = wsd/README \
                 wsd/reference.md \
                 wsd/metrics.txt
 
-coolwsddatadir = @COOLWSD_DATADIR@
+oxoolwsddatadir = @OXOOLWSD_DATADIR@
 
-coolwsddata_DATA = discovery.xml \
+oxoolwsddata_DATA = discovery.xml \
                    favicon.ico
 
-coolwsdconfigdir = @COOLWSD_CONFIGDIR@
+oxoolwsdconfigdir = @OXOOLWSD_CONFIGDIR@
 
-coolwsdconfig_DATA = coolwsd.xml \
-		     coolkitconfig.xcu
+oxoolwsdconfig_DATA = $(WSD_NAME).xml \
+		     ${PRODUCTNAME}kitconfig.xcu \
+         etc/*.pem
 
 apache2configdir = ${sysconfdir}/apache2/conf-available
 
-apache2config_DATA = etc/apache2/coolwsd.conf
+apache2config_DATA = etc/apache2/oxoolwsd.conf
 
 nginxconfigdir = ${sysconfdir}/nginx/snippets
 
-nginxconfig_DATA = etc/nginx/coolwsd.conf
+nginxconfig_DATA = etc/nginx/oxoolwsd.conf
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -74,8 +80,8 @@ if ENABLE_SSL
 include_paths += ${OPENSSL_CFLAGS}
 endif
 
-AM_CPPFLAGS = -pthread -DCOOLWSD_DATADIR='"@COOLWSD_DATADIR@"' \
-	      -DCOOLWSD_CONFIGDIR='"@COOLWSD_CONFIGDIR@"' \
+AM_CPPFLAGS = -pthread -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
+	      -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
 	      -DDEBUG_ABSSRCDIR='"@abs_srcdir@"' \
 	      ${include_paths}
 
@@ -83,13 +89,18 @@ if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -pthread -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS}
+AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS}
+
+# Clang's linker doesn't like -pthread.
+if !HAVE_CLANG
+AM_LDFLAGS += -pthread
+endif
 
 if ENABLE_SSL
 AM_LDFLAGS += ${OPENSSL_LIBS}
 else
-coolwsd_LDADD = ${OPENSSL_LIBS}
-coolconfig_LDADD = ${OPENSSL_LIBS}
+oxoolwsd_LDADD = ${OPENSSL_LIBS}
+oxoolconfig_LDADD = ${OPENSSL_LIBS}
 endif
 
 AM_ETAGSFLAGS = --c++-kinds=+p --fields=+iaS --extra=+q -R --totals=yes --exclude=browser *
@@ -122,15 +133,13 @@ if ENABLE_SSL
 shared_sources += net/Ssl.cpp
 endif
 
-shared_json = $(patsubst %.cpp,%.cmd,$(shared_sources))
-
-coolwsd_sources = common/Crypto.cpp \
+oxoolwsd_sources = common/Crypto.cpp \
                   wsd/Admin.cpp \
                   wsd/AdminModel.cpp \
                   wsd/Auth.cpp \
                   wsd/DocumentBroker.cpp \
                   wsd/ProxyProtocol.cpp \
-                  wsd/COOLWSD.cpp \
+                  wsd/OXOOLWSD.cpp \
                   wsd/ClientSession.cpp \
                   wsd/FileServer.cpp \
                   wsd/ProxyRequestHandler.cpp \
@@ -142,18 +151,16 @@ coolwsd_sources = common/Crypto.cpp \
                   wsd/ProofKey.cpp \
                   wsd/QuarantineUtil.cpp
 
-coolwsd_json = $(patsubst %.cpp,%.cmd,$(coolwsd_sources))
-
-coolwsd_SOURCES = $(coolwsd_sources) \
+oxoolwsd_SOURCES = $(oxoolwsd_sources) \
                   $(shared_sources)
 
-EXTRA_coolwsd_DEPENDENCIES = browser/node_modules
+EXTRA_oxoolwsd_DEPENDENCIES = browser/node_modules
 
 noinst_PROGRAMS = clientnb \
                   connect \
                   lokitclient \
-                  coolmap \
-                  coolsocketdump
+                  oxoolmap \
+                  oxoolsocketdump
 
 if ENABLE_LIBFUZZER
 noinst_PROGRAMS += \
@@ -178,23 +185,21 @@ lokitclient_SOURCES = common/Log.cpp \
                       common/TraceEvent.cpp \
                       common/Util.cpp
 
-coolforkit_sources = kit/ChildSession.cpp \
+oxoolforkit_sources = kit/ChildSession.cpp \
                      kit/ForKit.cpp \
                      kit/Kit.cpp
 
-coolforkit_json = $(patsubst %.cpp,%.cmd,$(coolforkit_sources))
-
-coolforkit_SOURCES = $(coolforkit_sources) \
+oxoolforkit_SOURCES = $(oxoolforkit_sources) \
                      $(shared_sources)
 
 if ENABLE_LIBFUZZER
-coolforkit_SOURCES += \
+oxoolforkit_SOURCES += \
 		       common/DummyTraceEventEmitter.cpp
 
 common_fuzzer_sources = \
 		       common/DummyTraceEventEmitter.cpp \
-		       $(coolwsd_sources) \
-		       $(coolforkit_sources) \
+		       $(oxoolwsd_sources) \
+		       $(oxoolforkit_sources) \
 		       $(shared_sources)
 
 admin_fuzzer_CPPFLAGS = \
@@ -238,18 +243,18 @@ clientnb_SOURCES = net/clientnb.cpp \
                    common/StringVector.cpp \
                    common/Util.cpp
 
-coolmount_SOURCES = tools/mount.cpp
+oxoolmount_SOURCES = tools/mount.cpp
 
-coolmap_SOURCES = tools/map.cpp
+oxoolmap_SOURCES = tools/map.cpp
 
-coolconvert_SOURCES = tools/Tool.cpp
+oxoolconvert_SOURCES = tools/Tool.cpp
 
-coolstress_CPPFLAGS = -DTDOC=\"$(abs_top_srcdir)/test/data\" ${include_paths}
-coolstress_SOURCES = tools/Stress.cpp \
+oxoolstress_CPPFLAGS = -DTDOC=\"$(abs_top_srcdir)/test/data\" ${include_paths}
+oxoolstress_SOURCES = tools/Stress.cpp \
                      common/DummyTraceEventEmitter.cpp \
                      $(shared_sources)
 
-coolconfig_SOURCES = tools/Config.cpp \
+oxoolconfig_SOURCES = tools/Config.cpp \
 		     tools/ConfigMigrationAssistant.cpp \
 		     common/DummyTraceEventEmitter.cpp \
 		     common/Crypto.cpp \
@@ -257,7 +262,7 @@ coolconfig_SOURCES = tools/Config.cpp \
 		     common/StringVector.cpp \
 		     common/Util.cpp
 
-coolsocketdump_SOURCES = tools/WebSocketDump.cpp \
+oxoolsocketdump_SOURCES = tools/WebSocketDump.cpp \
 			 common/DummyTraceEventEmitter.cpp \
 			 $(shared_sources)
 
@@ -265,12 +270,13 @@ wsd_headers = wsd/Admin.hpp \
               wsd/AdminModel.hpp \
               wsd/Auth.hpp \
               wsd/ClientSession.hpp \
+              wsd/ContentSecurityPolicy.hpp \
               wsd/DocumentBroker.hpp \
               wsd/ProxyProtocol.hpp \
               wsd/Exceptions.hpp \
               wsd/FileServer.hpp \
               wsd/ProxyRequestHandler.hpp \
-              wsd/COOLWSD.hpp \
+              wsd/OXOOLWSD.hpp \
               wsd/ProofKey.hpp \
               wsd/RequestDetails.hpp \
               wsd/SenderQueue.hpp \
@@ -336,11 +342,11 @@ kit_headers = kit/ChildSession.hpp \
               kit/Watermark.hpp
 
 noinst_HEADERS = $(wsd_headers) $(shared_headers) $(kit_headers) \
-                 tools/COOLWebSocket.hpp \
+                 tools/OXOOLWebSocket.hpp \
                  test/UnitHTTP.hpp \
                  test/HttpTestServer.hpp \
                  test/WopiTestServer.hpp \
-                 test/countcoolkits.hpp \
+                 test/countoxoolkits.hpp \
                  test/lokassert.hpp \
                  test/test.hpp \
                  test/testlog.hpp \
@@ -354,37 +360,30 @@ GIT_HASH := $(shell git log -1 --format=%h)
 
 dist-hook:
 	git log -1 --format=%h > $(distdir)/dist_git_hash 2> /dev/null || rm $(distdir)/dist_git_hash
-	mkdir -p $(distdir)/bundled/include/LibreOfficeKit/
-	cp @LOKIT_PATH@/LibreOfficeKit/LibreOfficeKit.h \
-	   @LOKIT_PATH@/LibreOfficeKit/LibreOfficeKit.hxx \
-	   @LOKIT_PATH@/LibreOfficeKit/LibreOfficeKitEnums.h \
-	   @LOKIT_PATH@/LibreOfficeKit/LibreOfficeKitInit.h \
-	   @LOKIT_PATH@/LibreOfficeKit/LibreOfficeKitTypes.h \
-	   $(distdir)/bundled/include/LibreOfficeKit/
+	cp dist_git_branch $(distdir)/
+	cp -aR bundled $(distdir)/
 
 EXTRA_DIST = discovery.xml \
              favicon.ico \
-             coolkitconfig.xcu \
-             coolwsd.init.rhel6 \
-             coolwsd.spec \
-             coolwsd.xml.in \
-             coolwsd.service \
-             sysconfig.coolwsd \
+             ${PRODUCTNAME}kitconfig.xcu \
+             $(WSD_NAME).spec \
+             online.xml.in \
+             oxoolwsd.service \
              debian/compat \
              debian/copyright \
-             debian/coolwsd.preinst \
-             debian/coolwsd.service \
+             debian/oxoolwsd.preinst \
+             debian/${PRODUCTNAME}.service \
              debian/rules \
              debian/source/format \
              debian/changelog \
              debian/control \
-             debian/coolwsd.postinst \
-             debian/coolwsd.postrm \
+             debian/oxoolwsd.postinst \
+             debian/oxoolwsd.postrm \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
-             etc/apache2/coolwsd.conf \
-             etc/nginx/coolwsd.conf \
+             etc/apache2/oxoolwsd.conf \
+             etc/nginx/oxoolwsd.conf \
              scripts/unocommands.py \
              scripts/refresh-git-hooks \
              README.md \
@@ -393,10 +392,10 @@ EXTRA_DIST = discovery.xml \
 if ENABLE_LIBFUZZER
 CLEANUP_COMMAND=true
 else
-# Use coolwsd to cleanup jails, if any. If it fails, we may have a broken/old coolwsd binary, remove it to rebuild.
-# A CI box may switch branches without cleaning up the binaries, if coolwsd from a broken branch is used here
-# it will fail all subsequent builds, until it's rebuilt from the new branch. So removing coolwsd after failing is needed.
-CLEANUP_COMMAND=if test -s ./coolwsd; then echo "Cleaning up..." && ./coolwsd --disable-cool-user-checking --cleanup --o:logging.level=trace || rm ./coolwsd; fi
+# Use oxoolwsd to cleanup jails, if any. If it fails, we may have a broken/old oxoolwsd binary, remove it to rebuild.
+# A CI box may switch branches without cleaning up the binaries, if oxoolwsd from a broken branch is used here
+# it will fail all subsequent builds, until it's rebuilt from the new branch. So removing oxoolwsd after failing is needed.
+CLEANUP_COMMAND=if test -s ./oxoolwsd; then echo "Cleaning up..." && ./oxoolwsd --disable-oxool-user-checking --cleanup --o:logging.level=trace || rm ./oxoolwsd; fi
 endif
 
 if HAVE_LO_PATH
@@ -406,7 +405,7 @@ CAPABILITIES = $(if @ENABLE_SETCAP@,true,false)
 RUN_GDB = $(if $(GDB_FRONTEND),$(GDB_FRONTEND),gdb --tui --args)
 
 if ENABLE_SETCAP
-SET_CAPS_COMMAND=sudo @SETCAP@ cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep coolforkit && sudo @SETCAP@ cap_sys_admin=ep coolmount
+SET_CAPS_COMMAND=sudo @SETCAP@ cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep oxoolforkit && sudo @SETCAP@ cap_sys_admin=ep oxoolmount && sudo @SETCAP@ cap_dac_override,cap_net_bind_service=ep oxoolwsd
 else
 SET_CAPS_COMMAND=echo "Skipping capability setting"
 endif
@@ -414,16 +413,16 @@ endif
 if ENABLE_LIBFUZZER
 CLEANUP_DEPS=
 else
-CLEANUP_DEPS=coolwsd coolmount coolforkit
+CLEANUP_DEPS=oxoolwsd oxoolmount oxoolforkit
 endif
 
-# Build coolwsd and coolmount first, so we can cleanup before updating
+# Build oxoolwsd and oxoolmount first, so we can cleanup before updating
 # the systemplate directory, which we can't rm if it's mounted.
-$(SYSTEM_STAMP): ${top_srcdir}/coolwsd-systemplate-setup $(CLEANUP_DEPS)
+$(SYSTEM_STAMP): ${top_srcdir}/oxoolwsd-systemplate-setup $(CLEANUP_DEPS)
 	$(SET_CAPS_COMMAND)
 	$(CLEANUP_COMMAND)
 	if test "z@SYSTEMPLATE_PATH@" != "z"; then chmod u+w -R --silent "@SYSTEMPLATE_PATH@" ; rm -rf "@SYSTEMPLATE_PATH@" && \
-	${top_srcdir}/coolwsd-systemplate-setup "@SYSTEMPLATE_PATH@" "@LO_PATH@" && touch $@; fi
+	${top_srcdir}/oxoolwsd-systemplate-setup "@SYSTEMPLATE_PATH@" "@LO_PATH@" && touch $@; fi
 
 @JAILS_PATH@:
 	@$(CLEANUP_COMMAND)
@@ -438,120 +437,94 @@ clean-am: cleanup clean-binPROGRAMS clean-generic clean-libtool clean-local clea
 
 clean-local:
 	$(CLEANUP_COMMAND)
-	if test "z@JAILS_PATH@" != "z"; then rm -rf "@JAILS_PATH@"; fi
-	if test "z@SYSTEMPLATE_PATH@" != "z"; then rm -rf "@SYSTEMPLATE_PATH@"; fi
+	if test "z@SYSTEMPLATE_PATH@" != "z"; then rm -rf "@SYSTEMPLATE_PATH@" || echo "WARNING: failed to remove the systemplate"; fi
+	if test "z@JAILS_PATH@" != "z"; then rm -rf "@JAILS_PATH@" || echo "WARNING: failed to remove all jails cleanly"; fi
 	rm -rf "${top_srcdir}/loleaflet"
 	rm -rf loolconfig loolconvert loolforkit loolmap loolmount # kill old binaries
-	rm -rf loolwsd loolwsd_fuzzer coolwsd_fuzzer loolstress loolsocketdump
+	rm -rf loolwsd loolwsd_fuzzer oxoolwsd_fuzzer loolstress loolsocketdump
 	rm -rf ${abs_top_srcdir}/gcov
 	find . -iname "*.gc??" -delete
 
 if ENABLE_DEBUG
-# can write to /tmp/coolwsd.log
+# can write to /tmp/oxoolwsd.log
   OUTPUT_TO_FILE=true
 else
-# can't write to /var/log/coolwsd.log
+# can't write to /var/log/oxoolwsd.log
   OUTPUT_TO_FILE=false
 endif
 
 setup-wsd: all @JAILS_PATH@
-	@echo "Launching coolwsd"
+	@echo "Launching oxoolwsd"
 	@fc-cache "@LO_PATH@"/share/fonts/truetype
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(abs_top_srcdir)/test/data/hello-world.odt
 	@cp $(abs_top_srcdir)/test/data/hello.ods $(abs_top_srcdir)/test/data/hello-world.ods
 	@cp $(abs_top_srcdir)/test/data/hello.odp $(abs_top_srcdir)/test/data/hello-world.odp
 	@echo
 
+COMMON_PARAMS = \
+	--o:file_server_root_path="$(abs_top_srcdir)" \
+	--o:sys_template_path="@SYSTEMPLATE_PATH@" \
+	--o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
+	--o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
+	--o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
+	--o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
+	--o:admin_console.username=admin --o:admin_console.password=admin
+
 run: setup-wsd
-	./coolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:security.capabilities="$(CAPABILITIES)" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=${OUTPUT_TO_FILE} --o:logging.level=trace \
-			  --o:trace_event[@enable]=true
+	./oxoolwsd $(COMMON_PARAMS) \
+			--o:security.capabilities="$(CAPABILITIES)" \
+			--o:logging.file[@enable]=${OUTPUT_TO_FILE} --o:logging.level=trace \
+			--o:trace_event[@enable]=true
 
 if ENABLE_DEBUG
 run-one: setup-wsd
-	./coolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:security.capabilities="$(CAPABILITIES)" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=true --o:logging.level=trace \
-			  --singlekit
+	./oxoolwsd $(COMMON_PARAMS) \
+			--o:security.capabilities="$(CAPABILITIES)" \
+			--o:logging.file[@enable]=true --o:logging.level=trace \
+			--singlekit
 endif
 
 sync-writer:
-	browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/cool.html?file_path=file://$(abs_top_srcdir)/test/data/hello-world.odt"
+	browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/loleaflet.html?file_path=file://$(abs_top_srcdir)/test/data/hello-world.odt"
 
 sync-calc:
-	browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/cool.html?file_path=file://$(abs_top_srcdir)/test/data/hello-world.ods"
+	browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/loleaflet.html?file_path=file://$(abs_top_srcdir)/test/data/hello-world.ods"
 
 sync-impress:
-	browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/cool.html?file_path=file://$(abs_top_srcdir)/test/data/hello-world.odp"
+	browser-sync start --config browsersync-config.js --startPath "browser/96c23f663/loleaflet.html?file_path=file://$(abs_top_srcdir)/test/data/hello-world.odp"
 
 run-trace: setup-wsd
-	./coolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=false --o:logging.level=trace \
-                          --o:trace[@enable]=true --o:trace.path=${builddir}/trace.txt.gz \
-                          --o:trace.outgoing.record=false
+	./oxoolwsd $(COMMON_PARAMS) \
+			--o:logging.file[@enable]=false --o:logging.level=trace \
+			--o:trace[@enable]=true --o:trace.path=${builddir}/trace.txt.gz \
+			--o:trace.outgoing.record=false
 
 run-valgrind: setup-wsd
-	@echo "Launching coolwsd under valgrind (but not forkit/coolkit, yet)"
+	@echo "Launching oxoolwsd under valgrind (but not forkit/oxoolkit, yet)"
 	valgrind --tool=memcheck --trace-children=no -v --read-var-info=yes \
-		./coolwsd --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=false --o:logging.level=trace
+		./oxoolwsd $(COMMON_PARAMS) \
+			--o:logging.file[@enable]=false --o:logging.level=trace
 
 run-gdb: setup-wsd
-	@echo "Launching coolwsd under gdb"
+	@echo "Launching oxoolwsd under gdb"
 	$(RUN_GDB) \
-		./coolwsd --o:security.capabilities="false" \
-			  --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=false --o:logging.level=error
+		./oxoolwsd $(COMMON_PARAMS) \
+			--o:security.capabilities="false" \
+			--o:logging.file[@enable]=false --o:logging.level=error
 
 run-callgrind: setup-wsd
-	@echo "Launching coolwsd under valgrind's callgrind"
+	@echo "Launching oxoolwsd under valgrind's callgrind"
 	valgrind --tool=callgrind --simulate-cache=yes --dump-instr=yes --num-callers=50 --error-limit=no --trace-children=yes \
-		./coolwsd --o:security.capabilities="false" \
-			  --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=false --o:logging.level=error
+		./oxoolwsd $(COMMON_PARAMS) \
+			--o:security.capabilities="false" \
+			--o:logging.file[@enable]=false --o:logging.level=error
 
 run-strace: setup-wsd
-	@echo "Launching coolwsd under strace"
+	@echo "Launching oxoolwsd under strace"
 	strace -o strace.log -f -tt -s 256 \
-		./coolwsd --o:security.capabilities="false" \
-			  --o:sys_template_path="@SYSTEMPLATE_PATH@" \
-			  --o:child_root_path="@JAILS_PATH@" --o:storage.filesystem[@allow]=true \
-			  --o:ssl.cert_file_path="$(abs_top_srcdir)/etc/cert.pem" \
-			  --o:ssl.key_file_path="$(abs_top_srcdir)/etc/key.pem" \
-			  --o:ssl.ca_file_path="$(abs_top_srcdir)/etc/ca-chain.cert.pem" \
-			  --o:admin_console.username=admin --o:admin_console.password=admin \
-			  --o:logging.file[@enable]=false --o:logging.level=error
+		./oxoolwsd $(COMMON_PARAMS) \
+			--o:security.capabilities="false" \
+			--o:logging.file[@enable]=false --o:logging.level=error
 
 else
 
@@ -564,10 +537,10 @@ endif
 if ENABLE_LIBFUZZER
 ALL_LOCAL_DEPS=
 else
-ALL_LOCAL_DEPS=coolwsd
+ALL_LOCAL_DEPS=oxoolwsd
 endif
 
-# After building coolforkit, set its capabilities as required. Do it
+# After building oxoolforkit, set its capabilities as required. Do it
 # already after a plain 'make' to allow for testing without
 # installing. When building for packaging, no need for this, as the
 # capabilities won't survive packaging anyway. Instead, handle it when
@@ -595,7 +568,7 @@ CLANGXX_COMPILE_FLAGS=clang++ $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 
 JSON_COMPILE_FLAGS=$(subst ",\",$(subst \,\\,$(CLANGXX_COMPILE_FLAGS)))
 
-JSON_COMPILE_SRC = $(coolwsd_json) $(coolforkit_json) $(shared_json)
+JSON_COMPILE_SRC = $(patsubst %.cpp,%.cmd,$(wildcard **/*.cpp))
 
 $(eval $(call file_targets,$(JSON_COMPILE_SRC)))
 
@@ -619,18 +592,12 @@ compile_commands: $(abs_srcdir)/compile_commands.json
 browser/node_modules: browser/package.json browser/archived-packages
 	@cd browser && npm install
 
-install-exec-hook:
-	cd $(DESTDIR)$(bindir) && \
-	$(LN_S) coolconfig loolconfig && \
-	$(LN_S) coolwsd loolwsd && \
-	$(LN_S) coolwsd-systemplate-setup loolwsd-systemplate-setup
-
 stress_file=$(abs_top_srcdir)/test/data/hello-world.odt
 trace_dir=$(abs_top_srcdir)/test/traces
 stress:
 	@cp $(abs_top_srcdir)/test/data/hello.odt $(stress_file)
-	@echo "Watch at: https://localhost:9980/browser/12345/cool.html?file_path=$(stress_file)"
-	./coolstress wss://localhost:9980 \
+	@echo "Watch at: https://localhost:9980/browser/12345/loleaflet.html?file_path=$(stress_file)"
+	./oxoolstress wss://localhost:9980 \
 		$(stress_file) $(trace_dir)/writer-quick.txt \
 		$(stress_file) $(trace_dir)/writer-add-bullet.txt \
 		$(stress_file) $(trace_dir)/writer-mash-text-table.txt \
@@ -642,19 +609,29 @@ stress:
 if ENABLE_CODE_COVERAGE
 GEN_COVERAGE_COMMAND=mkdir -p ${abs_top_srcdir}/gcov && \
 lcov --no-external --capture --rc 'lcov_excl_line=' --rc 'lcov_excl_br_line=LOG_|TST_|LOK_|WSD_|TRANSITION|assert' \
---compat libtool=on --directory ${abs_top_srcdir}/. --output-file ${abs_top_srcdir}/gcov/cool.coverage.test.info && \
-genhtml --prefix ${abs_top_srcdir}/. --ignore-errors source ${abs_top_srcdir}/gcov/cool.coverage.test.info \
+--compat libtool=on --directory ${abs_top_srcdir}/. --output-file ${abs_top_srcdir}/gcov/oxool.coverage.test.info && \
+genhtml --prefix ${abs_top_srcdir}/. --ignore-errors source ${abs_top_srcdir}/gcov/oxool.coverage.test.info \
 --legend --title "${GIT_BRANCH} @ ${GIT_HASH}" --output-directory=${abs_top_srcdir}/gcov/html && \
 echo "Code-Coverage report generated in ${abs_top_srcdir}/gcov/html"
 else
 GEN_COVERAGE_COMMAND=true
 endif
 
-check: check-recursive
+# typically the system nss won't work in a jail and fail to init which is fatal for
+# exporting to pdf, which is something that gets tested
+check-for-system-nss:
+	@if test -e "@LO_PATH@/../config_host.mk"; then \
+		if grep -q SYSTEM_NSS=TRUE "@LO_PATH@/../config_host.mk"; then \
+			echo make check will fail unless core is configured using --without-system-nss; \
+			exit 1; \
+		fi \
+	fi
+
+check: check-for-system-nss check-recursive
 	$(GEN_COVERAGE_COMMAND)
 
 coverage-report:
 	$(GEN_COVERAGE_COMMAND)
 
 czech: check
-	@echo "This should do something much cooler"
+	@echo "This should do something much oxooler"

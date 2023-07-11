@@ -9,7 +9,7 @@
 
 #include <string>
 #include "RequestDetails.hpp"
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 
 /** This class helps us to build a URL that will reliably point back
  * at our service. It does very simple splitting of proxy URL
@@ -36,12 +36,11 @@ public:
     void init(const std::string &host, const std::string &proxyPrefix)
     {
         // The user can override the ServerRoot with a new prefix.
-        _pathPlus = COOLWSD::ServiceRoot;
+        _pathPlus = OXOOLWSD::ServiceRoot;
 
-        _ssl = (COOLWSD::isSSLEnabled() || COOLWSD::isSSLTermination());
+        _ssl = (OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination());
         _websocket = true;
-        std::string serverName = COOLWSD::ServerName.empty() ? host : COOLWSD::ServerName;
-        _schemeAuthority = serverName;
+        _schemeAuthority = OXOOLWSD::ServerName.empty() ? host : OXOOLWSD::ServerName;
 
         // A well formed ProxyPrefix will override it.
         const std::string& url = proxyPrefix;
@@ -75,6 +74,14 @@ public:
     std::string getWebSocketUrl() const
     {
         std::string schemeProtocol = (_websocket ? "ws" : "http");
+        if (_ssl)
+            schemeProtocol += 's';
+        return schemeProtocol + "://" + _schemeAuthority;
+    }
+
+    std::string getWebServerUrl() const
+    {
+        std::string schemeProtocol = "http";
         if (_ssl)
             schemeProtocol += 's';
         return schemeProtocol + "://" + _schemeAuthority;

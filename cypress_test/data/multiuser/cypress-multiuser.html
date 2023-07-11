@@ -23,7 +23,7 @@
     <script>
         function constructWopiUrl() {
             var wopiUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?";
-            wopiUrl = wopiUrl.replace("cypress-multiuser.html", "cool.html");
+            wopiUrl = wopiUrl.replace("cypress-multiuser.html", "loleaflet.html");
             var params = new URLSearchParams(window.location.search);
             var filePath = params.get('file_path').substr(1);
             params.delete('file_path');

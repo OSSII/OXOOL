@@ -29,17 +29,17 @@
 #include <Util.hpp>
 #include <common/FileUtil.hpp>
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
 TileCache::TileCache(std::string docURL, const std::chrono::system_clock::time_point& modifiedTime,
                      bool dontCache)
     : _docURL(std::move(docURL))
     , _dontCache(dontCache)
     , _cacheSize(0)
-    , _maxCacheSize(512 * 1024)
+    , _maxCacheSize(1024 * 1024)
 {
 #ifndef BUILDING_TESTS
-    LOG_INF("TileCache ctor for uri [" << COOLWSD::anonymizeUrl(_docURL) <<
+    LOG_INF("TileCache ctor for uri [" << OXOOLWSD::anonymizeUrl(_docURL) <<
             "], modifiedTime=" << std::chrono::duration_cast<std::chrono::seconds>
 							(modifiedTime.time_since_epoch()).count() << "], dontCache=" << _dontCache);
 #endif
@@ -50,7 +50,7 @@ TileCache::~TileCache()
 {
     _owner = std::thread::id();
 #ifndef BUILDING_TESTS
-    LOG_INF("~TileCache dtor for uri [" << COOLWSD::anonymizeUrl(_docURL) << "].");
+    LOG_INF("~TileCache dtor for uri [" << OXOOLWSD::anonymizeUrl(_docURL) << "].");
 #endif
 }
 
@@ -134,7 +134,7 @@ bool TileCache::hasTileBeingRendered(const TileDesc& tileDesc, const std::chrono
 
 std::shared_ptr<TileCache::TileBeingRendered> TileCache::findTileBeingRendered(const TileDesc& tileDesc)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     const auto tile = _tilesBeingRendered.find(tileDesc);
     return tile != _tilesBeingRendered.end() ? tile->second : nullptr;
@@ -143,7 +143,7 @@ std::shared_ptr<TileCache::TileBeingRendered> TileCache::findTileBeingRendered(c
 void TileCache::forgetTileBeingRendered(const TileDesc &descForKitReply,
                                         const std::shared_ptr<TileCache::TileBeingRendered>& tileBeingRendered)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
     assert(tileBeingRendered);
     assert(hasTileBeingRendered(tileBeingRendered->getTile()));
 
@@ -180,7 +180,7 @@ Tile TileCache::lookupTile(const TileDesc& tile)
 
 void TileCache::saveTileAndNotify(const TileDesc& desc, const char *data, const size_t size)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::shared_ptr<TileBeingRendered> tileBeingRendered = findTileBeingRendered(desc);
 
@@ -188,11 +188,25 @@ void TileCache::saveTileAndNotify(const TileDesc& desc, const char *data, const 
     {
         LOG_TRC("Zero sized cache tile: " << cacheFileName(desc));
 
-        // un-subscribe subscribers, if any.
         if (tileBeingRendered)
         {
+            updateWidInCache(desc);
+
+            const size_t subscriberCount = tileBeingRendered->getSubscribers().size();
+
+            // notify that the tile was re-rendered, with no change.
+            for (size_t i = 0; i < subscriberCount; ++i)
+            {
+                auto& subscriber = tileBeingRendered->getSubscribers()[i];
+                std::shared_ptr<ClientSession> session = subscriber.lock();
+                if (session)
+                    session->sendUpdateNow(desc);
+            }
+
             LOG_DBG("STATISTICS: tile " << desc.getVersion() << " internal roundtrip to empty tile " <<
                     tileBeingRendered->getElapsedTimeMs());
+
+            // un-subscribe subscribers, if any.
             forgetTileBeingRendered(desc, tileBeingRendered);
         }
         return;
@@ -221,7 +235,7 @@ void TileCache::saveTileAndNotify(const TileDesc& desc, const char *data, const 
                 auto& subscriber = tileBeingRendered->getSubscribers()[i];
                 std::shared_ptr<ClientSession> session = subscriber.lock();
                 if (session)
-                    session->sendTile(desc, tile);
+                    session->sendTileNow(desc, tile);
             }
         }
         else if (subscriberCount == 0)
@@ -254,7 +268,7 @@ bool TileCache::getTextStream(StreamType type, const std::string& fileName, std:
         buffer.pop_back();
 
     content = std::string(buffer.data(), buffer.size());
-    LOG_INF("Read '" << COOLProtocol::getAbbreviatedMessage(content.c_str(), content.size()) <<
+    LOG_INF("Read '" << OXOOLProtocol::getAbbreviatedMessage(content.c_str(), content.size()) <<
             "' from " << fileName);
 
     return true;
@@ -263,7 +277,7 @@ bool TileCache::getTextStream(StreamType type, const std::string& fileName, std:
 void TileCache::saveTextStream(StreamType type, const std::string& fileName,
                                const std::vector<char>& data)
 {
-    LOG_INF("Saving '" << COOLProtocol::getAbbreviatedMessage(data.data(), data.size()) << "' to " << fileName
+    LOG_INF("Saving '" << OXOOLProtocol::getAbbreviatedMessage(data.data(), data.size()) << "' to " << fileName
                        << " of size " << data.size() << " bytes");
 
     saveDataToStreamCache(type, fileName, data.data(), data.size());
@@ -295,7 +309,7 @@ void TileCache::invalidateTiles(int part, int mode, int x, int y, int width, int
             ", height: " << height <<
             ", viewid: " << normalizedViewId);
 
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     for (auto it = _cache.begin(); it != _cache.end();)
     {
@@ -321,42 +335,53 @@ void TileCache::invalidateTiles(int part, int mode, int x, int y, int width, int
 
 void TileCache::invalidateTiles(const std::string& tiles, int normalizedViewId)
 {
-    const std::pair<TileCache::PartModePair, Util::Rectangle> result = TileCache::parseInvalidateMsg(tiles);
-    const Util::Rectangle& invalidateRect = result.second;
-    int part = result.first.first;
-    int mode = result.first.second;
+    int part = 0, mode = 0;
+    TileWireId wireId = 0;
+    const Util::Rectangle invalidateRect = TileCache::parseInvalidateMsg(tiles, part, mode, wireId);
+
     invalidateTiles(part, mode, invalidateRect.getLeft(), invalidateRect.getTop(),
                     invalidateRect.getWidth(), invalidateRect.getHeight(), normalizedViewId);
 }
 
-std::pair<TileCache::PartModePair, Util::Rectangle> TileCache::parseInvalidateMsg(const std::string& tiles)
+Util::Rectangle TileCache::parseInvalidateMsg(const std::string& tiles, int &part, int &mode, TileWireId &wireId)
 {
     StringVector tokens = StringVector::tokenize(tiles);
 
     assert(!tokens.empty() && tokens.equals(0, "invalidatetiles:"));
 
+    mode = 0;
+    part = 0;
+    wireId = 0;
     if (tokens.size() == 2 && tokens.equals(1, "EMPTY"))
     {
-        return std::pair<PartModePair, Util::Rectangle>(
-            std::make_pair<int, int>(-1, 0), Util::Rectangle(0, 0, INT_MAX, INT_MAX));
+        part = -1;
+        return Util::Rectangle(0, 0, INT_MAX, INT_MAX);
     }
-
-    int mode = 0;
-    int part = 0;
-    if (tokens.size() == 3 && tokens.equals(1, "EMPTY,"))
+    else if (tokens.size() == 3 && tokens.equals(1, "EMPTY,"))
     {
-        if (stringToInteger(tokens[2], part))
-            return std::pair<PartModePair, Util::Rectangle>(
-                std::make_pair(part, mode), Util::Rectangle(0, 0, INT_MAX, INT_MAX));
+        part = -1;
+        if (!tokens.getUInt32(2, "wid", wireId))
+            assert(false && "missing wid");
+        return Util::Rectangle(0, 0, INT_MAX, INT_MAX);
     }
     else if (tokens.size() == 4 && tokens.equals(1, "EMPTY,"))
     {
         if (stringToInteger(tokens[2], part))
         {
+            if (!tokens.getUInt32(3, "wid", wireId))
+                assert(false && "missing wid");
+            return Util::Rectangle(0, 0, INT_MAX, INT_MAX);
+        }
+    }
+    else if (tokens.size() == 5 && tokens.equals(1, "EMPTY,"))
+    {
+        if (stringToInteger(tokens[2], part))
+        {
             if (stringToInteger(tokens[3], mode))
             {
-                return std::pair<PartModePair, Util::Rectangle>(
-                    std::make_pair(part, mode), Util::Rectangle(0, 0, INT_MAX, INT_MAX));
+                if (!tokens.getUInt32(4, "wid", wireId))
+                    assert(false && "missing wid");
+                return Util::Rectangle(0, 0, INT_MAX, INT_MAX);
             }
         }
     }
@@ -366,32 +391,33 @@ std::pair<TileCache::PartModePair, Util::Rectangle> TileCache::parseInvalidateMs
         int y = 0;
         int width = 0;
         int height = 0;
-        if (tokens.size() == 6 &&
+        if (tokens.size() == 7 &&
             getTokenInteger(tokens[1], "part", part) &&
             getNonNegTokenInteger(tokens[2], "x", x) &&
             getNonNegTokenInteger(tokens[3], "y", y) &&
             getNonNegTokenInteger(tokens[4], "width", width) &&
-            getNonNegTokenInteger(tokens[5], "height", height))
+            getNonNegTokenInteger(tokens[5], "height", height) &&
+            tokens.getUInt32(6, "wid", wireId))
         {
-            return std::pair<PartModePair, Util::Rectangle>(
-                std::make_pair(part, mode), Util::Rectangle(x, y, width, height));
+            return Util::Rectangle(x, y, width, height);
         }
-        else if (tokens.size() == 7 &&
+        else if (tokens.size() == 8 &&
             getTokenInteger(tokens[1], "part", part) &&
             getTokenInteger(tokens[2], "mode", mode) &&
             getNonNegTokenInteger(tokens[3], "x", x) &&
             getNonNegTokenInteger(tokens[4], "y", y) &&
             getNonNegTokenInteger(tokens[5], "width", width) &&
-            getNonNegTokenInteger(tokens[6], "height", height))
+            getNonNegTokenInteger(tokens[6], "height", height) &&
+            tokens.getUInt32(7, "wid", wireId))
         {
-            return std::pair<PartModePair, Util::Rectangle>(
-                std::make_pair(part, mode), Util::Rectangle(x, y, width, height));
+            return Util::Rectangle(x, y, width, height);
         }
     }
 
     LOG_ERR("Unexpected invalidatetiles request [" << tiles << "].");
-    return std::pair<PartModePair, Util::Rectangle>(
-        std::make_pair<int, int>(-1, 0), Util::Rectangle(0, 0, 0, 0));
+    assert(false && "Unexpected invalidatetiles request");
+    part = -1;
+    return Util::Rectangle(0, 0, 0, 0);
 }
 
 std::string TileCache::cacheFileName(const TileDesc& tile)
@@ -436,7 +462,7 @@ bool TileCache::intersectsTile(const TileDesc &tileDesc, int part, int mode, int
 void TileCache::subscribeToTileRendering(const TileDesc& tile, const std::shared_ptr<ClientSession>& subscriber,
                                          const std::chrono::steady_clock::time_point &now)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::shared_ptr<TileBeingRendered> tileBeingRendered = findTileBeingRendered(tile);
 
@@ -473,64 +499,6 @@ void TileCache::subscribeToTileRendering(const TileDesc& tile, const std::shared
     }
 }
 
-std::string TileCache::cancelTiles(const std::shared_ptr<ClientSession> &subscriber)
-{
-    assert(subscriber && "cancelTiles expects valid subscriber");
-    LOG_TRC("Cancelling tiles for " << subscriber->getName());
-
-    assertCorrectThread();
-
-    const ClientSession* sub = subscriber.get();
-
-    std::ostringstream oss;
-
-    for (auto it = _tilesBeingRendered.begin(); it != _tilesBeingRendered.end(); )
-    {
-        if (it->second->getTile().getId() >= 0)
-        {
-            // Tile is for a thumbnail, don't cancel it
-            ++it;
-            continue;
-        }
-
-        auto& subscribers = it->second->getSubscribers();
-        LOG_TRC("Tile " << it->first.serialize() << " has " << subscribers.size() << " subscribers.");
-
-        const auto itRem = std::find_if(subscribers.begin(), subscribers.end(),
-                                        [sub](std::weak_ptr<ClientSession>& ptr){ return ptr.lock().get() == sub; });
-        if (itRem != subscribers.end())
-        {
-            LOG_TRC("Tile " << it->first.serialize() << " has " << subscribers.size() <<
-                    " subscribers. Removing " << subscriber->getName() << '.');
-            subscribers.erase(itRem, itRem + 1);
-            if (subscribers.empty())
-            {
-                // No other subscriber, remove it from the render queue.
-                oss << it->second->getVersion() << ',';
-                it = _tilesBeingRendered.erase(it);
-                continue;
-            }
-        }
-
-        ++it;
-    }
-
-    const std::string canceltiles = oss.str();
-    return canceltiles.empty() ? canceltiles : "canceltiles " + canceltiles;
-}
-
-void TileCache::assertCorrectThread()
-{
-    const bool correctThread = _owner == std::thread::id() || std::this_thread::get_id() == _owner;
-    if (!correctThread)
-    {
-        LOG_ERR("TileCache method invoked from foreign thread. Expected: "
-                << Log::to_string(_owner) << " but called from " << std::this_thread::get_id()
-                << " (" << Util::getThreadId() << ").");
-    }
-    assert (correctThread);
-}
-
 Tile TileCache::findTile(const TileDesc &desc)
 {
     const auto it = _cache.find(desc);
@@ -541,6 +509,17 @@ Tile TileCache::findTile(const TileDesc &desc)
     }
 
     return Tile();
+}
+
+// Used when we get a zero delta - to update the wire-id
+void TileCache::updateWidInCache(const TileDesc& desc)
+{
+    Tile tile = _cache[desc];
+    if (tile)
+    {
+        LOG_TRC("Bumped wid on " << desc.serialize());
+        tile->bumpLastWid(desc.getWireId());
+    }
 }
 
 Tile TileCache::saveDataToCache(const TileDesc &desc, const char *data, const size_t size)

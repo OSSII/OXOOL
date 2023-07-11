@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "COOL_LOGLEVEL"
+            key = "OXOOL_LOGLEVEL"
             value = "trace"
             isEnabled = "YES">
          </EnvironmentVariable>

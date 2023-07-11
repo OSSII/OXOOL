@@ -18,7 +18,7 @@
 
 #import "ios.h"
 #import "FakeSocket.hpp"
-#import "COOLWSD.hpp"
+#import "OXOOLWSD.hpp"
 #import "Log.hpp"
 #import "MobileApp.hpp"
 #import "SigUtil.hpp"
@@ -198,7 +198,8 @@ static IMP standardImpOfInputAccessoryView = nil;
                     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"debug"];
                     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"lok"];
                     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"error"];
-                    self.webView.configuration.userContentController = nil;
+                    // Don't set webView.configuration.userContentController to
+                    // nil as it generates a "nil not allowed" compiler warning
                     [self.webView removeFromSuperview];
                     self.webView = nil;
                     }];
@@ -266,7 +267,9 @@ static IMP standardImpOfInputAccessoryView = nil;
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
-    LOG_ERR("WebContent process terminated! What should we do?");
+    // Fix issue #5876 by closing the document if the content process dies
+    [self bye];
+    LOG_ERR("WebContent process terminated! Is closing the document enough?");
 }
 
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
@@ -302,10 +305,10 @@ static IMP standardImpOfInputAccessoryView = nil;
         if ([message.body isEqualToString:@"HULLO"]) {
             // Now we know that the JS has started completely
 
-            // Contact the permanently (during app lifetime) listening COOLWSD server
+            // Contact the permanently (during app lifetime) listening OXOOLWSD server
             // "public" socket
-            assert(coolwsd_server_socket_fd != -1);
-            rc = fakeSocketConnect(self.document->fakeClientFd, coolwsd_server_socket_fd);
+            assert(oxoolwsd_server_socket_fd != -1);
+            rc = fakeSocketConnect(self.document->fakeClientFd, oxoolwsd_server_socket_fd);
             assert(rc != -1);
 
             // Create a socket pair to notify the below thread when the document has been closed
@@ -365,7 +368,7 @@ static IMP standardImpOfInputAccessoryView = nil;
             p.events = POLLOUT;
             fakeSocketPoll(&p, 1, -1);
 
-            // This is read in the iOS-specific code in ClientRequestDispatcher::handleIncomingMessage() in COOLWSD.cpp
+            // This is read in the iOS-specific code in ClientRequestDispatcher::handleIncomingMessage() in OXOOLWSD.cpp
             std::string message(url + " " + std::to_string(self.document->appDocId));
             fakeSocketWrite(self.document->fakeClientFd, message.c_str(), message.size());
 
@@ -531,8 +534,7 @@ static IMP standardImpOfInputAccessoryView = nil;
                     return;
                 }
                 UIDocumentPickerViewController *picker =
-                    [[UIDocumentPickerViewController alloc] initWithURL:downloadAsTmpURL
-                                                                 inMode:UIDocumentPickerModeExportToService];
+                    [[UIDocumentPickerViewController alloc] initForExportingURLs:[NSArray arrayWithObject:downloadAsTmpURL] asCopy:YES];
                 picker.delegate = self;
                 [self presentViewController:picker
                                    animated:YES

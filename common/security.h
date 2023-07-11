@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifndef COOL_USER_ID
+#ifndef OXOOL_USER_ID
 #  error "include config.h for user id";
 #endif
 
@@ -65,10 +65,10 @@ inline int hasCorrectUID(const char *appName)
     (void)appName;
     return 1; // insecure but easy to use.
 #else
-    if (hasUID(COOL_USER_ID))
+    if (hasUID(OXOOL_USER_ID))
         return 1;
     else {
-        fprintf(stderr, "Security: %s incorrect user-name, other than '" COOL_USER_ID "'\n", appName);
+        fprintf(stderr, "Security: %s incorrect user-name, other than '" OXOOL_USER_ID "'\n", appName);
         return 0;
     }
 #endif
@@ -86,7 +86,7 @@ inline int hasAnyCapability()
     }
 
     cap_t caps_none = cap_init();
-    if (caps == nullptr)
+    if (caps_none == nullptr)
     {
         fprintf(stderr, "Error: cap_init() failed.\n");
         cap_free(caps);

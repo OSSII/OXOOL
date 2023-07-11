@@ -139,6 +139,13 @@ struct TileData
         return since < _wids[0];
     }
 
+    /// we now know this wid is really the latest
+    void bumpLastWid(TileWireId since)
+    {
+        assert(_wids.size() > 0);
+        _wids.back() = since;
+    }
+
     bool appendChangesSince(std::vector<char> &output, TileWireId since)
     {
         size_t i;
@@ -192,8 +199,6 @@ class TileCache
     std::shared_ptr<TileBeingRendered> findTileBeingRendered(const TileDesc& tile);
 
 public:
-    typedef std::pair<int, int> PartModePair;
-
     /// When the docURL is a non-file:// url, the timestamp has to be provided by the caller.
     /// For file:// url's, it's ignored.
     /// When it is missing for non-file:// url, it is assumed the document must be read, and no cached value used.
@@ -244,8 +249,8 @@ public:
     // The tiles parameter is an invalidatetiles: message as sent by the child process
     void invalidateTiles(const std::string& tiles, int normalizedViewId);
 
-    /// Parse invalidateTiles message to a part number and a rectangle of the invalidated area
-    static std::pair<PartModePair, Util::Rectangle> parseInvalidateMsg(const std::string& tiles);
+    /// Parse invalidateTiles message to rectangle and associated attributes of the invalidated area
+    static Util::Rectangle parseInvalidateMsg(const std::string& tiles, int &part, int &mode, TileWireId &wid);
 
     /// Forget the tile being rendered if it is the latest version we expect.
     void forgetTileBeingRendered(const TileDesc& descForKitReply,
@@ -265,8 +270,7 @@ public:
 
     // Debugging bits ...
     void dumpState(std::ostream& os);
-    void setThreadOwner(const std::thread::id &id) { _owner = id; }
-    void assertCorrectThread();
+    void setThreadOwner(const std::thread::id& id) { _owner = id; }
     void assertCacheSize();
 
 private:
@@ -287,6 +291,7 @@ private:
     static bool intersectsTile(const TileDesc &tileDesc, int part, int mode, int x, int y,
                                int width, int height, int normalizedViewId);
 
+    void updateWidInCache(const TileDesc& desc);
     Tile saveDataToCache(const TileDesc& desc, const char* data, size_t size);
     void saveDataToStreamCache(StreamType type, const std::string& fileName, const char* data,
                                size_t size);

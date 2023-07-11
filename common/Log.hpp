@@ -171,44 +171,6 @@ namespace Log
              : StreamLogger();
     }
 
-    template <typename U>
-    StreamLogger& operator<<(StreamLogger& lhs, const U& rhs)
-    {
-        if (lhs.enabled())
-        {
-            lhs.getStream() << rhs;
-        }
-
-        return lhs;
-    }
-
-    template <typename U>
-    StreamLogger& operator<<(StreamLogger&& lhs, U&& rhs)
-    {
-        if (lhs.enabled())
-        {
-            lhs.getStream() << rhs;
-        }
-
-        return lhs;
-    }
-
-    inline StreamLogger& operator<<(StreamLogger& lhs, const std::chrono::system_clock::time_point& rhs)
-    {
-        if (lhs.enabled())
-        {
-            lhs.getStream() << Util::getIso8601FracformatTime(rhs);
-        }
-
-        return lhs;
-    }
-
-    inline void operator<<(StreamLogger& lhs, const _end_marker&)
-    {
-        (void)end;
-        lhs.flush();
-    }
-
     /// Dump the invalid id as 0, otherwise dump in hex.
     /// Note: std::thread::id defines operator<< which
     /// serializes in decimal. We need this for hex.
@@ -223,11 +185,51 @@ namespace Log
 
         return "0";
     }
+
+} // namespace Log
+
+template <typename U> Log::StreamLogger& operator<<(Log::StreamLogger& lhs, const U& rhs)
+{
+    if (lhs.enabled())
+    {
+        lhs.getStream() << rhs;
+    }
+
+    return lhs;
 }
+
+template <typename U> Log::StreamLogger& operator<<(Log::StreamLogger&& lhs, U&& rhs)
+{
+    if (lhs.enabled())
+    {
+        lhs.getStream() << rhs;
+    }
+
+    return lhs;
+}
+
+inline Log::StreamLogger& operator<<(Log::StreamLogger& lhs,
+                                     const std::chrono::system_clock::time_point& rhs)
+{
+    if (lhs.enabled())
+    {
+        lhs.getStream() << Util::getIso8601FracformatTime(rhs);
+    }
+
+    return lhs;
+}
+
+inline void operator<<(Log::StreamLogger& lhs, const Log::_end_marker&) { lhs.flush(); }
 
 /// A default implementation that is a NOP.
 /// Any context can implement this to prefix its log entries.
 inline void logPrefix(std::ostream&) {}
+
+inline std::ostream& operator<<(std::ostream& lhs, const std::function<void(std::ostream&)>& f)
+{
+    f(lhs);
+    return lhs;
+}
 
 #ifdef IOS
 // We know that when building with Xcode, __FILE__ will always be a full path, with several slashes,
@@ -259,7 +261,7 @@ static constexpr std::size_t skipPathPrefix(const char (&s)[N], std::size_t n = 
 #ifdef __ANDROID__
 
 #define LOG_LOG(LOG, PRIO, LVL, STR)                                                               \
-    ((void)__android_log_print(ANDROID_LOG_DEBUG, "coolwsd", "%s %s", LVL, STR.c_str()))
+    ((void)__android_log_print(ANDROID_LOG_DEBUG, "oxoolwsd", "%s %s", LVL, STR.c_str()))
 
 #else
 

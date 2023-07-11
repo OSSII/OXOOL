@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-extern int coolwsd_server_socket_fd;
+extern int oxoolwsd_server_socket_fd;
 
 extern const char* user_name;
 

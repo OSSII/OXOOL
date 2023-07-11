@@ -1,0 +1,99 @@
+/* For btns hover status see device-desktop.css */
+
+.jsdialog *[disabled] {
+	color: var(--color-text-lighter);
+	border: 1px solid var(--color-border-lighter);
+	background: var(--color-background-lighter);
+}
+
+/*limit icon to button height*/
+button.jsdialog img {
+	max-height: 100%;
+}
+
+.annotation-btns-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: end;
+	flex-wrap: wrap;
+}
+
+.button-secondary,
+button:not(.ui-tab):not(.ui-corner-all):not(.button-primary):not(.unobutton):not(.form-field-button) {
+	box-sizing: border-box;
+	height: 32px;
+	line-height: 0em;
+	color: var(--color-main-text);
+	font-size: var(--default-font-size);
+	min-width: 62px;
+	background-color: var(--color-background-dark);
+	border: 1px solid var(--color-btn-border);
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius);
+	margin: 5px;
+	vertical-align: middle;
+	width: max-content;
+}
+
+.button-primary {
+	height: 32px;
+	line-height: 0em;
+	color: var(--color-primary-text);
+	min-width: 62px;
+	background-color: var(--color-primary);
+	border: 1px solid var(--color-primary-dark);
+	border-radius: var(--border-radius);
+	margin: 5px;
+	vertical-align: middle;
+	width: max-content;
+}
+
+.jsdialog.ui-button-box.end {
+	margin-top: 8px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.jsdialog.ui-button-box button[disabled='disabled'] {
+	color: var(--color-text-lighter) !important;
+	background-color: var(--color-background-lighter) !important;
+	border-color: var(--color-border-lighter) !important;
+}
+
+.ui-button-box .jsdialog.ui-pushbutton:not(.hidden) {
+	display: initial !important;
+}
+
+.ui-pushbutton[disabled] {
+	color: var(--color-text-lighter) !important;
+	background-color: var(--color-background-lighter) !important;
+	border: 1px solid var(--color-border-lighter) !important;
+}
+
+.ui-pushbutton[disabled]:hover {
+	cursor: not-allowed !important;
+	background: var(--color-background-darker) !important;
+}
+
+/* button box */
+
+.jsdialog.ui-button-box {
+	display: grid;
+}
+
+.jsdialog.ui-button-box-right {
+	display: flex;
+	justify-self: end;
+	margin-inline-end: -5px;
+}
+
+.jsdialog.ui-button-box-left {
+	display: flex;
+	justify-self: start;
+	margin-inline-start: -5px;
+}
+
+/* Eg: Sidebar -> Animation -> Effects buttons shouldn't overflow the content */
+button.has-img {
+	min-width: auto !important;
+}

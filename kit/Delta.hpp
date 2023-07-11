@@ -8,12 +8,15 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <unordered_set>
 #include <assert.h>
 #include <zlib.h>
 #include <zstd.h>
 #include <Log.hpp>
 #include <Common.hpp>
+#include <FileUtil.hpp>
+#include <Png.hpp>
 
 #define ENABLE_DELTAS 1
 
@@ -57,21 +60,142 @@ struct TileLocation {
 /// A quick and dirty, thread-safe delta generator for last tile changes
 class DeltaGenerator {
 
+    friend class DeltaTests;
+
     // fast - and deltas take lots of size off.
     static const int compressionLevel = -3;
 
+    static constexpr size_t _rleMaskUnits = 256 / 64;
+
     /// Bitmap row with a CRC for quick vertical shift detection
-    struct DeltaBitmapRow {
-        // FIXME: add "whole row the same" flag.
-        uint64_t        _crc;
-        const uint32_t *_pixels; // FIXME: remove me.
-        size_t          _pixSize;
+    class DeltaBitmapRow final {
+        size_t _rleSize;
+        uint64_t _rleMask[_rleMaskUnits];
+        uint32_t *_rleData;
+    public:
+        class PixIterator final
+        {
+            const DeltaBitmapRow &_row;
+            unsigned int _x;
+            const uint32_t *_rlePtr;
+        public:
+            PixIterator(const DeltaBitmapRow &row)
+                : _row(row), _x(0),
+                  _rlePtr(row._rleData)
+            {
+            }
+            uint32_t getPixel() const
+            {
+                return *_rlePtr;
+            }
+            bool identical(const PixIterator &i) const
+            {
+                return getPixel() == i.getPixel();
+            }
+            void next()
+            {
+                _x++;
+                size_t rleMaskIndex = _x >> 6;
+                if (rleMaskIndex >= _rleMaskUnits || !(_row._rleMask[rleMaskIndex] & (uint64_t(1) << (_x & 63))))
+                    _rlePtr++;
+            }
+        };
+
+
+        DeltaBitmapRow()
+            : _rleSize(0)
+            , _rleData(nullptr)
+        {
+            memset(_rleMask, 0, sizeof(_rleMask));
+        }
+        DeltaBitmapRow(const DeltaBitmapRow&) = delete;
+
+        ~DeltaBitmapRow()
+        {
+            if (_rleData)
+                free(_rleData);
+        }
+
+        void initRow(const uint32_t *from, unsigned int width)
+        {
+            uint32_t scratch[width];
+
+            unsigned int outp = 0;
+            scratch[0] = from[0];
+            _rleMask[0] = 1;
+            for (unsigned int x = 1; x < width; ++x)
+            {
+                if (from[x] == scratch[outp]) // set for run
+                    _rleMask[x>>6] |= uint64_t(1) << (x & 63);
+                else
+                    scratch[++outp] = from[x];
+            }
+            _rleSize = ++outp;
+            _rleData = (uint32_t *)malloc((size_t)_rleSize * 4);
+            memcpy(_rleData, scratch, _rleSize * 4);
+        }
 
         bool identical(const DeltaBitmapRow &other) const
         {
-            if (_crc != other._crc)
+            if (_rleSize != other._rleSize)
                 return false;
-            return !std::memcmp(_pixels, other._pixels, _pixSize * 4);
+            if (memcmp(_rleMask, other._rleMask, sizeof(_rleMask)))
+                return false;
+            return !std::memcmp(_rleData, other._rleData, _rleSize * 4);
+        }
+
+        // Create a diff from our state to new state in curRow
+        void diffRowTo(const DeltaBitmapRow &curRow,
+                       const int width, const int curY,
+                       std::vector<uint8_t> &output,
+                       LibreOfficeKitTileMode mode) const
+        {
+            PixIterator oldPixels(*this);
+            PixIterator curPixels(curRow);
+            for (int x = 0; x < width;)
+            {
+                int same;
+                for (same = 0; same + x < width &&
+                         oldPixels.identical(curPixels);)
+                {
+                    oldPixels.next();
+                    curPixels.next();
+                    same++;
+                }
+
+                x += same;
+
+                uint32_t scratch[256];
+
+                int diff;
+                for (diff = 0; diff + x < width &&
+                         (!oldPixels.identical(curPixels) || diff < 3)
+                         && diff < 254;)
+                {
+                    oldPixels.next();
+                    scratch[diff] = curPixels.getPixel();
+                    curPixels.next();
+                    ++diff;
+                }
+
+                if (diff > 0)
+                {
+                    output.push_back('d');
+                    output.push_back(curY);
+                    output.push_back(x);
+                    output.push_back(diff);
+
+                    size_t dest = output.size();
+                    output.resize(dest + diff * 4);
+
+                    copy_row(reinterpret_cast<unsigned char *>(&output[dest]),
+                              (const unsigned char *)(scratch),
+                              diff, mode);
+
+                    LOG_TRC("row " << curY << " different " << diff << "pixels");
+                    x += diff;
+                }
+            }
         }
     };
 
@@ -80,23 +204,6 @@ class DeltaGenerator {
         // no careless copying
         DeltaData(const DeltaData&) = delete;
         DeltaData& operator=(const DeltaData&) = delete;
-
-        static inline uint64_t copyWithCrc(uint32_t *to, const uint32_t *from, unsigned int width)
-        {
-            assert ((width & 0x1) == 0); // copy 64bits at a time.
-
-            const uint64_t *src = reinterpret_cast<const uint64_t *>(from);
-            uint64_t *dest = reinterpret_cast<uint64_t *>(to);
-
-            // We get the hash ~for free as we copy - with a cheap hash.
-            uint64_t crc = 0x7fffffff - 1;
-            for (unsigned int x = 0; x < (width>>1); ++x)
-            {
-                crc = (crc << 7) + crc + src[x];
-                dest[x] = src[x];
-            }
-            return crc;
-        }
 
         DeltaData (TileWireId wid,
                    unsigned char* pixmap, size_t startX, size_t startY,
@@ -120,24 +227,17 @@ class DeltaGenerator {
                     << (width * height * 4) << " width " << width
                     << " height " << height);
 
-            _pixels = (uint32_t *)malloc((size_t)width * height * 4);
             for (int y = 0; y < height; ++y)
             {
                 size_t position = ((startY + y) * bufferWidth * 4) + (startX * 4);
                 DeltaBitmapRow &row = _rows[y];
-                row._pixels = _pixels + width * y;
-                row._pixSize = width;
-                row._crc = copyWithCrc(
-                    const_cast<uint32_t *>(row._pixels),
-                    reinterpret_cast<uint32_t *>(pixmap + position), width);
+                row.initRow(reinterpret_cast<uint32_t *>(pixmap + position), width);
             }
         }
 
         ~DeltaData()
         {
             delete[] _rows;
-            if (_pixels)
-                free (_pixels);
         }
 
         void setWid(TileWireId wid)
@@ -189,9 +289,6 @@ class DeltaGenerator {
             delete[] _rows;
             _rows = repl->_rows;
             repl->_rows = nullptr;
-            free (_pixels);
-            _pixels = repl->_pixels;
-            repl->_pixels = nullptr;
             repl.reset();
         }
 
@@ -213,7 +310,6 @@ class DeltaGenerator {
         TileWireId _wid;
         int _width;
         int _height;
-        uint32_t *_pixels;
         DeltaBitmapRow *_rows;
     };
 
@@ -257,54 +353,27 @@ class DeltaGenerator {
         }
     }
 
-    // Unpremultiplies data and converts native endian ARGB => RGBA bytes
     static void
-    unpremult_copy (unsigned char *dest, const unsigned char *srcBytes, unsigned int count)
+    copy_row (unsigned char *dest, const unsigned char *srcBytes, unsigned int count, LibreOfficeKitTileMode mode)
     {
-        const uint32_t *src = reinterpret_cast<const uint32_t *>(srcBytes);
-
-        for (unsigned int i = 0; i < count; ++i)
+        switch (mode)
         {
-            // Profile me: avoid math for runs of duplicate pixels
-            // possibly we should RLE earlier ?
-            if (i > 0 && src[i-1] == src[i])
-            {
-                std::memcpy (dest, dest - 4, 4);
-                dest += 4;
-                continue;
-            }
-
-            uint32_t pix;
-            uint8_t  alpha;
-
-            std::memcpy (&pix, src + i, sizeof (uint32_t));
-
-            alpha = (pix & 0xff000000) >> 24;
-            if (alpha == 255)
-            {
-                dest[0] = ((pix & 0xff0000) >> 16);
-                dest[1] = ((pix & 0x00ff00) >>  8);
-                dest[2] = ((pix & 0x0000ff) >>  0);
-                dest[3] = 255;
-            }
-            else if (alpha == 0)
-                dest[0] = dest[1] = dest[2] = dest[3] = 0;
-
-            else
-            {
-                dest[0] = (((pix & 0xff0000) >> 16) * 255 + alpha / 2) / alpha;
-                dest[1] = (((pix & 0x00ff00) >>  8) * 255 + alpha / 2) / alpha;
-                dest[2] = (((pix & 0x0000ff) >>  0) * 255 + alpha / 2) / alpha;
-                dest[3] = alpha;
-            }
-            dest += 4;
+            case LOK_TILEMODE_RGBA:
+                std::memcpy(dest, srcBytes, count * 4);
+                break;
+            case LOK_TILEMODE_BGRA:
+                std::memcpy(dest, srcBytes, count * 4);
+                for (size_t j = 0; j < count * 4; j += 4)
+                    std::swap(dest[j], dest[j+2]);
+                break;
         }
     }
 
     bool makeDelta(
         const DeltaData &prev,
         const DeltaData &cur,
-        std::vector<char>& outStream)
+        std::vector<char>& outStream,
+        LibreOfficeKitTileMode mode)
     {
         // TODO: should we split and compress alpha separately ?
         if (prev.getWidth() != cur.getWidth() || prev.getHeight() != cur.getHeight())
@@ -317,7 +386,8 @@ class DeltaGenerator {
         LOG_TRC("building delta of a " << cur.getWidth() << 'x' << cur.getHeight() << " bitmap " <<
                 "between old wid " << prev.getWid() << " and " << cur.getWid());
 
-        std::vector<char> output;
+        // let's use uint8_t instead of char to avoid implicit sign extension
+        std::vector<uint8_t> output;
         // guestimated upper-bound delta size
         output.reserve(cur.getWidth() * (cur.getHeight() + 4) * 4);
 
@@ -345,9 +415,12 @@ class DeltaGenerator {
                     // TODO: if offsets are >256 - use 16bits?
                     if (lastCopy > 0)
                     {
-                        char cnt = output[lastCopy];
-                        if (output[lastCopy + 1] + cnt == (char)(match) &&
-                            output[lastCopy + 2] + cnt == (char)(y))
+                        // check if we can extend the last copy
+                        uint8_t cnt = output[lastCopy];
+                        if (output[lastCopy + 1] + cnt == match &&
+                            output[lastCopy + 2] + cnt == y &&
+                            // make sure we're not copying from out of bounds of the previous tile
+                            output[lastCopy + 1] + cnt + 1 < prev.getHeight())
                         {
                             output[lastCopy]++;
                             matched = true;
@@ -370,40 +443,7 @@ class DeltaGenerator {
                 continue;
 
             // Our row is just that different:
-            const DeltaBitmapRow &curRow = cur.getRow(y);
-            const DeltaBitmapRow &prevRow = prev.getRow(y);
-            for (int x = 0; x < prev.getWidth();)
-            {
-                int same;
-                for (same = 0; same + x < prev.getWidth() &&
-                         prevRow._pixels[x+same] == curRow._pixels[x+same];)
-                    ++same;
-
-                x += same;
-
-                int diff;
-                for (diff = 0; diff + x < prev.getWidth() &&
-                         (prevRow._pixels[x+diff] != curRow._pixels[x+diff] || diff < 3) &&
-                         diff < 254;)
-                    ++diff;
-                if (diff > 0)
-                {
-                    output.push_back('d');
-                    output.push_back(y);
-                    output.push_back(x);
-                    output.push_back(diff);
-
-                    size_t dest = output.size();
-                    output.resize(dest + diff * 4);
-
-                    unpremult_copy(reinterpret_cast<unsigned char *>(&output[dest]),
-                                   (const unsigned char *)(curRow._pixels + x),
-                                   diff);
-
-                    LOG_TRC("row " << y << " different " << diff << "pixels");
-                    x += diff;
-                }
-            }
+            prev.getRow(y).diffRowTo(cur.getRow(y), prev.getWidth(), y, output, mode);
         }
         LOG_TRC("Created delta of size " << output.size());
         if (output.empty())
@@ -449,7 +489,9 @@ class DeltaGenerator {
     }
 
   public:
-    DeltaGenerator() {}
+    DeltaGenerator()
+        : _maxEntries(0)
+    {}
 
     /// Re-balances the cache size to fit the number of sessions
     void rebalanceDeltas(ssize_t limit = -1)
@@ -463,7 +505,7 @@ class DeltaGenerator {
     /// Adapts cache sizing to the number of sessions
     void setSessionCount(size_t count)
     {
-        rebalanceDeltas(std::max(count, size_t(1)) * 24);
+        rebalanceDeltas(std::max(count, size_t(1)) * 48);
     }
 
     void dropCache()
@@ -491,11 +533,19 @@ class DeltaGenerator {
         int bufferWidth, int bufferHeight,
         const TileLocation &loc,
         std::vector<char>& output,
-        TileWireId wid, bool forceKeyframe)
+        TileWireId wid, bool forceKeyframe,
+        LibreOfficeKitTileMode mode)
     {
         if ((width & 0x1) != 0) // power of two - RGBA
         {
             LOG_TRC("Bad width to create deltas " << width);
+            return false;
+        }
+
+        if (width > 256 || height > 256)
+        {
+            LOG_TRC("Bad size << " << width << " x " << height << " to create deltas ");
+            assert(false && "shouldn't be possible to get tiles > 256x256");
             return false;
         }
 
@@ -528,7 +578,7 @@ class DeltaGenerator {
 
         bool delta = false;
         if (!forceKeyframe)
-            delta = makeDelta(*cacheEntry, *update, output);
+            delta = makeDelta(*cacheEntry, *update, output, mode);
 
         // no two threads can be working on the same DeltaData.
         cacheEntry->replaceAndFree(update);
@@ -547,11 +597,60 @@ class DeltaGenerator {
         int bufferWidth, int bufferHeight,
         const TileLocation &loc,
         std::vector<char>& output,
-        TileWireId wid, bool forceKeyframe)
+        TileWireId wid, bool forceKeyframe,
+        bool dumpTiles, LibreOfficeKitTileMode mode)
     {
+        #if !ENABLE_DEBUG
+        dumpTiles = false;
+        #endif
+        // Dump the tiles to the child sessions chroot jail
+        int dumpedIndex = 1;
+        if (dumpTiles)
+        {
+            std::string path = "/tmp/tiledump";
+            bool directoryExists = !FileUtil::isEmptyDirectory(path);
+            if (!directoryExists)
+            {
+                FileUtil::createTmpDir("tiledump");
+                directoryExists = true;
+            }
+            if (directoryExists)
+            {
+                // filename format: tile-<viewid>-<part>-<left>-<top>-<index>.png
+                std::ostringstream oss;
+                oss << "tile-" << loc._canonicalViewId << "-" << loc._part << "-" << loc._left << "-" << loc._top << "-";
+                std::string baseFilename = oss.str();
+
+                // find the next available filename
+                bool found = false;
+                int index = 1;
+
+                while (!found)
+                {
+                    std::string filename = std::string("/") + baseFilename + std::to_string(index) + ".png";
+                    if (!FileUtil::Stat(path + filename).exists())
+                    {
+                        found = true;
+                        path += filename;
+                        dumpedIndex = index;
+                    }
+                    else
+                    {
+                        index++;
+                    }
+                }
+
+                std::ofstream tileFile(path, std::ios::binary);
+                std::vector<char> pngOutput;
+                Png::encodeSubBufferToPNG(pixmap, startX, startY, width, height,
+                                        bufferWidth, bufferHeight, pngOutput, mode);
+                tileFile.write(pngOutput.data(), pngOutput.size());
+            }
+        }
+
         if (!createDelta(pixmap, startX, startY, width, height,
                          bufferWidth, bufferHeight,
-                         loc, output, wid, forceKeyframe))
+                         loc, output, wid, forceKeyframe, mode))
         {
             // FIXME: should stream it in =)
             size_t maxCompressed = ZSTD_COMPRESSBOUND((size_t)width * height * 4);
@@ -577,7 +676,7 @@ class DeltaGenerator {
             // FIXME: should we RLE in pixels first ?
             for (int y = 0; y < height; ++y)
             {
-                unpremult_copy(fixedupLine, pixmap + ((startY + y) * bufferWidth * 4) + (startX * 4), width);
+                copy_row(fixedupLine, pixmap + ((startY + y) * bufferWidth * 4) + (startX * 4), width, mode);
 
                 ZSTD_inBuffer inb;
                 inb.src = fixedupLine;
@@ -607,6 +706,23 @@ class DeltaGenerator {
             size_t oldSize = output.size();
             output.resize(oldSize + compSize);
             memcpy(&output[oldSize], compressed.get(), compSize);
+        }
+        else
+        {
+            // Dump the delta
+            if (dumpTiles)
+            {
+                std::string path = "/tmp/tiledump";
+                std::ostringstream oss;
+                // filename format: tile-delta-<viewid>-<part>-<left>-<top>-<prev_index>_to_<index>.zstd
+                oss << "tile-delta-" << loc._canonicalViewId << "-" << loc._part << "-" << loc._left << "-" << loc._top
+                    << "-" << dumpedIndex - 1 << "_to_" << dumpedIndex << ".zstd";
+                path += oss.str();
+                std::ofstream tileFile(path, std::ios::binary);
+                // Skip first character which is a 'D' used to identify deltas
+                // The rest should be a zstd compressed delta
+                tileFile.write(output.data() + 1, output.size() - 1);
+            }
         }
 
         return output.size();

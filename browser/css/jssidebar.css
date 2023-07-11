@@ -1,0 +1,395 @@
+/* general */
+
+.sidebar * {
+	font-family: var(--jquery-ui-font);
+	text-transform: none !important;
+}
+
+img.sidebar.ui-image {
+	/* Images that are not buttons (e.g. spinfield)
+	   16px + 6px + 6px = 28px, same height as grid cell */
+	padding: 6px;
+}
+
+/* Impress -> Master Slides images should fit in the visible width */
+img.sidebar.ui-drawing-area {
+	width: 300px;
+}
+
+.sidebar.ui-grid {
+	row-gap: 8px;
+}
+
+.sidebar .ui-content .unobutton {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+.sidebar .unobutton > img {
+	width: var(--btn-size);
+	height: var(--btn-size);
+}
+
+#document-container:not(.mobile) + #sidebar-dock-wrapper {
+	padding: 0;
+	box-sizing: border-box;
+}
+[data-userinterfacemode='classic'] #document-container:not(.mobile) + #sidebar-dock-wrapper,
+#document-container.spreadsheet-doctype:not(.mobile) + #sidebar-dock-wrapper {
+	border-inline-start: 1px solid var(--color-border);
+}
+.sidebar .menu-entry-icon {
+	width: var(--btn-size);
+	height: var(--btn-size);
+}
+
+
+/* expander section header */
+
+.sidebar.ui-expander {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.sidebar.ui-expander-label {
+	color: var(--color-main-text);
+	font-size: var(--header-font-size);
+	line-height: var(--header-height);
+	padding-inline: 8px;
+}
+
+.ui-expander-icon-right .sidebar.unotoolbutton {
+	margin: 0px !important;
+}
+
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right,
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right * {
+	display: block;
+	width: 10px;
+	height: 10px;
+	margin-inline-end: 10px;
+}
+
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right img {
+	filter: brightness(2);
+}
+
+.ui-expander.jsdialog.sidebar .ui-expander-icon-right:hover img {
+	filter: none;
+}
+
+#softedgeframe .sidebar.ui-expander-content,
+#glowframe .sidebar.ui-expander-content {
+	width: 100% !important; /* frame inside frame */
+}
+
+#AlignmentPropertyPanel.sidebar.ui-grid #box3,
+#ParaPropertyPanel.sidebar.ui-grid #box1.sidebar.ui-grid-cell,
+#NumberFormatPropertyPanel.sidebar.ui-grid #grid1 {
+	justify-content: space-between !important;
+}
+
+/* section content */
+
+.sidebar.ui-expander-content {
+	padding-inline: 10px;
+	width: 300px;
+	line-height: var(--default-height);
+}
+
+.sidebar.ui-grid.ui-grid-cell > div {
+	justify-content: start;
+	display: flex;
+}
+
+div.sidebar.ui-grid-cell.checkbutton,
+div.sidebar.ui-grid .checkbutton.sidebar,
+#ShadowPropertyPanel #SHOW_SHADOW,
+#NumberFormatPropertyPanel.sidebar.ui-grid div.sidebar.ui-grid-cell:nth-child(2n+1),
+#AlignmentPropertyPanel #indentbuttons, #SidebarTextPanel.sidebar.ui-grid div.sidebar.ui-grid-cell:nth-child(2n+1),
+#ParaPropertyPanel.sidebar.ui-grid div.sidebar.ui-grid-cell:nth-child(2n) {
+	justify-content: start;
+}
+
+/* widgets */
+
+.sidebar.toolbox {
+	align-items: center;
+}
+
+.sidebar.spinfieldcontainer input {
+	color: var(--color-text-dark);
+	background-color: var(--color-background-dark);
+}
+
+.menubutton.sidebar span {
+	display: none;
+}
+
+.menubutton.sidebar:hover span {
+	position: absolute;
+	font-size: var(--default-font-size);
+	display: block;
+	width: auto;
+	padding: 14px 4px;
+	border-radius: var(--border-radius);
+	white-space: nowrap;
+	margin-inline-start: -14px;
+	margin-block-start: 2px;
+}
+
+.sidebar.ui-grid.ui-grid-cell .menubutton {
+	justify-content: space-between;
+	justify-self: end;
+	padding: 4px;
+	margin-right: 1px;
+}
+
+/* widget width */
+
+.sidebar.ui-pushbutton,
+.sidebar.spinfield,
+.sidebar.ui-listbox,
+.sidebar.menubutton {
+	width: 121px;
+}
+
+#gradientstyle > .sidebar.ui-listbox,
+#gradangle > .sidebar.spinfield,
+#fontsizecombobox .sidebar.ui-listbox,
+#TableEditPanel .sidebar.spinfieldcontainer input,
+#ParaPropertyPanel .sidebar.spinfieldcontainer input {
+	min-width: 87px;
+	width: 87px;
+}
+
+#fontnamecombobox > .sidebar.jsdialog.ui-listbox,
+#applystyle > .sidebar.jsdialog.ui-listbox {
+	width: 198px;
+}
+
+/* widget selected */
+
+/* non selected */
+#clearFormatting,
+.hasnotebookbar .ui-content.unotoolbutton.has-label,
+.hasnotebookbar .ui-content.unotoolbutton.inline,
+.hasnotebookbar .ui-content.unotoolbutton:not(.has-label):not(.inline),
+.sidebar.unotoolbutton {
+	background-color: transparent;
+	border: 1px solid transparent;
+	color: var(--color-main-text);
+	border-radius: var(--border-radius);
+}
+/* selected */
+.hasnotebookbar .ui-content.unotoolbutton.selected.has-label,
+.hasnotebookbar .ui-content.unotoolbutton.selected.inline,
+.hasnotebookbar .ui-content.unotoolbutton.selected:not(.has-label):not(.inline),
+.sidebar.unotoolbutton.selected {
+	background-color: var(--color-background-dark);
+	border: 1px solid var(--color-border-dark);
+	color: var(--color-text-dark);
+	border-radius: var(--border-radius);
+}
+[data-theme='dark'] .hasnotebookbar .ui-content.unotoolbutton.selected.has-label,
+[data-theme='dark'] #toggledarktheme,
+[data-theme='dark'] .hasnotebookbar .ui-content.unotoolbutton.selected.inline,
+[data-theme='dark'] .hasnotebookbar .ui-content.unotoolbutton.selected:not(.has-label):not(.inline),
+[data-theme='dark'] .sidebar.unotoolbutton.selected {
+	background-color: var(--color-background-darker);
+	border-color: var(--color-border-darker);
+}
+/* selected hover */
+.hasnotebookbar .ui-content.unotoolbutton.selected:hover,
+.unotoolbutton.notebookbar:hover,
+.hasnotebookbar .ui-content.unotoolbutton.selected:not(.has-label):not(.inline):hover,
+.sidebar.unotoolbutton:hover,
+.sidebar.unotoolbutton.selected:hover {
+	background-color: var(--color-background-darker) !important;
+	border: 1px solid var(--color-border-darker);
+	color: var(--color-text-darker);
+	border-radius: var(--border-radius);
+}
+
+
+/* fixes */
+
+.sidebar.ui-grid-cell .sidebar.ui-pushbutton {
+	margin: 0;
+}
+.sidebar.unotoolbutton {
+	border: 1px solid transparent;
+	margin-right: 5px;
+}
+.sidebar.unotoolbutton.has-dropdown {
+	display: flex;
+}
+.sidebar.jsdialog.checkbutton {
+	font-size: var(--default-font-size);
+	align-items: center;
+}
+
+.sidebar.jsdialog.checkbutton label {
+	padding: 0;
+	display: flex;
+	line-height: 1;
+	flex-direction: column;
+	justify-content: center;
+}
+
+/* writer */
+
+#ParaPropertyPanel.sidebar #backgroundcolor,
+#PosSizePropertyPanel.sidebar #selectrotationtype {
+	justify-content: end;
+}
+/* Fix to allow ratio to span across columns
+ so Seitenverhältnis beibehalten doesn't get cropped*/
+#PosSizePropertyPanel.sidebar #ratio {
+	grid-column: 1 / 3;
+}
+#PosSizePropertyPanel.sidebar #ratio input[type='checkbox'] {
+	margin-inline-start: 0;
+}
+
+#ParaPropertyPanel.sidebar #indentfieldbox,
+#ParaPropertyPanel.sidebar #box3 {
+	display: grid;
+	justify-content: start;
+	row-gap: 4px;
+}
+
+#ParaPropertyPanel .sidebar.ui-grid-cell {
+	/* Same as sidebar  button margins */
+	column-gap: 5px;
+}
+
+button#button2.ui-pushbutton.jsdialog.sidebar {
+	width: 151px;
+	padding: 4px;
+	position: relative;
+	left: -10px;
+}
+
+#TableEditPanel.sidebar.ui-grid #delete_label {
+	width: 118px;
+}
+
+/* calc */
+
+/* cell appearance use one row */
+#CellAppearancePropertyPanel.sidebar div {
+	grid-template-columns: repeat(5, auto) !important;
+}
+
+#table-textorientbox.sidebar .jsdialog .radiobutton {
+	border: 1px solid transparent;
+}
+
+#table-textorientbox.sidebar .jsdialog input[type='radio'] {
+	background: none !important;
+	width: auto;
+	height: auto;
+}
+
+/* fixes sidebar width in calc (textorientbox) */
+#textorientbox {
+	grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+	grid-gap: inherit;
+}
+#textorientbox button {
+	min-width: auto;
+	width: auto;
+}
+
+
+/* Charts */
+
+.sidebar#ChartTypePanel #cmb_chartType-input,
+.sidebar#ChartTypePanel #\33 dscheme-input,
+.sidebar#ChartTypePanel .ui-listbox,
+.sidebar#ChartTypePanel .ui-pushbutton,
+.sidebar#ChartTypePanel .ui-scrollwindow,
+.sidebar#ChartTypePanel #stack,
+.sidebar#ChartElementsPanel .ui-listbox {
+	justify-content: start;
+	width: 100%;
+}
+
+.sidebar#ChartTypePanel #stack:not(.hidden) + #grid6 {
+	display: block !important;
+}
+
+.sidebar#ChartTypePanel #stack.hidden + #grid6 {
+	display: none;
+}
+
+/* not available commands*/
+
+.sidebar #orientationcontrol,
+.sidebar #rotation {
+	visibility: hidden;
+}
+
+.sidebar #orientationcontrol,
+.sidebar #rotation, .sidebar #grid1-cell-5-1,
+.sidebar #rotationlabel {
+	height: 0;
+}
+
+
+/* Navigator */
+
+#NavigatorDeck #contentbox,
+#NavigatorDeck #contenttree,
+#NavigatorDeck #tree {
+	position: absolute;
+	top: 0;
+	bottom: 10px;
+	left: 10px;
+	right: 10px;
+	border: none;
+}
+#NavigatorDeck .ui-expander-content > .root-container.jsdialog {
+	margin: 0;
+}
+#NavigatorDeck .ui-treeview-entry {
+	padding-inline-start: 0;
+	background-color: transparent;
+	margin-block-end: 8px;
+}
+#NavigatorDeck .ui-listview-icon {
+	width: var(--btn-size-s);
+	height: var(--btn-size-s);
+}
+#NavigatorDeck .ui-treeview-entry.selected {
+	background-color: var(--color-background-dark);
+	color: var(--color-primary);
+}
+#NavigatorDeck .ui-treeview-entry.selected:not(.ui-listview-expandable-with-icon)::before {
+	content: '–';
+	font-size: 17px;
+	font-weight: 500;
+	line-height: 1.2;
+	position: absolute;
+	left: 20px;
+}
+#NavigatorDeck .ui-treeview-cell-text {
+	/* good to move this into css var*/
+	font-size: 14px;
+}
+#NavigatorDeck .ui-treeview-cell {
+	/* Move this whole block away and fix in the main control */
+	display: flex;
+	align-items: center;
+}
+
+span.jsdialog.sidebar.ui-treeview-entry.ui-treeview-notexpandable {
+	margin-left: 15px;
+}
+
+#NavigatorDeck .ui-expander {
+	display: none;
+}

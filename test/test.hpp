@@ -31,7 +31,7 @@ std::set<pid_t> getForKitPids();
 /// Which port should we connect to get to WSD.
 int getClientPort();
 
-/// How many live coolkit processes do we have ?
-int getCoolKitProcessCount();
+/// How many live oxoolkit processes do we have ?
+int getOxoolKitProcessCount();
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

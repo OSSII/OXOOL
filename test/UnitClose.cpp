@@ -175,10 +175,10 @@ UnitBase::TestResult UnitClose::testAlertAllUsers()
                 = helpers::assertResponseString(socket[i], "error:", testname);
             StringVector tokens(StringVector::tokenize(response.substr(6), ' '));
             std::string cmd;
-            COOLProtocol::getTokenString(tokens, "cmd", cmd);
+            OXOOLProtocol::getTokenString(tokens, "cmd", cmd);
             LOK_ASSERT_EQUAL(std::string("internal"), cmd);
             std::string kind;
-            COOLProtocol::getTokenString(tokens, "kind", kind);
+            OXOOLProtocol::getTokenString(tokens, "kind", kind);
             LOK_ASSERT_EQUAL(std::string("diskfull"), kind);
         }
     }

@@ -3,7 +3,7 @@
 var helper = require('../../common/helper');
 var mobileHelper = require('../../common/mobile_helper');
 
-describe('Annotation tests.', function() {
+describe(['tagmobile'], 'Annotation tests.', function() {
 	var origTestFileName = 'annotation.odp';
 	var testFileName;
 
@@ -28,7 +28,7 @@ describe('Annotation tests.', function() {
 
 		mobileHelper.openCommentWizard();
 
-		cy.get('#mobile-wizard .wizard-comment-box .cool-annotation-content')
+		cy.cGet('#mobile-wizard .wizard-comment-box .oxool-annotation-content')
 			.should('have.text', 'some text');
 	});
 
@@ -37,60 +37,36 @@ describe('Annotation tests.', function() {
 
 		mobileHelper.selectAnnotationMenuItem('Modify');
 
-		cy.get('.cool-annotation-table')
-			.should('exist');
-
-		cy.get('#annotation-content-area-1')
-			.should('have.text', 'some text');
-
-		cy.get('#input-modal-input').type('modified');
-
-		cy.get('#response-ok').click();
-
-		cy.get('#annotation-content-area-1')
-			.should('exist');
-
-		cy.get('#annotation-content-area-1')
-			.should('have.text', 'some textmodified');
+		cy.cGet('.oxool-annotation-table').should('exist');
+		cy.cGet('#annotation-content-area-1').should('have.text', 'some text');
+		cy.cGet('#input-modal-input').type('modified');
+		cy.cGet('#response-ok').click();
+		cy.cGet('#tb_actionbar_item_comment_wizard').click();
+		cy.cGet('#annotation-content-area-1').should('exist');
+		cy.cGet('#annotation-content-area-1').should('have.text', 'some textmodified');
 	});
 
 	it('Remove comment.', function() {
 		mobileHelper.insertComment();
 
-		cy.get('.leaflet-marker-icon.annotation-marker')
-			.should('be.visible');
-
-		cy.get('#mobile-wizard .wizard-comment-box .cool-annotation-content')
-			.should('have.text', 'some text');
+		cy.cGet('.leaflet-marker-icon.annotation-marker').should('be.visible');
+		cy.cGet('#mobile-wizard .wizard-comment-box .oxool-annotation-content').should('have.text', 'some text');
 
 		mobileHelper.selectAnnotationMenuItem('Remove');
 
-		cy.get('#mobile-wizard .wizard-comment-box .cool-annotation-content')
-			.should('not.exist');
-
-		cy.get('.leaflet-marker-icon.annotation-marker')
-			.should('not.exist');
+		cy.cGet('#mobile-wizard .wizard-comment-box .oxool-annotation-content').should('not.exist');
+		cy.cGet('.leaflet-marker-icon.annotation-marker').should('not.exist');
 	});
 
 	it('Try to insert empty comment.', function() {
 		mobileHelper.openInsertionWizard();
 
-		cy.contains('.menu-entry-with-icon', 'Comment')
-			.click();
+		cy.cGet('body').contains('.menu-entry-with-icon', 'Comment').click();
 
-		cy.get('.cool-annotation-table')
-			.should('exist');
-
-		cy.get('.cool-annotation-textarea')
-			.should('have.text', '');
-
-		cy.get('#response-ok')
-			.click();
-
-		cy.get('.cool-annotation-content-wrapper.wizard-comment-box')
-			.should('not.exist');
-
-		cy.get('#mobile-wizard .wizard-comment-box .cool-annotation-content')
-			.should('not.exist');
+		cy.cGet('.oxool-annotation-table').should('exist');
+		cy.cGet('#input-modal-input').should('have.text', '');
+		cy.cGet('#response-ok').click();
+		cy.cGet('.oxool-annotation-content-wrapper.wizard-comment-box').should('not.exist');
+		cy.cGet('#mobile-wizard .wizard-comment-box .oxool-annotation-content').should('not.exist');
 	});
 });

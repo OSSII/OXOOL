@@ -8,8 +8,8 @@
 #include <config.h>
 #include <config_version.h>
 
-#ifndef COOLWSD_BUILDCONFIG
-#define COOLWSD_BUILDCONFIG
+#ifndef OXOOLWSD_BUILDCONFIG
+#define OXOOLWSD_BUILDCONFIG
 #endif
 
 #include "Util.hpp"
@@ -145,7 +145,8 @@ namespace Util
                 {
                     LOG_ERR("failed to read " << length << " hard random bytes, got " << len << " for hash: " << errno);
                 }
-                close(fd);
+                if (fd >= 0)
+                    close(fd);
             }
 
             hex.rdbuf()->setLineLength(0); // Don't insert line breaks.
@@ -384,6 +385,7 @@ namespace Util
                     break;
                 }
             }
+            fclose(file);
         }
 
         return totalMemKb;
@@ -499,6 +501,7 @@ namespace Util
                         pos = s.find(' ', pos + 1);
                     }
                 }
+                fclose(fp);
             }
         }
         return 0;
@@ -528,7 +531,7 @@ namespace Util
             std::string::size_type pos = 0;
             while ((pos = result.find(a, pos)) != std::string::npos)
             {
-                result = result.replace(pos, aSize, b);
+                result.replace(pos, aSize, b);
                 pos += bSize; // Skip the replacee to avoid endless recursion.
             }
         }
@@ -636,12 +639,12 @@ namespace Util
 
     void getVersionInfo(std::string& version, std::string& hash)
     {
-        version = std::string(COOLWSD_VERSION);
-        hash = std::string(COOLWSD_VERSION_HASH);
+        version = std::string(OXOOLWSD_VERSION);
+        hash = std::string(OXOOLWSD_VERSION_HASH);
         hash.resize(std::min(8, (int)hash.length()));
     }
 
-    std::string getProcessIdentifier()
+    const std::string& getProcessIdentifier()
     {
         static std::string id = Util::rng::getHexString(8);
 
@@ -655,8 +658,8 @@ namespace Util
         return
             "{ \"Version\":     \"" + version + "\", "
               "\"Hash\":        \"" + hash + "\", "
-              "\"BuildConfig\": \"" + std::string(COOLWSD_BUILDCONFIG) + "\", "
-              "\"Protocol\":    \"" + COOLProtocol::GetProtocolVersion() + "\", "
+              "\"BuildConfig\": \"" + std::string(OXOOLWSD_BUILDCONFIG) + "\", "
+              "\"Protocol\":    \"" + OXOOLProtocol::GetProtocolVersion() + "\", "
               "\"Id\":          \"" + Util::getProcessIdentifier() + "\", "
               "\"Options\":     \"" + std::string(enableExperimental ? " (E)" : "") + "\" }";
     }
@@ -1235,6 +1238,19 @@ namespace Util
         }
 
         return std::string();
+    }
+
+    void assertCorrectThread(std::thread::id owner, const char* fileName, int lineNo)
+    {
+        // uninitialized owner means detached and can be invoked by any thread.
+        const bool sameThread = (owner == std::thread::id() || owner == std::this_thread::get_id());
+        if (!sameThread)
+            LOG_ERR("Incorrect thread affinity. Expected: "
+                    << Log::to_string(owner) << " but called from "
+                    << Log::to_string(std::this_thread::get_id()) << " (" << Util::getThreadId()
+                    << "). (" << fileName << ":" << lineNo << ")");
+
+        assert(sameThread);
     }
 }
 

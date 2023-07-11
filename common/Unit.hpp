@@ -25,6 +25,7 @@ class UnitWSD;
 class UnitKit;
 class UnitTimeout;
 
+class ChildProcess;
 class WebSocketHandler;
 class ClientSession;
 class Message;
@@ -283,7 +284,7 @@ private:
     /// Initialize the Test Suite options.
     static void initTestSuiteOptions();
 
-    /// Based on COOL_TEST_OPTIONS envar, filter the tests.
+    /// Based on OXOOL_TEST_OPTIONS envar, filter the tests.
     static void filter();
 
     /// Returns true iff there are more valid test instances to dereference.
@@ -351,6 +352,10 @@ public:
 
     static UnitWSD& get();
 
+    /// Applies the default config.
+    /// This is needed to initialize the logging subsystem early.
+    static void defaultConfigure(Poco::Util::LayeredConfiguration& /* config */);
+
     enum class TestRequest
     {
         Client,
@@ -365,10 +370,10 @@ public:
     // ---------------- WSD hooks ----------------
 
     /// Manipulate and modify the configuration before any usage.
-    virtual void configure(Poco::Util::LayeredConfiguration& /* config */);
+    virtual void configure(Poco::Util::LayeredConfiguration& /* config */) {}
 
     /// Main-loop reached, time for testing.
-    /// Invoked from coolwsd's main thread.
+    /// Invoked from oxoolwsd's main thread.
     void invokeTest()
     {
         try
@@ -399,7 +404,7 @@ public:
     }
 
     /// When a new child kit process reports
-    virtual void newChild(WebSocketHandler &/* socket */) {}
+    virtual void newChild(const std::shared_ptr<ChildProcess>& /*child*/) {}
     /// Intercept createStorage
     virtual bool createStorage(const Poco::URI& /* uri */,
                                const std::string& /* jailRoot */,

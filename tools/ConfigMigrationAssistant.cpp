@@ -15,7 +15,7 @@ static const std::string NET_POST_ALLOW_HOST = ".net.post_allow.host";
 static const std::string STORAGE_WOPI_HOST = ".storage.wopi.host";
 static const std::set<std::string> multiElems {NET_POST_ALLOW_HOST, STORAGE_WOPI_HOST, ".logging.file.property", ".ssl.hpkp.pins.pin"};
 static const std::set<std::string> migrateIfNoTarget {".admin_console.secure_password", ".support_key"};
-static const std::map<std::string, std::string> renamedElems { {"loleaflet_logging", "browser_logging"} };
+static const std::map<std::string, std::string> renamedElems { {"loleaflet_logging", "loleaflet_logging"} };
 static const std::map<std::string, std::string> specialDefault {
                     {".ssl.cert_file_path", "/etc/loolwsd/cert.pem"},
                     {".ssl.key_file_path", "/etc/loolwsd/key.pem"},
@@ -42,7 +42,7 @@ void MigrateLevel(const XMLConfiguration &sourceConfig, XMLConfiguration &target
 {
     Poco::Util::AbstractConfiguration::Keys subKeys;
     sourceConfig.keys(sourceLevel, subKeys);
-    for (auto key: subKeys)
+    for (const auto& key: subKeys)
     {
         const std::string fullKey = sourceLevel + "." + key;
         MigrateLevel(sourceConfig, targetConfig, fullKey);

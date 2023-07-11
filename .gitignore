@@ -4,7 +4,6 @@
 
 # Autofoo
 .deps
-.libs
 .dirstamp
 .clang_complete
 .cxx_tags
@@ -15,13 +14,15 @@
 **/.cache
 Makefile
 Makefile.in
+oxoolkitconfig.xcu
 oxoolwsd.spec
 oxoolwsd.xml
-oxool.pc
 aclocal.m4
 autom4te.cache
 config.h
-config.h.in
+config_unused.h
+config_unused.h.in
+config_version.h
 ios/config.h
 config.log
 config.guess
@@ -35,36 +36,57 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+stamp-h2
+stamp-h3
 m4
+debian/oxoolwsd.postinst
 common/support-public-key.hpp
+compile_commands.json
+**/gdb.txt
 
 # Test stuff
 systemplate
 test-driver
 jails
+quarantine
 cache
 test/data/hello-world.odt
 test/data/hello-world.ods
 test/data/hello-world.odp
+test/data/hello-world.odg
 test/fakesockettest
+test/unithttplib
+jsstress
 
 *.o
 *.exe
 cscope*
 *.orig
-loolwsd.log
+oxoolwsd.log
 *.log.*.gz
+.log
 *.lo
-*.la
+*.mo
 
-# loleaflet
-loleaflet/dist
-loleaflet/node_modules
-loleaflet/npm-shrinkwrap.json
+gcov/*
+*.gcno
+*.gcda
+*.gcov
+
+# browser
+browser/debug
+browser/release
+browser/npm-shrinkwrap.json
+browser/jsconfig.json
+browser/admin/jsconfig.json
+browser/dist
+browser/compilets
+browser/typescript_js
 
 connect
 lokitclient
 oxoolwsd
+loolwsd
 oxoolforkit
 oxoolmount
 oxoolmap
@@ -72,11 +94,19 @@ oxoolconvert
 oxoolsocketdump
 oxoolstress
 oxoolconfig
-loolforkit-nocaps
+loolconfig
+oxoolforkit-nocaps
 loadtest
 unittest
-oxoolwsd_fuzzer
 clientnb
+
+# Fuzzer
+*_fuzzer
+fuzz*.log
+slow-unit-*
+crash-*
+leak-*
+timeout-*
 
 # make tags
 tags
@@ -84,24 +114,58 @@ test/tags
 TAGS
 test/TAGS
 
-docker/instdir
-docker/builddir
+docker/from-source/instdir
+docker/from-source/builddir
 
-Mobile/Mobile/Info.plist
+ios/Mobile/Info.plist
+ios/Mobile/Fonts
+ios/Mobile/Branding
+ios/Mobile/Resources/Settings.bundle/Root.plist
 
 # symlinks created by configure for the iOS app Xcode project
 lobuilddir-symlink
 pocoinclude-symlink
 pocolib-symlink
+zstdinclude-symlink
+zstdlib-symlink
 ICU.dat
-Mobile/Mobile/Assets.xcassets/AppIcon.appiconset
-debian/oxool.postinst
-support/authorizer
-support/signature
-support/users
-fonts/00-oxool.conf
-support/oxool.db
-oxool-*.tar.gz
-src/include/OxOOL/OxOOL.h
-src/tools/oxool-xml-config
-src/development-tools/oxool-module-maker
+ios/Mobile/Assets.xcassets/AppIcon.appiconset
+
+# iOS app build number
+BUNDLE-VERSION
+
+# android stuff
+/android/lib/src/main/assets/dist
+/android/lib/src/main/assets/hello-world.od*
+/android/lib/src/main/assets/templates/untitled.od*
+/android/lib/src/main/cpp/CMakeLists.txt
+
+# gtk fake mobile app
+gtk/mobile
+
+# backup and temporary editor files: the only convenience rules allowed here.
+*~
+.*sw?
+\#*
+.\#*
+*.kdev4
+.kdev_include_paths
+.buckd
+.directory
+.cproject
+.project
+.settings
+.eclipsesettingfile
+eclipsesettingfile.xml
+.clangd
+.cache
+*.code-workspace
+Makecache
+
+# autoconf stuff
+autogen.input
+dist_git_branch
+/*.pc
+/*.service
+/*.tar.gz
+debian/*.service

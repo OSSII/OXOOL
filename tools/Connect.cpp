@@ -31,11 +31,11 @@
 
 #include <Common.hpp>
 #include <Protocol.hpp>
-#include "COOLWebSocket.hpp"
+#include "OXOOLWebSocket.hpp"
 #include <Log.hpp>
 #include <Util.hpp>
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
 using Poco::Net::AcceptCertificateHandler;
 using Poco::Net::Context;
@@ -61,11 +61,11 @@ static std::mutex coutMutex;
 
 constexpr auto Name = "connect ";
 
-/// Prints incoming data from a COOLWebSocket.
+/// Prints incoming data from a OXOOLWebSocket.
 class Output : public Runnable
 {
 public:
-    Output(COOLWebSocket& ws) :
+    Output(OXOOLWebSocket& ws) :
         _ws(ws)
     {
     }
@@ -84,7 +84,7 @@ public:
                 {
                     {
                         std::unique_lock<std::mutex> lock(coutMutex);
-                        std::cout << "Got " << COOLWebSocket::getAbbreviatedFrameDump(buffer, n, flags) << std::endl;
+                        std::cout << "Got " << OXOOLWebSocket::getAbbreviatedFrameDump(buffer, n, flags) << std::endl;
                     }
 
                     std::string firstLine = getFirstLine(buffer, n);
@@ -121,10 +121,10 @@ public:
     }
 
 private:
-    COOLWebSocket& _ws;
+    OXOOLWebSocket& _ws;
 };
 
-/// Program for interactive or scripted testing of a cool server.
+/// Program for interactive or scripted testing of a oxool server.
 class Connect: public Poco::Util::Application
 {
 public:
@@ -163,9 +163,9 @@ protected:
 #endif
         std::string encodedUri;
         URI::encode(args[0], ":/?", encodedUri);
-        HTTPRequest request(HTTPRequest::HTTP_GET, "/cool/" + encodedUri + "/ws");
+        HTTPRequest request(HTTPRequest::HTTP_GET, "/oxool/" + encodedUri + "/ws");
         HTTPResponse response;
-        COOLWebSocket ws(cs, request, response);
+        OXOOLWebSocket ws(cs, request, response);
 
         ws.setReceiveTimeout(0);
 
@@ -192,7 +192,7 @@ protected:
             }
             else if (line == "exit")
             {
-                // While hacking on COOL and editing input files for this program back and forth it
+                // While hacking on OXOOL and editing input files for this program back and forth it
                 // is a good idea to be able to add an enforced exit in the middle of the input
                 // file.
                 {

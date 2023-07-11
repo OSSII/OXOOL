@@ -29,7 +29,7 @@
 #import "Kit.hpp"
 #import "KitHelper.hpp"
 #import "Log.hpp"
-#import "COOLWSD.hpp"
+#import "OXOOLWSD.hpp"
 #import "MobileApp.hpp"
 #import "Protocol.hpp"
 
@@ -75,7 +75,7 @@ static std::atomic<unsigned> appDocIdCounter(1);
     if (error != nil)
         return NO;
 
-    NSURL *url = [[NSBundle mainBundle] URLForResource:@"cool" withExtension:@"html"];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"oxool" withExtension:@"html"];
     NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
     DocumentData::allocate(appDocId).coDocument = self;
     components.queryItems = @[ [NSURLQueryItem queryItemWithName:@"file_path" value:[copyFileURL absoluteString]],
@@ -96,12 +96,16 @@ static std::atomic<unsigned> appDocIdCounter(1);
 }
 
 - (void)send2JS:(const char *)buffer length:(int)length {
-    LOG_TRC("To JS: " << COOLProtocol::getAbbreviatedMessage(buffer, length).c_str());
-
-    NSString *js;
+    LOG_TRC("To JS: " << OXOOLProtocol::getAbbreviatedMessage(buffer, length).c_str());
 
     const unsigned char *ubufp = (const unsigned char *)buffer;
     std::vector<char> data;
+    // Reserve the maxiumum possible length after encoding
+    // This avoids an excessive number of reallocations. This is overkill
+    // for non-binary messages, but most non-binary messages appear to be
+    // under 1K bytes in length. In contrast, it appears that binary
+    // messags routinely use at least 75% of the maximum possible length.
+    data.reserve((length * 4) + 1);
     bool newlineFound = false;
     bool binaryMessage = (isMessageOfType(buffer, "tile:", length) ||
                           isMessageOfType(buffer, "tilecombine:", length) ||
@@ -109,6 +113,12 @@ static std::atomic<unsigned> appDocIdCounter(1);
                           isMessageOfType(buffer, "renderfont:", length) ||
                           isMessageOfType(buffer, "rendersearchlist:", length) ||
                           isMessageOfType(buffer, "windowpaint:", length));
+
+    const char *pretext = "window.TheFakeWebSocket.onmessage({'data': '";
+    const int pretextlen = strlen(pretext);
+    for (int i = 0; i < pretextlen; i++)
+        data.push_back(pretext[i]);
+
     for (int i = 0; i < length; i++) {
         // Another fix for issue #5843 limit non-ASCII escaping to only
         // certain message types
@@ -131,19 +141,30 @@ static std::atomic<unsigned> appDocIdCounter(1);
             data.push_back(ubufp[i]);
         }
     }
+
+    const char *posttext = "'});";
+    const int posttextlen = strlen(posttext);
+    for (int i = 0; i < posttextlen; i++)
+        data.push_back(posttext[i]);
+
     data.push_back(0);
 
-    NSString *escapedData = [NSString stringWithUTF8String:data.data()];
-    if (!escapedData) {
+    // Related to issue #5876: don't autorelease large NSStrings
+    // The +[NSString string...] selectors won't be released until
+    // an enclosing autorelease pool is released. But since we use
+    // ARC, we don't know where the compiler has inserted the
+    // autorelease pool so JS messages may not be released until
+    // after a very long time potentially causing an out of memory
+    // crash. So, use the -[[NSString alloc] init...] selectors
+    // instead.
+    NSString *js = [[NSString alloc] initWithUTF8String:data.data()];
+    if (!js) {
         char outBuf[length + 1];
         memcpy(outBuf, buffer, length);
         outBuf[length] = '\0';
         LOG_ERR("Couldn't create NSString with message: " << outBuf);
         return;
     }
-    js = @"window.TheFakeWebSocket.onmessage({'data': '";
-    js = [js stringByAppendingString:escapedData];
-    js = [js stringByAppendingString:@"'});"];
 
     NSString *subjs = [js substringToIndex:std::min(100ul, js.length)];
     if (subjs.length < js.length)

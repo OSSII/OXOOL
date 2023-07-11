@@ -23,12 +23,12 @@ add_library(androidapp SHARED
             ../../../../../net/Socket.cpp
             ../../../../../wsd/ClientSession.cpp
             ../../../../../wsd/DocumentBroker.cpp
-            ../../../../../wsd/COOLWSD.cpp
+            ../../../../../wsd/OXOOLWSD.cpp
             ../../../../../wsd/RequestDetails.cpp
             ../../../../../wsd/Storage.cpp
             ../../../../../wsd/TileCache.cpp)
 
-target_compile_definitions(androidapp PRIVATE COOLWSD_CONFIGDIR="/assets/etc/coolwsd")
+target_compile_definitions(androidapp PRIVATE OXOOLWSD_CONFIGDIR="/assets/etc/oxoolwsd")
 
 # According to the ABI, we need to use different source trees
 if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
@@ -65,7 +65,7 @@ target_include_directories(androidapp PRIVATE
                            .                     # path to androidapp.h
 			   @abs_top_builddir@    # path to config.h
 			   @abs_top_srcdir@
-                           ../../../../../common # the needed coolwsd includes
+                           ../../../../../common # the needed oxoolwsd includes
                            ../../../../../kit
                            ../../../../../net
                            ../../../../../wsd

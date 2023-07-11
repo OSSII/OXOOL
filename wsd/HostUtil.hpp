@@ -11,7 +11,7 @@
 #include <Poco/URI.h>
 #include <Poco/Util/Application.h>
 
-/// This class contains static methods to parse alias_groups and WOPI host and static containers to store the data from the coolwsd.xml
+/// This class contains static methods to parse alias_groups and WOPI host and static containers to store the data from the oxoolwsd.xml
 class HostUtil
 {
 private:
@@ -34,7 +34,7 @@ public:
     static void parseAliases(Poco::Util::LayeredConfiguration& conf);
 
     /// if request uri is an alias, replace request uri host and port with
-    /// original hostname and port defined by group tag from coolwsd.xml
+    /// original hostname and port defined by group tag from oxoolwsd.xml
     /// to avoid possibility of opening the same file as two if the WOPI host
     /// is accessed using different aliases
     static std::string getNewUri(const Poco::URI& uri);
@@ -47,7 +47,7 @@ public:
     static bool isWopiEnabled() { return WopiEnabled; }
 
     /// replace the authority of aliashost to realhost if it matches
-    static const Poco::URI getNewLockedUri(Poco::URI& uri);
+    static const Poco::URI getNewLockedUri(const Poco::URI& uri);
 
     static void setFirstHost(const Poco::URI& uri);
 };

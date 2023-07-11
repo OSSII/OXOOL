@@ -25,7 +25,7 @@
 // Include config.h last, so the test server URI is still HTTP, even in SSL builds.
 #include <config.h>
 
-class COOLWebSocket;
+class OXOOLWebSocket;
 
 /// Test suite for bad document loading, etc.
 class UnitBadDocLoad : public UnitWSD
@@ -68,8 +68,8 @@ UnitBase::TestResult UnitBadDocLoad::testBadDocLoadFail()
 
         std::string errorCommand;
         std::string errorKind;
-        COOLProtocol::getTokenString(tokens[1], "cmd", errorCommand);
-        COOLProtocol::getTokenString(tokens[2], "kind", errorKind);
+        OXOOLProtocol::getTokenString(tokens[1], "cmd", errorCommand);
+        OXOOLProtocol::getTokenString(tokens[2], "kind", errorKind);
         LOK_ASSERT_EQUAL(std::string("load"), errorCommand);
         LOK_ASSERT_EQUAL(std::string("faileddocloading"), errorKind);
     }
@@ -171,12 +171,12 @@ UnitBase::TestResult UnitBadDocLoad::testMaxConnections()
 
         std::cerr << "Opened connection #1 of " << MAX_CONNECTIONS << std::endl;
 
-        std::vector<std::shared_ptr<COOLWebSocket>> views;
+        std::vector<std::shared_ptr<OXOOLWebSocket>> views;
         for (int it = 1; it < MAX_CONNECTIONS; ++it)
         {
             std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(uri));
             Poco::Net::HTTPResponse httpResponse;
-            auto ws = std::make_shared<COOLWebSocket>(*session, request, httpResponse);
+            auto ws = std::make_shared<OXOOLWebSocket>(*session, request, httpResponse);
             views.emplace_back(ws);
             std::cerr << "Opened connection #" << (it + 1) << " of " << MAX_CONNECTIONS
                       << std::endl;
@@ -187,7 +187,7 @@ UnitBase::TestResult UnitBadDocLoad::testMaxConnections()
         // try to connect MAX_CONNECTIONS + 1
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(uri));
         Poco::Net::HTTPResponse httpResponse;
-        auto socketN = std::make_shared<COOLWebSocket>(*session, request, httpResponse);
+        auto socketN = std::make_shared<OXOOLWebSocket>(*session, request, httpResponse);
 
         // Send load request, which will fail.
         helpers::sendTextFrame(socketN, "load url=" + documentURL, testname);
@@ -254,7 +254,7 @@ UnitBase::TestResult UnitBadDocLoad::testMaxViews()
         // try to connect MAX_CONNECTIONS + 1
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(uri));
         Poco::Net::HTTPResponse httpResponse;
-        auto socketN = std::make_shared<COOLWebSocket>(*session, request, httpResponse);
+        auto socketN = std::make_shared<OXOOLWebSocket>(*session, request, httpResponse);
 
         // Send load request, which will fail.
         helpers::sendTextFrame(socketN, "load url=" + documentURL, testname);

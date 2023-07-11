@@ -1,13 +1,15 @@
-/* global describe it cy beforeEach require afterEach*/
+/* global describe it cy beforeEach require afterEach Cypress expect */
 
 var helper = require('../../common/helper');
+const desktopHelper = require('../../common/desktop_helper');
 
-describe('Track Changes', function () {
+describe(['tagdesktop', 'tagnextcloud', 'tagproxy'], 'Track Changes', function () {
 	var origTestFileName = 'track_changes.odt';
 	var testFileName;
 
 	beforeEach(function () {
 		testFileName = helper.beforeAll(origTestFileName, 'writer');
+		desktopHelper.switchUIToCompact();
 	});
 
 	afterEach(function () {
@@ -15,80 +17,51 @@ describe('Track Changes', function () {
 	});
 
 	function confirmChange(action) {
-		cy.get('#menu-editmenu')
-			.click()
-			.get('#menu-changesmenu')
-			.click()
-			.contains(action)
-			.click();
+		cy.cGet('#menu-editmenu').click();
+		cy.cGet('#menu-changesmenu').should($el => { expect(Cypress.dom.isDetached($el)).to.eq(false); }).click();
+		cy.cGet('#menu-changesmenu').should($el => { expect(Cypress.dom.isDetached($el)).to.eq(false); }).contains(action).click();
+		cy.cGet('body').type('{esc}');
+		cy.cGet('#menu-changesmenu').should('not.be.visible');
 	}
 
 	//enable record for track changes
 	function enableRecord() {
-		cy.get('#menu-editmenu')
-			.click()
-			.get('#menu-changesmenu')
-			.click()
-			.contains('Record')
-			.click();
+		cy.cGet('#menu-editmenu').click();
+		cy.cGet('#menu-changesmenu').click();
+		cy.cGet('#menu-changesmenu').contains('Record').click();
 
-		//if we don't wait , the test will fail in CLI
-		cy.wait(200);
+		cy.cGet('body').type('{esc}');
 
-		cy.get('#menu-editmenu')
-			.click()
-			.get('#menu-changesmenu')
-			.click()
-			.contains('Record')
-			.should('have.class', 'lo-menu-item-checked');
+		cy.cGet('#menu-editmenu').click();
+		cy.cGet('#menu-changesmenu').click();
+		cy.cGet('#menu-changesmenu').contains('Record').should('have.class', 'lo-menu-item-checked');
 
 		//to close
-		cy.get('#menu-changesmenu')
-			.click();
+		cy.cGet('#menu-changesmenu').click();
 	}
 
 	it('Accept All', function () {
-
 		helper.typeIntoDocument('Hello World');
-
 		enableRecord();
-
 		helper.clearAllText();
-		//if we don't wait , the test will fail in CLI
-		cy.wait(200);
-
 		helper.selectAllText();
-
+		cy.wait(500);
 		confirmChange('Accept All');
-
-		cy.wait(200);
-
 		helper.typeIntoDocument('{ctrl}a');
-
+		cy.wait(500);
 		helper.textSelectionShouldNotExist();
 	});
 
-	it.skip('Reject All', function () {
-
+	it('Reject All', function () {
 		helper.typeIntoDocument('Hello World');
-
 		enableRecord();
-
 		helper.clearAllText();
-
-		//if we don't wait , the test will fail in CLI
-		cy.wait(600);
-
 		helper.selectAllText();
-
+		cy.wait(500);
 		confirmChange('Reject All');
-
-		cy.wait(200);
-
-		cy.get('.leaflet-layer').click();
-
+		cy.cGet('#document-container').click();
 		helper.selectAllText();
-
+		cy.wait(500);
 		helper.expectTextForClipboard('Hello World');
 	});
 });

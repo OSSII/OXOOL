@@ -14,7 +14,6 @@
 #include <set>
 #include <string>
 #include <utility>
-
 #include <Poco/URI.h>
 
 #include <common/Log.hpp>
@@ -27,12 +26,13 @@ struct DocumentAggregateStats;
 class View
 {
 public:
-    View(std::string sessionId, std::string userName, std::string userId)
+    View(std::string sessionId, std::string userName, std::string userId, bool readOnly)
         : _sessionId(std::move(sessionId))
         , _userName(std::move(userName))
         , _userId(std::move(userId))
         , _start(std::time(nullptr))
         , _loadDuration(0)
+        , _readOnly(readOnly)
     {
     }
 
@@ -43,6 +43,7 @@ public:
     bool isExpired() const { return _end != 0 && std::time(nullptr) >= _end; }
     std::chrono::milliseconds getLoadDuration() const { return _loadDuration; }
     void setLoadDuration(std::chrono::milliseconds loadDuration) { _loadDuration = loadDuration; }
+    bool isReadOnly() const { return _readOnly; }
 
 private:
     const std::string _sessionId;
@@ -51,10 +52,22 @@ private:
     const std::time_t _start;
     std::time_t _end = 0;
     std::chrono::milliseconds _loadDuration;
+    bool _readOnly = false;
 };
 
 struct DocCleanupSettings
 {
+    DocCleanupSettings()
+        : _enable(false)
+        , _cleanupInterval(0)
+        , _badBehaviorPeriod(0)
+        , _idleTime(0)
+        , _limitDirtyMem(0)
+        , _limitCpu(0)
+        , _lostKitGracePeriod(0)
+    {
+    }
+
     void setEnable(bool enable) { _enable = enable; }
     bool getEnable() const { return _enable; }
     void setCleanupInterval(size_t cleanupInterval) { _cleanupInterval = cleanupInterval; }
@@ -82,6 +95,14 @@ private:
 
 struct DocProcSettings
 {
+    DocProcSettings()
+        : _limitVirtMemMb(0)
+        , _limitStackMemKb(0)
+        , _limitFileSizeMb(0)
+        , _limitNumberOpenFiles(0)
+    {
+    }
+
     void setLimitVirtMemMb(size_t limitVirtMemMb) { _limitVirtMemMb = limitVirtMemMb; }
     size_t getLimitVirtMemMb() const { return _limitVirtMemMb; }
     void setLimitStackMemKb(size_t limitStackMemKb) { _limitStackMemKb = limitStackMemKb; }
@@ -158,6 +179,7 @@ public:
         , _hasMemDirtyChanged(true)
         , _badBehaviorDetectionTime(0)
         , _abortTime(0)
+        , _isUploaded(0)
     {
     }
 
@@ -183,7 +205,7 @@ public:
 
     std::time_t getIdleTime() const { return std::time(nullptr) - _lastActivity; }
 
-    void addView(const std::string& sessionId, const std::string& userName, const std::string& userId);
+    void addView(const std::string& sessionId, const std::string& userName, const std::string& userId, bool readOnly);
 
     int expireView(const std::string& sessionId);
 
@@ -205,6 +227,9 @@ public:
 
     void setModified(bool value) { _isModified = value; }
     bool getModifiedStatus() const { return _isModified; }
+
+    void setUploaded(bool value) { _isUploaded = value; }
+    bool getUploadedStatus() const { return _isUploaded; }
 
     void addBytes(uint64_t sent, uint64_t recv)
     {
@@ -268,6 +293,8 @@ private:
 
     std::time_t _badBehaviorDetectionTime;
     std::time_t _abortTime;
+
+    bool _isUploaded;
 };
 
 /// An Admin session subscriber.
@@ -324,14 +351,10 @@ public:
     /// All methods here must be called from the Admin socket-poll
     void setThreadOwner(const std::thread::id &id) { _owner = id; }
 
-    /// In debug mode check that code is running in the correct thread.
-    /// Asserts in the debug builds, otherwise just logs.
-    void assertCorrectThread() const;
-
     std::string query(const std::string& command);
     std::string getAllHistory() const;
 
-    /// Returns memory consumed by all active coolkit processes
+    /// Returns memory consumed by all active oxoolkit processes
     unsigned getKitsMemoryUsage();
     size_t getKitsJiffies();
 
@@ -341,6 +364,8 @@ public:
     void unsubscribe(int sessionId, const std::string& command);
 
     void modificationAlert(const std::string& docKey, pid_t pid, bool value);
+
+    void uploadedAlert(const std::string& docKey, pid_t pid, bool value);
 
     void clearMemStats() { _memStats.clear(); }
 
@@ -362,7 +387,7 @@ public:
 
     void addDocument(const std::string& docKey, pid_t pid, const std::string& filename,
                      const std::string& sessionId, const std::string& userName, const std::string& userId,
-                     const int smapsFD, const Poco::URI& wopiSrc);
+                     const int smapsFD, const Poco::URI& wopiSrc, bool readOnly);
 
     void removeDocument(const std::string& docKey, const std::string& sessionId);
     void removeDocument(const std::string& docKey);
@@ -400,6 +425,14 @@ public:
     static int getAssignedKitPids(std::vector<int> *pids);
     static int getUnassignedKitPids(std::vector<int> *pids);
     static int getKitPidsFromSystem(std::vector<int> *pids);
+    bool isDocSaved(const std::string&);
+    bool isDocReadOnly(const std::string&);
+    void setCurrentMigDoc(const std::string& docKey) { _currentMigDoc = docKey; }
+    std::string getCurrentMigDoc() { return _currentMigDoc; }
+    void setCurrentMigToken(const std::string& routeToken) { _currentMigToken = routeToken; }
+    std::string getCurrentMigToken() { return _currentMigToken; }
+    void sendMigrateMsgAfterSave(bool lastSaveSuccessful, const std::string& docKey);
+    std::string getWopiSrcMap();
 
 private:
     void doRemove(std::map<std::string, std::unique_ptr<Document>>::iterator &docIt);
@@ -448,6 +481,10 @@ private:
     std::thread::id _owner;
 
     DocProcSettings _defDocProcSettings;
+
+    std::string _currentMigDoc = std::string();
+
+    std::string _currentMigToken = std::string();
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -27,13 +27,13 @@
 
 namespace JailUtil
 {
-bool coolmount(const std::string& arg, std::string source, std::string target)
+bool oxoolmount(const std::string& arg, std::string source, std::string target)
 {
     source = Util::trim(source, '/');
     target = Util::trim(target, '/');
-    const std::string cmd = Poco::Path(Util::getApplicationPath(), "coolmount").toString() + ' '
+    const std::string cmd = Poco::Path(Util::getApplicationPath(), "oxoolmount").toString() + ' '
                             + arg + ' ' + source + ' ' + target;
-    LOG_TRC("Executing coolmount command: " << cmd);
+    LOG_TRC("Executing oxoolmount command: " << cmd);
     return !system(cmd.c_str());
 }
 
@@ -43,7 +43,7 @@ bool bind(const std::string& source, const std::string& target)
     try
     {
         Poco::File(target).createDirectory();
-        const bool res = coolmount("-b", source, target);
+        const bool res = oxoolmount("-b", source, target);
         if (res)
             LOG_TRC("Bind-mounted [" << source << "] -> [" << target << ']');
         else
@@ -64,7 +64,7 @@ bool remountReadonly(const std::string& source, const std::string& target)
     try
     {
         Poco::File(target).createDirectory();
-        const bool res = coolmount("-r", source, target);
+        const bool res = oxoolmount("-r", source, target);
         if (res)
             LOG_TRC("Mounted [" << source << "] -> [" << target << "] readonly");
         else
@@ -83,7 +83,7 @@ bool remountReadonly(const std::string& source, const std::string& target)
 static bool unmount(const std::string& target)
 {
     LOG_DBG("Unmounting [" << target << ']');
-    const bool res = coolmount("-u", "", target);
+    const bool res = oxoolmount("-u", "", target);
     if (res)
         LOG_TRC("Unmounted [" << target << "] successfully.");
     else
@@ -103,7 +103,7 @@ static bool unmount(const std::string& target)
 
 // This file signifies that we copied instead of mounted.
 // NOTE: jail cleanup helpers are called from forkit and
-// coolwsd, and they may have bind-mounting enabled, but the
+// oxoolwsd, and they may have bind-mounting enabled, but the
 // kit could have had it removed when falling back to copying.
 // In such cases, we cannot safely know whether the jail was
 // copied or not, since the bind envar will be present and
@@ -145,13 +145,23 @@ static bool safeRemoveDir(const std::string& path)
 
     // Recursively remove if link/copied.
     const bool recursive = copied;
+    //FIXME: do not delete the 'copied' marker until the very end.
     FileUtil::removeFile(path, recursive);
     return true;
 }
 
-void removeJail(const std::string& root)
+void removeAuxFolders(const std::string &root)
 {
-    LOG_INF("Removing jail [" << root << ']');
+    FileUtil::removeFile(Poco::Path(root, "tmp").toString(), true);
+    FileUtil::removeFile(Poco::Path(root, "linkable").toString(), true);
+}
+
+bool tryRemoveJail(const std::string& root)
+{
+    if (!FileUtil::Stat(root + '/' + LO_JAIL_SUBPATH).exists())
+        return false; // not a jail.
+
+    LOG_TRC("Do remove of jail [" << root << ']');
 
     // Unmount the tmp directory. Don't care if we fail.
     const std::string tmpPath = Poco::Path(root, "tmp").toString();
@@ -165,8 +175,15 @@ void removeJail(const std::string& root)
     //FIXME: technically, the loTemplate directory may have any name.
     unmount(Poco::Path(root, "lo").toString());
 
+    // Unmount the test-mount directory too.
+    const std::string testMountPath = Poco::Path(root, "oxool_test_mount").toString();
+    if (FileUtil::Stat(testMountPath).exists())
+        unmount(testMountPath);
+
     // Unmount/delete the jail (sysTemplate).
     safeRemoveDir(root);
+
+    return true;
 }
 
 /// This cleans up the jails directories.
@@ -181,43 +198,72 @@ void cleanupJails(const std::string& root)
     FileUtil::Stat stRoot(root);
     if (!stRoot.exists() || !stRoot.isDirectory())
     {
-        LOG_TRC("Directory [" << root << "] is not a directory or doesn't exist.");
+        LOG_TRC("Directory [" << root << "] is not a jail directory or doesn't exist.");
         return;
     }
 
-    if (FileUtil::Stat(root + '/' + LO_JAIL_SUBPATH).exists())
-    {
-        // This is a jail.
-        removeJail(root);
-    }
-    else
-    {
-        // Not a jail, recurse. UnitTest creates sub-directories.
-        LOG_TRC("Directory [" << root << "] is not a jail, recursing.");
+    std::vector<std::string> jails;
+    Poco::File(root).list(jails);
 
-        std::vector<std::string> jails;
-        Poco::File(root).list(jails);
-        for (const auto& jail : jails)
+    // legacy jails at the top-level
+    for (const auto& jail : jails)
+    {
+        std::string childDir = Poco::Path(root, jail).toString();
+        FileUtil::Stat stChild(childDir);
+        if (stChild.exists() && !stChild.isLink() && stChild.isDirectory())
         {
-            const Poco::Path path(root, jail);
-            // Postpone deleting "tmp" directory until we clean all the jails
-            // On FreeBSD the "tmp" dir contains a devfs moint point. Normally,
-            // it gets unmounted by coolmount during shutdown, but coolmount
-            // does nothing if it is called on the non-existing path.
-            // Removing this dir there prevents clean unmounting of devfs later.
-            if (jail == "tmp")
-                continue;
-            // Delete tmp and link cache with prejudice.
-            if (jail == "linkable")
-                FileUtil::removeFile(path.toString(), true);
-            else
-                cleanupJails(path.toString());
+            // Modern jails should look like this:
+            //   jails/<oxoolwsd-pid>-<random>/<random>/
+            size_t pidSepPos = jail.find('-');
+            if (pidSepPos != std::string::npos)
+            {
+                bool skip = false;
+                std::string pidStr = jail.substr(0, pidSepPos);
+                try {
+                    int pid = std::stoi(pidStr);
+                    LOG_TRC("Checking pid for jail " << pid << " " << root);
+                    if (pid != getpid() && kill(pid, 0) == 0)
+                    {
+                        LOG_TRC("Skipping cleaning jails directory for running oxoolwsd with pid " << pid);
+                        skip = true;
+                    }
+                } catch(...) {
+                    // Problematic - may delete a jail that is not ours then ...
+                    LOG_WRN("Exception parsing pid '" << pidStr << "' from '" << jail << "'");
+                }
+                if (!skip)
+                {
+                    std::vector<std::string> newJails;
+                    Poco::File(childDir).list(newJails);
+
+                    // legacy jails at the top-level
+                    for (const auto& newJail : newJails)
+                    {
+                        tryRemoveJail(Poco::Path(childDir, newJail).toString());
+                    }
+
+                    // top level linkable and tmp mount point.
+                    removeAuxFolders(childDir);
+
+                    // top level per-oxoolwsd jails directory.
+                    safeRemoveDir(childDir);
+                }
+            }
+            // Remove legacy things that look like jails
+            else if (tryRemoveJail(childDir))
+            {
+                static size_t warned = 0;
+                if (!(warned++))
+                    LOG_WRN("Cleaned legacy jail without pid prefix after upgrade " << childDir);
+            }
+            // else legacy tmp or linkable
         }
-        const Poco::Path tmpPath(root, "tmp");
-        FileUtil::removeFile(tmpPath.toString(), true);
     }
 
-    // Remove empty directories.
+    // Cleanup legacy top-level 'tmp' and 'linkable' directories if empty
+    removeAuxFolders(root);
+
+    // Cleanup top-level 'jails' directory if empty
     if (FileUtil::isEmptyDirectory(root))
         safeRemoveDir(root);
     else
@@ -244,7 +290,7 @@ void setupChildRoot(bool bindMount, const std::string& childRoot, const std::str
     {
         // Test mounting to verify it actually works,
         // as it might not function in some systems.
-        const std::string target = Poco::Path(childRoot, "cool_test_mount").toString();
+        const std::string target = Poco::Path(childRoot, "oxool_test_mount").toString();
 
         // Make sure that we can both mount and unmount before enabling bind-mounting.
         if (bind(sysTemplate, target) && unmount(target))
@@ -252,15 +298,76 @@ void setupChildRoot(bool bindMount, const std::string& childRoot, const std::str
             enableBindMounting();
             safeRemoveDir(target);
             LOG_INF("Enabling Bind-Mounting of jail contents for better performance per "
-                    "mount_jail_tree config in coolwsd.xml.");
+                    "mount_jail_tree config in oxoolwsd.xml.");
         }
         else
             LOG_ERR("Bind-Mounting fails and will be disabled for this run. To disable permanently "
-                    "set mount_jail_tree config entry in coolwsd.xml to false.");
+                    "set mount_jail_tree config entry in oxoolwsd.xml to false.");
     }
     else
         LOG_INF("Disabling Bind-Mounting of jail contents per "
-                "mount_jail_tree config in coolwsd.xml.");
+                "mount_jail_tree config in oxoolwsd.xml.");
+}
+
+/// Create a random device, either via mknod or by bind-mounting.
+bool createRandomDeviceInJail(const std::string& root, const std::string& devicePath, dev_t dev)
+{
+    const std::string absPath = root + devicePath;
+
+    if (FileUtil::Stat(absPath).exists())
+    {
+        LOG_DBG("Random device [" << devicePath << "] already exits");
+        return true;
+    }
+
+    LOG_DBG("Making [" << devicePath << "] node in [" << root << "/dev]");
+
+    if (mknod((absPath).c_str(),
+              S_IFCHR | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH, dev) == 0)
+    {
+        LOG_DBG("Created random device [" << absPath << ']');
+        return true;
+    }
+
+    const auto mknodErrno = errno;
+
+    if (isBindMountingEnabled())
+    {
+        static bool warned = false;
+        if (!warned)
+        {
+            warned = true;
+            LOG_WRN("Performance issue: nodev mount permission or mknod fails. Have to bind mount "
+                    "random devices");
+        }
+
+        Poco::File(absPath).createFile();
+        if (oxoolmount("-b", devicePath, absPath))
+        {
+            LOG_DBG("Bind mounted [" << devicePath << "] -> [" << absPath << ']');
+            return true;
+        }
+
+        LOG_INF("Failed to bind mount [" << devicePath << "] -> [" << absPath << ']');
+    }
+    else
+    {
+        LOG_INF("Failed to create random device via mknod("
+                << absPath << "). Mount must not use nodev flag, or bind-mount must be enabled: "
+                << strerror(mknodErrno));
+    }
+
+    static bool warned = false;
+    if (!warned)
+    {
+        warned = true;
+        LOG_ERR("Failed to create random device ["
+                << devicePath << "] at [" << absPath
+                << "]. Please either allow creating devices or enable bind-mounting. Some "
+                   "features, such us password-protection and document-signing, might not work");
+    }
+
+    return false;
 }
 
 // This is the second stage of setting up /dev/[u]random
@@ -288,34 +395,13 @@ void setupJailDevNodes(const std::string& root)
     }
 
 #ifndef __FreeBSD__
-    // Create the urandom and random devices.
-    if (!Poco::File(root + "/dev/random").exists())
-    {
-        LOG_DBG("Making /dev/random node in [" << root << "/dev].");
-        if (mknod((root + "/dev/random").c_str(),
-                  S_IFCHR | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-                  makedev(1, 8))
-            != 0)
-        {
-            LOG_SYS("mknod(" << root << "/dev/random) failed. Mount must not use nodev flag.");
-        }
-    }
-
-    if (!Poco::File(root + "/dev/urandom").exists())
-    {
-        LOG_DBG("Making /dev/urandom node in [" << root << "/dev].");
-        if (mknod((root + "/dev/urandom").c_str(),
-                  S_IFCHR | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-                  makedev(1, 9))
-            != 0)
-        {
-            LOG_SYS("mknod(" << root << "/dev/urandom) failed. Mount must not use nodev flag.");
-        }
-    }
+    // Create the random and urandom devices.
+    createRandomDeviceInJail(root, "/dev/random", makedev(1, 8));
+    createRandomDeviceInJail(root, "/dev/urandom", makedev(1, 9));
 #else
-    if (!Poco::File(root + "/dev/random").exists())
+    if (!FileUtil::Stat(root + "/dev/random").exists())
     {
-         const bool res = coolmount("-d", "", root + "/dev");
+         const bool res = oxoolmount("-d", "", root + "/dev");
          if (res)
             LOG_TRC("Mounted devfs hierarchy -> [" << root << "/dev].");
         else
@@ -325,7 +411,7 @@ void setupJailDevNodes(const std::string& root)
 }
 
 /// The envar name used to control bind-mounting of systemplate/jails.
-constexpr const char* BIND_MOUNTING_ENVAR_NAME = "COOL_BIND_MOUNT";
+constexpr const char* BIND_MOUNTING_ENVAR_NAME = "OXOOL_BIND_MOUNT";
 
 void enableBindMounting()
 {
@@ -528,7 +614,12 @@ void setupRandomDeviceLink(const std::string& sysTemplate, const std::string& na
     }
 
     if (symlink(target.c_str(), linkpath.c_str()) == -1)
-        LOG_SYS("Failed to symlink(\"" << target << "\", \"" << linkpath << "\")");
+    {
+        LOG_SYS(
+            "Failed to create symlink to ["
+            << name << "] device at [" << target << "] pointing to source [" << linkpath
+            << "]. Some features, such us password-protection and document-signing might not work");
+    }
 }
 
 // The random devices are setup in two stages.

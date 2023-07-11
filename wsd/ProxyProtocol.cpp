@@ -9,7 +9,7 @@
  * The ProxyProtocol creates a web-socket like connection over HTTP
  * requests. URLs are formed like this:
  *      0              1           2      3          4         5
- *   /cool/<encoded-document-url>/ws/<session-id>/<command>/<serial>
+ *   /oxool/<encoded-document-url>/ws/<session-id>/<command>/<serial>
  * <session-id> can be 'unknown'
  * <command> can be 'open', 'write', 'wait', or 'close'
  */
@@ -20,7 +20,7 @@
 #include "ClientSession.hpp"
 #include "ProxyProtocol.hpp"
 #include "Exceptions.hpp"
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 #include <Socket.hpp>
 
 #include <atomic>
@@ -46,8 +46,8 @@ void DocumentBroker::handleProxyRequest(
                 std::make_shared<ProxyProtocolHandler>(),
                 id, uriPublic, isReadOnly, requestDetails);
         addSession(clientSession);
-        COOLWSD::checkDiskSpaceAndWarnClients(true);
-        COOLWSD::checkSessionLimitsAndWarnClients();
+        OXOOLWSD::checkDiskSpaceAndWarnClients(true);
+        OXOOLWSD::checkSessionLimitsAndWarnClients();
 
         const std::string &sessionId = clientSession->getOrCreateProxyAccess();
         LOG_TRC("proxy: Returning sessionId " << sessionId);

@@ -13,7 +13,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/wsd \
 	-I@LOBUILDDIR@/workdir/UnpackedTarball/libpng \
 	-I@LOBUILDDIR@/workdir/UnpackedTarball/zlib \
-	-DCOOLWSD_CONFIGDIR='"@COOLWSD_CONFIGDIR@"' \
+	-DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
 	-DDEBUG_ABSSRCDIR='"@abs_srcdir@"' \
 	-DMOBILEAPP=1
 
@@ -41,7 +41,7 @@ online_SOURCES = \
 	../net/Socket.cpp \
 	../wsd/ClientSession.cpp \
 	../wsd/DocumentBroker.cpp \
-	../wsd/COOLWSD.cpp \
+	../wsd/OXOOLWSD.cpp \
 	../wsd/RequestDetails.cpp \
 	../wsd/Storage.cpp \
 	../wsd/TileCache.cpp
@@ -65,7 +65,7 @@ online_LDADD = \
 
 # TODO these are just copypasta from core
 online_LDFLAGS = \
-	-pthread -s MODULARIZE -s EXPORT_NAME=createOnlineModule -s USE_PTHREADS=1 -s TOTAL_MEMORY=1GB -s PTHREAD_POOL_SIZE=15 --bind -s FORCE_FILESYSTEM=1 -s WASM_BIGINT=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s FETCH=1 -s ASSERTIONS=1 -s EXIT_RUNTIME=0 -s EXPORTED_RUNTIME_METHODS=["UTF16ToString","stringToUTF16","UTF8ToString","allocateUTF8","ccall","cwrap","FS"] -pthread -s USE_PTHREADS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_FUNCTIONS=["_main","_libreofficekit_hook","_libreofficekit_hook_2","_lok_preinit","_lok_preinit_2","_handle_cool_message"] \
+	-pthread -s MODULARIZE -s EXPORT_NAME=createOnlineModule -s USE_PTHREADS=1 -s TOTAL_MEMORY=1GB -s PTHREAD_POOL_SIZE=15 --bind -s FORCE_FILESYSTEM=1 -s WASM_BIGINT=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s FETCH=1 -s ASSERTIONS=1 -s EXIT_RUNTIME=0 -s EXPORTED_RUNTIME_METHODS=["UTF16ToString","stringToUTF16","UTF8ToString","allocateUTF8","ccall","cwrap","FS"] -pthread -s USE_PTHREADS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_FUNCTIONS=["_main","_libreofficekit_hook","_libreofficekit_hook_2","_lok_preinit","_lok_preinit_2","_handle_oxool_message"] \
 	-gseparate-dwarf \
 	--pre-js @LOBUILDDIR@/workdir/CustomTarget/static/emscripten_fs_image/soffice.data.js.link
 

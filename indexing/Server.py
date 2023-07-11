@@ -13,11 +13,11 @@ import xml.etree.ElementTree as ET
 import base64
 
 # Configuration
-coolServerUrl = "http://localhost:9980"
+oxoolServerUrl = "http://localhost:9980"
 solrServerUrl = "http://localhost:8983"
 
 documentPath = "Docs/"
-coolInstance = coolServerUrl + "/browser/f6d368a0a/cool.html"
+oxoolInstance = oxoolServerUrl + "/browser/f6d368a0a/loleaflet.html"
 solrCollectionName = "documents"
 
 # Templates
@@ -74,12 +74,12 @@ def createSolrDeleteXml():
     ET.indent(et, space="  ", level=0)
     return ET.tostring(et.getroot(), encoding='utf-8', xml_declaration=True)
 
-# Calls "Convert To - Indexing XML" service on COOL Server
+# Calls "Convert To - Indexing XML" service on OXOOL Server
 def callConvertToIndexingXml(filename, filepath):
     filesDict = {
         'data': (filepath, open(filepath, 'rb'), None, {})
     }
-    response = requests.post("{}/cool/convert-to/xml".format(coolServerUrl), files=filesDict)
+    response = requests.post("{}/oxool/convert-to/xml".format(oxoolServerUrl), files=filesDict)
     if response.ok:
         return response.content
     return None
@@ -116,7 +116,7 @@ def callQueryServiceOnSolr(jsonString):
         for document in responseBody['docs']:
             type = document['type'][0]
             filename = document['filename'][0]
-            href = "{}?file_path=file://{}".format(coolInstance, os.path.abspath(documentPath + filename))
+            href = "{}?file_path=file://{}".format(oxoolInstance, os.path.abspath(documentPath + filename))
             if type == "paragraph":
                 returnMap = {
                     'filename' : filename,
@@ -137,10 +137,10 @@ def getDocuments():
             if entry.is_file():
                 yield {
                     "name" : entry.name,
-                    "href" : "{}?file_path=file://{}".format(coolInstance, os.path.abspath(documentPath + entry.name))
+                    "href" : "{}?file_path=file://{}".format(oxoolInstance, os.path.abspath(documentPath + entry.name))
                 }
 
-# Calls "Render Search Result" service on COOL Server
+# Calls "Render Search Result" service on OXOOL Server
 # Input is search result and the document, and return the rendered image
 def callRenderImageService(resultJsonString):
     result = json.loads(resultJsonString)
@@ -151,7 +151,7 @@ def callRenderImageService(resultJsonString):
         "document": (filename, open(documentPath + filename, 'rb'), None, {}),
         "result" : ("json", resultJsonProcessed, None, {})
     }
-    response = requests.post("{}/cool/render-search-result".format(coolServerUrl), files=filesDict)
+    response = requests.post("{}/oxool/render-search-result".format(oxoolServerUrl), files=filesDict)
     return base64.b64encode(response.content)
 
 # HTTP Server - Handle HTTP requests

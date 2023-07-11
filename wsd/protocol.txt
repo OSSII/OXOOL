@@ -78,13 +78,6 @@ TRACEEVENT name=<name> ph=<letter> ts=<timestamp> <more parameters>... [ args=<J
     between the beginning of the thing being timed and the time when
     the 'X' message was emitted, also in microseconds.
 
-canceltiles
-
-    All outstanding tile messages from the client to the server are
-    dropped and will not be handled, except tile messages with an id
-    parameter. There is no guarantee of exactly which tile: messages
-    might still be sent back to the client.
-
 tileprocessed tile=<tileid>
 
     Previously sent tile (server -> client) arrived and processed by the client.
@@ -153,7 +146,7 @@ load [part=<partNumber>] url=<url> [timestamp=<time>] [lang=<locale>] [deviceFor
 
     options are the whole rest of the line, not URL-encoded, and must be valid JSON.
 
-coolclient <major.minor[-patch]> [ <timestamp> <perfcounter> ]
+oxoolclient <major.minor[-patch]> [ <timestamp> <perfcounter> ]
 
     Upon connection, a client must announce the version number it supports.
     major: an integer that must always match between client and server,
@@ -315,10 +308,6 @@ asksignaturestatus
 
     Requests a signing status of the document.
 
-signdocument
-
-    Sign the current document with the input certificate and private key.
-
 rendershapeselection mimetype=<mimeType>
 
     Request rendering of selected shapes into an SVG format.
@@ -372,7 +361,7 @@ contentcontrolevent <JSON>
 server -> client
 ================
 
-coolserver <coolwsd version> <coolwsd git hash> <major.minor[-patch]>
+oxoolserver <oxoolwsd version> <oxoolwsd git hash> <major.minor[-patch]>
 
     Upon connection, the server must announce the version number it supports.
     Major: an integer that must always match between client and server,
@@ -474,14 +463,13 @@ getchildid: id=<id>
 
     Returns the child id
 
-invalidatetiles: part=<partNumber> x=<x> y=<y> width=<width> height=<height>
+invalidatetiles: part=<partNumber> x=<x> y=<y> width=<width> height=<height> wid=<wid>
 
     All parameters are numbers. Tells the client to invalidate any
     cached tiles for the document area specified (in twips), at any
     zoom level.
 
-invalidatetiles: EMPTY
-invalidatetiles: EMPTY, <partNumber>
+invalidatetiles: EMPTY, <partNumber>, <mode>, wid=<wid>
 
     Tells the client to invalidate all cached tiles.
 
@@ -540,7 +528,13 @@ delta: part=<partNumber> width=<width> height=<height> tileposx=<xpos> tileposy=
     A delta command is like a tile: command but the payload is purely
     an incremental patch on top of a previous tile.
 
+update: <as delta>
+
+    An update command simply informs the client of any updated wid
+    ie. this tile was re-rendered and returned an empty delta.
+
 commandresult: <payload>
+
     This is used to acknowledge the commands from the client.
     <payload> is { command: <command name>, success: 'true' }
 
@@ -628,11 +622,11 @@ wopi: <JSON>
 
      Properties mentioned:
      + PostMessageOrigin: See WOPI specs for more information
-     + HideSaveOption: (boolean): If Collabora Online should hide the save options
-     + HidePrintOption: (boolean): If Collabora Online should hide print options
-     + HideExportOption: (boolean): If Collabora Online should hide the export options
+     + HideSaveOption: (boolean): If OxOffice Online should hide the save options
+     + HidePrintOption: (boolean): If OxOffice Online should hide print options
+     + HideExportOption: (boolean): If OxOffice Online should hide the export options
        this implies 'Download as' options in file menu
-     + HideRepairOption: (boolean): If Collabora Online should hide the Repair
+     + HideRepairOption: (boolean): If OxOffice Online should hide the Repair
        undo functionality
 
 versionrestore: <action>
@@ -813,8 +807,8 @@ subscribe <space separated list of commands>
 
 version
 
-    Queries the server for current version of lokit and coolserver. See
-    'lokitversion' and 'coolserver' in admin -> client for the format of
+    Queries the server for current version of lokit and oxoolserver. See
+    'lokitversion' and 'oxoolserver' in admin -> client for the format of
     response message.
 
 documents
@@ -861,8 +855,8 @@ sent_bytes
 recv_bytes
 
     Queries for total memory or bandwidth being consumed by the server
-    in kilobytes. For mem_consumed this includes processes - coolwsd,
-    coolforkit, and child processes hosting various documents. For
+    in kilobytes. For mem_consumed this includes processes - oxoolwsd,
+    oxoolforkit, and child processes hosting various documents. For
     sent/recv_bytes this includes only external traffic.
 
 active_docs_count
@@ -879,7 +873,7 @@ settings
     Queries the server for configurable settings from admin console.
 
 log_lines
-    Gets last n lines from "coolwsd.log" file.
+    Gets last n lines from "oxoolwsd.log" file.
 
 channel_list
     Gets the log channels list with their respective log levels.
@@ -909,6 +903,10 @@ kill <pid>
      <pid> process id of the document to kill. All sessions of document would be
      killed. There is no way yet to kill individual sessions.
 
+wopiSrcMap
+
+    get map of wopiSrc<->routeToken
+
 admin -> client
 ===============
 
@@ -916,17 +914,18 @@ Commands marked with [*] are notifications that are delivered only if client is
 subscribed to these commands using `subscribe` (see client->admin
 section). Others are just response messages to some client command.
 
-[*] adddoc <pid> <filename> <viewid> <memory consumed>
+[*] adddoc <pid> <filename> <sessionid> <username> <userid> <memory consumed> <wopiHost> <isViewReadOnly> <wopiSrc>
 
     <pid> process id hosting the document
     <filename> URL encoded name of the file
-    <viewid> string identifying the view of this document
+    <sessionid> string identifying the view of this document
     <memory consumed> RSS of <pid> in kilobytes
+    <wopihost> storage host on which document exist
 
-[*] rmdoc <pid> <viewid>
+[*] rmdoc <pid> <sessionid>
 
     <pid> process id hosting the document
-    <viewid> view which was closed
+    <sessionid> view which was closed
 
 [*] mem_stats <memory consumed>
 
@@ -954,6 +953,15 @@ section). Others are just response messages to some client command.
 
     note: This might get additional parameters in future
 
+[*] wopiSrcMap <JSON string>
+
+    wopiSrcMap:
+    {
+        "routeToken": "abcpqr"
+        "wopiSrc" : ["wopiSrc1", "wopiSrc2"]
+    }
+    <JSON string> contains the map wopiSrc<->routeToken
+
 InvalidAuthToken
 
     This is sent when invalid auth token is provided in 'auth' command. See
@@ -976,9 +984,9 @@ documents <pid> <filename> <number of views> <memory consumed> <elapsed time> <i
     Each set document attributes is separated by a newline.
 
 mem_consumed <memory>
-    Total memory being consumed by Collabora Online.
+    Total memory being consumed by OxOffice Online.
 total_avail_mem <memory>
-    Total memory available to whole Collabora Online. This takes into account
+    Total memory available to whole OxOffice Online. This takes into account
     the memproportion setting, if set by the user, when calculating the amount
     of memory available to the process.
 
@@ -1000,7 +1008,7 @@ mem_stats <comma separated list of memory consumed values>
      The length of the list is equal to the value of setting
      mem_stats_size`
 
-coolserver <JSON string>
+oxoolserver <JSON string>
 
     The returned JSON string contains information in the following format:
     {Version: <>, Hash: <>}

@@ -9,7 +9,7 @@ FROM ubuntu:18.04
 # install adduser, findutils, openssl and cpio that we need later
 # install tzdata to accept the TZ environment variable
 # install an editor
-# tdf#117557 - Add CJK Fonts to Collabora Online Docker Image
+# tdf#117557 - Add CJK Fonts to OxOffice Online Docker Image
 RUN apt-get update && \
     apt-get -y install libpng16-16 fontconfig adduser cpio tzdata \
                findutils nano \
@@ -18,29 +18,29 @@ RUN apt-get update && \
                fonts-wqy-zenhei fonts-wqy-microhei fonts-droid-fallback \
                fonts-noto-cjk
 
-# copy freshly built LOKit and Collabora Online
+# copy freshly built LOKit and OxOffice Online
 COPY /instdir /
 
-# copy the shell script which can start Collabora Online (coolwsd)
+# copy the shell script which can start OxOffice Online (oxoolwsd)
 COPY /start-collabora-online.sh /
 COPY /start-collabora-online.pl /
 
-# set up Collabora Online (normally done by postinstall script of package)
+# set up OxOffice Online (normally done by postinstall script of package)
 # Fix permissions
-RUN setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/coolforkit && \
-    setcap cap_sys_admin=ep /usr/bin/coolmount && \
-    adduser --quiet --system --group --home /opt/cool cool && \
-    rm -rf /opt/cool && \
-    mkdir -p /opt/cool/child-roots && \
-    coolwsd-systemplate-setup /opt/cool/systemplate /opt/lokit >/dev/null 2>&1 && \
-    touch /var/log/coolwsd.log && \
-    chown cool:cool /var/log/coolwsd.log && \
-    chown -R cool:cool /opt/ && \
-    chown -R cool:cool /etc/coolwsd
+RUN setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit && \
+    setcap cap_sys_admin=ep /usr/bin/oxoolmount && \
+    adduser --quiet --system --group --home /opt/oxool oxool && \
+    rm -rf /opt/oxool && \
+    mkdir -p /opt/oxool/child-roots && \
+    oxoolwsd-systemplate-setup /opt/oxool/systemplate /opt/lokit >/dev/null 2>&1 && \
+    touch /var/log/oxoolwsd.log && \
+    chown oxool:oxool /var/log/oxoolwsd.log && \
+    chown -R oxool:oxool /opt/ && \
+    chown -R oxool:oxool /etc/oxoolwsd
 
 EXPOSE 9980
 
-# switch to cool user (use numeric user id to be compatible with Kubernetes Pod Security Policies)
+# switch to oxool user (use numeric user id to be compatible with Kubernetes Pod Security Policies)
 USER 101
 
 CMD ["/start-collabora-online.sh"]

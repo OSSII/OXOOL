@@ -51,7 +51,7 @@ constexpr std::chrono::microseconds WebSocketHandler::PingFrequencyMicroS;
 std::atomic<bool> SocketPoll::InhibitThreadChecks(false);
 std::atomic<bool> Socket::InhibitThreadChecks(false);
 
-#define SOCKET_ABSTRACT_UNIX_NAME "0coolwsd-"
+#define SOCKET_ABSTRACT_UNIX_NAME "0oxoolwsd-"
 
 int Socket::createSocket(Socket::Type type)
 {
@@ -187,7 +187,7 @@ SocketPoll::SocketPoll(std::string threadName)
 #endif
         )
     {
-        throw std::runtime_error("Failed to allocate pipe for SocketPoll [" + threadName + "] waking.");
+        throw std::runtime_error("Failed to allocate pipe for SocketPoll [" + _name + "] waking.");
     }
 
     LOG_DBG("New SocketPoll [" << _name << "] owned by " << Log::to_string(_owner));
@@ -319,7 +319,7 @@ int SocketPoll::poll(int64_t timeoutMaxMicroS)
     if (_runOnClientThread)
         checkAndReThread();
     else
-        assertCorrectThread();
+        ASSERT_CORRECT_SOCKET_THREAD(this);
 
 #if ENABLE_DEBUG
     // perturb - to rotate errors among several busy sockets.
@@ -487,7 +487,8 @@ int SocketPoll::poll(int64_t timeoutMaxMicroS)
 
         if (!toErase.empty())
         {
-            LOG_TRC("Removing " << toErase.size() << " socket" << (toErase.size() > 1 ? "s" : ""));
+            LOG_TRC("Removing " << toErase.size() << " socket" << (toErase.size() > 1 ? "s" : "")
+                                << " of " << _pollSockets.size() << " total");
             LOG_ASSERT(_pollSockets.size() > 0);
             LOG_ASSERT(toErase.size() <= _pollSockets.size());
             std::sort(toErase.begin(), toErase.end(), [](int a, int b) { return a > b; });
@@ -514,7 +515,7 @@ void SocketPoll::removeSockets()
 {
     LOG_DBG("Removing all " << _pollSockets.size() + _newSockets.size()
                             << " sockets from SocketPoll thread " << _name);
-    assertCorrectThread();
+    ASSERT_CORRECT_SOCKET_THREAD(this);
 
     while (!_pollSockets.empty())
     {
@@ -680,8 +681,10 @@ void ServerSocket::dumpState(std::ostream& os)
 
 void SocketDisposition::execute()
 {
+    LOG_TRC("Executing SocketDisposition of #" << _socket->getFD() << ": " << name(_disposition));
+
     // We should have hard ownership of this socket.
-    assert(_socket->getThreadOwner() == std::this_thread::get_id());
+    ASSERT_CORRECT_SOCKET_THREAD(_socket);
     if (_socketMove)
     {
         // Drop pretentions of ownership before _socketMove.
@@ -725,11 +728,10 @@ void StreamSocket::dumpState(std::ostream& os)
 {
     int64_t timeoutMaxMicroS = SocketPoll::DefaultPollTimeoutMicroS.count();
     const int events = getPollEvents(std::chrono::steady_clock::now(), timeoutMaxMicroS);
-    os << '\t' << getFD() << '\t' << events << '\t'
-       << (ignoringInput() ? "ignore\t" : "process\t")
-       << _inBuffer.size() << '\t' << _outBuffer.size() << '\t'
-       << " r: " << _bytesRecvd << "\t w: " << _bytesSent << '\t'
-       << clientAddress() << '\t';
+    os << '\t' << std::setw(6) << getFD() << "\t0x" << std::hex << events << std::dec << '\t'
+       << (ignoringInput() ? "ignore\t" : "process\t") << std::setw(6) << _inBuffer.size() << '\t'
+       << std::setw(6) << _outBuffer.size() << '\t' << " r: " << std::setw(6) << _bytesRecvd
+       << "\t w: " << std::setw(6) << _bytesSent << '\t' << clientAddress() << '\t';
     _socketHandler->dumpState(os);
     if (_inBuffer.size() > 0)
         Util::dumpHex(os, _inBuffer, "\t\tinBuffer:\n", "\t\t");
@@ -790,13 +792,17 @@ bool StreamSocket::sendAndShutdown(http::Response& response)
 void SocketPoll::dumpState(std::ostream& os) const
 {
     // FIXME: NOT thread-safe! _pollSockets is modified from the polling thread!
+    const auto pollSockets = _pollSockets;
+
     os << "\n  SocketPoll:";
-    os << "\n    Poll [" << _pollSockets.size() << "] - wakeup r: "
-       << _wakeup[0] << " w: " << _wakeup[1] << '\n';
-    if (_newCallbacks.size() > 0)
-        os << "\tcallbacks: " << _newCallbacks.size() << '\n';
-    os << "\tfd\tevents\trsize\twsize\n";
-    for (const auto &i : _pollSockets)
+    os << "\n    Poll [" << name() << "] with " << pollSockets.size() << " socket"
+       << (pollSockets.size() == 1 ? "" : "s") << " - wakeup rfd: " << _wakeup[0]
+       << " wfd: " << _wakeup[1] << '\n';
+    const auto callbacks = _newCallbacks.size();
+    if (callbacks > 0)
+        os << "\tcallbacks: " << callbacks << '\n';
+    os << "\t    fd\tevents\trbuffered\twbuffered\trtotal\twtotal\tclientaddress\n";
+    for (const auto& i : pollSockets)
         i->dumpState(os);
 }
 
@@ -1027,7 +1033,7 @@ std::string LocalServerSocket::bind()
     std::string socketAbstractUnixName(SOCKET_ABSTRACT_UNIX_NAME);
     const char* snapInstanceName = std::getenv("SNAP_INSTANCE_NAME");
     if (snapInstanceName && snapInstanceName[0])
-        socketAbstractUnixName = std::string("0snap.") + snapInstanceName + ".coolwsd-";
+        socketAbstractUnixName = std::string("0snap.") + snapInstanceName + ".oxoolwsd-";
 
     LOG_INF("Binding to Unix socket for local server with base name: " << socketAbstractUnixName);
 
@@ -1125,22 +1131,28 @@ bool StreamSocket::parseHeader(const char *clientName,
     try
     {
         request.read(message);
-
-        Log::StreamLogger logger = Log::info();
-        if (logger.enabled())
+        // Find out if there is a '/loleaflet/' string in request.getURI(),
+        // and if so, change it to a '/browser/' string.
+        std::string uri = request.getURI();
+        static const std::string loleaflet("/loleaflet/");
+        static const std::string browser("/browser/");
+        const std::string::size_type pos = uri.find(loleaflet);
+        if (pos != std::string::npos)
         {
-            logger << '#' << getFD() << ": " << clientName << " HTTP Request: "
-                   << request.getMethod() << ' '
-                   << request.getURI() << ' '
-                   << request.getVersion();
-
-            for (const auto& it : request)
-            {
-                logger << " / " << it.first << ": " << it.second;
-            }
-
-            LOG_END_FLUSH(logger);
+            LOG_DBG("Replacing '/loleaflet/' with '/browser/' in URI: " << uri);
+            uri.replace(pos, loleaflet.size(), browser);
+            request.setURI(uri);
         }
+
+        LOG_INF(clientName << " HTTP Request: " << request.getMethod() << ' ' << request.getURI()
+                           << ' ' << request.getVersion() <<
+                [&](auto& log)
+                {
+                    for (const auto& it : request)
+                    {
+                        log << " / " << it.first << ": " << it.second;
+                    }
+                });
 
         const std::streamsize contentLength = request.getContentLength();
         const auto offset = itBody - _inBuffer.begin();

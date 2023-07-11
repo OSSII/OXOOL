@@ -69,7 +69,8 @@ public:
         }
     }
 
-    void assertGetFileRequest(const Poco::Net::HTTPRequest& /*request*/) override
+    std::unique_ptr<http::Response>
+    assertGetFileRequest(const Poco::Net::HTTPRequest& /*request*/) override
     {
         LOG_TST("Testing " << toString(_scenario));
         LOK_ASSERT_STATE(_phase, Phase::WaitLoadStatus);
@@ -80,6 +81,8 @@ public:
         // LOK_ASSERT_EQUAL_MESSAGE("Expected modified document detection to have triggered", true,
         //                          _unloadingModifiedDocDetected);
         _unloadingModifiedDocDetected = false; // Reset.
+
+        return nullptr; // Success.
     }
 
     std::unique_ptr<http::Response>
@@ -90,7 +93,7 @@ public:
 
         assertPutFileCount();
 
-        const std::string wopiTimestamp = request.get("X-COOL-WOPI-Timestamp", std::string());
+        const std::string wopiTimestamp = request.get("X-OXOOL-WOPI-Timestamp", std::string());
         const bool force = wopiTimestamp.empty(); // Without a timestamp we force to always store.
 
         // We don't expect overwriting by forced uploading.
@@ -201,9 +204,9 @@ public:
             TRANSITION_STATE(_phase, Phase::Done);
 
             // We requested the save.
-            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsAutosave"));
+            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsAutosave"));
 
-            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsModifiedByUser"));
+            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsModifiedByUser"));
 
             // File unknown/User unauthorized.
             return Util::make_unique<http::Response>(http::StatusCode::NotFound);
@@ -303,20 +306,21 @@ public:
         config.setBool("per_document.always_save_on_exit", true);
     }
 
-    void configCheckFileInfo(Poco::JSON::Object::Ptr fileInfo) override
+    void configCheckFileInfo(const Poco::Net::HTTPRequest& /*request*/,
+                             Poco::JSON::Object::Ptr fileInfo) override
     {
-        LOG_TST("CheckFileInfo: making read-only");
+        LOG_TST("CheckFileInfo: making read-only for " << name(_scenario));
 
         fileInfo->set("UserCanWrite", "false");
         fileInfo->set("UserCanNotWriteRelative", "true");
 
-        if (_scenario == Scenario ::Edit)
+        if (_scenario == Scenario::Edit)
         {
             // An extension that doesn't allow commenting. By omitting this,
             // we allow commenting and consider the document editable.
             fileInfo->set("BaseFileName", "doc.odt");
         }
-        else if (_scenario == Scenario ::ViewWithComment)
+        else if (_scenario == Scenario::ViewWithComment)
         {
             // An extension that allows commenting.
             fileInfo->set("BaseFileName", "doc.pdf");
@@ -468,23 +472,23 @@ public:
         LOK_ASSERT_MESSAGE("Too many PutFile attempts", getCountPutFile() <= 3);
 
         // The document is modified.
-        LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsModifiedByUser"));
+        LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsModifiedByUser"));
         LOK_ASSERT_EQUAL(std::string("true"), request.get("X-LOOL-WOPI-IsModifiedByUser"));
 
         // Triggered manually or during closing, not auto-save.
-        LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsAutosave"));
+        LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsAutosave"));
         LOK_ASSERT_EQUAL(std::string("false"), request.get("X-LOOL-WOPI-IsAutosave"));
 
         if (getCountPutFile() < 3)
         {
             // Certainly not exiting yet.
-            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsExitSave"));
+            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsExitSave"));
             LOK_ASSERT_EQUAL(std::string("false"), request.get("X-LOOL-WOPI-IsExitSave"));
         }
         else
         {
             // Only on the last (third) attempt we exit.
-            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsExitSave"));
+            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsExitSave"));
             LOK_ASSERT_EQUAL(std::string("true"), request.get("X-LOOL-WOPI-IsExitSave"));
         }
 
@@ -629,10 +633,10 @@ public:
     std::unique_ptr<http::Response>
     assertPutFileRequest(const Poco::Net::HTTPRequest& request) override
     {
-        LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsModifiedByUser"));
+        LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsModifiedByUser"));
         LOK_ASSERT_EQUAL(std::string("true"), request.get("X-LOOL-WOPI-IsModifiedByUser"));
 
-        LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsAutosave"));
+        LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsAutosave"));
         LOK_ASSERT_EQUAL(std::string("false"), request.get("X-LOOL-WOPI-IsAutosave"));
 
         // We save twice. First right after loading, unmodified.
@@ -641,7 +645,7 @@ public:
             LOG_TST("assertPutFileRequest: First PutFile, which will fail");
 
             // Certainly not exiting yet.
-            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsExitSave"));
+            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsExitSave"));
             LOK_ASSERT_EQUAL(std::string("false"), request.get("X-LOOL-WOPI-IsExitSave"));
 
             // Fail with error.
@@ -654,7 +658,7 @@ public:
         LOK_ASSERT_STATE(_phase, Phase::WaitSecondPutFile);
 
         // Triggered while closing.
-        LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsExitSave"));
+        LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsExitSave"));
         LOK_ASSERT_EQUAL(std::string("true"), request.get("X-LOOL-WOPI-IsExitSave"));
 
         return nullptr;

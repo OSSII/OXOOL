@@ -1,5 +1,5 @@
 ~1819243~HWCp8Bcln3Hg7xKN~02d~NewSession: file:///tmp/test.odt
->1834924>HWCp8Bcln3Hg7xKN>02d>coolclient 0.1 1631391296951.5 1124.199999988079
+>1834924>HWCp8Bcln3Hg7xKN>02d>oxoolclient 0.1 1631391296951.5 1124.199999988079
 >1836055>HWCp8Bcln3Hg7xKN>02d>load url=file%3A%2F%2F%2Ftmp%2Ftest.odt deviceFormFactor=desktop
 >3064391>HWCp8Bcln3Hg7xKN>02d>commandvalues command=.uno:StyleApply
 >3064758>HWCp8Bcln3Hg7xKN>02d>commandvalues command=.uno:CharFontName
@@ -1800,4 +1800,4 @@
 >175977301>HWCp8Bcln3Hg7xKN>02d>mouse type=move x=5910 y=10292.999955 count=1 buttons=0 modifier=0
 ~176521659~HWCp8Bcln3Hg7xKN~02d~EndSession: file:///tmp/test.odt
 ~176590893~6cxYhoGJoRBucWaF~141~NewSession: file:///tmp/test.odt?permission=edit
->176636767>6cxYhoGJoRBucWaF>141>coolclient 0.1 1631391471754 175926.09999996424
+>176636767>6cxYhoGJoRBucWaF>141>oxoolclient 0.1 1631391471754 175926.09999996424

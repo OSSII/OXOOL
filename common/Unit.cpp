@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <condition_variable>
 #include <dlfcn.h>
 #include <fstream>
 #include <mutex>
@@ -30,6 +31,7 @@
 #include <common/SigUtil.hpp>
 #include <common/StringVector.hpp>
 #include <common/Message.hpp>
+#include <unistd.h>
 
 UnitKit *GlobalKit = nullptr;
 UnitWSD *GlobalWSD = nullptr;
@@ -40,9 +42,14 @@ char* UnitBase::UnitLibPath = nullptr;
 void* UnitBase::DlHandle = nullptr;
 UnitBase::TestOptions UnitBase::GlobalTestOptions;
 UnitBase::TestResult UnitBase::GlobalResult = UnitBase::TestResult::Ok;
-static std::thread TimeoutThread;
-static std::atomic<bool> TimeoutThreadRunning(false);
-std::timed_mutex TimeoutThreadMutex;
+
+namespace
+{
+std::thread TimeoutThread;
+std::mutex TimeoutThreadMutex;
+std::condition_variable TimeoutConditionVariable;
+
+} // namespace
 
 /// Controls whether experimental features/behavior is enabled or not.
 bool EnableExperimental = false;
@@ -127,7 +134,7 @@ UnitBase** UnitBase::linkAndCreateUnit(UnitType type, const std::string& unitLib
 
 void UnitBase::initTestSuiteOptions()
 {
-    static const char* TestOptions = getenv("COOL_TEST_OPTIONS");
+    static const char* TestOptions = getenv("OXOOL_TEST_OPTIONS");
     if (TestOptions == nullptr)
         return;
 
@@ -203,7 +210,7 @@ bool UnitBase::init(UnitType type, const std::string &unitLibPath)
 #if !MOBILEAPP
     LOG_ASSERT(!get(type));
 #else
-    // The COOLWSD initialization is called in a loop on mobile, allow reuse
+    // The OXOOLWSD initialization is called in a loop on mobile, allow reuse
     if (get(type))
         return true;
 #endif
@@ -236,17 +243,18 @@ bool UnitBase::init(UnitType type, const std::string &unitLibPath)
 
                 if (instance && type == UnitType::Kit)
                 {
-                    TimeoutThreadMutex.lock();
+                    std::unique_lock<std::mutex> lock(TimeoutThreadMutex);
                     TimeoutThread = std::thread(
                         [instance]
                         {
-                            TimeoutThreadRunning = true;
                             Util::setThreadName("unit timeout");
 
-                            if (TimeoutThreadMutex.try_lock_for(instance->_timeoutMilliSeconds))
+                            std::unique_lock<std::mutex> lock2(TimeoutThreadMutex);
+                            if (TimeoutConditionVariable.wait_for(lock2,
+                                                                  instance->_timeoutMilliSeconds) ==
+                                std::cv_status::no_timeout)
                             {
                                 LOG_DBG(instance->getTestname() << ": Unit test finished in time");
-                                TimeoutThreadMutex.unlock();
                             }
                             else
                             {
@@ -254,7 +262,6 @@ bool UnitBase::init(UnitType type, const std::string &unitLibPath)
                                                                 << instance->_timeoutMilliSeconds);
                                 instance->timeout();
                             }
-                            TimeoutThreadRunning = false;
                         });
                 }
 
@@ -390,7 +397,7 @@ bool UnitBase::isUnitTesting()
 
 void UnitBase::setTimeout(std::chrono::milliseconds timeoutMilliSeconds)
 {
-    assert(!TimeoutThreadRunning);
+    assert(!TimeoutThread.joinable() && "setTimeout must be called before starting a test");
     _timeoutMilliSeconds = timeoutMilliSeconds;
     LOG_TST(getTestname() << ": setTimeout: " << _timeoutMilliSeconds);
 }
@@ -480,7 +487,7 @@ bool UnitBase::filterSendWebSocketMessage(const char* data, const std::size_t le
 void UnitBase::exitTest(TestResult result, const std::string& reason)
 {
     // We could be called from either a SocketPoll (websrv_poll)
-    // or from invokeTest (coolwsd main).
+    // or from invokeTest (oxoolwsd main).
     std::lock_guard<std::mutex> guard(_lock);
 
     if (isFinished())
@@ -502,6 +509,9 @@ void UnitBase::exitTest(TestResult result, const std::string& reason)
 
         if (GlobalResult == TestResult::Ok)
             GlobalResult = result;
+
+        LOG_TST("Dumping state");
+        ::kill(getpid(), SIGUSR1);
     }
 
     _result = result;
@@ -535,7 +545,7 @@ void UnitBase::endTest(const std::string& reason)
     _socketPoll->joinThread();
 
     // tell the timeout thread that the work has finished
-    TimeoutThreadMutex.unlock();
+    TimeoutConditionVariable.notify_all();
     if (TimeoutThread.joinable())
         TimeoutThread.join();
 
@@ -552,17 +562,14 @@ UnitWSD::~UnitWSD()
 {
 }
 
-void UnitWSD::configure(Poco::Util::LayeredConfiguration &config)
+void UnitWSD::defaultConfigure(Poco::Util::LayeredConfiguration& config)
 {
-    if (isUnitTesting())
-    {
-        // Force HTTP - helps stracing.
-        config.setBool("ssl.enable", false);
-        // Use http:// everywhere.
-        config.setBool("ssl.termination", false);
-        // Force console output - easier to debug.
-        config.setBool("logging.file[@enable]", false);
-    }
+    // Force HTTP - helps stracing.
+    config.setBool("ssl.enable", false);
+    // Use http:// everywhere.
+    config.setBool("ssl.termination", false);
+    // Force console output - easier to debug.
+    config.setBool("logging.file[@enable]", false);
 }
 
 void UnitWSD::lookupTile(int part, int mode, int width, int height, int tilePosX, int tilePosY,
@@ -590,7 +597,7 @@ void UnitWSD::DocBrokerDestroy(const std::string& key)
         }
 
         // We could be called from either a SocketPoll (websrv_poll)
-        // or from invokeTest (coolwsd main).
+        // or from invokeTest (oxoolwsd main).
         std::lock_guard<std::mutex> guard(_lock);
 
         // Check if we have more tests, but keep the current index if it's the last.
@@ -605,7 +612,8 @@ void UnitWSD::DocBrokerDestroy(const std::string& key)
             GlobalWSD = nullptr;
             GlobalTool = nullptr;
 
-            if (GlobalArray[GlobalIndex] != nullptr)
+            if (GlobalArray[GlobalIndex] != nullptr && !SigUtil::getShutdownRequestFlag() &&
+                (_result == TestResult::Ok || GlobalTestOptions.getKeepgoing()))
             {
                 rememberInstance(_type, GlobalArray[GlobalIndex]);
 
@@ -614,10 +622,10 @@ void UnitWSD::DocBrokerDestroy(const std::string& key)
                 if (GlobalWSD)
                     GlobalWSD->configure(Poco::Util::Application::instance().config());
                 GlobalArray[GlobalIndex]->initialize();
-
-                // Wake-up so the previous test stops.
-                SocketPoll::wakeupWorld();
             }
+
+            // Wake-up so the previous test stops.
+            SocketPoll::wakeupWorld();
         }
     }
 }
@@ -681,7 +689,7 @@ UnitKit& UnitKit::get()
 
 void UnitKit::onExitTest(TestResult, const std::string&)
 {
-    // coolforkit doesn't link with CPPUnit.
+    // oxoolforkit doesn't link with CPPUnit.
     // LOK_ASSERT_MESSAGE("UnitKit doesn't yet support multiple tests", !haveMoreTests());
 
     // // We are done with all the tests.

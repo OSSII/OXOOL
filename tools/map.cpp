@@ -122,13 +122,17 @@ private:
     addr_t _end;
     std::string _name;
 public:
-    void setStart(addr_t start) { _start = start; }
+    Map(addr_t start, addr_t end, const std::string& name)
+        : _start(start)
+        , _end(end)
+        , _name(name)
+    {
+    }
+
     addr_t getStart() const { return _start; }
 
-    void setEnd(addr_t end) { _end = end; }
     addr_t getEnd() const { return _end; }
 
-    void setName(const std::string& name) { _name = name; }
     const std::string& getName() const { return _name; }
 
     size_t size() const { return _end - _start; }
@@ -189,11 +193,7 @@ public:
 
     void insert(addr_t start, addr_t end, const char *name)
     {
-        Map map;
-        map.setStart(start);
-        map.setEnd(end);
-        map.setName(std::string(name, 0, strlen(name) - 1));
-        _maps.push_back(map);
+        _maps.emplace_back(start, end, std::string(name, 0, strlen(name) - 1));
     }
 
     // Normal OUString:
@@ -603,6 +603,7 @@ static void total_smaps(unsigned proc_id, unsigned parent_id,
             }
         }
     }
+    fclose(file_pointer);
     space.scanMapsForStrings();
 
     printf("%s\n", cmdline);
@@ -690,7 +691,7 @@ int main(int argc, char **argv)
 
     if (help)
     {
-        fprintf(stderr, "Usage: coolmap --hex <name of process|pid>\n");
+        fprintf(stderr, "Usage: oxoolmap --hex <name of process|pid>\n");
         fprintf(stderr, "Dump memory map information for a given process\n");
         fprintf(stderr, "    --hex           Hex dump relevant page contents and diff to parent process\n");
         fprintf(stderr, "    --strings       Print all detected strings\n");

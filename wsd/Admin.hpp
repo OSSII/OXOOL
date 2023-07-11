@@ -11,7 +11,7 @@
 #include "Log.hpp"
 
 #include "net/WebSocketHandler.hpp"
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 
 class Admin;
 
@@ -86,9 +86,9 @@ public:
 
     void startMonitors();
 
-    void updateMonitors(std::vector<std::string>& oldMonitors);
+    void updateMonitors(std::vector<std::pair<std::string, int>>& oldMonitors);
 
-    std::vector<std::string> getMonitorList();
+    std::vector<std::pair<std::string, int>> getMonitorList();
 
     /// Custom poll thread function
     void pollingThread() override;
@@ -100,13 +100,16 @@ public:
     size_t getTotalCpuUsage();
 
     void modificationAlert(const std::string& dockey, pid_t pid, bool value);
+
+    void uploadedAlert(const std::string& dockey, pid_t pid, bool value);
+
     /// Update the Admin Model.
     void update(const std::string& message);
 
     /// Calls with same pid will increment view count, if pid already exists
     void addDoc(const std::string& docKey, pid_t pid, const std::string& filename,
                 const std::string& sessionId, const std::string& userName, const std::string& userId,
-                const int smapsFD, const Poco::URI& wopiSrc);
+                const int smapsFD, const Poco::URI& wopiSrc, bool readOnly);
 
     /// Decrement view count till becomes zero after which doc is removed
     void rmDoc(const std::string& docKey, const std::string& sessionId);

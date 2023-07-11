@@ -23,7 +23,7 @@
 
 class DocumentBroker;
 
-/// Represents a session to a COOL client, in the WSD process.
+/// Represents a session to a OXOOL client, in the WSD process.
 class ClientSession final : public Session
 {
 public:
@@ -95,7 +95,16 @@ public:
         _tracker.resetTileSeq(desc);
     }
 
-    bool sendTile(const TileDesc &desc, const Tile &tile)
+    // no tile data - just notify the client the ids/versions updated
+    bool sendUpdateNow(const TileDesc &desc)
+    {
+        TileWireId lastSentId = _tracker.updateTileSeq(desc);
+        std::string header = desc.serialize("update:", "\n");
+        LOG_TRC("Sending update from " << lastSentId << " to " << header);
+        return sendTextFrame(header.data(), header.size());
+    }
+
+    bool sendTileNow(const TileDesc &desc, const Tile &tile)
     {
         TileWireId lastSentId = _tracker.updateTileSeq(desc);
 
@@ -217,6 +226,10 @@ public:
     void setThumbnailTarget(const std::string& target) { _thumbnailTarget = target; }
 
     const std::string& getThumbnailTarget() const { return _thumbnailTarget; }
+
+    void setThumbnailPosition(const std::pair<int, int>& pos) { _thumbnailPosition = pos; }
+
+    const std::pair<int, int>& getThumbnailPosition() const { return _thumbnailPosition; }
 
     bool thumbnailSession() { return _thumbnailSession; }
 
@@ -377,6 +390,9 @@ private:
 
     /// Target used for thumbnail rendering
     std::string _thumbnailTarget;
+
+    // Position used for thumbnail rendering
+    std::pair<int, int> _thumbnailPosition;
 
     /// Rotating clipboard remote access identifiers - protected by GlobalSessionMapMutex
     std::string _clipboardKeys[2];

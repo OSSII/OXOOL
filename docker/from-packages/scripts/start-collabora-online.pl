@@ -5,7 +5,7 @@
 
 # At some stage, the hope is that the functionality of
 # start-collabora-online.sh will be moved here; for the moment
-# it only rewrites the alias_groups in coolwsd.xml according to
+# it only rewrites the alias_groups in oxoolwsd.xml according to
 # the envvar settings
 
 use strict;
@@ -89,7 +89,7 @@ sub generate_aliases() {
     return $output;
 }
 
-# Update the /etc/coolwsd/coolwsd.xml according to the env. variables from the YAML file
+# Update the /etc/oxoolwsd/oxoolwsd.xml according to the env. variables from the YAML file
 sub rewrite_config($) {
     my ($config) = @_;
     my $output = '';
@@ -140,4 +140,4 @@ sub rewrite_config($) {
     close(CONFIG);
 }
 
-rewrite_config('/etc/coolwsd/coolwsd.xml');
+rewrite_config('/etc/oxoolwsd/oxoolwsd.xml');

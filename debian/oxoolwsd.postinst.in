@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+	setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit || true
+	setcap cap_sys_admin=ep /usr/bin/oxoolmount || true
+	if [ -f /etc/loolwsd/loolwsd.xml ]; then /usr/bin/oxoolconfig migrateconfig --write || true; fi
+
+	adduser --quiet --system --group --home /opt/oxool oxool
+	chown oxool: /etc/oxoolwsd/oxoolwsd.xml
+	chmod 640 /etc/oxoolwsd/oxoolwsd.xml
+
+	# We assume that the LibreOffice to be used is built TDF-style
+	# and installs in @LO_PATH@, and that /opt/oxool is
+	# on the same file system
+
+	rm -rf /opt/oxool
+	mkdir -p /opt/oxool/child-roots
+	chown oxool: /opt/oxool
+	chown oxool: /opt/oxool/child-roots
+
+	fc-cache @LO_PATH@/share/fonts/truetype
+
+	oxoolwsd-systemplate-setup /opt/oxool/systemplate @LO_PATH@ >/dev/null 2>&1
+	oxoolwsd-generate-proof-key >/dev/null 2>&1
+    cat << EOF > /etc/apt/apt.conf.d/25oxoolwsd
+// Rebuild systemplate of @APP_NAME@
+DPkg::Post-Invoke { "echo Updating oxoolwsd systemplate;oxoolwsd-systemplate-setup /opt/oxool/systemplate @LO_PATH@ >/dev/null 2>&1 || true"; };
+EOF
+	;;
+
+esac
+
+#DEBHELPER#

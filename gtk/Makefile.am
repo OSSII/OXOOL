@@ -6,8 +6,8 @@ warning_flags = -Wall -Werror -Wno-parentheses -Wno-sign-compare -Wno-unused-var
 define_flags = -DMOBILEAPP=1
 
 AM_CPPFLAGS = -pthread \
-              -DCOOLWSD_DATADIR='"@COOLWSD_DATADIR@"' \
-              -DCOOLWSD_CONFIGDIR='"@COOLWSD_CONFIGDIR@"' \
+              -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
+              -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
 	      -DDEBUG_ABSSRCDIR='"'$(realpath ${top_srcdir})'"' \
               -DTOPSRCDIR='"'$(realpath ${top_srcdir})'"' \
               -DGTKAPP \
@@ -41,7 +41,7 @@ net_sources = ../net/FakeSocket.cpp \
 
 wsd_sources = ../wsd/ClientSession.cpp \
               ../wsd/DocumentBroker.cpp \
-              ../wsd/COOLWSD.cpp \
+              ../wsd/OXOOLWSD.cpp \
               ../wsd/RequestDetails.cpp \
               ../wsd/Storage.cpp \
               ../wsd/TileCache.cpp

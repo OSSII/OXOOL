@@ -9,13 +9,14 @@
 
 #include <config.h>
 
+#include "HttpRequest.hpp"
 #include "lokassert.hpp"
 
 #include <Unit.hpp>
 #include <UnitHTTP.hpp>
 #include <helpers.hpp>
 #include <sstream>
-#include <wsd/COOLWSD.hpp>
+#include <wsd/OXOOLWSD.hpp>
 #include <common/Clipboard.hpp>
 #include <wsd/ClientSession.hpp>
 #include <net/WebSocketSession.hpp>
@@ -41,6 +42,7 @@ class UnitCopyPaste : public UnitWSD
 public:
     UnitCopyPaste()
         : UnitWSD("UnitCopyPaste")
+        , _phase(Phase::RunTest)
     {
     }
 
@@ -59,8 +61,8 @@ public:
         return httpResponse->getBody();
     }
 
-    std::shared_ptr<ClipboardData> getClipboard(const std::string &clipURIstr,
-                                                HTTPResponse::HTTPStatus expected)
+    std::shared_ptr<ClipboardData> getClipboard(const std::string& clipURIstr,
+                                                http::StatusCode expected)
     {
         LOG_TST("getClipboard: connect to " << clipURIstr);
         Poco::URI clipURI(clipURIstr);
@@ -72,13 +74,12 @@ public:
         LOG_TST("getClipboard: sent request: " << clipURI.getPathAndQuery());
 
         try {
-            std::istringstream responseStream(httpResponse->getBody());
-            LOG_TST("getClipboard: HTTP get request returned reason: " << httpResponse->statusLine().reasonPhrase());
+            LOG_TST("getClipboard: HTTP get request returned: "
+                    << httpResponse->statusLine().statusCode());
 
             if (httpResponse->statusLine().statusCode() != expected)
             {
-                LOK_ASSERT_EQUAL_MESSAGE("clipboard status mismatches expected",
-                                         static_cast<unsigned int>(expected),
+                LOK_ASSERT_EQUAL_MESSAGE("clipboard status mismatches", expected,
                                          httpResponse->statusLine().statusCode());
                 exitTest(TestResult::Failed);
                 return std::shared_ptr<ClipboardData>();
@@ -88,6 +89,7 @@ public:
                                      std::string("application/octet-stream"),
                                      httpResponse->header().getContentType());
 
+            std::istringstream responseStream(httpResponse->getBody());
             auto clipboard = std::make_shared<ClipboardData>();
             clipboard->read(responseStream);
             std::ostringstream oss;
@@ -133,10 +135,9 @@ public:
         return true;
     }
 
-    bool fetchClipboardAssert(const std::string &clipURI,
-                              const std::string &mimeType,
-                              const std::string &content,
-                              HTTPResponse::HTTPStatus expected = HTTPResponse::HTTP_OK)
+    bool fetchClipboardAssert(const std::string& clipURI, const std::string& mimeType,
+                              const std::string& content,
+                              http::StatusCode expected = http::StatusCode::OK)
     {
         try
         {
@@ -206,7 +207,7 @@ public:
             std::shared_ptr<DocumentBroker> broker;
             std::shared_ptr<ClientSession> clientSession;
 
-            std::vector<std::shared_ptr<DocumentBroker>> brokers = COOLWSD::getBrokersTestOnly();
+            std::vector<std::shared_ptr<DocumentBroker>> brokers = OXOOLWSD::getBrokersTestOnly();
             assert(brokers.size() > 0);
             broker = brokers[0];
             auto sessions = broker->getSessionsTestOnlyUnsafe();

@@ -176,7 +176,9 @@ public:
         // might prove expensive and we don't expect draining
         // the queue to take anywhere close to the timeout.
         std::unique_lock<std::mutex> lock(_inMutex);
-        do
+
+        Util::Stopwatch sw;
+        for (;;)
         {
             // Drain the queue, first.
             while (!_inQueue.isEmpty())
@@ -190,11 +192,17 @@ public:
                 break;
 
             // Timed wait, if we must.
-        } while (_inCv.wait_for(
-            lock, timeout,
-            [this]() { return !_inQueue.isEmpty() || SigUtil::getShutdownRequestFlag(); }));
+            const std::chrono::milliseconds elapsed = sw.elapsed<std::chrono::milliseconds>();
+            if (elapsed >= timeout)
+                break;
 
-        LOG_DBG(context << "Giving up polling after " << timeout);
+            const std::chrono::milliseconds remaining = timeout - elapsed;
+            _inCv.wait_for(lock, remaining / 20,
+                           [this]()
+                           { return !_inQueue.isEmpty() || SigUtil::getShutdownRequestFlag(); });
+        }
+
+        LOG_DBG(context << "Giving up polling after " << sw.elapsed());
         return std::vector<char>();
     }
 
@@ -291,7 +299,7 @@ public:
 private:
     void handleMessage(const std::vector<char>& data) override
     {
-        LOG_TRC("Got message: " << COOLProtocol::getAbbreviatedMessage(data));
+        LOG_TRC("Got message: " << OXOOLProtocol::getAbbreviatedMessage(data));
         {
             std::unique_lock<std::mutex> lock(_inMutex);
             _inQueue.put(data);
@@ -303,8 +311,8 @@ private:
     bool matchMessage(const std::string& prefix, const std::vector<char>& message,
                       const std::string& context)
     {
-        const auto header = COOLProtocol::getFirstLine(message);
-        const bool match = COOLProtocol::matchPrefix(prefix, header);
+        const auto header = OXOOLProtocol::getFirstLine(message);
+        const bool match = OXOOLProtocol::matchPrefix(prefix, header);
         LOG_DBG(context << (match ? " Matched" : " Skipped") << " message [" << prefix
                         << "]: " << header);
         return match;

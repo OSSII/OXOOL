@@ -20,15 +20,16 @@
 #include <Log.hpp>
 #include <Unit.hpp>
 #include <Util.hpp>
-#include <wsd/COOLWSD.hpp>
+#include <wsd/OXOOLWSD.hpp>
 #include <wsd/Exceptions.hpp>
 
 #include <fnmatch.h>
 #include <dirent.h>
 
-void Document::addView(const std::string& sessionId, const std::string& userName, const std::string& userId)
+void Document::addView(const std::string& sessionId, const std::string& userName,
+                       const std::string& userId, bool readOnly)
 {
-    const auto ret = _views.emplace(sessionId, View(sessionId, userName, userId));
+    const auto ret = _views.emplace(sessionId, View(sessionId, userName, userId, readOnly));
     if (!ret.second)
     {
         LOG_WRN("View with SessionID [" << sessionId << "] already exists.");
@@ -95,7 +96,7 @@ const std::string Document::getHistory() const
     std::ostringstream oss;
     oss << "{";
     oss << "\"docKey\"" << ":\"" << _docKey << "\",";
-    oss << "\"filename\"" << ":\"" << COOLWSD::anonymizeUrl(getFilename()) << "\",";
+    oss << "\"filename\"" << ":\"" << OXOOLWSD::anonymizeUrl(getFilename()) << "\",";
     oss << "\"start\"" << ':' << _start << ',';
     oss << "\"end\"" << ':' << _end << ',';
     oss << "\"pid\"" << ':' << getPid() << ',';
@@ -162,7 +163,7 @@ bool Subscriber::notify(const std::string& message)
     std::shared_ptr<WebSocketHandler> webSocket = _ws.lock();
     if (webSocket)
     {
-        if (_subscriptions.find(COOLProtocol::getFirstToken(message)) == _subscriptions.end())
+        if (_subscriptions.find(OXOOLProtocol::getFirstToken(message)) == _subscriptions.end())
         {
             // No subscribers for the given message.
             return true;
@@ -193,18 +194,6 @@ bool Subscriber::subscribe(const std::string& command)
 void Subscriber::unsubscribe(const std::string& command)
 {
     _subscriptions.erase(command);
-}
-
-void AdminModel::assertCorrectThread() const
-{
-    // FIXME: share this code [!]
-    const bool sameThread = std::this_thread::get_id() == _owner;
-    if (!sameThread)
-        LOG_ERR("Admin command invoked from foreign thread. Expected: " <<
-        Log::to_string(_owner) << " but called from " <<
-        std::this_thread::get_id() << " (" << Util::getThreadId() << ").");
-
-    assert(sameThread);
 }
 
 AdminModel::~AdminModel()
@@ -238,9 +227,9 @@ std::string AdminModel::getAllHistory() const
 
 std::string AdminModel::query(const std::string& command)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
-    const auto token = COOLProtocol::getFirstToken(command);
+    const auto token = OXOOLProtocol::getFirstToken(command);
     if (token == "documents")
     {
         return getDocuments();
@@ -285,10 +274,10 @@ std::string AdminModel::query(const std::string& command)
     return std::string("");
 }
 
-/// Returns memory consumed by all active coolkit processes
+/// Returns memory consumed by all active oxoolkit processes
 unsigned AdminModel::getKitsMemoryUsage()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     unsigned totalMem = 0;
     unsigned docs = 0;
@@ -316,7 +305,7 @@ unsigned AdminModel::getKitsMemoryUsage()
 
 size_t AdminModel::getKitsJiffies()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     size_t totalJ = 0;
     for (auto& it : _documents)
@@ -341,7 +330,7 @@ size_t AdminModel::getKitsJiffies()
 
 void AdminModel::subscribe(int sessionId, const std::weak_ptr<WebSocketHandler>& ws)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     const auto ret = _subscribers.emplace(sessionId, Subscriber(ws));
     if (!ret.second)
@@ -352,7 +341,7 @@ void AdminModel::subscribe(int sessionId, const std::weak_ptr<WebSocketHandler>&
 
 void AdminModel::subscribe(int sessionId, const std::string& command)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto subscriber = _subscribers.find(sessionId);
     if (subscriber != _subscribers.end())
@@ -363,7 +352,7 @@ void AdminModel::subscribe(int sessionId, const std::string& command)
 
 void AdminModel::unsubscribe(int sessionId, const std::string& command)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto subscriber = _subscribers.find(sessionId);
     if (subscriber != _subscribers.end())
@@ -372,7 +361,7 @@ void AdminModel::unsubscribe(int sessionId, const std::string& command)
 
 void AdminModel::addMemStats(unsigned memUsage)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     _memStats.push_back(memUsage);
     if (_memStats.size() > _memStatsSize)
@@ -383,7 +372,7 @@ void AdminModel::addMemStats(unsigned memUsage)
 
 void AdminModel::addCpuStats(unsigned cpuUsage)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     _cpuStats.push_back(cpuUsage);
     if (_cpuStats.size() > _cpuStatsSize)
@@ -394,7 +383,7 @@ void AdminModel::addCpuStats(unsigned cpuUsage)
 
 void AdminModel::addSentStats(uint64_t sent)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     _sentStats.push_back(sent);
     if (_sentStats.size() > _sentStatsSize)
@@ -405,7 +394,7 @@ void AdminModel::addSentStats(uint64_t sent)
 
 void AdminModel::addRecvStats(uint64_t recv)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     _recvStats.push_back(recv);
     if (_recvStats.size() > _recvStatsSize)
@@ -416,7 +405,7 @@ void AdminModel::addRecvStats(uint64_t recv)
 
 void AdminModel::setCpuStatsSize(unsigned size)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     int wasteValuesLen = _cpuStats.size() - size;
     while (wasteValuesLen-- > 0)
@@ -435,7 +424,7 @@ void AdminModel::setCpuStatsSize(unsigned size)
 
 void AdminModel::setMemStatsSize(unsigned size)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     int wasteValuesLen = _memStats.size() - size;
     while (wasteValuesLen-- > 0)
@@ -454,7 +443,7 @@ void AdminModel::setMemStatsSize(unsigned size)
 
 void AdminModel::notify(const std::string& message)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     if (!_subscribers.empty())
     {
@@ -475,7 +464,7 @@ void AdminModel::notify(const std::string& message)
 
 void AdminModel::addBytes(const std::string& docKey, uint64_t sent, uint64_t recv)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto doc = _documents.find(docKey);
     if(doc != _documents.end())
@@ -487,7 +476,7 @@ void AdminModel::addBytes(const std::string& docKey, uint64_t sent, uint64_t rec
 
 void AdminModel::modificationAlert(const std::string& docKey, pid_t pid, bool value)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto doc = _documents.find(docKey);
     if (doc != _documents.end())
@@ -501,16 +490,29 @@ void AdminModel::modificationAlert(const std::string& docKey, pid_t pid, bool va
     notify(oss.str());
 }
 
+void AdminModel::uploadedAlert(const std::string& docKey, pid_t pid, bool value)
+{
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
+
+    auto doc = _documents.find(docKey);
+    if (doc != _documents.end())
+        doc->second->setUploaded(value);
+
+    std::ostringstream oss;
+    oss << "uploaded " << pid << ' ' << (value ? "Yes" : "No");
+    notify(oss.str());
+}
+
 void AdminModel::addDocument(const std::string& docKey, pid_t pid,
                              const std::string& filename, const std::string& sessionId,
                              const std::string& userName, const std::string& userId,
-                             const int smapsFD, const Poco::URI& wopiSrc)
+                             const int smapsFD, const Poco::URI& wopiSrc, bool isViewReadOnly)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
     const auto ret = _documents.emplace(docKey, std::unique_ptr<Document>(new Document(docKey, pid, filename, wopiSrc)));
     ret.first->second->setProcSMapsFD(smapsFD);
     ret.first->second->takeSnapshot();
-    ret.first->second->addView(sessionId, userName, userId);
+    ret.first->second->addView(sessionId, userName, userId, isViewReadOnly);
     LOG_DBG("Added admin document [" << docKey << "].");
 
     std::string memoryAllocated;
@@ -549,13 +551,13 @@ void AdminModel::addDocument(const std::string& docKey, pid_t pid,
         memoryAllocated = std::to_string(_documents.begin()->second->getMemoryDirty());
     }
 
-    const std::string wopiHost = wopiSrc.getHost();
-    oss << memoryAllocated << ' ' << wopiHost;
-    if (COOLWSD::getConfigValue<bool>("logging.docstats", false))
+    const std::string& wopiHost = wopiSrc.getHost();
+    oss << memoryAllocated << ' ' << wopiHost << ' ' << isViewReadOnly << ' ' << wopiSrc.toString();
+    if (OXOOLWSD::getConfigValue<bool>("logging.docstats", false))
     {
         std::string docstats = "docstats : adding a document : " + filename
-                            + ", created by : " + COOLWSD::anonymizeUsername(userName)
-                            + ", using WopiHost : " + COOLWSD::anonymizeUrl(wopiHost)
+                            + ", created by : " + OXOOLWSD::anonymizeUsername(userName)
+                            + ", using WopiHost : " + OXOOLWSD::anonymizeUrl(wopiHost)
                             + ", allocating memory of : " + memoryAllocated;
 
         LOG_ANY(docstats);
@@ -565,13 +567,22 @@ void AdminModel::addDocument(const std::string& docKey, pid_t pid,
 
 void AdminModel::doRemove(std::map<std::string, std::unique_ptr<Document>>::iterator &docIt)
 {
-    std::ostringstream ostream;
-    ostream << "routing_rmdoc " << docIt->second->getWopiSrc();
-    notify(ostream.str());
+    std::string docItKey = docIt->first;
+    // don't send the routing_rmdoc if document is migrating
+    if (getCurrentMigDoc() != docItKey)
+    {
+        std::ostringstream ostream;
+        ostream << "routing_rmdoc " << docIt->second->getWopiSrc();
+        notify(ostream.str());
+    }
+    else
+    {
+        setCurrentMigDoc(std::string());
+        setCurrentMigToken(std::string());
+    }
 
     std::unique_ptr<Document> doc;
     std::swap(doc, docIt->second);
-    std::string docItKey = docIt->first;
     _documents.erase(docIt);
     _expiredDocuments.emplace(docItKey + std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                                             std::chrono::steady_clock::now().time_since_epoch()).count()),
@@ -580,7 +591,7 @@ void AdminModel::doRemove(std::map<std::string, std::unique_ptr<Document>>::iter
 
 void AdminModel::removeDocument(const std::string& docKey, const std::string& sessionId)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto docIt = _documents.find(docKey);
     if (docIt != _documents.end() && !docIt->second->isExpired())
@@ -602,7 +613,7 @@ void AdminModel::removeDocument(const std::string& docKey, const std::string& se
 
 void AdminModel::removeDocument(const std::string& docKey)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto docIt = _documents.find(docKey);
     if (docIt != _documents.end())
@@ -626,7 +637,7 @@ void AdminModel::removeDocument(const std::string& docKey)
 
 std::string AdminModel::getMemStats()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::ostringstream oss;
     for (const auto& i: _memStats)
@@ -639,7 +650,7 @@ std::string AdminModel::getMemStats()
 
 std::string AdminModel::getCpuStats()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::ostringstream oss;
     for (const auto& i: _cpuStats)
@@ -652,7 +663,7 @@ std::string AdminModel::getCpuStats()
 
 std::string AdminModel::getSentActivity()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::ostringstream oss;
     for (const auto& i: _sentStats)
@@ -665,7 +676,7 @@ std::string AdminModel::getSentActivity()
 
 std::string AdminModel::getRecvActivity()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::ostringstream oss;
     for (const auto& i: _recvStats)
@@ -678,7 +689,7 @@ std::string AdminModel::getRecvActivity()
 
 unsigned AdminModel::getTotalActiveViews()
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     unsigned numTotalViews = 0;
     for (const auto& it: _documents)
@@ -768,7 +779,7 @@ void AdminModel::cleanupResourceConsumingDocs()
 
 std::string AdminModel::getDocuments() const
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     std::ostringstream oss;
     oss << '{' << "\"documents\"" << ':' << '[';
@@ -783,12 +794,14 @@ std::string AdminModel::getDocuments() const
                 << "\"pid\"" << ':' << it.second->getPid() << ','
                 << "\"docKey\"" << ':' << '"' << it.second->getDocKey() << '"' << ','
                 << "\"fileName\"" << ':' << '"' << encodedFilename << '"' << ','
-                << "\"wopiHost\"" << ':' << '"' << it.second -> getHostName() << '"' << ','
+                << "\"wopiHost\"" << ':' << '"' << it.second->getHostName() << '"' << ','
                 << "\"activeViews\"" << ':' << it.second->getActiveViews() << ','
                 << "\"memory\"" << ':' << it.second->getMemoryDirty() << ','
                 << "\"elapsedTime\"" << ':' << it.second->getElapsedTime() << ','
                 << "\"idleTime\"" << ':' << it.second->getIdleTime() << ','
                 << "\"modified\"" << ':' << '"' << (it.second->getModifiedStatus() ? "Yes" : "No") << '"' << ','
+                << "\"uploaded\"" << ':' << '"' << (it.second->getUploadedStatus() ? "Yes" : "No") << '"' << ','
+                << "\"wopiSrc\"" << ':' << '"' << it.second->getWopiSrc() << '"' << ','
                 << "\"views\"" << ':' << '[';
             std::map<std::string, View> viewers = it.second->getViews();
             std::string separator;
@@ -798,7 +811,8 @@ std::string AdminModel::getDocuments() const
                     oss << separator << '{'
                         << "\"userName\"" << ':' << '"' << viewIt.second.getUserName() << '"' << ','
                         << "\"userId\"" << ':' << '"' << viewIt.second.getUserId() << '"' << ','
-                        << "\"sessionid\"" << ':' << '"' << viewIt.second.getSessionId() << '"' << '}';
+                        << "\"sessionid\"" << ':' << '"' << viewIt.second.getSessionId() << '"' << ','
+                        << "\"readonly\"" << ':' << '"' << viewIt.second.isReadOnly() << '"' << '}';
                         separator = ',';
                 }
             }
@@ -807,14 +821,14 @@ std::string AdminModel::getDocuments() const
             separator1 = ',';
         }
     }
-    oss << ']' << '}';
 
+    oss << ']' << '}';
     return oss.str();
 }
 
 void AdminModel::updateLastActivityTime(const std::string& docKey)
 {
-    assertCorrectThread();
+    ASSERT_CORRECT_THREAD_OWNER(_owner);
 
     auto docIt = _documents.find(docKey);
     if (docIt != _documents.end())
@@ -832,7 +846,7 @@ double AdminModel::getServerUptimeSecs()
 {
     const auto currentTime = std::chrono::steady_clock::now();
     const std::chrono::milliseconds uptime
-        = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - COOLWSD::StartTime);
+        = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - OXOOLWSD::StartTime);
     return uptime.count() / 1000.0; // Convert to seconds and fractions.
 }
 
@@ -1104,10 +1118,10 @@ void PrintKitAggregateMetrics(std::ostringstream &oss, const char* name, const c
 
 void AdminModel::getMetrics(std::ostringstream &oss)
 {
-    oss << "coolwsd_count " << getPidsFromProcName(std::regex("coolwsd"), nullptr) << std::endl;
-    oss << "coolwsd_thread_count " << Util::getStatFromPid(getpid(), 19) << std::endl;
-    oss << "coolwsd_cpu_time_seconds " << Util::getCpuUsage(getpid()) / sysconf (_SC_CLK_TCK) << std::endl;
-    oss << "coolwsd_memory_used_bytes " << Util::getMemoryUsagePSS(getpid()) * 1024 << std::endl;
+    oss << "oxoolwsd_count " << getPidsFromProcName(std::regex("oxoolwsd"), nullptr) << std::endl;
+    oss << "oxoolwsd_thread_count " << Util::getStatFromPid(getpid(), 19) << std::endl;
+    oss << "oxoolwsd_cpu_time_seconds " << Util::getCpuUsage(getpid()) / sysconf (_SC_CLK_TCK) << std::endl;
+    oss << "oxoolwsd_memory_used_bytes " << Util::getMemoryUsagePSS(getpid()) * 1024 << std::endl;
     oss << std::endl;
 
     oss << "forkit_count " << getPidsFromProcName(std::regex("forkit"), nullptr) << std::endl;
@@ -1220,6 +1234,79 @@ void AdminModel::notifyDocsMemDirtyChanged()
             it.second->setMemDirtyChanged(false);
         }
     }
+}
+
+bool AdminModel::isDocSaved(const std::string& docKey)
+{
+    auto doc = _documents.find(docKey);
+    if (doc != _documents.end())
+        return !doc->second->getModifiedStatus();
+    LOG_DBG("cannot find document with docKey " << docKey);
+    return false;
+}
+
+bool AdminModel::isDocReadOnly(const std::string& docKey)
+{
+    auto doc = _documents.find(docKey);
+    if (doc != _documents.end())
+    {
+        bool isReadOnly = true;
+        for (const auto& view : doc->second->getViews())
+        {
+            if (!view.second.isReadOnly())
+            {
+                isReadOnly = false;
+                break;
+            }
+        }
+        return isReadOnly;
+    }
+    LOG_DBG("cannot find document with docKey " << docKey);
+    return false;
+}
+
+void AdminModel::sendMigrateMsgAfterSave(bool lastSaveSuccessful, const std::string& docKey)
+{
+    if (getCurrentMigDoc() != docKey)
+    {
+        return;
+    }
+    if (!lastSaveSuccessful)
+    {
+        setCurrentMigToken(std::string());
+        setCurrentMigDoc(std::string());
+    }
+    std::string saveSuccessful = lastSaveSuccessful ? "true" : "false";
+    std::ostringstream oss;
+    oss << "migrate: {";
+    oss << "\"afterSave\"" << ":true,";
+    oss << "\"saved\":" << saveSuccessful << ',';
+    oss << "\"routeToken\"" << ':' << "\"" << getCurrentMigToken()
+        << "\"" << '}';
+    OXOOLWSD::alertUserInternal(docKey, oss.str());
+}
+
+std::string AdminModel::getWopiSrcMap()
+{
+    std::ostringstream oss;
+    oss << "wopiSrcMap: {";
+    oss << "\"routeToken\": \"" << OXOOLWSD::RouteToken << "\",";
+    oss << "\"wopiSrc\": [";
+    size_t count = 0;
+    for (const auto& it : _documents)
+    {
+        if (!it.second->isExpired())
+        {
+            oss << "\"" << it.second->getWopiSrc() << "\"";
+            if (count < _documents.size() - 1)
+            {
+                oss << ',';
+            }
+        }
+        count++;
+    }
+    oss << "]}";
+    return oss.str();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

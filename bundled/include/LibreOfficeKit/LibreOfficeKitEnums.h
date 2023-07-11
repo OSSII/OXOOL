@@ -774,8 +774,7 @@ typedef enum
     LOK_CALLBACK_VALIDITY_INPUT_HELP = 51,
 
     /**
-     * This is currently Calc only. Indicates the document background
-     * color in the payload as a RGB hex string (RRGGBB).
+     * Indicates the document background color in the payload as a RGB hex string (RRGGBB).
      */
     LOK_CALLBACK_DOCUMENT_BACKGROUND_COLOR = 52,
 
@@ -922,7 +921,51 @@ typedef enum
      * Informs the LibreOfficeKit client that the background color surrounding
      * the document has changed.
     */
-   LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR = 61
+   LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR = 61,
+
+    /**
+     * Accessibility event: a paragraph get focus.
+     * The payload is a json with the following structure.
+     *
+     *   {
+     *       "content": "<paragraph text>"
+     *       "position": N
+     *   }
+     *   where N is the position of the text cursor inside the focused paragraph.
+     */
+    LOK_CALLBACK_A11Y_FOCUS_CHANGED = 62,
+
+    /**
+     * Accessibility event: text cursor position has changed.
+     *
+     *  {
+     *      "position": N
+     *  }
+     *  where N is the position of the text cursor inside the focused paragraph.
+     */
+    LOK_CALLBACK_A11Y_CARET_CHANGED = 63,
+
+    /**
+     * Accessibility event: text cursor position has changed.
+     *
+     *  {
+     *      "start": N1
+     *      "end": N2
+     *  }
+     *  where [N1,N2] is the range of the text selection inside the focused paragraph.
+     */
+    LOK_CALLBACK_A11Y_TEXT_SELECTION_CHANGED = 64,
+
+    /**
+     * Informs the LibreOfficeKit client that the color palettes have changed.
+    */
+    LOK_CALLBACK_COLOR_PALETTES = 65,
+
+    /**
+     * Informs that the document password has been succesfully changed.
+     * The payload contains the the new password and the type.
+    */
+    LOK_CALLBACK_DOCUMENT_PASSWORD_RESET = 66
 }
 LibreOfficeKitCallbackType;
 
@@ -1075,6 +1118,16 @@ static inline const char* lokCallbackTypeToString(int nType)
         return "LOK_CALLBACK_VIEW_RENDER_STATE";
     case LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR:
         return "LOK_CALLBACK_APPLICATION_BACKGROUND_COLOR";
+    case LOK_CALLBACK_A11Y_FOCUS_CHANGED:
+        return "LOK_CALLBACK_A11Y_FOCUS_CHANGED";
+    case LOK_CALLBACK_A11Y_CARET_CHANGED:
+        return "LOK_CALLBACK_A11Y_CARET_CHANGED";
+    case LOK_CALLBACK_A11Y_TEXT_SELECTION_CHANGED:
+        return "LOK_CALLBACK_A11Y_TEXT_SELECTION_CHANGED";
+    case LOK_CALLBACK_COLOR_PALETTES:
+        return "LOK_CALLBACK_COLOR_PALETTES";
+    case LOK_CALLBACK_DOCUMENT_PASSWORD_RESET:
+        return "LOK_CALLBACK_DOCUMENT_PASSWORD_RESET";
     }
 
     assert(!"Unknown LibreOfficeKitCallbackType type.");

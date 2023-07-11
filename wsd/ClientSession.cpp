@@ -22,7 +22,7 @@
 #include <Poco/JSON/Object.h>
 
 #include "DocumentBroker.hpp"
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 #include <common/Common.hpp>
 #include <common/JsonUtil.hpp>
 #include <common/Log.hpp>
@@ -37,9 +37,9 @@
 #include <net/HttpHelper.hpp>
 #endif
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
-static constexpr int SYNTHETIC_COOL_PID_OFFSET = 10000000;
+static constexpr int SYNTHETIC_OXOOL_PID_OFFSET = 10000000;
 
 using Poco::Path;
 
@@ -80,7 +80,7 @@ ClientSession::ClientSession(
     _isTextDocument(false),
     _thumbnailSession(false)
 {
-    const std::size_t curConnections = ++COOLWSD::NumConnections;
+    const std::size_t curConnections = ++OXOOLWSD::NumConnections;
     LOG_INF("ClientSession ctor [" << getName() << "] for URI: [" << _uriPublic.toString()
                                    << "], current number of connections: " << curConnections);
 
@@ -89,14 +89,14 @@ ClientSession::ClientSession(
         rotateClipboardKey(false);
 
     // Emit metadata Trace Events for the synthetic pid used for the Trace Events coming in from the
-    // client's cool, and for its dummy thread.
+    // client's oxool, and for its dummy thread.
     TraceEvent::emitOneRecordingIfEnabled("{\"name\":\"process_name\",\"ph\":\"M\",\"args\":{\"name\":\""
-                                          "cool-" + id
+                                          "oxool-" + id
                                           + "\"},\"pid\":"
-                                          + std::to_string(getpid() + SYNTHETIC_COOL_PID_OFFSET)
+                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
                                           + ",\"tid\":1},\n");
     TraceEvent::emitOneRecordingIfEnabled("{\"name\":\"thread_name\",\"ph\":\"M\",\"args\":{\"name\":\"JS\"},\"pid\":"
-                                          + std::to_string(getpid() + SYNTHETIC_COOL_PID_OFFSET)
+                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
                                           + ",\"tid\":1},\n");
 }
 
@@ -110,7 +110,7 @@ void ClientSession::construct()
 
 ClientSession::~ClientSession()
 {
-    const std::size_t curConnections = --COOLWSD::NumConnections;
+    const std::size_t curConnections = --OXOOLWSD::NumConnections;
     LOG_INF("~ClientSession dtor [" << getName() << "], current number of connections: " << curConnections);
 
     std::unique_lock<std::mutex> lock(GlobalSessionMapMutex);
@@ -212,14 +212,14 @@ std::string ClientSession::createPublicURI(const std::string& subPath, const std
     const std::string encodedFrom = Util::encodeURIComponent(wopiSrc.toString());
 
     std::string meta = _serverURL.getSubURLForEndpoint(
-        "/cool/" + subPath + "?WOPISrc=" + encodedFrom +
+        "/oxool/" + subPath + "?WOPISrc=" + encodedFrom +
         "&ServerId=" + Util::getProcessIdentifier() +
         "&ViewId=" + std::to_string(getKitViewId()) +
         "&Tag=" + tag);
 
 #if !MOBILEAPP
-    if (!COOLWSD::RouteToken.empty())
-        meta += "&RouteToken=" + COOLWSD::RouteToken;
+    if (!OXOOLWSD::RouteToken.empty())
+        meta += "&RouteToken=" + OXOOLWSD::RouteToken;
 #endif
 
     if (!encode)
@@ -357,14 +357,14 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     }
     else if (tokens.equals(0, "TRACEEVENT"))
     {
-        if (COOLWSD::EnableTraceEventLogging)
+        if (OXOOLWSD::EnableTraceEventLogging)
         {
             if (_performanceCounterEpoch == 0)
             {
                 static bool warnedOnce = false;
                 if (!warnedOnce)
                 {
-                    LOG_WRN("For some reason the _performanceCounterEpoch is still zero, ignoring TRACEEVENT from cool as the timestamp would be garbage");
+                    LOG_WRN("For some reason the _performanceCounterEpoch is still zero, ignoring TRACEEVENT from oxool as the timestamp would be garbage");
                     warnedOnce = true;
                 }
                 return false;
@@ -373,7 +373,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                 static bool warnedOnce = false;
                 if (!warnedOnce)
                 {
-                    LOG_WRN("For some reason the _performanceCounterEpoch is bogus, ignoring TRACEEVENT from cool as the timestamp would be garbage");
+                    LOG_WRN("For some reason the _performanceCounterEpoch is bogus, ignoring TRACEEVENT from oxool as the timestamp would be garbage");
                     warnedOnce = true;
                 }
                 return false;
@@ -398,21 +398,23 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                     uint64_t dur;
                     if (ph == "i")
                     {
-                        COOLWSD::writeTraceEventRecording("{\"name\":\""
+                        OXOOLWSD::writeTraceEventRecording("{\"name\":\""
                                                           + name
                                                           + "\",\"ph\":\"i\""
                                                           + args
                                                           + ",\"ts\":"
                                                           + std::to_string(ts + _performanceCounterEpoch)
                                                           + ",\"pid\":"
-                                                          + std::to_string(getpid() + SYNTHETIC_COOL_PID_OFFSET)
+                                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
                                                           + ",\"tid\":1},\n");
                     }
+                    // Should the first getTokenUInt64()'s return value really
+                    // be ignored?
                     else if ((ph == "S" || ph == "F") &&
-                             getTokenUInt64(tokens[4], "id", id),
-                             getTokenUInt64(tokens[5], "tid", tid))
+                             (static_cast<void>(getTokenUInt64(tokens[4], "id", id)),
+                             getTokenUInt64(tokens[5], "tid", tid)))
                     {
-                        COOLWSD::writeTraceEventRecording("{\"name\":\""
+                        OXOOLWSD::writeTraceEventRecording("{\"name\":\""
                                                           + name
                                                           + "\",\"ph\":\""
                                                           + ph
@@ -421,7 +423,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                                                           + ",\"ts\":"
                                                           + std::to_string(ts + _performanceCounterEpoch)
                                                           + ",\"pid\":"
-                                                          + std::to_string(getpid() + SYNTHETIC_COOL_PID_OFFSET)
+                                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
                                                           + ",\"tid\":"
                                                           + std::to_string(tid)
                                                           + ",\"id\":"
@@ -431,14 +433,14 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                     else if (ph == "X" &&
                              getTokenUInt64(tokens[4], "dur", dur))
                     {
-                        COOLWSD::writeTraceEventRecording("{\"name\":\""
+                        OXOOLWSD::writeTraceEventRecording("{\"name\":\""
                                                           + name
                                                           + "\",\"ph\":\"X\""
                                                           + args
                                                           + ",\"ts\":"
                                                           + std::to_string(ts + _performanceCounterEpoch)
                                                           + ",\"pid\":"
-                                                          + std::to_string(getpid() + SYNTHETIC_COOL_PID_OFFSET)
+                                                          + std::to_string(getpid() + SYNTHETIC_OXOOL_PID_OFFSET)
                                                           + ",\"tid\":1"
                                                             ",\"dur\":"
                                                           + std::to_string(dur)
@@ -456,9 +458,9 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         return false;
     }
 
-    COOLWSD::dumpIncomingTrace(docBroker->getJailId(), getId(), firstLine);
+    OXOOLWSD::dumpIncomingTrace(docBroker->getJailId(), getId(), firstLine);
 
-    if (COOLProtocol::tokenIndicatesUserInteraction(tokens[0]))
+    if (OXOOLProtocol::tokenIndicatesUserInteraction(tokens[0]))
     {
         // Keep track of timestamps of incoming client messages that indicate user activity.
         updateLastActivityTime();
@@ -471,11 +473,11 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         }
     }
 
-    if (tokens.equals(0, "coolclient"))
+    if (tokens.equals(0, "oxoolclient"))
     {
         if (tokens.size() < 2)
         {
-            sendTextFrameAndLogError("error: cmd=coolclient kind=badprotocolversion");
+            sendTextFrameAndLogError("error: cmd=oxoolclient kind=badprotocolversion");
             return false;
         }
 
@@ -483,7 +485,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         if (std::get<0>(versionTuple) != ProtocolMajorVersionNumber ||
             std::get<1>(versionTuple) != ProtocolMinorVersionNumber)
         {
-            sendTextFrameAndLogError("error: cmd=coolclient kind=badprotocolversion");
+            sendTextFrameAndLogError("error: cmd=oxoolclient kind=badprotocolversion");
             return false;
         }
 
@@ -513,14 +515,14 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             }
         }
 
-        // Send COOL version information
-        sendTextFrame("coolserver " + Util::getVersionJSON(EnableExperimental));
+        // Send OXOOL version information
+        sendTextFrame("oxoolserver " + Util::getVersionJSON(EnableExperimental));
         // Send LOKit version information
-        sendTextFrame("lokitversion " + COOLWSD::LOKitVersion);
+        sendTextFrame("lokitversion " + OXOOLWSD::LOKitVersion);
 
         // If Trace Event generation and logging is enabled (whether it can be turned on), tell it
-        // to cool
-        if (COOLWSD::EnableTraceEventLogging)
+        // to oxool
+        if (OXOOLWSD::EnableTraceEventLogging)
             sendTextFrame("enabletraceeventlogging yes");
 
         #if !MOBILEAPP
@@ -539,8 +541,8 @@ bool ClientSession::_handleInput(const char *buffer, int length)
 #if !MOBILEAPP
         std::string versionBar;
         {
-            std::lock_guard<std::mutex> lock(COOLWSD::FetchUpdateMutex);
-            versionBar = COOLWSD::LatestVersion;
+            std::lock_guard<std::mutex> lock(OXOOLWSD::FetchUpdateMutex);
+            versionBar = OXOOLWSD::LatestVersion;
         }
 
         if (!versionBar.empty())
@@ -579,11 +581,6 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     {
         sendTextFrameAndLogError("error: cmd=" + tokens[0] + " kind=nodocloaded");
         return false;
-    }
-    else if (tokens.equals(0, "canceltiles"))
-    {
-        docBroker->cancelTileRequests(client_from_this());
-        return true;
     }
     else if (tokens.equals(0, "commandvalues"))
     {
@@ -671,9 +668,9 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                 if (attr.size() == 2)
                 {
                     if (attr[0] == "dontTerminateEdit")
-                        COOLProtocol::stringToInteger(attr[1], dontTerminateEdit);
+                        OXOOLProtocol::stringToInteger(attr[1], dontTerminateEdit);
                     else if (attr[0] == "dontSaveIfUnmodified")
-                        COOLProtocol::stringToInteger(attr[1], dontSaveIfUnmodified);
+                        OXOOLProtocol::stringToInteger(attr[1], dontSaveIfUnmodified);
                     else if (attr[0] == "extendedData")
                     {
                         std::string decoded;
@@ -683,9 +680,8 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                 }
             }
 
-            constexpr bool isAutosave = false;
-            docBroker->sendUnoSave(client_from_this(), dontTerminateEdit != 0,
-                                   dontSaveIfUnmodified != 0, isAutosave, extendedData);
+            docBroker->manualSave(client_from_this(), dontTerminateEdit != 0,
+                                  dontSaveIfUnmodified != 0, extendedData);
         }
     }
     else if (tokens.equals(0, "savetostorage"))
@@ -778,7 +774,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     }
     else if (tokens.equals(0, "moveselectedclientparts"))
     {
-        if(!_isTextDocument)
+        if (!_isTextDocument)
         {
             int nPosition;
             if (tokens.size() != 2 ||
@@ -924,27 +920,27 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             {
                 try
                 {
-                    auto leastVerboseAllowed = Poco::Logger::parseLevel(COOLWSD::LeastVerboseLogLevelSettableFromClient);
-                    auto mostVerboseAllowed = Poco::Logger::parseLevel(COOLWSD::MostVerboseLogLevelSettableFromClient);
+                    auto leastVerboseAllowed = Poco::Logger::parseLevel(OXOOLWSD::LeastVerboseLogLevelSettableFromClient);
+                    auto mostVerboseAllowed = Poco::Logger::parseLevel(OXOOLWSD::MostVerboseLogLevelSettableFromClient);
 
                     if (tokens.equals(1, "verbose"))
                     {
                         LOG_INF("Client sets thread-local logging level to the most verbose allowed ["
-                                << COOLWSD::MostVerboseLogLevelSettableFromClient
+                                << OXOOLWSD::MostVerboseLogLevelSettableFromClient
                                 << "]");
-                        Log::setThreadLocalLogLevel(COOLWSD::MostVerboseLogLevelSettableFromClient);
+                        Log::setThreadLocalLogLevel(OXOOLWSD::MostVerboseLogLevelSettableFromClient);
                         LOG_INF("Thread-local logging level was set to ["
-                                << COOLWSD::MostVerboseLogLevelSettableFromClient
+                                << OXOOLWSD::MostVerboseLogLevelSettableFromClient
                                 << "]");
                     }
                     else if (tokens.equals(1, "terse"))
                     {
                         LOG_INF("Client sets thread-local logging level to the least verbose allowed ["
-                                << COOLWSD::LeastVerboseLogLevelSettableFromClient
+                                << OXOOLWSD::LeastVerboseLogLevelSettableFromClient
                                 << "]");
-                        Log::setThreadLocalLogLevel(COOLWSD::LeastVerboseLogLevelSettableFromClient);
+                        Log::setThreadLocalLogLevel(OXOOLWSD::LeastVerboseLogLevelSettableFromClient);
                         LOG_INF("Thread-local logging level was set to ["
-                                << COOLWSD::LeastVerboseLogLevelSettableFromClient
+                                << OXOOLWSD::LeastVerboseLogLevelSettableFromClient
                                 << "]");
                     }
                     else
@@ -963,8 +959,8 @@ bool ClientSession::_handleInput(const char *buffer, int length)
                             LOG_WRN("Client tries to set logging level to ["
                                     << tokens[1]
                                     << "] which is outside of bounds ["
-                                    << COOLWSD::LeastVerboseLogLevelSettableFromClient << ","
-                                    << COOLWSD::MostVerboseLogLevelSettableFromClient << "]");
+                                    << OXOOLWSD::LeastVerboseLogLevelSettableFromClient << ","
+                                    << OXOOLWSD::MostVerboseLogLevelSettableFromClient << "]");
                         }
                     }
                 }
@@ -977,7 +973,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
     }
     else if (tokens.equals(0, "traceeventrecording"))
     {
-        if (COOLWSD::getConfigValue<bool>("trace_event[@enable]", false))
+        if (OXOOLWSD::getConfigValue<bool>("trace_event[@enable]", false))
         {
             if (tokens.size() > 0)
             {
@@ -1037,19 +1033,18 @@ bool ClientSession::_handleInput(const char *buffer, int length)
              tokens.equals(0, "userinactive") ||
              tokens.equals(0, "paintwindow") ||
              tokens.equals(0, "windowcommand") ||
-             tokens.equals(0, "signdocument") ||
              tokens.equals(0, "asksignaturestatus") ||
-             tokens.equals(0, "uploadsigneddocument") ||
-             tokens.equals(0, "exportsignanduploaddocument") ||
              tokens.equals(0, "rendershapeselection") ||
              tokens.equals(0, "resizewindow") ||
              tokens.equals(0, "removetextcontext") ||
-             tokens.equals(0, "rendersearchresult"))
+             tokens.equals(0, "rendersearchresult") ||
+             tokens.equals(0, "geta11yfocusedparagraph") ||
+             tokens.equals(0, "geta11ycaretposition"))
     {
         if (tokens.equals(0, "key"))
             _keyEvents++;
 
-        if (COOLProtocol::tokenIndicatesDocumentModification(tokens))
+        if (OXOOLProtocol::tokenIndicatesDocumentModification(tokens))
         {
             docBroker->updateLastModifyingActivityTime();
         }
@@ -1074,6 +1069,10 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         return attemptLock(docBroker);
     }
     else if (tokens.equals(0, "blockingcommandstatus"))
+    {
+        return forwardToChild(std::string(buffer, length), docBroker);
+    }
+    else if (tokens.equals(0, "toggletiledumping"))
     {
         return forwardToChild(std::string(buffer, length), docBroker);
     }
@@ -1114,14 +1113,14 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             Poco::URI::encode(getUserId(), "", encodedUserId);
             oss << " authorid=" << encodedUserId;
             encodedUserId = "";
-            Poco::URI::encode(COOLWSD::anonymizeUsername(getUserId()), "", encodedUserId);
+            Poco::URI::encode(OXOOLWSD::anonymizeUsername(getUserId()), "", encodedUserId);
             oss << " xauthorid=" << encodedUserId;
 
             std::string encodedUserName;
             Poco::URI::encode(getUserName(), "", encodedUserName);
             oss << " author=" << encodedUserName;
             encodedUserName = "";
-            Poco::URI::encode(COOLWSD::anonymizeUsername(getUserName()), "", encodedUserName);
+            Poco::URI::encode(OXOOLWSD::anonymizeUsername(getUserName()), "", encodedUserName);
             oss << " xauthor=" << encodedUserName;
         }
 
@@ -1176,18 +1175,24 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
             std::string encodedWatermarkText;
             Poco::URI::encode(getWatermarkText(), "", encodedWatermarkText);
             oss << " watermarkText=" << encodedWatermarkText;
-            oss << " watermarkOpacity=" << COOLWSD::getConfigValue<double>("watermark.opacity", 0.2);
+            oss << " watermarkOpacity=" << OXOOLWSD::getConfigValue<double>("watermark.opacity", 0.2);
         }
 
-        if (COOLWSD::hasProperty("security.enable_macros_execution"))
+        if (OXOOLWSD::hasProperty("security.enable_macros_execution"))
         {
             oss << " enableMacrosExecution=" << std::boolalpha
-                << COOLWSD::getConfigValue<bool>("security.enable_macros_execution", false);
+                << OXOOLWSD::getConfigValue<bool>("security.enable_macros_execution", false);
         }
 
-        if (COOLWSD::hasProperty("security.macro_security_level"))
+        if (OXOOLWSD::hasProperty("security.macro_security_level"))
         {
-            oss << " macroSecurityLevel=" << COOLWSD::getConfigValue<int>("security.macro_security_level", 1);
+            oss << " macroSecurityLevel=" << OXOOLWSD::getConfigValue<int>("security.macro_security_level", 1);
+        }
+
+        if (OXOOLWSD::hasProperty("accessibility.enable"))
+        {
+            oss << " enableAccessibility=" << std::boolalpha
+                << OXOOLWSD::getConfigValue<bool>("accessibility.enable", false);
         }
 
         if (!getDocOptions().empty())
@@ -1384,7 +1389,8 @@ bool ClientSession::filterMessage(const std::string& message) const
         }
         else if (tokens.equals(0, "uno"))
         {
-            if (tokens.size() > 1 && (tokens.equals(1, ".uno:ExecuteSearch") || tokens.equals(1, ".uno:Signature")))
+            if (tokens.size() > 1 && (tokens.equals(1, ".uno:ExecuteSearch") || tokens.equals(1, ".uno:Signature")
+                 || tokens.equals(1, ".uno:ExportToPDF")))
             {
                 allowed = true;
             }
@@ -1534,7 +1540,7 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
     const bool isConvertTo = static_cast<bool>(_saveAsSocket);
 
 #if !MOBILEAPP
-    COOLWSD::dumpOutgoingTrace(docBroker->getJailId(), getId(), firstLine);
+    OXOOLWSD::dumpOutgoingTrace(docBroker->getJailId(), getId(), firstLine);
 #endif
 
     const auto& tokens = payload->tokens();
@@ -1551,18 +1557,8 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
                 const auto& object = parsedJSON.extract<Poco::JSON::Object::Ptr>();
                 if (object->get("commandName").toString() == ".uno:Save")
                 {
-                    const bool success = object->get("success").toString() == "true";
-                    std::string result;
-                    if (object->has("result"))
-                    {
-                        const Poco::Dynamic::Var parsedResultJSON = object->get("result");
-                        const auto& resultObj = parsedResultJSON.extract<Poco::JSON::Object::Ptr>();
-                        if (resultObj->get("type").toString() == "string")
-                            result = resultObj->get("value").toString();
-                    }
-
                     // Save to Storage and log result.
-                    docBroker->handleSaveResponse(client_from_this(), success, result);
+                    docBroker->handleSaveResponse(client_from_this(), object);
 
                     if (!isCloseFrame())
                         forwardToClient(payload);
@@ -1680,7 +1676,7 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
         Poco::URI resultURL(encodedURL);
 
         // Prepend the jail path in the normal (non-nocaps) case
-        if (resultURL.getScheme() == "file" && !COOLWSD::NoCapsForKit)
+        if (resultURL.getScheme() == "file" && !OXOOLWSD::NoCapsForKit)
         {
             std::string relative;
             if (isConvertTo || isExportAs)
@@ -1834,7 +1830,7 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
         // final cleanup ...
         if (!empty && _state == SessionState::WAIT_DISCONNECT &&
             (!_wopiFileInfo || !_wopiFileInfo->getDisableCopy()))
-            COOLWSD::SavedClipboards->insertClipboard(
+            OXOOLWSD::SavedClipboards->insertClipboard(
                 _clipboardKeys, &payload->data()[header], payload->size() - header);
 
         for (const auto& it : _clipSockets)
@@ -2066,6 +2062,18 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
             handleTileInvalidation(firstLine, docBroker);
             return ret;
         }
+        else if (tokens.equals(0, "statechanged:"))
+        {
+            if (_thumbnailSession)
+            {
+                // fallback in case we setup target at first character in the text document,
+                // or not existing target and we will not enter invalidatecursor second time
+                std::ostringstream renderThumbnailCmd;
+                auto position = getThumbnailPosition();
+                renderThumbnailCmd << "getthumbnail x=" << position.first << " y=" << position.second;
+                docBroker->forwardToChild(client_from_this(), renderThumbnailCmd.str());
+            }
+        }
         else if (tokens.equals(0, "invalidatecursor:"))
         {
             assert(firstLine.size() == payload->size() &&
@@ -2095,6 +2103,8 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
                     // session used for thumbnailing and target already was set
                     if (_thumbnailSession)
                     {
+                        setThumbnailPosition(std::make_pair(x, y));
+
                         bool cursorAlreadyAtTargetPosition = getThumbnailTarget().empty();
                         if (cursorAlreadyAtTargetPosition)
                         {
@@ -2216,7 +2226,7 @@ void ClientSession::enqueueSendMessage(const std::shared_ptr<Message>& data)
 
     const std::shared_ptr<DocumentBroker> docBroker = _docBroker.lock();
     LOG_CHECK_RET(docBroker && "Null DocumentBroker instance", );
-    docBroker->assertCorrectThread();
+    docBroker->ASSERT_CORRECT_THREAD();
 
     std::unique_ptr<TileDesc> tile;
     if (data->firstTokenMatches("tile:"))
@@ -2298,11 +2308,11 @@ Util::Rectangle ClientSession::getNormalizedVisibleArea() const
 void ClientSession::onDisconnect()
 {
     LOG_INF("Disconnected, current global number of connections (inclusive): "
-            << COOLWSD::NumConnections);
+            << OXOOLWSD::NumConnections);
 
     const std::shared_ptr<DocumentBroker> docBroker = getDocumentBroker();
     LOG_CHECK_RET(docBroker && "Null DocumentBroker instance", );
-    docBroker->assertCorrectThread();
+    docBroker->ASSERT_CORRECT_THREAD();
     const std::string docKey = docBroker->getDocKey();
 
     // Keep self alive, so that our own dtor runs only at the end of this function. Without this,
@@ -2420,10 +2430,9 @@ void ClientSession::handleTileInvalidation(const std::string& message,
         return;
     }
 
-    std::pair<TileCache::PartModePair, Util::Rectangle> result = TileCache::parseInvalidateMsg(message);
-    int part = result.first.first;
-    int mode = result.first.second;
-    Util::Rectangle& invalidateRect = result.second;
+    int part = 0, mode = 0;
+    TileWireId wireId = 0;
+    Util::Rectangle invalidateRect = TileCache::parseInvalidateMsg(message, part, mode, wireId);
 
     constexpr SplitPaneName panes[4] = {
         TOPLEFT_PANE,

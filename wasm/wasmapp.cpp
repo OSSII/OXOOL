@@ -9,13 +9,13 @@
 
 #include "base64.hpp"
 
-int coolwsd_server_socket_fd = -1;
+int oxoolwsd_server_socket_fd = -1;
 
 const char* user_name;
 const int SHOW_JS_MAXLEN = 200;
 
 static std::string fileURL = "file:///sample.docx";
-static COOLWSD *coolwsd = nullptr;
+static OXOOLWSD *oxoolwsd = nullptr;
 static int fakeClientFd;
 static int closeNotificationPipeForForwardingThread[2] = {-1, -1};
 
@@ -71,18 +71,18 @@ static void send2JS(const std::vector<char>& buffer)
 }
 
 extern "C"
-void handle_cool_message(const char *string_value)
+void handle_oxool_message(const char *string_value)
 {
-    std::cout << "================ handle_cool_message(): '" << string_value << "'" << std::endl;
+    std::cout << "================ handle_oxool_message(): '" << string_value << "'" << std::endl;
 
     if (strcmp(string_value, "HULLO") == 0)
     {
         // Now we know that the JS has started completely
 
-        // Contact the permanently (during app lifetime) listening COOLWSD server
+        // Contact the permanently (during app lifetime) listening OXOOLWSD server
         // "public" socket
-        assert(coolwsd_server_socket_fd != -1);
-        int rc = fakeSocketConnect(fakeClientFd, coolwsd_server_socket_fd);
+        assert(oxoolwsd_server_socket_fd != -1);
+        int rc = fakeSocketConnect(fakeClientFd, oxoolwsd_server_socket_fd);
         assert(rc != -1);
 
         // Create a socket pair to notify the below thread when the document has been closed
@@ -214,9 +214,9 @@ void closeDocument()
     // Close one end of the socket pair, that will wake up the forwarding thread that was constructed in HULLO
     fakeSocketClose(closeNotificationPipeForForwardingThread[0]);
 
-    LOG_DBG("Waiting for COOLWSD to finish...");
-    std::unique_lock<std::mutex> lock(COOLWSD::lokit_main_mutex);
-    LOG_DBG("COOLWSD has finished.");
+    LOG_DBG("Waiting for OXOOLWSD to finish...");
+    std::unique_lock<std::mutex> lock(OXOOLWSD::lokit_main_mutex);
+    LOG_DBG("OXOOLWSD has finished.");
 }
 
 int main(int, char*[])
@@ -241,9 +241,9 @@ int main(int, char*[])
     // We run COOOLWSD::run() in a thread of its own so that main() can return.
     std::thread([&]
                 {
-                    coolwsd = new COOLWSD();
-                    coolwsd->run(1, argv);
-                    delete coolwsd;
+                    oxoolwsd = new OXOOLWSD();
+                    oxoolwsd->run(1, argv);
+                    delete oxoolwsd;
                 }).detach();
 
     std::cout << "================ main() is returning" << std::endl;

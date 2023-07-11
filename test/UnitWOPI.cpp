@@ -51,10 +51,10 @@ public:
             LOK_ASSERT_STATE(_phase, Phase::WaitLoadStatus);
 
             // the document is not modified
-            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsModifiedByUser"));
+            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsModifiedByUser"));
 
             // but the save action is an explicit user's request
-            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-COOL-WOPI-IsAutosave"));
+            LOK_ASSERT_EQUAL(std::string("false"), request.get("X-OXOOL-WOPI-IsAutosave"));
 
             _finishedSaveUnmodified = true;
 
@@ -68,14 +68,14 @@ public:
             LOK_ASSERT_STATE(_phase, Phase::WaitModifiedStatus);
 
             // the document is modified
-            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsModifiedByUser"));
+            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsModifiedByUser"));
 
             // and this test fakes that it's an autosave
-            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-COOL-WOPI-IsAutosave"));
+            LOK_ASSERT_EQUAL(std::string("true"), request.get("X-OXOOL-WOPI-IsAutosave"));
 
             // Check that we get the extended data.
             LOK_ASSERT_EQUAL(std::string("CustomFlag=Custom Value;AnotherFlag=AnotherValue"),
-                             request.get("X-COOL-WOPI-ExtendedData"));
+                             request.get("X-OXOOL-WOPI-ExtendedData"));
 
             _finishedSaveModified = true;
 

@@ -9,7 +9,7 @@
 
 #include <Poco/URI.h>
 
-#include <COOLWSD.hpp>
+#include <OXOOLWSD.hpp>
 #include "ProxyRequestHandler.hpp"
 #include <net/HttpRequest.hpp>
 #include <net/HttpHelper.hpp>
@@ -52,7 +52,7 @@ void ProxyRequestHandler::handleRequest(const std::string& relPath,
                 {
                     const auto callbackNow = std::chrono::system_clock::now();
                     std::shared_ptr<http::Response> httpResponse = httpSession->response();
-                    if (httpResponse->statusLine().statusCode() == 200)
+                    if (httpResponse->statusLine().statusCode() == http::StatusCode::OK)
                     {
                         if (MaxAge == zero)
                         {
@@ -83,7 +83,7 @@ void ProxyRequestHandler::handleRequest(const std::string& relPath,
             };
 
     sessionProxy->setFinishedHandler(proxyCallback);
-    if (!sessionProxy->asyncRequest(requestProxy, *COOLWSD::getWebServerPoll()))
+    if (!sessionProxy->asyncRequest(requestProxy, *OXOOLWSD::getWebServerPoll()))
     {
         HttpHelper::sendErrorAndShutdown(400, socket);
     }

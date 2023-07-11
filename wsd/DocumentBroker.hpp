@@ -24,6 +24,7 @@
 #include <Poco/URI.h>
 
 #include "Log.hpp"
+#include "QuarantineUtil.hpp"
 #include "TileDesc.hpp"
 #include "Util.hpp"
 #include "net/Socket.hpp"
@@ -48,18 +49,18 @@ class Message;
 /// document using the LibreOfficeKit API. It isn't actually a child of the WSD process, but a
 /// grandchild. The comments loosely talk about "child" anyway.
 
-class ChildProcess : public WSProcess
+class ChildProcess final : public WSProcess
 {
 public:
     /// @param pid is the process ID of the child.
     /// @param socket is the underlying Socket to the child.
-    ChildProcess(const pid_t pid,
-                 const std::string& jailId,
-                 const std::shared_ptr<StreamSocket>& socket,
-                 const Poco::Net::HTTPRequest &request) :
-        WSProcess("ChildProcess", pid, socket, std::make_shared<WebSocketHandler>(socket, request)),
-        _jailId(jailId),
-        _smapsFD(-1)
+    template <typename T>
+    ChildProcess(const pid_t pid, const std::string& jailId,
+                 const std::shared_ptr<StreamSocket>& socket, const T& request)
+        : WSProcess("ChildProcess", pid, socket,
+                    std::make_shared<WebSocketHandler>(socket, request))
+        , _jailId(jailId)
+        , _smapsFD(-1)
     {
     }
 
@@ -290,8 +291,8 @@ public:
 
     /// Handle the save response from Core and upload to storage as necessary.
     /// Also notifies clients of the result.
-    void handleSaveResponse(const std::shared_ptr<ClientSession>& session, bool success,
-                            const std::string& result);
+    void handleSaveResponse(const std::shared_ptr<ClientSession>& session,
+                            const Poco::JSON::Object::Ptr& json);
 
     /// Check if uploading is needed, and start uploading.
     /// The current state of uploading must be introspected separately.
@@ -321,7 +322,7 @@ public:
     /// @param dontSaveIfUnmodified when true, save will fail if the document is not modified.
     /// @return true if attempts to save or it also waits
     /// and receives save notification. Otherwise, false.
-    bool autoSave(const bool force, const bool dontSaveIfUnmodified = true);
+    bool autoSave(const bool force, const bool dontSaveIfUnmodified);
 
     /// Saves the document and stops if there was nothing to autosave.
     void autoSaveAndStop(const std::string& reason);
@@ -338,7 +339,7 @@ public:
 
     /// Are we running in either shutdown, or the polling thread.
     /// Asserts in the debug builds, otherwise just logs.
-    void assertCorrectThread() const;
+    void assertCorrectThread(const char* filename = "?", int line = 0) const;
 
     /// Pretty print internal state to a stream.
     void dumpState(std::ostream& os);
@@ -387,7 +388,6 @@ public:
     void handleTileCombinedRequest(TileCombined& tileCombined, bool forceKeyframe,
                                    const std::shared_ptr<ClientSession>& session);
     void sendRequestedTiles(const std::shared_ptr<ClientSession>& session);
-    void cancelTileRequests(const std::shared_ptr<ClientSession>& session);
 
     enum ClipboardRequest {
         CLIP_REQUEST_SET,
@@ -452,10 +452,9 @@ public:
             _lastEditingSessionId = viewId;
     }
 
-    /// Sends the .uno:Save command to LoKit.
-    bool sendUnoSave(const std::shared_ptr<ClientSession>& session, bool dontTerminateEdit = true,
-                     bool dontSaveIfUnmodified = true, bool isAutosave = false,
-                     const std::string& extendedData = std::string());
+    /// User wants to issue a save on the document.
+    bool manualSave(const std::shared_ptr<ClientSession>& session, bool dontTerminateEdit,
+                    bool dontSaveIfUnmodified, const std::string& extendedData);
 
     /// Sends a message to all sessions.
     /// Returns the number of sessions sent the message to.
@@ -608,6 +607,11 @@ private:
     /// Handles the completion of uploading to storage, both success and failure cases.
     void handleUploadToStorageResponse(const StorageBase::UploadResult& uploadResult);
 
+    /// Sends the .uno:Save command to LoKit.
+    bool sendUnoSave(const std::shared_ptr<ClientSession>& session, bool dontTerminateEdit = true,
+                     bool dontSaveIfUnmodified = true, bool isAutosave = false,
+                     const std::string& extendedData = std::string());
+
     /**
      * Report back the save result to PostMessage users (Action_Save_Resp)
      * @param success: Whether saving was successful
@@ -703,7 +707,7 @@ private:
     /// Request manager.
     /// Encapsulates common fields for
     /// Save and Upload requests.
-    class RequestManager
+    class RequestManager final
     {
     public:
         RequestManager(std::chrono::milliseconds minTimeBetweenRequests)
@@ -1220,7 +1224,7 @@ private:
 
     /// The state of the document.
     /// This regulates all other primary operations.
-    class DocumentState
+    class DocumentState final
     {
     public:
         /// Strictly speaking, these are phases that are directional.
@@ -1371,7 +1375,7 @@ private:
     /// for user's command to act.
     bool _documentChangedInStorage;
 
-    /// True for file that COOLWSD::IsViewFileExtension return true.
+    /// True for file that OXOOLWSD::IsViewFileExtension return true.
     /// These files, such as PDF, don't have a reliable ModifiedStatus.
     bool _isViewFileExtension;
 
@@ -1393,13 +1397,18 @@ private:
 
     std::unique_ptr<StorageBase> _storage;
 
-    /// The current upload request's attributes. Re-used to retry after failure.
-    /// Updated right before uploading.
-    StorageBase::Attributes _currentStorageAttrs;
-    /// The next upload request's attributes. Avoids clobbering
-    /// _currentStorageAttrs until the current request succeeds.
-    /// Updated right before saving.
+    /// The next upload request's attributes, used during uno:Save only.
+    /// Updated right before saving and when saving is completed.
     StorageBase::Attributes _nextStorageAttrs;
+    /// The current upload request's attributes.
+    /// Updated after saving and merged with 'last' when upload fails.
+    StorageBase::Attributes _currentStorageAttrs;
+    /// The last upload request's attributes. Re-used to retry after failure.
+    /// Updated right before uploading.
+    StorageBase::Attributes _lastStorageAttrs;
+
+    /// The Quarantine manager.
+    std::unique_ptr<Quarantine> _quarantine;
 
     std::unique_ptr<TileCache> _tileCache;
     std::atomic<bool> _isModified;
@@ -1450,12 +1459,10 @@ private:
     const bool _alwaysSaveOnExit;
 
     // Last member.
-#ifdef ENABLE_DEBUG
     /// The UnitWSD instance. We capture it here since
     /// this is our instance, but the test framework
     /// has a single global instance via UnitWSD::get().
-    UnitWSD& _unitWsd;
-#endif
+    UnitWSD* const _unitWsd;
 };
 
 #if !MOBILEAPP

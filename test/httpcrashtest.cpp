@@ -35,11 +35,11 @@
 #include <Protocol.hpp>
 #include <test.hpp>
 #include <helpers.hpp>
-#include <countcoolkits.hpp>
+#include <countoxoolkits.hpp>
 
 using namespace helpers;
 
-/// Tests the HTTP WebSocket API of coolwsd. The server has to be started manually before running this test.
+/// Tests the HTTP WebSocket API of oxoolwsd. The server has to be started manually before running this test.
 class HTTPCrashTest : public CPPUNIT_NS::TestFixture
 {
     const Poco::URI _uri;
@@ -89,7 +89,7 @@ public:
     void setUp()
     {
         resetTestStartTime();
-        testCountHowManyCoolkits();
+        testCountHowManyOxoolkits();
         resetTestStartTime();
         _socketPoll->startThread();
     }
@@ -98,7 +98,7 @@ public:
     {
         _socketPoll->joinThread();
         resetTestStartTime();
-        testNoExtraCoolKitsLeft();
+        testNoExtraOxoolKitsLeft();
         resetTestStartTime();
     }
 };
@@ -111,7 +111,7 @@ void HTTPCrashTest::testBarren()
     try
     {
         killLoKitProcesses();
-        countCoolKitProcesses(0);
+        countOxoolKitProcesses(0);
 
         TST_LOG("Loading after kill.");
 
@@ -145,10 +145,10 @@ void HTTPCrashTest::testCrashKit()
         TST_LOG("Allowing time for kits to spawn and connect to wsd to get cleanly killed");
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        TST_LOG("Killing coolkit instances.");
+        TST_LOG("Killing oxoolkit instances.");
 
         killLoKitProcesses();
-        countCoolKitProcesses(0, std::chrono::seconds(1));
+        countOxoolKitProcesses(0, std::chrono::seconds(1));
 
         TST_LOG("Reading the error code from the socket.");
         //FIXME: implement in WebSocketSession.
@@ -180,10 +180,10 @@ void HTTPCrashTest::testRecoverAfterKitCrash()
         TST_LOG("Allowing time for kits to spawn and connect to wsd to get cleanly killed");
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        TST_LOG("Killing coolkit instances.");
+        TST_LOG("Killing oxoolkit instances.");
 
         killLoKitProcesses();
-        countCoolKitProcesses(0, std::chrono::seconds(1));
+        countOxoolKitProcesses(0, std::chrono::seconds(1));
 
         // We expect the client connection to close.
         TST_LOG("Reconnect after kill.");
@@ -234,9 +234,9 @@ void HTTPCrashTest::testCrashForkit()
         LOK_ASSERT_MESSAGE("Expected successful disconnection of the WebSocket",
                            socket->waitForDisconnection(std::chrono::seconds(5)));
 
-        TST_LOG("Killing coolkit.");
+        TST_LOG("Killing oxoolkit.");
         killLoKitProcesses();
-        countCoolKitProcesses(0);
+        countOxoolKitProcesses(0);
         TST_LOG("Communicating after kill.");
         socket = loadDocAndGetSession(_socketPoll, "empty.odt", _uri, testname);
         socket->asyncShutdown();
@@ -265,7 +265,7 @@ static void killPids(const std::set<pid_t> &pids, const std::string& testname)
 void HTTPCrashTest::killLoKitProcesses()
 {
     killPids(getKitPids(), "killLoKitProcesses ");
-    InitialCoolKitCount = 1; // non-intuitive but it will arrive soon.
+    InitialOxoolKitCount = 1; // non-intuitive but it will arrive soon.
 }
 
 void HTTPCrashTest::killForkitProcess()

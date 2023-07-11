@@ -26,19 +26,19 @@
 #include <Common.hpp>
 #include <common/FileUtil.hpp>
 
-#include <countcoolkits.hpp>
+#include <countoxoolkits.hpp>
 #include <helpers.hpp>
 #include <memory>
 
-/// Tests the HTTP GET API of coolwsd.
+/// Tests the HTTP GET API of oxoolwsd.
 class HTTPServerTest : public CPPUNIT_NS::TestFixture
 {
     const Poco::URI _uri;
 
     CPPUNIT_TEST_SUITE(HTTPServerTest);
 
-    CPPUNIT_TEST(testCoolGet);
-    CPPUNIT_TEST(testCoolPost);
+    CPPUNIT_TEST(testOxoolGet);
+    CPPUNIT_TEST(testOxoolPost);
     CPPUNIT_TEST(testScriptsAndLinksGet);
     CPPUNIT_TEST(testScriptsAndLinksPost);
     CPPUNIT_TEST(testConvertTo);
@@ -50,8 +50,8 @@ class HTTPServerTest : public CPPUNIT_NS::TestFixture
 
     CPPUNIT_TEST_SUITE_END();
 
-    void testCoolGet();
-    void testCoolPost();
+    void testOxoolGet();
+    void testOxoolPost();
     void testScriptsAndLinksGet();
     void testScriptsAndLinksPost();
     void testConvertTo();
@@ -92,18 +92,18 @@ public:
     void setUp()
     {
         helpers::resetTestStartTime();
-        testCountHowManyCoolkits();
+        testCountHowManyOxoolkits();
         helpers::resetTestStartTime();
     }
 
     void tearDown()
     {
         helpers::resetTestStartTime();
-        testNoExtraCoolKitsLeft();
+        testNoExtraOxoolKitsLeft();
         helpers::resetTestStartTime();
     }
 
-    // A server URI which was not added to coolwsd.xml as post_allow IP or a wopi storage host
+    // A server URI which was not added to oxoolwsd.xml as post_allow IP or a wopi storage host
     Poco::URI getNotAllowedTestServerURI()
     {
         static std::string serverURI(
@@ -118,16 +118,15 @@ public:
     }
 };
 
-void HTTPServerTest::testCoolGet()
+void HTTPServerTest::testOxoolGet()
 {
     constexpr auto testname = __func__;
 
-    const auto pathAndQuery = "/browser/dist/cool.html?access_token=111111111";
+    const auto pathAndQuery = "/browser/dist/loleaflet.html?access_token=111111111";
     const std::shared_ptr<const http::Response> httpResponse
         = http::get(_uri.toString(), pathAndQuery);
 
-    LOK_ASSERT_EQUAL(static_cast<unsigned>(Poco::Net::HTTPResponse::HTTP_OK),
-                     httpResponse->statusLine().statusCode());
+    LOK_ASSERT_EQUAL(http::StatusCode::OK, httpResponse->statusLine().statusCode());
     LOK_ASSERT_EQUAL(std::string("text/html"), httpResponse->header().getContentType());
 
     //FIXME: Replace with own URI parser.
@@ -137,16 +136,16 @@ void HTTPServerTest::testCoolGet()
     const std::string html = httpResponse->getBody();
     LOK_ASSERT(html.find(param["access_token"]) != std::string::npos);
     LOK_ASSERT(html.find(_uri.getHost()) != std::string::npos);
-    LOK_ASSERT(html.find(std::string(COOLWSD_VERSION_HASH)) != std::string::npos);
+    LOK_ASSERT(html.find(std::string(OXOOLWSD_VERSION_HASH)) != std::string::npos);
 }
 
-void HTTPServerTest::testCoolPost()
+void HTTPServerTest::testOxoolPost()
 {
     constexpr auto testname = __func__;
 
     std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
 
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/browser/dist/cool.html");
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/browser/dist/loleaflet.html");
     Poco::Net::HTMLForm form;
     form.set("access_token", "2222222222");
     form.prepareSubmit(request);
@@ -207,7 +206,7 @@ void HTTPServerTest::testScriptsAndLinksGet()
 
     std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
 
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/browser/dist/cool.html");
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/browser/dist/loleaflet.html");
     session->sendRequest(request);
 
     Poco::Net::HTTPResponse response;
@@ -230,7 +229,7 @@ void HTTPServerTest::testScriptsAndLinksPost()
 
     std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
 
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/browser/dist/cool.html");
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/browser/dist/loleaflet.html");
     std::string body;
     request.setContentLength((int) body.length());
     session->sendRequest(request) << body;
@@ -258,7 +257,7 @@ void HTTPServerTest::testConvertTo()
 
     TST_LOG("Convert-to odt -> txt");
 
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/convert-to");
     Poco::Net::HTMLForm form;
     form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
     form.set("format", "txt");
@@ -304,7 +303,7 @@ void HTTPServerTest::testConvertTo2()
 
     TST_LOG("Convert-to #2 xlsx -> png");
 
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/convert-to");
     Poco::Net::HTMLForm form;
     form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
     form.set("format", "png");
@@ -351,7 +350,7 @@ void HTTPServerTest::testConvertToWithForwardedIP_Deny()
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
         session->setTimeout(Poco::Timespan(TimeoutSeconds, 0));
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/convert-to");
         LOK_ASSERT(!request.has("X-Forwarded-For"));
         request.add("X-Forwarded-For", getNotAllowedTestServerURI().getHost() + ", " + _uri.getHost());
         Poco::Net::HTMLForm form;
@@ -401,7 +400,7 @@ void HTTPServerTest::testConvertToWithForwardedIP_Allow()
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
         session->setTimeout(Poco::Timespan(TimeoutSeconds, 0));
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/convert-to");
         LOK_ASSERT(!request.has("X-Forwarded-For"));
         request.add("X-Forwarded-For", _uri.getHost() + ", " + _uri.getHost());
         Poco::Net::HTMLForm form;
@@ -459,7 +458,7 @@ void HTTPServerTest::testConvertToWithForwardedIP_DenyMulti()
         std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
         session->setTimeout(Poco::Timespan(TimeoutSeconds, 0));
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/convert-to");
         LOK_ASSERT(!request.has("X-Forwarded-For"));
         request.add("X-Forwarded-For", _uri.getHost() + ", "
                                        + getNotAllowedTestServerURI().getHost() + ", "
@@ -505,7 +504,7 @@ void HTTPServerTest::testRenderSearchResult()
     std::unique_ptr<Poco::Net::HTTPClientSession> session(helpers::createSession(_uri));
     session->setTimeout(Poco::Timespan(COMMAND_TIMEOUT_SECS * 2, 0)); // 10 seconds.
 
-    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/render-search-result");
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/render-search-result");
     Poco::Net::HTMLForm form;
     form.setEncoding(Poco::Net::HTMLForm::ENCODING_MULTIPART);
     form.addPart("document", new Poco::Net::FilePartSource(srcPathDoc));

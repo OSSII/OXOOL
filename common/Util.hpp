@@ -31,9 +31,7 @@
 
 #include <memory.h>
 
-#ifndef __linux__
 #include <thread>
-#endif
 
 #include <Poco/File.h>
 #include <Poco/Path.h>
@@ -107,8 +105,9 @@ namespace Util
 
         void restart() { _startTime = std::chrono::steady_clock::now(); }
 
-        /// Returns true iff at least the given amount of time has elapsed.
-        template <typename T>
+        /// Returns the time that has elapsed since starting, in the units required.
+        /// Units defaults to milliseconds.
+        template <typename T = std::chrono::milliseconds>
         T
         elapsed(std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now()) const
         {
@@ -152,7 +151,7 @@ namespace Util
             if ((offset + i) >= buffer.size())
                 break;
 
-            sprintf(scratch, "%.2x", static_cast<unsigned char>(buffer[offset + i]));
+            snprintf(scratch, sizeof(scratch), "%.2x", static_cast<unsigned char>(buffer[offset + i]));
             os << scratch;
         }
 
@@ -195,9 +194,9 @@ namespace Util
     void alertAllUsers(const std::string& msg);
 
     /// Send a 'error:' message with the specified cmd and kind parameters to all connected
-    /// clients. This function can be called either in coolwsd or coolkit processes, even if only
-    /// coolwsd obviously has contact with the actual clients; in coolkit it will be forwarded to
-    /// coolwsd for redistribution. (This function must be implemented separately in each program
+    /// clients. This function can be called either in oxoolwsd or oxoolkit processes, even if only
+    /// oxoolwsd obviously has contact with the actual clients; in oxoolkit it will be forwarded to
+    /// oxoolwsd for redistribution. (This function must be implemented separately in each program
     /// that uses it, it is not in Util.cpp.)
     void alertAllUsers(const std::string& cmd, const std::string& kind);
 #else
@@ -262,6 +261,7 @@ namespace Util
     void setProcessAndThreadPriorities(const pid_t pid, int prio);
 #endif
 
+    /// Replace substring @a in string @s with string @b.
     std::string replace(std::string s, const std::string& a, const std::string& b);
 
     std::string formatLinesForLog(const std::string& s);
@@ -280,7 +280,7 @@ namespace Util
     void getVersionInfo(std::string& version, std::string& hash);
 
     ///< A random hex string that identifies the current process.
-    std::string getProcessIdentifier();
+    const std::string& getProcessIdentifier();
 
     std::string getVersionJSON(bool enableExperimental);
 
@@ -451,7 +451,7 @@ namespace Util
         os << legend;
         for (j = 0; j < buffer.size() + width - 1; j += width)
         {
-            sprintf (scratch, "%s0x%.4x  ", prefix, j);
+            snprintf (scratch, sizeof(scratch), "%s0x%.4x  ", prefix, j);
             os << scratch;
 
             std::string line = stringifyHexLine(buffer, j, width);
@@ -1055,7 +1055,7 @@ int main(int argc, char**argv)
     inline void vectorAppendHex(std::vector<char> &vector, uint64_t number)
     {
         char output[32];
-        sprintf(output, "%" PRIx64, number);
+        snprintf(output, sizeof(output), "%" PRIx64, number);
         vectorAppend(vector, output);
     }
 
@@ -1448,6 +1448,16 @@ int main(int argc, char**argv)
         return oss.str().substr(indent.size());
     }
 
+    /// Asserts in the debug builds, otherwise just logs.
+    void assertCorrectThread(std::thread::id owner, const char* fileName, int lineNo);
+
+#ifndef ASSERT_CORRECT_THREAD
+#define ASSERT_CORRECT_THREAD() assertCorrectThread(__FILE__, __LINE__)
+#endif
+#ifndef ASSERT_CORRECT_THREAD_OWNER
+#define ASSERT_CORRECT_THREAD_OWNER(OWNER) Util::assertCorrectThread(OWNER, __FILE__, __LINE__)
+#endif
+
     /**
      * Similar to std::atoi() but does not require p to be null-terminated.
      *
@@ -1458,6 +1468,7 @@ int main(int argc, char**argv)
     /// Close logs and forcefully exit with the given exit code.
     /// This calls std::_Exit, which terminates the program without cleaning up
     /// static instances (i.e. anything registered with `atexit' or `on_exit').
+    // coverity[+kill]
     void forcedExit(int code) __attribute__ ((__noreturn__));
 
 } // end namespace Util

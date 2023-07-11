@@ -1,5 +1,5 @@
 ~1819243~HWCp8Bcln3Hg7xKN~02d~NewSession: file:///tmp/test.odt
->1834924>HWCp8Bcln3Hg7xKN>02d>coolclient 0.1 1631391296951.5 1124.199999988079
+>1834924>HWCp8Bcln3Hg7xKN>02d>oxoolclient 0.1 1631391296951.5 1124.199999988079
 >1836055>HWCp8Bcln3Hg7xKN>02d>load url=file%3A%2F%2F%2Ftmp%2Ftest.odt deviceFormFactor=desktop
 >3064391>HWCp8Bcln3Hg7xKN>02d>commandvalues command=.uno:StyleApply
 >3064758>HWCp8Bcln3Hg7xKN>02d>commandvalues command=.uno:CharFontName

@@ -33,7 +33,7 @@
 
 #include <helpers.hpp>
 #include <Unit.hpp>
-#include <wsd/COOLWSD.hpp>
+#include <wsd/OXOOLWSD.hpp>
 #if ENABLE_SSL
 #include <Ssl.hpp>
 #include <SslSocket.hpp>
@@ -79,7 +79,7 @@ static bool IsDebugrun = false;
 int main(int argc, char** argv)
 {
     bool verbose = false;
-    std::string cert_path = "/etc/coolwsd/";
+    std::string cert_path = "/etc/oxoolwsd/";
     for (int i = 1; i < argc; ++i)
     {
         const std::string arg(argv[i]);
@@ -293,20 +293,20 @@ bool runClientTests(const char* cmd, bool standalone, bool verbose)
 
 std::set<pid_t> getKitPids()
 {
-    return COOLWSD::getKitPids();
+    return OXOOLWSD::getKitPids();
 }
 
 /// Get the PID of the forkit
 std::set<pid_t> getForKitPids()
 {
     std::set<pid_t> pids;
-    if (COOLWSD::ForKitProcId >= 0)
-        pids.emplace(COOLWSD::ForKitProcId);
+    if (OXOOLWSD::ForKitProcId >= 0)
+        pids.emplace(OXOOLWSD::ForKitProcId);
     return pids;
 }
 
-/// How many live coolkit processes do we have ?
-int getCoolKitProcessCount()
+/// How many live oxoolkit processes do we have ?
+int getOxoolKitProcessCount()
 {
     return getKitPids().size();
 }

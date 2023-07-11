@@ -13,7 +13,7 @@
 #include <FakeSocket.hpp>
 #include <Kit.hpp>
 #include <Log.hpp>
-#include <COOLWSD.hpp>
+#include <OXOOLWSD.hpp>
 #include <Protocol.hpp>
 #include <SetupKitEnvironment.hpp>
 #include <Util.hpp>
@@ -28,10 +28,10 @@
 #include <emscripten/val.h>
 #endif
 
-extern int coolwsd_server_socket_fd;
+extern int oxoolwsd_server_socket_fd;
 
 extern const char* user_name;
 
-extern "C" void handle_cool_message(const char *string_value);
+extern "C" void handle_oxool_message(const char *string_value);
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab cinoptions=b1,g0,N-s cinkeys+=0=break: */

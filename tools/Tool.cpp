@@ -61,7 +61,7 @@ protected:
 };
 
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
 using Poco::Net::HTTPClientSession;
 using Poco::Net::HTTPRequest;
@@ -98,7 +98,7 @@ public:
         else
             session = new Poco::Net::HTTPClientSession(uri.getHost(), uri.getPort());
 
-        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/cool/convert-to");
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/oxool/convert-to");
 
         try {
             Poco::Net::HTMLForm form;
@@ -107,7 +107,7 @@ public:
             form.addPart("data", new Poco::Net::FilePartSource(document));
             form.prepareSubmit(request);
 
-            // If this results in a Poco::Net::ConnectionRefusedException, coolwsd is not running.
+            // If this results in a Poco::Net::ConnectionRefusedException, oxoolwsd is not running.
             form.write(session->sendRequest(request));
         }
         catch (const Poco::Exception &e)
@@ -153,14 +153,14 @@ Tool::Tool() :
 
 void Tool::displayHelp()
 {
-    std::cout << "Collabora Online document converter tool.\n"
+    std::cout << "OxOffice Online document converter tool.\n"
               << "Usage: " << commandName() << " [options] file...\n"
               << "Options are:\n"
               << "  --help                      Show this text\n"
               << "  --extension=format          File format to convert to\n"
               << "  --outdir=directory          Output directory for converted files\n"
               << "  --parallelism=threads       Number of simultaneous threads to use\n"
-              << "  --server=uri                URI of COOL server\n"
+              << "  --server=uri                URI of OXOOL server\n"
               << "  --no-check-certificate      Disable checking of SSL certificate\n"
               << "In addition, the options taken by the libreoffice command for its --convert-to\n"
               << "functionality can be used (but are ignored if irrelevant to this command)." << std::endl;

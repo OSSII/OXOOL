@@ -13,7 +13,6 @@
 #include <UnitHTTP.hpp>
 #include <helpers.hpp>
 #include <Poco/Net/HTTPRequest.h>
-#include <Poco/Util/LayeredConfiguration.h>
 
 class UnitWOPIWatermark : public WopiTestServer
 {
@@ -27,60 +26,14 @@ public:
     {
     }
 
-    virtual bool handleHttpRequest(const Poco::Net::HTTPRequest& request, Poco::MemoryInputStream& /*message*/, std::shared_ptr<StreamSocket>& socket) override
+    void configCheckFileInfo(const Poco::Net::HTTPRequest& request,
+                             Poco::JSON::Object::Ptr fileInfo) override
     {
-        Poco::URI uriReq(request.getURI());
-        Poco::RegularExpression regInfo("/wopi/files/[0-9]");
-        Poco::RegularExpression regContent("/wopi/files/[0-9]/contents");
-        LOG_INF("FakeWOPIHost: Request: " << uriReq.toString());
-
-        // CheckFileInfo
-        if (request.getMethod() == "GET" && regInfo.match(uriReq.getPath()))
-        {
-            LOG_INF("FakeWOPIHost: Handling CheckFileInfo: " << uriReq.getPath());
-
-            assertCheckFileInfoRequest(request);
-
-            const std::string fileName(uriReq.getPath() == "/wopi/files/3" ? "he%llo.txt" : "hello.txt");
-            Poco::JSON::Object::Ptr fileInfo = new Poco::JSON::Object();
-            fileInfo->set("BaseFileName", fileName);
-            fileInfo->set("Size", getFileContent().size());
-            fileInfo->set("Version", "1.0");
-            fileInfo->set("OwnerId", "test");
-            fileInfo->set("UserId", "test");
-            fileInfo->set("UserFriendlyName", "test");
-            fileInfo->set("UserCanWrite", "true");
-            fileInfo->set("PostMessageOrigin", "localhost");
-            fileInfo->set("LastModifiedTime", Util::getIso8601FracformatTime(getFileLastModifiedTime()));
-            fileInfo->set("EnableOwnerTermination", "true");
-            fileInfo->set("WatermarkText", "WatermarkTest");
-
-            std::ostringstream jsonStream;
-            fileInfo->stringify(jsonStream);
-
-            http::Response httpResponse(http::StatusCode::OK);
-            httpResponse.set("Last-Modified", Util::getHttpTime(getFileLastModifiedTime()));
-            httpResponse.setBody(jsonStream.str(), "application/json; charset=utf-8");
-            socket->sendAndShutdown(httpResponse);
-
-            return true;
-        }
-        // GetFile
-        else if (request.getMethod() == "GET" && regContent.match(uriReq.getPath()))
-        {
-            LOG_INF("FakeWOPIHost: Handling GetFile: " << uriReq.getPath());
-
-            assertGetFileRequest(request);
-
-            http::Response httpResponse(http::StatusCode::OK);
-            httpResponse.set("Last-Modified", Util::getHttpTime(getFileLastModifiedTime()));
-            httpResponse.setBody(getFileContent(), "text/plain; charset=utf-8");
-            socket->sendAndShutdown(httpResponse);
-
-            return true;
-        }
-
-        return false;
+        const Poco::URI uriReq(request.getURI());
+        const std::string fileName(uriReq.getPath() == "/wopi/files/3" ? "he%llo.txt"
+                                                                       : "hello.txt");
+        fileInfo->set("BaseFileName", fileName);
+        fileInfo->set("WatermarkText", "WatermarkTest");
     }
 
     void invokeWSDTest() override
@@ -107,16 +60,17 @@ public:
             {
                 WSD_CMD("tilecombine nviewid=0 part=0 width=256 height=256 tileposx=0,3840 "
                         "tileposy=0,0 tilewidth=3840 tileheight=3840");
-                std::string tile =
+                const std::string tile =
                     helpers::getResponseString(getWs()->getWebSocket(), "tile:", testName);
 
-                if(!tile.empty())
+                if (!tile.empty())
                 {
                     StringVector tokens(StringVector::tokenize(tile, ' '));
                     std::string nviewid = tokens[1].substr(std::string("nviewid=").size());
                     if (!nviewid.empty() && nviewid != "0")
                     {
-                        LOG_INF("Watermark is hashed into integer successfully nviewid=" << nviewid);
+                        LOG_INF(
+                            "Watermark is hashed into integer successfully nviewid=" << nviewid);
                         TRANSITION_STATE(_phase, Phase::Done);
                     }
                 }
@@ -126,9 +80,6 @@ public:
     }
 };
 
-UnitBase *unit_create_wsd(void)
-{
-    return new UnitWOPIWatermark();
-}
+UnitBase* unit_create_wsd(void) { return new UnitWOPIWatermark(); }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -1,17 +1,13 @@
-[![Build Status](https://cpci.cbg.collabora.co.uk:8080/view/Gerrit/job/Gerrit%20for%20core%20(co-2021)%20side%20of%20online%20co-21-11/badge/icon?subject=Gerrit%20core%20co-2021)](https://cpci.cbg.collabora.co.uk:8080/view/Gerrit/job/Gerrit%20for%20core%20(co-2021)%20side%20of%20online%20co-21-11/) [![Build Status](https://cpci.cbg.collabora.co.uk:8080/view/Gerrit/job/Gerrit%20for%20core%20(co-22.05)%20side%20of%20online%20master/badge/icon?subject=Gerrit%20core%20co-22.05)](https://cpci.cbg.collabora.co.uk:8080/view/Gerrit/job/Gerrit%20for%20core%20(co-22.05)%20side%20of%20online%20master/)
-
-[![Build Status](https://cpci.cbg.collabora.co.uk:8080/view/Tinderbox/job/Tinderbox%20for%20online%20co-21-11//badge/icon?subject=co-21-11%20vs%20co-2021)](https://cpci.cbg.collabora.co.uk:8080/view/Tinderbox/job/Tinderbox%20for%20online%20co-21-11/)  [![Build Status](https://cpci.cbg.collabora.co.uk:8080/view/Gerrit/job/Tinderbox%20for%20online%20master%20against%20co-22.05/badge/icon?subject=master%20vs%20co-22.05)](https://cpci.cbg.collabora.co.uk:8080/view/Gerrit/job/Tinderbox%20for%20online%20master%20against%20co-22.05/)
-
 <p align="right"><a href="#gitpod"><img alt="Open in Gitpod" src="https://gitpod.io/button/open-in-gitpod.svg"></a></p>
 
-# Collabora Online
+# OxOffice Online
 <!--
 [![Master: Pull request policy](https://img.shields.io/badge/Master-PRs%20can%20be%20merge%20without%20approval-42BC00?logoColor=42BC00&logo=git "Main release is still distant. Thanks for your support and contributions! :)")](https://github.com/CollaboraOnline/online/blob/master/CONTRIBUTING.md#contributing-to-source-code)
 -->
 [![Master: Pull request policy](https://img.shields.io/badge/Master-protected%2C%20PRs%20need%20approval-red?logoColor=lightred&logo=git "Collabora Team is preparing for the next release, therefore 'master' branch is protected now, PRs need 1 review before merging. Thanks for your support and contributions! :)")](https://github.com/CollaboraOnline/online/blob/master/CONTRIBUTING.md#contributing-to-source-code)
 
 
-[![irc](https://img.shields.io/badge/IRC-%23cool--dev%20on%20libera-orange.svg)](https://web.libera.chat/?channels=cool-dev)
+[![irc](https://img.shields.io/badge/IRC-%23oxool--dev%20on%20libera-orange.svg)](https://web.libera.chat/?channels=oxool-dev)
 [![Telegram](https://img.shields.io/badge/Telegram-Collabora%20Online-green.svg)](https://t.me/CollaboraOnline)
 [![Forum](https://img.shields.io/badge/Forum-Discourse-blue.svg)](https://forum.collaboraonline.com/)
 [![Website](https://img.shields.io/badge/Website-collaboraonline.github.io-blueviolet.svg)](https://collaboraonline.github.io/)
@@ -43,8 +39,8 @@ For many more details, build instructions, downloads and more please visit https
 
 ## Developer assistance
 Please ask your questions on any of the bridged IRC/Matrix/Telegram rooms
-* IRC: `#cool-dev` on `irc.libera.chat` 
-* Matrix: [#cool-dev:libera.chat](https://app.element.io/#/room/#cool-dev:libera.chat)
+* IRC: `#oxool-dev` on `irc.libera.chat` 
+* Matrix: [#oxool-dev:libera.chat](https://app.element.io/#/room/#oxool-dev:libera.chat)
 * Telegram: [CollaboraOnline](https://t.me/CollaboraOnline)
 
 Join the conversation on our Discourse server at https://forum.collaboraonline.com/

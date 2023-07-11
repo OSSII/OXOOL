@@ -1,10 +1,10 @@
-Collabora Online WebSocket server
+OxOffice Online WebSocket server
 =================================
 
 Dependencies
 ------------
 
-Collabora Online WebSocket server has the following dependencies:
+OxOffice Online WebSocket server has the following dependencies:
 
 * libpng
 * Poco library: https://pocoproject.org/
@@ -25,7 +25,7 @@ Similar repos exist for other openSUSE and SLE releases.
 Building
 --------
 
-coolwsd uses autoconf/automake, so especially when building from .git
+oxoolwsd uses autoconf/automake, so especially when building from .git
 (as opposed to from a distribution tarball) you need to run:
 
     ./autogen.sh
@@ -43,7 +43,7 @@ When building from a tarball less magic is needed.
 
 Run 'make check' after each commit.
 
-Note that the coolforkit program needs the CAP_SYS_CHROOT capability,
+Note that the oxoolforkit program needs the CAP_SYS_CHROOT capability,
 thus you will be asked the root password when running make as it
 invokes sudo to run /sbin/setcap.
 
@@ -86,47 +86,47 @@ chroot system, and directory for the jails:
     ROOTFORJAILS=`pwd`/jails       # or tweak for your system
 
     rm -Rf ${SYSTEMPLATE} # clean
-    ./coolwsd-systemplate-setup ${SYSTEMPLATE} ${MASTER}/instdir # build template
+    ./oxoolwsd-systemplate-setup ${SYSTEMPLATE} ${MASTER}/instdir # build template
     mkdir -p ${ROOTFORJAILS} # create location for transient jails.
 
-To run coolwsd the way it is supposed to eventually be run "for real", you can
+To run oxoolwsd the way it is supposed to eventually be run "for real", you can
 now do:
 
-    ./coolwsd --o:sys_template_path=${SYSTEMPLATE} --o:child_root_path=${ROOTFORJAILS}
+    ./oxoolwsd --o:sys_template_path=${SYSTEMPLATE} --o:child_root_path=${ROOTFORJAILS}
 
 The ${SYSTEMPLATE} is a directory tree set up using the
-coolwsd-systemplate-setup script here. (It should not exist before
+oxoolwsd-systemplate-setup script here. (It should not exist before
 running the script.) It will contain the runtime environment needed by
 the LibreOffice dynamic libraries used through LibreOfficeKit.
 Improvements to that script are very likely needed on various distros.
 
 The ${ROOTFORJAILS} directory above is a presumably initially empty
-directory under which coolwsd will create chroot jails for editing
+directory under which oxoolwsd will create chroot jails for editing
 each specific document.
 
-As coolwsd uses hardlinks to "copy" the contents of both
+As oxoolwsd uses hardlinks to "copy" the contents of both
 ${SYSTEMPLATE} and the ${MASTER}/instdir directories into each chroot
 jail, ${SYSTEMPLATE} and ${MASTER}/instdir need to be on the same file
 system as ${ROOTFORJAILS}.
 
-Leaflet files are served itself by coolwsd internal file server. You
+Leaflet files are served itself by oxoolwsd internal file server. You
 can specify the root of this fileserver using the --o:file_server_root_path
-flag in coolwsd commandline.  By default, if you do not specify this
-flag, the parent directory of coolwsd/ is assumed to be the
+flag in oxoolwsd commandline.  By default, if you do not specify this
+flag, the parent directory of oxoolwsd/ is assumed to be the
 file_server_root_path. So, for development purposes, you can access the
-COOL files (using /browser/), but it is advised to explicitly set
+OXOOL files (using /browser/), but it is advised to explicitly set
 the file_server_root_path to prevent any unwanted files from reading,
-especially when cool is deployed for normal public usage on servers.
+especially when oxool is deployed for normal public usage on servers.
 
-Please note that it is necessary that all the COOL files that are
+Please note that it is necessary that all the OXOOL files that are
 meant to be served is under a directory named 'browser'. Since, the
-COOL files, in the git repo, are itself in a directory named
+OXOOL files, in the git repo, are itself in a directory named
 'browser', this would work out of the box for development purposes.
 
-If you run coolwsd on HTTPS, you have to set up your own private key
+If you run oxoolwsd on HTTPS, you have to set up your own private key
 and certificates (in PEM format only). The name and location of key,
 certificate and CA certificate chain is defined in
-${sysconfdir}/coolwsd/coolwsd.xml. Dummy self-signed cert.pem,
+${sysconfdir}/oxoolwsd/oxoolwsd.xml. Dummy self-signed cert.pem,
 ca-chain.cert.pem and key.pem are already included, but it is better
 to replace those with your own files.
 
@@ -169,8 +169,8 @@ there is a less verbose way, but this worked for me:
 HTTPS is the default. HTTP-only mode can be enabled with --disable-ssl
 configure option.
 
-If you plan to hack on coolwsd, you probably want to familiarize
-yourself with coolwsd's --o:num_prespawn_children switch, and the 'connect'
+If you plan to hack on oxoolwsd, you probably want to familiarize
+yourself with oxoolwsd's --o:num_prespawn_children switch, and the 'connect'
 test program.
 
 For interactive testing, you can use the 'connect' program. It accepts
@@ -184,16 +184,16 @@ Unless you want to test SSL itself, it is easier to go for the non-SSL option.
 
 Setup Nextcloud or ownCloud on localhost, and install the richdocuments app.
 Good tutorials exist how to install ownCloud or Nextcloud, we don't repeat
-them here. richdocuments is called Collabora Online in the respective app
+them here. richdocuments is called OxOffice Online in the respective app
 stores / marketplaces / whatever.
 
 When you have a running Nextcloud or ownCloud instance at
 http://localhost/nextcloud or at http://localhost/owncloud
-go to Collabora Online settings, and set the WOPI URL to
+go to OxOffice Online settings, and set the WOPI URL to
 http://localhost:9980
 
-Then in the build tree, edit the generated coolwsd.xml and set ssl setting to
-false. You can run make run, and test coolwsd with the ownCloud or Nextcloud
+Then in the build tree, edit the generated oxoolwsd.xml and set ssl setting to
+false. You can run make run, and test oxoolwsd with the ownCloud or Nextcloud
 integration.
 
 Admin Panel
@@ -203,7 +203,7 @@ You can access the admin panel by directly accessing the admin.html file
 from browser directory. See browser/README for more details.
 
 Websocket connections to admin console can be made at path: /adminws/ on the
-same url and port as coolwsd is running on. However, one needs a JWT token to
+same url and port as oxoolwsd is running on. However, one needs a JWT token to
 authenticate to the admin console websocket. This is stored as a cookie with
 `Path: /adminws/` when user successfully authenticates when trying to access
 /browser/dist/admin/admin*html files (HTTP Basic authentication). Token
@@ -218,7 +218,7 @@ be obtained as described above.
 Debugging
 ---------
 
-When debugging, you want to add --o:num_prespawn_children=1 to the coolwsd parameters to
+When debugging, you want to add --o:num_prespawn_children=1 to the oxoolwsd parameters to
 limit the amount of concurrently running processes.
 
 When the crash happens too early, you also want to
@@ -229,8 +229,8 @@ or
 
 so that you have time to attach to the process.
 
-Then run coolwsd, and attach your debugger to the process you are
-interested in. Note that as the coolforkit executable file has
+Then run oxoolwsd, and attach your debugger to the process you are
+interested in. Note that as the oxoolforkit executable file has
 capabilities set, so when debugging that you need to run the debugger
 with super-user privilege.
 
@@ -238,14 +238,14 @@ Also, note that as the child processes run in a chroot environment,
 they see the LibreOffice shared libraries as being in a directory tree
 /lo , but your debugger does not. So in order to be able to
 effectively debug the LibreOffice code as used through LibreOfficeKit
-by a child coolwsd process, you need to symlink the "lo" subdirectory
-of a running child coolwsd process's chroot jail as /lo. Something like:
+by a child oxoolwsd process, you need to symlink the "lo" subdirectory
+of a running child oxoolwsd process's chroot jail as /lo. Something like:
 
-sudo ln -s ~/libreoffice/master/cool-child-roots/1046829984599121011/lo /lo
+sudo ln -s ~/libreoffice/master/oxool-child-roots/1046829984599121011/lo /lo
 
 Use the ps command to find out exactly the path to use.
 
-Set COOL_DEBUG=1 to trap SIGSEGV and SEGBUS and prompt for debugger.
+Set OXOOL_DEBUG=1 to trap SIGSEGV and SEGBUS and prompt for debugger.
 
 if you choose PAUSEFORDEBUGGER send the signal SIGUSR1 to resume the process
 
@@ -263,7 +263,7 @@ websocket.
 Architecture
 ------------
 
-There are three processes: CoolWSD, CoolForKit, and CoolKit.
+There are three processes: OxoolWSD, OxoolForKit, and OxoolKit.
 
 WSD is the top-level server and is intended to run as a service.
 It is responsible for spawning ForKit and listening on public

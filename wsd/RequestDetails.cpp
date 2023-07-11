@@ -7,8 +7,9 @@
 
 #include <config.h>
 
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 #include "RequestDetails.hpp"
+#include "Util.hpp"
 #include "common/Log.hpp"
 #include "HostUtil.hpp"
 
@@ -23,45 +24,15 @@ std::map<std::string, std::string> getParams(const std::string& uri)
     std::map<std::string, std::string> result;
     for (const auto& param : Poco::URI(uri).getQueryParameters())
     {
-        std::string key;
-        Poco::URI::decode(param.first, key);
-        std::string value;
-        Poco::URI::decode(param.second, value);
+        std::string key = Util::decodeURIComponent(param.first);
+        std::string value = Util::decodeURIComponent(param.second);
         LOG_TRC("Decoding param [" << param.first << "] = [" << param.second << "] -> [" << key
-                                   << "] = [" << value << "].");
+                                   << "] = [" << value << ']');
 
-        result.emplace(key, value);
+        result.emplace(std::move(key), std::move(value));
     }
 
     return result;
-}
-
-/// Returns true iff the two containers are equal.
-template <typename T> bool equal(const T& lhs, const T& rhs)
-{
-    if (lhs.size() != rhs.size())
-    {
-        LOG_ERR("!!! Size mismatch: [" << lhs.size() << "] != [" << rhs.size() << "].");
-        return false;
-    }
-
-    const auto endLeft = std::end(lhs);
-
-    auto itRight = std::begin(rhs);
-
-    for (auto itLeft = std::begin(lhs); itLeft != endLeft; ++itLeft, ++itRight)
-    {
-        const auto subLeft = lhs.getParam(*itLeft);
-        const auto subRight = rhs.getParam(*itRight);
-
-        if (subLeft != subRight)
-        {
-            LOG_ERR("!!! Data mismatch: [" << subLeft << "] != [" << subRight << ']');
-            return false;
-        }
-    }
-
-    return true;
 }
 }
 
@@ -106,8 +77,8 @@ RequestDetails::RequestDetails(const std::string &mobileURI)
 
 void RequestDetails::dehexify()
 {
-    // For now, we only hexify cool/ URLs.
-    constexpr auto Prefix = "cool/0x";
+    // For now, we only hexify oxool/ URLs.
+    constexpr auto Prefix = "oxool/0x";
     constexpr auto PrefixLen = sizeof(Prefix) - 1;
 
     const auto hexPos = _uriString.find(Prefix);
@@ -170,8 +141,8 @@ void RequestDetails::processURI()
     std::string uriRes = _uriString.substr(posDocUri + 1);
 
     const auto posLastWS = uriRes.rfind("/ws");
-    // DocumentURI is the second segment in cool URIs.
-    if (_pathSegs.equals(0, "cool"))
+    // DocumentURI is the second segment in oxool URIs.
+    if (_pathSegs.equals(0, "oxool"))
     {
         //FIXME: For historic reasons the DocumentURI includes the WOPISrc.
         // This is problematic because decoding a URI that embeds not one, but
@@ -188,20 +159,16 @@ void RequestDetails::processURI()
         {
             end = (posLastWS != std::string::npos ? posLastWS : uriRes.find('/'));
             if (end == std::string::npos)
-                end = uriRes.find('?'); // e.g. /cool/clipboard?WOPISrc=file%3A%2F%2F%2Ftmp%2Fcopypasteef324307_empty.ods...
+                end = uriRes.find('?'); // e.g. /oxool/clipboard?WOPISrc=file%3A%2F%2F%2Ftmp%2Fcopypasteef324307_empty.ods...
         }
 
         const std::string docUri = uriRes.substr(0, end);
 
-        std::string decoded;
-        Poco::URI::decode(docUri, decoded);
-        _fields[Field::LegacyDocumentURI] = decoded;
+        _fields[Field::LegacyDocumentURI] = Util::decodeURIComponent(docUri);
 
         // Find the DocumentURI proper.
         end = uriRes.find_first_of("/?", 0, 2);
-        decoded.clear();
-        Poco::URI::decode(uriRes.substr(0, end), decoded);
-        _fields[Field::DocumentURI] = decoded;
+        _fields[Field::DocumentURI] = Util::decodeURIComponent(uriRes.substr(0, end));
     }
     else // Otherwise, it's the full URI.
     {
@@ -242,9 +209,7 @@ Poco::URI RequestDetails::sanitizeURI(const std::string& uri)
 {
     // The URI of the document should be url-encoded.
 #if !MOBILEAPP
-    std::string decodedUri;
-    Poco::URI::decode(uri, decodedUri);
-    Poco::URI uriPublic(decodedUri);
+    Poco::URI uriPublic(Util::decodeURIComponent(uri));
 #else
     Poco::URI uriPublic(uri);
 #endif
@@ -260,7 +225,7 @@ Poco::URI RequestDetails::sanitizeURI(const std::string& uri)
         throw std::runtime_error("Invalid URI.");
     }
 
-    // We decoded access token before embedding it in cool.html
+    // We decoded access token before embedding it in loleaflet.html
     // So, we need to decode it now to get its actual value
     Poco::URI::QueryParameters queryParams = uriPublic.getQueryParameters();
     for (auto& param : queryParams)
@@ -268,9 +233,7 @@ Poco::URI RequestDetails::sanitizeURI(const std::string& uri)
         // look for encoded query params (access token as of now)
         if (param.first == "access_token")
         {
-            std::string decodedToken;
-            Poco::URI::decode(param.second, decodedToken);
-            param.second = decodedToken;
+            param.second = Util::decodeURIComponent(param.second);
         }
     }
 
@@ -283,15 +246,14 @@ Poco::URI RequestDetails::sanitizeURI(const std::string& uri)
 #if !defined(BUILDING_TESTS)
 std::string RequestDetails::getDocKey(const Poco::URI& uri)
 {
-    std::string docKey;
-    std::string newUri = uri.getPath();
-
     // resolve aliases
 #if !MOBILEAPP
-    newUri = HostUtil::getNewUri(uri);
+    const std::string newUri = HostUtil::getNewUri(uri);
+#else
+    const std::string newUri = uri.getPath();
 #endif
 
-    Poco::URI::encode(newUri, "", docKey);
+    std::string docKey = Util::encodeURIComponent(newUri);
     LOG_INF("DocKey from URI [" << uri.toString() << "] => [" << docKey << ']');
     return docKey;
 }

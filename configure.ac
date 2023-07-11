@@ -3,7 +3,18 @@
 
 AC_PREREQ([2.63])
 
-AC_INIT([coolwsd], [23.05.0.1], [https://github.com/CollaboraOnline/online/issues], [coolwsd], [https://collaboraonline.github.io/])
+# Package name and tarname
+m4_define([package_NAME], [oxool])
+# Daemon name(若非 oxool，請和 package_NAME 同)
+m4_define([wsd_NAME], [oxoolwsd])
+# Package Version
+m4_define([package_VERSION], [5.0.0])
+# Bug Report URL(Report Bugs)
+m4_define([bug_REPORT], [https://github.com/OSSII/oxool-community/issues])
+# Package URL(Homepage)
+m4_define([package_URL], [https://www.ossii.com.tw/online])
+
+AC_INIT([package_NAME], [package_VERSION], [bug_REPORT], [package_NAME], [package_URL])
 LT_INIT([shared, disable-static, dlopen])
 
 AM_INIT_AUTOMAKE([1.10 foreign subdir-objects tar-pax -Wno-portability])
@@ -13,10 +24,14 @@ AC_CONFIG_MACRO_DIR([m4])
 # We don't want to require pkg-config and PKG_CHECK_MODULES on macOS
 m4_if(m4_esyscmd_s([uname -s]),Darwin,[m4_define([PKG_CHECK_MODULES],[])],[])
 
-COOLWSD_VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
-COOLWSD_VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
-COOLWSD_VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
-COOLWSD_VERSION_NANO=`echo $VERSION | awk -F. '{print $4}'`
+OXOOLWSD_VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
+OXOOLWSD_VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
+OXOOLWSD_VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
+OXOOLWSD_VERSION_NANO=`echo $VERSION | awk -F. '{print $4}'`
+# 如果 OXOOLWSD_VERSION_NANO 是空值，則設為 1
+if test -z "$OXOOLWSD_VERSION_NANO"; then
+    OXOOLWSD_VERSION_NANO=1
+fi
 
 ANDROID_PACKAGE_VERSIONCODE=
 if test "$enable_androidapp" = "yes"; then
@@ -25,10 +40,10 @@ if test "$enable_androidapp" = "yes"; then
         ANDROID_PACKAGE_VERSIONCODE="1"
         AC_MSG_RESULT([not set, using $ANDROID_PACKAGE_VERSIONCODE])
     else
-        COOLWSD_VERSION_MAJOR=`echo $with_android_package_versioncode | awk -F. '{print $1}'`
-        COOLWSD_VERSION_MINOR=`echo $with_android_package_versioncode | awk -F. '{print $2}'`
-        COOLWSD_VERSION_MICRO=`echo $with_android_package_versioncode | awk -F. '{print $3}'`
-        COOLWSD_VERSION_NANO=`echo $with_android_package_versioncode | awk -F. '{print $4}' | awk -F- '{print $1}'`
+        OXOOLWSD_VERSION_MAJOR=`echo $with_android_package_versioncode | awk -F. '{print $1}'`
+        OXOOLWSD_VERSION_MINOR=`echo $with_android_package_versioncode | awk -F. '{print $2}'`
+        OXOOLWSD_VERSION_MICRO=`echo $with_android_package_versioncode | awk -F. '{print $3}'`
+        OXOOLWSD_VERSION_NANO=`echo $with_android_package_versioncode | awk -F. '{print $4}' | awk -F- '{print $1}'`
 
         ANDROID_PACKAGE_VERSIONCODE=`echo $with_android_package_versioncode | awk -F- '{print $2}'`
         AC_MSG_RESULT([$ANDROID_PACKAGE_VERSIONCODE])
@@ -36,29 +51,68 @@ if test "$enable_androidapp" = "yes"; then
 fi
 AC_SUBST(ANDROID_PACKAGE_VERSIONCODE)
 
-COOLWSD_VERSION="$COOLWSD_VERSION_MAJOR.$COOLWSD_VERSION_MINOR.$COOLWSD_VERSION_MICRO.$COOLWSD_VERSION_NANO"
+OXOOLWSD_VERSION="$OXOOLWSD_VERSION_MAJOR.$OXOOLWSD_VERSION_MINOR.$OXOOLWSD_VERSION_MICRO.$OXOOLWSD_VERSION_NANO"
 
-AC_SUBST([COOLWSD_VERSION_MAJOR])
-AC_SUBST([COOLWSD_VERSION_MINOR])
-AC_SUBST([COOLWSD_VERSION_MICRO])
-AC_SUBST([COOLWSD_VERSION_NANO])
-AC_SUBST([COOLWSD_VERSION])
+AC_SUBST([OXOOLWSD_VERSION_MAJOR])
+AC_SUBST([OXOOLWSD_VERSION_MINOR])
+AC_SUBST([OXOOLWSD_VERSION_MICRO])
+AC_SUBST([OXOOLWSD_VERSION_NANO])
+AC_SUBST([OXOOLWSD_VERSION])
 
-AC_DEFINE_UNQUOTED([COOLWSD_VERSION],[["$COOLWSD_VERSION"]],[Collabora Online WebSocket server version])
+AC_DEFINE_UNQUOTED([OXOOLWSD_VERSION],[["$OXOOLWSD_VERSION"]],[OxOffice Online WebSocket server version])
 
 # try to add a git hash for a version if we're developing
-COOLWSD_VERSION_HASH="$COOLWSD_VERSION"
+OXOOLWSD_VERSION_HASH="$OXOOLWSD_VERSION"
 git_hash=`cd ${srcdir} && ( cat dist_git_hash 2> /dev/null || git log -1 --format=%h 2> /dev/null )`
 if test "z$git_hash" != "z"; then
-   COOLWSD_VERSION_HASH=$git_hash
+   OXOOLWSD_VERSION_HASH=$git_hash
 fi
-AC_SUBST([COOLWSD_VERSION_HASH])
+AC_SUBST([OXOOLWSD_VERSION_HASH])
 
-AC_DEFINE_UNQUOTED([COOLWSD_VERSION_HASH],[["$COOLWSD_VERSION_HASH"]],[Collabora Online git hash if present])
+AC_DEFINE_UNQUOTED([OXOOLWSD_VERSION_HASH],[["$OXOOLWSD_VERSION_HASH"]],[OxOffice Online git hash if present])
 
-AC_CONFIG_SRCDIR([wsd/COOLWSD.cpp])
+AC_CONFIG_SRCDIR([wsd/OXOOLWSD.cpp])
 
-AC_DEFINE_UNQUOTED([COOLWSD_BUILDCONFIG],[["$ac_configure_args"]],[Options passed to configure script])
+AC_ARG_WITH([product-name],
+    AS_HELP_STRING([--with-product-name='My Online Editor'], [Set product name (default: AC_PACKAGE_NAME)]),
+    [PRODUCTNAME="$withval"],
+    [PRODUCTNAME="AC_PACKAGE_NAME"])
+AC_SUBST([PRODUCTNAME])
+
+WSD_NAME="wsd_NAME"
+AC_SUBST([WSD_NAME])
+LIB_LINK_NAME="OxOOL"
+AC_SUBST([LIB_LINK_NAME])
+LIB_NAME="lib${LIB_LINK_NAME}"
+AC_SUBST([LIB_NAME])
+
+# 如果是 git repo，取得 git branch name，否則從 dist_git_branch 檔案取得
+if test -d .git; then
+    OXOOLWSD_BRANCH=`git rev-parse --abbrev-ref HEAD | cut -d '-' -f 1`
+    # 將 git branch name 寫入 dist_git_branch 檔案
+    echo "$OXOOLWSD_BRANCH" > dist_git_branch
+else
+    # 使用發佈的套件(.tar.gz)，由於沒有 .git repo，所以從 dist_git_branch 檔案取得
+    OXOOLWSD_BRANCH=`cat dist_git_branch 2> /dev/null`
+fi
+AC_SUBST([OXOOLWSD_BRANCH])
+AC_DEFINE_UNQUOTED([OXOOLWSD_BRANCH], [["$OXOOLWSD_BRANCH"]],[git branch name])
+
+# OXOOLWSD_DIST_NAME 是 tarball 的名稱，由 PACKAGE-VERSION-OXOOLWSD_BRANCH 組成
+# 如果 OXOOLWSD_BRANCH 是空值或 PACKAGE 不是 oxool，則不需要 OXOOLWSD_BRANCH
+if test -z "$OXOOLWSD_BRANCH" || test "$PACKAGE" != "oxool"; then
+    OXOOLWSD_DIST_NAME="${PACKAGE}-${VERSION}"
+    OXOOLWSD_DIST_RELEASE="${$OXOOLWSD_VERSION_NANO}"
+else
+    OXOOLWSD_DIST_NAME="${PACKAGE}-${VERSION}-${OXOOLWSD_BRANCH}"
+    OXOOLWSD_DIST_RELEASE="${OXOOLWSD_VERSION_NANO}.${OXOOLWSD_BRANCH}"
+fi
+AC_SUBST([OXOOLWSD_DIST_NAME])
+AC_DEFINE_UNQUOTED([OXOOLWSD_DIST_NAME], [["$OXOOLWSD_DIST_NAME"]],[tarball name])
+AC_SUBST([OXOOLWSD_DIST_RELEASE])
+AC_DEFINE_UNQUOTED([OXOOLWSD_DIST_RELEASE], [["$OXOOLWSD_DIST_RELEASE"]],[tarball release])
+
+AC_DEFINE_UNQUOTED([OXOOLWSD_BUILDCONFIG],[["$ac_configure_args"]],[Options passed to configure script])
 
 # this is a dummy header, autoheader adds all entries to it
 # don't include config_unused.h anywhere!
@@ -96,7 +150,7 @@ for MODULE in lxml polib; do
         AC_MSG_RESULT([yes])
     else
         AC_MSG_RESULT([no])
-        AS_IF([test `uname -s` = Linux -o `uname -s` = FreeBSD -o `uname -s`= Darwin],
+        AS_IF([test `uname -s` = Linux -o `uname -s` = FreeBSD -o `uname -s` = Darwin],
               [AC_MSG_ERROR([${MODULE} for python3 is needed. It might be in a package called python3-${MODULE}.])],
               [AC_MSG_WARN([${MODULE} for python3 is needed. It might be in a package called python3-${MODULE}. But
                if you are building the JS bits on another (Linux) machine, that doesn't matter])])
@@ -145,13 +199,13 @@ AC_ARG_ENABLE([iosapp],
 
 AC_ARG_WITH([wasm-fallback],
               AS_HELP_STRING([--with-wasm-fallback=<path>],
-                             [Build a COOL where the client can fall back to a WASM implementation if the connection to the server fails.
+                             [Build a OXOOL where the client can fall back to a WASM implementation if the connection to the server fails.
                               The path is where the WASM build of Online was done.]))
 
 AC_ARG_WITH([wasm-additional-files],
               AS_HELP_STRING([--with-wasm-additional-files=<path>],
                              [Add more files to the in-memory WASM file system in online.wasm in addition to the ones from the WASM
-                              build of Collabora Office. The files will be available in the WASM in-memory file system as pathnames
+                              build of OxOffice. The files will be available in the WASM in-memory file system as pathnames
                               stripping the initial prefix <path> where they are on the build system. For instance, if you give
                               --with-wasm-additional-files=$HOME/our-sample-docs, and there is a file $HOME/our-sample-docs/temp/test.docx,
                               that will be available in the online.wasm as /temp/test.docx.
@@ -182,7 +236,7 @@ AC_ARG_ENABLE([gtkapp],
 AC_ARG_ENABLE(fuzzers,
     AS_HELP_STRING([--enable-fuzzers],
         [Enables building libfuzzer targets for fuzz testing. It is useful to enable this switch
-         only in a separate build tree, since the switch disables the creation of a coolwsd
+         only in a separate build tree, since the switch disables the creation of a oxoolwsd
          binary. For best results: --with-sanitizer=address,undefined])
 )
 
@@ -223,7 +277,7 @@ AC_ARG_WITH([app-name],
                              [Set the user-visible name of the app you build.]))
 
 AC_ARG_WITH([user-id],
-              AS_HELP_STRING([--with-user-id=cool],
+              AS_HELP_STRING([--with-user-id=oxool],
                              [Set the account name of the user required to run the app (outside debug mode).]))
 
 AC_ARG_WITH([icon-theme],
@@ -325,7 +379,7 @@ AC_ARG_ENABLE([ssl],
 
 AC_ARG_WITH([support-public-key],
             AS_HELP_STRING([--with-support-public-key=<public-key-name.pub>],
-                [Implements signed key with expiration required for support. Targeted at Collabora Online Service Providers.]))
+                [Implements signed key with expiration required for support. Targeted at OxOffice Online Service Providers.]))
 
 AC_ARG_WITH([max-connections],
             AS_HELP_STRING([--with-max-connections],
@@ -369,17 +423,17 @@ AC_ARG_ENABLE([werror],
             AS_HELP_STRING([--disable-werror],
                           [Do not turn warnings into errors.]))
 
-AC_ARG_ENABLE([vereign],
-            AS_HELP_STRING([--enable-vereign],
-                          [Set Vereign document_signing_url configuration key to the default app.vereign.com.]))
-
 AC_ARG_ENABLE([cypress],
             AS_HELP_STRING([--enable-cypress],
                            [Enable cypress tests.]))
 
+AC_ARG_ENABLE([tests],
+            AS_HELP_STRING([--disable-tests],
+                           [Do not build and run unit tests.]))
+
 AC_ARG_WITH([help-url],
             AS_HELP_STRING([--with-help-url=<url>],
-                [Set the base URL of the online help. Default is https://help.collaboraoffice.com/help.html?])
+                [Set the base URL of the online help. Default is https://help.libreoffice.org/help.html?])
                 [--without-help-url Help buttons of dialogs will be disabled, external help website will not be used.],,)
 
 AC_ARG_WITH([dictionaries],
@@ -409,11 +463,11 @@ AS_IF([test "$enable_debug" = yes -a -n "$with_poco_libs"],
 ENABLE_DEBUG=false
 ENABLE_DEBUG_PROTOCOL=false
 ENABLE_BUNDLE=true
-COOLWSD_LOGLEVEL="warning"
-COOLWSD_LOG_TO_FILE="false"
-COOLWSD_LOGFILE="/var/log/coolwsd.log"
-COOLWSD_TRACEEVENTFILE="/var/log/coolwsd.trace.json"
-COOLWSD_ANONYMIZE_USER_DATA=false
+OXOOLWSD_LOGLEVEL="warning"
+OXOOLWSD_LOG_TO_FILE="false"
+OXOOLWSD_LOGFILE="/var/log/oxoolwsd.log"
+OXOOLWSD_TRACEEVENTFILE="/var/log/oxoolwsd.trace.json"
+OXOOLWSD_ANONYMIZE_USER_DATA=false
 BROWSER_LOGGING="false"
 debug_msg="secure mode: product build"
 anonym_msg=""
@@ -428,11 +482,11 @@ if test "$enable_debug" = "yes"; then
    AC_DEFINE([ENABLE_DEBUG],1,[Whether to compile in some extra debugging support code and disable some security pieces])
    ENABLE_DEBUG=true
    ENABLE_DEBUG_PROTOCOL=true
-   COOLWSD_LOGLEVEL="trace"
-   COOLWSD_LOG_TO_FILE="true"
-   COOLWSD_LOGFILE="/tmp/coolwsd.log"
-   COOLWSD_TRACEEVENTFILE="/tmp/coolwsd.trace.json"
-   COOLWSD_ANONYMIZE_USER_DATA=false
+   OXOOLWSD_LOGLEVEL="trace"
+   OXOOLWSD_LOG_TO_FILE="true"
+   OXOOLWSD_LOGFILE="/tmp/oxoolwsd.log"
+   OXOOLWSD_TRACEEVENTFILE="/tmp/oxoolwsd.trace.json"
+   OXOOLWSD_ANONYMIZE_USER_DATA=false
    BROWSER_LOGGING="true"
    debug_msg="low security debugging mode"
 
@@ -459,8 +513,8 @@ else
 fi
 AC_SUBST(ENABLE_DEBUG)
 AC_SUBST(ENABLE_BUNDLE)
-AC_SUBST(COOLWSD_LOGLEVEL)
-AC_SUBST(COOLWSD_LOG_TO_FILE)
+AC_SUBST(OXOOLWSD_LOGLEVEL)
+AC_SUBST(OXOOLWSD_LOG_TO_FILE)
 AC_SUBST(BROWSER_LOGGING)
 
 if test "$enable_debug_protocol" = no; then
@@ -477,22 +531,22 @@ fi
 AC_SUBST(ENABLE_BROWSERSYNC)
 
 if test -n "$with_logfile" ; then
-   COOLWSD_LOGFILE="$with_logfile"
+   OXOOLWSD_LOGFILE="$with_logfile"
 fi
-AC_SUBST(COOLWSD_LOGFILE)
+AC_SUBST(OXOOLWSD_LOGFILE)
 
 if test -n "$with_trace_event_file" ; then
-   COOLWSD_TRACEEVENTFILE="$with_trace_event_file"
+   OXOOLWSD_TRACEEVENTFILE="$with_trace_event_file"
 fi
-AC_SUBST(COOLWSD_TRACEEVENTFILE)
-AC_DEFINE_UNQUOTED([COOLWSD_TRACEEVENTFILE], [["]$COOLWSD_TRACEEVENTFILE["]], [Destination for Trace Event output])
+AC_SUBST(OXOOLWSD_TRACEEVENTFILE)
+AC_DEFINE_UNQUOTED([OXOOLWSD_TRACEEVENTFILE], [["]$OXOOLWSD_TRACEEVENTFILE["]], [Destination for Trace Event output])
 
 if test "$enable_anonymization" = "yes" ; then
-   COOLWSD_ANONYMIZE_USER_DATA=true
+   OXOOLWSD_ANONYMIZE_USER_DATA=true
    anonym_msg="anonymization of user-data is enabled"
 fi
-AC_DEFINE_UNQUOTED([COOLWSD_ANONYMIZE_USER_DATA],[$COOLWSD_ANONYMIZE_USER_DATA],[Enable permanent anonymization in logs])
-AC_SUBST(COOLWSD_ANONYMIZE_USER_DATA)
+AC_DEFINE_UNQUOTED([OXOOLWSD_ANONYMIZE_USER_DATA],[$OXOOLWSD_ANONYMIZE_USER_DATA],[Enable permanent anonymization in logs])
+AC_SUBST(OXOOLWSD_ANONYMIZE_USER_DATA)
 
 if test "$enable_logging_test_asserts" = "yes" ; then
    LOK_LOG_ASSERTIONS=1
@@ -729,6 +783,11 @@ AC_DEFINE_UNQUOTED([CORE_VERSION_HASH],[["$CORE_VERSION_HASH"]],[LibreOffice cor
 LIBPNG_INCLUDES="$with_libpng_includes"
 LIBPNG_LIBS="$with_libpng_libs"
 
+LOKIT_PATH="`pwd`/bundled/include"
+if test "x$with_lokit_path" = "x"; then
+    with_lokit_path="$LOKIT_PATH"
+fi
+
 if test "$enable_iosapp" != yes -a "$enable_androidapp" != yes; then
    LOKIT_PATH=`readlink -f $with_lokit_path`
 fi
@@ -767,7 +826,7 @@ AC_SUBST(ENABLE_ANDROIDAPP)
 AM_CONDITIONAL([ENABLE_ANDROIDAPP], [test "$ENABLE_ANDROIDAPP" = "true"])
 AC_SUBST(ANDROID_PACKAGE_NAME)
 
-APP_NAME="Collabora Online Development Edition"
+APP_NAME="OxOffice Online"
 if test -n "$with_app_name"; then
    APP_NAME="$with_app_name"
 fi
@@ -780,7 +839,8 @@ if test "$enable_iosapp" = yes -a -z "$with_vendor"; then
     AC_MSG_ERROR([You must use --with-vendor when configuring for the iOS app])
 fi
 if test -z "$with_vendor" -o "$with_vendor" = "no"; then
-    VENDOR="$USERNAME"
+    # 未設定供應商時，預設為 OSS Integral Institute Co., Ltd
+    VENDOR="OSS Integral Institute Co., Ltd"
 
     if test -z "$VENDOR"; then
         VENDOR="$USER"
@@ -838,7 +898,7 @@ fi
 AC_SUBST(ENABLE_GTKAPP)
 AM_CONDITIONAL([ENABLE_GTKAPP], [test "$ENABLE_GTKAPP" = "true"])
 
-dnl ENABLE_WASM_FALLBACK means we are building an otherwise normal COOL but with the "WASM fallback"
+dnl ENABLE_WASM_FALLBACK means we are building an otherwise normal OXOOL but with the "WASM fallback"
 dnl capability. Compare to ENABLE_WASM.
 
 AM_CONDITIONAL([ENABLE_WASM_FALLBACK], [test -n "$with_wasm_fallback"])
@@ -906,20 +966,13 @@ if test -n "$with_welcome_url"; then
     WELCOME_URL=$with_welcome_url
     ENABLE_WELCOME_MESSAGE=1
 else
-    WELCOME_CONFIG_FRAGMENT=$srcdir/coolwsd-welcome.xml
+    WELCOME_CONFIG_FRAGMENT=$srcdir/oxoolwsd-welcome.xml
 fi
 
 AC_SUBST_FILE([WELCOME_CONFIG_FRAGMENT])
 AC_DEFINE_UNQUOTED([ENABLE_WELCOME_MESSAGE],$ENABLE_WELCOME_MESSAGE,[Should the Release notes message be shown on upgrade])
 AM_CONDITIONAL([ENABLE_WELCOME_MESSAGE], [test "$ENABLE_WELCOME_MESSAGE" = "1"])
 AC_DEFINE_UNQUOTED([WELCOME_URL],["$WELCOME_URL"],[The welcome url of the build.])
-
-VEREIGN_URL=
-if test "$enable_vereign" = "yes"; then
-    VEREIGN_URL="https://app.vereign.com"
-fi
-AC_DEFINE_UNQUOTED([VEREIGN_URL],["$VEREIGN_URL"],[Default value of per_documents.document_signing_url])
-AC_SUBST(VEREIGN_URL)
 
 # Test for build environment
 
@@ -1034,6 +1087,20 @@ else
     AC_MSG_ERROR(Compiler doesn't support C++17)
 fi
 
+# Check if we have clang, rather than gcc, which
+# doesn't like -pthread on the linker command-line.
+AC_MSG_CHECKING([whether the compiler is clang])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+    #if !defined(__clang__)
+    #error not clang
+    #endif
+])],
+                    [AC_MSG_RESULT([yes])
+                    AC_DEFINE([HAVE_CLANG],1,[whether the C++ compiler is clang])],
+                    [AC_MSG_RESULT([no])
+                    AC_DEFINE([HAVE_CLANG],0,[whether the C++ compiler is clang])])
+AM_CONDITIONAL([HAVE_CLANG], [test "$HAVE_CLANG" = "1"])
+
 AS_IF([test "$ENABLE_GTKAPP" != true],
 [CXXFLAGS="$CXXFLAGS $CXXFLAGS_CXXSTD"])
 
@@ -1138,6 +1205,10 @@ AC_DEFINE_UNQUOTED([LO_PATH],["$LO_PATH"],[Path to LibreOffice installation])
 AC_SUBST(JAILS_PATH)
 AC_SUBST(SYSTEMPLATE_PATH)
 AM_CONDITIONAL(HAVE_LO_PATH,[test "$have_lo_path" = "true"])
+
+LO_PARENT_PATH=`dirname "$LO_PATH"`
+AC_SUBST(LO_PARENT_PATH)
+AC_DEFINE_UNQUOTED([LO_PARENT_PATH],["$LO_PARENT_PATH"],[Path to LibreOffice installation parent path])
 
 AS_IF([test -n "$with_poco_includes"],
       [CPPFLAGS="$CPPFLAGS -isystem ${with_poco_includes}"])
@@ -1326,14 +1397,14 @@ AS_IF([test "$ENABLE_IOSAPP" != "true" -a "$ENABLE_ANDROIDAPP" != "true" -a "$ho
 
 AS_IF([test `uname -s` = "Linux" -o `uname -s` = "FreeBSD" -o `uname -s` = "Darwin"],
       # We need npm and node unconditionally only on Linux, both in the normal Online case, and when
-      # only building cool for the iOS app. When building the iOS app itself on macOS, this is
-      # optional. If node and npm are not available, cool will have to be built on a Linux box.
+      # only building oxool for the iOS app. When building the iOS app itself on macOS, this is
+      # optional. If node and npm are not available, oxool will have to be built on a Linux box.
       [AC_PATH_PROG(NODE, node, no)
        if test "$NODE" = "no"; then
            if test `uname -s` = "Darwin"; then
-               AC_MSG_WARN([The cool bits will have to be built on a Linux machine and copied over])
+               AC_MSG_WARN([The oxool bits will have to be built on a Linux machine and copied over])
            else
-               AC_MSG_ERROR([node required to build cool, but not installed])
+               AC_MSG_ERROR([node required to build oxool, but not installed])
            fi
        else
            NODE_VER=`node --version | sed 's/^v//' | awk -F. '{ print (($1 * 100) + $2) * 100 + $3;}'`
@@ -1345,7 +1416,7 @@ AS_IF([test `uname -s` = "Linux" -o `uname -s` = "FreeBSD" -o `uname -s` = "Darw
        if test "$NODE" != "no"; then
            AC_PATH_PROG(NPM, npm, no)
            if test "$NPM" = "no"; then
-               AC_MSG_ERROR([npm required to build cool, but not installed])
+               AC_MSG_ERROR([npm required to build oxool, but not installed])
            else
                NPM_VER=`npm -v | awk -F. '{ print (($1 * 100) + $2) * 100 + $3;}'`
                if test "$NPM_VER" -lt 50000; then
@@ -1370,19 +1441,19 @@ AS_IF([test `uname -s` = "FreeBSD"],
 
 # need this after the other stuff that uses the compiler because we don't want to run configure-tests with the plugins enabled
 AS_IF([test -n "$with_compiler_plugins"],
-      [CPPFLAGS="$CPPFLAGS -Xclang -load -Xclang ${with_compiler_plugins}/compilerplugins/obj/plugin.so -Xclang -add-plugin -Xclang loplugin -Xclang -plugin-arg-loplugin -Xclang --cool-base-path=\${abs_top_srcdir}"])
+      [CPPFLAGS="$CPPFLAGS -Xclang -load -Xclang ${with_compiler_plugins}/compilerplugins/obj/plugin.so -Xclang -add-plugin -Xclang loplugin -Xclang -plugin-arg-loplugin -Xclang --oxool-base-path=\${abs_top_srcdir}"])
 
-COOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
-AC_SUBST(COOLWSD_CONFIGDIR)
+OXOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
+AC_SUBST(OXOOLWSD_CONFIGDIR)
 
-COOLWSD_DATADIR=${datadir}/${PACKAGE}
-AC_SUBST(COOLWSD_DATADIR)
+OXOOLWSD_DATADIR=${datadir}/${PACKAGE}
+AC_SUBST(OXOOLWSD_DATADIR)
 
-COOL_USER_ID="cool"
+OXOOL_USER_ID="lool"
 if test -n "$with_user_id"; then
-   COOL_USER_ID="$with_user_id"
+   OXOOL_USER_ID="$with_user_id"
 fi
-AC_DEFINE_UNQUOTED([COOL_USER_ID],["$COOL_USER_ID"],[The user-name which is allowed to run coolwsd and its tools])
+AC_DEFINE_UNQUOTED([OXOOL_USER_ID],["$OXOOL_USER_ID"],[The user-name which is allowed to run oxoolwsd and its tools])
 
 AM_CONDITIONAL([ENABLE_SETCAP], [test "$enable_setcap" != "no" -a `uname -s` = "Linux" -a "$enable_fuzzers" != "yes" -a "$host_os" != "emscripten"])
 
@@ -1399,7 +1470,6 @@ AC_SUBST(ENABLE_SETCAP)
 AC_CONFIG_LINKS([discovery.xml:discovery.xml])
 AC_CONFIG_LINKS([browser/package.json:browser/package.json])
 AC_CONFIG_LINKS([cypress_test/package.json:cypress_test/package.json])
-AC_CONFIG_LINKS([cypress_test/cypress.json:cypress_test/cypress.json])
 AC_CONFIG_COMMANDS_PRE([
 if test "$srcdir" != '.'; then
    dst_dirs="cypress_test/plugins cypress_test/eslint_plugin browser/archived-packages"
@@ -1460,11 +1530,11 @@ AS_IF([test "$ENABLE_IOSAPP" = "true"],
               (cd "$APP_BRANDING_DIR" && tar cf - .) | (cd ios/Mobile/Branding && tar xf -)
           else
               # A Branding/branding.css file must exist, it is
-              # referenced unconditionally in cool.html in the
+              # referenced unconditionally in loleaflet.html in the
               # iOS app.
               touch ios/Mobile/Branding/branding.css
           fi
-          cp coolkitconfig-mobile.xcu ios/Mobile/coolkitconfig.xcu
+          cp oxoolkitconfig-mobile.xcu ios/Mobile/oxoolkitconfig.xcu
        fi
       ])
 AC_SUBST(IOSAPP_FONTS)
@@ -1481,6 +1551,15 @@ else
 fi
 AM_CONDITIONAL([ENABLE_CYPRESS], [$ENABLE_CYPRESS])
 
+ENABLE_TESTS=true
+if test "$enable_tests" = "no"; then
+    ENABLE_TESTS=false
+else
+    ENABLE_TESTS=true
+fi
+AM_CONDITIONAL([ENABLE_TESTS], [$ENABLE_TESTS])
+
+
 AC_MSG_CHECKING([for URL of online help])
 if test -n "$with_help_url" -a "$with_help_url" != "no"; then
     HELP_URL="$with_help_url"
@@ -1489,10 +1568,11 @@ elif test "$with_help_url" = "no"; then
     HELP_URL=
     AC_MSG_RESULT([none, help buttons are disabled])
 else
-    HELP_URL="https://help.collaboraoffice.com/help.html?"
+    HELP_URL="https://help.libreoffice.org/help.html?"
     AC_MSG_RESULT([default: $HELP_URL])
 fi
 AC_SUBST(HELP_URL)
+AC_DEFINE_UNQUOTED([HELP_URL],["$HELP_URL"],[Default value of help root URL])
 
 AC_MSG_CHECKING([for allowed languages for Writing Aids])
 if test -n "$with_dictionaries" -a "$with_dictionaries" != "no"; then
@@ -1610,7 +1690,7 @@ AM_SUBST_NOTMAKE(LOCK_CONFIGURATION)
 
 UNLOCK_LINK_PER_HOST=
 if test "$enable_feature_lock" = "yes"; then
-    UNLOCK_LINK_PER_HOST="<unlock_link desc=\"Link from where user can unlock the features, which will get mapped with alias_group. According to hostname coolwsd will set the unlock link for feature unlock dialog. If not specified it will fallback to feature_lock.unlock_link entry\" default=\"\"></unlock_link>"
+    UNLOCK_LINK_PER_HOST="<unlock_link desc=\"Link from where user can unlock the features, which will get mapped with alias_group. According to hostname oxoolwsd will set the unlock link for feature unlock dialog. If not specified it will fallback to feature_lock.unlock_link entry\" default=\"\"></unlock_link>"
 fi
 
 AC_SUBST(UNLOCK_LINK_PER_HOST)
@@ -1631,17 +1711,22 @@ AM_SUBST_NOTMAKE(FEATURE_RESTRICTION_CONFIGURATION)
 AC_MSG_RESULT([$ALLOWED_LANGUAGES])
 AC_SUBST(ALLOWED_LANGUAGES)
 
+AC_CONFIG_FILES([
+    ${WSD_NAME}.xml:online.xml.in
+    ${WSD_NAME}.service:online.service.in
+    debian/${PRODUCTNAME}.service:online.service.in
+    ${WSD_NAME}.spec:online.spec.in
+    ${PRODUCTNAME}kitconfig.xcu:onlinekitconfig.xcu.in
+    ${PRODUCTNAME}.pc:online.pc.in
+    ])
+
 AC_CONFIG_FILES([Makefile
                  cypress_test/Makefile
                  gtk/Makefile
                  wasm/Makefile
-                 test/Makefile
                  browser/Makefile
                  browser/npm-shrinkwrap.json
-                 coolkitconfig.xcu
-                 coolwsd.spec
-                 coolwsd.xml
-                 debian/coolwsd.postinst])
+                 debian/oxoolwsd.postinst])
 
 if test "$enable_iosapp" = "yes"; then
     AC_CONFIG_FILES([ios/config.h
@@ -1734,6 +1819,8 @@ AS_IF([test "$ENABLE_IOSAPP" = "true"],
       [
        echo "
 Configuration:
+    Product name              ${PRODUCTNAME}
+    Vendor name               ${VENDOR}
     LOKit path                ${lokit_msg}
     LO path                   $LO_PATH
     LO integration tests      ${lo_msg}
@@ -1751,7 +1838,7 @@ Configuration:
 
     \$ make # to compile"
 if test -n "$with_lo_path"; then
-echo "    \$ make run # to start coolwsd
+echo "    \$ make run # to start oxoolwsd
     \$ make sync-writer|calc|impress # to start browsersync with specified app
 "
 fi

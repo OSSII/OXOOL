@@ -99,21 +99,15 @@ private:
         {
             request.read(message);
 
-            Log::StreamLogger logger = Log::info();
-            if (logger.enabled())
-            {
-                logger << '#' << socket->getFD() << ": Client HTTP Request: "
-                       << request.getMethod() << ' '
-                       << request.getURI() << ' '
-                       << request.getVersion();
-
-                for (const auto& it : request)
-                {
-                    logger << " / " << it.first << ": " << it.second;
-                }
-
-                LOG_END_FLUSH(logger);
-            }
+            LOG_INF('#' << socket->getFD() << ": Client HTTP Request: " << request.getMethod()
+                        << ' ' << request.getURI() << ' ' << request.getVersion() <<
+                    [&](auto& log)
+                    {
+                        for (const auto& it : request)
+                        {
+                            log << " / " << it.first << ": " << it.second;
+                        }
+                    });
 
             const std::streamsize contentLength = request.getContentLength();
             const auto offset = itBody - in.begin();
@@ -168,7 +162,7 @@ private:
 
             // NOTE: Check _wsState to choose between HTTP response or WebSocket (app-level) error.
             LOG_INF('#' << socket->getFD() << " Exception while processing incoming request: [" <<
-                    COOLProtocol::getAbbreviatedMessage(in) << "]: " << exc.what());
+                    OXOOLProtocol::getAbbreviatedMessage(in) << "]: " << exc.what());
         }
 
         // if we succeeded - remove the request from our input buffer
@@ -219,10 +213,10 @@ namespace Util
     }
 }
 
-class CoolConfig final: public Poco::Util::XMLConfiguration
+class OxoolConfig final: public Poco::Util::XMLConfiguration
 {
 public:
-    CoolConfig()
+    OxoolConfig()
         {}
 };
 
@@ -238,8 +232,8 @@ int main (int argc, char **argv)
     Log::initialize("WebSocketDump", "trace", true, false,
                     std::map<std::string, std::string>());
 
-    CoolConfig config;
-    config.load("coolwsd.xml");
+    OxoolConfig config;
+    config.load("oxoolwsd.xml");
 
     // read the port & ssl support
     int port = 9042;

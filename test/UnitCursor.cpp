@@ -267,7 +267,7 @@ UnitBase::TestResult UnitCursor::testInsertAnnotationWriter()
                        socket->waitForDisconnection(std::chrono::seconds(5)));
 
     // Make sure the document is fully unloaded.
-    // testNoExtraCoolKitsLeft();
+    // testNoExtraOxoolKitsLeft();
 
     TST_LOG("Reloading ");
     socket = helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
@@ -338,7 +338,7 @@ UnitBase::TestResult UnitCursor::testEditAnnotationWriter()
     LOK_ASSERT_EQUAL(
         std::string("textselectioncontent: and now for something completely different"), res);
 
-    // const int kitcount = getCoolKitProcessCount();
+    // const int kitcount = getOxoolKitProcessCount();
 
     // Close and reopen the same document and test again.
     TST_LOG("Closing connection after pasting.");
@@ -350,7 +350,7 @@ UnitBase::TestResult UnitCursor::testEditAnnotationWriter()
     socket = helpers::loadDocAndGetSession(socketPoll, uri, documentURL, testname);
 
     // Should have no new instances.
-    // LOK_ASSERT_EQUAL(kitcount, countCoolKitProcesses(kitcount));
+    // LOK_ASSERT_EQUAL(kitcount, countOxoolKitProcesses(kitcount));
 
     // Confirm that the text is in the comment and not doc body.
     // Click in the body.

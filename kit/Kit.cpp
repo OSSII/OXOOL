@@ -69,7 +69,6 @@
 #include <Log.hpp>
 #include <Png.hpp>
 #include <Rectangle.hpp>
-#include <TileDesc.hpp>
 #include <Unit.hpp>
 #include <UserMessages.hpp>
 #include <Util.hpp>
@@ -86,7 +85,7 @@
 #endif
 
 #if MOBILEAPP
-#include "COOLWSD.hpp"
+#include "OXOOLWSD.hpp"
 #endif
 
 #ifdef IOS
@@ -106,7 +105,7 @@ using Poco::URI;
 using Poco::Path;
 #endif
 
-using namespace COOLProtocol;
+using namespace OXOOLProtocol;
 
 extern "C" { void dump_kit_state(void); /* easy for gdb */ }
 
@@ -146,6 +145,8 @@ static std::string JailRoot;
 static void flushTraceEventRecordings();
 #endif
 
+
+
 // Abnormally we get LOK events from another thread, which must be
 // push safely into our main poll loop to process to keep all
 // socket buffer & event processing in a single, thread.
@@ -157,6 +158,36 @@ static LokHookFunction2* initFunction = nullptr;
 
 namespace
 {
+    // for later consistency checking.
+    static std::string UserDirPath;
+    static std::string InstDirPath;
+
+    std::string pathFromFileURL(const std::string &uri)
+    {
+        std::string decoded;
+        Poco::URI::decode(uri, decoded);
+        if (decoded.rfind("file://", 0) != 0)
+        {
+            LOG_ERR("Asked to load a very unusual file path: '" << uri << "' -> '" << decoded << "'");
+            return std::string();
+        }
+        return decoded.substr(7);
+    }
+
+    void consistencyCheckFileExists(const std::string &uri)
+    {
+        std::string path = pathFromFileURL(uri);
+        if (path.empty())
+            return;
+        FileUtil::Stat stat(path);
+        if (!stat.good() && stat.isFile())
+            LOG_ERR("Fatal system error: created file passed into document doesn't exist: '" << path << "'");
+        else
+            LOG_TRC("File path '" << path << "' exists of length " << stat.size());
+
+        consistencyCheckJail();
+    }
+
 #ifndef BUILDING_TESTS
     enum class LinkOrCopyType
     {
@@ -320,7 +351,7 @@ namespace
             if (errno == ENOENT)
             {
                 File(Path(linkableCopy).parent()).createDirectories();
-                if (!FileUtil::copy(fpath, linkableCopy.c_str(), /*log=*/false, /*throw_on_error=*/false))
+                if (!FileUtil::copy(fpath, linkableCopy, /*log=*/false, /*throw_on_error=*/false))
                     LOG_TRC("Failed to create linkable copy [" << fpath << "] to [" << linkableCopy.c_str() << "]");
                 else {
                     // Match system permissions, so a file we can write is not shared across jails.
@@ -423,18 +454,19 @@ namespace
             {
                 const std::size_t size = sb->st_size;
                 std::vector<char> target(size + 1);
-                const ssize_t written = readlink(fpath, target.data(), size);
+                char* target_data = target.data();
+                const ssize_t written = readlink(fpath, target_data, size);
                 if (written <= 0 || static_cast<std::size_t>(written) > size)
                 {
                     LOG_SYS("nftw: readlink(\"" << fpath << "\") failed");
                     Util::forcedExit(EX_SOFTWARE);
                 }
-                target[written] = '\0';
+                target_data[written] = '\0';
 
                 Poco::File(newPath.parent()).createDirectories();
-                if (symlink(target.data(), newPath.toString().c_str()) == -1)
+                if (symlink(target_data, newPath.toString().c_str()) == -1)
                 {
-                    LOG_SYS("nftw: symlink(\"" << target.data() << "\", \"" << newPath.toString()
+                    LOG_SYS("nftw: symlink(\"" << target_data << "\", \"" << newPath.toString()
                                                << "\") failed");
                     return FTW_STOP;
                 }
@@ -455,9 +487,7 @@ namespace
         return FTW_CONTINUE;
     }
 
-    void linkOrCopy(std::string source,
-                    const Poco::Path& destination,
-                    std::string linkable,
+    void linkOrCopy(std::string source, const Poco::Path& destination, const std::string& linkable,
                     LinkOrCopyType type)
     {
         std::string resolved = FileUtil::realpath(source);
@@ -645,7 +675,7 @@ namespace
 /// Manages the lifetime of a document.
 /// Technically, we can host multiple documents
 /// per process. But for security reasons don't.
-/// However, we could have a coolkit instance
+/// However, we could have a oxoolkit instance
 /// per user or group of users (a trusted circle).
 class Document final : public DocumentManagerInterface
 {
@@ -896,7 +926,7 @@ public:
 
         if (!RenderTiles::doRender(_loKitDocument, _deltaGen, tileCombined, _pngPool,
                                    combined, blenderFunc, postMessageFunc, _mobileAppDocId,
-                                   session->getCanonicalViewId()))
+                                   session->getCanonicalViewId(), session->getDumpTiles()))
         {
             LOG_DBG("All tiles skipped, not producing empty tilecombine: message");
             return;
@@ -937,7 +967,7 @@ public:
     {
         LOG_TRC("Should we trim our caches ?");
         // FIXME: multi-document mobile optimization ?
-        for (auto it : _sessions)
+        for (const auto& it : _sessions)
         {
             if (it.second->isActive())
             {
@@ -1097,6 +1127,22 @@ public:
                 tileQueue->updateCursorPosition(std::stoi(targetViewId), std::stoi(part), cursorX, cursorY, cursorWidth, cursorHeight);
             }
         }
+        else if (type == LOK_CALLBACK_DOCUMENT_PASSWORD_RESET)
+        {
+            Document* document = dynamic_cast<Document*>(descriptor->getDoc());
+            Poco::JSON::Object::Ptr object;
+            if (document && JsonUtil::parseJSON(payload, object))
+            {
+                std::string password = JsonUtil::getJSONValue<std::string>(object, "password");
+                bool isToModify = JsonUtil::getJSONValue<bool>(object, "isToModify");
+                document->_isDocPasswordProtected = !password.empty();
+                document->_haveDocPassword = document->_isDocPasswordProtected;
+                document->_docPassword = password;
+                document->_docPasswordType =
+                    isToModify ? PasswordType::ToModify : PasswordType::ToView;
+            }
+            return;
+        }
         else if (type == LOK_CALLBACK_VIEW_RENDER_STATE)
         {
             Document* document = dynamic_cast<Document*>(descriptor->getDoc());
@@ -1115,7 +1161,7 @@ public:
             }
             else
             {
-                // This shouldn't happen, but for sanity.
+                // This shouldn't happen, but for consistency.
                 LOG_ERR("Failed to downcast DocumentManagerInterface to Document");
             }
             return;
@@ -1469,7 +1515,12 @@ private:
         const std::string& batchMode = session->getBatchMode();
         const std::string& enableMacrosExecution = session->getEnableMacrosExecution();
         const std::string& macroSecurityLevel = session->getMacroSecurityLevel();
+        const bool enableAccessibility = session->getEnableAccessibility();
         const std::string& userTimezone = session->getTimezone();
+
+#if !MOBILEAPP
+        consistencyCheckFileExists(uri);
+#endif
 
         std::string options;
         if (!lang.empty())
@@ -1612,6 +1663,7 @@ private:
 
         _loKitDocument->setViewLanguage(viewId, lang.c_str());
         _loKitDocument->setViewTimezone(viewId, userTimezone.c_str());
+        _loKitDocument->setAccessibilityState(viewId, enableAccessibility);
 
         // viewId's monotonically increase, and CallbackDescriptors are never freed.
         _viewIdToCallbackDescr.emplace(viewId,
@@ -1648,7 +1700,7 @@ private:
 
         std::string name;
         std::string sessionId;
-        if (COOLProtocol::parseNameValuePair(prefix, name, sessionId, '-') && name == "child")
+        if (OXOOLProtocol::parseNameValuePair(prefix, name, sessionId, '-') && name == "child")
         {
             const auto it = _sessions.find(sessionId);
             if (it != _sessions.end())
@@ -1789,7 +1841,7 @@ public:
 
                 const TileQueue::Payload input = _tileQueue->pop();
 
-                LOG_TRC("Kit handling queue message: " << COOLProtocol::getAbbreviatedMessage(input));
+                LOG_TRC("Kit handling queue message: " << OXOOLProtocol::getAbbreviatedMessage(input));
 
                 const StringVector tokens = StringVector::tokenize(input.data(), input.size());
 
@@ -1882,12 +1934,12 @@ public:
                     }
                     else
                     {
-                        LOG_ERR("Invalid callback message: [" << COOLProtocol::getAbbreviatedMessage(input) << "].");
+                        LOG_ERR("Invalid callback message: [" << OXOOLProtocol::getAbbreviatedMessage(input) << "].");
                     }
                 }
                 else
                 {
-                    LOG_ERR("Unexpected request: [" << COOLProtocol::getAbbreviatedMessage(input) << "].");
+                    LOG_ERR("Unexpected request: [" << OXOOLProtocol::getAbbreviatedMessage(input) << "].");
                 }
             }
 
@@ -2070,7 +2122,7 @@ private:
 
 #if !defined BUILDING_TESTS && !MOBILEAPP && !LIBFUZZER
 
-// When building the fuzzer we link COOLWSD.cpp into the same executable so the
+// When building the fuzzer we link OXOOLWSD.cpp into the same executable so the
 // Protected::emitOneRecording() there gets used. When building the unit tests the one in
 // TraceEvent.cpp gets used.
 
@@ -2400,24 +2452,21 @@ protected:
             return;
 #endif
         StringVector tokens = StringVector::tokenize(message);
-        Log::StreamLogger logger = Log::debug();
-        if (logger.enabled())
-        {
-            logger << _socketName << ": recv [";
-            for (const auto& token : tokens)
-            {
-                // Don't log user-data, there are anonymized versions that get logged instead.
-                if (tokens.startsWith(token, "jail") ||
-                    tokens.startsWith(token, "author") ||
-                    tokens.startsWith(token, "name") ||
-                    tokens.startsWith(token, "url"))
-                    continue;
 
-                logger << tokens.getParam(token) << ' ';
-            }
+        LOG_DBG(_socketName << ": recv [" <<
+                [&](auto& log)
+                {
+                    for (const auto& token : tokens)
+                    {
+                        // Don't log user-data, there are anonymized versions that get logged instead.
+                        if (tokens.startsWith(token, "jail") ||
+                            tokens.startsWith(token, "author") ||
+                            tokens.startsWith(token, "name") || tokens.startsWith(token, "url"))
+                            continue;
 
-            LOG_END_FLUSH(logger);
-        }
+                        log << tokens.getParam(token) << ' ';
+                    }
+                });
 
         // Note: Syntax or parsing errors here are unexpected and fatal.
         if (SigUtil::getTerminationFlag())
@@ -2483,9 +2532,9 @@ protected:
             _document.reset();
 #endif
         }
-        else if (tokens.equals(0, "tile") || tokens.equals(0, "tilecombine") || tokens.equals(0, "canceltiles") ||
-                tokens.equals(0, "paintwindow") || tokens.equals(0, "resizewindow") ||
-                COOLProtocol::getFirstToken(tokens[0], '-') == "child")
+        else if (tokens.equals(0, "tile") || tokens.equals(0, "tilecombine") ||
+                 tokens.equals(0, "paintwindow") || tokens.equals(0, "resizewindow") ||
+                 OXOOLProtocol::getFirstToken(tokens[0], '-') == "child")
         {
             if (_document)
             {
@@ -2678,16 +2727,16 @@ void lokit_main(
 {
 #if !MOBILEAPP
 
-    SigUtil::setFatalSignals("kit startup of " COOLWSD_VERSION " " COOLWSD_VERSION_HASH);
+    SigUtil::setFatalSignals("kit startup of " OXOOLWSD_VERSION " " OXOOLWSD_VERSION_HASH);
     SigUtil::setUserSignals();
 
     Util::setThreadName("kit_spare_" + Util::encodeId(numericIdentifier, 3));
 
     // Reinitialize logging when forked.
-    const bool logToFile = std::getenv("COOL_LOGFILE");
-    const char* logFilename = std::getenv("COOL_LOGFILENAME");
-    const char* logLevel = std::getenv("COOL_LOGLEVEL");
-    const char* logLevelStartup = std::getenv("COOL_LOGLEVEL_STARTUP");
+    const bool logToFile = std::getenv("OXOOL_LOGFILE");
+    const char* logFilename = std::getenv("OXOOL_LOGFILENAME");
+    const char* logLevel = std::getenv("OXOOL_LOGLEVEL");
+    const char* logLevelStartup = std::getenv("OXOOL_LOGLEVEL_STARTUP");
     const bool logColor = config::getBool("logging.color", true) && isatty(fileno(stderr));
     std::map<std::string, std::string> logProperties;
     if (logToFile && logFilename)
@@ -2699,7 +2748,7 @@ void lokit_main(
 
     const std::string LogLevel = logLevel ? logLevel : "trace";
     const std::string LogLevelStartup = logLevelStartup ? logLevelStartup : "trace";
-    const bool bTraceStartup = (std::getenv("COOL_TRACE_STARTUP") != nullptr);
+    const bool bTraceStartup = (std::getenv("OXOOL_TRACE_STARTUP") != nullptr);
     Log::initialize("kit", bTraceStartup ? LogLevelStartup : logLevel, logColor, logToFile, logProperties);
     if (bTraceStartup && LogLevel != LogLevelStartup)
     {
@@ -2707,7 +2756,7 @@ void lokit_main(
                 "setting to [" << LogLevel << "] until after Kit initialization.");
     }
 
-    const char* pAnonymizationSalt = std::getenv("COOL_ANONYMIZATION_SALT");
+    const char* pAnonymizationSalt = std::getenv("OXOOL_ANONYMIZATION_SALT");
     if (pAnonymizationSalt)
     {
         AnonymizationSalt = std::stoull(std::string(pAnonymizationSalt));
@@ -2778,7 +2827,7 @@ void lokit_main(
 
                 // tmpdir inside the jail for added sercurity.
                 const std::string tempRoot = Poco::Path(childRoot, "tmp").toString();
-                const std::string tmpSubDir = Poco::Path(tempRoot, "cool-" + jailId).toString();
+                const std::string tmpSubDir = Poco::Path(tempRoot, "oxool-" + jailId).toString();
                 Poco::File(tmpSubDir).createDirectories();
                 const std::string jailTmpDir = Poco::Path(jailPath, "tmp").toString();
                 LOG_INF("Mounting random temp dir " << tmpSubDir << " -> " << jailTmpDir);
@@ -2805,7 +2854,7 @@ void lokit_main(
                 if (!mountJail())
                 {
                     LOG_INF("Cleaning up jail before linking/copying.");
-                    JailUtil::removeJail(jailPathStr);
+                    JailUtil::tryRemoveJail(jailPathStr);
                     bindMount = false;
                     JailUtil::disableBindMounting();
                 }
@@ -2899,6 +2948,9 @@ void lokit_main(
         LOG_DBG("Initializing LOK with instdir [" << instdir_path << "] and userdir ["
                                                   << userdir_url << "].");
 
+        UserDirPath = pathFromFileURL(userdir_url);
+        InstDirPath = instdir_path;
+
         LibreOfficeKit *kit;
         {
             const char *instdir = instdir_path.c_str();
@@ -2971,7 +3023,7 @@ void lokit_main(
             SigUtil::setVersionInfo(versionString);
 
             // Add some parameters we want to pass to the client. Could not figure out how to get
-            // the configuration parameters from COOLWSD.cpp's initialize() or coolwsd.xml here, so
+            // the configuration parameters from OXOOLWSD.cpp's initialize() or oxoolwsd.xml here, so
             // oh well, just have the value hardcoded in KitHelper.hpp. It isn't really useful to
             // "tune" it at end-user installations anyway, I think.
             auto versionJSON = Poco::JSON::Parser().parse(versionString).extract<Poco::JSON::Object::Ptr>();
@@ -3013,7 +3065,7 @@ void lokit_main(
         static std::shared_ptr<lok::Office> loKit = std::make_shared<lok::Office>(kit);
         assert(loKit);
 
-        COOLWSD::LOKitVersion = loKit->getVersionInfo();
+        OXOOLWSD::LOKitVersion = loKit->getVersionInfo();
 
         // Dummies
         const std::string jailId = "jailid";
@@ -3125,6 +3177,48 @@ void runKitLoopInAThread()
 #endif // IOS
 
 #endif // !BUILDING_TESTS
+
+#if !MOBILEAPP
+
+void consistencyCheckJail()
+{
+    static bool warned = false;
+    if (!warned)
+    {
+        bool failedTmp, failedLo, failedUser;
+        FileUtil::Stat tmp("/tmp");
+        if ((failedTmp = (!tmp.good() || !tmp.isDirectory())))
+            LOG_ERR("Fatal system error: Kit jail is missing its /tmp directory");
+
+        FileUtil::Stat lo(InstDirPath + "/unorc");
+        if ((failedLo = (!lo.good() || !lo.isFile())))
+            LOG_ERR("Fatal system error: Kit jail is missing its LibreOfficeKit directory at '" << InstDirPath << "'");
+
+        FileUtil::Stat user(UserDirPath);
+        if ((failedUser = (!user.good() || !user.isDirectory())))
+            LOG_ERR("Fatal system error: Kit jail is missing its user directory at '" << UserDirPath << "'");
+
+        if (failedTmp || failedLo || failedUser)
+        {
+            LOG_ERR("A fatal system error indicates that, outside the control of OXOOL "
+                    "major structural changes have occured in our filesystem. These are "
+                    "potentially indicative of an operator damaging the system, and will "
+                    "inevitably cause document data-loss and/or malfunction.");
+            warned = true;
+            assert(!"Fatal system error with jail setup.");
+        }
+        else
+            LOG_TRC("Passed system consistency check");
+    }
+}
+
+#endif // !MOBILEAPP
+
+/// Fetch the latest montonically incrementing wire-id
+TileWireId getCurrentWireId(bool increment)
+{
+    return RenderTiles::getCurrentWireId(increment);
+}
 
 std::string anonymizeUrl(const std::string& url)
 {
