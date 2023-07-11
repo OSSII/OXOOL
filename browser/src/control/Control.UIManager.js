@@ -414,8 +414,10 @@ L.Control.UIManager = L.Control.extend({
 	},
 
 	refreshNotebookbar: function() {
+		var selectedTab = $('.ui-tab.notebookbar[aria-selected="true"]').attr('id') || 'Home-tab-label';
 		this.removeNotebookbarUI();
 		this.createNotebookbarControl(this.map.getDocType());
+		$('#' + selectedTab).click();
 		this.makeSpaceForNotebookbar();
 		this.notebookbar._showNotebookbar = true;
 		this.notebookbar.showTabs();
