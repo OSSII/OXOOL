@@ -1,23 +1,21 @@
-# spec file for package oxool
+# spec file for package @PACKAGE@
 #
-# Copyright (c) 2015 OSSII
+# Copyright (c) 2015-2023 OSSII
 #
 # This file is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-%define config_options --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
+%define config_options --with-product-name="OxOffice Online" --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
 %define loroot /opt/oxoffice
 %define HAVE_DEVEL 0
 
 Name:           @PACKAGE@
-Version:        @PACKAGE_VERSION@
+Version:        @VERSION@
 Release:        @OXOOLWSD_DIST_RELEASE@%{?dist}
 Vendor:         @VENDOR@
 Summary:        OxOffice Online WebSocket Daemon for @OXOOLWSD_BRANCH@
 License:        MPL
-Provides:       oxoolwsd
-Obsoletes:	    oxoolwsd
 Source0:        @OXOOLWSD_DIST_NAME@.tar.gz
 BuildRequires:  libcap-devel libpng-devel pam-devel gcc-c++ cppunit-devel make
 BuildRequires:  poco-devel >= 1.7.5
@@ -36,7 +34,7 @@ BuildRequires:  libpcap kernel-headers python3-polib python3-lxml
 
 Requires:       oxoffice oxoffice-ure oxofficelib-core oxofficelib-writer oxofficelib-impress oxofficelib-graphicfilter oxofficelib-en-US oxofficelib-calc oxofficelib-ooofonts oxofficelib-images oxofficelib-draw oxofficelib-extension-pdf-import oxofficelib-ooolinguistic oxofficelib-math
 Requires(post): coreutils grep sed cpio
-# oxoolwsd dependencies
+# oxool dependencies
 Requires:       systemd expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssh-clients openssl-libs pcre xz-libs zlib unzip sudo fontconfig freetype libuuid bzip2-libs
 Requires:       poco-crypto >= 1.7.5 poco-data >= 1.7.5 poco-encodings >= 1.7.5 poco-foundation >= 1.7.5 poco-json >= 1.7.5 poco-mongodb >= 1.7.5 poco-mysql >= 1.7.5 poco-net >= 1.7.5 poco-netssl >= 1.7.5 poco-odbc >= 1.7.5 poco-pagecompiler >= 1.7.5 poco-sqlite >= 1.7.5 poco-util >= 1.7.5 poco-xml >= 1.7.5 poco-zip >= 1.7.5
 
@@ -79,7 +77,7 @@ install -d -m 755 %{buildroot}/var/adm/fillup-templates
 install -D -m 444 @WSD_NAME@.service %{buildroot}%{_unitdir}/@WSD_NAME@.service
 # systemd in RHEL 7 does not understand these options
 %if 0%{?rhel} <= 7
-sed -i "/^ReadWritePaths/d;/^ProtectControlGroups/d;/^ProtectSystem/d" %{buildroot}%{_unitdir}/oxoolwsd.service
+sed -i "/^ReadWritePaths/d;/^ProtectControlGroups/d;/^ProtectSystem/d" %{buildroot}%{_unitdir}/@WSD_NAME@.service
 %endif
 %endif
 mkdir -p %{buildroot}/etc/pam.d
@@ -88,12 +86,12 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/@PRODUCTNAME@config
-%{_bindir}/@PRODUCTNAME@convert
-%{_bindir}/@PRODUCTNAME@forkit
-%{_bindir}/@PRODUCTNAME@mount
+%{_bindir}/@PACKAGE@config
+%{_bindir}/@PACKAGE@convert
+%{_bindir}/@PACKAGE@forkit
+%{_bindir}/@PACKAGE@mount
 %{_bindir}/@WSD_NAME@
-%{_bindir}/@PRODUCTNAME@stress
+%{_bindir}/@PACKAGE@stress
 %{_bindir}/@WSD_NAME@-generate-proof-key
 %{_bindir}/@WSD_NAME@-systemplate-setup
 
@@ -108,13 +106,9 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) /etc/%{name}/*.pem
 %config(noreplace) %attr(640, lool, root) /etc/%{name}/@WSD_NAME@.xml
 %config /etc/%{name}/*.xcu
-%config(noreplace) /etc/nginx/snippets/*.conf
-%config(noreplace) /etc/apache2/conf-available/*.conf
-
-
 
 %if 0%{HAVE_DEVEL}
-%{_bindir}/@PRODUCTNAME@-xml-config
+%{_bindir}/@PACKAGE@-xml-config
 %dir %{_libdir}/%{name}
 %{_libdir}/%{name}/*.so
 %{_libdir}/*.so.*
@@ -126,7 +120,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config %attr(440, root, root) /etc/sudoers.d/lool
 /etc/fonts/conf.d/*.conf
 %dir /etc/%{name}/conf.d
-%config(noreplace) /etc/sysconfig/oxoolwsd
+%config(noreplace) /etc/sysconfig/@WSD_NAME@
 %endif
 
 %if 0%{HAVE_DEVEL}
@@ -140,12 +134,12 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
 %pre
 getent group lool >/dev/null || groupadd -r lool
-getent passwd lool >/dev/null || useradd -g lool -r lool -d /opt/oxool -s /bin/bash
+getent passwd lool >/dev/null || useradd -g lool -r lool -d /opt/@PACKAGE@ -s /bin/bash
 
 %post
 setcap cap_dac_override,cap_net_bind_service=ep /usr/bin/@WSD_NAME@
-setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/@PRODUCTNAME@forkit
-setcap cap_sys_admin=ep /usr/bin/@PRODUCTNAME@mount
+setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/@PACKAGE@forkit
+setcap cap_sys_admin=ep /usr/bin/@PACKAGE@mount
 
 %if 0%{?fedora} || 0%{?rhel} >= 7
 %systemd_post @WSD_NAME@.service
@@ -161,18 +155,22 @@ if [ $OXOOLWSD_IS_ACTIVE == "1" ]; then systemctl stop @WSD_NAME@; fi
 %endif
 
 # Figure out where LO is installed, let's hope it is not a mount point
-# Create a directory for oxloolwsd on the same file system
+# Create a directory for @WSD_NAME@ on the same file system
 loroot=%{loroot}
 loolparent=`cd ${loroot} && cd .. && /bin/pwd`
 
-rm -rf ${loolparent}/%{name}
+# 如果 ${loolparent}/%{name} 目錄不存在，就建立
+if [ ! -d ${loolparent}/%{name} ]; then
+    mkdir -p ${loolparent}/%{name}
+fi
+
 mkdir -p ${loolparent}/%{name}/child-roots
 chown lool:lool ${loolparent}/%{name}
 chown lool:lool ${loolparent}/%{name}/child-roots
 
 fc-cache ${loroot}/share/fonts/truetype
-su lool -c "oxoolwsd-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} >/dev/null 2>&1"
-oxoolwsd-generate-proof-key >/dev/null 2>&1
+su lool -c "@WSD_NAME@-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} >/dev/null 2>&1"
+@WSD_NAME@-generate-proof-key >/dev/null 2>&1
 
 %if 0%{?rhel} || 0%{?suse_version}
 if [ $OXOOLWSD_IS_ACTIVE == "1" ]; then systemctl start @WSD_NAME@; fi
@@ -200,8 +198,12 @@ if [ $arg = 0 ] ; then
     # systemplate & child root
     loroot=%{loroot}
     loolparent=`cd ${loroot} && cd .. && /bin/pwd`
-    rm -rf ${loolparent}/%{name}/*
+    # 移除 ${loolparent}/%{name} 之下的 systemplate 和 child-roots
+    rm -rf ${loolparent}/%{name}/systemplate
+    rm -rf ${loolparent}/%{name}/child-roots
 fi
 
 
 %changelog
+* Wed Jul 12 2023 Chiaming Teng <firefly@ossii.com.tw> - 5.0.0-1
+- Initial package

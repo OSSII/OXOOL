@@ -169,3 +169,6 @@ dist_git_branch
 /*.service
 /*.tar.gz
 debian/*.service
+/*-generate-proof-key
+/*-systemplate-setup
+/*.spec

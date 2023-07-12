@@ -73,6 +73,15 @@ AC_DEFINE_UNQUOTED([OXOOLWSD_VERSION_HASH],[["$OXOOLWSD_VERSION_HASH"]],[OxOffic
 
 AC_CONFIG_SRCDIR([wsd/OXOOLWSD.cpp])
 
+# 如果 PACKAGE 不是 oxool，則 Custom package = true，否則 Custom package = false
+CUSTOM_PACKAGE=false
+if test "$PACKAGE" != "oxool"; then
+    CUSTOM_PACKAGE=true
+fi
+AM_CONDITIONAL([CUSTOM_PACKAGE], [$CUSTOM_PACKAGE])
+AC_SUBST([CUSTOM_PACKAGE])
+
+
 AC_ARG_WITH([product-name],
     AS_HELP_STRING([--with-product-name='My Online Editor'], [Set product name (default: AC_PACKAGE_NAME)]),
     [PRODUCTNAME="$withval"],
@@ -102,7 +111,7 @@ AC_DEFINE_UNQUOTED([OXOOLWSD_BRANCH], [["$OXOOLWSD_BRANCH"]],[git branch name])
 # 如果 OXOOLWSD_BRANCH 是空值或 PACKAGE 不是 oxool，則不需要 OXOOLWSD_BRANCH
 if test -z "$OXOOLWSD_BRANCH" || test "$PACKAGE" != "oxool"; then
     OXOOLWSD_DIST_NAME="${PACKAGE}-${VERSION}"
-    OXOOLWSD_DIST_RELEASE="${$OXOOLWSD_VERSION_NANO}"
+    OXOOLWSD_DIST_RELEASE="${OXOOLWSD_VERSION_NANO}"
 else
     OXOOLWSD_DIST_NAME="${PACKAGE}-${VERSION}-${OXOOLWSD_BRANCH}"
     OXOOLWSD_DIST_RELEASE="${OXOOLWSD_VERSION_NANO}.${OXOOLWSD_BRANCH}"
@@ -966,7 +975,7 @@ if test -n "$with_welcome_url"; then
     WELCOME_URL=$with_welcome_url
     ENABLE_WELCOME_MESSAGE=1
 else
-    WELCOME_CONFIG_FRAGMENT=$srcdir/oxoolwsd-welcome.xml
+    WELCOME_CONFIG_FRAGMENT=$srcdir/online-welcome.xml
 fi
 
 AC_SUBST_FILE([WELCOME_CONFIG_FRAGMENT])
@@ -1714,10 +1723,12 @@ AC_SUBST(ALLOWED_LANGUAGES)
 AC_CONFIG_FILES([
     ${WSD_NAME}.xml:online.xml.in
     ${WSD_NAME}.service:online.service.in
-    debian/${PRODUCTNAME}.service:online.service.in
-    ${WSD_NAME}.spec:online.spec.in
-    ${PRODUCTNAME}kitconfig.xcu:onlinekitconfig.xcu.in
-    ${PRODUCTNAME}.pc:online.pc.in
+    debian/${PACKAGE}.service:online.service.in
+    ${PACKAGE}.spec:online.spec.in
+    ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
+    ${PACKAGE}.pc:online.pc.in
+    ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
+    ${WSD_NAME}-generate-proof-key:online-generate-proof-key.in
     ])
 
 AC_CONFIG_FILES([Makefile
@@ -1748,6 +1759,11 @@ AC_CONFIG_FILES([test/run_unit_standalone.sh],[chmod +x test/run_unit_standalone
 AC_CONFIG_FILES([jsstress],[chmod +x jsstress])
 
 AC_OUTPUT
+
+# Generate the systemplate setup script
+chmod +x ${WSD_NAME}-systemplate-setup
+# Generate the proof key generation script
+chmod +x ${WSD_NAME}-generate-proof-key
 
 AC_LANG_POP
 
@@ -1838,7 +1854,7 @@ Configuration:
 
     \$ make # to compile"
 if test -n "$with_lo_path"; then
-echo "    \$ make run # to start oxoolwsd
+echo "    \$ make run # to start ${WSD_NAME}
     \$ make sync-writer|calc|impress # to start browsersync with specified app
 "
 fi

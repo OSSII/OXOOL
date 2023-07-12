@@ -1,8 +1,5 @@
 ETAGS=ctags -e
 
-PRODUCTNAME = @PRODUCTNAME@
-WSD_NAME = @WSD_NAME@
-
 distdir = $(OXOOLWSD_DIST_NAME)
 
 if ENABLE_MOBILEAPP
@@ -61,16 +58,8 @@ oxoolwsddata_DATA = discovery.xml \
 oxoolwsdconfigdir = @OXOOLWSD_CONFIGDIR@
 
 oxoolwsdconfig_DATA = $(WSD_NAME).xml \
-		     ${PRODUCTNAME}kitconfig.xcu \
+		     $(PACKAGE)kitconfig.xcu \
          etc/*.pem
-
-apache2configdir = ${sysconfdir}/apache2/conf-available
-
-apache2config_DATA = etc/apache2/oxoolwsd.conf
-
-nginxconfigdir = ${sysconfdir}/nginx/snippets
-
-nginxconfig_DATA = etc/nginx/oxoolwsd.conf
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -365,14 +354,15 @@ dist-hook:
 
 EXTRA_DIST = discovery.xml \
              favicon.ico \
-             ${PRODUCTNAME}kitconfig.xcu \
-             $(WSD_NAME).spec \
+             *.xcu \
+             *.spec \
              online.xml.in \
-             oxoolwsd.service \
+             online-welcome.xml \
+             *.service \
              debian/compat \
              debian/copyright \
              debian/oxoolwsd.preinst \
-             debian/${PRODUCTNAME}.service \
+             debian/*.service \
              debian/rules \
              debian/source/format \
              debian/changelog \
@@ -382,8 +372,6 @@ EXTRA_DIST = discovery.xml \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \
-             etc/apache2/oxoolwsd.conf \
-             etc/nginx/oxoolwsd.conf \
              scripts/unocommands.py \
              scripts/refresh-git-hooks \
              README.md \
