@@ -384,6 +384,8 @@ else
 CLEANUP_COMMAND=if test -s ./oxoolwsd; then echo "Cleaning up..." && ./oxoolwsd --disable-oxool-user-checking --cleanup --o:logging.level=trace || rm ./oxoolwsd; fi
 endif
 
+CLEANUP_COVERAGE=rm -rf ${abs_top_srcdir}/gcov; find . -iname "*.gc??" -delete
+
 if HAVE_LO_PATH
 
 SYSTEM_STAMP = @SYSTEMPLATE_PATH@/system_stamp
@@ -425,8 +427,7 @@ clean-local:
 	$(CLEANUP_COMMAND)
 	if test "z@SYSTEMPLATE_PATH@" != "z"; then rm -rf "@SYSTEMPLATE_PATH@" || echo "WARNING: failed to remove the systemplate"; fi
 	if test "z@JAILS_PATH@" != "z"; then rm -rf "@JAILS_PATH@" || echo "WARNING: failed to remove all jails cleanly"; fi
-	rm -rf ${abs_top_srcdir}/gcov
-	find . -iname "*.gc??" -delete
+	$(CLEANUP_COVERAGE)
 
 if ENABLE_DEBUG
 # can write to /tmp/oxoolwsd.log
@@ -615,6 +616,9 @@ check: check-for-system-nss check-recursive
 
 coverage-report:
 	$(GEN_COVERAGE_COMMAND)
+
+coverage-clean:
+	$(CLEANUP_COVERAGE)
 
 czech: check
 	@echo "This should do something much oxooler"
