@@ -5637,8 +5637,17 @@ int OXOOLWSD::innerMain()
     // We can open files with non-ASCII names just fine on iOS without this, and this code is
     // heavily Linux-specific anyway.
 
+    char* LANG = std::getenv("LANG");
+    if (!LANG)
+    {
+        LANG = (char*)"zh_TW.UTF-8";
+    }
+
+    std::pair<std::string, std::string> sysLocale = Util::split(std::string(LANG), '.');
+    std::string newLocale(sysLocale.first + ".UTF-8"); // Force UTF-8 encoding
+
     // Force a uniform UTF-8 locale for ourselves & our children.
-    char* locale = std::setlocale(LC_ALL, "C.UTF-8");
+    char* locale = std::setlocale(LC_ALL, newLocale.c_str());
     if (!locale)
     {
         // rhbz#1590680 - C.UTF-8 is unsupported on RH7
