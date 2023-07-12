@@ -1543,7 +1543,7 @@ AS_IF([test "$ENABLE_IOSAPP" = "true"],
               # iOS app.
               touch ios/Mobile/Branding/branding.css
           fi
-          cp oxoolkitconfig-mobile.xcu ios/Mobile/oxoolkitconfig.xcu
+          cp online-mobile.xcu ios/Mobile/${PACKAGE}kitconfig.xcu
        fi
       ])
 AC_SUBST(IOSAPP_FONTS)
