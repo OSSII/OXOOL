@@ -427,9 +427,6 @@ clean-local:
 	$(CLEANUP_COMMAND)
 	if test "z@SYSTEMPLATE_PATH@" != "z"; then rm -rf "@SYSTEMPLATE_PATH@" || echo "WARNING: failed to remove the systemplate"; fi
 	if test "z@JAILS_PATH@" != "z"; then rm -rf "@JAILS_PATH@" || echo "WARNING: failed to remove all jails cleanly"; fi
-	rm -rf "${top_srcdir}/loleaflet"
-	rm -rf loolconfig loolconvert loolforkit loolmap loolmount # kill old binaries
-	rm -rf loolwsd loolwsd_fuzzer oxoolwsd_fuzzer loolstress loolsocketdump
 	rm -rf ${abs_top_srcdir}/gcov
 	find . -iname "*.gc??" -delete
 
