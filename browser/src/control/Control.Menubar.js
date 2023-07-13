@@ -2151,6 +2151,19 @@ L.Control.Menubar = L.Control.extend({
 				}
 				aItem.tabIndex = 0;
 			} else if (menu[i].type === 'unocommand' || menu[i].uno !== undefined) {
+				// 如果不顯示 Sidebar，就檢查 menu[i].uno 是否在 hideSidebarItems 中
+				// 若在就不顯示
+				var hideSidebarItems = [
+					'.uno:SidebarDeck.PropertyDeck', // 側邊欄
+					'.uno:Navigator',	// 助手
+					'.uno:ModifyPage',	// 投影片版面配置
+					'.uno:SlideChangeWindow',	// 投影片轉場
+					'.uno:CustomAnimation',	// 動畫
+					'.uno:MasterSlidesPanel'	// 投影片母片
+				];
+				if (window.app.dontUseNotebookbar && hideSidebarItems.indexOf(menu[i].uno) > -1)
+					continue;
+
 				$(aItem).data('type', 'unocommand');
 				$(aItem).data('uno', menu[i].uno);
 				$(aItem).data('tag', menu[i].tag);
@@ -2161,6 +2174,10 @@ L.Control.Menubar = L.Control.extend({
 			} else if (menu[i].type === 'action') {
 				if (menu[i].id == 'feedback' && !this._map.feedback)
 					continue;
+				// 如果不使用 Notebookbar，就不顯示切換 UI 模式的選項
+				if (menu[i].id == 'toggleuimode' && window.app.dontUseNotebookbar)
+					continue;
+
 				$(aItem).data('type', 'action');
 				$(aItem).data('id', menu[i].id);
 				aItem.tabIndex = 0;

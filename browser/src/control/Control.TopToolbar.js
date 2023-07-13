@@ -336,7 +336,7 @@ L.Control.TopToolbar = L.Control.extend({
 				toolbarUp.show('reset', 'textalign', 'wraptext', 'breakspacing', 'insertannotation', 'conditionalformaticonset',
 					'numberformatcurrency', 'numberformatpercent',
 					'numberformatincdecimals', 'numberformatdecdecimals', 'break-number', 'togglemergecells', 'breakmergecells',
-					'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting', 'backgroundcolor', 'breaksidebar', 'sidebar');
+					'setborderstyle', 'sortascending', 'sortdescending', 'breaksorting', 'backgroundcolor', 'breaksidebar', 'sidebar', 'navigator');
 				toolbarUp.remove('styles');
 			}
 
@@ -351,7 +351,7 @@ L.Control.TopToolbar = L.Control.extend({
 			if (toolbarUp)
 				toolbarUp.show('reset', 'leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 					'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'incrementindent', 'decrementindent',
-					'breakindent', 'inserttable', 'insertannotation', 'backcolor', 'breaksidebar', 'sidebar');
+					'breakindent', 'inserttable', 'insertannotation', 'backcolor', 'breaksidebar', 'sidebar', 'navigator');
 
 			break;
 		case 'presentation':
@@ -383,15 +383,20 @@ L.Control.TopToolbar = L.Control.extend({
 			if (toolbarUp) {
 				toolbarUp.show('leftpara', 'centerpara', 'rightpara', 'justifypara', 'breakpara', 'linespacing',
 					'breakspacing', 'defaultbullet', 'defaultnumbering', 'breakbullet', 'inserttextbox', 'inserttable', 'backcolor',
-					'breaksidebar', 'sidebarmodifypage', 'insertconnectors');
+					'breaksidebar', 'sidebarmodifypage', 'navigator', 'insertconnectors');
 			}
 			break;
 		}
 
 		window.updateVisibilityForToolbar(w2ui['editbar']);
 
-		if (toolbarUp)
+		if (toolbarUp) {
+			// 如果不使用側邊欄，隱藏側邊欄按鈕
+			if (window.app.dontUseSidebar) {
+				toolbarUp.hide('breaksidebar', 'sidebar', 'modifypage', 'slidechangewindow', 'customanimation', 'masterslidespanel', 'navigator');
+			}
 			toolbarUp.refresh();
+		}
 
 		this.map.createFontSizeSelector('#fontsizes-select');
 	},
