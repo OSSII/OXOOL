@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-%define config_options --with-product-name="OxOffice Online" --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
+%define config_options --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
 %define loroot /opt/oxoffice
 %define HAVE_DEVEL 0
 

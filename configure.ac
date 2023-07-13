@@ -83,9 +83,9 @@ AC_SUBST([CUSTOM_PACKAGE])
 
 
 AC_ARG_WITH([product-name],
-    AS_HELP_STRING([--with-product-name='My Online Editor'], [Set product name (default: AC_PACKAGE_NAME)]),
+    AS_HELP_STRING([--with-product-name='My Online Editor'], [Set product name (default: "OxOffice Online")]),
     [PRODUCTNAME="$withval"],
-    [PRODUCTNAME="AC_PACKAGE_NAME"])
+    [PRODUCTNAME="OxOffice Online"])
 AC_SUBST([PRODUCTNAME])
 
 WSD_NAME="wsd_NAME"
