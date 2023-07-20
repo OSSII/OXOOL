@@ -95,15 +95,19 @@ AC_SUBST([LIB_LINK_NAME])
 LIB_NAME="lib${LIB_LINK_NAME}"
 AC_SUBST([LIB_NAME])
 
-# 如果是 git repo，取得 git branch name，否則從 dist_git_branch 檔案取得
-if test -d .git; then
-    OXOOLWSD_BRANCH=`git rev-parse --abbrev-ref HEAD | cut -d '-' -f 1`
-    # 將 git branch name 寫入 dist_git_branch 檔案
-    echo "$OXOOLWSD_BRANCH" > dist_git_branch
-else
-    # 使用發佈的套件(.tar.gz)，由於沒有 .git repo，所以從 dist_git_branch 檔案取得
-    OXOOLWSD_BRANCH=`cat dist_git_branch 2> /dev/null`
+# OXOOLWSD_BRANCH 是 git branch name
+OXOOLWSD_BRANCH=`git rev-parse --abbrev-ref HEAD | cut -d '-' -f 1`
+# 如果執行錯誤，則查看 dist_git_branch 檔案是否存在，如果存在，則從檔案取得
+# 否則 OXOOLWSD_BRANCH 為 unknown
+if test $? -ne 0; then
+    if test -f dist_git_branch; then
+        OXOOLWSD_BRANCH=`cat dist_git_branch 2> /dev/null`
+    else
+        OXOOLWSD_BRANCH="unknown"
+    fi
 fi
+# 把 OXOOLWSD_BRANCH 存到 dist_git_branch 中
+echo $OXOOLWSD_BRANCH > dist_git_branch
 AC_SUBST([OXOOLWSD_BRANCH])
 AC_DEFINE_UNQUOTED([OXOOLWSD_BRANCH], [["$OXOOLWSD_BRANCH"]],[git branch name])
 
