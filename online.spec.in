@@ -69,7 +69,7 @@ env BUILDING_FROM_RPMBUILD=yes make %{?_smp_mflags}
 %install
 env BUILDING_FROM_RPMBUILD=yes make install DESTDIR=%{buildroot}
 rm -f %{buildroot}/%{_libdir}/*.la
-rm -f %{buildroot}/%{_libdir}/@PACKAGE_NAME@/*.la
+rm -f %{buildroot}/%{_libdir}/@PACKAGE@/*.la
 install -d -m 755 %{buildroot}/var/adm/fillup-templates
 %if 0%{?rhel}
 install -D -m 444 @WSD_NAME@.service %{buildroot}%{_unitdir}/@WSD_NAME@.service

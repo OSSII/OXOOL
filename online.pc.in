@@ -10,7 +10,7 @@ module_config_dir=@LOOLWSD_MODULE_CONFIG_DIR@
 module_data_dir=@LOOLWSD_MODULE_DATA_DIR@
 
 
-Name: @PACKAGE_NAME@
+Name: @PACKAGE@
 Description:
 Version: @VERSION@
 Libs: -L${libdir} -l@LIB_LINK_NAME@

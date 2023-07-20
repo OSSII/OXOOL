@@ -249,7 +249,7 @@ AC_ARG_ENABLE([gtkapp],
 AC_ARG_ENABLE(fuzzers,
     AS_HELP_STRING([--enable-fuzzers],
         [Enables building libfuzzer targets for fuzz testing. It is useful to enable this switch
-         only in a separate build tree, since the switch disables the creation of a oxoolwsd
+         only in a separate build tree, since the switch disables the creation of a wsd_NAME
          binary. For best results: --with-sanitizer=address,undefined])
 )
 
@@ -290,7 +290,7 @@ AC_ARG_WITH([app-name],
                              [Set the user-visible name of the app you build.]))
 
 AC_ARG_WITH([user-id],
-              AS_HELP_STRING([--with-user-id=oxool],
+              AS_HELP_STRING([--with-user-id=lool],
                              [Set the account name of the user required to run the app (outside debug mode).]))
 
 AC_ARG_WITH([icon-theme],
@@ -477,9 +477,9 @@ ENABLE_DEBUG=false
 ENABLE_DEBUG_PROTOCOL=false
 ENABLE_BUNDLE=true
 OXOOLWSD_LOGLEVEL="warning"
-OXOOLWSD_LOG_TO_FILE="false"
-OXOOLWSD_LOGFILE="/var/log/oxoolwsd.log"
-OXOOLWSD_TRACEEVENTFILE="/var/log/oxoolwsd.trace.json"
+OXOOLWSD_LOG_TO_FILE="true"
+OXOOLWSD_LOGFILE="/var/log/${WSD_NAME}.log"
+OXOOLWSD_TRACEEVENTFILE="/var/log/${WSD_NAME}.trace.json"
 OXOOLWSD_ANONYMIZE_USER_DATA=false
 BROWSER_LOGGING="false"
 debug_msg="secure mode: product build"
@@ -497,8 +497,8 @@ if test "$enable_debug" = "yes"; then
    ENABLE_DEBUG_PROTOCOL=true
    OXOOLWSD_LOGLEVEL="trace"
    OXOOLWSD_LOG_TO_FILE="true"
-   OXOOLWSD_LOGFILE="/tmp/oxoolwsd.log"
-   OXOOLWSD_TRACEEVENTFILE="/tmp/oxoolwsd.trace.json"
+   OXOOLWSD_LOGFILE="/tmp/${WSD_NAME}.log"
+   OXOOLWSD_TRACEEVENTFILE="/tmp/${WSD_NAME}.trace.json"
    OXOOLWSD_ANONYMIZE_USER_DATA=false
    BROWSER_LOGGING="true"
    debug_msg="low security debugging mode"
@@ -1415,9 +1415,9 @@ AS_IF([test `uname -s` = "Linux" -o `uname -s` = "FreeBSD" -o `uname -s` = "Darw
       [AC_PATH_PROG(NODE, node, no)
        if test "$NODE" = "no"; then
            if test `uname -s` = "Darwin"; then
-               AC_MSG_WARN([The oxool bits will have to be built on a Linux machine and copied over])
+               AC_MSG_WARN([The package_NAME bits will have to be built on a Linux machine and copied over])
            else
-               AC_MSG_ERROR([node required to build oxool, but not installed])
+               AC_MSG_ERROR([node required to build package_NAME, but not installed])
            fi
        else
            NODE_VER=`node --version | sed 's/^v//' | awk -F. '{ print (($1 * 100) + $2) * 100 + $3;}'`
@@ -1429,7 +1429,7 @@ AS_IF([test `uname -s` = "Linux" -o `uname -s` = "FreeBSD" -o `uname -s` = "Darw
        if test "$NODE" != "no"; then
            AC_PATH_PROG(NPM, npm, no)
            if test "$NPM" = "no"; then
-               AC_MSG_ERROR([npm required to build oxool, but not installed])
+               AC_MSG_ERROR([npm required to build package_NAME, but not installed])
            else
                NPM_VER=`npm -v | awk -F. '{ print (($1 * 100) + $2) * 100 + $3;}'`
                if test "$NPM_VER" -lt 50000; then
@@ -1466,7 +1466,7 @@ OXOOL_USER_ID="lool"
 if test -n "$with_user_id"; then
    OXOOL_USER_ID="$with_user_id"
 fi
-AC_DEFINE_UNQUOTED([OXOOL_USER_ID],["$OXOOL_USER_ID"],[The user-name which is allowed to run oxoolwsd and its tools])
+AC_DEFINE_UNQUOTED([OXOOL_USER_ID],["$OXOOL_USER_ID"],[The user-name which is allowed to run wsd_NAME and its tools])
 AC_SUBST(OXOOL_USER_ID)
 
 AM_CONDITIONAL([ENABLE_SETCAP], [test "$enable_setcap" != "no" -a `uname -s` = "Linux" -a "$enable_fuzzers" != "yes" -a "$host_os" != "emscripten"])
@@ -1704,7 +1704,7 @@ AM_SUBST_NOTMAKE(LOCK_CONFIGURATION)
 
 UNLOCK_LINK_PER_HOST=
 if test "$enable_feature_lock" = "yes"; then
-    UNLOCK_LINK_PER_HOST="<unlock_link desc=\"Link from where user can unlock the features, which will get mapped with alias_group. According to hostname oxoolwsd will set the unlock link for feature unlock dialog. If not specified it will fallback to feature_lock.unlock_link entry\" default=\"\"></unlock_link>"
+    UNLOCK_LINK_PER_HOST="<unlock_link desc=\"Link from where user can unlock the features, which will get mapped with alias_group. According to hostname ${WSD_NAME} will set the unlock link for feature unlock dialog. If not specified it will fallback to feature_lock.unlock_link entry\" default=\"\"></unlock_link>"
 fi
 
 AC_SUBST(UNLOCK_LINK_PER_HOST)
