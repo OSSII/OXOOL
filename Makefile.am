@@ -354,21 +354,21 @@ dist-hook:
 
 EXTRA_DIST = discovery.xml \
              favicon.ico \
-             *.xcu \
-             *.spec \
+             $(PACKAGE)kitconfig.xcu \
+             $(PACKAGE).spec \
              online.xml.in \
              online-welcome.xml \
-             *.service \
+             $(WSD_NAME).service \
              debian/compat \
              debian/copyright \
-             debian/oxoolwsd.preinst \
-             debian/*.service \
+             debian/$(PACKAGE).preinst \
+             debian/$(PACKAGE).service \
              debian/rules \
              debian/source/format \
              debian/changelog \
              debian/control \
-             debian/oxoolwsd.postinst \
-             debian/oxoolwsd.postrm \
+             debian/$(PACKAGE).postinst \
+             debian/$(PACKAGE).postrm \
              etc/key.pem \
              etc/cert.pem \
              etc/ca-chain.cert.pem \

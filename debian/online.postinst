@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+	setcap cap_dac_override,cap_net_bind_service=ep /usr/bin/@WSD_NAME@ || true
+	setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/@PACKAGE@forkit || true
+	setcap cap_sys_admin=ep /usr/bin/@PACKAGE@mount || true
+
+	adduser --quiet --system --group --home /opt/@PACKAGE@ @OXOOL_USER_ID@
+	chown @OXOOL_USER_ID@: /etc/@PACKAGE@/@WSD_NAME@.xml
+	chmod 640 /etc/@PACKAGE@/@WSD_NAME@.xml
+
+	# We assume that the LibreOffice to be used is built TDF-style
+	# and installs in @LO_PATH@, and that /opt/@PACKAGE@ is
+	# on the same file system
+
+	rm -rf /opt/@PACKAGE@
+	mkdir -p /opt/@PACKAGE@/child-roots
+	chown @OXOOL_USER_ID@: /opt/@PACKAGE@
+	chown @OXOOL_USER_ID@: /opt/@PACKAGE@/child-roots
+
+	fc-cache @LO_PATH@/share/fonts/truetype
+
+	@WSD_NAME@-systemplate-setup /opt/@PACKAGE@/systemplate @LO_PATH@ >/dev/null 2>&1
+	@WSD_NAME@-generate-proof-key >/dev/null 2>&1
+    cat << EOF > /etc/apt/apt.conf.d/25@WSD_NAME@
+// Rebuild systemplate of @APP_NAME@
+DPkg::Post-Invoke { "echo Updating @WSD_NAME@ systemplate;@WSD_NAME@-systemplate-setup /opt/@PACKAGE@/systemplate @LO_PATH@ >/dev/null 2>&1 || true"; };
+EOF
+	;;
+
+esac
+
+#DEBHELPER#

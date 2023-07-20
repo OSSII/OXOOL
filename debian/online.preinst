@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+# Stop any running @PACKAGE@ process
+if [ -d /run/systemd/system ]; then
+    deb-systemd-invoke stop @PACKAGE@.service >/dev/null || true
+fi
+
+#DEBHELPER#

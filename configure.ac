@@ -1455,7 +1455,7 @@ AS_IF([test -n "$with_compiler_plugins"],
 OXOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(OXOOLWSD_CONFIGDIR)
 
-OXOOLWSD_DATADIR=${datadir}/${PACKAGE}
+OXOOLWSD_DATADIR=${prefix}/share/${PACKAGE}
 AC_SUBST(OXOOLWSD_DATADIR)
 
 OXOOL_USER_ID="lool"
@@ -1463,6 +1463,7 @@ if test -n "$with_user_id"; then
    OXOOL_USER_ID="$with_user_id"
 fi
 AC_DEFINE_UNQUOTED([OXOOL_USER_ID],["$OXOOL_USER_ID"],[The user-name which is allowed to run oxoolwsd and its tools])
+AC_SUBST(OXOOL_USER_ID)
 
 AM_CONDITIONAL([ENABLE_SETCAP], [test "$enable_setcap" != "no" -a `uname -s` = "Linux" -a "$enable_fuzzers" != "yes" -a "$host_os" != "emscripten"])
 
@@ -1723,12 +1724,16 @@ AC_SUBST(ALLOWED_LANGUAGES)
 AC_CONFIG_FILES([
     ${WSD_NAME}.xml:online.xml.in
     ${WSD_NAME}.service:online.service.in
-    debian/${PACKAGE}.service:online.service.in
     ${PACKAGE}.spec:online.spec.in
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
     ${PACKAGE}.pc:online.pc.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
     ${WSD_NAME}-generate-proof-key:online-generate-proof-key.in
+    debian/${PACKAGE}.service:online.service.in
+    debian/copyright
+    debian/${PACKAGE}.preinst:debian/online.preinst
+    debian/${PACKAGE}.postinst:debian/online.postinst
+    debian/${PACKAGE}.postrm:debian/online.postrm
     ])
 
 AC_CONFIG_FILES([Makefile
@@ -1736,8 +1741,7 @@ AC_CONFIG_FILES([Makefile
                  gtk/Makefile
                  wasm/Makefile
                  browser/Makefile
-                 browser/npm-shrinkwrap.json
-                 debian/oxoolwsd.postinst])
+                 browser/npm-shrinkwrap.json])
 
 if test "$enable_iosapp" = "yes"; then
     AC_CONFIG_FILES([ios/config.h
