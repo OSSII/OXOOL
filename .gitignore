@@ -168,7 +168,7 @@ dist_git_branch
 /*.pc
 /*.service
 /*.tar.gz
-debian/*.service
+debian/oxool.*
 /*-generate-proof-key
 /*-systemplate-setup
 /*.spec
