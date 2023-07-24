@@ -24,7 +24,7 @@ case "$1" in
 	fc-cache @LO_PATH@/share/fonts/truetype
 
 	@WSD_NAME@-systemplate-setup /opt/@PACKAGE@/systemplate @LO_PATH@ >/dev/null 2>&1
-	@WSD_NAME@-generate-proof-key >/dev/null 2>&1
+	@WSD_NAME@condif generate-proof-key >/dev/null 2>&1
     cat << EOF > /etc/apt/apt.conf.d/25@WSD_NAME@
 // Rebuild systemplate of @APP_NAME@
 DPkg::Post-Invoke { "echo Updating @WSD_NAME@ systemplate;@WSD_NAME@-systemplate-setup /opt/@PACKAGE@/systemplate @LO_PATH@ >/dev/null 2>&1 || true"; };

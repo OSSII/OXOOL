@@ -9,7 +9,7 @@ Package: oxool
 Section: web
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
- adduser, fontconfig, cpio, libcap2-bin, openssh-client,
+ adduser, fontconfig, cpio, libcap2-bin,
  oxofficelib-calc,
  oxofficelib-core,
  oxofficelib-graphicfilter,

@@ -1732,7 +1732,6 @@ AC_CONFIG_FILES([
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
     ${PACKAGE}.pc:online.pc.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
-    ${WSD_NAME}-generate-proof-key:online-generate-proof-key.in
     debian/${PACKAGE}.service:online.service.in
     debian/copyright
     debian/${PACKAGE}.preinst:debian/online.preinst
@@ -1770,8 +1769,6 @@ AC_OUTPUT
 
 # Generate the systemplate setup script
 chmod +x ${WSD_NAME}-systemplate-setup
-# Generate the proof key generation script
-chmod +x ${WSD_NAME}-generate-proof-key
 
 AC_LANG_POP
 

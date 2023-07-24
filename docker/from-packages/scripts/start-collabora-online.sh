@@ -21,9 +21,9 @@ else
 openssl req -key certs/servers/localhost/privkey.pem -new -sha256 -out certs/tmp/localhost.csr.pem -subj "/C=DE/ST=BW/L=Stuttgart/O=Dummy Authority/CN=${cert_domain}"
 fi
 openssl x509 -req -in certs/tmp/localhost.csr.pem -CA certs/ca/root.crt.pem -CAkey certs/ca/root.key.pem -CAcreateserial -out certs/servers/localhost/cert.pem -days 9131
-mv -f certs/servers/localhost/privkey.pem /etc/oxoolwsd/key.pem
-mv -f certs/servers/localhost/cert.pem /etc/oxoolwsd/cert.pem
-mv -f certs/ca/root.crt.pem /etc/oxoolwsd/ca-chain.cert.pem
+mv -f certs/servers/localhost/privkey.pem /etc/oxool/key.pem
+mv -f certs/servers/localhost/cert.pem /etc/oxool/cert.pem
+mv -f certs/ca/root.crt.pem /etc/oxool/ca-chain.cert.pem
 fi
 
 # Disable warning/info messages of LOKit by default
@@ -36,27 +36,27 @@ if test -n "${aliasgroup1}" -o -n "${domain}" -o -n "${remoteconfigurl}"; then
     perl -w /start-collabora-online.pl || { exit 1; }
 fi
 if test -n "${username}"; then
-    perl -pi -e "s/<username (.*)>.*<\/username>/<username \1>${username}<\/username>/" /etc/oxoolwsd/oxoolwsd.xml
+    perl -pi -e "s/<username (.*)>.*<\/username>/<username \1>${username}<\/username>/" /etc/oxool/oxoolwsd.xml
 fi
 if test -n "${password}"; then
-    perl -pi -e "s/<password (.*)>.*<\/password>/<password \1>${password}<\/password>/" /etc/oxoolwsd/oxoolwsd.xml
+    perl -pi -e "s/<password (.*)>.*<\/password>/<password \1>${password}<\/password>/" /etc/oxool/oxoolwsd.xml
 fi
 if test -n "${server_name}"; then
-    perl -pi -e "s/<server_name (.*)>.*<\/server_name>/<server_name \1>${server_name}<\/server_name>/" /etc/oxoolwsd/oxoolwsd.xml
+    perl -pi -e "s/<server_name (.*)>.*<\/server_name>/<server_name \1>${server_name}<\/server_name>/" /etc/oxool/oxoolwsd.xml
 fi
 if test -n "${dictionaries}"; then
-    perl -pi -e "s/<allowed_languages (.*)>.*<\/allowed_languages>/<allowed_languages \1>${dictionaries:-de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru}<\/allowed_languages>/" /etc/oxoolwsd/oxoolwsd.xml
+    perl -pi -e "s/<allowed_languages (.*)>.*<\/allowed_languages>/<allowed_languages \1>${dictionaries:-de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru}<\/allowed_languages>/" /etc/oxool/oxoolwsd.xml
 fi
 
-# Restart when /etc/oxoolwsd/oxoolwsd.xml changes
+# Restart when /etc/oxool/oxoolwsd.xml changes
 [ -x /usr/bin/inotifywait -a -x /usr/bin/killall ] && (
-  /usr/bin/inotifywait -e modify /etc/oxoolwsd/oxoolwsd.xml
-  echo "$(ls -l /etc/oxoolwsd/oxoolwsd.xml) modified --> restarting"
+  /usr/bin/inotifywait -e modify /etc/oxool/oxoolwsd.xml
+  echo "$(ls -l /etc/oxool/oxoolwsd.xml) modified --> restarting"
   /usr/bin/killall -1 oxoolwsd
 ) &
 
 # Generate WOPI proof key
-oxoolwsd-generate-proof-key
+oxoolconfig generate-proof-key
 
 # Start oxoolwsd
-exec /usr/bin/oxoolwsd --version --o:sys_template_path=/opt/oxool/systemplate --o:child_root_path=/opt/oxool/child-roots --o:file_server_root_path=/usr/share/oxoolwsd --o:logging.color=false ${extra_params}
+exec /usr/bin/oxoolwsd --version --o:sys_template_path=/opt/oxool/systemplate --o:child_root_path=/opt/oxool/child-roots --o:file_server_root_path=/usr/share/oxool --o:logging.color=false ${extra_params}

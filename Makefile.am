@@ -31,8 +31,7 @@ else
 bin_PROGRAMS += oxoolwsd
 endif
 
-dist_bin_SCRIPTS = oxoolwsd-systemplate-setup \
-                   oxoolwsd-generate-proof-key
+dist_bin_SCRIPTS = oxoolwsd-systemplate-setup
 
 man_MANS = man/oxoolwsd.1 \
            man/oxoolforkit.1 \
@@ -40,7 +39,6 @@ man_MANS = man/oxoolwsd.1 \
            man/oxoolconfig.1 \
            man/oxoolstress.1 \
            man/oxoolwsd-systemplate-setup.1 \
-           man/oxoolwsd-generate-proof-key.1 \
            man/oxoolmount.1
 
 

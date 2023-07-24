@@ -1,6 +1,6 @@
-.TH OXOOLCONFIG "1" "Nov 2021" "oxoolconfig" "User Commands"
+.TH OXOOLCONFIG "1" "Jul 2023" "oxoolconfig" "User Commands"
 .SH NAME
-oxoolconfig \- Configuration tool for OxOffice Online.
+oxoolconfig \- Configuration tool for Collabora Online.
 .SH SYNOPSIS
 oxoolconfig COMMAND [OPTIONS]
 .SH COMMANDS AND OPTIONS
@@ -8,7 +8,7 @@ oxoolconfig COMMAND [OPTIONS]
 .SS "General options:"
 \fB\-h\fR, \fB\-\-help\fR                Show this usage information.
 .PP
-\fB\-\-config\-file\fR=\fIpath\fR        Specify configuration file path manually. The default is usually \fI/etc/oxoolwsd/oxoolwsd.xml\fR.
+\fB\-\-config\-file\fR=\fIpath\fR        Specify configuration file path manually. The default is usually \fI/etc/oxool/oxoolwsd.xml\fR.
 .SS "anonymize"
 The \fBanonymize\fR command helps to read anonymized logs. If you know a document and/or a user had an issue, you can find their session in the logs by running this command with the username and/or document name and get the anonymized hash, which you use to search the logs with.
 .PP
@@ -17,7 +17,7 @@ anonymize [string\-1]...[string\-n]
 \fB\-\-anonymization\-salt\fR=\fIsalt\fR Anonymize strings with the given 64-bit salt instead of the one in the config file.
 .PP
 .SS "migrateconfig"
-The \fBmigrateconfig\fR command migrates config file of OxOffice Online 6.4 or older to the new format.
+The \fBmigrateconfig\fR command migrates config file of Collabora Online 6.4 or older to the new format.
 .PP
 migrateconfig [\-\-old\-config\-file=<path>] [\-\-config\-file=<path>] [\-\-write]
 .PP
@@ -25,7 +25,7 @@ migrateconfig [\-\-old\-config\-file=<path>] [\-\-config\-file=<path>] [\-\-writ
 .PP
 \fB\-\-write\fR                   Write migrated configuration. Without this option no changes are written to the config file, only information about differences between old and new config is printed.
 .PP
-\fBExample:\fR oxoolconfig migrateconfig \-\-old\-config\-file=/etc/loolwsd/loolwsd.xml \-\-config\-file=/etc/oxoolwsd/oxoolwsd.xml \-\-write
+\fBExample:\fR oxoolconfig migrateconfig \-\-old\-config\-file=/etc/loolwsd/loolwsd.xml \-\-config\-file=/etc/oxool/oxoolwsd.xml \-\-write
 .PP
 .SS "set"
 The \fBset\fR command changes an existing configuration setting in the config file. The <key> is the XPath expression of the config item in the config XML file (oxoolwsd.xml).
@@ -35,7 +35,7 @@ set <key> <value>
 \fBExample:\fR oxoolconfig set logging.level trace
 .PP
 .SS "set\-admin\-password"
-The \fBset\-admin\-password\fR command sets the user name and password of the administrator who can access OxOffice Online's admin console.
+The \fBset\-admin\-password\fR command sets the user name and password of the administrator who can access Collabora Online's admin console.
 .PP
 set\-admin\-password
 .PP
@@ -46,9 +46,11 @@ set\-admin\-password
 \fB\-\-pwd\-hash\-length\fR=\fInumber\fR  Length of password hash to generate.
 .PP
 .SS "update\-system\-template"
-The \fBupdate\-system\-template\fR command updates OxOffice Online's system template. It is used typically when new fonts are added to the system, that need to be used with OxOffice Online.
+The \fBupdate\-system\-template\fR command updates Collabora Online's system template. It is used typically when new fonts are added to the system, that need to be used with Collabora Online.
 .PP
 update\-system\-template
 .PP
+.SS "generate\-proof\-key"
+The \fBgenerate\-proof\-key\fR command creates an RSA key pair in /etc/oxool for the WOPI Proof headers. The postinstall script of oxoolwsd package usually creates this RSA key pair in case of new installation.
 .SH "SEE ALSO"
-oxoolforkit(1), oxoolconvert(1), oxoolwsd(1), oxoolwsd-systemplate-setup(1), oxoolwsd-generate-proof-key(1), oxoolmount(1)
+oxoolforkit(1), oxoolconvert(1), oxoolwsd(1), oxoolwsd-systemplate-setup(1), oxoolmount(1)

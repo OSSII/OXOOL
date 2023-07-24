@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-%define config_options --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
+%define config_options --with-product-name="MODA ODF WEB" --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
 %define loroot /opt/oxoffice
 %define HAVE_DEVEL 0
 
@@ -14,7 +14,7 @@ Name:           @PACKAGE@
 Version:        @VERSION@
 Release:        @OXOOLWSD_DIST_RELEASE@%{?dist}
 Vendor:         @VENDOR@
-Summary:        OxOffice Online WebSocket Daemon for @OXOOLWSD_BRANCH@
+Summary:        MODA ODF WEB WebSocket Daemon.
 License:        MPL
 Source0:        @OXOOLWSD_DIST_NAME@.tar.gz
 BuildRequires:  libcap-devel libpng-devel pam-devel gcc-c++ cppunit-devel make
@@ -40,12 +40,12 @@ Requires:       poco-crypto >= 1.7.5 poco-data >= 1.7.5 poco-encodings >= 1.7.5 
 
 %if 0%{HAVE_DEVEL}
 %package	devel
-Summary:	Files for build OxOffice Online Editor.
+Summary:	Files for build MODA ODF WEB Editor.
 Requires:	%{name} = %{version}
 Requires:	poco-devel >= 1.7.5
 Requires:	libgit2
 %description	devel
-Files for build OxOffice Online Editor.
+Files for build MODA ODF WEB Editor.
 %endif
 
 %prep
@@ -90,7 +90,6 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %{_bindir}/@PACKAGE@mount
 %{_bindir}/@WSD_NAME@
 %{_bindir}/@PACKAGE@stress
-%{_bindir}/@WSD_NAME@-generate-proof-key
 %{_bindir}/@WSD_NAME@-systemplate-setup
 
 %dir /usr/share/%{name}
@@ -168,7 +167,7 @@ chown @OXOOL_USER_ID@:@OXOOL_USER_ID@ ${loolparent}/%{name}/child-roots
 
 fc-cache ${loroot}/share/fonts/truetype
 su @OXOOL_USER_ID@ -c "@WSD_NAME@-systemplate-setup ${loolparent}/%{name}/systemplate ${loroot} >/dev/null 2>&1"
-@WSD_NAME@-generate-proof-key >/dev/null 2>&1
+@PACKAGE@config generate-proof-key >/dev/null 2>&1
 
 %if 0%{?rhel} || 0%{?suse_version}
 if [ $OXOOLWSD_IS_ACTIVE == "1" ]; then systemctl start @WSD_NAME@; fi
