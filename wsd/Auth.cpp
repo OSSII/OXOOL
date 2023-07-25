@@ -138,7 +138,8 @@ bool JWTAuth::verify(const std::string& accessToken)
             }
         }
 
-        std::istringstream istr(tokens[1]);
+        // Append "==" to make it a valid base64 string
+        std::istringstream istr(tokens[1].append("=="));
         std::string decodedPayload;
         Base64Decoder decoder(istr);
         decoder >> decodedPayload;
