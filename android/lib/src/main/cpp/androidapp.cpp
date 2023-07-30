@@ -347,7 +347,7 @@ Java_org_libreoffice_androidlib_LOActivity_createOXOOLWSD(JNIEnv *env, jobject i
                         {
                             fakeClientFd = fakeSocketSocket();
                             LOG_DBG("createOXOOLWSD created fakeClientFd: " << fakeClientFd);
-                            std::unique_ptr<OXOOLWSD> oxoolwsd(new OXOOLWSD());
+                            std::unique_ptr<OXOOLWSD> oxoolwsd = std::make_unique<OXOOLWSD>();
                             oxoolwsd->run(1, argv);
                         }
                         LOG_DBG("One run of OXOOLWSD completed");
