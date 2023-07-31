@@ -7,6 +7,7 @@
 /* global app $ setupToolbar w2ui toolbarUpMobileItems _ Hammer */
 L.Control.UIManager = L.Control.extend({
 	mobileWizard: null,
+	documentNameInput: null,
 	blockedUI: false,
 	busyPopupTimer: null,
 	customButtons: [], // added by WOPI InsertButton
@@ -130,6 +131,7 @@ L.Control.UIManager = L.Control.extend({
 		}
 		this.refreshSidebar();
 	},
+
 	initDarkModeFromSettings: function() {
 		var selectedMode = this.getDarkModeState();
 		if (selectedMode) {
@@ -146,6 +148,15 @@ L.Control.UIManager = L.Control.extend({
 			};
 			app.socket.sendMessage('uno .uno:ChangeTheme ' + JSON.stringify(cmd));
 		}
+	},
+
+	renameDocument: function() {
+		// todo: does this need _('rename document)
+		var docNameInput = this.documentNameInput;
+		this.showInputModal('rename-modal', _('Rename Document'), _('Enter new name'), '', _('Rename'), 
+			function(newName) {
+				docNameInput.documentNameConfirm(newName);
+		});
 	},
 
 	getAccessibilityState: function() {
@@ -199,7 +210,8 @@ L.Control.UIManager = L.Control.extend({
 
 		setupToolbar(this.map);
 
-		this.map.addControl(L.control.documentNameInput());
+		this.documentNameInput = L.control.documentNameInput();
+		this.map.addControl(this.documentNameInput);
 		this.map.addControl(L.control.alertDialog());
 		this.mobileWizard = L.control.mobileWizard();
 		this.map.addControl(this.mobileWizard);
