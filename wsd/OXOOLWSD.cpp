@@ -2700,21 +2700,22 @@ void OXOOLWSD::innerInitialize(Application& self)
 
         const auto compress = getConfigValue<bool>(conf, "trace.path[@compress]", false);
         const auto takeSnapshot = getConfigValue<bool>(conf, "trace.path[@snapshot]", false);
-        TraceDumper = Util::make_unique<TraceFileWriter>(path, recordOutgoing, compress, takeSnapshot, filters);
+        TraceDumper = std::make_unique<TraceFileWriter>(path, recordOutgoing, compress,
+                                                        takeSnapshot, filters);
     }
 
 #if !MOBILEAPP
-    SavedClipboards = Util::make_unique<ClipboardCache>();
+    SavedClipboards = std::make_unique<ClipboardCache>();
 
     LOG_TRC("Initialize FileServerRequestHandler");
     FileServerRequestHandler::initialize(OXOOLWSD::FileServerRoot);
 #endif
 
-    WebServerPoll = Util::make_unique<TerminatingPoll>("websrv_poll");
+    WebServerPoll = std::make_unique<TerminatingPoll>("websrv_poll");
 
-    PrisonerPoll = Util::make_unique<PrisonPoll>();
+    PrisonerPoll = std::make_unique<PrisonPoll>();
 
-    Server = Util::make_unique<OXOOLWSDServer>();
+    Server = std::make_unique<OXOOLWSDServer>();
 
     LOG_TRC("Initialize StorageBase");
     StorageBase::initialize();
@@ -5758,7 +5759,7 @@ int OXOOLWSD::innerMain()
     try
     {
         // Fetch font settings from server if configured
-        remoteFontConfigThread = Util::make_unique<RemoteFontConfigPoll>(config());
+        remoteFontConfigThread = std::make_unique<RemoteFontConfigPoll>(config());
         remoteFontConfigThread->start();
     }
     catch (const Poco::Exception&)
