@@ -23,7 +23,7 @@ COPY /start-collabora-online.pl /
 # Fix permissions
 RUN setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit && \
     setcap cap_sys_admin=ep /usr/bin/oxoolmount && \
-    useradd -r -U -d /opt/oxool -m oxool && \
+    useradd --system --user-group --create-home --home-dir /opt/oxool oxool && \
     rm -rf /opt/oxool && \
     mkdir -p /opt/oxool/child-roots && \
     oxoolwsd-systemplate-setup /opt/oxool/systemplate /opt/lokit >/dev/null 2>&1 && \
@@ -34,7 +34,9 @@ RUN setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit
 
 EXPOSE 9980
 
+RUN usermod -u 973 oxool
+
 # switch to oxool user (use numeric user id to be compatible with Kubernetes Pod Security Policies)
-USER 974
+USER 973
 
 CMD ["/start-collabora-online.sh"]
