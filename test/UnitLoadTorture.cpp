@@ -71,7 +71,7 @@ int UnitLoadTorture::loadTorture(const std::string& name, const std::string& doc
                 const std::string status = OXOOLProtocol::getFirstLine(message);
 
                 int viewid = -1;
-                OXOOLProtocol::getTokenIntegerFromMessage(status, "viewid", viewid);
+                LOK_ASSERT(OXOOLProtocol::getTokenIntegerFromMessage(status, "viewid", viewid));
                 sum_view_ids += viewid;
                 ++num_of_views;
                 --num_to_load;
