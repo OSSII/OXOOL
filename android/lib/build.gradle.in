@@ -83,7 +83,7 @@ dependencies {
     }
 }
 
-task copyUnpackAssets(type: Copy) {
+tasks.register('copyUnpackAssets', Copy) {
     description "copies assets that need to be extracted on the device"
     into 'src/main/assets/unpack'
     into('program') {
@@ -105,7 +105,7 @@ task copyUnpackAssets(type: Copy) {
     }
     into('etc/oxoolwsd') {
         from('/android/oxoolkitconfig.xcu')
-            includes = [ 'oxoolkitconfig.xcu' ]
+        includes = ['oxoolkitconfig.xcu']
     }
     into('user/fonts') {
         from "${liboInstdir}/share/fonts/truetype"
@@ -132,7 +132,7 @@ task copyUnpackAssets(type: Copy) {
         filter {
             String line ->
                 line.replaceAll(
-                    '@@APPLICATION_ID@@', new String("${liboApplicationId}")
+                        '@@APPLICATION_ID@@', new String("${liboApplicationId}")
                 )
         }
     }
@@ -148,15 +148,15 @@ task copyUnpackAssets(type: Copy) {
         includes = ['extensions/dict-de/**', 'extensions/dict-en/**', 'extensions/dict-es/**', 'extensions/dict-fr/**', 'extensions/dict-pt-BR/**']
         exclude { FileTreeElement details ->
             !(details.file.isDirectory() ||
-                details.file.name.endsWith('.xcu') ||
-                details.file.name.endsWith('.dic') ||
-                details.file.name.endsWith('.aff') ||
-                details.file.name.endsWith('.xml'))
+                    details.file.name.endsWith('.xcu') ||
+                    details.file.name.endsWith('.dic') ||
+                    details.file.name.endsWith('.aff') ||
+                    details.file.name.endsWith('.xml'))
         }
     }
 }
 
-task copyAssets(type: Copy) {
+tasks.register('copyAssets', Copy) {
     description "copies assets that can be accessed within the installed apk"
     into 'src/main/assets'
     from("${liboSrcRoot}/instdir/") {
@@ -178,7 +178,7 @@ task copyAssets(type: Copy) {
     }
 }
 
-task createFullConfig(type: Copy) {
+tasks.register('createFullConfig', Copy) {
     description "copies various configuration bits into the apk"
     into('src/main/assets/share/config')
     from("${liboInstdir}/share/config") {
@@ -186,25 +186,25 @@ task createFullConfig(type: Copy) {
     }
 }
 
-task copyBrandTheme(type: Copy) {
-	from "${liboBrandingDir}/online-theme"
-	into "src/main/assets/share/theme_definitions/online"
+tasks.register('copyBrandTheme', Copy) {
+    from "${liboBrandingDir}/online-theme"
+    into "src/main/assets/share/theme_definitions/online"
 }
 
-task copyDocTemplates(type: Copy) {
-        from "${rootProject.getRootDir()}/templates/untitled.odp",
-             "${rootProject.getRootDir()}/templates/untitled.ods",
-             "${rootProject.getRootDir()}/templates/untitled.odt"
-        into "src/main/assets/templates"
+tasks.register('copyDocTemplates', Copy) {
+    from "${rootProject.getRootDir()}/templates/untitled.odp",
+            "${rootProject.getRootDir()}/templates/untitled.ods",
+            "${rootProject.getRootDir()}/templates/untitled.odt"
+    into "src/main/assets/templates"
 }
 
-task copyKitConfig(type: Copy) {
-        from "${file(rootProject.getRootDir()).getParent()}/oxoolkitconfig-mobile.xcu"
-        into "src/main/assets/etc/oxoolwsd"
-        rename { "oxoolkitconfig.xcu" }
+tasks.register('copyKitConfig', Copy) {
+    from "${file(rootProject.getRootDir()).getParent()}/oxoolkitconfig-mobile.xcu"
+    into "src/main/assets/etc/oxoolwsd"
+    rename { "oxoolkitconfig.xcu" }
 }
 
-task createStrippedConfig {
+tasks.register('createStrippedConfig') {
     def preserveDir = file("src/main/assets/share/config/soffice.cfg/empty")
     outputs.dir "src/main/assets/share/registry/res"
     outputs.file preserveDir
@@ -217,7 +217,7 @@ task createStrippedConfig {
     }
 }
 
-task createRCfiles {
+tasks.register('createRCfiles') {
     inputs.file "libSettings.gradle"
     dependsOn copyUnpackAssets, copyAssets
     def sofficerc = file('src/main/assets/unpack/program/sofficerc')
@@ -305,7 +305,7 @@ preBuild.dependsOn 'createRCfiles',
         'createFullConfig',
         'copyBrandTheme'
 
-task generateOxoolDebugAssets {
+tasks.register('generateOxoolDebugAssets') {
     doLast {
         exec {
             commandLine 'make', '-C', "${rootProject.getBuildDir()}/../../browser", 'clean'
@@ -316,7 +316,7 @@ task generateOxoolDebugAssets {
     }
 }
 
-task generateOxoolReleaseAssets {
+tasks.register('generateOxoolReleaseAssets') {
     doLast {
         exec {
             commandLine 'make', '-C', "${rootProject.getBuildDir()}/../../browser", 'clean'
