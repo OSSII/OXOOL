@@ -24,7 +24,7 @@ window.app = {
 			fetch(global.location.pathname.match(/.*\//) + 'logging.html', {
 				method: 'POST',
 				headers: { 'Content-Type' : 'application/json' },
-				body: log
+				body: global.oxoolLogging + ' ' + log
 			});
 		}
 	};
@@ -78,7 +78,7 @@ window.app = {
 		}
 	};
 
-	global.setLogging(global.oxoolLogging == 'true');
+	global.setLogging(global.oxoolLogging != '');
 
 	global.oxoolParams = new URLSearchParams(global.location.search);
 	var ua = navigator.userAgent.toLowerCase(),
