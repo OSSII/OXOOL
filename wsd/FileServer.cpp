@@ -30,6 +30,7 @@
 #include <Poco/DateTimeFormatter.h>
 #include <Poco/Exception.h>
 #include <Poco/FileStream.h>
+#include <Poco/SHA1Engine.h>
 #include <Poco/Net/HTMLForm.h>
 #include <Poco/Net/HTTPBasicCredentials.h>
 #include <Poco/Net/HTTPCookie.h>
@@ -562,9 +563,20 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
             const std::string oxoolLogging = config.getString("loleaflet_logging", "false");
             if (oxoolLogging != "false")
             {
-                LOG_ERR(message.rdbuf());
-                socket->send(response);
-                return;
+                std::string token;
+                Poco::SHA1Engine engine;
+
+                engine.update(OXOOLWSD::LogToken);
+                std::getline(message, token, ' ');
+
+                if (Poco::DigestEngine::digestToHex(engine.digest()) == token)
+                {
+                    LOG_ERR(message.rdbuf());
+
+                    http::Response httpResponse(http::StatusCode::OK);
+                    socket->send(httpResponse);
+                    return;
+                }
             }
         }
 
@@ -1129,8 +1141,16 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     Poco::replaceInPlace(preprocess, std::string("<!--%BRANDING_JS%-->"), brandJS);
     Poco::replaceInPlace(preprocess, std::string("<!--%CSS_VARIABLES%-->"), cssVarsToStyle(cssVars));
 
-    const auto oxoolLogging = stringifyBoolFromConfig(config, "loleaflet_logging", false);
-    Poco::replaceInPlace(preprocess, std::string("%BROWSER_LOGGING%"), oxoolLogging);
+    if (config.getBool("loleaflet_logging", false))
+    {
+        Poco::SHA1Engine engine;
+        engine.update(OXOOLWSD::LogToken);
+        Poco::replaceInPlace(preprocess, std::string("%BROWSER_LOGGING%"),
+                             Poco::DigestEngine::digestToHex(engine.digest()));
+    }
+    else
+        Poco::replaceInPlace(preprocess, std::string("%BROWSER_LOGGING%"), std::string());
+
     const auto groupDownloadAs = stringifyBoolFromConfig(config, "per_view.group_download_as", true);
     Poco::replaceInPlace(preprocess, std::string("%GROUP_DOWNLOAD_AS%"), groupDownloadAs);
     const unsigned int outOfFocusTimeoutSecs = config.getUInt("per_view.out_of_focus_timeout_secs", 60);

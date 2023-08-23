@@ -1026,6 +1026,7 @@ bool OXOOLWSD::EnableAccessibility = false;
 FILE *OXOOLWSD::TraceEventFile = NULL;
 std::string OXOOLWSD::LogLevel = "trace";
 std::string OXOOLWSD::LogLevelStartup = "trace";
+std::string OXOOLWSD::LogToken;
 std::string OXOOLWSD::MostVerboseLogLevelSettableFromClient = "notice";
 std::string OXOOLWSD::LeastVerboseLogLevelSettableFromClient = "fatal";
 std::string OXOOLWSD::UserInterface = "default";
@@ -2445,6 +2446,11 @@ void OXOOLWSD::innerInitialize(Application& self)
     {
         LOG_INF("Setting log-level to [" << LogLevelStartup << "] and delaying setting to ["
                 << LogLevel << "] until after WSD initialization.");
+    }
+
+    if (getConfigValue<bool>(conf, "loleaflet_logging", "false"))
+    {
+        LogToken = Util::rng::getHardRandomHexString(16);
     }
 
     // First log entry.
