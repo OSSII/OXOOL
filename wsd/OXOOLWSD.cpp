@@ -5781,11 +5781,6 @@ std::string OXOOLWSD::getServerURL()
 int OXOOLWSD::innerMain()
 {
 #if !MOBILEAPP
-    SigUtil::setUserSignals();
-    SigUtil::setFatalSignals("wsd " OXOOLWSD_VERSION " " OXOOLWSD_VERSION_HASH);
-#endif
-
-#if !MOBILEAPP
 #  ifdef __linux__
     // down-pay all the forkit linking cost once & early.
     setenv("LD_BIND_NOW", "1", 1);
@@ -6389,7 +6384,22 @@ void forwardSigUsr2()
 // Avoid this in the Util::isFuzzing() case because libfuzzer defines its own main().
 #if !MOBILEAPP && !LIBFUZZER
 
-POCO_SERVER_MAIN(OXOOLWSD)
+int main(int argc, char** argv)
+{
+    SigUtil::setUserSignals();
+    SigUtil::setFatalSignals("wsd " OXOOLWSD_VERSION " " OXOOLWSD_VERSION_HASH);
+
+    try
+    {
+        OXOOLWSD app;
+        return app.run(argc, argv);
+    }
+    catch (Poco::Exception& exc)
+    {
+        std::cerr << exc.displayText() << std::endl;
+        return EX_SOFTWARE;
+    }
+}
 
 #endif
 
