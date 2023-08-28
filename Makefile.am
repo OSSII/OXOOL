@@ -175,7 +175,6 @@ lokitclient_SOURCES = common/Log.cpp \
 
 noinst_LIBRARIES = libsimd.a
 libsimd_a_SOURCES = kit/DeltaSimd.c
-# FIXME: x86_only etc.
 libsimd_a_CFLAGS = @SIMD_CFLAGS@
 
 oxoolforkit_sources = kit/ChildSession.cpp \
