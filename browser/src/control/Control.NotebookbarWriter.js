@@ -1250,6 +1250,13 @@ L.Control.NotebookbarWriter = L.Control.Notebookbar.extend({
 				'accessibility': { focusBack: false,	combination: 'FM',	de: null }
 			},
 			{
+				'id': 'insert-QrCode',
+				'type': 'bigtoolitem',
+				'text': _UNO('.uno:InsertQrCode', 'text'),
+				'command': '.uno:InsertQrCode',
+				'accessibility': { focusBack: false,	combination: 'IQ',	de: null }
+			},
+			{
 				'type': 'container',
 				'children': [
 					{
