@@ -810,8 +810,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             }
             else
             {
-                if (!isReadOnly())
-                    docBroker->updateLastModifyingActivityTime();
+                docBroker->updateLastModifyingActivityTime();
                 return forwardToChild(std::string(buffer, length), docBroker);
             }
         }
@@ -1073,7 +1072,7 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         if (tokens.equals(0, "key"))
             _keyEvents++;
 
-        if (!isReadOnly() && OXOOLProtocol::tokenIndicatesDocumentModification(tokens))
+        if (OXOOLProtocol::tokenIndicatesDocumentModification(tokens))
         {
             docBroker->updateLastModifyingActivityTime();
         }
