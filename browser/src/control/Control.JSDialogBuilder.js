@@ -534,7 +534,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			return '';
 		if (text.endsWith('...'))
 			text = text.slice(0, -3);
-		return text.replace('~', '');
+		return window.removeAccessKey(text);
 	},
 
 	_extractUnits: function(text) {
