@@ -1497,7 +1497,7 @@ AS_IF([test -n "$with_compiler_plugins"],
 OXOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(OXOOLWSD_CONFIGDIR)
 
-OXOOLWSD_DATADIR=${prefix}/share/${PACKAGE}
+OXOOLWSD_DATADIR=${datadir}/${PACKAGE}
 AC_SUBST(OXOOLWSD_DATADIR)
 
 OXOOL_USER_ID="lool"
