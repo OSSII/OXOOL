@@ -12,6 +12,7 @@ L.Control.UIManager = L.Control.extend({
 	busyPopupTimer: null,
 	customButtons: [], // added by WOPI InsertButton
 	modalIdPretext: 'modal-dialog-',
+	previousTheme: null,
 
 	onAdd: function (map) {
 		this.map = map;
@@ -107,6 +108,7 @@ L.Control.UIManager = L.Control.extend({
 		var selectedMode = this.getDarkModeState();
 		// swap them by invoking the appropriate load function and saving the state
 		if (selectedMode) {
+			this.previousTheme = 'Dark';
 			this.setSavedState('darkTheme',false);
 			this.loadLightMode();
 			var cmd = {
@@ -115,6 +117,7 @@ L.Control.UIManager = L.Control.extend({
 			app.socket.sendMessage('uno .uno:ChangeTheme ' + JSON.stringify(cmd));
 		}
 		else {
+			this.previousTheme = 'Light';
 			this.setSavedState('darkTheme',true);
 			this.loadDarkMode();
 			var cmd = {
@@ -135,6 +138,7 @@ L.Control.UIManager = L.Control.extend({
 		}
 
 		if (selectedMode) {
+			this.previousTheme = 'Dark';
 			this.loadDarkMode();
 			var cmd = {
 				'NewTheme': { 'type': 'string', 'value': 'Dark' }
@@ -142,6 +146,7 @@ L.Control.UIManager = L.Control.extend({
 			app.socket.sendMessage('uno .uno:ChangeTheme ' + JSON.stringify(cmd));
 		}
 		else {
+			this.previousTheme = 'Light';
 			this.loadLightMode();
 			var cmd = {
 				'NewTheme': { 'type': 'string', 'value': 'Light' }
