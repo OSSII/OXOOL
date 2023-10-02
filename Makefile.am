@@ -205,6 +205,7 @@ admin_fuzzer_SOURCES = \
 		       $(common_fuzzer_sources) \
 		       fuzzer/Admin.cpp
 admin_fuzzer_LDFLAGS = -fsanitize=fuzzer $(AM_LDFLAGS)
+admin_fuzzer_LDADD = libsimd.a
 
 clientsession_fuzzer_CPPFLAGS = \
 				-DKIT_IN_PROCESS=1 \
@@ -213,6 +214,7 @@ clientsession_fuzzer_SOURCES = \
 			       $(common_fuzzer_sources) \
 			       fuzzer/ClientSession.cpp
 clientsession_fuzzer_LDFLAGS = -fsanitize=fuzzer $(AM_LDFLAGS)
+clientsession_fuzzer_LDADD = libsimd.a
 
 httpresponse_fuzzer_CPPFLAGS = \
 				-DKIT_IN_PROCESS=1 \
@@ -221,6 +223,7 @@ httpresponse_fuzzer_SOURCES = \
 			       $(common_fuzzer_sources) \
 			       fuzzer/HttpResponse.cpp
 httpresponse_fuzzer_LDFLAGS = -fsanitize=fuzzer $(AM_LDFLAGS)
+httpresponse_fuzzer_LDADD = libsimd.a
 
 httpecho_fuzzer_CPPFLAGS = \
 				-DKIT_IN_PROCESS=1 \
@@ -230,6 +233,7 @@ httpecho_fuzzer_SOURCES = \
 			       $(common_fuzzer_sources) \
 			       fuzzer/HttpEcho.cpp
 httpecho_fuzzer_LDFLAGS = -fsanitize=fuzzer $(AM_LDFLAGS)
+httpecho_fuzzer_LDADD = libsimd.a
 
 endif # ENABLE_LIBFUZZER
 
