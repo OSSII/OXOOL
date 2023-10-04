@@ -921,18 +921,16 @@ L.Control.UIManager = L.Control.extend({
 
 	// Snack bar
 
+	closeSnackbar: function() {
+		var closeMessage = { id: 'snackbar', jsontype: 'dialog', type: 'snackbar', action: 'close' };
+		app.socket._onMessage({ textMsg: 'jsdialog: ' + JSON.stringify(closeMessage) });
+	},
+
 	showSnackbar: function(label, action, callback, timeout, hasProgress) {
 		if (!app.socket)
 			return;
 
-		var closeJson = {
-			id: 'snackbar',
-			jsontype: 'dialog',
-			type: 'snackbar',
-			action: 'fadeout'
-		};
-
-		app.socket._onMessage({textMsg: 'jsdialog: ' + JSON.stringify(closeJson)});
+		this.closeSnackbar();
 
 		var json = {
 			id: 'snackbar',
@@ -952,6 +950,7 @@ L.Control.UIManager = L.Control.extend({
 			]
 		};
 
+		var that = this;
 		var builderCallback = function(objectType, eventType, object, data) {
 			window.app.console.debug('control: \'' + objectType + '\' id:\'' + object.id + '\' event: \'' + eventType + '\' state: \'' + data + '\'');
 
@@ -959,8 +958,7 @@ L.Control.UIManager = L.Control.extend({
 				if (callback)
 					callback();
 
-				var closeMessage = { id: 'snackbar', jsontype: 'dialog', type: 'snackbar', action: 'close' };
-				app.socket._onMessage({ textMsg: 'jsdialog: ' + JSON.stringify(closeMessage) });
+				that.closeSnackbar();
 			}
 		};
 
