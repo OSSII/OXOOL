@@ -6136,7 +6136,7 @@ int OXOOLWSD::innerMain()
     {
         // If we have written any objects to it, it ends with a comma and newline. Back over those.
         if (ftell(TraceEventFile) > 2)
-            fseek(TraceEventFile, -2, SEEK_CUR);
+            (void)fseek(TraceEventFile, -2, SEEK_CUR);
         // Close the JSON array.
         fprintf(TraceEventFile, "\n]\n");
         fclose(TraceEventFile);
