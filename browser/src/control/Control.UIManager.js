@@ -70,7 +70,7 @@ L.Control.UIManager = L.Control.extend({
 		if (window.app.dontUseNotebookbar)
 			return false;
 
-		var forceCompact = this.getSavedStateOrDefault('CompactMode', null);
+		var forceCompact = this.getSavedStateOrDefault('compactMode', null);
 		return (window.userInterfaceMode === 'notebookbar' && forceCompact === null)
 			|| forceCompact === false;
 	},
@@ -546,7 +546,7 @@ L.Control.UIManager = L.Control.extend({
 			break;
 		}
 
-		this.setSavedState('CompactMode', uiMode.mode === 'classic');
+		this.setSavedState('compactMode', uiMode.mode === 'classic');
 		this.initializeSidebar();
 		this.insertCustomButtons();
 
@@ -1492,15 +1492,15 @@ L.Control.UIManager = L.Control.extend({
 	},
 
 	setSavedState: function(name, state) {
-		var docType = (name === 'CompactMode') ? null : this.map.getDocType();
+		var docType = (name === 'compactMode') ? null : this.map.getDocType();
 		if (window.isLocalStorageAllowed)
 			localStorage.setItem('UIDefaults_' + docType + '_' + name, state);
 	},
 
 	getSavedStateOrDefault: function(name, forcedDefault) {
 		var retval = forcedDefault !== undefined ? forcedDefault : true;
-		// we request CompactMode very early, no info about doctype so unify all the calls
-		var docType = (name === 'CompactMode') ? null : this.map.getDocType();
+		// we request compactMode very early, no info about doctype so unify all the calls
+		var docType = (name === 'compactMode') ? null : this.map.getDocType();
 		var state = null;
 		if (window.isLocalStorageAllowed)
 			state = localStorage.getItem('UIDefaults_' + docType + '_' + name);
