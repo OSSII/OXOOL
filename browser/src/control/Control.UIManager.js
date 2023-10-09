@@ -1125,9 +1125,11 @@ L.Control.UIManager = L.Control.extend({
 		var that = this;
 		this.showModal(json, [
 			{id: responseButtonId, func: function() {
+				var dontClose = false;
 				if (typeof callback === 'function')
-					callback();
-				that.closeModal(dialogId);
+					dontClose = callback();
+				if (!dontClose)
+					that.closeModal(dialogId);
 			}}
 		], cancelButtonId);
 		if (!buttonText && !withCancel) {
@@ -1142,17 +1144,17 @@ L.Control.UIManager = L.Control.extend({
 	/// shows modal dialog with progress
 	showProgressBarDialog: function(id, title, message, buttonText, callback, value) {
 		var dialogId = this.generateModalId(id);
-		var responseButtonId = dialogId + '-response';
+		var responseButtonId = id + '-response';
 
 		var json = this._modalDialogJSON(id, title, true, [
 			{
-				id: dialogId + '-title',
+				id: 'info-modal-tile-m',
 				type: 'fixedtext',
 				text: title,
 				hidden: !window.mode.isMobile()
 			},
 			{
-				id: dialogId + '-label',
+				id: 'info-modal-label1',
 				type: 'fixedtext',
 				text: message
 			},
@@ -1184,9 +1186,11 @@ L.Control.UIManager = L.Control.extend({
 		var that = this;
 		this.showModal(json, [
 			{id: responseButtonId, func: function() {
+				var dontClose = false;
 				if (typeof callback === 'function')
-					callback();
-				that.closeModal(dialogId);
+					dontClose = callback();
+				if (!dontClose)
+					that.closeModal(dialogId);
 			}}
 		]);
 	},
