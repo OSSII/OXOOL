@@ -4,14 +4,13 @@
 			 and allows to controll them (show/hide)
  */
 
-/* global app $ setupToolbar w2ui toolbarUpMobileItems _ Hammer */
+/* global app $ setupToolbar w2ui toolbarUpMobileItems _ Hammer JSDialog */
 L.Control.UIManager = L.Control.extend({
 	mobileWizard: null,
 	documentNameInput: null,
 	blockedUI: false,
 	busyPopupTimer: null,
 	customButtons: [], // added by WOPI InsertButton
-	modalIdPretext: 'modal-dialog-',
 	previousTheme: null,
 
 	onAdd: function (map) {
@@ -1039,9 +1038,9 @@ L.Control.UIManager = L.Control.extend({
 			return this.mobileWizard.isOpen();
 	},
 
-	/// Returns generated (or to be generated) id for the modal container.
+	// TODO: remove and use JSDialog.generateModalId directly
 	generateModalId: function(givenId) {
-		return this.modalIdPretext + givenId;
+		return JSDialog.generateModalId(givenId);
 	},
 
 	_modalDialogJSON: function(id, title, cancellable, widgets, focusId) {
@@ -1142,9 +1141,10 @@ L.Control.UIManager = L.Control.extend({
 	},
 
 	/// shows modal dialog with progress
-	showProgressBarDialog: function(id, title, message, buttonText, callback, value) {
+	showProgressBarDialog: function(id, title, message, buttonText, callback, value, cancelCallback) {
 		var dialogId = this.generateModalId(id);
 		var responseButtonId = id + '-response';
+		var cancelButtonId = id + '-cancel';
 
 		var json = this._modalDialogJSON(id, title, true, [
 			{
@@ -1171,6 +1171,11 @@ L.Control.UIManager = L.Control.extend({
 				enabled: true,
 				children: [
 					{
+						id: cancelButtonId,
+						type: 'pushbutton',
+						text: _('Cancel')
+					},
+					{
 						id: responseButtonId,
 						type: 'pushbutton',
 						text: buttonText,
@@ -1191,8 +1196,12 @@ L.Control.UIManager = L.Control.extend({
 					dontClose = callback();
 				if (!dontClose)
 					that.closeModal(dialogId);
+			}},
+			{id: cancelButtonId, func: function() {
+				if (typeof cancelCallback === 'function')
+					cancelCallback();
 			}}
-		]);
+		], cancelButtonId);
 	},
 
 	/// sets progressbar status, value should be in range 0-100
@@ -1203,7 +1212,7 @@ L.Control.UIManager = L.Control.extend({
 		var dialogId = this.generateModalId(id);
 
 		var json = {
-			id: id,
+			id: dialogId,
 			jsontype: 'dialog',
 			type: 'modalpopup',
 			action: 'update',
