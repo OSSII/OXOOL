@@ -17,7 +17,6 @@ COPY /instdir /
 
 # copy the shell script which can start OxOffice Online (oxoolwsd)
 COPY /start-collabora-online.sh /
-COPY /start-collabora-online.pl /
 
 # set up OxOffice Online (normally done by postinstall script of package)
 # Fix permissions
@@ -34,9 +33,9 @@ RUN setcap cap_fowner,cap_chown,cap_mknod,cap_sys_chroot=ep /usr/bin/oxoolforkit
 
 EXPOSE 9980
 
-RUN usermod -u 973 oxool
+RUN usermod -u 972 oxool
 
 # switch to oxool user (use numeric user id to be compatible with Kubernetes Pod Security Policies)
-USER 973
+USER 972
 
 CMD ["/start-collabora-online.sh"]
