@@ -338,6 +338,7 @@ OXOOL_JS_LST =\
 	src/control/jsdialog/Widget.IconView.js \
 	src/control/jsdialog/Widget.LanguageSelector.js \
 	src/control/jsdialog/Widget.MenuButton.js \
+	src/control/jsdialog/Widget.MobileBorderSelector.js \
 	src/control/jsdialog/Widget.MobileTabControl.js \
 	src/control/jsdialog/Widget.MultilineEdit.js \
 	src/control/jsdialog/Widget.Progressbar.js \
@@ -721,6 +722,7 @@ pot:
 		src/control/Control.DownloadProgress.js \
 		src/control/Control.FormulaBar.js \
 		src/control/Control.FormulaBarJSDialog.js \
+		src/control/jsdialog/Widget.MobileBorderSelector.js \
 		src/control/Control.JSDialogBuilder.js \
 		src/control/Control.LanguageDialog.js \
 		src/control/Control.Menubar.js \
