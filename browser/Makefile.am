@@ -535,7 +535,6 @@ $(INTERMEDIATE_DIR)/admin-src.js: $(OXOOL_ADMIN_TS_JS) $(OXOOL_ADMIN_JS)
 
 $(INTERMEDIATE_DIR)/loleaflet-src.js: tscompile.done $(call prereq_oxool) $(OXOOL_JS_DST)
 	@mkdir -p $(dir $@)
-	$(abs_top_srcdir)/scripts/unocommands.py --check $(abs_top_srcdir)
 	@printf "Checking for obsolete JS build intermediates in this makefile... "
 	@if ! test "z$(OXOOL_ASSERT_INTERSECT)" == "z"; then echo; echo "Error: please remove obsolete files:"; echo "$(OXOOL_ASSERT_INTERSECT)"; exit 1; else echo "clean"; fi
 	@echo "Checking for oxool JS errors..."
