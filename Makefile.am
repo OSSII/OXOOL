@@ -18,6 +18,8 @@ else
 
 SUBDIRS = . browser cypress_test
 
+SUBDIRS += ossii
+
 export ENABLE_DEBUG
 
 bin_PROGRAMS = \

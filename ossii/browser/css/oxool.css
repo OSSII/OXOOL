@@ -1,0 +1,19 @@
+
+:root {
+	/* font */
+	--oxool-font: 'Segoe UI', Tahoma, Arial, Helvetica, 'Liberation Sans', 'Microsoft JhengHei', 'Heiti TC', 'Noto Sans TC', 'Source Han Sans TC', sans-serif;
+
+	/* size */
+	--default-font-size: 16px; /* 預設的字型大小 */
+
+}
+
+/* Dialog title bar background */
+.lokdialog_container .ui-dialog-titlebar.ui-widget-header {
+	background: var(--doc-identify-color) !important;
+}
+
+/* Dialog title */
+.ui-widget-header {
+	color: var(--nav-color-main-text) !important;
+}

@@ -1,0 +1,29 @@
+/* navigation bar default background color */
+.main-nav {
+	background: var(--doc-identify-color) !important;
+}
+
+/* navigation bar background color for text document type */
+.main-nav.text-color-indicator {
+	background: var(--text-identify-color) !important;
+}
+
+/* navigation bar background color for spreadsheet document type */
+.main-nav.spreadsheet-color-indicator {
+	background: var(--spreadsheet-identify-color) !important;
+}
+
+/* navigation bar background color for presentation document type */
+.main-nav.presentation-color-indicator {
+	background: var(--presentation-identify-color) !important;
+}
+
+/* navigation bar background color for drawing document type */
+.main-nav.drawing-color-indicator {
+	background: var(--drawing-identify-color) !important;
+}
+
+/* hide the last modify field */
+#menu-last-mod {
+	display: none !important;
+}

@@ -1,0 +1,11 @@
+:root {
+	--doc-identify-color: transparent; /* 目前文件識別色，文件未載入前透明，文件載入後與下列其中之一相同 */
+	--text-identify-color: #2b579a; /* 文字文件代表色 */
+	--spreadsheet-identify-color: #217346; /* 試算表文件代表色 */
+	--presentation-identify-color: #bc472a; /* 簡報文件代表色 */
+	--drawing-identify-color: #876900; /* 繪圖文件代表色 */
+
+	--nav-color-main-text: #fff; /* Navgation bar text color */
+	--nav-selected-background-color: #fff; /* Navgation bar selected background color */
+	--nav-selected-text-color: #000; /* Navgation bar selected text color */
+}

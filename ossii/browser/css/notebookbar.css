@@ -1,0 +1,20 @@
+
+/* Notebookbar unselected tab text color */
+.ui-tab.notebookbar {
+	color: var(--nav-color-main-text) !important;
+	font-size: var(--default-font-size) !important;
+	height: 24px !important;
+	line-height: 24px !important;
+}
+
+.ui-tab.selected.notebookbar {
+	background: var(--nav-selected-background-color) !important;
+	border: 1px solid var(--nav-selected-background-color) !important;
+	color: var(--nav-selected-text-color) !important;
+}
+
+.ui-tab.notebookbar:hover:not(.selected) {
+	/* background: var(--doc-identify-color) !important; */
+	border: 1px solid transparent;
+	color: var(--nav-color-main-text) !important;
+}

@@ -1,0 +1,9 @@
+[data-theme='dark'] {
+	--nav-color-main-text: #ffffff; /* Navgation bar text color */
+
+	--doc-identify-color: transparent; /* 文件識別色 */
+	--text-identify-color: #2b579a; /* 文字文件代表色 */
+	--spreadsheet-identify-color: #217346; /* 試算表文件代表色 */
+	--presentation-identify-color: #bc472a; /* 簡報文件代表色 */
+	--drawing-identify-color: #876900; /* 繪圖文件代表色 */
+}

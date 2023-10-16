@@ -1777,6 +1777,21 @@ AC_CONFIG_FILES([
     debian/${PACKAGE}.postrm:debian/online.postrm
     ])
 
+# The ossii directory is the OxOOL common object and development kit,
+# Search all Makefile.am and *.in files under it,
+# Avoid recording one by one.
+AC_CONFIG_FILES(m4_esyscmd_s([
+find ossii/ ! -path "ossii/src/development-tools/module-template/*" -type f -name "Makefile.am" -or -name "OxOOL.h.in" |
+while read file
+do
+    DIRNAME=`dirname "$file"`
+    FILENAME=$(basename -- "$file")
+    EXTENSION="${FILENAME##*.}"
+    FILENAME="${FILENAME%.*}"
+    echo "${DIRNAME}/${FILENAME}"
+done
+    ]))
+
 AC_CONFIG_FILES([Makefile
                  cypress_test/Makefile
                  gtk/Makefile
