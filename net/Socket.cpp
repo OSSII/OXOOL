@@ -8,6 +8,7 @@
 #include <config.h>
 
 #include "Socket.hpp"
+#include "Util.hpp"
 
 #include <cstring>
 #include <ctype.h>
@@ -1148,14 +1149,8 @@ bool StreamSocket::parseHeader(const char *clientName,
         }
 
         LOG_INF(clientName << " HTTP Request: " << request.getMethod() << ' ' << request.getURI()
-                           << ' ' << request.getVersion() <<
-                [&](auto& log)
-                {
-                    for (const auto& it : request)
-                    {
-                        log << " / " << it.first << ": " << it.second;
-                    }
-                });
+                           << ' ' << request.getVersion() << ' '
+                           << [&](auto& log) { Util::joinPair(log, request, " / "); });
 
         const std::streamsize contentLength = request.getContentLength();
         const auto offset = itBody - _inBuffer.begin();
