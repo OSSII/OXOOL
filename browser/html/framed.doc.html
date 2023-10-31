@@ -184,6 +184,12 @@
             });
       }
 
+      function HintOnscreenKeyboard(hint) {
+        post({'MessageId': hint ? 'Hint_OnscreenKeyboard' : 'Hint_NoOnscreenKeyboard',
+              'Values': null
+            });
+      }
+
       function ShowMenubar(visible) {
         var messageId = visible ? 'Show_Menubar' : 'Hide_Menubar';
         post({'MessageId': messageId});
