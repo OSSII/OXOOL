@@ -131,6 +131,15 @@ struct _LibreOfficeKitClass
     /// @see lok::Office::trimMemory
     /// @since LibreOffice 7.6
     void (*trimMemory) (LibreOfficeKit* pThis, int nTarget);
+
+    /// @see lok::Office::startURP
+    void* (*startURP)(LibreOfficeKit* pThis,
+                    void* pReceiveURPFromLOContext, void* pSendURPToLOContext,
+                    int (*fnReceiveURPFromLO)(void* pContext, const signed char* pBuffer, int nLen),
+                    int (*fnSendURPToLO)(void* pContext, signed char* pBuffer, int nLen));
+
+    /// @see lok::Office::stopURP
+    void (*stopURP)(LibreOfficeKit* pThis, void* pSendURPToLOContext);
 };
 
 #define LIBREOFFICEKIT_DOCUMENT_HAS(pDoc,member) LIBREOFFICEKIT_HAS_MEMBER(LibreOfficeKitDocumentClass,member,(pDoc)->pClass->nSize)
