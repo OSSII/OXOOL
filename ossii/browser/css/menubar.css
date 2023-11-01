@@ -27,3 +27,12 @@
 #menu-last-mod {
 	display: none !important;
 }
+
+.lo-menu > li > a, .lo-menu > li > a.has-submenu {
+	color: var(--nav-color-main-text) !important;
+}
+
+.lo-menu > li > a:hover, .lo-menu > li > a:focus, .lo-menu > li > a:active, .lo-menu > li > a.highlighted {
+	color: var(--nav-selected-text-color) !important;
+	background-color: var(--nav-selected-background-color) !important;
+}

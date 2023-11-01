@@ -1,9 +1,15 @@
 [data-theme='dark'] {
-	--nav-color-main-text: #ffffff; /* Navgation bar text color */
+	--nav-color-main-text: #fff; /* Navgation bar text color */
 
 	--doc-identify-color: transparent; /* 文件識別色 */
 	--text-identify-color: #2b579a; /* 文字文件代表色 */
 	--spreadsheet-identify-color: #217346; /* 試算表文件代表色 */
 	--presentation-identify-color: #bc472a; /* 簡報文件代表色 */
 	--drawing-identify-color: #876900; /* 繪圖文件代表色 */
+
+	--color-menu-border: #555; /* 選單邊框顏色 */
+	--color-menu-separator: #555; /* 選單分隔線顏色 */
+	--color-menu-background: #262626; /* 選單背景顏色 */
+	--color-menu-item-text: #fff; /* 選單項目文字顏色 */
+	--color-menu-item-text-disabled: #888; /* 選單項目文字顏色(禁用) */
 }

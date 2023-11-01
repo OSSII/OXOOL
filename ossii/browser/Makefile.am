@@ -49,6 +49,7 @@ OXOOL_CSS_LIST = \
 	css/oxool.css \
 	css/color-palette.css \
 	css/color-palette-dark.css \
+	css/jsdialogs.css \
 	css/jssidebar.css \
 	css/menubar.css \
 	css/notebookbar.css
