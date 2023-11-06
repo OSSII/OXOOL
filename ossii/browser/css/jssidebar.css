@@ -2,3 +2,7 @@
 .sidebar * {
 	font-family: var(--oxool-font);
 }
+
+#sidebar-panel {
+	background-color: var(--color-sidebar-background);
+}

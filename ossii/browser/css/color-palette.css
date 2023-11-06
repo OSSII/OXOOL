@@ -13,5 +13,7 @@
 	--color-menu-separator: #ccc; /* 選單分隔線顏色 */
 	--color-menu-background: #fff; /* 選單背景顏色 */
 	--color-menu-item-text: #000; /* 選單項目文字顏色 */
-	--color-menu-item-text-disabled: #ddd /* 選單項目文字顏色(禁用) */
+	--color-menu-item-text-disabled: #ddd;/* 選單項目文字顏色(禁用) */
+
+	--color-sidebar-background: #eee; /* 側邊欄背景顏色 */
 }

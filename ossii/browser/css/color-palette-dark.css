@@ -12,4 +12,6 @@
 	--color-menu-background: #262626; /* 選單背景顏色 */
 	--color-menu-item-text: #fff; /* 選單項目文字顏色 */
 	--color-menu-item-text-disabled: #888; /* 選單項目文字顏色(禁用) */
+
+	--color-sidebar-background: #262626; /* 側邊欄背景顏色 */
 }
