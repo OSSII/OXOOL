@@ -6,7 +6,9 @@ declare var $: any;
 declare var Hammer: any;
 declare var app: any;
 
-class TilesSection extends CanvasSectionObject {
+namespace oxool {
+
+export class TilesSection extends CanvasSectionObject {
 	map: any;
 	isJSDOM: boolean = false; // testing
 	checkpattern: any;
@@ -868,6 +870,8 @@ class TilesSection extends CanvasSectionObject {
 	}
 }
 
+}
+
 L.getNewTilesSection = function () {
-	return new TilesSection();
+	return new oxool.TilesSection();
 };
