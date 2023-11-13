@@ -15,7 +15,6 @@ OXOOL_JS_LIST = \
 	js/control/IconAlias.js \
 	js/control/Toolbar.Extensions.js \
 	js/control/Control.AlternativeCommand.js \
-	js/control/Control.Menubar.js \
 	js/main.js
 
 # 產生打包用的 JS 檔案

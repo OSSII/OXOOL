@@ -1,7 +1,5 @@
 /* -*- js-indent-level: 8; fill-column: 100 -*- */
 /* global L app */
-// 偷天換日
-L.Control.Menubar = L.Control.OxMenubar;
 
 (function() {
     'use strict';
