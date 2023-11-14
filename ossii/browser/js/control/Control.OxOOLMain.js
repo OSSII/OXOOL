@@ -12,8 +12,7 @@ L.Control.OxOOLMain = L.Control.extend({
         this.map.off('doclayerinit', this.onDocLayerInit, this);
     },
 
-    onDocLayerInit: function(e) {
-        console.debug('OxOOLMain.onDocLayerInit', e);
+    onDocLayerInit: function(/* e */) {
         var docType = this._map.getDocType();
         // 取得文件類型的識別色
         var docIdentify = getComputedStyle(document.documentElement).getPropertyValue('--' + docType + '-identify-color');
