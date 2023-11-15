@@ -59,55 +59,65 @@ var map = L.map('map', {
 	outOfFocusTimeoutSecs: outOfFocusTimeoutSecs, // Dim after switching tabs.
 });
 
-////// Controls /////
-
-map.uiManager = L.control.uiManager();
-map.addControl(map.uiManager);
-
-map.uiManager.initializeBasicUI();
-
-if (wopiSrc === '' && filePath === '' && !window.ThisIsAMobileApp) {
-	map.uiManager.showInfoModal('wrong-wopi-src-modal', '', errorMessages.wrongwopisrc, '', _('OK'), null, false);
-}
-if (host === '' && !window.ThisIsAMobileApp) {
-	map.uiManager.showInfoModal('empty-host-url-modal', '', errorMessages.emptyhosturl, '', _('OK'), null, false);
-}
-
-if (L.Map.versionBar)
-	map.addControl(L.Map.versionBar);
-
 L.Map.THIS = map;
 app.map = map;
 app.idleHandler.map = map;
 
-if (window.ThisIsTheEmscriptenApp) {
-	var Module = {
-		onRuntimeInitialized: function() {
-			map.loadDocument(global.socket);
-		},
-	};
-	createOnlineModule(Module);
-	app.HandleOXOOLMessage = Module['_handle_oxool_message'];
-	app.AllocateUTF8 = Module['allocateUTF8'];
-} else {
-	map.loadDocument(global.socket);
+function waitForBrandingJsLoaded(callback) {
+	if (window.brandingjsLoaded === true) {
+		callback();
+	} else {
+		setTimeout(function() { waitForBrandingJsLoaded(callback); }, 10);
+	}
 }
 
-window.addEventListener('beforeunload', function () {
-	if (map && app.socket) {
-		if (app.socket.setUnloading)
-			app.socket.setUnloading();
-		app.socket.close();
+waitForBrandingJsLoaded(function() {
+	////// Controls /////
+
+	map.uiManager = L.control.uiManager();
+	map.addControl(map.uiManager);
+
+	map.uiManager.initializeBasicUI();
+
+	if (wopiSrc === '' && filePath === '' && !window.ThisIsAMobileApp) {
+		map.uiManager.showInfoModal('wrong-wopi-src-modal', '', errorMessages.wrongwopisrc, '', _('OK'), null, false);
+	}
+	if (host === '' && !window.ThisIsAMobileApp) {
+		map.uiManager.showInfoModal('empty-host-url-modal', '', errorMessages.emptyhosturl, '', _('OK'), null, false);
+	}
+
+	if (L.Map.versionBar)
+		map.addControl(L.Map.versionBar);
+
+	if (window.ThisIsTheEmscriptenApp) {
+		var Module = {
+			onRuntimeInitialized: function() {
+				map.loadDocument(global.socket);
+			},
+		};
+		createOnlineModule(Module);
+		app.HandleOXOOLMessage = Module['_handle_oxool_message'];
+		app.AllocateUTF8 = Module['allocateUTF8'];
+	} else {
+		map.loadDocument(global.socket);
+	}
+
+	window.addEventListener('beforeunload', function () {
+		if (map && app.socket) {
+			if (app.socket.setUnloading)
+				app.socket.setUnloading();
+			app.socket.close();
+		}
+	});
+
+	window.bundlejsLoaded = true;
+
+
+	////// Unsupported Browser Warning /////
+
+	if (L.Browser.isInternetExplorer) {
+		map.uiManager.showInfoModal('browser-not-supported-modal', '', _('Warning! The browser you are using is not supported.'), '', _('OK'), null, false);
 	}
 });
-
-window.bundlejsLoaded = true;
-
-
-////// Unsupported Browser Warning /////
-
-if (L.Browser.isInternetExplorer) {
-	map.uiManager.showInfoModal('browser-not-supported-modal', '', _('Warning! The browser you are using is not supported.'), '', _('OK'), null, false);
-}
 
 }(window));
