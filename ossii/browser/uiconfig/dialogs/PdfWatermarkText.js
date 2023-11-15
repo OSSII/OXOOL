@@ -16,9 +16,8 @@ L.dialog.PdfWatermarkText = {
 		_('Use screen watermark'), // 採用螢幕浮水印
 		_('If no needed, please leave it blank.'), // 如果不需要，請保持空白
 		_('Direction'), // 方向
-		// 替文件中的超連結(如果有的話)製作 QR code.
-		_('Create a QR code for hyperlinks (if any) in the document.'),
 	],
+
 
 	// init 只會在載入的第一次執行
 	initialize: function() {
@@ -26,7 +25,6 @@ L.dialog.PdfWatermarkText = {
 		this._id = $(this._dialog).uniqueId().attr('id');
 		this._watermarkTextId = this._id + '_watermarkText';
 		this._useScreenId = this._id + '_useScreen';
-		this._hyperlinkQRCode = this._id + '_hyperlinkQRCode';
 		this._hasScreenWatermark = (this._map.options.watermark !== undefined && this._map.options.watermark.editing === true);
 		this._dialog.innerHTML =
 			'<label for="' + this._watermarkTextId + '" _="Watermark text"></label>' +
@@ -37,9 +35,6 @@ L.dialog.PdfWatermarkText = {
 			'<label style="margin-right:24px;"><input type="radio" name="watermarkAngle" value="45" checked> <span _="Diagonal"></span></label>' +
 			'<label><input type="radio" name="watermarkAngle" value="0"> <span _="Horizontal"></span></label>' +
 			'</fieldset>';
-		this._dialog.innerHTML +=
-			'<input type="checkbox" id="' + this._hyperlinkQRCode + '" name="hyperlinkQRCode">' +
-			'<label for="' + this._hyperlinkQRCode + '" _="Create a QR code for hyperlinks (if any) in the document."></label>';
 
 		this._map.translationElement(this._dialog);
 
@@ -68,7 +63,6 @@ L.dialog.PdfWatermarkText = {
 				{
 					text: _('Without watermark'), // 不用浮水印
 					click: function() {
-						that.needInsertQRCode();
 						that._map.showBusy(_('Downloading...'), false);
 						app.socket.sendMessage('downloadas ' +
 							'name=' + encodeURIComponent(that._args.name) + ' ' +
@@ -81,7 +75,6 @@ L.dialog.PdfWatermarkText = {
 				{
 					text: _('OK'),
 					click: function() {
-						that.needInsertQRCode();
 						// 文字
 						var text = document.getElementById(that._watermarkTextId).value.trim();
 						// 角度
@@ -112,20 +105,6 @@ L.dialog.PdfWatermarkText = {
 				}
 			]
 		});
-	},
-
-	needInsertQRCode: function() {
-		var isNeed = document.getElementById(this._hyperlinkQRCode).checked;
-		// 如果需要製作超連結 QR codes
-		if (isNeed) {
-			// 1. 如果檔案有修改過，要先存檔
-			if (this._map._everModified) {
-				this._map.save(true, true);
-			}
-
-			// 2. 呼叫製作超連結 QR code 巨集
-			this._map.sendUnoCommand('macro:///QRcodePrint.QRcodePrint.QRcodeRun()');
-		}
 	},
 
 	// 每次都會從這裡開始
