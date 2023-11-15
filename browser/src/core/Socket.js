@@ -1342,6 +1342,10 @@ app.definitions.Socket = L.Class.extend({
 		}
 
 		if (!this._map._docLayer) {
+			// Added by Firefly<firefly@ossii.com.tw>
+			// 初始化文件預設值
+			this._map.initializeDocumentPresets(command.type);
+
 			// initialize and append text input before doc layer
 			this._map.initTextInput(command.type);
 

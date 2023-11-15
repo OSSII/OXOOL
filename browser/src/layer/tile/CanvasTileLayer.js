@@ -3112,13 +3112,19 @@ L.CanvasTileLayer = L.Layer.extend({
 		if (isPureJSON) {
 			var json = JSON.parse(textMsg);
 			if (json.commandName && json.state) {
-				this._map.fire('commandstatechanged', json);
+				// Modified by Firefly<firefly@ossii.com.tw
+				// 不直接廣播指令狀態，改為先送給 stateChangeHandler
+				//this._map.fire('commandstatechanged', json);
+				this._map.stateChangeHandler._onStateChanged(json);
 			}
 		} else {
 			var index = textMsg.indexOf('=');
 			var commandName = index !== -1 ? textMsg.substr(0, index) : '';
 			var state = index !== -1 ? textMsg.substr(index + 1) : '';
-			this._map.fire('commandstatechanged', {commandName : commandName, state : state});
+			// Modified by Firefly<firefly@ossii.com.tw
+			// 不直接廣播指令狀態，改為先送給 stateChangeHandler
+			//this._map.fire('commandstatechanged', {commandName : commandName, state : state});
+			this._map.stateChangeHandler._onStateChanged({commandName : commandName, state : state});
 		}
 	},
 
