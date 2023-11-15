@@ -5,11 +5,13 @@
  * @author Firefly <firefly@ossii.com.tw>
  */
 
-/* global L $ */
+/* global L */
 L.Map.include({
 
 	// uno command 圖示路徑
 	_cmdIconDIR: 'cmd/',
+	// uno command (dark)圖示路徑
+	_cmdDarkIconDIR: 'cmd/dark/',
 	// resource 圖示路徑
 	_resIconDIR: 'res/',
 
@@ -508,7 +510,8 @@ L.Map.include({
 		// P.S. _savedIcon 是 L.installContextMenu() 產生的，
 		// 非透過 L.installContextMenu() 無法指定
 		var iconURL = this.getIconURL(item._savedIcon ? item._savedIcon : itemKey);
-		$(icon).css('background-image', 'url("' + iconURL  + '")');
+		// 設定 icon 的背景圖片
+		icon.style.backgroundImage = 'url(\'' + iconURL  + '\')';
 		$itemElement.prepend(icon);
 		// 如果是桌面環境，檢查該項目是否有快捷鍵
 		if (window.mode.isDesktop()) {
@@ -572,7 +575,7 @@ L.Map.include({
 
 		case '.uno':
 		case 'dialog':
-			iconDIR = this._cmdIconDIR;
+			iconDIR = this.uiManager.getDarkModeState() ? this._cmdDarkIconDIR : this._cmdIconDIR;
 			iconName = this._iconAlias[iconName] ? this._iconAlias[iconName] : iconName;
 			break;
 

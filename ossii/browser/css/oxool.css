@@ -6,6 +6,10 @@
 	/* size */
 	--default-font-size: 16px; /* 預設的字型大小 */
 
+	--hotkey-font-size: 11px; /* 快速鍵字型大小 */
+	--menu-item-font-size: 14px; /* 下拉選單項目字型大小 */
+	--context-menu-item-font-size: 14px; /* 右鍵選單項目字型大小 */
+
 }
 
 /* Dialog title bar background */
@@ -13,7 +17,84 @@
 	background: var(--doc-identify-color) !important;
 }
 
+.ui-dialog-titlebar {
+	background: var(--doc-identify-color) !important;
+}
+
 /* Dialog title */
 .ui-widget-header {
 	color: var(--nav-color-main-text) !important;
+}
+
+/* Context menu */
+.context-menu-list {
+	border: 1px solid var(--color-menu-border) !important;
+	background-color: var(--color-menu-background) !important;
+}
+
+.context-menu-item {
+	margin-left: 3px;
+	margin-right: 3px;
+	border-radius: 5px;
+	font-size: var(--context-menu-item-font-size) !important;
+	padding-top: 3px !important;
+	padding-bottom: 3px !important;
+	padding-left: 40px !important;
+	padding-right: 16px !important;
+}
+
+.context-menu-icon::before {
+	font-family: var(--oxool-font) !important;
+	content: '\2713';
+	color: var(--nav-color-main-text) !important;
+	width: 16px !important
+}
+
+.context-menu-icon:hover::before {
+	color: #fff !important;
+}
+
+.context-menu-image-icon {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left: 16px;
+	height: 18px;
+	width: 18px;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	-moz-background-size: contain;
+	-webkit-background-size: contain;
+	-o-background-size: contain;
+}
+
+.context-menu-separator {
+	margin: 3px 0px 3px 32px !important;
+	padding: 0px !important;
+	border-bottom: 1px solid var(--color-menu-separator) !important;
+}
+
+.context-menu-item, .context-menu-link {
+	color: var(--color-menu-item-text) !important;
+}
+
+.context-menu-hover {
+	color: var(--nav-color-main-text) !important;
+	background-color: var(--doc-identify-color) !important;
+}
+
+.context-menu-hover > span > a {
+	color: var(--nav-color-main-text) !important;
+}
+
+.context-menu-submenu.context-menu-hover:after {
+	border-color: transparent transparent transparent var(--color-background-lighter);
+}
+
+.context-menu-submenu:after {
+	right: 6px;
+	/*border-color: transparent transparent transparent #2f2f2f;*/
+	border-width: 0.3em 0 0.3em 0.3em !important;
 }

@@ -23,9 +23,9 @@ L.dialog.ShowHelp = {
 			return;
 		}
 
-		var helpLocation = 'loleaflet-help.html';
+		var helpLocation = 'oxool-help.html';
 		if (window.socketProxy) {
-			helpLocation = window.makeWsUrl('/loleaflet/dist/' + helpLocation);
+			helpLocation = window.makeWsUrl('/browser/dist/' + helpLocation);
 		}
 		$.get(helpLocation, function(data) {
 			that.showHelp(data, args.id);
@@ -56,7 +56,7 @@ L.dialog.ShowHelp = {
 		var i;
 		// Display keyboard shortcut or online help
 		if (id === 'keyboard-shortcuts') {
-			document.getElementById('online-help').style.display='none';
+			document.getElementById('online-help-content').style.display='none';
 			// Display help according to document opened
 			if (map.getDocType() === 'text') {
 				document.getElementById('text-shortcuts').style.display='block';
@@ -71,9 +71,9 @@ L.dialog.ShowHelp = {
 				document.getElementById('drawing-shortcuts').style.display='block';
 			}
 		} else /* id === 'online-help' */ {
-			document.getElementById('keyboard-shortcuts').style.display='none';
+			document.getElementById('keyboard-shortcuts-content').style.display='none';
 			if (window.socketProxy) {
-				var helpdiv = document.getElementById('online-help');
+				var helpdiv = document.getElementById('online-help-content');
 				var imgList = helpdiv.querySelectorAll('img');
 				for (var p = 0; p < imgList.length; p++) {
 					var imgSrc = imgList[p].src;
@@ -159,10 +159,10 @@ L.dialog.ShowHelp = {
 			for (i = 0, max = productNameContent.length; i < max; i++) {
 				productNameContent[i].innerHTML = productNameContent[i].innerHTML.replace(/%productName/g, productName);
 			}
-			document.getElementById('online-help').innerHTML = L.Util.replaceCtrlAltInMac(document.getElementById('online-help').innerHTML);
+			document.getElementById('online-help-content').innerHTML = L.Util.replaceCtrlAltInMac(document.getElementById('online-help-content').innerHTML);
 		}
 		if (id === 'keyboard-shortcuts') {
-			document.getElementById('keyboard-shortcuts').innerHTML = L.Util.replaceCtrlAltInMac(document.getElementById('keyboard-shortcuts').innerHTML);
+			document.getElementById('keyboard-shortcuts-content').innerHTML = L.Util.replaceCtrlAltInMac(document.getElementById('keyboard-shortcuts-content').innerHTML);
 		}
 
 		var minHeight = (window.innerHeight * 0.8).toFixed(); // 最小高度為視窗高度 80 %
