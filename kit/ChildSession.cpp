@@ -455,6 +455,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                tokens.equals(0, "a11ystate") ||
                tokens.equals(0, "geta11yfocusedparagraph") ||
                tokens.equals(0, "geta11ycaretposition") ||
+               tokens.equals(0, "initunostatus") ||
                tokens.equals(0, "toggletiledumping"));
 
         std::string pzName("ChildSession::_handleInput:" + tokens[0]);
@@ -625,6 +626,10 @@ bool ChildSession::_handleInput(const char *buffer, int length)
                     }
                 }
             }
+        }
+        else if (tokens.equals(0, "initunostatus"))
+        {
+            return initUnoStatus(buffer, length, tokens);
         }
         else if (tokens.equals(0, "sallogoverride"))
         {
@@ -1772,6 +1777,20 @@ bool ChildSession::renderSearchResult(const char* buffer, int length, const Stri
     return true;
 }
 
+bool ChildSession::initUnoStatus(const char* /*buffer*/, int /*length*/, const StringVector& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        sendTextFrame("error: cmd=initunostatus kind=.uno:Acommand,.uno:Bcommand[,.uno:Ccommand]");
+        return false;
+    }
+
+    LOG_DBG("Init UNO command status lists: " + tokens[1]);
+
+    getLOKitDocument()->setView(_viewId);
+    getLOKitDocument()->initUnoStatus(tokens[1].c_str());
+    return true;
+}
 
 bool ChildSession::completeFunction(const StringVector& tokens)
 {

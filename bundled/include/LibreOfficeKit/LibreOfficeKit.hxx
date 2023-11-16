@@ -888,6 +888,17 @@ public:
         return mpDoc->pClass->getA11yCaretPosition(mpDoc);
     }
 
+    /**
+     * Let OxOffice report the status of the specified UNO command.
+     * 讓 OxOffice 回報指定的 UNO 命令狀態
+     *
+     * @param pCommands Uno commands separated by commas.
+     */
+    void initUnoStatus(const char* pCommands)
+    {
+        mpDoc->pClass->initUnoStatus(mpDoc, pCommands);
+    }
+
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 

@@ -340,6 +340,7 @@ private:
     bool getA11yCaretPosition();
 
     void rememberEventsForInactiveUser(const int type, const std::string& payload);
+    bool initUnoStatus(const char* buffer, int length, const StringVector& tokens);
 
     virtual void disconnect() override;
     virtual bool _handleInput(const char* buffer, int length) override;
