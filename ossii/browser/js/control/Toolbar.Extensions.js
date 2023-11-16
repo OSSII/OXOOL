@@ -5,7 +5,7 @@
  * @author Firefly <firefly@ossii.com.tw>
  */
 
-/* global app _ _UNO $ */
+/* global app _ _UNO _UNOTARGET $ */
 L.Map.include({
 	// 可被執行的指令
 	_allowedCommands: {
@@ -517,6 +517,7 @@ L.Map.include({
 	 */
 	executeAllowedCommand: function(command, json) {
 		var result = false;
+		command = command.trim(); // remove leading and trailing spaces
 		// 該指令可被執行
 		if (this.isAllowedCommand(command)) {
 			if (this.alternativeCommand.has(command)) {
@@ -524,6 +525,11 @@ L.Map.include({
 				result = true;
 			// 指令開頭是 '.uno:' 或 'macro://'，直接執行
 			} else if (command.startsWith('.uno:') || command.startsWith('macro://')) {
+				// 是否有替代的指令
+				var targetURL = _UNOTARGET(command, this.getDocType());
+				if (targetURL) {
+					command = encodeURI(targetURL);
+				}
 				this.sendUnoCommand(command, json);
 				result = true;
 			// 指令開頭是 dialog:，執行該 dialog
