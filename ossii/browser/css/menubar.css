@@ -95,6 +95,12 @@
 	background: transparent; /* top-level menus remain greyish */
 	border-left-color: transparent;
 }
+
+.lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active, .lo-menu a.highlighted {
+	background: var(--doc-identify-color);
+	color: var(--color-menu-selected-text);
+}
+
 .lo-menu > li .disabled {
 	background: var(--color-menu-background);
 	color: var(--color-menu-item-text-disabled);

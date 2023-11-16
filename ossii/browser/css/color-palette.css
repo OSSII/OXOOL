@@ -14,6 +14,7 @@
 	--color-menu-background: #fff; /* 選單背景顏色 */
 	--color-menu-item-text: #000; /* 選單項目文字顏色 */
 	--color-menu-item-text-disabled: #bbb;/* 選單項目文字顏色(禁用) */
+	--color-menu-item-item-checked-color: #008; /* 選單項目文字顏色(已勾選) */
 	--color-menu-selected-text: #fff; /* 選單項目文字顏色(選取) */
 	--color-menu-selected-background: var(--doc-identify-color); /* 選單項目背景顏色(選取) */
 

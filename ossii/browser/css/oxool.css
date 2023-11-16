@@ -45,8 +45,8 @@
 
 .context-menu-icon::before {
 	font-family: var(--oxool-font) !important;
-	content: '\2713';
-	color: var(--nav-color-main-text) !important;
+	content: '\2713' !important;
+	color: var(--color-menu-item-item-checked-color) !important;
 	width: 16px !important
 }
 
