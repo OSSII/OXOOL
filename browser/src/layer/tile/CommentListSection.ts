@@ -1043,6 +1043,7 @@ export class CommentSection extends CanvasSectionObject {
 
 		this.sectionProperties.commentList.push(annotation);
 
+		this.adjustParentAdd(annotation);
 		this.orderCommentList();
 		this.updateIdIndexMap();
 		this.checkSize();
@@ -1186,7 +1187,6 @@ export class CommentSection extends CanvasSectionObject {
 			} else {
 				this.adjustComment(obj.comment);
 				annotation = this.add(obj.comment);
-				this.adjustParentAdd(annotation);
 				if (this.sectionProperties.docLayer._docType === 'spreadsheet')
 					annotation.hide();
 			}
