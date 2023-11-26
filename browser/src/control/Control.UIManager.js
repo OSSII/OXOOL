@@ -167,6 +167,17 @@ L.Control.UIManager = L.Control.extend({
 		});
 	},
 
+	toggleWasm: function () {
+		if (window.ThisIsTheEmscriptenApp) {
+			//TODO: Should use the "external" socket.
+			// app.socket.sendMessage('switch_request online');
+		} else {
+			app.socket.sendMessage('switch_request offline');
+		}
+
+		// Wait for Oxoolwsd to initiate the switch.
+	},
+
 	getAccessibilityState: function() {
 		return window.isLocalStorageAllowed && window.localStorage.getItem('accessibilityState') === 'true';
 	},
