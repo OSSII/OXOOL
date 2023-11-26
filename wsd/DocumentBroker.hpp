@@ -567,7 +567,7 @@ public:
 
 #if !MOBILEAPP && !WASMAPP
     /// Switch between Online and Offline modes.
-    void switchMode(const std::string& mode);
+    void switchMode(const std::shared_ptr<ClientSession>& session, const std::string& mode);
 #endif // !MOBILEAPP && !WASMAPP
 
 private:
@@ -612,7 +612,7 @@ private:
 
 #if !MOBILEAPP && !WASMAPP
     /// Invoked to switch from Online to Offline mode.
-    void startSwitchingToOffline();
+    void startSwitchingToOffline(const std::shared_ptr<ClientSession>& session);
     /// Finish switching to Offline.
     void endSwitchingToOffline();
 
