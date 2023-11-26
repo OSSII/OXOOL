@@ -618,6 +618,8 @@ private:
 
     /// Invoked to switch from Offline to Online mode.
     void startSwitchingToOnline();
+    /// Do the switching when all is ready.
+    void switchToOffline();
     /// Finish switching to Online.
     void endSwitchingToOnline();
 #endif // !MOBILEAPP && !WASMAPP

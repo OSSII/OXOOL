@@ -1588,6 +1588,20 @@ void DocumentBroker::checkAndUploadToStorage(const std::shared_ptr<ClientSession
             // Done saving.
             endActivity();
         }
+        break;
+
+#if !MOBILEAPP && !WASMAPP
+        case DocumentState::Activity::SwitchingToOffline:
+        {
+            // If we have nothing to upload, do the switching now.
+            if (needToUploadState == NeedToUpload::No)
+            {
+                switchToOffline();
+                return;
+            }
+        }
+        break;
+#endif // !MOBILEAPP && !WASMAPP
 
         default:
         break;
@@ -1796,6 +1810,16 @@ void DocumentBroker::uploadToStorageInternal(const std::shared_ptr<ClientSession
             }
             break;
 
+#if !MOBILEAPP && !WASMAPP
+            case DocumentState::Activity::SwitchingToOffline:
+            {
+                LOG_DBG("Failed to switch to Offline because uploading post-save failed");
+                endSwitchingToOffline();
+                //TODO: Send error to the user.
+            }
+            break;
+#endif // !MOBILEAPP && !WASMAPP
+
             default:
                 break;
         }
@@ -1909,6 +1933,14 @@ void DocumentBroker::handleUploadToStorageResponse(const StorageBase::UploadResu
                     }
                 }
                 break;
+
+#if !MOBILEAPP && !WASMAPP
+                case DocumentState::Activity::SwitchingToOffline:
+                {
+                    switchToOffline();
+                }
+                break;
+#endif // !MOBILEAPP && !WASMAPP
 
                 default:
                 {
@@ -4306,6 +4338,23 @@ void DocumentBroker::startSwitchingToOnline()
 
     // Block the UI to prevent further changes and notify the user.
     blockUI("switchingtoonline");
+}
+
+void DocumentBroker::switchToOffline()
+{
+    // We should end SwitchingToOffline if the conditions change.
+    LOG_ASSERT_MSG(_sessions.size() == 1,
+                   "Unexpected number of sessions for SwitchingToOffline in post-upload");
+    LOG_DBG("Switch to Offline post uploading");
+
+    // End activity to allow for unloading.
+    endActivity();
+
+    // We are done with this instance. The user will reconnect; don't reuse.
+    _docState.markToDestroy();
+
+    std::shared_ptr<ClientSession> session = _sessions.begin()->second;
+    session->sendTextFrame("reload");
 }
 
 void DocumentBroker::endSwitchingToOnline()
