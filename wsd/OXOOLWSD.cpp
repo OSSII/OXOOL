@@ -990,6 +990,7 @@ bool OXOOLWSD::SingleKit = false;
 bool OXOOLWSD::ForceCaching = false;
 #endif
 OXOOLWSD::WASMActivationState OXOOLWSD::WASMState = OXOOLWSD::WASMActivationState::Disabled;
+std::unordered_map<std::string, std::chrono::steady_clock::time_point> OXOOLWSD::Uri2WasmModeMap;
 #endif
 std::string OXOOLWSD::SysTemplate;
 std::string OXOOLWSD::LoTemplate = LO_PATH;
