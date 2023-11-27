@@ -2468,7 +2468,6 @@ void OXOOLWSD::innerInitialize(Application& self)
                              ? OXOOLWSD::WASMActivationState::Enabled
                              : OXOOLWSD::WASMActivationState::Disabled;
 
-#if ENABLE_DEBUG
     if (getConfigValue<bool>(conf, "wasm.force", false))
     {
         if (OXOOLWSD::WASMState != OXOOLWSD::WASMActivationState::Enabled)
@@ -2482,7 +2481,6 @@ void OXOOLWSD::innerInitialize(Application& self)
         LOG_INF("WASM is force-enabled. All documents will be loaded through WASM");
         OXOOLWSD::WASMState = OXOOLWSD::WASMActivationState::Forced;
     }
-#endif
 
     // Get anonymization settings.
 #if OXOOLWSD_ANONYMIZE_USER_DATA
