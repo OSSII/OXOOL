@@ -25,12 +25,15 @@ $(DIST_FOLDER)/images/%: $(srcdir)/images/%
 
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
+	js/control/Permission.Extensions.js \
 	js/control/IconAlias.js \
 	js/control/Toolbar.Extensions.js \
+	js/control/Parts.Extensions.js \
 	js/control/Control.AlternativeCommand.js \
 	js/control/Control.Dialogs.js \
 	js/control/Control.ContextMenu.js \
 	js/control/Control.Menubar.js \
+	js/control/Control.ReadonlyBar.js \
 	js/control/Control.OxOOLMain.js \
 	js/main.js
 

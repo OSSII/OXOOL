@@ -282,7 +282,7 @@ L.Map.include({
 				// 3. 把該類文件右鍵指令加入系統白名單
 				that.createAllowCommand(that._allowedCommands.contextMenu[docType]);
 				// 4. 把暫存未初始狀態的指令，一次送給 server
-				if (that._isOxOffice && that._allowedCommands.pausedInitCmd !== '') {
+				if (/* that._isOxOffice &&  */that._allowedCommands.pausedInitCmd !== '') {
 					app.socket.sendMessage('initunostatus ' + that._allowedCommands.pausedInitCmd);
 				}
 
@@ -561,7 +561,7 @@ L.Map.include({
 				result = true;
 			}
 		} else {
-			window.app.console.debug('Warning! command:"' + command + '" is not allowed.');
+			console.debug('Warning! command:"' + command + '" is not allowed.');
 			result = true;
 		}
 		return result;
@@ -849,4 +849,23 @@ L.Map.include({
 			}
 		}.bind(this));
 	},
+
+	// 保留原有的 dispatch function
+	_savedDispatch: this.dispatch,
+
+	/**
+	 * 重新定義 dispatch function
+	 * @param {string} action - 指令名稱
+	 */
+	dispatch: function(action) {
+		// 如果是在白名單中的指令，就執行，否則就呼叫原來的 dispatch
+		if (this.executeAllowedCommand(action))
+			return;
+
+		// 檢查是否有指定的 callback function
+		if (typeof(this._savedDispatch) === 'function') {
+			// 有的話就呼叫
+			this._savedDispatch(action);
+		}
+	}
 });

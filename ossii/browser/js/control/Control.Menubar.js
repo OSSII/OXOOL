@@ -3,7 +3,7 @@
 * Control.Menubar
 */
 
-/* global app $ _ _UNO vex L */
+/* global app $ _ _UNO L */
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help, eg: mobiledrawing)
 	options: {
@@ -779,137 +779,14 @@ L.Control.Menubar = L.Control.extend({
 		this._map._docLayer._openMobileWizard(data);
 	},
 
-	// 以下僅供參考，實際不會也不要到這裡執行，若有需要新增類似程序，
+	// called from JSDialogBuilder/NotebookbarBuilder
 	// 請在 Control.AlternativeCommand.js 中實作
 	_executeAction: function(itNode, itWizard) {
-		var id, postmessage;
 		if (itNode === undefined)
-		{ // called from JSDialogBuilder/NotebookbarBuilder
-			id = itWizard.id;
-			postmessage = false;
+		{
+			this._map.executeAllowedCommand(itWizard.id);
+			return;
 		}
-		else
-		{ // called from menu item
-			id = itNode.mgr.getId();
-			postmessage = (itNode.mgr.data('postmessage') === true);
-		}
-
-		if (id === 'save') {
-			// Save only when not read-only.
-			if (!this._map.isReadOnlyMode()) {
-				this._map.fire('postMessage', {msgId: 'UI_Save', args: { source: 'filemenu' }});
-
-				if (!this._map._disableDefaultAction['UI_Save']) {
-					this._map.save(false, false);
-				}
-			}
-		} else if (id === 'saveas') {
-			this._map.openSaveAs();
-		} else if (id === 'savecomments') {
-			if (this._map.isPermissionEditForComments()) {
-				this._map.fire('postMessage', {msgId: 'UI_Save'});
-				if (!this._map._disableDefaultAction['UI_Save']) {
-					this._map.save(false, false);
-				}
-			}
-		} else if (id === 'shareas' || id === 'ShareAs') {
-			this._map.openShare();
-		} else if (id === 'print') {
-			this._map.print();
-		} else if (id.startsWith('downloadas-')) {
-			var format = id.substring('downloadas-'.length);
-			var fileName = this._map['wopi'].BaseFileName;
-			fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-			fileName = fileName === '' ? 'document' : fileName;
-			this._map.downloadAs(fileName + '.' + format, format);
-		} else if (id === 'signdocument') {
-			this._map.showSignDocument();
-		} else if (id === 'insertcomment') {
-			this._map.insertComment();
-		} else if (id === 'insertgraphic') {
-			L.DomUtil.get('insertgraphic').click();
-		} else if (id === 'insertgraphicremote') {
-			this._map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
-		} else if (id === 'selectbackground') {
-			L.DomUtil.get('selectbackground').click();
-		} else if (id === 'zoomin' && this._map.getZoom() < this._map.getMaxZoom()) {
-			this._map.zoomIn(1, null, true /* animate? */);
-		} else if (id === 'showresolved') {
-			this._map.showResolvedComments(!$(itNode).hasClass('lo-menu-item-checked'));
-		} else if (id === 'zoomout' && this._map.getZoom() > this._map.getMinZoom()) {
-			this._map.zoomOut(1, null, true /* animate? */);
-		} else if (id === 'zoomreset') {
-			this._map.setZoom(this._map.options.zoom, null, true);
-		} else if (id === 'fullscreen') {
-			L.toggleFullScreen();
-		} else if (id === 'fullscreen-presentation' && this._map.getDocType() === 'presentation') {
-			this._map.fire('fullscreen');
-		} else if (id === 'presentation-currentslide' && this._map.getDocType() === 'presentation') {
-			this._map.fire('fullscreen', {startSlideNumber: this._map.getCurrentPartNumber()});
-		} else if (id === 'insertpage') {
-			this._map.insertPage();
-		} else if (id === 'insertshape') {
-			this._openInsertShapesWizard();
-		} else if (id === 'duplicatepage') {
-			this._map.duplicatePage();
-		} else if (id === 'deletepage') {
-			var map = this._map;
-			vex.dialog.open({
-				message: _('Are you sure you want to delete this slide?'),
-				buttons: [
-					$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
-					$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
-				],
-				callback: function(e) {
-					if (e === true) {
-						map.deletePage();
-					}
-				}
-			});
-		} else if (id === 'about') {
-			this._map.showLOAboutDialog();
-		} else if (id === 'latestupdates' && this._map.welcome) {
-			this._map.welcome.showWelcomeDialog();
-		} else if (id === 'feedback' && this._map.feedback) {
-			this._map.feedback.showFeedbackDialog();
-		} else if (id === 'report-an-issue') {
-			window.open('https://github.com/MODAODF/modaodfweb-3/issues', '_blank');
-		} else if (id === 'inserthyperlink') {
-			this._map.showHyperlinkDialog();
-		} else if (L.Params.revHistoryEnabled && (id === 'rev-history' || id === 'Rev-History' || id === 'last-mod')) {
-			this._map.openRevisionHistory();
-		} else if (id === 'closedocument') {
-			window.onClose();
-		} else if (id === 'repair') {
-			app.socket.sendMessage('commandvalues command=.uno:DocumentRepair');
-		} else if (id === 'searchdialog') {
-			if (this._map.isReadOnlyMode()) {
-				$('#toolbar-down').hide();
-				$('#toolbar-search').show();
-				$('#mobile-edit-button').hide();
-				L.DomUtil.get('search-input').focus();
-			} else {
-				this._map.sendUnoCommand('.uno:SearchDialog');
-			}
-		} else if (id === 'inserttextbox') {
-			this._map.sendUnoCommand('.uno:Text?CreateDirectly:bool=true');
-		} else if (id === 'insertslidefield') {
-			this._map.sendUnoCommand('.uno:InsertPageField');
-		} else if (id === 'insertslidetitlefield') {
-			this._map.sendUnoCommand('.uno:InsertPageTitleField');
-		} else if (id === 'insertslidesfield') {
-			this._map.sendUnoCommand('.uno:InsertPagesField');
-		} else if (id === 'pagesetup') {
-			this._map.sendUnoCommand('.uno:SidebarShow');
-			this._map.sendUnoCommand('.uno:LOKSidebarWriterPage');
-			this._map.fire('showwizardsidebar', {noRefresh: true});
-			window.pageMobileWizard = true;
-		} else {
-			window.app.console.debug('Warning! "%s" no action.', id);
-		}
-		// Inform the host if asked
-		if (postmessage)
-			this._map.fire('postMessage', {msgId: 'Clicked_Button', args: {Id: id} });
 	},
 
 	_onItemSelected: function(e, item) {
