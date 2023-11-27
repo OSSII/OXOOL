@@ -973,10 +973,8 @@ void sendLoadResult(std::shared_ptr<ClientSession> clientSession, bool success,
 std::atomic<uint64_t> OXOOLWSD::NextConnectionId(1);
 
 #if !MOBILEAPP
-#ifndef KIT_IN_PROCESS
 std::atomic<int> OXOOLWSD::ForKitProcId(-1);
 std::shared_ptr<ForKitProcess> OXOOLWSD::ForKitProc;
-#endif
 bool OXOOLWSD::NoCapsForKit = false;
 bool OXOOLWSD::NoSeccomp = false;
 bool OXOOLWSD::AdminEnabled = true;
