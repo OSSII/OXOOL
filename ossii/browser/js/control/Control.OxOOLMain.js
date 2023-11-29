@@ -5,7 +5,6 @@ L.Control.OxOOLMain = L.Control.extend({
 
     onAdd: function (map) {
         map.on('doclayerinit', this.onDocLayerInit, this);
-
     },
 
     onRemove: function() {
@@ -23,6 +22,30 @@ L.Control.OxOOLMain = L.Control.extend({
         } else {
             console.warn('Can not get document identify color: ' + docType);
         }
+
+        /**
+         * 以下要實作以自己的功能取代原來的功能
+         */
+
+        // 替換 this._map._docLayer._showURLPopUp 函數
+        // 1. 保留原來的函數
+        this._map._docLayer._showURLPopUpSaved = this._map._docLayer._showURLPopUp;
+        // 2. 替換原來的函數
+        this._map._docLayer._showURLPopUp = function(position, url) {
+            // 如果是文件內部的超連結，直接跳到該超連結的位置
+            if (url.startsWith('#'))
+            {
+                this._map.sendUnoCommand('.uno:JumpToMark?Bookmark:string=' + encodeURIComponent(url.substring(1)));
+                return;
+            }
+            // 如果不是編輯模式，就不要顯示超連結的彈出視窗
+            if (!this._map.isEditMode()) {
+                this._map.fire('warn', {url: url, map: this._map, cmd: 'openlink'});
+                return;
+            }
+            // 交還給原來的函數處理
+            this._showURLPopUpSaved(position, url);
+        };
     }
 });
 
