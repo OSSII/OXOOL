@@ -32,15 +32,15 @@ L.Control.OxOOLMain = L.Control.extend({
         this._map._docLayer._showURLPopUpSaved = this._map._docLayer._showURLPopUp;
         // 2. 替換原來的函數
         this._map._docLayer._showURLPopUp = function(position, url) {
-            // 如果是文件內部的超連結，直接跳到該超連結的位置
-            if (url.startsWith('#'))
-            {
-                this._map.sendUnoCommand('.uno:JumpToMark?Bookmark:string=' + encodeURIComponent(url.substring(1)));
-                return;
-            }
             // 如果不是編輯模式，就不要顯示超連結的彈出視窗
             if (!this._map.isEditMode()) {
-                this._map.fire('warn', {url: url, map: this._map, cmd: 'openlink'});
+                // 如果是文件內部的超連結，直接跳到該超連結的位置
+                if (url.startsWith('#')) {
+                    this._map.sendUnoCommand('.uno:JumpToMark?Bookmark:string=' + encodeURIComponent(url.substring(1)));
+                } else {
+                    // 如果是外部的超連結，發出警告
+                    this._map.fire('warn', {url: url, map: this._map, cmd: 'openlink'});
+                }
                 return;
             }
             // 交還給原來的函數處理
