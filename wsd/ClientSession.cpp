@@ -1475,6 +1475,32 @@ bool ClientSession::filterMessage(const std::string& message) const
                 allowed = true;
             }
         }
+        // Added by Firefly <firefly@ossii.com.tw>
+        else if (tokens.equals(0, "mouse"))
+        {
+            /* FIXME: This is a hack to allow mouse events to be sent to the client
+             * when the document is in readonly mode.
+
+            std::string type;
+            int x = -1, y = -1;
+            int count = -1;
+            int buttons = -1;
+            int modifier = -1;
+
+            if (!getTokenString(tokens[1], "type", type) ||
+                !getTokenInteger(tokens[2], "x", x) ||
+                !getTokenInteger(tokens[3], "y", y) ||
+                !getTokenInteger(tokens[4], "count", count) ||
+                !getTokenInteger(tokens[5], "buttons", buttons) ||
+                !getTokenInteger(tokens[6], "modifier", modifier))
+            {
+                LOG_ERR("Bad syntax for: " << tokens[0]);
+            }
+            else */
+            {
+                allowed = true;
+            }
+        }
     }
 
     return allowed;
