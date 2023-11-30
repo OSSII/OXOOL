@@ -30,7 +30,8 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 		// If document is on read only mode, we will draw all parts at once.
 		// Let's call default view the "part based view" and new view the "file based view".
 		if (app.file.readOnly)
-			app.file.fileBasedView = true;
+			// Modifyed by Firefly <firefly@ossii.com.tw>
+			app.file.fileBasedView = false; // Impress and Drawing dont use file based view.
 		else
 			app.file.partBasedView = true; // For Writer and Calc, this one should always be "true".
 
