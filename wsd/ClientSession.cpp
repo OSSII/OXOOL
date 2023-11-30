@@ -1480,6 +1480,7 @@ bool ClientSession::filterMessage(const std::string& message) const
         {
             /* FIXME: This is a hack to allow mouse events to be sent to the client
              * when the document is in readonly mode.
+             */
 
             std::string type;
             int x = -1, y = -1;
@@ -1496,9 +1497,17 @@ bool ClientSession::filterMessage(const std::string& message) const
             {
                 LOG_ERR("Bad syntax for: " << tokens[0]);
             }
-            else */
+            else
             {
-                allowed = true;
+                // Simple mouse movement event.
+                if (type == "move" && buttons == 0 && modifier == 0)
+                {
+                    allowed = true;
+                }
+                else if (type == "buttondown" || type == "buttonup")
+                {
+                    allowed = true;
+                }
             }
         }
     }
