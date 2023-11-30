@@ -574,12 +574,10 @@ void FileServerRequestHandler::handleRequest(const HTTPRequest& request,
 
         if (request.getMethod() == HTTPRequest::HTTP_GET)
         {
-            if (endPoint == "admin.html" ||
-                endPoint == "adminSettings.html" ||
-                endPoint == "adminHistory.html" ||
-                endPoint == "adminAnalytics.html" ||
-                endPoint == "adminLog.html" ||
-                endPoint == "adminClusterOverview.html")
+            // Modified by Firefly <firefly@ossii.com.tw>
+            // 開頭是 admin 的 html 檔案，都要經過 preprocessAdminFile 處理
+            if (endPoint.substr(0, 5) == "admin" &&
+                endPoint.substr(endPoint.length() - 5) == ".html")
             {
                 preprocessAdminFile(request, requestDetails, socket);
                 return;
