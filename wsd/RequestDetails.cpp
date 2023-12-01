@@ -146,7 +146,7 @@ void RequestDetails::processURI()
 
     const auto posLastWS = uriRes.rfind("/ws");
     // DocumentURI is the second segment in oxool URIs.
-    if (_pathSegs.equals(0, "oxool"))
+    if (_pathSegs.equals(0, "oxool") || _pathSegs.equals(0, "wasm"))
     {
         //FIXME: For historic reasons the DocumentURI includes the WOPISrc.
         // This is problematic because decoding a URI that embeds not one, but
