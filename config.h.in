@@ -115,3 +115,5 @@
 /* Should we enable SIMD acceleration */
 #undef ENABLE_SIMD
 
+/* Define to 1 if this is the WASM app build. */
+#undef WASMAPP

@@ -168,7 +168,7 @@ using Poco::Net::PartHandler;
 #include "gtk.hpp"
 #elif defined(__ANDROID__)
 #include "androidapp.hpp"
-#elif defined(__EMSCRIPTEN__)
+#elif WASMAPP
 #include "wasmapp.hpp"
 #endif
 #endif
@@ -2894,7 +2894,7 @@ void OXOOLWSD::innerInitialize(Application& self)
         OXOOLWSD::MaxDocuments = OXOOLWSD::MaxConnections;
     }
 
-#if !defined __EMSCRIPTEN__
+#if !WASMAPP
     struct rlimit rlim;
     ::getrlimit(RLIMIT_NOFILE, &rlim);
     LOG_INF("Maximum file descriptor supported by the system: " << rlim.rlim_cur - 1);
@@ -6146,7 +6146,7 @@ int OXOOLWSD::innerMain()
     // Start the server.
     Server->start();
 
-#if defined(__EMSCRIPTEN__)
+#if WASMAPP
     // It is not at all obvious that this is the ideal place to do the HULLO thing and call onopen
     // on TheFakeWebSocket. But it seems to work.
     handle_oxool_message("HULLO");
