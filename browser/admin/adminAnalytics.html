@@ -1,66 +1,32 @@
-<main>
-  <div class="container">
-    <script>Admin.Analytics(host);</script>
-
-    <h3 class="title is-3"><script>document.write(l10nstrings.strAnalytics)</script></h3>
-
-    <div class="tabs">
-      <ul>
-        <li id="tab-documents-open" class="is-active"><a id="button-memview" href="#memview"><script>document.write(l10nstrings.strMemoryGraph)</script></a></li>
-        <li id="tab-users-online"><a id="button-cpuview" href="#cpuview"><script>document.write(l10nstrings.strCpuGraph)</script></a></li>
-        <li id="tab-users-online"><a id="button-networkview" href="#networkview"><script>document.write(l10nstrings.strNetGraph)</script></a></li>
-      </ul>
+<script>Admin.Analytics(host);</script>
+<nav>
+    <div class="nav nav-tabs" role="tablist">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#memview" type="button" role="tab" aria-selected="true" _="Memory Graph"></button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cpuview" type="button" role="tab" aria-selected="false" _="CPU Graph"></button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#networkview" type="button" role="tab" aria-selected="false" _="Network Graph"></button>
     </div>
+</nav>
 
-    <div id="memview" class="mtabs">
-      <div class="graph-container">
-        <div>
-          <svg id="MemVisualisation" width="1010" height="510"></svg>
+<div class="tab-content graph-content">
+    <div id="memview" class="active tab-pane">
+        <div class="graph-container">
+            <div>
+                <svg id="MemVisualisation" width="100%" height="512"></svg>
+            </div>
         </div>
-      </div>
     </div>
-
-    <div id="cpuview" class="mtabs">
-      <div class="graph-container">
-        <div>
-          <svg id="CpuVisualisation" width="1010" height="510"></svg>
+    <div id="cpuview" class="tab-pane">
+        <div class="graph-container">
+            <div>
+                <svg id="CpuVisualisation" width="100%" height="512"></svg>
+            </div>
         </div>
-      </div>
     </div>
-
-    <div id="networkview" class="mtabs">
-      <div class="graph-container">
-        <div>
-          <svg id="NetVisualisation" width="1010" height="510"></svg>
+    <div id="networkview" class="tab-pane">
+        <div class="graph-container">
+            <div>
+                <svg id="NetVisualisation" width="100%" height="512"></svg>
+            </div>
         </div>
-      </div>
     </div>
-
-  </div>
-</main>
-
-<script>
-  document.getElementById('a-analytics-mobile').classList.add('is-active');
-  document.getElementById('a-analytics-tablet').classList.add('is-active');
-
-  window.location.href += '#memview';
-
-  // Switching tabs is done by css rules. We will set "is-active" classes here.
-  document.getElementById('button-memview').onclick = function() {
-    document.getElementById('button-memview').parentNode.className = 'is-active';
-    document.getElementById('button-cpuview').parentNode.className = '';
-    document.getElementById('button-networkview').parentNode.className = '';
-  }
-
-  document.getElementById('button-cpuview').onclick = function() {
-    document.getElementById('button-memview').parentNode.className = '';
-    document.getElementById('button-cpuview').parentNode.className = 'is-active';
-    document.getElementById('button-networkview').parentNode.className = '';
-  }
-
-  document.getElementById('button-networkview').onclick = function() {
-    document.getElementById('button-memview').parentNode.className = '';
-    document.getElementById('button-cpuview').parentNode.className = '';
-    document.getElementById('button-networkview').parentNode.className = 'is-active';
-  }
-</script>
+</div>

@@ -15,6 +15,49 @@
 
 class Admin;
 
+class ReceiveFile
+{
+public:
+    ///
+    ReceiveFile();
+
+    /// 是否正在收資料狀態
+    bool isWorking() { return _working; }
+
+    /// 開始接收資料
+    bool begin(const std::string& fileName, const size_t fileSize);
+
+    /// 資料寫入檔案
+    void writeData(const std::vector<char> &payload);
+
+    /// 取得目前收到的檔案大小
+    size_t size() { return _receivedSize; }
+
+    /// 是否接收完畢
+    bool isComplete();
+
+    /// 取得目前接收檔案存放的完整路徑
+    std::string getWorkPath() { return _tempPath.toString() + std::to_string(_workID); };
+
+    /// 取得目前接收檔案檔名
+    std::string getWorkFileName() { return _name; }
+
+    /// 清除工作目錄
+    void deleteWorkDir();
+
+private:
+    Poco::Path _tempPath; // 暫存目錄
+
+    bool _working; // 是否正在接收檔案
+    unsigned int _workID; // 工作ID (接收的檔案存放在 _tempPath/_workID/檔名)
+
+    std::string _name; // 上傳的檔案名稱
+    size_t _size; // 上傳檔案的大小(bytes)
+
+    size_t _receivedSize; // 已收到的資料大小(bytes)
+    std::ofstream _receivedFile; // 已收到的檔案
+};
+
 /// Handle admin client's Websocket requests & replies.
 class AdminSocketHandler : public WebSocketHandler
 {
@@ -39,13 +82,17 @@ public:
 
 private:
     /// Sends text frames simply to authenticated clients.
-    void sendTextFrame(const std::string& message);
+    /// Modified by Firefly <firefly@ossii.com.tw>
+    /// 若 flush = true 的話，會立刻把資料傳出去，預設為 flase
+    void sendTextFrame(const std::string& message, bool flush = false);
+
 
 private:
     Admin* _admin;
     int _sessionId;
     bool _isAuthenticated;
     std::string _clientIPAdress;
+    ReceiveFile _receiveFile;
 };
 
 class MonitorSocketHandler : public AdminSocketHandler

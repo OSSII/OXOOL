@@ -59,7 +59,7 @@ OXOOL_WELCOME_SRC = $(shell find $(srcdir)/welcome -name '*')
 OXOOL_WELCOME_DST = $(patsubst $(srcdir)/welcome/%,$(DIST_FOLDER)/welcome/%,$(OXOOL_WELCOME_SRC))
 endif
 
-OXOOL_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name 'OFL.txt' -or -name '*.svg')
+OXOOL_ADMIN_SRC = $(shell find $(srcdir)/admin -name '*.html' -or -name '*.css' -or -name '*.ttf' -or -name '*.woff*' -or -name 'OFL.txt' -or -name '*.svg' -or -name '*.png' -or -name '*.min.js' -or -name 'admin.menu.js')
 OXOOL_ADMIN_ALL = $(shell find $(srcdir)/admin -name '*')
 OXOOL_ADMIN_DST = $(patsubst $(srcdir)/admin/%,$(DIST_FOLDER)/admin/%,$(OXOOL_ADMIN_SRC))
 
@@ -101,12 +101,13 @@ OXOOL_ADMIN_JS =\
 	admin/src/Admin.js \
 	admin/src/AdminSocketBase.js \
 	admin/src/Util.js \
+	admin/src/AdminSocketBroker.js \
+	admin/src/AdminSocketGlobalFunction.js \
 	admin/src/AdminSocketOverview.js \
 	admin/src/AdminSocketAnalytics.js \
-	admin/src/AdminSocketSettings.js \
-	admin/src/AdminSocketHistory.js \
 	admin/src/AdminSocketLog.js \
-	admin/src/AdminClusterOverview.js
+	admin/src/AdminSocketSoftwareUpgrade.js \
+	admin/src/AdminSocketFontManager.js
 
 NODE_MODULES_SRC =\
 	autolinker@3.14.1 \
@@ -532,7 +533,7 @@ $(DIST_FOLDER)/admin-bundle.js: $(OXOOL_ADMIN_DST) \
 	$(INTERMEDIATE_DIR)/admin-src.js
 	@NODE_PATH=$(abs_builddir)/node_modules:$(INTERMEDIATE_DIR) $(NODE) node_modules/browserify/bin/cmd.js -g browserify-css $(if $(IS_SEPARATE),--debug,-g uglifyify) -o $@ $(srcdir)/admin/main-admin.js
 
-$(INTERMEDIATE_DIR)/admin-src.js: $(OXOOL_ADMIN_TS_JS) $(OXOOL_ADMIN_JS)
+$(INTERMEDIATE_DIR)/admin-src.js: $(OXOOL_ADMIN_JS)
 	@mkdir -p $(dir $@)
 	@echo "Checking for admin JS errors..."
 	@$(NODE) node_modules/eslint/bin/eslint.js --resolve-plugins-relative-to $(abs_builddir) --ignore-path $(srcdir)/.eslintignore --config $(srcdir)/.eslintrc --no-eslintrc $(srcdir)/admin/src
@@ -714,11 +715,8 @@ libs:
 pot:
 	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/templates/oxool-ui.pot \
 		admin/admin.strings.js \
-		admin/src/AdminSocketAnalytics.js \
-		admin/src/AdminSocketBase.js \
-		admin/src/AdminSocketOverview.js \
-		admin/src/AdminSocketSettings.js \
-		admin/src/Util.js \
+		admin/src/*.js \
+		admin/js/admin.menu.js \
 		js/w2ui-1.5.rc1.js \
 		src/control/ColorPicker.js \
 		src/control/Control.AlertDialog.js \

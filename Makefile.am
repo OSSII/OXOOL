@@ -64,7 +64,7 @@ oxoolwsdconfig_DATA = $(WSD_NAME).xml \
 ACLOCAL_AMFLAGS = -I m4
 
 # quick and easy for now.
-include_paths = -I${top_srcdir}/common -I${top_srcdir}/net -I${top_srcdir}/wsd -I${top_srcdir}/kit ${ZLIB_CFLAGS} ${ZSTD_CFLAGS} ${PNG_CFLAGS}
+include_paths = -I${top_srcdir}/common -I${top_srcdir}/net -I${top_srcdir}/wsd -I${top_srcdir}/kit ${ZLIB_CFLAGS} ${ZSTD_CFLAGS} ${PNG_CFLAGS} ${FONTCONFIG_CFLAGS}
 if ENABLE_SSL
 include_paths += ${OPENSSL_CFLAGS}
 endif
@@ -78,7 +78,7 @@ if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS}
+AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS} ${FONTCONFIG_LIBS}
 
 # Clang's linker doesn't like -pthread.
 if !HAVE_CLANG
@@ -471,6 +471,7 @@ COMMON_PARAMS = \
 
 run: setup-wsd
 	./oxoolwsd $(COMMON_PARAMS) \
+			--config-file="$(abs_top_srcdir)/@PACKAGE@.xml" \
 			--o:security.capabilities="$(CAPABILITIES)" \
 			--o:logging.file[@enable]=${OUTPUT_TO_FILE} --o:logging.level=trace \
 			--o:trace_event[@enable]=true

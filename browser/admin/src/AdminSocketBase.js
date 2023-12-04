@@ -3,10 +3,11 @@
 	Abstract class
 */
 
-/* global _ DlgYesNo Base */
+/* global $ _ vex Base */
 
 var AdminSocketBase = Base.extend({
 	socket: null,
+	connectCount: 0,
 
 	constructor: function (host) {
 		// because i am abstract
@@ -48,23 +49,50 @@ var AdminSocketBase = Base.extend({
 		this.socket.close();
 
 		if (this.pageWillBeRefreshed === false) {
-			var dialog = (new DlgYesNo())
-				.title(_('Refresh'))
-				.text(_('Server has been shut down; please reload the page.'))
-				.yesButtonText(_('OK'))
-				.type('warning')
-				.yesFunction(function() { window.location.reload(); });
-			dialog.open();
+			this.vexInstance = vex.open({
+				unsafeContent: _('Server has been shut down; Waiting to be back online.') +
+						'<div>' +
+						'<span class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>' +
+						' <span id="wait-server-start"></span>' +
+						'</div>',
+				contentClassName: 'loleaflet-user-idle',
+				showCloseButton: false,
+				overlayClosesOnClick: false,
+				escapeButtonCloses: false,
+			});
+			this.waitServerStart(); // 進入等待 Server 重啟循環
 		}
 	},
 
 	onSocketError: function () {
-		var dialog = (new DlgYesNo())
-			.title(_('Connection error'))
-			.text(_('Connection error'))
-			.yesButtonText(_('OK'))
-			.type('warning')
-			.yesFunction(function() { window.location.reload(); });
-		dialog.open();
+		vex.dialog.alert(_('Connection error'));
+	},
+
+	// 偵測 OxOOL Server 是否啟動，若是，就重新 reload 當前頁面
+	waitServerStart: function () {
+		var that = this;
+		this.connectCount ++;
+		$('#wait-server-start').text(_('Try to reconnect...') + ' #' + this.connectCount);
+		setTimeout(function () {
+			// 偵測 OxOOL 是否已經啟動
+			// get "/" 位址，若傳回 OK 表示正常
+			$.ajax({
+				type: 'GET',
+				url: '/',
+				timeout: 100, // 0.1 秒
+				success: function(data/*, textStatus*/) {
+					if (data === 'OK') {
+						location.reload();
+					}  else {
+						// 繼續測試
+						that.waitServerStart();
+					}
+				},
+				error:function(/*xhr, ajaxOptions, thrownError*/) {
+					// 繼續測試
+					that.waitServerStart();
+				}
+			});
+		}, 2900);
 	}
 });

@@ -1,51 +1,40 @@
-<main>
-  <div class="container">
-    <script>Admin.Log(host);</script>
-
-    <h3 class="title is-3"><script>document.write(l10nstrings.strLog)</script></h3>
-
-    <div class="buttons is-fullwidth is-right">
-      <button type="button" class="button is-info" id="refresh-log" style="min-width:120px;"><script>document.write(l10nstrings.strRefreshLog)</script></button>
-      <button type="button" id="button-open-log-list-modal" class="button is-info" style="min-width:120px;">
-        <script>document.write(l10nstrings.strSetLogLevels)</script>
-      </button>
-    </div>
-
-    <div class="level is-fullwidth is-mobile">
-      <div class="field is-horizontal">
-        <label class="field-label" style="vertical-align: middle; line-height:30px;"><script>document.write(l10nstrings.strChannelFilter)</script></label>
-        <div class="control">
-          <select class="select" id="log-channel-filter">
-            <option><script>document.write(l10nstrings.strChannelFilterNone)</script></option>
-          </select>
+<script>Admin.Log(host);</script>
+<div class="row g-3 align-items-end">
+    <div class="col-7">
+        <div class="form-floating">
+            <select class="form-select" id="log-channel-filter">
+            <option _="None"></option>
+            </select>
+            <label for="log-channel-filter" _="Channel Filter:"></label>
         </div>
-      </div>
     </div>
-    <textarea id="log-lines" style="width:100%;height:100%;min-height: calc(100vh - 250px);resize:vertical;" readonly="true"></textarea>
-  </div>
-</main>
-
-<div class="modal" id="channel-list-modal">
-  <div class="modal-background" onclick="document.getElementById('channel-list-modal').classList.remove('is-active');"></div>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title"><script>document.write(l10nstrings.strLogLevels)</script></p>
-      <button class="delete" onclick="document.getElementById('channel-list-modal').classList.remove('is-active');"></button>
-    </header>
-    <section class="modal-card-body">
-      <form class="form-horizontal" id="form-channel-list"></form>
-    </section>
-    <footer class="modal-card-foot is-fullwidth has-text-right">
-        <button type="button" onclick="document.getElementById('channel-list-modal').classList.remove('is-active');" class="button" style="min-width:120px;" data-dismiss="modal"><script>document.write(l10nstrings.strCloseModal)</script></button>
-        <button type="button" form="form-channel-list" id="update-log-levels" class="button is-primary" style="min-width:140px;"><script>document.write(l10nstrings.strUpdateLogLevels)</script></button>
-    </footer>
-  </div>
+    <div class="col-5">
+        <div class="input-group">
+            <button type="button" class="btn btn-outline-success" id="refresh-log" _="Refresh Log"></button>
+            <button type="button" class="btn btn-outline-primary" id="button-open-log-list-modal" data-bs-toggle="modal" data-bs-target="#channel-list-modal" _="Set Log Levels"></button>
+        </div>
+    </div>
+    <div class="col-12">
+        <textarea id="log-lines" class="form-control bg-dark text-light" style="height:70vh;" readonly="true" wrap="off"></textarea>
+    </div>
 </div>
 
-<script>
-  document.getElementById('a-log-mobile').classList.add('is-active');
-  document.getElementById('a-log-tablet').classList.add('is-active');
-  document.getElementById('button-open-log-list-modal').onclick = function() {
-    document.getElementById('channel-list-modal').classList.add('is-active');
-  };
-</script>
+<!-- Modal -->
+<div class="modal" id="channel-list-modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h4 class="modal-title" _="Log Levels"></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </header>
+            <section class="modal-body">
+                <form id="form-channel-list">
+                </form>
+            </section>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" _="Cancel"></button>
+                <button type="button" class="btn btn-primary" form="form-channel-list" id="update-log-levels" data-bs-dismiss="modal" _="Update Log Levels"></button>
+            </footer>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,9 @@
 #include <chrono>
 #include <config.h>
 
+#include <fontconfig/fontconfig.h>
+#include <fontconfig/fcfreetype.h>
+
 #include <cassert>
 #include <sys/poll.h>
 #include <unistd.h>
@@ -15,6 +18,8 @@
 #include <Poco/Net/HTTPCookie.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/Util/XMLConfiguration.h>
+#include <Poco/TemporaryFile.h>
 
 #include "Admin.hpp"
 #include "AdminModel.hpp"
@@ -30,7 +35,6 @@
 #include <Util.hpp>
 #include <common/JsonUtil.hpp>
 
-
 #include <net/Socket.hpp>
 #if ENABLE_SSL
 #include <SslSocket.hpp>
@@ -43,16 +47,173 @@ using namespace OXOOLProtocol;
 
 using Poco::Net::HTTPResponse;
 using Poco::Util::Application;
+using Poco::Path;
+using Poco::File;
+
+using Poco::Util::XMLConfiguration;
+using Poco::Path;
+using Poco::File;
+using Poco::TemporaryFile;
+using Poco::JSON::Object;
+using Poco::JSON::Array;
+using Poco::Dynamic::Var;
+
+#define pwdSaltLength 128
+#define pwdIterations 10000
+#define pwdHashLength 128
+
+const std::string fontsDir =
+#if ENABLE_DEBUG
+    DEBUG_ABSSRCDIR "/fonts";
+#else
+    "/usr/share/fonts/" PACKAGE_NAME;
+#endif
+
+const std::string sysTemplateFontsDir(OXOOLWSD::SysTemplate + fontsDir);
 
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 1000;
 const std::string levelList[] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
+
+class OxoolConfig final: public XMLConfiguration
+{
+public:
+    OxoolConfig()
+        {}
+};
+
+namespace
+{
+// 掃描 OxOOL 管理的字型目錄
+const std::string scanFontDir()
+{
+    const std::string format = "{\"%{file|basename}\":{\"index\":%{index}, \"family\":\"%{family}\", \"familylang\":\"%{familylang}\", \"style\":\"%{style}\", \"stylelang\":\"%{stylelang}\", \"weight\":\"%{weight}\", \"slant\":\"%{slant}\", \"color\":\"%{color|downcase}\", \"symbol\":\"%{symbol|downcase}\", \"variable\":\"%{variable|downcase}\", \"lang\":\"%{lang}\"}}";
+    FcFontSet *fs = FcFontSetCreate();
+    FcStrSet *dirs = FcStrSetCreate();
+    FcStrList *strlist = FcStrListCreate(dirs);
+    FcChar8 *file = (FcChar8*)fontsDir.c_str();
+    do
+    {
+        FcDirScan(fs, dirs, NULL, NULL, file, FcTrue);
+    }
+    while ((file = FcStrListNext(strlist)));
+    FcStrListDone(strlist);
+    FcStrSetDestroy(dirs);
+
+    std::string jsonStr("[");
+    for (int i = 0; i < fs->nfont; i++)
+    {
+        FcPattern *pat = fs->fonts[i];
+        FcChar8 *s = FcPatternFormat(pat, (FcChar8 *)format.c_str());
+
+        if (i > 0) jsonStr.append(",");
+
+        jsonStr.append((char *)s);
+        FcStrFree(s);
+    }
+    jsonStr.append("]");
+    FcFontSetDestroy(fs);
+    FcFini();
+    return jsonStr;
+}
+
+// 利用 fc-cache 重建 oxool 管理的字型目錄
+void makeFontCache()
+{
+    std::string fontCacheCmd = "fc-cache -f \"" + fontsDir + "\"";
+    if (system(fontCacheCmd.c_str()))
+    {
+        /* do nothing */
+    }
+}
+}
+
+ReceiveFile::ReceiveFile()
+{
+    _name = "";
+    _size = 0;
+    _working = false;
+    _workID = 0;
+    _tempPath = Path::forDirectory(Poco::TemporaryFile::tempName());
+}
+
+bool ReceiveFile::begin(const std::string& fileName, const size_t fileSize)
+{
+    if (fileName.empty() || fileSize == 0)
+    {
+        return false;
+    }
+
+    _name = fileName;
+    _size = fileSize;
+    _workID ++;
+
+    _receivedSize = 0;
+
+    // 暫存目錄不存在
+    if (!File(_tempPath).exists())
+    {
+        // 就建立目錄
+        File(_tempPath).createDirectories();
+        // Process 結束就刪除整個暫存目錄
+        Poco::TemporaryFile::registerForDeletion(_tempPath.toString());
+    }
+
+    std::string workPath = getWorkPath();
+    File(workPath).createDirectories();
+    _receivedFile.open(workPath + "/" + _name, std::ofstream::out|std::ofstream::trunc);
+
+    _working = true;
+    return _working;
+}
+
+void ReceiveFile::writeData(const std::vector<char> &payload)
+{
+    _receivedFile.write(payload.data(), payload.size());
+    _receivedSize += payload.size();
+}
+
+bool ReceiveFile::isComplete()
+{
+    if (_working && _receivedSize >= _size)
+    {
+        _receivedFile.close();
+        _working = false;
+        return true;
+    }
+    return false;
+}
+
+void ReceiveFile::deleteWorkDir()
+{
+    if (File(getWorkPath()).exists())
+    {
+        File(getWorkPath()).remove(true);
+    }
+}
 
 /// Process incoming websocket messages
 void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
 {
     // FIXME: check fin, code etc.
     const std::string firstLine = getFirstLine(payload.data(), payload.size());
+
+    // Added by Firefly <firefly@ossii.com.tw>
+    const std::string uiconfigDir = OXOOLWSD::FileServerRoot + "/browser/dist/uiconfig";
+    // 處於接收檔案狀態
+    if (_receiveFile.isWorking())
+    {
+        _receiveFile.writeData(payload); // 資料寫入檔案
+        // 通知 client 總共收到的 bytes
+        sendTextFrame("receivedSize:" + std::to_string(_receiveFile.size()), true);
+
+        if (_receiveFile.isComplete())
+        {
+            sendTextFrame("uploadFileReciveOK"); // 通知 client，檔案接收完畢
+        }
+        return;
+    }
+
     StringVector tokens(StringVector::tokenize(firstLine, ' '));
     LOG_TRC("Recv: " << firstLine << " tokens " << tokens.size());
 
@@ -394,6 +555,283 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             sendTextFrame("InvalidAuthToken " + id);
         }
     }
+    // Added by Firefly <firefly@ossii.com.tw>
+    // 檢查管理帳號密碼是否與 oxoolwsd.xml 中的一致
+    // 格式: isConfigAuthOk <帳號> <密碼>
+    else if (tokens.equals(0, "isConfigAuthOk") && tokens.size() == 3)
+    {
+        if (FileServerRequestHandler::isConfigAuthMatch(tokens[1], tokens[2]))
+        {
+            sendTextFrame("ConfigAuthOk");
+        }
+        else
+        {
+            sendTextFrame("ConfigAuthWrong");
+        }
+    }
+    // 變更管理帳號及密碼
+    else if (tokens.equals(0, "setAdminPassword") && tokens.size() == 3)
+    {
+        OxoolConfig config;
+        config.load(OXOOLWSD::ConfigFile);
+        std::string adminUser = tokens[1];
+        std::string adminPwd  = tokens[2];
+        config.setString("admin_console.username", adminUser); // 帳號用明碼儲存
+#if HAVE_PKCS5_PBKDF2_HMAC
+        unsigned char pwdhash[pwdHashLength];
+        unsigned char salt[pwdSaltLength];
+        RAND_bytes(salt, pwdSaltLength);
+        // Do the magic !
+        PKCS5_PBKDF2_HMAC(adminPwd.c_str(), -1,
+                          salt, pwdSaltLength,
+                          pwdIterations,
+                          EVP_sha512(),
+                          pwdHashLength, pwdhash);
+
+        std::stringstream stream;
+        // Make salt randomness readable
+        for (unsigned j = 0; j < pwdSaltLength; ++j)
+            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(salt[j]);
+        const std::string saltHash = stream.str();
+
+        // Clear our used hex stream to make space for password hash
+        stream.str("");
+        stream.clear();
+        // Make the hashed password readable
+        for (unsigned j = 0; j < pwdHashLength; ++j)
+            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(pwdhash[j]);
+        const std::string passwordHash = stream.str();
+
+        std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
+        pwdConfigValue << std::to_string(pwdIterations) << ".";
+        pwdConfigValue << saltHash << "." << passwordHash;
+        config.remove("admin_console.password");
+        config.setString("admin_console.secure_password[@desc]",
+                              "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
+        config.setString("admin_console.secure_password", pwdConfigValue.str());
+#else
+        config.remove("admin_console.secure_password");
+        config.setString("admin_console.password[@desc]", "The password is stored in plain code.");
+        config.setString("admin_console.password", adminPwd);
+#endif
+        config.save(OXOOLWSD::ConfigFile);
+        sendTextFrame("setAdminPasswordOk");
+    }
+    // 上傳檔案
+    // 命令是: uploadFile <檔名> <檔案大小>
+    else if (tokens.equals(0, "uploadFile") && tokens.size() == 3)
+    {
+        std::string fileName;
+        Poco::URI::decode(tokens[1], fileName);
+        if (_receiveFile.begin(fileName, std::strtol(tokens[2].c_str(), nullptr, 0)))
+        {
+            sendTextFrame("readyToReceiveFile"); // 告訴 Client 可以開始上傳了
+        }
+        else
+        {
+            sendTextFrame("uploadFileInfoError"); // 告訴 Client 檔案資訊有誤
+        }
+    }
+    // 安裝升級檔
+    else if (tokens.equals(0, "upgradePackage") && tokens.size() == 1)
+    {
+        // TODO: 這裡應該要檢測 Linux 主機環境是 rpm base 或 deb base
+        std::string packageBase = "rpm"; // FIXME: getPackageBase()
+
+        // 開始安裝套件
+        std::string installTestCmd, installCmd;
+        if (packageBase == "rpm")
+        {
+            installTestCmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
+            installCmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
+        }
+        else if (packageBase == "deb")
+        {
+            // FIXME! please.
+            // installTestCmd = "sudo dpkg -i "
+            // installCmd = "sudo dpkg -i ";
+        }
+        else
+        {
+            sendTextFrame("upgradeMsg:Unsupported package installation system!");
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        // 紀錄目前工作目錄
+        std::string currentPath = Path::current();
+        // 上傳檔案所在路徑
+        Path workPath = _receiveFile.getWorkPath();
+        // 進入暫存目錄
+        if (chdir(workPath.toString().c_str()) != 0)
+        {
+            sendTextFrame("upgradeMsg:Unable to enter the temporary directory!");
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        // 上傳的檔名
+        Path workFile = _receiveFile.getWorkFileName();
+        // 取延伸檔名
+        std::string extName = workFile.getExtension();
+        // 延伸檔名轉小寫
+        std::transform(extName.begin(), extName.end(), extName.begin(), ::tolower);
+
+        std::string uncompressCmd;
+        // 檔案是否為 .deb/.rpm/.zip/.tgz or tar.gz
+        if (extName == "rpm" || extName == "deb")
+        {
+            // Do nothing.
+        }
+        // zip 型態要先解壓縮
+        else if (extName == "zip")
+        {
+            uncompressCmd = "unzip \"" + workFile.getFileName() + "\" 2>&1 ; echo $? > retcode";
+        }
+        // gz / tgz 要先解壓縮
+        else if (extName == "gz" || extName == "tgz")
+        {
+            uncompressCmd = "tar zxvf \"" + workFile.getFileName() + "\" 2>&1 ; echo $? > retcode";
+        }
+        // 未知的檔案型態
+        else
+        {
+            sendTextFrame("upgradeMsg:Unknown file type!");
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        FILE *fp;
+        char buffer[128];
+        std::ifstream in;
+        int retcode; // 指令結束狀態碼
+
+        // 一、是否需要先解壓縮
+        if (!uncompressCmd.empty())
+        {
+            sendTextFrame("upgradeMsg:File uncompressing...", true);
+            sendTextFrame("upgradeInfo:Command: " + uncompressCmd + "\n\n", true);
+            fp = popen(uncompressCmd.c_str(), "r");
+            while (fgets(buffer, sizeof(buffer), fp))
+            {
+                // 傳回輸出內容
+                sendTextFrame("upgradeInfo:" + std::string(buffer), true);
+            }
+            pclose(fp);
+            // 讀取指令結束碼
+            in.open("./retcode", std::ifstream::in);
+            in.getline(buffer, sizeof(buffer));
+            in.close();
+            retcode = std::atoi(buffer);
+            // 指令執行有錯
+            if (retcode != 0)
+            {
+                _receiveFile.deleteWorkDir(); // 砍掉該檔案整個目錄
+                sendTextFrame("uncompressPackageFail");
+                return;
+            }
+        }
+
+        // 二、測試是否能升級
+        sendTextFrame("upgradeMsg:Test whether it can be upgraded.", true);
+        sendTextFrame("upgradeInfo:Command: " + installTestCmd + "\n\n", true);
+        fp = popen(installTestCmd.c_str(), "r");
+        while (fgets(buffer, sizeof(buffer), fp))
+        {
+            // 傳回輸出內容
+            sendTextFrame("upgradeInfo:" + std::string(buffer), true);
+        }
+        pclose(fp);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buffer, sizeof(buffer));
+        in.close();
+        retcode = std::atoi(buffer);
+        // 指令執行有錯
+        if (retcode != 0)
+        {
+            _receiveFile.deleteWorkDir(); // 砍掉該檔案整個目錄
+            sendTextFrame("upgradePackageTestFail");
+            return;
+        }
+
+        // 三、正式升級
+        sendTextFrame("upgradeMsg:Start the real upgrade.", true);
+        sendTextFrame("upgradeInfo:Command: " + installCmd + "\n\n", true);
+        fp = popen(installCmd.c_str(), "r");
+        while (fgets(buffer, sizeof(buffer), fp))
+        {
+            // 傳回輸出內容
+            sendTextFrame("upgradeInfo:" + std::string(buffer), true);
+        }
+        pclose(fp);
+        // 讀取指令結束碼
+        in.open("./retcode", std::ifstream::in);
+        in.getline(buffer, sizeof(buffer));
+        in.close();
+        retcode = std::atoi(buffer);
+        // 指令執行有錯
+        if (retcode != 0)
+        {
+            _receiveFile.deleteWorkDir(); // 砍掉該檔案整個目錄
+            sendTextFrame("upgradeFail");
+            return;
+        }
+
+        // 回到之前的工作目錄
+        if (chdir(currentPath.c_str())) {/* do nothing */};
+        _receiveFile.deleteWorkDir(); // 砍掉工作暫存目錄
+        sendTextFrame("upgradeSuccess");
+    }
+    // 傳回管理字型檔案列表
+    else if (tokens.equals(0, "getFontlist") && tokens.size() == 1)
+    {
+        sendTextFrame("fontList: " + scanFontDir());
+    }
+    // 安裝上傳的字型檔案到 oxool 管理的字型目錄及 systemplate/
+    // oxool 管理的字型目錄是 /usr/share/fonts/oxool
+    // modaodfweb 管理的字型目錄是 /usr/share/fonts/modaodfweb
+    else if (tokens.equals(0, "installFont") && tokens.size() == 1)
+    {
+        //const std::string sysTemplateFontsDir = OXOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
+        std::string fontFile = _receiveFile.getWorkPath() + "/" + _receiveFile.getWorkFileName();
+        File font(fontFile);
+        font.copyTo(fontsDir);
+        font.copyTo(sysTemplateFontsDir);
+        _receiveFile.deleteWorkDir(); // 砍掉工作暫存目錄
+        sendTextFrame("installFontSuccess");
+    }
+    // 刪除字型
+    // 語法：deleteFont <檔名>
+    // 檔名要用 encodeURI()
+    else if (tokens.equals(0, "deleteFont") && tokens.size() == 2)
+    {
+        //const std::string sysTemplateFontsDir = OXOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
+        std::string fileName;
+        Poco::URI::decode(tokens[1], fileName);
+        File masterFont(fontsDir + "/" + fileName);
+        File tempFont(sysTemplateFontsDir + "/" + fileName);
+
+        if (masterFont.exists())
+        {
+            masterFont.remove();
+        }
+
+        if (tempFont.exists())
+        {
+            tempFont.remove();
+        }
+        sendTextFrame("deleteFontSuccess");
+    }
+    // 重建 font cache
+    else if (tokens.equals(0, "makeFontCache") && tokens.size() == 1)
+    {
+        makeFontCache(); // 重建 font cache
+    }
+    else
+    {
+        std::cerr << "未知指令:\"" << firstLine << "\"\n";
+    }
 }
 
 AdminSocketHandler::AdminSocketHandler(Admin* adminManager,
@@ -416,7 +854,7 @@ AdminSocketHandler::AdminSocketHandler(Admin* adminManager)
     _sessionId = Util::decodeId(OXOOLWSD::GetConnectionId());
 }
 
-void AdminSocketHandler::sendTextFrame(const std::string& message)
+void AdminSocketHandler::sendTextFrame(const std::string& message, bool flush)
 {
     if (!Util::isFuzzing())
     {
@@ -426,7 +864,7 @@ void AdminSocketHandler::sendTextFrame(const std::string& message)
     if (_isAuthenticated)
     {
         LOG_TRC("send admin text frame '" << message << '\'');
-        sendMessage(message);
+        sendMessage(message.c_str(), message.size(), WSOpCode::Text, flush);
     }
     else
         LOG_TRC("Skip sending message to non-authenticated client: '" << message << '\'');

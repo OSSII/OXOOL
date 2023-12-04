@@ -2,9 +2,19 @@
 /*
 	Socket to be intialized on opening the log page in Admin console
 */
-/* global Admin $ AdminSocketBase */
+/* global Admin $ AdminSocketBase _ */
 var AdminSocketLog = AdminSocketBase.extend({
 	_logLines: '',
+
+	_l10n: [
+		_('None'), // 無
+		_('Channel Filter:'), // 過濾類別:
+		_('Refresh Log'), // 更新日誌
+		_('Set Log Levels'), // 設定紀錄層級
+		_('Log Levels'), // 紀錄層級
+		_('Update Log Levels'), // 更新紀錄層級
+
+	],
 
 	constructor: function(host) {
 		this.base(host);
@@ -23,10 +33,6 @@ var AdminSocketLog = AdminSocketBase.extend({
 	sendChannelListLogLevels: function(e) {
 		e.stopPropagation();
 
-		// We change the colour of the button when we send the data and change it back when the task is done (in function applyChannelList). But it is happening too fast.
-		document.getElementById('update-log-levels').classList.add('is-warning');
-		document.getElementById('update-log-levels').classList.remove('is-info');
-
 		// Get the form.
 		var form = document.getElementById('form-channel-list');
 
@@ -40,7 +46,6 @@ var AdminSocketLog = AdminSocketBase.extend({
 		}
 
 		this.socket.send(textToSend);
-		document.getElementById('channel-list-modal').classList.remove('is-active');
 	},
 
 	onSocketOpen: function() {
@@ -74,33 +79,24 @@ var AdminSocketLog = AdminSocketBase.extend({
 				var channelLogLevel = channelListArr[i].split('=')[1];
 
 				var newDiv = document.createElement('div');
-				newDiv.className = 'content';
+				newDiv.className = 'input-group mb-2';
 
 				var newLabel = document.createElement('label');
-				newLabel.className = 'label is-normal';
-				newLabel.setAttribute('for', 'channel-' + channelName);
+				newLabel.className = 'input-group-text col-sm-2';
 				newLabel.innerText = channelName;
-
-				var newSubDivision = document.createElement('div');
-				newSubDivision.className = 'select';
 
 				var newSelectElement = document.createElement('select');
 				newSelectElement.name = 'channel-' + channelName;
 				newSelectElement.id = 'channel-' + channelName;
 				newSelectElement.innerHTML = innerHTML;
 				newSelectElement.value = channelLogLevel;
-				newSelectElement.style.width = '160px';
-				newSelectElement.className = 'form-control';
+				newSelectElement.className = 'form-select';
 
 				channelForm.appendChild(newDiv);
 				newDiv.appendChild(newLabel);
-				newDiv.appendChild(newSubDivision);
-				newSubDivision.appendChild(newSelectElement);
+				newDiv.appendChild(newSelectElement);
 			}
 		}
-
-		document.getElementById('update-log-levels').classList.remove('is-warning');
-		document.getElementById('update-log-levels').classList.add('is-info');
 	},
 
 	applyChannelFilter: function() {
