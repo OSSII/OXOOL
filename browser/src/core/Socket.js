@@ -1581,6 +1581,7 @@ app.definitions.Socket = L.Class.extend({
 				this._map._isCursorVisible = false;
 
 			this._map._docLayer._resetCanonicalIdStatus();
+			this._map.uiManager.previousTheme = null;
 		}
 
 		if (isActive && this._reconnecting) {
