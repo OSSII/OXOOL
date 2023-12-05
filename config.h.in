@@ -3,6 +3,9 @@
 /* The user-visible name of the app you build. */
 #undef APP_NAME
 
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
 /* Default value of feature_lock.calc_unlock_highlights */
 #undef CALC_UNLOCK_HIGHLIGHTS
 
