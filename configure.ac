@@ -529,14 +529,25 @@ if test "$enable_debug" = "yes"; then
     else
       AC_MSG_RESULT([no (to enable --enable-logging-test-asserts)])
     fi
+
+    modules_dir="`pwd`/ossii/src/modules"
+    OXOOLWSD_MODULE_DIR="${modules_dir}"
+    OXOOLWSD_MODULE_CONFIG_DIR="${modules_dir}"
+    OXOOLWSD_MODULE_DATA_DIR="${modules_dir}"
 else
     AC_MSG_RESULT([no (Release build)])
     AC_DEFINE([ENABLE_DEBUG],0,[Whether to compile in some extra debugging support code and disable some security pieces])
+    OXOOLWSD_MODULE_DIR=${libdir}/${PACKAGE}
+    OXOOLWSD_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
+    OXOOLWSD_MODULE_DATA_DIR=${prefix}/share/${PACKAGE}/modules
 fi
 AC_SUBST(ENABLE_DEBUG)
 AC_SUBST(ENABLE_BUNDLE)
 AC_SUBST(OXOOLWSD_LOGLEVEL)
 AC_SUBST(OXOOLWSD_LOG_TO_FILE)
+AC_SUBST(OXOOLWSD_MODULE_DIR)
+AC_SUBST(OXOOLWSD_MODULE_CONFIG_DIR)
+AC_SUBST(OXOOLWSD_MODULE_DATA_DIR)
 AC_SUBST(BROWSER_LOGGING)
 
 if test "$enable_debug_protocol" = no; then
