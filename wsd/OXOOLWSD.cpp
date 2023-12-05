@@ -6411,26 +6411,4 @@ void forwardSigUsr2()
     }
 }
 
-// Avoid this in the Util::isFuzzing() case because libfuzzer defines its own main().
-#if !MOBILEAPP && !LIBFUZZER
-
-int main(int argc, char** argv)
-{
-    SigUtil::setUserSignals();
-    SigUtil::setFatalSignals("wsd " OXOOLWSD_VERSION " " OXOOLWSD_VERSION_HASH);
-
-    try
-    {
-        OXOOLWSD app;
-        return app.run(argc, argv);
-    }
-    catch (Poco::Exception& exc)
-    {
-        std::cerr << exc.displayText() << std::endl;
-        return EX_SOFTWARE;
-    }
-}
-
-#endif
-
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

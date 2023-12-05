@@ -129,6 +129,7 @@ oxoolwsd_sources = common/Crypto.cpp \
                   wsd/Auth.cpp \
                   wsd/DocumentBroker.cpp \
                   wsd/ProxyProtocol.cpp \
+                  wsd/MainOXOOLWSD.cpp \
                   wsd/OXOOLWSD.cpp \
                   wsd/ClientSession.cpp \
                   wsd/FileServer.cpp \
