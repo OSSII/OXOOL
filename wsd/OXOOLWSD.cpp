@@ -5568,6 +5568,9 @@ private:
         // Set if this instance supports Zotero
         capabilities->set("hasZoteroSupport", config::getBool("zotero.enable", true));
 
+        // Set if this instance supports Zotero
+        capabilities->set("hasWASMSupport", OXOOLWSD::WASMState != OXOOLWSD::WASMActivationState::Disabled);
+
         std::ostringstream ostrJSON;
         capabilities->stringify(ostrJSON);
         return ostrJSON.str();
