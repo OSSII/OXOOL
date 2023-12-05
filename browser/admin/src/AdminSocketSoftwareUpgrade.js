@@ -10,6 +10,7 @@ var AdminSocketSoftwareUpgrade = AdminSocketBase.extend({
 
 	_l10nMsg: [
 		_('The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb'), // 接受以下的檔案類型
+		_('Upload'), // 上傳
 		_('Unsupported package installation system!'), // 不支援的套件安裝系統
 		_('Unable to enter the temporary directory!'), // 無法進入暫存目錄
 		_('Unknown file type!'), // 未知的檔案型態

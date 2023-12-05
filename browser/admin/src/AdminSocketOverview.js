@@ -23,6 +23,7 @@ var AdminSocketOverview = AdminSocketBase.extend({
 		_('Idle time'), // 閒置時間
 		_('Modified'), // 已修改
 		_('Number of Documents'), // 文件數
+		_('Uploaded'), // 已上傳
 	],
 
 	_basicStatsIntervalId: 0,

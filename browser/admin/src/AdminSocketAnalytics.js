@@ -10,6 +10,12 @@ var AdminSocketAnalytics = AdminSocketBase.extend({
 		this.base(host);
 	},
 
+	_l10n: [
+		_('Memory Graph'), // 記憶體圖表
+		_('CPU Graph'), // CPU 圖表
+		_('Network Graph'), // 網路圖表
+	],
+
 	_memStatsData: [],
 	_cpuStatsData: [],
 	_sentStatsData: [],
