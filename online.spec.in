@@ -95,6 +95,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %dir /usr/share/%{name}
 /usr/share/%{name}/*
 /usr/share/doc/%{name}/*
+%dir %attr(755, @OXOOL_USER_ID@, root) /usr/share/fonts/%{name}
 /usr/share/man/man1/*
 /usr/lib/systemd/system/*.service
 
@@ -102,6 +103,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) /etc/pam.d/%{name}
 %config(noreplace) /etc/%{name}/*.pem
 %config(noreplace) %attr(640, @OXOOL_USER_ID@, root) /etc/%{name}/@WSD_NAME@.xml
+%config %attr(440, root, root) /etc/sudoers.d/@OXOOL_USER_ID@
 %config /etc/%{name}/*.xcu
 
 %if 0%{HAVE_DEVEL}
@@ -111,10 +113,8 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %{_libdir}/*.so.*
 /etc/%{name}/conf.d/*
 /usr/share/%{name}/modules
-%dir %attr(755, @OXOOL_USER_ID@, root) /usr/share/fonts/%{name}
 %dir %attr(750, @OXOOL_USER_ID@, root) /usr/share/%{name}/support
 /usr/share/%{name}/support/*
-%config %attr(440, root, root) /etc/sudoers.d/@OXOOL_USER_ID@
 /etc/fonts/conf.d/*.conf
 %dir /etc/%{name}/conf.d
 %config(noreplace) /etc/sysconfig/@WSD_NAME@
