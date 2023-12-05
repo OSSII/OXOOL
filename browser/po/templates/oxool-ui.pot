@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-29 13:19+0800\n"
+"POT-Creation-Date: 2023-12-05 14:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,244 +17,134 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: \n"
 
-#: admin/admin.strings.js:6
+#: admin/admin.strings.js:113 admin/admin.strings.js:123
 msgid "Admin console"
 msgstr ""
 
-#: admin/admin.strings.js:7
-msgid "Settings"
-msgstr ""
-
-#: admin/admin.strings.js:8
+#: admin/admin.strings.js:124 admin/js/admin.menu.js:5
 msgid "Overview"
 msgstr ""
 
-#: admin/admin.strings.js:9
-msgid "(current)"
-msgstr ""
-
-#: admin/admin.strings.js:10
+#: admin/admin.strings.js:125 admin/js/admin.menu.js:10
 msgid "Analytics"
 msgstr ""
 
-#: admin/admin.strings.js:11
-msgid "History"
-msgstr ""
-
-#: admin/admin.strings.js:12
+#: admin/admin.strings.js:126 admin/js/admin.menu.js:15
 msgid "Log"
 msgstr ""
 
-#: admin/admin.strings.js:13
-msgid "Dashboard"
+#: admin/admin.strings.js:127
+msgid "SSL certificate manager"
 msgstr ""
 
-#: admin/admin.strings.js:14
-msgid "Users online"
+#: admin/admin.strings.js:128
+msgid "System configuration"
 msgstr ""
 
-#: admin/admin.strings.js:15
-msgid "User Name"
+#: admin/admin.strings.js:129 admin/js/admin.menu.js:20
+msgid "Software upgrade"
 msgstr ""
 
-#: admin/admin.strings.js:16
-msgid "Documents open"
+#: admin/admin.strings.js:130 admin/js/admin.menu.js:25
+msgid "Font manager"
 msgstr ""
 
-#: admin/admin.strings.js:17 admin/src/AdminSocketOverview.js:73
-#: admin/src/AdminSocketOverview.js:122 admin/src/AdminSocketOverview.js:349
-msgid " user(s)."
-msgstr ""
-
-#: admin/admin.strings.js:18 admin/src/AdminSocketOverview.js:205
-msgid " document(s) open."
-msgstr ""
-
-#: admin/admin.strings.js:19
-msgid "Number of Documents"
-msgstr ""
-
-#: admin/admin.strings.js:20
-msgid "Memory consumed"
-msgstr ""
-
-#: admin/admin.strings.js:21
-msgid "Bytes sent"
-msgstr ""
-
-#: admin/admin.strings.js:22
-msgid "Bytes received"
-msgstr ""
-
-#: admin/admin.strings.js:23
-msgid "PID"
-msgstr ""
-
-#: admin/admin.strings.js:24
-msgid "Document"
-msgstr ""
-
-#: admin/admin.strings.js:25
-msgid "Views"
-msgstr ""
-
-#: admin/admin.strings.js:26
-msgid "Elapsed time"
-msgstr ""
-
-#: admin/admin.strings.js:27
-msgid "Idle time"
-msgstr ""
-
-#: admin/admin.strings.js:28
-msgid "Modified"
-msgstr ""
-
-#: admin/admin.strings.js:29
-msgid "Uploaded"
-msgstr ""
-
-#: admin/admin.strings.js:30
-msgid "WOPI host"
-msgstr ""
-
-#: admin/admin.strings.js:31
-msgid "Kill"
-msgstr ""
-
-#: admin/admin.strings.js:32
-msgid "Graphs"
-msgstr ""
-
-#: admin/admin.strings.js:33
+#: admin/src/AdminSocketAnalytics.js:14
 msgid "Memory Graph"
 msgstr ""
 
-#: admin/admin.strings.js:34
+#: admin/src/AdminSocketAnalytics.js:15
 msgid "CPU Graph"
 msgstr ""
 
-#: admin/admin.strings.js:35
+#: admin/src/AdminSocketAnalytics.js:16
 msgid "Network Graph"
 msgstr ""
 
-#: admin/admin.strings.js:36 src/control/Control.Notebookbar.js:263
-#: src/control/Control.NotebookbarCalc.js:108
-#: src/control/Control.NotebookbarDraw.js:25
-#: src/control/Control.NotebookbarDraw.js:149
-#: src/control/Control.NotebookbarImpress.js:25
-#: src/control/Control.NotebookbarImpress.js:172
-#: src/control/Control.NotebookbarWriter.js:154
-#: src/layer/tile/CommentListSection.ts:395
-#: src/layer/tile/CommentSection.ts:120
-msgid "Save"
-msgstr ""
-
-#: admin/admin.strings.js:37
-msgid "Cache size of memory statistics"
-msgstr ""
-
-#: admin/admin.strings.js:38
-msgid "Time interval of memory statistics (in ms)"
-msgstr ""
-
-#: admin/admin.strings.js:39
-msgid "Cache size of CPU statistics"
-msgstr ""
-
-#: admin/admin.strings.js:40
-msgid "Time interval of CPU statistics (in ms)"
-msgstr ""
-
-#: admin/admin.strings.js:41 admin/src/AdminSocketOverview.js:91
-msgid "Kill session."
-msgstr ""
-
-#: admin/admin.strings.js:42
-msgid "Maximum Document process virtual memory (in MB) - reduce only"
-msgstr ""
-
-#: admin/admin.strings.js:43
-msgid "Maximum Document process stack memory (in KB) - reduce only"
-msgstr ""
-
-#: admin/admin.strings.js:44
-msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
-msgstr ""
-
-#: admin/admin.strings.js:45
-msgid "Documents:"
-msgstr ""
-
-#: admin/admin.strings.js:46
-msgid "Expired:"
-msgstr ""
-
-#: admin/admin.strings.js:47 admin/src/AdminSocketBase.js:52
-#: src/control/Control.Zotero.js:208
-msgid "Refresh"
-msgstr ""
-
-#: admin/admin.strings.js:48
-msgid "Shutdown Server"
-msgstr ""
-
-#: admin/admin.strings.js:49
-msgid "Server uptime"
-msgstr ""
-
-#: admin/admin.strings.js:50
-msgid "Refresh Log"
-msgstr ""
-
-#: admin/admin.strings.js:51
-msgid "Channel Filter:"
-msgstr ""
-
-#: admin/admin.strings.js:52 src/control/Control.JSDialogBuilder.js:565
-#: src/control/Control.StatusBar.js:336
-msgid "None"
-msgstr ""
-
-#: admin/admin.strings.js:53
-msgid "Set Log Levels"
-msgstr ""
-
-#: admin/admin.strings.js:54
-msgid "Log Levels"
-msgstr ""
-
-#: admin/admin.strings.js:55 src/control/Control.AlertDialog.js:21
-#: src/control/Control.AlertDialog.js:27 src/control/Control.AlertDialog.js:58
-#: src/control/Control.Zotero.js:188 src/control/Parts.js:441
-#: src/core/Socket.js:1033 src/core/Socket.js:1038
-#: welcome/welcome.html+html.body.div.div.div.div.div:51
-msgid "Close"
-msgstr ""
-
-#: admin/admin.strings.js:56
-msgid "Update Log Levels"
-msgstr ""
-
-#: admin/admin.strings.js:57
-msgid "Version Information"
-msgstr ""
-
-#: admin/src/AdminSocketAnalytics.js:205
+#: admin/src/AdminSocketAnalytics.js:211
 msgid "Received"
 msgstr ""
 
-#: admin/src/AdminSocketAnalytics.js:209
+#: admin/src/AdminSocketAnalytics.js:215
 msgid "Sent"
 msgstr ""
 
 #: admin/src/AdminSocketBase.js:53
-msgid "Server has been shut down; please reload the page."
+msgid "Server has been shut down; Waiting to be back online."
 msgstr ""
 
-#: admin/src/AdminSocketBase.js:54 admin/src/AdminSocketBase.js:65
-#: admin/src/AdminSocketOverview.js:99 admin/src/AdminSocketOverview.js:422
-#: admin/src/AdminSocketSettings.js:36 src/control/Control.AlertDialog.js:43
+#: admin/src/AdminSocketBase.js:68
+msgid "Connection error"
+msgstr ""
+
+#: admin/src/AdminSocketBase.js:75
+msgid "Try to reconnect..."
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:12
+msgid "Select all"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:13
+msgid "File name"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:14
+msgid "Font name (preview)"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:15
+#: src/control/Control.JSDialogBuilder.js:1777
+#: src/control/Control.TopToolbar.js:513
+msgid "Style"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:16
+msgid "Color font"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:17
+msgid "Symbol font"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:18
+msgid "Delete selected files?"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:43
+msgid "Upload font files."
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:115
+#: admin/src/AdminSocketSoftwareUpgrade.js:123
+msgid "Transmission"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:152
+msgid "Sending file"
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:279
+#: admin/src/AdminSocketFontManager.js:302
+msgid "file(s)."
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:280
+msgid "font(s)."
+msgstr ""
+
+#: admin/src/AdminSocketFontManager.js:302
+#: src/control/Control.ContextMenu.js:187 src/control/Toolbar.js:1081
+msgid "Delete"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:10
+msgid "Are you sure you want to restart the online service?"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:12
+#: admin/src/AdminSocketGlobalFunction.js:56
+#: admin/src/AdminSocketOverview.js:255 src/control/Control.AlertDialog.js:43
 #: src/control/Control.DocumentRepair.js:68
 #: src/control/Control.LanguageDialog.js:115 src/control/Control.Tabs.js:311
 #: src/control/Control.Tabs.js:320 src/control/Control.Zotero.js:334
@@ -270,20 +160,10 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: admin/src/AdminSocketBase.js:63 admin/src/AdminSocketBase.js:64
-msgid "Connection error"
-msgstr ""
-
-#: admin/src/AdminSocketOverview.js:97 admin/src/AdminSocketSettings.js:34
-msgid "Confirmation"
-msgstr ""
-
-#: admin/src/AdminSocketOverview.js:98
-msgid "Are you sure you want to terminate this session?"
-msgstr ""
-
-#: admin/src/AdminSocketOverview.js:100 admin/src/AdminSocketOverview.js:423
-#: admin/src/AdminSocketSettings.js:37
+#: admin/src/AdminSocketGlobalFunction.js:13
+#: admin/src/AdminSocketGlobalFunction.js:33
+#: admin/src/AdminSocketGlobalFunction.js:57
+#: admin/src/AdminSocketOverview.js:256
 #: src/control/Control.DocumentRepair.js:62
 #: src/control/Control.DownloadProgress.js:81
 #: src/control/Control.LanguageDialog.js:109
@@ -294,20 +174,240 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: admin/src/AdminSocketOverview.js:411
+#: admin/src/AdminSocketGlobalFunction.js:26
+msgid ""
+"For security reasons, please enter your original management account and "
+"password."
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
+msgid "User name"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:29
+#: admin/src/AdminSocketGlobalFunction.js:52
+msgid "Password"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:32
+msgid "Verification"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:49
+msgid "Please enter a new account and password."
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:53
+msgid "Confirm password"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:69
+msgid "The password does not match the confirmation password!"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:84
+msgid "Restart service"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:85
+msgid "Change account password"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:107
+msgid "System"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:128
+msgid "The account or password is inconsistent with the system!"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:138
+msgid ""
+"The account and password have been updated and will take effect after the "
+"next service restart."
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:142
+msgid "Version"
+msgstr ""
+
+#: admin/src/AdminSocketGlobalFunction.js:147
+#: admin/src/AdminSocketGlobalFunction.js:152
+msgid "Core"
+msgstr ""
+
+#: admin/src/AdminSocketLog.js:10 src/control/Control.JSDialogBuilder.js:565
+#: src/control/Control.StatusBar.js:336
+msgid "None"
+msgstr ""
+
+#: admin/src/AdminSocketLog.js:11
+msgid "Channel Filter:"
+msgstr ""
+
+#: admin/src/AdminSocketLog.js:12
+msgid "Refresh Log"
+msgstr ""
+
+#: admin/src/AdminSocketLog.js:13
+msgid "Set Log Levels"
+msgstr ""
+
+#: admin/src/AdminSocketLog.js:14
+msgid "Log Levels"
+msgstr ""
+
+#: admin/src/AdminSocketLog.js:15
+msgid "Update Log Levels"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:12
+msgid "Users online"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:13
+msgid "Documents opened"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:14
+msgid "Memory consumed"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:15
+msgid "Bytes sent"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:16
+msgid "Bytes received"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:17
+msgid "Server uptime"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:18
+msgid "WOPI host"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:19
+msgid "Views"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:20
+msgid "PID"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:21
+msgid "Document"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:22
+msgid "Elapsed time"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:23
+msgid "Idle time"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:24
+msgid "Modified"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:25
+msgid "Number of Documents"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:26
+msgid "Uploaded"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:193
 msgid "Failed to set jwt authentication cookie over insecure connection"
 msgstr ""
 
-#: admin/src/AdminSocketOverview.js:415
+#: admin/src/AdminSocketOverview.js:197
 msgid "Failed to authenticate this session over protocol %0"
 msgstr ""
 
-#: admin/src/AdminSocketOverview.js:420
-msgid "Warning"
+#: admin/src/AdminSocketOverview.js:247
+msgid "Kill session."
 msgstr ""
 
-#: admin/src/AdminSocketSettings.js:35
-msgid "Are you sure you want to shut down the server?"
+#: admin/src/AdminSocketOverview.js:253
+msgid "Are you sure you want to terminate this session?"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:316
+msgid "user(s)."
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:368
+msgid "document(s) open."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:12
+msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:13
+msgid "Upload"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:14
+msgid "Unsupported package installation system!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:15
+msgid "Unable to enter the temporary directory!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:16
+msgid "Unknown file type!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:17
+msgid "File uncompressing..."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:18
+msgid "Test whether it can be upgraded."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:19
+msgid "Start the upgrade."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:20
+msgid "Start the real upgrade."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:92
+msgid "The upload file command is wrong, the syntax is as follows:"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:95
+msgid "Start the software upgrade..."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:99
+msgid "File decompression failed!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:102
+msgid "Test upgrade failed!"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:105
+msgid "Software upgrade is successful."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:108
+msgid "You may need to restart the service."
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:111
+msgid "Software upgrade failed!"
 msgstr ""
 
 #: admin/src/Util.js:14
@@ -370,6 +470,13 @@ msgstr ""
 msgid "Automatic color"
 msgstr ""
 
+#: src/control/Control.AlertDialog.js:21 src/control/Control.AlertDialog.js:27
+#: src/control/Control.AlertDialog.js:58 src/control/Control.Zotero.js:188
+#: src/control/Parts.js:441 src/core/Socket.js:1033 src/core/Socket.js:1038
+#: welcome/welcome.html+html.body.div.div.div.div.div:51
+msgid "Close"
+msgstr ""
+
 #: src/control/Control.AlertDialog.js:42
 msgid "External link"
 msgstr ""
@@ -384,10 +491,6 @@ msgstr ""
 
 #: src/control/Control.Command.js:80
 msgid "Unlock"
-msgstr ""
-
-#: src/control/Control.ContextMenu.js:187 src/control/Toolbar.js:1081
-msgid "Delete"
 msgstr ""
 
 #: src/control/Control.ContextMenu.js:207
@@ -590,11 +693,6 @@ msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1775 src/control/Toolbar.js:123
 msgid "Font Size"
-msgstr ""
-
-#: src/control/Control.JSDialogBuilder.js:1777
-#: src/control/Control.TopToolbar.js:513
-msgid "Style"
 msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:2044
@@ -1176,6 +1274,18 @@ msgstr ""
 
 #: src/control/Control.MobileWizardBuilder.js:524
 msgid "Gradient End"
+msgstr ""
+
+#: src/control/Control.Notebookbar.js:263
+#: src/control/Control.NotebookbarCalc.js:108
+#: src/control/Control.NotebookbarDraw.js:25
+#: src/control/Control.NotebookbarDraw.js:149
+#: src/control/Control.NotebookbarImpress.js:25
+#: src/control/Control.NotebookbarImpress.js:172
+#: src/control/Control.NotebookbarWriter.js:154
+#: src/layer/tile/CommentListSection.ts:395
+#: src/layer/tile/CommentSection.ts:120
+msgid "Save"
 msgstr ""
 
 #: src/control/Control.NotebookbarBuilder.js:307
@@ -1783,6 +1893,10 @@ msgstr ""
 msgid ""
 "The document contains some citations which may be unreachable through web "
 "API. It may cause some problems while editing citations or bibliography."
+msgstr ""
+
+#: src/control/Control.Zotero.js:208
+msgid "Refresh"
 msgstr ""
 
 #: src/control/Control.Zotero.js:243 src/core/Socket.js:1085

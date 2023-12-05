@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-29 13:19+0800\n"
+"POT-Creation-Date: 2023-12-05 14:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,244 +18,134 @@ msgstr ""
 "X-Pootle-Revision: 3609394\n"
 "X-Pootle-Path: /zh_TW/libo_online/loleaflet-ui-zh_TW.po\n"
 
-#: admin/admin.strings.js:6
+#: admin/admin.strings.js:113 admin/admin.strings.js:123
 msgid "Admin console"
 msgstr "管理主控臺"
 
-#: admin/admin.strings.js:7
-msgid "Settings"
-msgstr "設定"
-
-#: admin/admin.strings.js:8
+#: admin/admin.strings.js:124 admin/js/admin.menu.js:5
 msgid "Overview"
 msgstr "概覽"
 
-#: admin/admin.strings.js:9
-msgid "(current)"
-msgstr "（目前）"
-
-#: admin/admin.strings.js:10
+#: admin/admin.strings.js:125 admin/js/admin.menu.js:10
 msgid "Analytics"
 msgstr "分析"
 
-#: admin/admin.strings.js:11
-msgid "History"
-msgstr "最後使用記錄"
-
-#: admin/admin.strings.js:12
+#: admin/admin.strings.js:126 admin/js/admin.menu.js:15
 msgid "Log"
 msgstr "日誌"
 
-#: admin/admin.strings.js:13
-msgid "Dashboard"
-msgstr "控制面板"
+#: admin/admin.strings.js:127
+msgid "SSL certificate manager"
+msgstr "SSL 設定管理"
 
-#: admin/admin.strings.js:14
-msgid "Users online"
-msgstr "線上使用者"
+#: admin/admin.strings.js:128
+msgid "System configuration"
+msgstr "系統配置設定"
 
-#: admin/admin.strings.js:15
-msgid "User Name"
-msgstr "使用者名稱"
+#: admin/admin.strings.js:129 admin/js/admin.menu.js:20
+msgid "Software upgrade"
+msgstr "軟體升級"
 
-#: admin/admin.strings.js:16
-msgid "Documents open"
-msgstr "開啟的文件"
+#: admin/admin.strings.js:130 admin/js/admin.menu.js:25
+msgid "Font manager"
+msgstr "字型管理"
 
-#: admin/admin.strings.js:17 admin/src/AdminSocketOverview.js:73
-#: admin/src/AdminSocketOverview.js:122 admin/src/AdminSocketOverview.js:349
-msgid " user(s)."
-msgstr " 位使用者"
-
-#: admin/admin.strings.js:18 admin/src/AdminSocketOverview.js:205
-msgid " document(s) open."
-msgstr "開啟的文件"
-
-#: admin/admin.strings.js:19
-msgid "Number of Documents"
-msgstr "文件數"
-
-#: admin/admin.strings.js:20
-msgid "Memory consumed"
-msgstr "消耗的記憶體"
-
-#: admin/admin.strings.js:21
-msgid "Bytes sent"
-msgstr "已傳送的流量"
-
-#: admin/admin.strings.js:22
-msgid "Bytes received"
-msgstr "已接收的流量"
-
-#: admin/admin.strings.js:23
-msgid "PID"
-msgstr "PID"
-
-#: admin/admin.strings.js:24
-msgid "Document"
-msgstr "文件"
-
-#: admin/admin.strings.js:25
-msgid "Views"
-msgstr "開啟者"
-
-#: admin/admin.strings.js:26
-msgid "Elapsed time"
-msgstr "經過的時間"
-
-#: admin/admin.strings.js:27
-msgid "Idle time"
-msgstr "閒置時間"
-
-#: admin/admin.strings.js:28
-msgid "Modified"
-msgstr "最後修改"
-
-#: admin/admin.strings.js:29
-msgid "Uploaded"
-msgstr ""
-
-#: admin/admin.strings.js:30
-msgid "WOPI host"
-msgstr "WOPI 主機"
-
-#: admin/admin.strings.js:31
-msgid "Kill"
-msgstr "中止"
-
-#: admin/admin.strings.js:32
-msgid "Graphs"
-msgstr "圖表"
-
-#: admin/admin.strings.js:33
+#: admin/src/AdminSocketAnalytics.js:14
 msgid "Memory Graph"
 msgstr "記憶體圖表"
 
-#: admin/admin.strings.js:34
+#: admin/src/AdminSocketAnalytics.js:15
 msgid "CPU Graph"
 msgstr "CPU 圖表"
 
-#: admin/admin.strings.js:35
+#: admin/src/AdminSocketAnalytics.js:16
 msgid "Network Graph"
 msgstr "網路圖表"
 
-#: admin/admin.strings.js:36 src/control/Control.Notebookbar.js:263
-#: src/control/Control.NotebookbarCalc.js:108
-#: src/control/Control.NotebookbarDraw.js:25
-#: src/control/Control.NotebookbarDraw.js:149
-#: src/control/Control.NotebookbarImpress.js:25
-#: src/control/Control.NotebookbarImpress.js:172
-#: src/control/Control.NotebookbarWriter.js:154
-#: src/layer/tile/CommentListSection.ts:395
-#: src/layer/tile/CommentSection.ts:120
-msgid "Save"
-msgstr "儲存"
-
-#: admin/admin.strings.js:37
-msgid "Cache size of memory statistics"
-msgstr "記憶體統計資料的快取大小"
-
-#: admin/admin.strings.js:38
-msgid "Time interval of memory statistics (in ms)"
-msgstr "記憶體統計的時間間隔（單位毫秒）"
-
-#: admin/admin.strings.js:39
-msgid "Cache size of CPU statistics"
-msgstr "CPU 統計資料的快取大小"
-
-#: admin/admin.strings.js:40
-msgid "Time interval of CPU statistics (in ms)"
-msgstr "CPU 統計資料的時間間隔（單位毫秒）"
-
-#: admin/admin.strings.js:41 admin/src/AdminSocketOverview.js:91
-msgid "Kill session."
-msgstr "中止作業"
-
-#: admin/admin.strings.js:42
-msgid "Maximum Document process virtual memory (in MB) - reduce only"
-msgstr "最大文件的程序虛擬記憶 (單位 MB) - 僅能減少"
-
-#: admin/admin.strings.js:43
-msgid "Maximum Document process stack memory (in KB) - reduce only"
-msgstr "最大文件的程序堆疊記憶 (單位 KB) - 僅能減少"
-
-#: admin/admin.strings.js:44
-msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
-msgstr "寫入磁碟的最大允許檔案大小 (單位 MB) - 僅能減少"
-
-#: admin/admin.strings.js:45
-msgid "Documents:"
-msgstr "文件："
-
-#: admin/admin.strings.js:46
-msgid "Expired:"
-msgstr "逾期："
-
-#: admin/admin.strings.js:47 admin/src/AdminSocketBase.js:52
-#: src/control/Control.Zotero.js:208
-msgid "Refresh"
-msgstr "重整"
-
-#: admin/admin.strings.js:48
-msgid "Shutdown Server"
-msgstr "關閉伺服器"
-
-#: admin/admin.strings.js:49
-msgid "Server uptime"
-msgstr "服務時間"
-
-#: admin/admin.strings.js:50
-msgid "Refresh Log"
-msgstr "更新日誌"
-
-#: admin/admin.strings.js:51
-msgid "Channel Filter:"
-msgstr "過濾類別："
-
-#: admin/admin.strings.js:52 src/control/Control.JSDialogBuilder.js:565
-#: src/control/Control.StatusBar.js:336
-msgid "None"
-msgstr "無"
-
-#: admin/admin.strings.js:53
-msgid "Set Log Levels"
-msgstr "設定紀錄層級"
-
-#: admin/admin.strings.js:54
-msgid "Log Levels"
-msgstr "紀錄層級"
-
-#: admin/admin.strings.js:55 src/control/Control.AlertDialog.js:21
-#: src/control/Control.AlertDialog.js:27 src/control/Control.AlertDialog.js:58
-#: src/control/Control.Zotero.js:188 src/control/Parts.js:441
-#: src/core/Socket.js:1033 src/core/Socket.js:1038
-#: welcome/welcome.html+html.body.div.div.div.div.div:51
-msgid "Close"
-msgstr "關閉"
-
-#: admin/admin.strings.js:56
-msgid "Update Log Levels"
-msgstr "更新紀錄層級"
-
-#: admin/admin.strings.js:57
-msgid "Version Information"
-msgstr "版本資訊"
-
-#: admin/src/AdminSocketAnalytics.js:205
+#: admin/src/AdminSocketAnalytics.js:211
 msgid "Received"
 msgstr "已接收"
 
-#: admin/src/AdminSocketAnalytics.js:209
+#: admin/src/AdminSocketAnalytics.js:215
 msgid "Sent"
 msgstr "已送出"
 
 #: admin/src/AdminSocketBase.js:53
-msgid "Server has been shut down; please reload the page."
-msgstr "伺服器已關閉； 請重新載入頁面。"
+msgid "Server has been shut down; Waiting to be back online."
+msgstr "服務正在重啟，等待重新上線"
 
-#: admin/src/AdminSocketBase.js:54 admin/src/AdminSocketBase.js:65
-#: admin/src/AdminSocketOverview.js:99 admin/src/AdminSocketOverview.js:422
-#: admin/src/AdminSocketSettings.js:36 src/control/Control.AlertDialog.js:43
+#: admin/src/AdminSocketBase.js:68
+msgid "Connection error"
+msgstr "連線錯誤"
+
+#: admin/src/AdminSocketBase.js:75
+msgid "Try to reconnect..."
+msgstr "嘗試重新連線…"
+
+#: admin/src/AdminSocketFontManager.js:12
+msgid "Select all"
+msgstr "全選"
+
+#: admin/src/AdminSocketFontManager.js:13
+msgid "File name"
+msgstr "檔案名稱"
+
+#: admin/src/AdminSocketFontManager.js:14
+msgid "Font name (preview)"
+msgstr "字型名稱（預覽）"
+
+#: admin/src/AdminSocketFontManager.js:15
+#: src/control/Control.JSDialogBuilder.js:1777
+#: src/control/Control.TopToolbar.js:513
+msgid "Style"
+msgstr "樣式"
+
+#: admin/src/AdminSocketFontManager.js:16
+msgid "Color font"
+msgstr "彩色字型"
+
+#: admin/src/AdminSocketFontManager.js:17
+msgid "Symbol font"
+msgstr "符號字型"
+
+#: admin/src/AdminSocketFontManager.js:18
+msgid "Delete selected files?"
+msgstr "刪除選取的檔案嗎？"
+
+#: admin/src/AdminSocketFontManager.js:43
+msgid "Upload font files."
+msgstr "上傳字型檔"
+
+#: admin/src/AdminSocketFontManager.js:115
+#: admin/src/AdminSocketSoftwareUpgrade.js:123
+msgid "Transmission"
+msgstr "傳送"
+
+#: admin/src/AdminSocketFontManager.js:152
+msgid "Sending file"
+msgstr "傳送檔案"
+
+#: admin/src/AdminSocketFontManager.js:279
+#: admin/src/AdminSocketFontManager.js:302
+msgid "file(s)."
+msgstr "個檔案"
+
+#: admin/src/AdminSocketFontManager.js:280
+msgid "font(s)."
+msgstr "個字型"
+
+#: admin/src/AdminSocketFontManager.js:302
+#: src/control/Control.ContextMenu.js:187 src/control/Toolbar.js:1081
+msgid "Delete"
+msgstr "刪除"
+
+#: admin/src/AdminSocketGlobalFunction.js:10
+msgid "Are you sure you want to restart the online service?"
+msgstr "您確定要重新啟動線上服務嗎？"
+
+#: admin/src/AdminSocketGlobalFunction.js:12
+#: admin/src/AdminSocketGlobalFunction.js:56
+#: admin/src/AdminSocketOverview.js:255 src/control/Control.AlertDialog.js:43
 #: src/control/Control.DocumentRepair.js:68
 #: src/control/Control.LanguageDialog.js:115 src/control/Control.Tabs.js:311
 #: src/control/Control.Tabs.js:320 src/control/Control.Zotero.js:334
@@ -271,20 +161,10 @@ msgstr "伺服器已關閉； 請重新載入頁面。"
 msgid "OK"
 msgstr "確定"
 
-#: admin/src/AdminSocketBase.js:63 admin/src/AdminSocketBase.js:64
-msgid "Connection error"
-msgstr "連線錯誤"
-
-#: admin/src/AdminSocketOverview.js:97 admin/src/AdminSocketSettings.js:34
-msgid "Confirmation"
-msgstr "確認"
-
-#: admin/src/AdminSocketOverview.js:98
-msgid "Are you sure you want to terminate this session?"
-msgstr "您確定要中止這個作業階段？"
-
-#: admin/src/AdminSocketOverview.js:100 admin/src/AdminSocketOverview.js:423
-#: admin/src/AdminSocketSettings.js:37
+#: admin/src/AdminSocketGlobalFunction.js:13
+#: admin/src/AdminSocketGlobalFunction.js:33
+#: admin/src/AdminSocketGlobalFunction.js:57
+#: admin/src/AdminSocketOverview.js:256
 #: src/control/Control.DocumentRepair.js:62
 #: src/control/Control.DownloadProgress.js:81
 #: src/control/Control.LanguageDialog.js:109
@@ -295,21 +175,241 @@ msgstr "您確定要中止這個作業階段？"
 msgid "Cancel"
 msgstr "取消"
 
-#: admin/src/AdminSocketOverview.js:411
+#: admin/src/AdminSocketGlobalFunction.js:26
+msgid ""
+"For security reasons, please enter your original management account and "
+"password."
+msgstr "為了安全理由，請輸入管理帳號及密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:28
+#: admin/src/AdminSocketGlobalFunction.js:51
+msgid "User name"
+msgstr "使用者名稱"
+
+#: admin/src/AdminSocketGlobalFunction.js:29
+#: admin/src/AdminSocketGlobalFunction.js:52
+msgid "Password"
+msgstr "密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:32
+msgid "Verification"
+msgstr "驗證"
+
+#: admin/src/AdminSocketGlobalFunction.js:49
+msgid "Please enter a new account and password."
+msgstr "請輸入新的帳號及密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:53
+msgid "Confirm password"
+msgstr "確認密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:69
+msgid "The password does not match the confirmation password!"
+msgstr "密碼與確認密碼不符！"
+
+#: admin/src/AdminSocketGlobalFunction.js:84
+msgid "Restart service"
+msgstr "重啟服務"
+
+#: admin/src/AdminSocketGlobalFunction.js:85
+msgid "Change account password"
+msgstr "變更帳號密碼"
+
+#: admin/src/AdminSocketGlobalFunction.js:107
+msgid "System"
+msgstr "系統"
+
+#: admin/src/AdminSocketGlobalFunction.js:128
+msgid "The account or password is inconsistent with the system!"
+msgstr "帳號或密碼與系統不一致！"
+
+#: admin/src/AdminSocketGlobalFunction.js:138
+msgid ""
+"The account and password have been updated and will take effect after the "
+"next service restart."
+msgstr "帳號及密碼已更新，將在下次服務重新啟動後生效。"
+
+#: admin/src/AdminSocketGlobalFunction.js:142
+msgid "Version"
+msgstr "版本"
+
+#: admin/src/AdminSocketGlobalFunction.js:147
+#: admin/src/AdminSocketGlobalFunction.js:152
+msgid "Core"
+msgstr "核心"
+
+#: admin/src/AdminSocketLog.js:10 src/control/Control.JSDialogBuilder.js:565
+#: src/control/Control.StatusBar.js:336
+msgid "None"
+msgstr "無"
+
+#: admin/src/AdminSocketLog.js:11
+msgid "Channel Filter:"
+msgstr "過濾類別："
+
+#: admin/src/AdminSocketLog.js:12
+msgid "Refresh Log"
+msgstr "更新日誌"
+
+#: admin/src/AdminSocketLog.js:13
+msgid "Set Log Levels"
+msgstr "設定紀錄層級"
+
+#: admin/src/AdminSocketLog.js:14
+msgid "Log Levels"
+msgstr "紀錄層級"
+
+#: admin/src/AdminSocketLog.js:15
+msgid "Update Log Levels"
+msgstr "更新紀錄層級"
+
+#: admin/src/AdminSocketOverview.js:12
+msgid "Users online"
+msgstr "線上使用者"
+
+#: admin/src/AdminSocketOverview.js:13
+msgid "Documents opened"
+msgstr "開啟的文件"
+
+#: admin/src/AdminSocketOverview.js:14
+msgid "Memory consumed"
+msgstr "消耗的記憶體"
+
+#: admin/src/AdminSocketOverview.js:15
+msgid "Bytes sent"
+msgstr "已傳送的流量"
+
+#: admin/src/AdminSocketOverview.js:16
+msgid "Bytes received"
+msgstr "已接收的流量"
+
+#: admin/src/AdminSocketOverview.js:17
+msgid "Server uptime"
+msgstr "服務時間"
+
+#: admin/src/AdminSocketOverview.js:18
+msgid "WOPI host"
+msgstr "WOPI 主機"
+
+#: admin/src/AdminSocketOverview.js:19
+msgid "Views"
+msgstr "開啟者"
+
+#: admin/src/AdminSocketOverview.js:20
+msgid "PID"
+msgstr "PID"
+
+#: admin/src/AdminSocketOverview.js:21
+msgid "Document"
+msgstr "文件"
+
+#: admin/src/AdminSocketOverview.js:22
+msgid "Elapsed time"
+msgstr "經過的時間"
+
+#: admin/src/AdminSocketOverview.js:23
+msgid "Idle time"
+msgstr "閒置時間"
+
+#: admin/src/AdminSocketOverview.js:24
+msgid "Modified"
+msgstr "最後修改"
+
+#: admin/src/AdminSocketOverview.js:25
+msgid "Number of Documents"
+msgstr "文件數"
+
+#: admin/src/AdminSocketOverview.js:26
+msgid "Uploaded"
+msgstr ""
+
+#: admin/src/AdminSocketOverview.js:193
 msgid "Failed to set jwt authentication cookie over insecure connection"
 msgstr "jwt cookie 身份驗證不能在不安全的連線使用"
 
-#: admin/src/AdminSocketOverview.js:415
+#: admin/src/AdminSocketOverview.js:197
 msgid "Failed to authenticate this session over protocol %0"
 msgstr "不能通過 %0 協議進行身份驗證"
 
-#: admin/src/AdminSocketOverview.js:420
-msgid "Warning"
-msgstr "警告"
+#: admin/src/AdminSocketOverview.js:247
+msgid "Kill session."
+msgstr "中止作業"
 
-#: admin/src/AdminSocketSettings.js:35
-msgid "Are you sure you want to shut down the server?"
-msgstr "確定要關閉伺服器？"
+#: admin/src/AdminSocketOverview.js:253
+msgid "Are you sure you want to terminate this session?"
+msgstr "您確定要中止這個作業階段？"
+
+#: admin/src/AdminSocketOverview.js:316
+msgid "user(s)."
+msgstr "個使用者"
+
+#: admin/src/AdminSocketOverview.js:368
+msgid "document(s) open."
+msgstr "個文件開啟"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:12
+msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
+msgstr "接受以下檔案類型：*.zip/*.tar.gz/*.rpm/.deb"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:13
+msgid "Upload"
+msgstr ""
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:14
+msgid "Unsupported package installation system!"
+msgstr "該系統不支援此種軟體安裝！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:15
+msgid "Unable to enter the temporary directory!"
+msgstr "無法進入暫存目錄！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:16
+msgid "Unknown file type!"
+msgstr "未知的檔案類型！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:17
+msgid "File uncompressing..."
+msgstr "檔案解壓縮中……"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:18
+msgid "Test whether it can be upgraded."
+msgstr "測試是否能升級"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:19
+msgid "Start the upgrade."
+msgstr "開始升級作業"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:20
+msgid "Start the real upgrade."
+msgstr "開始真正升級"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:92
+msgid "The upload file command is wrong, the syntax is as follows:"
+msgstr "上傳檔案的指令錯誤，語法如下："
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:95
+msgid "Start the software upgrade..."
+msgstr "開始升級軟體……"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:99
+msgid "File decompression failed!"
+msgstr "檔案解壓縮錯誤！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:102
+msgid "Test upgrade failed!"
+msgstr "測試升級失敗！"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:105
+msgid "Software upgrade is successful."
+msgstr "軟體升級成功"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:108
+msgid "You may need to restart the service."
+msgstr "您可能需要重新啟動伺服器"
+
+#: admin/src/AdminSocketSoftwareUpgrade.js:111
+msgid "Software upgrade failed!"
+msgstr "軟體升級失敗"
 
 #: admin/src/Util.js:14
 msgid "kB"
@@ -371,6 +471,13 @@ msgstr "無色彩"
 msgid "Automatic color"
 msgstr "自動色彩"
 
+#: src/control/Control.AlertDialog.js:21 src/control/Control.AlertDialog.js:27
+#: src/control/Control.AlertDialog.js:58 src/control/Control.Zotero.js:188
+#: src/control/Parts.js:441 src/core/Socket.js:1033 src/core/Socket.js:1038
+#: welcome/welcome.html+html.body.div.div.div.div.div:51
+msgid "Close"
+msgstr "關閉"
+
 #: src/control/Control.AlertDialog.js:42
 msgid "External link"
 msgstr "外部連結"
@@ -386,10 +493,6 @@ msgstr "伺服器在解析 %1 指令時遭遇 %0 錯誤。"
 #: src/control/Control.Command.js:80
 msgid "Unlock"
 msgstr "解鎖"
-
-#: src/control/Control.ContextMenu.js:187 src/control/Toolbar.js:1081
-msgid "Delete"
-msgstr "刪除"
 
 #: src/control/Control.ContextMenu.js:207
 msgid "Paste Special"
@@ -415,19 +518,19 @@ msgstr "類型"
 
 #: src/control/Control.DocumentRepair.js:131
 msgid "What?"
-msgstr ""
+msgstr "動作"
 
 #: src/control/Control.DocumentRepair.js:131
 msgid "Who?"
-msgstr ""
+msgstr "是誰"
 
 #: src/control/Control.DocumentRepair.js:131
 msgid "When?"
-msgstr ""
+msgstr "何時"
 
 #: src/control/Control.DocumentRepair.js:150
 msgid "You have not done anything to rollback yet..."
-msgstr ""
+msgstr "您尚未執行任何可復原的操作..."
 
 #: src/control/Control.DocumentRepair.js:160
 msgid "Redo"
@@ -439,13 +542,13 @@ msgstr "復原"
 
 #: src/control/Control.DownloadProgress.js:43
 msgid "Download Selection"
-msgstr ""
+msgstr "下載選擇"
 
 #: src/control/Control.DownloadProgress.js:48
 msgid ""
 "If you want to share large elements outside of %productName it's necessary "
 "to first download them."
-msgstr ""
+msgstr "如果您想在 %productName 之外共用大型元素，則必須先下載它們。"
 
 #: src/control/Control.DownloadProgress.js:61
 #: src/control/Control.NotebookbarCalc.js:204
@@ -456,7 +559,7 @@ msgstr "下載"
 
 #: src/control/Control.DownloadProgress.js:80
 msgid "Downloading clipboard content"
-msgstr "下在剪貼簿內容"
+msgstr "下載剪貼簿內容"
 
 #: src/control/Control.DownloadProgress.js:87
 #: src/control/Control.DownloadProgress.js:112
@@ -466,12 +569,12 @@ msgstr "複製"
 
 #: src/control/Control.DownloadProgress.js:110
 msgid "Download completed and ready to be copied to clipboard."
-msgstr ""
+msgstr "下載完成，準備複製到剪貼簿。"
 
 #: src/control/Control.DownloadProgress.js:111
 msgid ""
 "From now on clipboard notifications will discreetly appear at the bottom."
-msgstr ""
+msgstr "現在開始，剪貼簿通知將顯示在底部。"
 
 #: src/control/Control.DownloadProgress.js:257
 msgid "Content copied to clipboard"
@@ -491,7 +594,6 @@ msgid "Function Wizard"
 msgstr "函式精靈"
 
 #: src/control/Control.FormulaBarJSDialog.js:60
-#, fuzzy
 msgid "Formula"
 msgstr "公式"
 
@@ -535,7 +637,7 @@ msgstr ""
 #: src/control/Control.JSDialogBuilder.js:203
 #: src/control/Control.Menubar.js:675 src/control/Control.TopToolbar.js:99
 msgid "All Sheets"
-msgstr ""
+msgstr "所有工作表"
 
 #: src/control/Control.JSDialogBuilder.js:568
 msgid "Solid"
@@ -594,11 +696,6 @@ msgstr "字型名稱"
 msgid "Font Size"
 msgstr "字型大小"
 
-#: src/control/Control.JSDialogBuilder.js:1777
-#: src/control/Control.TopToolbar.js:513
-msgid "Style"
-msgstr "樣式"
-
 #: src/control/Control.JSDialogBuilder.js:2044
 msgid "reply"
 msgstr "回覆"
@@ -620,7 +717,7 @@ msgstr "插入註解"
 
 #: src/control/Control.JSDialogBuilder.js:2868
 msgid "Automatic"
-msgstr ""
+msgstr "自動"
 
 #: src/control/Control.JSDialogBuilder.js:3007
 #: src/control/Control.Menubar.js:817
@@ -723,7 +820,6 @@ msgid "EPUB (.epub)"
 msgstr "EPUB 電子書(.epub)"
 
 #: src/control/Control.Menubar.js:76
-#, fuzzy
 msgid "Rename Document"
 msgstr "修復文件"
 
@@ -809,7 +905,7 @@ msgstr "重設遠近"
 #: src/control/Control.NotebookbarImpress.js:494
 #: src/control/Control.NotebookbarWriter.js:1406
 msgid "Toggle UI Mode"
-msgstr ""
+msgstr "切換 UI 模式"
 
 #: src/control/Control.Menubar.js:129 src/control/Control.Menubar.js:422
 #: src/control/Control.NotebookbarWriter.js:1420
@@ -872,14 +968,13 @@ msgstr "文字方向"
 
 #: src/control/Control.Menubar.js:276
 #: src/control/Control.NotebookbarWriter.js:57
-#, fuzzy
 msgid "References"
 msgstr "參照"
 
 #: src/control/Control.Menubar.js:279
 #: src/control/Control.NotebookbarWriter.js:1811
 msgid "Update Index"
-msgstr ""
+msgstr "更新索引"
 
 #: src/control/Control.Menubar.js:288
 #: src/control/Control.NotebookbarWriter.js:1907
@@ -929,7 +1024,6 @@ msgid "Insert Picture"
 msgstr ""
 
 #: src/control/Control.Menubar.js:326 src/control/Control.Menubar.js:1222
-#, fuzzy
 msgid "Insert Date"
 msgstr "插入表格"
 
@@ -1184,6 +1278,18 @@ msgstr "漸層起始"
 #: src/control/Control.MobileWizardBuilder.js:524
 msgid "Gradient End"
 msgstr "漸層終止"
+
+#: src/control/Control.Notebookbar.js:263
+#: src/control/Control.NotebookbarCalc.js:108
+#: src/control/Control.NotebookbarDraw.js:25
+#: src/control/Control.NotebookbarDraw.js:149
+#: src/control/Control.NotebookbarImpress.js:25
+#: src/control/Control.NotebookbarImpress.js:172
+#: src/control/Control.NotebookbarWriter.js:154
+#: src/layer/tile/CommentListSection.ts:395
+#: src/layer/tile/CommentSection.ts:120
+msgid "Save"
+msgstr "儲存"
 
 #: src/control/Control.NotebookbarBuilder.js:307
 msgid "Tap to expand"
@@ -1461,7 +1567,7 @@ msgstr "精簡介面"
 #: src/control/Control.NotebookbarImpress.js:507
 #: src/control/Control.NotebookbarWriter.js:1445
 msgid "Collapse Tabs"
-msgstr ""
+msgstr "收起分頁"
 
 #: src/control/Control.NotebookbarCalc.js:1282
 #: src/control/Control.NotebookbarDraw.js:409
@@ -1543,7 +1649,7 @@ msgstr ""
 
 #: src/control/Control.NotebookbarWriter.js:1314
 msgid "Picture"
-msgstr ""
+msgstr "圖片"
 
 #: src/control/Control.NotebookbarWriter.js:1419
 msgid "Ruler"
@@ -1659,7 +1765,7 @@ msgstr "編輯"
 
 #: src/control/Control.StatusBar.js:487
 msgid "Select multiple cells"
-msgstr ""
+msgstr "選取多個儲存格"
 
 #: src/control/Control.StatusBar.js:490
 msgid "Insert mode: inactive"
@@ -1671,15 +1777,15 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:566
 msgid "Set Language for All text"
-msgstr ""
+msgstr "設定所有文字語言"
 
 #: src/control/Control.StatusBar.js:569
 msgid "Set Language for Paragraph"
-msgstr ""
+msgstr "設定段落語言"
 
 #: src/control/Control.StatusBar.js:570
 msgid "Set Language for Selection"
-msgstr ""
+msgstr "設定選取語言"
 
 #: src/control/Control.Tabs.js:54
 msgid "Insert sheet before this"
@@ -1806,6 +1912,10 @@ msgid ""
 "API. It may cause some problems while editing citations or bibliography."
 msgstr ""
 
+#: src/control/Control.Zotero.js:208
+msgid "Refresh"
+msgstr "重整"
+
 #: src/control/Control.Zotero.js:243 src/core/Socket.js:1085
 msgid "Loading..."
 msgstr "載入中..."
@@ -1860,7 +1970,6 @@ msgid "Citation Style"
 msgstr ""
 
 #: src/control/Control.Zotero.js:752
-#, fuzzy
 msgid "Styles"
 msgstr "樣式"
 
@@ -2079,7 +2188,7 @@ msgstr "重新載入"
 
 #: src/core/Socket.js:584
 msgid "Cluster configuration warning"
-msgstr ""
+msgstr "叢集配置警告"
 
 #: src/core/Socket.js:587
 msgid "Wrong server, reconnecting..."
@@ -2167,7 +2276,7 @@ msgstr "只有文件擁有者有權變更密碼。"
 
 #: src/core/Socket.js:1033 src/core/Socket.js:1038
 msgid "Missing Fonts"
-msgstr ""
+msgstr "缺少字體"
 
 #: src/core/Socket.js:1075
 msgid "Someone"
@@ -2231,7 +2340,7 @@ msgstr "伺服器已經離線。"
 
 #: src/errormessages.js:13
 msgid "No disk space left on server."
-msgstr ""
+msgstr "伺服器上已無剩餘的磁碟空間。"
 
 #: src/errormessages.js:14
 msgid ""
@@ -2460,7 +2569,7 @@ msgstr "將討論串標記為已解決"
 #: src/layer/tile/CommentListSection.ts:1128
 #: src/layer/tile/CommentListSection.ts:1165
 msgid "Autosaved"
-msgstr ""
+msgstr "自動儲存"
 
 #: src/layer/tile/CommentSection.ts:255
 msgid "Open menu"
@@ -2578,7 +2687,7 @@ msgstr "錯誤"
 
 #: src/map/handler/Map.WOPI.js:520
 msgid "File name should contain an extension."
-msgstr ""
+msgstr "檔案名稱應包含副檔名"
 
 #: src/map/handler/Map.WOPI.js:528
 msgid "Creating copy..."
@@ -2636,26 +2745,83 @@ msgid ""
 "it."
 msgstr ""
 
-#~ msgid "SSL certificate manager"
-#~ msgstr "SSL 設定管理"
+#~ msgid "Settings"
+#~ msgstr "設定"
 
-#~ msgid "System configuration"
-#~ msgstr "系統配置設定"
+#~ msgid "(current)"
+#~ msgstr "（目前）"
 
-#~ msgid "Software upgrade"
-#~ msgstr "軟體升級"
+#~ msgid "History"
+#~ msgstr "最後使用記錄"
 
-#~ msgid "Font manager"
-#~ msgstr "字型管理"
+#~ msgid "Dashboard"
+#~ msgstr "控制面板"
+
+#~ msgid "User Name"
+#~ msgstr "使用者名稱"
+
+#~ msgid "Documents open"
+#~ msgstr "開啟的文件"
+
+#~ msgid " user(s)."
+#~ msgstr " 位使用者"
+
+#~ msgid " document(s) open."
+#~ msgstr "開啟的文件"
+
+#~ msgid "Kill"
+#~ msgstr "中止"
+
+#~ msgid "Graphs"
+#~ msgstr "圖表"
+
+#~ msgid "Cache size of memory statistics"
+#~ msgstr "記憶體統計資料的快取大小"
+
+#~ msgid "Time interval of memory statistics (in ms)"
+#~ msgstr "記憶體統計的時間間隔（單位毫秒）"
+
+#~ msgid "Cache size of CPU statistics"
+#~ msgstr "CPU 統計資料的快取大小"
+
+#~ msgid "Time interval of CPU statistics (in ms)"
+#~ msgstr "CPU 統計資料的時間間隔（單位毫秒）"
+
+#~ msgid "Maximum Document process virtual memory (in MB) - reduce only"
+#~ msgstr "最大文件的程序虛擬記憶 (單位 MB) - 僅能減少"
+
+#~ msgid "Maximum Document process stack memory (in KB) - reduce only"
+#~ msgstr "最大文件的程序堆疊記憶 (單位 KB) - 僅能減少"
+
+#~ msgid "Maximum file size allowed to write to disk (in MB) - reduce only"
+#~ msgstr "寫入磁碟的最大允許檔案大小 (單位 MB) - 僅能減少"
+
+#~ msgid "Documents:"
+#~ msgstr "文件："
+
+#~ msgid "Expired:"
+#~ msgstr "逾期："
+
+#~ msgid "Shutdown Server"
+#~ msgstr "關閉伺服器"
+
+#~ msgid "Version Information"
+#~ msgstr "版本資訊"
+
+#~ msgid "Server has been shut down; please reload the page."
+#~ msgstr "伺服器已關閉； 請重新載入頁面。"
+
+#~ msgid "Confirmation"
+#~ msgstr "確認"
+
+#~ msgid "Warning"
+#~ msgstr "警告"
+
+#~ msgid "Are you sure you want to shut down the server?"
+#~ msgstr "確定要關閉伺服器？"
 
 #~ msgid "Menu editor"
 #~ msgstr "選單編輯"
-
-#~ msgid "Server has been shut down; Waiting to be back online."
-#~ msgstr "服務正在重啟，等待重新上線"
-
-#~ msgid "Try to reconnect..."
-#~ msgstr "嘗試重新連線…"
 
 #~ msgid "millisecond"
 #~ msgstr "毫秒"
@@ -2955,9 +3121,6 @@ msgstr ""
 #~ msgid "User ID"
 #~ msgstr "使用者 ID"
 
-#~ msgid "User name"
-#~ msgstr "使用者名稱"
-
 #~ msgid "User IP"
 #~ msgstr "使用者 IP 位址"
 
@@ -3011,85 +3174,6 @@ msgstr ""
 
 #~ msgid "Delete source"
 #~ msgstr "刪除來源"
-
-#~ msgid "Select all"
-#~ msgstr "全選"
-
-#~ msgid "File name"
-#~ msgstr "檔案名稱"
-
-#~ msgid "Font name (preview)"
-#~ msgstr "字型名稱（預覽）"
-
-#~ msgid "Color font"
-#~ msgstr "彩色字型"
-
-#~ msgid "Symbol font"
-#~ msgstr "符號字型"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "刪除選取的檔案嗎？"
-
-#~ msgid "Upload font files."
-#~ msgstr "上傳字型檔"
-
-#~ msgid "Transmission"
-#~ msgstr "傳送"
-
-#~ msgid "Sending file"
-#~ msgstr "傳送檔案"
-
-#~ msgid "file(s)."
-#~ msgstr "個檔案"
-
-#~ msgid "font(s)."
-#~ msgstr "個字型"
-
-#~ msgid "Are you sure you want to restart the online service?"
-#~ msgstr "您確定要重新啟動線上服務嗎？"
-
-#~ msgid ""
-#~ "For security reasons, please enter your original management account and "
-#~ "password."
-#~ msgstr "為了安全理由，請輸入管理帳號及密碼"
-
-#~ msgid "Password"
-#~ msgstr "密碼"
-
-#~ msgid "Verification"
-#~ msgstr "驗證"
-
-#~ msgid "Please enter a new account and password."
-#~ msgstr "請輸入新的帳號及密碼"
-
-#~ msgid "Confirm password"
-#~ msgstr "確認密碼"
-
-#~ msgid "The password does not match the confirmation password!"
-#~ msgstr "密碼與確認密碼不符！"
-
-#~ msgid "Restart service"
-#~ msgstr "重啟服務"
-
-#~ msgid "Change account password"
-#~ msgstr "變更帳號密碼"
-
-#~ msgid "System"
-#~ msgstr "系統"
-
-#~ msgid "The account or password is inconsistent with the system!"
-#~ msgstr "帳號或密碼與系統不一致！"
-
-#~ msgid ""
-#~ "The account and password have been updated and will take effect after the "
-#~ "next service restart."
-#~ msgstr "帳號及密碼已更新，將在下次服務重新啟動後生效。"
-
-#~ msgid "Version"
-#~ msgstr "版本"
-
-#~ msgid "Core"
-#~ msgstr "核心"
 
 #~ msgid "Enabled item"
 #~ msgstr "啟用選項"
@@ -3146,60 +3230,6 @@ msgstr ""
 
 #~ msgid "Menu permission updated successfully"
 #~ msgstr "選單權限更新成功"
-
-#~ msgid "Documents opened"
-#~ msgstr "開啟的文件"
-
-#~ msgid "user(s)."
-#~ msgstr "個使用者"
-
-#~ msgid "document(s) open."
-#~ msgstr "個文件開啟"
-
-#~ msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
-#~ msgstr "接受以下檔案類型：*.zip/*.tar.gz/*.rpm/.deb"
-
-#~ msgid "Unsupported package installation system!"
-#~ msgstr "該系統不支援此種軟體安裝！"
-
-#~ msgid "Unable to enter the temporary directory!"
-#~ msgstr "無法進入暫存目錄！"
-
-#~ msgid "Unknown file type!"
-#~ msgstr "未知的檔案類型！"
-
-#~ msgid "File uncompressing..."
-#~ msgstr "檔案解壓縮中……"
-
-#~ msgid "Test whether it can be upgraded."
-#~ msgstr "測試是否能升級"
-
-#~ msgid "Start the upgrade."
-#~ msgstr "開始升級作業"
-
-#~ msgid "Start the real upgrade."
-#~ msgstr "開始真正升級"
-
-#~ msgid "The upload file command is wrong, the syntax is as follows:"
-#~ msgstr "上傳檔案的指令錯誤，語法如下："
-
-#~ msgid "Start the software upgrade..."
-#~ msgstr "開始升級軟體……"
-
-#~ msgid "File decompression failed!"
-#~ msgstr "檔案解壓縮錯誤！"
-
-#~ msgid "Test upgrade failed!"
-#~ msgstr "測試升級失敗！"
-
-#~ msgid "Software upgrade is successful."
-#~ msgstr "軟體升級成功"
-
-#~ msgid "You may need to restart the service."
-#~ msgstr "您可能需要重新啟動伺服器"
-
-#~ msgid "Software upgrade failed!"
-#~ msgstr "軟體升級失敗"
 
 #~ msgid "Upload cert file."
 #~ msgstr "上傳數位憑證"
