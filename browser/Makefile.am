@@ -91,8 +91,7 @@ define npm_source
 	done
 endef
 
-OXOOL_ADMIN_TS =\
-	admin/src/ModalDialogCreator.ts
+OXOOL_ADMIN_TS =
 
 OXOOL_ADMIN_TS_JS = $(patsubst %.ts,$(TYPESCRIPT_JS_DIR)/%.js,$(OXOOL_ADMIN_TS))
 
