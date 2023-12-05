@@ -69,8 +69,6 @@ const std::string fontsDir =
     "/usr/share/fonts/" PACKAGE_NAME;
 #endif
 
-const std::string sysTemplateFontsDir(OXOOLWSD::SysTemplate + fontsDir);
-
 const int Admin::MinStatsIntervalMs = 50;
 const int Admin::DefStatsIntervalMs = 1000;
 const std::string levelList[] = {"none", "fatal", "critical", "error", "warning", "notice", "information", "debug", "trace"};
@@ -793,7 +791,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     // modaodfweb 管理的字型目錄是 /usr/share/fonts/modaodfweb
     else if (tokens.equals(0, "installFont") && tokens.size() == 1)
     {
-        //const std::string sysTemplateFontsDir = OXOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
+        const std::string sysTemplateFontsDir = OXOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
         std::string fontFile = _receiveFile.getWorkPath() + "/" + _receiveFile.getWorkFileName();
         File font(fontFile);
         font.copyTo(fontsDir);
@@ -806,7 +804,7 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     // 檔名要用 encodeURI()
     else if (tokens.equals(0, "deleteFont") && tokens.size() == 2)
     {
-        //const std::string sysTemplateFontsDir = OXOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
+        const std::string sysTemplateFontsDir = OXOOLWSD::SysTemplate + "/usr/share/fonts/" PACKAGE_NAME;
         std::string fileName;
         Poco::URI::decode(tokens[1], fileName);
         File masterFont(fontsDir + "/" + fileName);
