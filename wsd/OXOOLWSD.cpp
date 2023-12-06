@@ -2475,6 +2475,7 @@ void OXOOLWSD::innerInitialize(Application& self)
     if (getSafeConfig(conf, "storage.wopi.reuse_cookies", reuseCookies))
         LOG_WRN("NOTE: Deprecated config option storage.wopi.reuse_cookies - no longer supported.");
 
+#if !MOBILEAPP
     OXOOLWSD::WASMState = getConfigValue<bool>(conf, "wasm.enable", false)
                              ? OXOOLWSD::WASMActivationState::Enabled
                              : OXOOLWSD::WASMActivationState::Disabled;
@@ -2492,6 +2493,7 @@ void OXOOLWSD::innerInitialize(Application& self)
         LOG_INF("WASM is force-enabled. All documents will be loaded through WASM");
         OXOOLWSD::WASMState = OXOOLWSD::WASMActivationState::Forced;
     }
+#endif // !MOBILEAPP
 
     // Get anonymization settings.
 #if OXOOLWSD_ANONYMIZE_USER_DATA
@@ -4372,6 +4374,7 @@ private:
                 // is 'lool' e.g. when integrations use the old /lool/convert-to endpoint
                 handlePostRequest(requestDetails, request, message, disposition, socket);
             }
+#if !MOBILEAPP
             else if (requestDetails.equals(RequestDetails::Field::Type, "wasm"))
             {
                 if (OXOOLWSD::WASMState == OXOOLWSD::WASMActivationState::Disabled)
@@ -4388,6 +4391,7 @@ private:
                 _wopiProxy = std::make_unique<WopiProxy>(_id, requestDetails, socket);
                 _wopiProxy->handleRequest(*WebServerPoll, disposition);
             }
+#endif // !MOBILEAPP
             else
             {
                 LOG_ERR("Unknown resource: " << requestDetails.toString());
@@ -5579,8 +5583,10 @@ private:
         // Set if this instance supports Zotero
         capabilities->set("hasZoteroSupport", config::getBool("zotero.enable", true));
 
-        // Set if this instance supports Zotero
+#if !MOBILEAPP
+        // Set if this instance supports WASM.
         capabilities->set("hasWASMSupport", OXOOLWSD::WASMState != OXOOLWSD::WASMActivationState::Disabled);
+#endif // !MOBILEAPP
 
         std::ostringstream ostrJSON;
         capabilities->stringify(ostrJSON);
