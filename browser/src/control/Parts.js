@@ -3,10 +3,15 @@
  * Document parts switching and selecting handler
  */
 
-/* global app _ */
+/* global app _ cool */
 
 L.Map.include({
 	setPart: function (part, external, calledFromSetPartHandler) {
+		if (oxool.Comment.isAnyEdit()) {
+			oxool.CommentSection.showCommentEditingWarning();
+			return;
+		}
+
 		var docLayer = this._docLayer;
 
 		if (docLayer.isCalc())
@@ -278,6 +283,11 @@ L.Map.include({
 	},
 
 	insertPage: function(nPos) {
+		if (oxool.Comment.isAnyEdit()) {
+			oxool.CommentSection.showCommentEditingWarning();
+			return;
+		}
+
 		if (this.isPresentationOrDrawing()) {
 			app.socket.sendMessage('uno .uno:InsertPage');
 		}
