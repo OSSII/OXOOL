@@ -6,6 +6,13 @@
 #
 
 sudoersdir = ${sysconfdir}/sudoers.d
-dist_sudoers_DATA = sudoers.d/lool
+EXTRA_DIST = sudoers.d/lool
+
+install-data-local:
+	$(INSTALL) -d $(DESTDIR)$(sudoersdir)
+	$(INSTALL) -m 0440 $(srcdir)/sudoers.d/lool $(DESTDIR)$(sudoersdir)/@PACKAGE@
+
+uninstall-local:
+	rm -f $(DESTDIR)$(sudoersdir)
 
 ## vim: set noet sw=4 ts=4:
