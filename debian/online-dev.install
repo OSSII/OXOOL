@@ -1,0 +1,7 @@
+usr/bin/@PACKAGE@-module-maker
+etc/@PACKAGE@/conf.d/ModuleTesting.xml
+usr/include/OxOOL/
+usr/lib/*.so
+usr/lib/pkgconfig/*.pc
+usr/lib/@PACKAGE@/ModuleTesting.so
+usr/share/@PACKAGE@-devel/module-template/

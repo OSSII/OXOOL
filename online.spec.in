@@ -6,8 +6,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-%define config_options --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
-%define loroot /opt/oxoffice
+%define config_options --with-product-name="@PRODUCTNAME@" --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
+%define loroot /opt/@CORE_OFFICE@
 %define HAVE_DEVEL 1
 
 Name:           @PACKAGE@
@@ -30,7 +30,7 @@ BuildRequires:  libpcap kernel-headers python36-polib python36-lxml
 BuildRequires:  libpcap kernel-headers python3-polib python3-lxml
 %endif
 
-Requires:       oxoffice oxoffice-ure oxofficelib-core oxofficelib-writer oxofficelib-impress oxofficelib-graphicfilter oxofficelib-en-US oxofficelib-calc oxofficelib-ooofonts oxofficelib-images oxofficelib-draw oxofficelib-extension-pdf-import oxofficelib-ooolinguistic oxofficelib-math
+Requires:       @CORE_OFFICE@ @CORE_OFFICE@-ure @CORE_OFFICE@lib-core @CORE_OFFICE@lib-writer @CORE_OFFICE@lib-impress @CORE_OFFICE@lib-graphicfilter @CORE_OFFICE@lib-en-US @CORE_OFFICE@lib-calc @CORE_OFFICE@lib-ooofonts @CORE_OFFICE@lib-images @CORE_OFFICE@lib-draw @CORE_OFFICE@lib-extension-pdf-import @CORE_OFFICE@lib-ooolinguistic @CORE_OFFICE@lib-math
 Requires(post): coreutils grep sed cpio
 # @PACGAKE@ dependencies
 Requires:       systemd expat keyutils-libs krb5-libs libattr libcap libcom_err libgcc libpng libselinux openssh-clients openssl-libs pcre xz-libs zlib unzip sudo fontconfig freetype libuuid bzip2-libs

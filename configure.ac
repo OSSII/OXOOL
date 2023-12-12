@@ -13,6 +13,8 @@ m4_define([package_VERSION], [5.0.0])
 m4_define([bug_REPORT], [https://github.com/OSSII/oxool-community/issues])
 # Package URL(Homepage)
 m4_define([package_URL], [https://www.ossii.com.tw/online])
+# Core Office name.
++m4_define([core_OFFICE], [oxoffice])
 
 AC_INIT([package_NAME], [package_VERSION], [bug_REPORT], [package_NAME], [package_URL])
 LT_INIT([shared, disable-static, dlopen])
@@ -24,6 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # We don't want to require pkg-config and PKG_CHECK_MODULES on macOS
 m4_if(m4_esyscmd_s([uname -s]),Darwin,[m4_define([PKG_CHECK_MODULES],[])],[])
 
+AC_SUBST([CORE_OFFICE], m4_defn([core_OFFICE]))
 OXOOLWSD_VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
 OXOOLWSD_VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
 OXOOLWSD_VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
@@ -1797,10 +1800,13 @@ AC_CONFIG_FILES([
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
     debian/${PACKAGE}.service:online.service.in
+    debian/control
     debian/copyright
     debian/${PACKAGE}.preinst:debian/online.preinst
     debian/${PACKAGE}.postinst:debian/online.postinst
     debian/${PACKAGE}.postrm:debian/online.postrm
+    debian/${PACKAGE}.install:debian/online.install
+    debian/${PACKAGE}-dev.install:debian/online-dev.install
     ])
 
 # The ossii directory is the OxOOL common object and development kit,

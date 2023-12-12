@@ -1,0 +1,27 @@
+Source: @PACKAGE@
+Section: web
+Priority: optional
+Maintainer: Firefly <firefly@ossii.com.tw>
+Build-Depends: debhelper (>= 9.20160709) | dh-systemd (>= 1.3), libcap-dev, libcap2-bin, nodejs, python3-polib, python3-lxml, fontconfig, libpam-dev, libcppunit-dev, pkg-config, devscripts, m4
+Standards-Version: 3.9.7
+
+Package: @PACKAGE@
+Section: web
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ adduser, fontconfig, cpio, libcap2-bin,
+ @CORE_OFFICE@lib-calc,
+ @CORE_OFFICE@lib-core,
+ @CORE_OFFICE@lib-graphicfilter,
+ @CORE_OFFICE@lib-images,
+ @CORE_OFFICE@lib-impress,
+ @CORE_OFFICE@lib-ooofonts,
+ @CORE_OFFICE@lib-writer,
+ @CORE_OFFICE@,
+ @CORE_OFFICE@-ure,
+ @CORE_OFFICE@lib-en-us,
+ @CORE_OFFICE@lib-draw,
+ @CORE_OFFICE@lib-extension-pdf-import,
+ @CORE_OFFICE@lib-ooolinguistic,
+ @CORE_OFFICE@lib-math
+Description: @PRODUCENAME@ WebSocket Daemon.
