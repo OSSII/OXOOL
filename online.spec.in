@@ -103,7 +103,7 @@ echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.pem
 %config(noreplace) %attr(640, @OXOOL_USER_ID@, root) %{_sysconfdir}/%{name}/@WSD_NAME@.xml
-%config %attr(440, root, root) %{_sysconfdir}/sudoers.d/@OXOOL_USER_ID@
+%config %attr(440, root, root) %{_sysconfdir}/sudoers.d/*
 %config %{_sysconfdir}/%{name}/*.xcu
 
 %if 0%{HAVE_DEVEL}
