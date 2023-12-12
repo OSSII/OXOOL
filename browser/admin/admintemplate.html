@@ -34,8 +34,17 @@
             l10nstrings.productName = brandProductName
         }
         var SERVICE_ROOT = '%SERVICE_ROOT%';
-        //var MODULE_NAME = '%MODULE_NAME%';
-        //var adminModules = JSON.parse('%ADMIN_MODULES%');
+        var MODULE_NAME = '%MODULE_NAME%';
+
+        var adminModulesStr = '%ADMIN_MODULES%';
+        try
+        {
+            var adminModules = JSON.parse(adminModulesStr);
+        }
+        catch(e)
+        {
+            var adminModules = [];
+        }
         var host = (window.location.protocol === 'https:' ? 'wss://': 'ws://') + window.location.host + '%SERVICE_ROOT%/oxool/adminws/';
         Admin.GlobalFunction(host);
     </script>
@@ -80,7 +89,7 @@
         window.jwtToken = '%JWT_TOKEN%';
         document.getElementById('productName').innerText = l10nstrings.productName;
         l10nstrings.buildMainMenu(mainMenus);
-        //l10nstrings.buildModuleMenu(adminModules);
+        l10nstrings.buildModuleMenu(adminModules);
         // 翻譯整頁(只要 element 有 _="xxxx", _UNO="xxxx", title and placeholder 的，都翻)
         l10nstrings.fullPageTranslation();
 

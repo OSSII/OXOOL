@@ -222,6 +222,11 @@ void DocumentBroker::setupTransfer(SocketDisposition &disposition,
     disposition.setTransfer(*_poll, std::move(transferFn));
 }
 
+void DocumentBroker::startThread()
+{
+    _poll->startThread();
+}
+
 void DocumentBroker::assertCorrectThread(const char* filename, int line) const
 {
     _poll->assertCorrectThread(filename, line);

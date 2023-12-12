@@ -6,6 +6,9 @@
 /* Define to the full name of this package. */
 #undef PACKAGE_NAME
 
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
 /* Default value of feature_lock.calc_unlock_highlights */
 #undef CALC_UNLOCK_HIGHLIGHTS
 

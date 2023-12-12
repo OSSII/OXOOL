@@ -1,0 +1,31 @@
+
+#pragma once
+
+#include <string>
+
+#define MULTILINE_STRING(...) #__VA_ARGS__
+
+#ifndef CODE_COVERAGE
+#define CODE_COVERAGE 0
+#endif
+
+#ifndef MOBILEAPP
+#define MOBILEAPP 0
+#endif
+
+namespace OxOOL
+{
+namespace ENV
+{
+
+    const std::string Version = "@VERSION@";
+    const std::string VersionHash = "@OXOOLWSD_VERSION_HASH@";
+    const std::string HttpAgentString = "OxOOL HTTP Agent " + Version;
+    const std::string WopiAgentString = HttpAgentString;
+    const std::string HttpServerString = "OxOOL HTTP Server " + Version;
+    const std::string ModuleDir = "@OXOOLWSD_MODULE_DIR@";
+    const std::string ModuleConfigDir = "@OXOOLWSD_MODULE_CONFIG_DIR@";
+    const std::string ModuleDataDir = "@OXOOLWSD_MODULE_DATA_DIR@";
+
+} // namespace ENV
+} // namespace OxOOL

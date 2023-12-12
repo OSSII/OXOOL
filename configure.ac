@@ -164,6 +164,14 @@ if test "$use_fontconfig" = "no" ; then
     AC_MSG_ERROR([Need fontconfig, but not found or version too old.])
 fi
 
+#-----------------------------------------------------------------------
+# Check for libgit2 support
+#-----------------------------------------------------------------------
+PKG_CHECK_MODULES(GIT2, libgit2, use_git2="yes", use_git2="no")
+if test "$use_git2" = "no" ; then
+    AC_MSG_ERROR([Requires the libgit2 development kit.])
+fi
+
 # check for python modules
 for MODULE in lxml polib; do
     AC_MSG_CHECKING([for ${MODULE} for python3])
@@ -1787,7 +1795,6 @@ AC_CONFIG_FILES([
     ${WSD_NAME}.service:online.service.in
     ${PACKAGE}.spec:online.spec.in
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
-    ${PACKAGE}.pc:online.pc.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
     debian/${PACKAGE}.service:online.service.in
     debian/copyright
@@ -1800,7 +1807,7 @@ AC_CONFIG_FILES([
 # Search all Makefile.am and *.in files under it,
 # Avoid recording one by one.
 AC_CONFIG_FILES(m4_esyscmd_s([
-find ossii/ ! -path "ossii/src/development-tools/module-template/*" -type f -name "Makefile.am" -or -name "OxOOL.h.in" |
+find ossii/ ! -path "ossii/src/development-tools/module-template/*" -type f -name "Makefile.am" -or -name "online.pc.in" -or -name "OxOOL.h.in" |
 while read file
 do
     DIRNAME=`dirname "$file"`

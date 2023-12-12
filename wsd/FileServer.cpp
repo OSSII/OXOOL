@@ -39,6 +39,9 @@
 #include <Poco/JSON/Object.h>
 #include "Exceptions.hpp"
 
+#include <OxOOL/HttpHelper.h>
+#include <OxOOL/ModuleManager.h>
+
 #include "Auth.hpp"
 #include <Common.hpp>
 #include <Crypto.hpp>
@@ -1376,6 +1379,11 @@ void FileServerRequestHandler::preprocessAdminFile(const HTTPRequest& request,
     Poco::replaceInPlace(templateFile, std::string("<!--%FOOTER%-->"), brandFooter);
     Poco::replaceInPlace(templateFile, std::string("%VERSION%"), std::string(OXOOLWSD_VERSION_HASH));
     Poco::replaceInPlace(templateFile, std::string("%SERVICE_ROOT%"), responseRoot);
+
+    // 傳入有管理界面的模組列表
+    std::string langTag = OxOOL::HttpHelper::getAcceptLanguage(request);
+    Poco::replaceInPlace(templateFile, std::string("%ADMIN_MODULES%"),
+        OxOOL::ModuleManager::instance().getAdminModuleDetailsJsonString(langTag));
 
     // Ask UAs to block if they detect any XSS attempt
     response.add("X-XSS-Protection", "1; mode=block");

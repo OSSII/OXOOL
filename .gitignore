@@ -173,3 +173,4 @@ debian/oxool.*
 /*-generate-proof-key
 /*-systemplate-setup
 /*.spec
+/.libs

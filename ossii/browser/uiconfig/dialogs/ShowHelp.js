@@ -78,7 +78,7 @@ L.dialog.ShowHelp = {
 				for (var p = 0; p < imgList.length; p++) {
 					var imgSrc = imgList[p].src;
 					imgSrc = imgSrc.substring(imgSrc.indexOf('/images'));
-					imgList[p].src = window.makeWsUrl('/loleaflet/dist'+ imgSrc);
+					imgList[p].src = window.makeWsUrl('/browser/dist'+ imgSrc);
 				}
 			}
 			// Display help according to document opened

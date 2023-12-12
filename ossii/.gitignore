@@ -2,3 +2,11 @@
 
 # browser
 browser/branding
+
+#defelop
+*.la
+.libs/
+OxOOL.h
+*-xml-config
+*-module-maker
+*.pc

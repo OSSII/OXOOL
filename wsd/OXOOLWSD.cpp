@@ -115,6 +115,8 @@ using Poco::Net::PartHandler;
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/Util/XMLConfiguration.h>
 
+#include <OxOOL/ModuleManager.h>
+
 #include "Admin.hpp"
 #include "Auth.hpp"
 #include "ClientSession.hpp"
@@ -4095,6 +4097,11 @@ private:
             {
                 // Unit testing, nothing to do here
             }
+            // Prioritize module processing
+            if (OxOOL::ModuleManager::instance().handleRequest(request, disposition))
+            {
+                // Do nothing.
+            }
             else if (requestDetails.equals(RequestDetails::Field::Type, "browser") || requestDetails.equals(RequestDetails::Field::Type, "wopi"))
             {
                 // File server
@@ -5544,6 +5551,7 @@ public:
 
 #if !MOBILEAPP
         _admin.start();
+        OxOOL::ModuleManager::instance().start();
 #endif
     }
 
@@ -5554,6 +5562,7 @@ public:
             WebServerPoll->joinThread();
 #if !MOBILEAPP
         _admin.stop();
+        OxOOL::ModuleManager::instance().stop();
 #endif
     }
 
@@ -6004,9 +6013,24 @@ int OXOOLWSD::innerMain()
             << adminURI << '\n'
             << getServiceURI(OXOOLWSD_TEST_METRICS, true) << '\n'
             << getServiceURI("/hosting/capabilities") << '\n'
-            << getServiceURI("/hosting/discovery") << '\n';
+            << getServiceURI("/hosting/discovery") << '\n'
+            << std::endl;
 
-    oss << std::endl;
+    // 取得所有模組資料
+    std::vector<OxOOL::Module::Detail> details = OxOOL::ModuleManager::instance().getAllModuleDetails();
+    if (!details.empty())
+    {
+        for (auto it : details)
+        {
+            // 該模組有指定服務位址
+            if (!it.serviceURI.empty())
+            {
+                oss << std::endl << "Module '" << it.name << "': " << it.summary << std::endl
+                    << getServiceURI(it.serviceURI, it.adminPrivilege) << std::endl;
+            }
+        }
+    }
+
     std::cerr << oss.str();
 #endif
 
