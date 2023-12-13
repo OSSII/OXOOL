@@ -1800,13 +1800,12 @@ AC_CONFIG_FILES([
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
     debian/${PACKAGE}.service:online.service.in
-    debian/control
     debian/copyright
-    debian/${PACKAGE}.preinst:debian/online.preinst
-    debian/${PACKAGE}.postinst:debian/online.postinst
-    debian/${PACKAGE}.postrm:debian/online.postrm
-    debian/${PACKAGE}.install:debian/online.install
-    debian/${PACKAGE}-dev.install:debian/online-dev.install
+    debian/${PACKAGE}.preinst:ossii/debian-template/online.preinst
+    debian/${PACKAGE}.postinst:ossii/debian-template/online.postinst
+    debian/${PACKAGE}.postrm:ossii/debian-template/online.postrm
+    debian/${PACKAGE}.install:ossii/debian-template/online.install
+    debian/${PACKAGE}-dev.install:ossii/debian-template/online-dev.install
     ])
 
 # The ossii directory is the OxOOL common object and development kit,
