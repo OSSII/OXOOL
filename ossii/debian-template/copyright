@@ -1,7 +1,7 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
-Name: oxool
+Name: @PACKAGE@
 Maintainer: Firefly <firefly@ossoo.com.tw>
-Source: https://www.ossii.com.tw/git/OSSIIDEV/oxool.git
+Source: https://github.com/MODAODF/modaodfweb
 
-Copyright: 2023 OSS Integral Institute Co., Ltd <contact@ossii.com.tw>
+Copyright: 2023 Ministry of Digital Affairs. <service@moda.gov.tw>
 License: MPL-2

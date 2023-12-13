@@ -1,7 +1,0 @@
-Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
-Name: @PACKAGE@
-Maintainer: Firefly <firefly@ossoo.com.tw>
-Source: https://www.ossii.com.tw/git/OSSIIDEV/oxool.git
-
-Copyright: 2023 OSS Integral Institute Co., Ltd <contact@ossii.com.tw>
-License: MPL-2

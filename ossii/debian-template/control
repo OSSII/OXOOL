@@ -2,7 +2,7 @@ Source: @PACKAGE@
 Section: web
 Priority: optional
 Maintainer: Firefly <firefly@ossii.com.tw>
-Build-Depends: debhelper (>= 9.20160709) | dh-systemd (>= 1.3), libcap-dev, libcap2-bin, nodejs, python3-polib, python3-lxml, fontconfig, libpam-dev, libcppunit-dev, pkg-config, devscripts, m4
+Build-Depends: debhelper (>= 9.20160709) | dh-systemd (>= 1.3), libcap-dev, libcap2-bin, nodejs, python3-polib, python3-lxml, fontconfig, libpam-dev, libcppunit-dev, pkg-config, devscripts, m4, libgit2-dev
 Standards-Version: 3.9.7
 
 Package: @PACKAGE@
@@ -24,4 +24,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  @CORE_OFFICE@lib-extension-pdf-import,
  @CORE_OFFICE@lib-ooolinguistic,
  @CORE_OFFICE@lib-math
-Description: @PRODUCENAME@ WebSocket Daemon.
+Description: @PRODUCTNAME@ WebSocket Daemon.
+
+Package: @PACKAGE@-dev
+Architecture: any
+Multi-Arch: same
+Depends: @PACKAGE@, libpoco-dev
+Description: Development kit needed to compile @PRODUCTNAME@ module.

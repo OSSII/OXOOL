@@ -1800,7 +1800,9 @@ AC_CONFIG_FILES([
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
     debian/${PACKAGE}.service:online.service.in
-    debian/copyright
+    debian/copyright:ossii/debian-template/copyright
+    debian/control:ossii/debian-template/control
+    debian/rules:ossii/debian-template/rules
     debian/${PACKAGE}.preinst:ossii/debian-template/online.preinst
     debian/${PACKAGE}.postinst:ossii/debian-template/online.postinst
     debian/${PACKAGE}.postrm:ossii/debian-template/online.postrm
