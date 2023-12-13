@@ -78,9 +78,6 @@ install -D -m 444 @WSD_NAME@.service %{buildroot}%{_unitdir}/@WSD_NAME@.service
 sed -i "/^ReadWritePaths/d;/^ProtectControlGroups/d;/^ProtectSystem/d" %{buildroot}%{_unitdir}/@WSD_NAME@.service
 %endif
 %endif
-mkdir -p %{buildroot}/etc/pam.d
-echo "auth       required     pam_unix.so" > %{buildroot}/etc/pam.d/%{name}
-echo "account    required     pam_unix.so" >>  %{buildroot}/etc/pam.d/%{name}
 
 %files
 %defattr(-,root,root,-)
