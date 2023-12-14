@@ -10,9 +10,7 @@ usr/share/@PACKAGE@
 usr/share/doc/@PACKAGE@
 usr/share/fonts/@PACKAGE@
 usr/share/man/man1/
-usr/lib/systemd/system/*.service
 
-etc/@PACKAGE@
 etc/@PACKAGE@/*.pem
 etc/@PACKAGE@/@WSD_NAME@.xml
 etc/@PACKAGE@/*.xcu
@@ -20,8 +18,6 @@ etc/pam.d/@PACKAGE@
 etc/sudoers.d/*
 
 usr/bin/@PACKAGE@-xml-config
-usr/lib/@PACKAGE@
-etc/@PACKAGE@/conf.d
 etc/@PACKAGE@/conf.d/{Alive.xml,Announce.xml}
 usr/lib/@PACKAGE@/{alive.so,announce.so}
 usr/lib/*.so.*
