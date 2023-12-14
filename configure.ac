@@ -1527,7 +1527,7 @@ AS_IF([test -n "$with_compiler_plugins"],
 OXOOLWSD_CONFIGDIR=${sysconfdir}/${PACKAGE}
 AC_SUBST(OXOOLWSD_CONFIGDIR)
 
-OXOOLWSD_DATADIR=${datadir}/${PACKAGE}
+OXOOLWSD_DATADIR=${prefix}/share/${PACKAGE}
 AC_SUBST(OXOOLWSD_DATADIR)
 
 OXOOL_USER_ID="lool"
@@ -1800,28 +1800,31 @@ AC_CONFIG_FILES([
     ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
     ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
     debian/${PACKAGE}.service:online.service.in
-    debian/copyright:ossii/debian-template/copyright
-    debian/control:ossii/debian-template/control
-    debian/rules:ossii/debian-template/rules
     debian/${PACKAGE}.preinst:ossii/debian-template/online.preinst
     debian/${PACKAGE}.postinst:ossii/debian-template/online.postinst
     debian/${PACKAGE}.postrm:ossii/debian-template/online.postrm
     debian/${PACKAGE}.install:ossii/debian-template/online.install
     debian/${PACKAGE}-dev.install:ossii/debian-template/online-dev.install
     ])
+AC_CONFIG_FILES([ossii/debian-template/control], [cp ossii/debian-template/control debian/])
+AC_CONFIG_FILES([ossii/debian-template/copyright], [cp ossii/debian-template/copyright debian/])
+AC_CONFIG_FILES([ossii/debian-template/rules], [cp ossii/debian-template/rules debian/])
 
 # The ossii directory is the OxOOL common object and development kit,
 # Search all Makefile.am and *.in files under it,
 # Avoid recording one by one.
 AC_CONFIG_FILES(m4_esyscmd_s([
-find ossii/ ! -path "ossii/src/development-tools/module-template/*" -type f -name "Makefile.am" -or -name "online.pc.in" -or -name "OxOOL.h.in" |
+find ossii/ ! -path "ossii/src/development-tools/module-template/*" \
+    -type f -name "Makefile.am" \
+    -or -name "online.pc.in" \
+    -or -name "OxOOL.h.in" |
 while read file
 do
     DIRNAME=`dirname "$file"`
-    FILENAME=$(basename -- "$file")
-    EXTENSION="${FILENAME##*.}"
-    FILENAME="${FILENAME%.*}"
-    echo "${DIRNAME}/${FILENAME}"
+    FILENAME=$(basename -- "$file") # strip directory and suffix
+    EXTENSION="${FILENAME##*.}" # get suffix
+    FILENAME="${FILENAME%.*}" # strip suffix
+    echo "${DIRNAME}/${FILENAME}" # output file name without suffix
 done
     ]))
 
