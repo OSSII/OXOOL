@@ -276,7 +276,9 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 			this._update();
 			var partMatch = textMsg.match(/[^\r\n]+/g);
 			// only get the last matches
-			this._partHashes = partMatch.slice(partMatch.length - this._parts);
+			var newPartHashes = partMatch.slice(partMatch.length - this._parts);
+			var refreshAnnotation = this._partHashes && (this._partHashes.length !== newPartHashes.length || !this._partHashes.every(function(element,i) { return element === newPartHashes[i]; }));
+			this._partHashes = newPartHashes;
 			this._hiddenSlides = new Set(command.hiddenparts);
 			this._map.fire('updateparts', {
 				selectedPart: this._selectedPart,
@@ -285,6 +287,8 @@ L.ImpressTileLayer = L.CanvasTileLayer.extend({
 				docType: this._docType,
 				partNames: this._partHashes
 			});
+			if (refreshAnnotation)
+				app.socket.sendMessage('commandvalues command=.uno:ViewAnnotations');
 		}
 
 		if (app.file.fileBasedView)
