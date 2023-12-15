@@ -17,7 +17,7 @@ Vendor:         @VENDOR@
 Summary:        @APP_NAME@ WebSocket Daemon.
 License:        MPL
 Source0:        @OXOOLWSD_DIST_NAME@.tar.gz
-BuildRequires:  libcap-devel libpng-devel pam-devel gcc-c++ cppunit-devel make
+BuildRequires:  libcap-devel pam-devel cppunit-devel nodejs rsync
 BuildRequires:  poco-devel >= 1.7.5
 BuildRequires:  libgit2-devel
 
