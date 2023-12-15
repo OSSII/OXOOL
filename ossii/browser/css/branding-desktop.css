@@ -1,3 +1,14 @@
+/* Document logo */
+body #document-header .document-logo {
+	background-image: url('images/res/logo_inverted.svg') !important;
+	background-repeat: no-repeat !important;
+	background-size: contain !important;
+	background-position: center !important;
+	width: 128px !important;
+	height: 128px !important;
+	margin-left: 8px !important;
+}
+
 /* About dialog */
 #integrator-logo {
 	flex-grow: 1 !important;
