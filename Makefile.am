@@ -78,18 +78,14 @@ if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS} ${FONTCONFIG_LIBS}
-
-if ENABLE_DEBUG
-AM_LDFLAGS += -Wl,-E,-rpath,"@abs_top_builddir@/ossii/src/lib/.libs"
-endif
+AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS} ${FONTCONFIG_LIBS} ${OSSII_LIBS}
 
 # Clang's linker doesn't like -pthread.
 if !HAVE_CLANG
 AM_LDFLAGS += -pthread
 endif
 
-OSSII_LIBS = ossii/src/lib/@LIB_NAME@.la
+#OSSII_LIBS = ossii/src/lib/@LIB_NAME@.la
 
 if ENABLE_SSL
 AM_LDFLAGS += ${OPENSSL_LIBS}

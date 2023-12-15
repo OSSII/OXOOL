@@ -5,11 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-include_paths = -I$(top_srcdir)/ossii/src/include \
-		-I$(top_srcdir)/common \
-		-I$(top_srcdir)/net \
-		-I$(top_srcdir)/wsd
-
 configdir = @OXOOLWSD_MODULE_CONFIG_DIR@
 dist_config_DATA = Alive.xml
 
@@ -17,7 +12,7 @@ dist_config_DATA = Alive.xml
 moduledir = @OXOOLWSD_MODULE_DIR@
 module_LTLIBRARIES = alive.la
 
-alive_la_CPPFLAGS = -pthread ${include_paths}
+alive_la_CPPFLAGS = -pthread $(OSSII_CFLAGS)
 
 alive_la_LDFLAGS = -avoid-version -module
 

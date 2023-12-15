@@ -5,17 +5,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-include_paths = -I$(top_srcdir)/ossii/src/include \
-                -I$(top_srcdir)/common \
-                -I$(top_srcdir)/net \
-                -I$(top_srcdir)/wsd
-
 bin_PROGRAMS = @PACKAGE_NAME@-xml-config
 
-@PACKAGE_NAME@_xml_config_CPPFLAGS = -pthread \
-			      ${include_paths}
+@PACKAGE_NAME@_xml_config_CPPFLAGS = -pthread $(OSSII_CFLAGS)
 
-@PACKAGE_NAME@_xml_config_LDADD = ../lib/@LIB_NAME@.la
+@PACKAGE_NAME@_xml_config_LDFLAGS = $(OSSII_LIBS)
+
 @PACKAGE_NAME@_xml_config_SOURCES = XmlConfig.cpp
 
 # vim: set noet sw=4 ts=4:

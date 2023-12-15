@@ -5,27 +5,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-include_paths = -I${top_srcdir}/common \
-                -I${top_srcdir}/net \
-                -I${top_srcdir}/wsd \
-                -I${top_srcdir}/kit \
-                -I${top_srcdir}/ossii/src/include
-
-if ENABLE_SSL
-include_paths += ${OPENSSL_CFLAGS}
-endif
 
 AM_CPPFLAGS = -pthread -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
 	      -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
-	      -DDEBUG_ABSSRCDIR='"@abs_srcdir@"' \
-	      ${include_paths} \
-          ${ZLIB_CFLAGS} ${ZSTD_CFLAGS} ${PNG_CFLAGS} ${FONTCONFIG_CFLAGS}
+	      -DDEBUG_ABSSRCDIR='"@abs_top_builddir@"' \
+          $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) $(FONTCONFIG_CFLAGS) \
+		  $(OSSII_CFLAGS)
+
+if ENABLE_SSL
+AM_CPPFLAGS += $(OPENSSL_CFLAGS)
+endif
 
 if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS} ${FONTCONFIG_LIBS}
+AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) $(PNG_LIBS) $(FONTCONFIG_LIBS)
 
 # Clang's linker doesn't like -pthread.
 if !HAVE_CLANG
@@ -35,8 +30,6 @@ endif
 if ENABLE_SSL
 AM_LDFLAGS += ${OPENSSL_LIBS}
 endif
-
-lib_LTLIBRARIES = lib@LIB_LINK_NAME@.la
 
 shared_sources = $(top_srcdir)/common/FileUtil.cpp \
                  $(top_srcdir)/common/JailUtil.cpp \
@@ -98,6 +91,7 @@ oxoolcore_sources = \
                     OxOOL/Util/OptionlValidator.cpp \
                     OxOOL/Util/FileValidator.cpp
 
-lib@LIB_LINK_NAME@_la_SOURCES = $(shared_sources) $(oxoolwsd_sources) $(oxoolcore_sources)
+lib_LTLIBRARIES = lib@OSSII_LIB_NAME@.la
+lib@OSSII_LIB_NAME@_la_SOURCES = $(shared_sources) $(oxoolwsd_sources) $(oxoolcore_sources)
 
 # vim: set noet sw=4 ts=4:

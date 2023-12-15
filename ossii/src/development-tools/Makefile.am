@@ -11,19 +11,14 @@ else
 MODULE_TEMPLATE_DIR = ${datarootdir}/@PACKAGE_NAME@-devel/module-template
 endif
 
-include_paths = -I$(top_srcdir)/ossii/src/include \
-                -I$(top_srcdir)/common \
-                -I$(top_srcdir)/net \
-                -I$(top_srcdir)/wsd
-
 bin_PROGRAMS = @PACKAGE_NAME@-module-maker
 
 @PACKAGE_NAME@_module_maker_CPPFLAGS = -pthread \
 			      -DMODULE_TEMPLATE_DIR='"${MODULE_TEMPLATE_DIR}"' \
-			      ${include_paths} \
+			      $(OSSII_CFLAGS) \
 			      $(GIT2_CFLAGS)
 
-@PACKAGE_NAME@_module_maker_LDADD = $(GIT2_LIBS) $(top_srcdir)/ossii/src/lib/@LIB_NAME@.la
+@PACKAGE_NAME@_module_maker_LDFLAGS = $(GIT2_LIBS) $(OSSII_LIBS)
 @PACKAGE_NAME@_module_maker_SOURCES = ModuleMaker.cpp
 
 EXTRA_DIST = module-template

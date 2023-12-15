@@ -13,8 +13,6 @@ m4_define([package_VERSION], [5.0.0])
 m4_define([bug_REPORT], [https://github.com/OSSII/oxool-community/issues])
 # Package URL(Homepage)
 m4_define([package_URL], [https://www.ossii.com.tw/online])
-# Core Office name.
-+m4_define([core_OFFICE], [oxoffice])
 
 AC_INIT([package_NAME], [package_VERSION], [bug_REPORT], [package_NAME], [package_URL])
 LT_INIT([shared, disable-static, dlopen])
@@ -26,7 +24,8 @@ AC_CONFIG_MACRO_DIR([m4])
 # We don't want to require pkg-config and PKG_CHECK_MODULES on macOS
 m4_if(m4_esyscmd_s([uname -s]),Darwin,[m4_define([PKG_CHECK_MODULES],[])],[])
 
-AC_SUBST([CORE_OFFICE], m4_defn([core_OFFICE]))
+ossii_INIT
+
 OXOOLWSD_VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
 OXOOLWSD_VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
 OXOOLWSD_VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
@@ -85,14 +84,6 @@ AM_CONDITIONAL([CUSTOM_PACKAGE], [$CUSTOM_PACKAGE])
 AC_SUBST([CUSTOM_PACKAGE])
 
 
-AC_ARG_WITH([product-name],
-    AS_HELP_STRING([--with-product-name='My Online Editor'], [Set product name (default: "OxOffice Online")]),
-    [PRODUCTNAME="$withval"],
-    [PRODUCTNAME="OxOffice Online"])
-AC_SUBST([PRODUCTNAME])
-
-WSD_NAME="wsd_NAME"
-AC_SUBST([WSD_NAME])
 LIB_LINK_NAME="OxOOL"
 AC_SUBST([LIB_LINK_NAME])
 LIB_NAME="lib${LIB_LINK_NAME}"
@@ -540,25 +531,14 @@ if test "$enable_debug" = "yes"; then
     else
       AC_MSG_RESULT([no (to enable --enable-logging-test-asserts)])
     fi
-
-    modules_dir="`pwd`/ossii/src/modules"
-    OXOOLWSD_MODULE_DIR="${modules_dir}"
-    OXOOLWSD_MODULE_CONFIG_DIR="${modules_dir}"
-    OXOOLWSD_MODULE_DATA_DIR="${modules_dir}"
 else
     AC_MSG_RESULT([no (Release build)])
     AC_DEFINE([ENABLE_DEBUG],0,[Whether to compile in some extra debugging support code and disable some security pieces])
-    OXOOLWSD_MODULE_DIR=${libdir}/${PACKAGE}
-    OXOOLWSD_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
-    OXOOLWSD_MODULE_DATA_DIR=${prefix}/share/${PACKAGE}/modules
 fi
 AC_SUBST(ENABLE_DEBUG)
 AC_SUBST(ENABLE_BUNDLE)
 AC_SUBST(OXOOLWSD_LOGLEVEL)
 AC_SUBST(OXOOLWSD_LOG_TO_FILE)
-AC_SUBST(OXOOLWSD_MODULE_DIR)
-AC_SUBST(OXOOLWSD_MODULE_CONFIG_DIR)
-AC_SUBST(OXOOLWSD_MODULE_DATA_DIR)
 AC_SUBST(BROWSER_LOGGING)
 
 if test "$enable_debug_protocol" = no; then
@@ -883,9 +863,6 @@ if test "$enable_iosapp" = yes -a -z "$with_vendor"; then
     AC_MSG_ERROR([You must use --with-vendor when configuring for the iOS app])
 fi
 if test -z "$with_vendor" -o "$with_vendor" = "no"; then
-    # 未設定供應商時，預設為 OSS Integral Institute Co., Ltd
-    VENDOR="OSS Integral Institute Co., Ltd"
-
     if test -z "$VENDOR"; then
         VENDOR="$USER"
     fi
@@ -1793,40 +1770,7 @@ AM_SUBST_NOTMAKE(FEATURE_RESTRICTION_CONFIGURATION)
 AC_MSG_RESULT([$ALLOWED_LANGUAGES])
 AC_SUBST(ALLOWED_LANGUAGES)
 
-AC_CONFIG_FILES([
-    ${WSD_NAME}.xml:online.xml.in
-    ${WSD_NAME}.service:online.service.in
-    ${PACKAGE}.spec:online.spec.in
-    ${PACKAGE}kitconfig.xcu:onlinekitconfig.xcu.in
-    ${WSD_NAME}-systemplate-setup:online-systemplate-setup.in
-    debian/${PACKAGE}.service:online.service.in
-    debian/${PACKAGE}.preinst:ossii/debian-template/online.preinst
-    debian/${PACKAGE}.postinst:ossii/debian-template/online.postinst
-    debian/${PACKAGE}.postrm:ossii/debian-template/online.postrm
-    debian/${PACKAGE}.install:ossii/debian-template/online.install
-    debian/${PACKAGE}-dev.install:ossii/debian-template/online-dev.install
-    ])
-AC_CONFIG_FILES([ossii/debian-template/control], [cp ossii/debian-template/control debian/])
-AC_CONFIG_FILES([ossii/debian-template/copyright], [cp ossii/debian-template/copyright debian/])
-AC_CONFIG_FILES([ossii/debian-template/rules], [cp ossii/debian-template/rules debian/])
-
-# The ossii directory is the OxOOL common object and development kit,
-# Search all Makefile.am and *.in files under it,
-# Avoid recording one by one.
-AC_CONFIG_FILES(m4_esyscmd_s([
-find ossii/ ! -path "ossii/src/development-tools/module-template/*" \
-    -type f -name "Makefile.am" \
-    -or -name "online.pc.in" \
-    -or -name "OxOOL.h.in" |
-while read file
-do
-    DIRNAME=`dirname "$file"`
-    FILENAME=$(basename -- "$file") # strip directory and suffix
-    EXTENSION="${FILENAME##*.}" # get suffix
-    FILENAME="${FILENAME%.*}" # strip suffix
-    echo "${DIRNAME}/${FILENAME}" # output file name without suffix
-done
-    ]))
+ossii_CONFIG_VARS
 
 AC_CONFIG_FILES([Makefile
                  cypress_test/Makefile
@@ -1854,10 +1798,9 @@ AC_CONFIG_FILES([test/run_unit.sh],[chmod +x test/run_unit.sh])
 AC_CONFIG_FILES([test/run_unit_standalone.sh],[chmod +x test/run_unit_standalone.sh])
 AC_CONFIG_FILES([jsstress],[chmod +x jsstress])
 
-AC_OUTPUT
+ossii_CONFIG_FILES
 
-# Generate the systemplate setup script
-chmod +x ${WSD_NAME}-systemplate-setup
+AC_OUTPUT
 
 AC_LANG_POP
 
@@ -1953,5 +1896,7 @@ echo "    \$ make run # to start ${WSD_NAME}
 "
 fi
       ])
+
+ossii_POST_INIT
 
 dnl vim:set shiftwidth=4 softtabstop=4 expandtab:
