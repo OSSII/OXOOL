@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-%define config_options --with-product-name="@PRODUCTNAME@" --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
+%define config_options --disable-debug --enable-ssl -with-max-documents=10240 --with-max-connections=10240
 %define loroot /opt/@CORE_OFFICE@
 %define HAVE_DEVEL 1
 
@@ -14,7 +14,7 @@ Name:           @PACKAGE@
 Version:        @VERSION@
 Release:        @OXOOLWSD_DIST_RELEASE@%{?dist}
 Vendor:         @VENDOR@
-Summary:        @PRODUCTNAME@ WebSocket Daemon.
+Summary:        @APP_NAME@ WebSocket Daemon.
 License:        MPL
 Source0:        @OXOOLWSD_DIST_NAME@.tar.gz
 BuildRequires:  libcap-devel libpng-devel pam-devel gcc-c++ cppunit-devel make
@@ -40,12 +40,12 @@ Requires:       poco-crypto >= 1.7.5 poco-data >= 1.7.5 poco-encodings >= 1.7.5 
 
 %if 0%{HAVE_DEVEL}
 %package	devel
-Summary:	Files for build @PRODUCTNAME@ Editor.
+Summary:	Files for build @APP_NAME@ Editor.
 Requires:	%{name} = %{version}
 Requires:	poco-devel >= 1.7.5
 Requires:	libgit2
 %description	devel
-Files for build @PRODUCTNAME@ Editor.
+Files for build @APP_NAME@ Editor.
 %endif
 
 %prep
