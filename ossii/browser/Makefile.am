@@ -20,13 +20,6 @@ $(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
 	@$(MKDIR_P) $(dir $@)
 	@cp $< $@
 
-# 複製圖片檔案
-IMAGES_SRC = $(shell find $(srcdir)/images -name '*.*')
-IMAGES_DST = $(patsubst $(srcdir)/%,$(DIST_FOLDER)/%,$(IMAGES_SRC))
-$(DIST_FOLDER)/images/%: $(srcdir)/images/%
-	@$(MKDIR_P) $(dir $@)
-	@cp $< $@
-
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
 	js/control/Permission.Extensions.js \
@@ -102,9 +95,6 @@ clean-local:
 	$(RM) -f $(DIST_FOLDER)/branding.js
 	$(RM) -f $(DIST_FOLDER)/branding*.css
 	$(RM) -rf $(DIST_FOLDER)/uiconfig
-	$(RM) -rf $(DIST_FOLDER)/images/cmd
-	$(RM) -rf $(DIST_FOLDER)/images/extcursors
-	$(RM) -rf $(DIST_FOLDER)/images/res
 	$(RM) -rf $(BRANDING_DIR)
 
 EXTRA_DIST = $(shell find . -type f -not -path './.git/*' | sed 's/.\///')

@@ -30,5 +30,8 @@ AC_SUBST([OSSII_LIBS], ["${OSSII_LDFLAGS} `pwd`/ossii/src/lib/lib${OSSII_LIB_NAM
 
 AC_SUBST([VENDOR], [ossii_VENDOR])
 
+# This is used by the ossii browser to load custom icons.
+AC_SUBST([CUSTOM_ICONS_DIRECTORY], ["`pwd`/ossii/browser/images"])
+
 ])
 dnl vim:set shiftwidth=4 softtabstop=4 expandtab:
