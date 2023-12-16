@@ -150,21 +150,7 @@ AS_IF([test `uname -s` = Linux -a "$host_os" != "emscripten"],
        AS_IF([test -z "$SETCAP"],
        [AC_MSG_ERROR([The setcap command is needed. It might be in a package called libcap-progs.])]))
 
-#-----------------------------------------------------------------------
-# Check for fontconfig support
-#-----------------------------------------------------------------------
-PKG_CHECK_MODULES(FONTCONFIG, fontconfig >= 2.12.6, use_fontconfig="yes", use_fontconfig="no")
-if test "$use_fontconfig" = "no" ; then
-    AC_MSG_ERROR([Need fontconfig, but not found or version too old.])
-fi
-
-#-----------------------------------------------------------------------
-# Check for libgit2 support
-#-----------------------------------------------------------------------
-PKG_CHECK_MODULES(GIT2, libgit2, use_git2="yes", use_git2="no")
-if test "$use_git2" = "no" ; then
-    AC_MSG_ERROR([Requires the libgit2 development kit.])
-fi
+ossii_DEP_LIBS
 
 # check for python modules
 for MODULE in lxml polib; do
