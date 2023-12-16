@@ -75,20 +75,6 @@ AC_DEFINE_UNQUOTED([OXOOLWSD_VERSION_HASH],[["$OXOOLWSD_VERSION_HASH"]],[OxOffic
 
 AC_CONFIG_SRCDIR([wsd/OXOOLWSD.cpp])
 
-# 如果 PACKAGE 不是 oxool，則 Custom package = true，否則 Custom package = false
-CUSTOM_PACKAGE=false
-if test "$PACKAGE" != "oxool"; then
-    CUSTOM_PACKAGE=true
-fi
-AM_CONDITIONAL([CUSTOM_PACKAGE], [$CUSTOM_PACKAGE])
-AC_SUBST([CUSTOM_PACKAGE])
-
-
-LIB_LINK_NAME="OxOOL"
-AC_SUBST([LIB_LINK_NAME])
-LIB_NAME="lib${LIB_LINK_NAME}"
-AC_SUBST([LIB_NAME])
-
 # OXOOLWSD_BRANCH 是 git branch name
 OXOOLWSD_BRANCH=`git rev-parse --abbrev-ref HEAD | cut -d '-' -f 1`
 # 如果執行錯誤，則查看 dist_git_branch 檔案是否存在，如果存在，則從檔案取得
