@@ -590,6 +590,14 @@ compile_commands: $(abs_srcdir)/compile_commands.json
 browser/node_modules: browser/package.json browser/archived-packages
 	@cd browser && npm install
 
+eslint: browser/node_modules
+	browser/node_modules/.bin/eslint browser/src browser/js browser/admin/src \
+		--max-warnings 0 \
+		--resolve-plugins-relative-to browser \
+		--ignore-path browser/.eslintignore \
+		--no-eslintrc \
+		--config browser/.eslintrc
+
 stress_file=$(abs_top_srcdir)/test/data/hello-world.odt
 trace_dir=$(abs_top_srcdir)/test/traces
 stress:
@@ -625,7 +633,7 @@ check-for-system-nss:
 		fi \
 	fi
 
-check: check-for-system-nss check-recursive
+check: check-for-system-nss check-recursive eslint
 	$(GEN_COVERAGE_COMMAND)
 
 coverage-report:
