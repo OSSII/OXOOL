@@ -306,6 +306,17 @@ void OXOOLWSD::appendAllowedHostsFrom(LayeredConfiguration& conf, const std::str
     }
 }
 
+namespace {
+std::string removeProtocol(const std::string& host)
+{
+    size_t nPos = host.find("//");
+    if (nPos != std::string::npos)
+        return host.substr(nPos + 2);
+
+    return host;
+}
+}
+
 void OXOOLWSD::appendAllowedAliasGroups(LayeredConfiguration& conf, std::vector<std::string>& allowed)
 {
     for (size_t i = 0;; i++)
@@ -316,7 +327,7 @@ void OXOOLWSD::appendAllowedAliasGroups(LayeredConfiguration& conf, std::vector<
             break;
         }
 
-        const std::string host = conf.getString(path + ".host", "");
+        std::string host = conf.getString(path + ".host", "");
         bool allow = conf.getBool(path + ".host[@allow]", false);
         if (!allow)
         {
@@ -325,6 +336,7 @@ void OXOOLWSD::appendAllowedAliasGroups(LayeredConfiguration& conf, std::vector<
 
         if (!host.empty())
         {
+            host = removeProtocol(host);
             LOG_INF_S("Adding trusted LOK_ALLOW host: [" << host << ']');
             allowed.push_back(host);
         }
@@ -337,10 +349,11 @@ void OXOOLWSD::appendAllowedAliasGroups(LayeredConfiguration& conf, std::vector<
                 break;
             }
 
-            const std::string alias = getConfigValue<std::string>(conf, aliasPath, "");
+            std::string alias = getConfigValue<std::string>(conf, aliasPath, "");
 
             if (!aliasPath.empty())
             {
+                alias = removeProtocol(alias);
                 LOG_INF_S("Adding trusted LOK_ALLOW alias: [" << alias << ']');
                 allowed.push_back(alias);
             }
