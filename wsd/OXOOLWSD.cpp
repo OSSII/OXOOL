@@ -2723,6 +2723,7 @@ void OXOOLWSD::innerInitialize(Application& self)
     if (getConfigValue<bool>(conf, "quarantine_files[@enable]", false))
     {
         std::string path = Util::trimmed(getPathFromConfig("quarantine_files.path"));
+        LOG_INF("Quarantine path is set to [" << path << "] in config");
         if (path.empty())
         {
             LOG_WRN("Quarantining is enabled via quarantine_files config, but no path is set in "
@@ -2732,6 +2733,10 @@ void OXOOLWSD::innerInitialize(Application& self)
         {
             if (path[path.size() - 1] != '/')
                 path += '/';
+
+            if (path[0] != '/')
+                LOG_WRN("Quarantine path is relative. Please use an absolute path for better "
+                        "reliability");
 
             Poco::File p(path);
             try
@@ -2753,6 +2758,10 @@ void OXOOLWSD::innerInitialize(Application& self)
                 Quarantine::initialize(path);
             }
         }
+    }
+    else
+    {
+        LOG_INF("Quarantine is disabled in config");
     }
 
     NumPreSpawnedChildren = getConfigValue<int>(conf, "num_prespawn_children", 1);
