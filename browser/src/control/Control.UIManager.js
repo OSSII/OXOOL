@@ -23,7 +23,6 @@ L.Control.UIManager = L.Control.extend({
 	customButtons: [], // added by WOPI InsertButton
 	hiddenButtons: {},
 	hiddenCommands: {},
-	previousTheme: null,
 
 	onAdd: function (map) {
 		this.map = map;
@@ -119,13 +118,11 @@ L.Control.UIManager = L.Control.extend({
 		var selectedMode = this.getDarkModeState();
 		// swap them by invoking the appropriate load function and saving the state
 		if (selectedMode) {
-			this.previousTheme = 'Dark';
 			this.setSavedState('darkTheme',false);
 			this.loadLightMode();
 			this.activateDarkModeInCore(false);
 		}
 		else {
-			this.previousTheme = 'Light';
 			this.setSavedState('darkTheme',true);
 			this.loadDarkMode();
 			this.activateDarkModeInCore(true);
@@ -145,11 +142,9 @@ L.Control.UIManager = L.Control.extend({
 		}
 
 		if (selectedMode) {
-			this.previousTheme = 'Dark';
 			this.loadDarkMode();
 		}
 		else {
-			this.previousTheme = 'Light';
 			this.loadLightMode();
 		}
 		this.activateDarkModeInCore(selectedMode);
