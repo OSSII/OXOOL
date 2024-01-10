@@ -1660,8 +1660,10 @@ bool ChildSession::readOnlyClickEvent(const StringVector& tokens)
     if (tokens.size() != 3)
         return false;
 
-    const int x = Util::safe_atoi(tokens[1].data(), tokens[1].size());
-    const int y = Util::safe_atoi(tokens[2].data(), tokens[2].size());
+    const std::string strX = Util::replace(tokens[1], "x=", "");
+    const std::string strY = Util::replace(tokens[2], "y=", "");
+    const int x = Util::safe_atoi(strX.data(), strX.size());
+    const int y = Util::safe_atoi(strY.data(), strY.size());
     char* test = getLOKitDocument()->hyperlinkInfoAtPosition(x, y);
 
     if (test != nullptr)
@@ -1672,8 +1674,8 @@ bool ChildSession::readOnlyClickEvent(const StringVector& tokens)
         if (!result.empty() && x != 0 && y != 0)
         {
             std::ostringstream message;
-            message << "readonlyhyperlinkclicked: { \"link\": \"" << result << "\""
-                    << " \"position\": { \"x\": " << x << ", \"y\": " << y << " }";
+            message << "readonlyhyperlinkclicked: { \"link\": \"" << result << "\","
+                    << " \"position\": { \"x\": " << x << ", \"y\": " << y << " } }";
 
             sendTextFrame(message.str());
         }
