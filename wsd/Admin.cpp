@@ -549,7 +549,15 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
         OXOOLProtocol::getTokenString(tokens[1], "jwt", jwtToken);
         OXOOLProtocol::getTokenString(tokens[2], "id", id);
 
-        jwtToken = Util::decodeURIComponent(jwtToken);
+        try
+        {
+            jwtToken = Util::decodeURIComponent(jwtToken);
+        }
+        catch (const Poco::URISyntaxException& exception)
+        {
+            LOG_DBG("Invalid URI syntax: " << exception.what());
+        }
+
         LOG_INF("Verifying JWT token: " << jwtToken);
         JWTAuth authAgent("admin", "admin", "admin");
         if (authAgent.verify(jwtToken))
