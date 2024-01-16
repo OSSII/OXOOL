@@ -5845,6 +5845,8 @@ public:
 
         // If we have any delaying work going on.
         Delay::dumpState(os);
+
+        OXOOLWSD::SavedClipboards->dumpState(os);
 #endif
 
         os << "Document Broker polls "
@@ -6290,6 +6292,8 @@ int OXOOLWSD::innerMain()
         }
 
 #if !MOBILEAPP
+        SavedClipboards->checkexpiry();
+
         const std::chrono::milliseconds durationFetch
             = std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - stampFetch);
         if (fetchUpdateCheck > std::chrono::milliseconds::zero() && durationFetch > fetchUpdateCheck)
