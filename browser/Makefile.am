@@ -778,6 +778,7 @@ pot:
 		src/map/handler/Map.Feedback.js \
 		src/map/handler/Map.FileInserter.js \
 		src/map/handler/Map.Keyboard.js \
+		src/map/handler/Map.SlideShow.js \
 		src/map/handler/Map.WOPI.js
 
 	html2po --pot --input=html/oxool-help.html --output=po/templates/oxool-help.pot --duplicates=merge
