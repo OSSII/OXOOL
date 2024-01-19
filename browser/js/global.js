@@ -1113,9 +1113,9 @@ window.app = {
 		}
 	}
 
-	var lang = encodeURIComponent(global.oxoolParams.get('lang'));
+	var lang = global.oxoolParams.get('lang');
 	if (lang)
-		global.langParam = lang;
+		global.langParam = encodeURIComponent(lang);
 	else
 		global.langParam = 'en-US';
 	global.langParamLocale = new Intl.Locale(global.langParam);
