@@ -1113,6 +1113,21 @@ window.app = {
 		}
 	}
 
+	var isRandomUser = global.oxoolParams.get('randomUser');
+	if (isRandomUser) {
+		// List of languages supported in core
+		var randomUserLangs = [
+			'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en-US',
+			'en-GB', 'eo', 'es', 'eu', 'fi', 'fr', 'gl', 'he',
+			'hr', 'hu', 'id', 'is', 'it', 'ja', 'ko', 'lo',
+			'nb', 'nl', 'oc', 'pl', 'pt', 'pt-BR', 'sq', 'ru',
+			'sk', 'sl', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW'];
+		var randomUserLang = randomUserLangs[Math.floor(Math.random() * randomUserLangs.length)];
+		window.app.console.log('Randomize Settings: Set language to: ',randomUserLang);
+		global.oxoolParams.set('lang', randomUserLang);
+		global.oxoolParams.set('debug',true);
+	}
+
 	var lang = global.oxoolParams.get('lang');
 	if (lang)
 		global.langParam = encodeURIComponent(lang);
