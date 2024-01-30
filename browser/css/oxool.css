@@ -506,6 +506,10 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	max-width: 250px;
 }
 
+.oxool-annotation.greyed {
+	opacity: 0.5;
+}
+
 .oxool-annotation > .modalpopup {
 	max-height: initial !important;
 }
