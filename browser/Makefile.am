@@ -541,7 +541,7 @@ $(INTERMEDIATE_DIR)/admin-src.js: $(OXOOL_ADMIN_JS)
 	@$(NODE) node_modules/eslint/bin/eslint.js --resolve-plugins-relative-to $(abs_builddir) --ignore-path $(srcdir)/.eslintignore --config $(srcdir)/.eslintrc --no-eslintrc $(srcdir)/admin/src
 	@awk 'FNR == 1 {print ""} 1' $(OXOOL_ADMIN_TS_JS) $(patsubst %.js,$(srcdir)/%.js,$(OXOOL_ADMIN_JS)) > $@
 
-$(INTERMEDIATE_DIR)/loleaflet-src.js: tscompile.done $(call prereq_oxool) $(OXOOL_JS_DST)
+$(INTERMEDIATE_DIR)/loleaflet-src.js: tscompile.done $(call prereq_oxool) $(OXOOL_JS_DST) $(abs_top_srcdir)/scripts/unocommands.py
 	@mkdir -p $(dir $@)
 	@printf "Checking for obsolete JS build intermediates in this makefile... "
 	@if ! test "z$(OXOOL_ASSERT_INTERSECT)" == "z"; then echo; echo "Error: please remove obsolete files:"; echo "$(OXOOL_ASSERT_INTERSECT)"; exit 1; else echo "clean"; fi
