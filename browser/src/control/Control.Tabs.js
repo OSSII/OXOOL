@@ -65,6 +65,10 @@ L.Control.Tabs = L.Control.extend({
 			'.uno:Name': {name: _UNO('.uno:RenameTable', 'spreadsheet', true),
 				callback: (this._renameSheet).bind(this)
 			},
+			'.uno:Protect': {
+				name: _UNO('.uno:Protect', 'spreadsheet', true),
+				callback: (this._protectSheet).bind(this),
+			},
 			'.uno:Show': {
 				name: _UNO('.uno:Show', 'spreadsheet', true),
 				callback: (this._showSheet).bind(this),
@@ -282,16 +286,21 @@ L.Control.Tabs = L.Control.extend({
 		}
 	},
 
-	_setPart: function (e) {
+	// Set the part by index. Return true if cancelled.
+	_setPartIndex: function(index) {
 		if (oxool.Comment.isAnyEdit()) {
 			oxool.CommentSection.showCommentEditingWarning();
-			return;
+			return true;
 		}
 
+		this._map._docLayer._clearReferences();
+		this._map.setPart(index, /*external:*/ false, /*calledFromSetPartHandler:*/ true);
+	},
+
+	_setPart: function (e) {
 		var part =  e.target.id.match(/\d+/g)[0];
 		if (part !== null) {
-			this._map._docLayer._clearReferences();
-			this._map.setPart(parseInt(part), /*external:*/ false, /*calledFromSetPartHandler:*/ true);
+			this._setPartIndex(parseInt(part));
 		}
 	},
 
@@ -359,6 +368,14 @@ L.Control.Tabs = L.Control.extend({
 			function (value) {
 				map.renamePage(value, nPos);
 			});
+	},
+
+	// Trigger sheet protection. It seems that it does it for the current sheet
+	// so we select it first.
+	_protectSheet: function() {
+		if (!this._setPartIndex(this._tabForContextMenu)) {
+			this._map.sendUnoCommand('.uno:Protect');
+		}
 	},
 
 	_showSheet: function() {
