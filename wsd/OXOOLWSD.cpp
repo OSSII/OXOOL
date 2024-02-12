@@ -2834,6 +2834,9 @@ void OXOOLWSD::innerInitialize(Application& self)
 
     // Otherwise we profile the soft-device at jail creation time.
     setenv("SAL_DISABLE_OPENCL", "true", 1);
+    // Disable getting the OS print queue and default printer
+    setenv("SAL_DISABLE_PRINTERLIST", "true", 1);
+    setenv("SAL_DISABLE_DEFAULTPRINTER", "true", 1);
 
     // Log the connection and document limits.
 #if ENABLE_WELCOME_MESSAGE
