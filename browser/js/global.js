@@ -80,7 +80,19 @@ window.app = {
 
 	global.setLogging(global.oxoolLogging != '');
 
-	global.oxoolParams = new URLSearchParams(global.location.search);
+	var oxoolParams = {
+		p: new URLSearchParams(global.location.search),
+	};
+	/* We need to return an empty string instead of `null` */
+	oxoolParams.get = function(name) {
+		var value = this.p.get(name);
+		return value === null ? '' : value;
+	}.bind(oxoolParams);
+	oxoolParams.set = function(name) {
+		this.p.set(name);
+	}.bind(oxoolParams);
+	global.oxoolParams = oxoolParams;
+
 	var ua = navigator.userAgent.toLowerCase(),
 	    uv = navigator.vendor.toLowerCase(),
 	    doc = document.documentElement,
