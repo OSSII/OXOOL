@@ -506,8 +506,12 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	width: 250px;
 }
 
-.oxool-annotation.greyed {
+.oxool-annotation.tracked-deteled-comment-show {
 	opacity: 0.5;
+}
+
+.oxool-annotation.tracked-deteled-comment-hide {
+	display: none;
 }
 
 .oxool-annotation > .modalpopup {
