@@ -506,11 +506,11 @@ nav.spreadsheet-color-indicator ~ #sidebar-dock-wrapper {
 	width: 250px;
 }
 
-.oxool-annotation.tracked-deteled-comment-show {
+.oxool-annotation.tracked-deleted-comment-show {
 	opacity: 0.5;
 }
 
-.oxool-annotation.tracked-deteled-comment-hide {
+.oxool-annotation.tracked-deleted-comment-hide {
 	display: none;
 }
 
