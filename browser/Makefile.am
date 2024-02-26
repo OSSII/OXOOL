@@ -721,6 +721,7 @@ pot:
 		admin/admin.strings.js \
 		admin/src/*.js \
 		admin/js/admin.menu.js \
+		js/global.js \
 		js/w2ui-1.5.rc1.js \
 		src/control/ColorPicker.js \
 		src/control/Control.AlertDialog.js \
