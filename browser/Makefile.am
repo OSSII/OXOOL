@@ -179,8 +179,7 @@ OXOOL_LIBS_JS +=\
 endif
 
 OXOOL_LIBS_JS +=\
-	w2ui-1.5.rc1.js \
-	viamapi-client.js
+	w2ui-1.5.rc1.js
 
 NODE_MODULES_JS_SRC = $(patsubst %.js,$(builddir)/%.js,$(NODE_MODULES_JS))
 NODE_MODULES_JS_DST = $(patsubst %.js,$(DIST_FOLDER)/%.js,$(NODE_MODULES_JS))
