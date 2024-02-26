@@ -99,6 +99,11 @@ waitForBrandingJsLoaded(function() {
 		map.addControl(L.Map.versionBar);
 
 	if (window.ThisIsTheEmscriptenApp) {
+		var docParamsString = $.param(docParams);
+		// The URL may already contain a query (e.g., 'http://server.tld/foo/wopi/files/bar?desktop=baz') - then just append more params
+		var docParamsPart = docParamsString ? (docURL.includes('?') ? '&' : '?') + docParamsString : '';
+		var encodedWOPI = encodeURIComponent(docURL + docParamsPart);
+
 		var Module = {
 			onRuntimeInitialized: function() {
 				map.loadDocument(global.socket);
@@ -111,8 +116,8 @@ waitForBrandingJsLoaded(function() {
 				if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
 				console.error(text);
 			},
-			arguments_: [docURL],
-			arguments: [docURL],
+			arguments_: [docURL, encodedWOPI, isWopi ? 'true' : 'false'],
+			arguments: [docURL, encodedWOPI, isWopi ? 'true' : 'false'],
 		};
 		createOnlineModule(Module);
 		app.HandleOXOOLMessage = Module['_handle_oxool_message'];
