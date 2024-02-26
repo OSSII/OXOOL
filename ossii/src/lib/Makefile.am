@@ -72,10 +72,12 @@ oxoolwsd_sources = $(top_srcdir)/common/Crypto.cpp \
                   $(top_srcdir)/wsd/FileServerUtil.cpp \
                   $(top_srcdir)/wsd/RequestDetails.cpp \
                   $(top_srcdir)/wsd/Storage.cpp \
+                  $(top_srcdir)/wsd/StorageConnectionManager.cpp \
                   $(top_srcdir)/wsd/HostUtil.cpp \
                   $(top_srcdir)/wsd/TileCache.cpp \
                   $(top_srcdir)/wsd/ProofKey.cpp \
-                  $(top_srcdir)/wsd/QuarantineUtil.cpp
+                  $(top_srcdir)/wsd/QuarantineUtil.cpp \
+                  $(top_srcdir)/wsd/WopiProxy.cpp
 
 oxoolcore_sources = \
                     OxOOL/Module/Base.cpp \

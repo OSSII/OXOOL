@@ -104,13 +104,14 @@ wsd_headers = \
     $(top_srcdir)/wsd/SenderQueue.hpp \
     $(top_srcdir)/wsd/ServerURL.hpp \
     $(top_srcdir)/wsd/Storage.hpp \
+    $(top_srcdir)/wsd/StorageConnectionManager.hpp \
     $(top_srcdir)/wsd/TileCache.hpp \
     $(top_srcdir)/wsd/TileDesc.hpp \
     $(top_srcdir)/wsd/TraceFile.hpp \
     $(top_srcdir)/wsd/UserMessages.hpp \
     $(top_srcdir)/wsd/QuarantineUtil.hpp \
-    $(top_srcdir)/wsd/HostUtil.hpp
-	$(top_srcdir)/wsd/HostUtil.hpp
+    $(top_srcdir)/wsd/HostUtil.hpp \
+	$(top_srcdir)/wsd/WopiProxy.hpp
 
 wsd_includedir = $(includedir)/OxOOL/wsd
 wsd_include_HEADERS = $(wsd_headers)
