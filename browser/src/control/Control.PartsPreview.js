@@ -3,7 +3,7 @@
  * L.Control.PartsPreview
  */
 
-/* global _ app $ Hammer w2ui _UNO cool */
+/* global _ app $ Hammer w2ui _UNO oxool */
 L.Control.PartsPreview = L.Control.extend({
 	options: {
 		fetchThumbnail: true,

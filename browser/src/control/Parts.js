@@ -3,7 +3,7 @@
  * Document parts switching and selecting handler
  */
 
-/* global app _ cool */
+/* global app _ oxool */
 
 L.Map.include({
 	setPart: function (part, external, calledFromSetPartHandler) {

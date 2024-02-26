@@ -9,7 +9,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 /* global errorMessages getParameterByName accessToken accessTokenTTL accessHeader createOnlineModule */
-/* global app L host idleTimeoutSecs outOfFocusTimeoutSecs _ */
+/* global app $ L host idleTimeoutSecs outOfFocusTimeoutSecs _ */
 /*eslint indent: [error, "tab", { "outerIIFEBody": 0 }]*/
 (function (global) {
 
