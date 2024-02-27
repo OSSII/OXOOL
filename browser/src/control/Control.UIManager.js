@@ -14,7 +14,7 @@
  *			 and allows to controll them (show/hide)
  */
 
-/* global app cool $ setupToolbar w2ui toolbarUpMobileItems _ Hammer JSDialog */
+/* global app oxool $ setupToolbar w2ui toolbarUpMobileItems _ Hammer JSDialog */
 L.Control.UIManager = L.Control.extend({
 	mobileWizard: null,
 	documentNameInput: null,
