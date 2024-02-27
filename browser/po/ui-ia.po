@@ -7,28 +7,26 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-27 17:03+0800\n"
-"PO-Revision-Date: 2022-05-04 14:13+0000\n"
-"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
-"Language-Team: Uzbek <https://hosted.weblate.org/projects/collabora-"
-"online/ui/uz/>\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Translate Toolkit 3.6.0\n"
 
 #: admin/admin.strings.js:113 admin/admin.strings.js:123
 msgid "Admin console"
-msgstr "Administrator terminali"
+msgstr ""
 
 #: admin/admin.strings.js:124 admin/js/admin.menu.js:5
 msgid "Overview"
-msgstr "Umumiy ko‘rinishi"
+msgstr ""
 
 #: admin/admin.strings.js:125 admin/js/admin.menu.js:10
 msgid "Analytics"
-msgstr "Tashxis"
+msgstr ""
 
 #: admin/admin.strings.js:126 admin/js/admin.menu.js:15
 msgid "Log"
@@ -76,7 +74,7 @@ msgstr ""
 
 #: admin/src/AdminSocketBase.js:68
 msgid "Connection error"
-msgstr "Ulanishda xatolik yuz berdi"
+msgstr ""
 
 #: admin/src/AdminSocketBase.js:75
 msgid "Try to reconnect..."
@@ -98,7 +96,7 @@ msgstr ""
 #: src/control/Control.JSDialogBuilder.js:1794
 #: src/control/Control.TopToolbar.js:529
 msgid "Style"
-msgstr "Uslub"
+msgstr ""
 
 #: admin/src/AdminSocketFontManager.js:16
 msgid "Color font"
@@ -176,7 +174,7 @@ msgstr ""
 #: src/core/Socket.js:1255 src/layer/tile/CommentListSection.ts:425
 #: src/layer/tile/CommentSection.ts:157 src/layer/tile/CommentSection.ts:160
 msgid "Cancel"
-msgstr "Bekor qilish"
+msgstr ""
 
 #: admin/src/AdminSocketGlobalFunction.js:26
 msgid ""
@@ -187,7 +185,7 @@ msgstr ""
 #: admin/src/AdminSocketGlobalFunction.js:28
 #: admin/src/AdminSocketGlobalFunction.js:51
 msgid "User name"
-msgstr "Foydalanuvchi nomi"
+msgstr ""
 
 #: admin/src/AdminSocketGlobalFunction.js:29
 #: admin/src/AdminSocketGlobalFunction.js:52
@@ -244,7 +242,7 @@ msgstr ""
 #: admin/src/AdminSocketLog.js:10 src/control/Control.JSDialogBuilder.js:577
 #: src/control/Control.StatusBar.js:336
 msgid "None"
-msgstr "Yo‘q"
+msgstr ""
 
 #: admin/src/AdminSocketLog.js:11
 msgid "Channel Filter:"
@@ -268,16 +266,15 @@ msgstr ""
 
 #: admin/src/AdminSocketOverview.js:12
 msgid "Users online"
-msgstr "Onlayn foydalanuvchilar"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:13
-#, fuzzy
 msgid "Documents opened"
-msgstr "Ochiq hujjatlar"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:14
 msgid "Memory consumed"
-msgstr "Sarflangan xotira"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:15
 msgid "Bytes sent"
@@ -301,15 +298,15 @@ msgstr ""
 
 #: admin/src/AdminSocketOverview.js:20
 msgid "PID"
-msgstr "PID"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:21
 msgid "Document"
-msgstr "Hujjat"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:22
 msgid "Elapsed time"
-msgstr "Sarflangan vaqt"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:23
 msgid "Idle time"
@@ -341,17 +338,15 @@ msgstr ""
 
 #: admin/src/AdminSocketOverview.js:253
 msgid "Are you sure you want to terminate this session?"
-msgstr "Bu seansni to‘xtatmoqchimisiz?"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:316
-#, fuzzy
 msgid "user(s)."
-msgstr "Foydalanuvchilar yo‘q"
+msgstr ""
 
 #: admin/src/AdminSocketOverview.js:368
-#, fuzzy
 msgid "document(s) open."
-msgstr "Ochiq hujjatlar"
+msgstr ""
 
 #: admin/src/AdminSocketSoftwareUpgrade.js:12
 msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
@@ -419,19 +414,19 @@ msgstr ""
 
 #: admin/src/Util.js:14
 msgid "kB"
-msgstr "kB"
+msgstr ""
 
 #: admin/src/Util.js:14
 msgid "MB"
-msgstr "MB"
+msgstr ""
 
 #: admin/src/Util.js:14
 msgid "GB"
-msgstr "GB"
+msgstr ""
 
 #: admin/src/Util.js:14
 msgid "TB"
-msgstr "TB"
+msgstr ""
 
 #: admin/src/Util.js:14
 msgid "PB"
@@ -455,15 +450,15 @@ msgstr ""
 
 #: admin/src/Util.js:43 admin/src/Util.js:45
 msgid " hrs"
-msgstr "soat"
+msgstr ""
 
 #: admin/src/Util.js:49 admin/src/Util.js:51
 msgid " mins"
-msgstr "daq"
+msgstr ""
 
 #: admin/src/Util.js:54
 msgid " s"
-msgstr "s"
+msgstr ""
 
 #: js/global.js:912
 msgid "Cluster is scaling, retrying..."
@@ -556,7 +551,7 @@ msgstr ""
 
 #: src/control/Control.ContextMenu.js:216
 msgid "Paste Special"
-msgstr "Maxsus qo‘yish"
+msgstr ""
 
 #: src/control/Control.DocumentNameInput.js:109
 msgid "Path"
@@ -565,16 +560,16 @@ msgstr ""
 #: src/control/Control.DocumentRepair.js:27
 #: src/control/Control.DocumentRepair.js:28
 msgid "Repair Document"
-msgstr "Hujjatni tuzatish"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:124
 #: src/control/Control.UserList.js:331
 msgid "You"
-msgstr "Siz"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:140
 msgid "Type"
-msgstr "Turi"
+msgstr ""
 
 #: src/control/Control.DocumentRepair.js:140
 msgid "What?"
@@ -650,9 +645,8 @@ msgstr ""
 
 #: src/control/Control.FormulaBarJSDialog.js:53
 #: src/control/Control.FormulaBarJSDialog.js:100
-#, fuzzy
 msgid "Function Wizard"
-msgstr "Funksiya"
+msgstr ""
 
 #: src/control/Control.FormulaBarJSDialog.js:65
 msgid "Formula"
@@ -661,27 +655,25 @@ msgstr ""
 #: src/control/Control.FormulaBarJSDialog.js:71
 #: src/control/Control.MobileTopBar.js:42
 msgid "Accept"
-msgstr "Qabul qilish"
+msgstr ""
 
 #: src/control/Control.IdleHandler.ts:29
-#, fuzzy
 msgid "Idle document - please click to reload and resume editing"
-msgstr "Nofaol hujjat - tahrirlashda davom etishuchun bosing"
+msgstr ""
 
 #: src/control/Control.IdleHandler.ts:31
-#, fuzzy
 msgid "Idle document - please tap to reload and resume editing"
-msgstr "Nofaol hujjat - tahrirlashda davom etishuchun bosing"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:169
 #: src/control/Control.StatusBar.js:334
 msgid "Sum"
-msgstr "Sum"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:170
 #: src/control/Control.StatusBar.js:329
 msgid "Average"
-msgstr "O‘rtacha"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:171
 msgid "Min"
@@ -694,7 +686,7 @@ msgstr ""
 #: src/control/Control.JSDialogBuilder.js:173
 #: src/control/Control.StatusBar.js:331
 msgid "Count"
-msgstr "Hisob"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:206
 #: src/control/Control.Menubar.js:677
@@ -751,20 +743,17 @@ msgid "Color"
 msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1736
-#, fuzzy
 msgid "Select range"
-msgstr "Kataklarning tanlangan oralig‘i"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1790
 #: src/control/Control.NotebookbarBuilder.js:241
-#, fuzzy
 msgid "Font Name"
-msgstr "Shrift"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:1792 src/control/Toolbar.js:123
-#, fuzzy
 msgid "Font Size"
-msgstr "Shrift"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:2061
 msgid "reply"
@@ -779,7 +768,7 @@ msgstr ""
 #: src/layer/tile/CanvasTileLayer.js:5965
 #: src/layer/tile/CommentListSection.ts:1018
 msgid "Comment"
-msgstr "Sharh"
+msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:2139
 msgid "Insert Comment"
@@ -796,9 +785,8 @@ msgid "Columns"
 msgstr ""
 
 #: src/control/Control.JSDialogBuilder.js:3052
-#, fuzzy
 msgid "Insert Table"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.LanguageDialog.js:64 src/control/Control.Menubar.js:341
 #: src/control/Control.Menubar.js:343 src/control/Control.Menubar.js:345
@@ -820,7 +808,7 @@ msgstr ""
 #: src/control/Control.NotebookbarBuilder.js:530
 #: src/control/Control.NotebookbarBuilder.js:637
 msgid "ODF text document (.odt)"
-msgstr "ODF matn hujjati (.odt)"
+msgstr ""
 
 #: src/control/Control.Menubar.js:68 src/control/Control.Menubar.js:83
 #: src/control/Control.Menubar.js:936
@@ -877,7 +865,7 @@ msgstr ""
 #: src/control/Control.NotebookbarImpress.js:350
 #: src/control/Control.NotebookbarWriter.js:299
 msgid "PDF Document (.pdf)"
-msgstr "PDF hujjat (.pdf)"
+msgstr ""
 
 #: src/control/Control.Menubar.js:74 src/control/Control.Menubar.js:86
 #: src/control/Control.Menubar.js:925 src/control/Control.Menubar.js:939
@@ -887,9 +875,8 @@ msgid "EPUB (.epub)"
 msgstr ""
 
 #: src/control/Control.Menubar.js:76 src/control/Control.UIManager.js:163
-#, fuzzy
 msgid "Rename Document"
-msgstr "Hujjatni tuzatish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:77 src/control/Control.Menubar.js:385
 #: src/control/Control.Menubar.js:535 src/control/Control.Menubar.js:665
@@ -903,14 +890,14 @@ msgstr ""
 #: src/control/Control.Menubar.js:928 src/control/Control.Menubar.js:992
 #: src/control/Control.Menubar.js:1057 src/control/Control.Menubar.js:1110
 msgid "See revision history"
-msgstr "Tarixni qaytadan ko‘rish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:79 src/control/Control.Menubar.js:387
 #: src/control/Control.Menubar.js:538 src/control/Control.Menubar.js:667
 #: src/control/Control.Menubar.js:932 src/control/Control.Menubar.js:996
 #: src/control/Control.Menubar.js:1059 src/control/Control.Menubar.js:1116
 msgid "Download as"
-msgstr "Yuklab olish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:81 src/control/Control.Menubar.js:389
 #: src/control/Control.Menubar.js:540 src/control/Control.Menubar.js:669
@@ -919,15 +906,14 @@ msgstr "Yuklab olish"
 #: src/control/Control.NotebookbarBuilder.js:557
 #: src/control/Control.NotebookbarBuilder.js:587
 #: src/control/Control.NotebookbarBuilder.js:617
-#, fuzzy
 msgid "PDF Document (.pdf) as..."
-msgstr "PDF hujjat (.pdf)"
+msgstr ""
 
 #: src/control/Control.Menubar.js:90 src/control/Control.Menubar.js:397
 #: src/control/Control.Menubar.js:545 src/control/Control.Menubar.js:680
 #: src/control/Control.Toolbar.js:1412
 msgid "Close document"
-msgstr "Hujatni yopish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:95 src/control/Control.Menubar.js:402
 #: src/control/Control.Menubar.js:550 src/control/Control.Menubar.js:685
@@ -948,7 +934,7 @@ msgstr "Hujatni yopish"
 #: src/control/Control.NotebookbarWriter.js:343
 #: src/control/Control.NotebookbarWriter.js:344
 msgid "Repair"
-msgstr "Tuzatish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:119 src/control/Control.Menubar.js:125
 #: src/control/Control.Menubar.js:414 src/control/Control.Menubar.js:420
@@ -964,7 +950,7 @@ msgstr "Tuzatish"
 #: src/control/Control.NotebookbarWriter.js:1415
 #: src/control/Control.StatusBar.js:209
 msgid "Reset zoom"
-msgstr "Masshtabni tiklash"
+msgstr ""
 
 #: src/control/Control.Menubar.js:128 src/control/Control.Menubar.js:423
 #: src/control/Control.Menubar.js:571 src/control/Control.Menubar.js:706
@@ -1032,7 +1018,7 @@ msgstr ""
 
 #: src/control/Control.Menubar.js:216
 msgid "Text orientation"
-msgstr "Matn joylashuvi"
+msgstr ""
 
 #: src/control/Control.Menubar.js:278
 #: src/control/Control.NotebookbarWriter.js:61
@@ -1092,9 +1078,8 @@ msgid "Insert Picture"
 msgstr ""
 
 #: src/control/Control.Menubar.js:328 src/control/Control.Menubar.js:1221
-#, fuzzy
 msgid "Insert Date"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:329 src/control/Control.Menubar.js:1222
 #: src/control/Control.NotebookbarCalc.js:305
@@ -1125,7 +1110,7 @@ msgstr ""
 #: src/control/Control.Menubar.js:645 src/control/Control.Menubar.js:909
 #: src/control/Control.NotebookbarWriter.js:439
 msgid "Keyboard shortcuts"
-msgstr "Tugmalar birikmasi"
+msgstr ""
 
 #: src/control/Control.Menubar.js:365 src/control/Control.Menubar.js:519
 #: src/control/Control.Menubar.js:646 src/control/Control.Menubar.js:910
@@ -1155,7 +1140,7 @@ msgstr ""
 #: src/control/Control.Menubar.js:1098 src/control/Control.Menubar.js:1172
 #: src/control/Control.NotebookbarWriter.js:502
 msgid "About"
-msgstr "Dastur haqida"
+msgstr ""
 
 #: src/control/Control.Menubar.js:370 src/control/Control.Menubar.js:524
 #: src/control/Control.Menubar.js:651 src/control/Control.Menubar.js:915
@@ -1167,7 +1152,7 @@ msgstr ""
 #: src/control/Control.NotebookbarBuilder.js:595
 #: src/control/Control.NotebookbarBuilder.js:671
 msgid "ODF presentation (.odp)"
-msgstr "ODF prezintatsiya (.odp)"
+msgstr ""
 
 #: src/control/Control.Menubar.js:378 src/control/Control.Menubar.js:391
 #: src/control/Control.Menubar.js:1000
@@ -1186,9 +1171,8 @@ msgid "PowerPoint Presentation (.pptx)"
 msgstr ""
 
 #: src/control/Control.Menubar.js:384 src/control/Control.Menubar.js:534
-#, fuzzy
 msgid "Save Comments"
-msgstr "Sharh"
+msgstr ""
 
 #: src/control/Control.Menubar.js:428
 #: src/control/Control.NotebookbarImpress.js:543
@@ -1198,7 +1182,7 @@ msgstr ""
 #: src/control/Control.Menubar.js:503 src/control/Control.Menubar.js:1041
 #: src/control/Control.PresentationBar.js:64
 msgid "Fullscreen presentation"
-msgstr "To‘liq ekranda namoyish etish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:504
 msgid "Present current slide"
@@ -1213,16 +1197,15 @@ msgstr ""
 #: src/control/Control.NotebookbarBuilder.js:599
 #: src/control/Control.NotebookbarDraw.js:237
 #: src/control/Control.NotebookbarImpress.js:312
-#, fuzzy
 msgid "ODF Drawing (.odg)"
-msgstr "ODF prezintatsiya (.odp)"
+msgstr ""
 
 #: src/control/Control.Menubar.js:658 src/control/Control.Menubar.js:670
 #: src/control/Control.Menubar.js:1119
 #: src/control/Control.NotebookbarBuilder.js:565
 #: src/control/Control.NotebookbarBuilder.js:656
 msgid "ODF spreadsheet (.ods)"
-msgstr "ODF spreadsheet (.ods)"
+msgstr ""
 
 #: src/control/Control.Menubar.js:659 src/control/Control.Menubar.js:671
 #: src/control/Control.Menubar.js:1120
@@ -1282,9 +1265,8 @@ msgstr ""
 #: src/control/Control.NotebookbarWriter.js:907
 #: src/control/Control.StatusBar.js:194 src/control/Control.Zotero.js:221
 #: src/control/Toolbar.js:543
-#, fuzzy
 msgid "Search"
-msgstr "Izlash:"
+msgstr ""
 
 #: src/control/Control.Menubar.js:971
 msgid "Page Setup"
@@ -1321,9 +1303,8 @@ msgid "Read-only mode"
 msgstr ""
 
 #: src/control/Control.Menubar.js:1817
-#, fuzzy
 msgid "Insert Shape"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.Menubar.js:2042
 msgid "file type icon"
@@ -1332,9 +1313,8 @@ msgstr ""
 #: src/control/Control.MobileBottomBar.js:28
 #: src/control/Control.MobileBottomBar.js:130
 #: src/control/Control.MobileBottomBar.js:197
-#, fuzzy
 msgid "Show the search bar"
-msgstr "Izlashni bekor qilish"
+msgstr ""
 
 #: src/control/Control.MobileBottomBar.js:37
 #: src/control/Control.TopToolbar.js:165
@@ -1367,7 +1347,7 @@ msgstr ""
 #: src/layer/tile/CommentListSection.ts:430
 #: src/layer/tile/CommentSection.ts:158
 msgid "Save"
-msgstr "Saqlash"
+msgstr ""
 
 #: src/control/Control.NotebookbarBuilder.js:311
 msgid "Tap to expand"
@@ -1426,9 +1406,8 @@ msgstr ""
 #: src/control/Control.NotebookbarDraw.js:75
 #: src/control/Control.NotebookbarImpress.js:90
 #: src/control/Control.NotebookbarWriter.js:49
-#, fuzzy
 msgid "Insert"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:42
 #: src/control/Control.NotebookbarDraw.js:81
@@ -1445,9 +1424,8 @@ msgstr ""
 #: src/control/Control.NotebookbarDraw.js:87
 #: src/control/Control.NotebookbarImpress.js:102
 #: src/control/Control.NotebookbarWriter.js:67
-#, fuzzy
 msgid "Review"
-msgstr "Umumiy ko‘rinishi"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:60
 #: src/control/Control.NotebookbarDraw.js:93
@@ -1505,9 +1483,8 @@ msgid "See history"
 msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:220
-#, fuzzy
 msgid "ODF Spreadsheet (.ods)"
-msgstr "ODF spreadsheet (.ods)"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:270
 #: src/control/Control.NotebookbarDraw.js:272
@@ -1599,28 +1576,24 @@ msgid "Column Width"
 msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:995
-#, fuzzy
 msgid "Insert Rows Above"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1002
-#, fuzzy
 msgid "Insert Columns Before"
-msgstr "Bundan oldin varaqni kiriting"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1009
-#, fuzzy
 msgid "Delete Rows"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1021
 msgid "Insert Rows Below"
 msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1028
-#, fuzzy
 msgid "Insert Columns After"
-msgstr "Bundan keyin varaqni kiriting"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1035
 msgid "Delete Columns"
@@ -1656,7 +1629,7 @@ msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1374
 msgid "Sparkline"
-msgstr "Sparklayn"
+msgstr ""
 
 #: src/control/Control.NotebookbarCalc.js:1506
 #: src/control/Control.NotebookbarCalc.js:2305
@@ -1689,9 +1662,8 @@ msgid "Master"
 msgstr ""
 
 #: src/control/Control.NotebookbarImpress.js:304
-#, fuzzy
 msgid "ODF Presentation (.odp)"
-msgstr "ODF prezintatsiya (.odp)"
+msgstr ""
 
 #: src/control/Control.NotebookbarImpress.js:442
 #: src/control/Control.NotebookbarImpress.js:1062
@@ -1707,9 +1679,8 @@ msgid "Form"
 msgstr ""
 
 #: src/control/Control.NotebookbarWriter.js:263
-#, fuzzy
 msgid "ODF Text Document (.odt)"
-msgstr "ODF matn hujjati (.odt)"
+msgstr ""
 
 #: src/control/Control.NotebookbarWriter.js:319
 msgid "EPUB Document (.epub)"
@@ -1764,14 +1735,12 @@ msgid "Scroll down annotations"
 msgstr ""
 
 #: src/control/Control.SearchBar.js:20
-#, fuzzy
 msgid "Hide the search bar"
-msgstr "Izlashni bekor qilish"
+msgstr ""
 
 #: src/control/Control.SearchBar.js:31
-#, fuzzy
 msgid "Clear the search field"
-msgstr "Izlashni bekor qilish"
+msgstr ""
 
 #: src/control/Control.SheetsBar.js:27
 msgid "Scroll to the first sheet"
@@ -1790,61 +1759,60 @@ msgid "Scroll to the last sheet"
 msgstr ""
 
 #: src/control/Control.SheetsBar.js:31
-#, fuzzy
 msgid "Insert sheet"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:200
 msgid "Cancel the search"
-msgstr "Izlashni bekor qilish"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:301
 msgid "Number of Sheets"
-msgstr "Varaqlar soni"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:306
 msgid "Selected range of cells"
-msgstr "Kataklarning tanlangan oralig‘i"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:311 src/control/Control.StatusBar.js:364
 msgid "Entering text mode"
-msgstr "Matn rejimiga kirilmoqda"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:320 src/control/Control.StatusBar.js:369
 msgid "Selection Mode"
-msgstr "Tanlash rejimi"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:325
 msgid "Choice of functions"
-msgstr "Funksiyalar tanlovi"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:330
 msgid "CountA"
-msgstr "A hisob"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:332
 msgid "Maximum"
-msgstr "Maksimal"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:333
 msgid "Minimum"
-msgstr "Minimal"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:335
 msgid "Selection count"
-msgstr "Tanlanganlar soni"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:354 src/control/Control.StatusBar.js:410
 msgid "Number of Pages"
-msgstr "Sahifalar soni"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:359
 msgid "Word Counter"
-msgstr "So‘z hisoblagich"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:390
 msgid "Number of Slides"
-msgstr "Slaydlar soni"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:443 src/control/Control.StatusBar.js:447
 msgid "Permission Mode"
@@ -1852,7 +1820,7 @@ msgstr ""
 
 #: src/control/Control.StatusBar.js:447
 msgid "Edit"
-msgstr "Tahrirlash"
+msgstr ""
 
 #: src/control/Control.StatusBar.js:487
 msgid "Select multiple cells"
@@ -1880,11 +1848,11 @@ msgstr ""
 
 #: src/control/Control.Tabs.js:54
 msgid "Insert sheet before this"
-msgstr "Bundan oldin varaqni kiriting"
+msgstr ""
 
 #: src/control/Control.Tabs.js:57
 msgid "Insert sheet after this"
-msgstr "Bundan keyin varaqni kiriting"
+msgstr ""
 
 #: src/control/Control.Tabs.js:90
 msgid "Move Sheet Left"
@@ -1899,9 +1867,8 @@ msgid "Copy Sheet..."
 msgstr ""
 
 #: src/control/Control.Tabs.js:378
-#, fuzzy
 msgid "Are you sure you want to delete sheet, %sheet%?"
-msgstr "Bu varaqni o‘chirishni xohlaysizmi? %sheet% ?"
+msgstr ""
 
 #: src/control/Control.Tabs.js:389
 msgid "Rename sheet"
@@ -1909,15 +1876,15 @@ msgstr ""
 
 #: src/control/Control.Tabs.js:389
 msgid "Enter new sheet name"
-msgstr "Yangi varaq nomini kiriting"
+msgstr ""
 
 #: src/control/Control.Toolbar.js:1205
 msgid "Previous slide"
-msgstr "Oldingi slayd"
+msgstr ""
 
 #: src/control/Control.Toolbar.js:1206
 msgid "Next slide"
-msgstr "Keyingi slayd"
+msgstr ""
 
 #: src/control/Control.Toolbar.js:1267
 msgid ""
@@ -1935,12 +1902,11 @@ msgstr ""
 
 #: src/control/Control.TopToolbar.js:228
 msgid "Insert table"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.TopToolbar.js:237
-#, fuzzy
 msgid "Insert shapes"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Control.TopToolbar.js:239
 msgid "Insert connectors"
@@ -1964,24 +1930,23 @@ msgstr ""
 
 #: src/control/Control.UserList.js:11
 msgid "%user has joined"
-msgstr "%user ta foydalanvchi kirdi"
+msgstr ""
 
 #: src/control/Control.UserList.js:12
 msgid "%user has left"
-msgstr "%user chiqib ketdi"
+msgstr ""
 
 #: src/control/Control.UserList.js:35
 msgid "%n users"
-msgstr "%n ta foydalanuvchi"
+msgstr ""
 
 #: src/control/Control.UserList.js:36
 msgid "1 user"
-msgstr "1 ta foydalanuvchi"
+msgstr ""
 
 #: src/control/Control.UserList.js:37
-#, fuzzy
 msgid "0 users"
-msgstr "Foydalanuvchilar yo‘q"
+msgstr ""
 
 #: src/control/Control.UserList.js:195
 msgid "Following"
@@ -2023,7 +1988,7 @@ msgstr ""
 
 #: src/control/Control.Zotero.js:247 src/core/Socket.js:1105
 msgid "Loading..."
-msgstr "Yuklanmoqda..."
+msgstr ""
 
 #: src/control/Control.Zotero.js:265
 msgid "Language:"
@@ -2074,9 +2039,8 @@ msgid "Citation Style"
 msgstr ""
 
 #: src/control/Control.Zotero.js:758
-#, fuzzy
 msgid "Styles"
-msgstr "Uslub"
+msgstr ""
 
 #: src/control/Control.Zotero.js:758
 msgid "An error occurred while fetching style list"
@@ -2193,14 +2157,12 @@ msgid "Right Margin"
 msgstr ""
 
 #: src/control/Ruler.js:621
-#, fuzzy
 msgid "Insert tabstop"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Ruler.js:628
-#, fuzzy
 msgid "Delete tabstop"
-msgstr "Jadval kiritish"
+msgstr ""
 
 #: src/control/Signing.js:18
 msgid "This document is digitally signed and the signature is valid."
@@ -2230,15 +2192,15 @@ msgstr ""
 
 #: src/control/Toolbar.js:45
 msgid "Font"
-msgstr "Shrift"
+msgstr ""
 
 #: src/control/Toolbar.js:240 src/control/Toolbar.js:253
 msgid "Downloading..."
-msgstr "Yuklab olinmoqda…"
+msgstr ""
 
 #: src/control/Toolbar.js:269
 msgid "Saving..."
-msgstr "Saqlanmoqda..."
+msgstr ""
 
 #: src/control/Toolbar.js:288
 msgid "Renaming..."
@@ -2246,7 +2208,7 @@ msgstr ""
 
 #: src/control/Toolbar.js:775
 msgid "This version of %productName is powered by"
-msgstr "%productName dasturining ushbu versiyasi yaratuvchisi:"
+msgstr ""
 
 #: src/control/Toolbar.js:787
 msgid "\"Slow Proxy\""
@@ -2266,11 +2228,11 @@ msgstr ""
 
 #: src/control/Toolbar.js:1214
 msgid "Are you sure you want to delete this slide?"
-msgstr "Bu slaydni o‘chirishni xohlaysizmi?"
+msgstr ""
 
 #: src/control/Toolbar.js:1217
 msgid "Are you sure you want to delete this page?"
-msgstr "Bu sahifani o‘chirishni xohlaysizmi?"
+msgstr ""
 
 #: src/control/jsdialog/Widget.MobileBorderSelector.js:92
 msgid "Cell borders"
@@ -2314,7 +2276,7 @@ msgstr ""
 
 #: src/core/Socket.js:638
 msgid "Unsupported server version."
-msgstr "Mos kelmaydigan server versiyasi."
+msgstr ""
 
 #: src/core/Socket.js:642
 msgid "LOKit version:"
@@ -2326,7 +2288,7 @@ msgstr ""
 
 #: src/core/Socket.js:778
 msgid "Session terminated by document owner"
-msgstr "Seans hujjat egasi tomonidan to‘xtatilgan"
+msgstr ""
 
 #: src/core/Socket.js:789
 msgid "Server is shutting down for maintenance (auto-saving)"
@@ -2358,19 +2320,19 @@ msgstr ""
 
 #: src/core/Socket.js:973
 msgid "Document requires password to view."
-msgstr "Hujjatni ko‘rish uchun parolni kiriting."
+msgstr ""
 
 #: src/core/Socket.js:976
 msgid "Document requires password to modify."
-msgstr "Hujjatni o‘zgartirish uchun parolni kiriting."
+msgstr ""
 
 #: src/core/Socket.js:978
 msgid "Hit Cancel to open in view-only mode."
-msgstr "Faqat ko‘rish rejimida ochish uchun “Bekor qilish” tugmasiga bosing."
+msgstr ""
 
 #: src/core/Socket.js:982
 msgid "Wrong password provided. Please try again."
-msgstr "Noto‘g‘ri parolni kiritdingiz. Yana urinib ko‘ring."
+msgstr ""
 
 #: src/core/Socket.js:1020
 msgid "Only the document owner can change the password."
@@ -2390,7 +2352,7 @@ msgstr ""
 
 #: src/core/Socket.js:1105
 msgid "Connecting..."
-msgstr "Ulanmoqda..."
+msgstr ""
 
 #: src/core/Socket.js:1122
 msgid "The document is being renamed and will reload shortly"
@@ -2434,12 +2396,11 @@ msgstr ""
 msgid ""
 "Well, this is embarrassing, we cannot connect to your document. Please try "
 "again."
-msgstr "Bizni afv eting: hujjatingizga ulana olmadik. Yana urinib ko‘ring."
+msgstr ""
 
 #: src/core/Socket.js:1623
-#, fuzzy
 msgid "Reconnecting..."
-msgstr "Ulanmoqda..."
+msgstr ""
 
 #: src/core/Socket.js:1633
 msgid "The server has been disconnected."
@@ -2462,13 +2423,10 @@ msgid "No disk space left on server."
 msgstr ""
 
 #: src/errormessages.js:23
-#, fuzzy
 msgid ""
 "The host URL is empty. The oxoolwsd server is probably misconfigured, "
 "please contact the administrator."
 msgstr ""
-"Host URL manzili bo‘sh. coolwsd serveri noto‘g‘ri sozlangan bo‘lishi mumkin. "
-"Administratorga xabar bering."
 
 #: src/errormessages.js:24
 msgid ""
@@ -2637,9 +2595,8 @@ msgid "Uploading file to server failed, the file is too large."
 msgstr ""
 
 #: src/layer/tile/CanvasTileLayer.js:1969
-#, fuzzy
 msgid "Functions"
-msgstr "Funksiya"
+msgstr ""
 
 #: src/layer/tile/CanvasTileLayer.js:2570
 msgid "and %COUNT more"
@@ -2782,7 +2739,7 @@ msgstr ""
 
 #: src/map/Map.js:218
 msgid "Initializing..."
-msgstr "Ishga tushirilmoqda…"
+msgstr ""
 
 #: src/map/Map.js:443 src/map/Map.js:446 src/map/Map.js:449 src/map/Map.js:452
 msgid "Last saved:"
@@ -2806,7 +2763,7 @@ msgstr ""
 
 #: src/map/handler/Map.FileInserter.js:138
 msgid "Uploading..."
-msgstr "Yukanmoqda..."
+msgstr ""
 
 #: src/map/handler/Map.FileInserter.js:161
 msgid "Uploading file to server failed with status: %0"
@@ -2918,93 +2875,3 @@ msgid ""
 "\">filing a bug report</a> with all the essential steps on how to reproduce "
 "it."
 msgstr ""
-
-#~ msgid "Settings"
-#~ msgstr "Sozlamalar"
-
-#~ msgid "(current)"
-#~ msgstr "(joriy)"
-
-#~ msgid "History"
-#~ msgstr "Tarix"
-
-#~ msgid "Dashboard"
-#~ msgstr "Boshqarub paneli"
-
-#, fuzzy
-#~ msgid "User Name"
-#~ msgstr "Foydalanuvchi nomi"
-
-#~ msgid "Kill"
-#~ msgstr "Tugatish"
-
-#~ msgid "Graphs"
-#~ msgstr "Tasvirlar"
-
-#~ msgid "Cache size of memory statistics"
-#~ msgstr "Xotira keshi hajmi ma’lumotlari"
-
-#~ msgid "Time interval of memory statistics (in ms)"
-#~ msgstr "Xotira vaqti oralig‘i ma’lumotlari (ms)"
-
-#~ msgid "Cache size of CPU statistics"
-#~ msgstr "CPU keshi hajmi ma’lumotlari"
-
-#~ msgid "Time interval of CPU statistics (in ms)"
-#~ msgstr "CPU vaqti oralig‘i ma’lumotlari (ms)"
-
-#, fuzzy
-#~ msgid "Documents:"
-#~ msgstr "Hujjat"
-
-#~ msgid ""
-#~ "No disk space left on server, please contact the server administrator to "
-#~ "continue."
-#~ msgstr ""
-#~ "Serverda bo‘sh joy qolmadi. Davom etish uchun server administratori bilan "
-#~ "bog‘laning."
-
-#, fuzzy
-#~ msgid "Type:"
-#~ msgstr "Turi"
-
-#~ msgid "Index"
-#~ msgstr "Indeks"
-
-#, fuzzy
-#~ msgid "Start Presentation"
-#~ msgstr "Matn joylashuvi"
-
-#, fuzzy
-#~ msgid "Reset Zoom"
-#~ msgstr "Masshtabni tiklash"
-
-#~ msgid "Inactive document - please click to resume editing"
-#~ msgstr "Nofaol hujjat - tahrirlashda davom etishuchun bosing"
-
-#~ msgid "Oops, there is a problem connecting to Collabora Online : "
-#~ msgstr "Obbo! Collabora Online xizmatiga ulanishda muammo yuz berdi: "
-
-#~ msgid "Number of views"
-#~ msgstr "Ko‘rilgan:"
-
-#, fuzzy
-#~ msgid "Documents"
-#~ msgstr "Hujjat"
-
-#~ msgid "First sheet"
-#~ msgstr "Birinchi varaq"
-
-#~ msgid "Previous sheet"
-#~ msgstr "Oldingi varaq"
-
-#~ msgid "Next sheet"
-#~ msgstr "Keyingi varaq"
-
-#~ msgid "Last sheet"
-#~ msgstr "So‘nggi varaq"
-
-#, fuzzy
-#~| msgid "Text orientation"
-#~ msgid "Toggle Page Orientation"
-#~ msgstr "Matn joylashuvi"
