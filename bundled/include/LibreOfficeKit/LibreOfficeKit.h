@@ -514,6 +514,9 @@ struct _LibreOfficeKitDocumentClass
     /// @see lok::Document::initUnoStatus
     void (*initUnoStatus) (LibreOfficeKitDocument* pThis, const char* pCommands);
 
+    /// @see lok::Document::hyperlinkInfoAtPosition().
+    char* (*hyperlinkInfoAtPosition) (LibreOfficeKitDocument* pThis, int x,int y);
+
 #endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
