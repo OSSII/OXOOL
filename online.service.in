@@ -8,7 +8,7 @@ ExecStart=/usr/bin/@WSD_NAME@
 KillSignal=SIGINT
 TimeoutStopSec=120
 User=@OXOOL_USER_ID@
-KillMode=control-group
+KillMode=mixed
 Restart=always
 LimitNOFILE=infinity:infinity
 
