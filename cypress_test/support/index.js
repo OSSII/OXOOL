@@ -72,7 +72,7 @@ Cypress.Commands.overwrite('waitUntil', function(originalFn, subject, checkFunct
 
 /**
  * Set the current iFrame
- * Example: cy.cSetActiveFrame('#coolframe');
+ * Example: cy.cSetActiveFrame('#oxoolframe');
  */
 Cypress.Commands.add('cSetActiveFrame', function(frameID) {
 	Cypress.log();

@@ -403,13 +403,13 @@
       frameUrl.searchParams.append('NotWOPIButIframe', 'true');
 
       function startOxool(url, file_path) {
-          var coolUrl = new URL(url);
+          var oxoolUrl = new URL(url);
           if (file_path) {
-              coolUrl.searchParams.set('file_path', file_path);
+              oxoolUrl.searchParams.set('file_path', file_path);
           }
           var iframe = document.getElementById('frame');
-          iframe.src = coolUrl.href;
-          link.href = coolUrl.href;
+          iframe.src = oxoolUrl.href;
+          link.href = oxoolUrl.href;
       }
 
       // Select the app with extension.
