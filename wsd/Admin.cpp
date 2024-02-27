@@ -12,9 +12,6 @@
 #include <chrono>
 #include <config.h>
 
-#include <fontconfig/fontconfig.h>
-#include <fontconfig/fcfreetype.h>
-
 #include <cassert>
 #include <sys/poll.h>
 #include <unistd.h>
@@ -46,6 +43,9 @@
 #include <net/WebSocketHandler.hpp>
 
 #include <common/SigUtil.hpp>
+
+#include <fontconfig/fontconfig.h>
+#include <fontconfig/fcfreetype.h>
 
 using namespace OXOOLProtocol;
 
