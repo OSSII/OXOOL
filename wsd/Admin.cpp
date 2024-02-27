@@ -43,6 +43,7 @@
 
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcfreetype.h>
+#include <wsd/FileServer.hpp>
 
 using namespace OXOOLProtocol;
 
