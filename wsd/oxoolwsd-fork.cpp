@@ -12,6 +12,8 @@
 #include "TraceEvent.hpp"
 #include "OXOOLWSD.hpp"
 
+void setKitInProcess() { Util::setKitInProcess(false); }
+
 #if !MOBILEAPP
 int createForkit(const std::string& forKitPath, const StringVector& args)
 {

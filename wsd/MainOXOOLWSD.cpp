@@ -19,6 +19,8 @@ int main(int argc, char** argv)
     SigUtil::setUserSignals();
     SigUtil::setFatalSignals("wsd " OXOOLWSD_VERSION " " OXOOLWSD_VERSION_HASH);
 
+    setKitInProcess();
+
     try
     {
         OXOOLWSD app;
