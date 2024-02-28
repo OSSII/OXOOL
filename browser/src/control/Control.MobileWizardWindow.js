@@ -1,6 +1,6 @@
 /* -*- js-indent-level: 8 -*- */
 /*
- * Copyright the OxOffice Online contributors.
+ * Copyright the Collabora Online contributors.
  *
  * SPDX-License-Identifier: MPL-2.0
  *
@@ -96,7 +96,7 @@ L.Control.MobileWizardWindow = L.Control.extend({
 		if (this.isSnackBar)
 			this.mobileWizard.addClass('snackbar');
 		if (this.isBusyPopUp)
-			this.mobileWizard.addClass('busypopup'); 
+			this.mobileWizard.addClass('busypopup');
 	},
 
 	/// resets all classes which can modify the look to the original values

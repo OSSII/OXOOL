@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright the OxOffice Online contributors.
+# Copyright the Collabora Online contributors.
 #
 # SPDX-License-Identifier: MPL-2.0
 #

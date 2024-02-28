@@ -1,6 +1,6 @@
 /* -*- js-indent-level: 8 -*- */
 /*
- * Copyright the OxOffice Online contributors.
+ * Copyright the Collabora Online contributors.
  *
  * SPDX-License-Identifier: MPL-2.0
  *
@@ -2826,7 +2826,7 @@ L.Control.JSDialogBuilder = L.Control.extend({
 			var buttonImage = L.DomUtil.create('img', '', button);
 			// Set the src attribute of the img element to the image URL
 			L.LOUtil.setImage(buttonImage, icon, builder.map);
-			
+
 			button.id = buttonId;
 			button.setAttribute('alt', id);
 

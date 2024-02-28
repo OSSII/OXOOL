@@ -1,6 +1,6 @@
 /* -*- js-indent-level: 8 -*- */
 /*
- * Copyright the OxOffice Online contributors.
+ * Copyright the Collabora Online contributors.
  *
  * SPDX-License-Identifier: MPL-2.0
  *
@@ -153,7 +153,7 @@ L.Control.DocumentNameInput = L.Control.extend({
 
 	showLoadingAnimation : function() {
 		this.disableDocumentNameInput();
-		$('#document-name-input-loading-bar').css('display', 'block');	
+		$('#document-name-input-loading-bar').css('display', 'block');
 	},
 
 	hideLoadingAnimation : function() {
