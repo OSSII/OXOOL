@@ -183,7 +183,8 @@ oxoolforkit_sources = kit/ChildSession.cpp \
                      kit/ForKit.cpp \
                      kit/Kit.cpp
 
-oxoolforkit_SOURCES = $(oxoolforkit_sources)
+oxoolforkit_SOURCES = $(oxoolforkit_sources) \
+                      kit/forkit-main.cpp
 
 oxoolforkit_LDADD = libsimd.a ${OSSII_LIBS}
 
@@ -194,6 +195,7 @@ oxoolforkit_SOURCES += \
 common_fuzzer_sources = \
 		       common/DummyTraceEventEmitter.cpp \
 		       $(oxoolwsd_sources) \
+		       wsd/oxoolwsd-inproc.cpp \
 		       $(oxoolforkit_sources) \
 		       $(shared_sources)
 

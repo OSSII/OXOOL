@@ -77,7 +77,8 @@ oxoolwsd_sources = $(top_srcdir)/common/Crypto.cpp \
                   $(top_srcdir)/wsd/TileCache.cpp \
                   $(top_srcdir)/wsd/ProofKey.cpp \
                   $(top_srcdir)/wsd/QuarantineUtil.cpp \
-                  $(top_srcdir)/wsd/WopiProxy.cpp
+                  $(top_srcdir)/wsd/WopiProxy.cpp \
+                  $(top_srcdir)/wsd/oxoolwsd-fork.cpp
 
 oxoolcore_sources = \
                     OxOOL/Module/Base.cpp \

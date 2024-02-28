@@ -28,7 +28,8 @@ add_library(androidapp SHARED
             ../../../../../wsd/OXOOLWSD.cpp
             ../../../../../wsd/RequestDetails.cpp
             ../../../../../wsd/Storage.cpp
-            ../../../../../wsd/TileCache.cpp)
+            ../../../../../wsd/TileCache.cpp
+            ../../../../../wsd/oxoolwsd-fork.cpp)
 
 target_compile_definitions(androidapp PRIVATE OXOOLWSD_CONFIGDIR="/assets/etc/oxoolwsd")
 
