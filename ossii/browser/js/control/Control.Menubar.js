@@ -739,6 +739,7 @@ L.Control.Menubar = L.Control.extend({
 	},
 
 	_beforeShow: function(e, menu) {
+		this._map.hideAllToolbarPopup(); // 強制隱藏所有 Toolbar 選單
 		if (e.data && e.data.self) {
 			var self = e.data.self;
 			self._setupOverflow();

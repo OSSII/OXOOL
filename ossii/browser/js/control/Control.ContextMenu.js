@@ -246,10 +246,6 @@ L.Control.ContextMenu = L.Control.extend({
 					hasParam = true;
 				}
 
-				// We use a special character dialog in spelling context menu with a parameter
-				if (commandName === 'FontDialog' && !hasParam)
-					continue;
-
 				// 手機環境須特別過濾能用的指令
 				if (window.mode.isMobile()) {
 					// 忽略不在白名單的指令
@@ -338,7 +334,19 @@ L.Control.ContextMenu = L.Control.extend({
 		}
 
 		return contextMenu;
-	}
+	},
+
+	// Prevents right mouse button's mouseup event from triggering menu item accidentally.
+    stopRightMouseUpEvent: function() {
+        var menuItems = document.getElementsByClassName('context-menu-item');
+
+        for (var i = 0 ; i < menuItems.length; i++) {
+            menuItems[i].addEventListener('mouseup', function(e) {
+                if (e.button == 2) // Is a right mouse button event?
+                    e.stopPropagation();
+            });
+        }
+    }
 });
 
 L.control.contextMenu = function (options) {
@@ -361,31 +369,48 @@ L.installContextMenu = function(options) {
 	if (options.events === undefined) {
 		options.events = {};
 	}
-	// 放入我們自己的 preShow
+
+	// Called before show of the contextmenu,
+	// when returning false default browser context menu is shown.
 	if (options.events.preShow === undefined) {
 		options.events.preShow = function(/*trigger, event*/) {
 			$.SmartMenus.hideAll(); // 強制隱藏 Menubar 選單
-			L.hideAllToolbarPopup(); // 強制隱藏所有 Toolbar 選單
+			map.hideAllToolbarPopup(); // 強制隱藏所有 Toolbar 選單
 		};
 	}
-
+	// Called on show of the contextmenu
 	if (options.events.show === undefined) {
 		options.events.show = function(/*options*/) {
 			// do nothing.
 		}.bind(map);
 	}
+	// Called before hide of the contextmenu
 	if (options.events.hide === undefined) {
 		options.events.hide = function(/*options*/) {
 			// do nothing.
 		}.bind(map);
 	}
+	// Called after activation of the contextmenu
 	if (options.events.activated === undefined) {
 		options.events.activated = function(/*options*/) {
 			// do nothing.
 		}.bind(map);
 	}
 
+	// 如果是 rtl，就把 positionSubmenu 改成我們自己的
+	if (document.documentElement.dir === 'rtl') {
+		options.positionSubmenu = function($menu) {
+				if (typeof $menu === 'undefined')
+						return;
+
+				$menu.css('right', 'auto');
+				$.contextMenu.defaults.positionSubmenu.call(this, $menu);
+				$menu.css('right', $menu.css('left'));
+		};
+	}
+
 	options.itemClickEvent = 'click';
+
 	var rewrite = function(items) {
 		if (items === undefined)
 			return;
@@ -402,6 +427,7 @@ L.installContextMenu = function(options) {
 				if (map.isUnoCommand(key)) {
 					items[key].name = _UNO(key, docType, 'popup');
 				 } else {
+					console.error('No name for context menu item: ' + key);
 					continue;
 				 }
 			}
@@ -426,22 +452,4 @@ L.installContextMenu = function(options) {
 	};
 	rewrite(options.items);
 	$.contextMenu(options);
-};
-
-// Add by Firefly <firefly@ossii.com.tw>
-// 強制隱藏所有 toolbar 選單
-L.hideAllToolbarPopup = function() {
-	var w2uiPrefix = '#w2ui-overlay';
-	var $dom = $(w2uiPrefix);
-	// type 為 color & text-color 會在最頂層？(搔頭)
-	if ($dom.length > 0) {
-		$dom.removeData('keepOpen')[0].hide();
-	} else { // 隱藏所有 Toolbar 選單(如果有的話)
-		for (var key in window.w2ui) {
-			$dom = $(w2uiPrefix + '-' + key);
-			if ($dom.length > 0) {
-				$dom.removeData('keepOpen')[0].hide();
-			}
-		}
-	}
 };
