@@ -1241,7 +1241,7 @@ L.Map.include({
 		case 'closetablet':
 			this.uiManager.enterReadonlyOrClose();
 			break;
-		case 'showresolvedannotations':
+		case '.uno:ShowResolvedAnnotations':
 			var items = this['stateChangeHandler'];
 			var val = items.getItemValue('.uno:ShowResolvedAnnotations');
 			val = (val === 'true' || val === true);
@@ -1281,11 +1281,11 @@ L.Map.include({
 		case 'print-all-sheets':
 			this.print();
 			break;
-		case 'acceptalltrackedchanges':
+		case '.uno:AcceptAllTrackedChanges':
 			this.sendUnoCommand('.uno:AcceptAllTrackedChanges');
 			app.socket.sendMessage('commandvalues command=.uno:ViewAnnotations');
 			break;
-		case 'rejectalltrackedchanges':
+		case '.uno:RejectAllTrackedChanges':
 			this.sendUnoCommand('.uno:RejectAllTrackedChanges');
 			var commentSection = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name);
 			commentSection.rejectAllTrackedCommentChanges();
