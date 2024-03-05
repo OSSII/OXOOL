@@ -32,6 +32,7 @@ OXOOL_JS_LIST = \
 	js/control/Control.Menubar.js \
 	js/control/Control.ReadonlyBar.js \
 	js/control/Control.OxOOLMain.js \
+	js/spectrum.js \
 	js/main.js
 
 
@@ -39,7 +40,8 @@ OXOOL_JS_LIST = \
 $(BRANDING_DIR)/branding-src.js: $(OXOOL_JS_LIST)
 	@echo "Checking for JS errors..."
 	@$(NODE) $(top_srcdir)/browser/node_modules/eslint/bin/eslint.js $(srcdir)/js \
-		--config $(top_srcdir)/browser/.eslintrc
+		--config $(top_srcdir)/browser/.eslintrc \
+		--ignore-path $(srcdir)/.eslintignore
 	@echo "Bundling $@..."
 	@$(MKDIR_P) $(dir $@)
 	@cat $^ >> $@
@@ -69,7 +71,8 @@ OXOOL_CSS_LIST = \
 	css/jsdialogs.css \
 	css/jssidebar.css \
 	css/menubar.css \
-	css/notebookbar.css
+	css/notebookbar.css \
+	css/spectrum.css
 
 $(DIST_FOLDER)/branding.css: $(OXOOL_CSS_LIST)
 	@echo "Checking for CSS errors..."
