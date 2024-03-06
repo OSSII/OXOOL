@@ -300,6 +300,14 @@ std::set<pid_t> getKitPids()
 {
     return OXOOLWSD::getKitPids();
 }
+std::set<pid_t> getSpareKitPids()
+{
+    return OXOOLWSD::getSpareKitPids();
+}
+std::set<pid_t> getDocKitPids()
+{
+    return OXOOLWSD::getDocKitPids();
+}
 
 /// Get the PID of the forkit
 std::set<pid_t> getForKitPids()

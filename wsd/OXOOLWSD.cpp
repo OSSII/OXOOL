@@ -6583,6 +6583,13 @@ std::vector<std::shared_ptr<DocumentBroker>> OXOOLWSD::getBrokersTestOnly()
 
 std::set<pid_t> OXOOLWSD::getKitPids()
 {
+    std::set<pid_t> pids = getSpareKitPids();
+    pids.merge(getDocKitPids());
+    return pids;
+}
+
+std::set<pid_t> OXOOLWSD::getSpareKitPids()
+{
     std::set<pid_t> pids;
     pid_t pid;
     {
@@ -6594,6 +6601,13 @@ std::set<pid_t> OXOOLWSD::getKitPids()
                 pids.emplace(pid);
         }
     }
+    return pids;
+}
+
+std::set<pid_t> OXOOLWSD::getDocKitPids()
+{
+    std::set<pid_t> pids;
+    pid_t pid;
     {
         std::unique_lock<std::mutex> lock(DocBrokersMutex);
         for (const auto &it : DocBrokers)
