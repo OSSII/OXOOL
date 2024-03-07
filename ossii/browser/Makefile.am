@@ -22,11 +22,11 @@ $(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
 
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
+	js/map/handler/Map.AlternativeCommand.js \
 	js/control/Permission.Extensions.js \
 	js/control/IconAlias.js \
 	js/control/Toolbar.Extensions.js \
 	js/control/Parts.Extensions.js \
-	js/control/Control.AlternativeCommand.js \
 	js/control/Control.Dialogs.js \
 	js/control/Control.ContextMenu.js \
 	js/control/Control.Menubar.js \
@@ -44,7 +44,7 @@ $(BRANDING_DIR)/branding-src.js: $(OXOOL_JS_LIST)
 		--ignore-path $(srcdir)/.eslintignore
 	@echo "Bundling $@..."
 	@$(MKDIR_P) $(dir $@)
-	@cat $^ >> $@
+	@cat $^ > $@
 	@echo "Done bundling $@."
 
 # 壓縮打包用的 JS 檔案

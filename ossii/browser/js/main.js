@@ -13,9 +13,12 @@
     // register the main control
     app.map.addControl(L.control.OxOOLMain());
 
-    // register the alternative command control
-    app.map.alternativeCommand = L.control.alternativeCommand();
-    app.map.addControl(app.map.alternativeCommand);
+    /**
+     * All handlers are registered here.
+     */
+    // register the alternative command handler
+    app.map.addHandler('alternativeCommand', L.Map.AlternativeCommand);
+
     // register the dialogs control
     app.map.addControl(L.control.dialogs());
 

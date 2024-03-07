@@ -1,19 +1,25 @@
 /* -*- js-indent-level: 8 -*- */
 /**
- * L.Control.AlternativeCommand
- *
- * 指令替代機制
- * 有些指令無法直接執行，需要替代程序模擬出相同功能
+ * L.Control.AlternativeCommand is a control that allows the user to execute alternative commands.
  *
  * @author Firefly <firefly@ossii.com.tw>
  */
 
 /* global L _ app */
-L.Control.AlternativeCommand = L.Control.extend({
+L.Map.mergeOptions({
+	alternativeCommand: true
+});
 
-	onAdd: function(map) {
+L.Map.AlternativeCommand = L.Handler.extend({
+
+	initialize: function (map) {
 		this._map = map;
-		this._commands._map = map;
+	},
+
+	addHooks: function () {
+	},
+
+	removeHooks: function () {
 	},
 
 	/**
@@ -21,8 +27,8 @@ L.Control.AlternativeCommand = L.Control.extend({
 	 * @param {string} orignalCommand: 指令名稱
 	 * @returns {boolean} true:有, false: 無
 	 */
-	has: function(orignalCommand) {
-		return typeof(this._commands[orignalCommand]) === 'function';
+	has: function (orignalCommand) {
+		return typeof (this._commands[orignalCommand]) === 'function';
 	},
 
 	/**
@@ -30,10 +36,11 @@ L.Control.AlternativeCommand = L.Control.extend({
 	 * @param {string} orignalCommand: 指令名稱
 	 * @returns {function} 替代指令的函數
 	 */
-	get: function(orignalCommand) {
+	get: function (orignalCommand) {
 		if (this.has(orignalCommand)) {
 			return this._commands[orignalCommand];
 		}
+		return null;
 	},
 
 	/**
@@ -42,13 +49,14 @@ L.Control.AlternativeCommand = L.Control.extend({
 	 * @param {object} json: 物件
 	 * @returns {boolean} true: 已執行, false: 未執行
 	 */
-	run: function(orignalCommand, json) {
+	run: function (orignalCommand, json) {
 		if (this.has(orignalCommand)) {
-			this._commands[orignalCommand]({
+			var func = this.get(orignalCommand);
+			func.call(this, {
 				commandName: orignalCommand,
 				json: json
 			});
-			window.app.console.debug('Alternative command(%s), target:', orignalCommand, this._commands[orignalCommand]);
+			console.debug('Alternative command(%s), target:', orignalCommand, func);
 			return true;
 		}
 		return false;
@@ -60,7 +68,7 @@ L.Control.AlternativeCommand = L.Control.extend({
 	 * @param {*} func: 函數
 	 * @returns {boolean} true: success, false: fail
 	 */
-	add: function(cmd, func) {
+	add: function (cmd, func) {
 		// 已存在或格式不符
 		if (this.has(cmd) || typeof cmd !== 'string' || typeof func !== 'function') {
 			return false;
@@ -74,22 +82,31 @@ L.Control.AlternativeCommand = L.Control.extend({
 	 * 移除替代指令
 	 * @param {string} cmd: 指令名稱
 	 */
-	remove: function(cmd) {
+	remove: function (cmd) {
 		if (this.has(cmd)) {
 			delete this._command[cmd];
 		}
 	},
 
+	createStateEvent: function (cmd, state) {
+
+		// 如果 state 是 boolean 型態，轉換成字串
+		if (typeof state === 'boolean') {
+			state = state ? 'true' : 'false';
+		}
+
+		return ({ commandName: cmd, state: state });
+	},
+
 	_commands: {
-		_map: null,
 
 		/**
 		 * 存檔
 		 */
-		'.uno:Save': function() {
+		'.uno:Save': function () {
 			// Save only when not read-only.
 			if (!this._map.isReadOnlyMode()) {
-				this._map.fire('postMessage', {msgId: 'UI_Save'});
+				this._map.fire('postMessage', { msgId: 'UI_Save' });
 				if (!this._map._disableDefaultAction['UI_Save']) {
 					this._map.save(false, false);
 				}
@@ -98,68 +115,123 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * 另存新檔
 		 */
-		'.uno:SaveAs': function() {
+		'.uno:SaveAs': function () {
 			this._map.openSaveAs();
+		},
+		'savecomment': function () {
+			if (this._map.isPermissionEditForComments()) {
+				this._map.fire('postMessage', { msgId: 'UI_Save' });
+				if (!this._map._disableDefaultAction['UI_Save']) {
+					this._map.save(false, false);
+				}
+			}
 		},
 		/**
 		 * 分享
 		 */
-		'ShareAs': function() {
+		'shareas': function () {
 			this._map.openShare();
 		},
 		/**
 		 * 檢視修訂紀錄
 		 */
-		'rev-history': function() {
+		'rev-history': function () {
 			this._map.openRevisionHistory();
 		},
 		/**
 		 * 修復
 		 */
-		'Repair': function() {
+		'Repair': function () {
 			app.socket.sendMessage('commandvalues command=.uno:DocumentRepair');
 		},
 		/**
 		 * 列印
 		 */
-		'.uno:Print': function() {
+		'.uno:Print': function () {
 			this._map.print();
-		 },
+		},
 		/**
 		 * 關閉檔案
 		 */
-		'.uno:CloseDoc': function() {
+		'.uno:CloseDoc': function () {
 			this._map.closeDocument();
+		},
+		/**
+		 * 切換使用者界面(精簡/分頁)
+		 */
+		'.uno:ToolbarModeUI': function () {
+			if (this._map.uiManager.shouldUseNotebookbarMode()) {
+				this._map.uiManager.onChangeUIMode({ mode: 'classic', force: true });
+			} else {
+				this._map.uiManager.onChangeUIMode({ mode: 'notebookbar', force: true });
+			}
+		},
+		'toggleuimode': function (e) {
+			this.run('.uno:ToolbarModeUI', e.json);
+		},
+		/**
+		 * 切換尺規顯示與否
+		 */
+		'showruler': function () {
+			this._map.uiManager.toggleRuler();
+		},
+		/**
+		 * 切換狀態列顯示與否
+		 */
+		'showstatusbar': function () {
+			this._map.uiManager.toggleStatusBar();
+		},
+		/**
+		 * 切換下拉選單列顯示與否
+		 */
+		'togglemenubar': function () {
+			this._map.uiManager.toggleMenubar();
+		},
+		/**
+		 *
+		 * 切換暗色/亮色主題
+		 */
+		'toggledarktheme': function (e) {
+			this._map.uiManager.toggleDarkMode();
+			var event = this.createStateEvent(e.commandName, this._map.uiManager.isDarkMode());
+			this._map.fire('commandstatechanged', event);
 		},
 		/**
 		 * 貼上無格式設定的文字
 		 */
-		'.uno:PasteUnformatted': function(e) {
+		'.uno:PasteUnformatted': function (e) {
 			this._map._clip._openPasteSpecialPopup(e.commandName);
 		},
 		/**
 		 * 選擇性貼上
 		 */
-		'.uno:PasteSpecial': function(e) {
+		'.uno:PasteSpecial': function (e) {
 			this._map._clip._openPasteSpecialPopup(e.commandName);
 		},
 		/**
 		 * 編輯檔案
 		 */
-		'.uno:EditDoc': function() {
+		'.uno:EditDoc': function () {
 			// 如果有任何更改，先存檔，否則會 crash
 			if (this._map._everModified) {
 				this._map.save(true, true);
 			}
 			this._map.sendUnoCommand('.uno:EditDoc');
 		},
-		'.uno:FullScreen': function() {
-			L.toggleFullScreen();
+		'.uno:FullScreen': function (e) {
+			var isFullscreen = this._map.uiManager.isFullscreen(); // 全螢幕狀態
+			L.toggleFullScreen(); // 切換
+
+			var event = this.createStateEvent(e.commandName, !isFullscreen);
+			this._map.fire('commandstatechanged', event);
+		},
+		'fullscreen': function (e) {
+			this.run('.uno:FullScreen', e.json);
 		},
 		/**
 		 * 拉遠
 		 */
-		'.uno:ZoomMinus': function() {
+		'.uno:ZoomMinus': function () {
 			if (this._map.getZoom() > this._map.getMinZoom()) {
 				this._map.zoomOut(1, null, true /* animate? */);
 			}
@@ -167,7 +239,7 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * 拉近
 		 */
-		'.uno:ZoomPlus': function() {
+		'.uno:ZoomPlus': function () {
 			if (this._map.getZoom() < this._map.getMaxZoom()) {
 				this._map.zoomIn(1, null, true /* animate? */);
 			}
@@ -175,10 +247,10 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * 重設遠近
 		 */
-		'.uno:Zoom100Percent': function() {
+		'.uno:Zoom100Percent': function () {
 			this._map.setZoom(this._map.options.zoom, null, true);
 		},
-		'.uno:ShapesMenu': function() {
+		'.uno:ShapesMenu': function () {
 			if (window.mode.isMobile()) {
 				this._map.menubar._openInsertShapesWizard();
 			}
@@ -186,31 +258,31 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * 插入電腦(本地)圖片
 		 */
-		'.uno:InsertGraphic': function() {
+		'.uno:InsertGraphic': function () {
 			L.DomUtil.get('insertgraphic').click();
 		},
 		/**
 		 * 以外部工具編輯
 		 */
-		'.uno:ExternalEdit': function() {
+		'.uno:ExternalEdit': function () {
 			app.socket.sendMessage('getgraphicselection id=edit');
 		},
 		/**
 		 * 儲存(下載)文件中的圖片
 		 */
-		'.uno:SaveGraphic': function() {
+		'.uno:SaveGraphic': function () {
 			app.socket.sendMessage('getgraphicselection id=export');
 		},
 		/**
 		 * 插入特殊符號
 		 */
-		'.uno:InsertSymbol': function() {
+		'.uno:InsertSymbol': function () {
 			L.dialog.run('CommonSymbols');
 		},
 		/**
 		 * 插入/修改超連結
 		 */
-		'.uno:HyperlinkDialog': function(e) {
+		'.uno:HyperlinkDialog': function (e) {
 			// 手機界面不一樣
 			if (window.mode.isMobile()) {
 				this._map.showHyperlinkDialog();
@@ -222,50 +294,50 @@ L.Control.AlternativeCommand = L.Control.extend({
 		 * 修改超連結
 		 * @param {*} e
 		 */
-		'.uno:EditHyperlink': function(e) {
+		'.uno:EditHyperlink': function (e) {
 			this['.uno:HyperlinkDialog'](e);
 		},
 		/**
 		 * 修改圖案超連結
 		 * @param {*} e
 		 */
-		'.uno:EditShapeHyperlink': function(e) {
+		'.uno:EditShapeHyperlink': function (e) {
 			this['.uno:HyperlinkDialog'](e);
 		},
 		/**
 		 * writer: 前往頁面
 		 */
-		'.uno:GotoPage': function() {
+		'.uno:GotoPage': function () {
 			L.dialog.run('GotoPage');
 		},
 		/**
 		 * 插入註解
 		 */
-		'.uno:InsertAnnotation': function() {
+		'.uno:InsertAnnotation': function () {
 			this._map.insertComment();
 		},
 		/**
 		 * calc: 插入工作表
 		 */
-		'.uno:Insert': function() {
+		'.uno:Insert': function () {
 			L.dialog.run('InsertTable');
 		},
 		/**
 		 * calc: 從結尾插入工作表
 		 */
-		'.uno:Add': function() {
+		'.uno:Add': function () {
 			L.dialog.run('AddTableAtEnd');
 		},
 		/**
 		 * calc: 刪除工作表
 		 */
-		'.uno:Remove': function() {
+		'.uno:Remove': function () {
 			var currPart = this._map.getCurrentPartNumber();
 			var currName = this._map._docLayer._partNames[currPart];
 			L.dialog.confirm({
 				icon: 'warning',
 				message: _('Are you sure you want to delete sheet, %sheet% ?').replace('%sheet%', currName),
-				callback: function(ans) {
+				callback: function (ans) {
 					if (ans) {
 						this._map.deletePage(currPart);
 					}
@@ -276,7 +348,7 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * 重新命名工作表
 		 */
-		'.uno:RenameTable': function() {
+		'.uno:RenameTable': function () {
 			var currPart = this._map.getCurrentPartNumber();
 			// 工作表被保護就不能重新命名
 			if (this._map.isPartProtected(currPart)) {
@@ -288,7 +360,7 @@ L.Control.AlternativeCommand = L.Control.extend({
 				icon: 'question',
 				message: _('Enter new sheet name'),
 				default: currName,
-				callback: function(data) {
+				callback: function (data) {
 					// 有輸入資料
 					if (data !== null) {
 						if (this._map.isSheetnameValid(data, currPart)) {
@@ -306,53 +378,53 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * 移動或複製工作表
 		 */
-		'.uno:Move': function() {
+		'.uno:Move': function () {
 			L.dialog.run('MoveTable');
 		},
 		/**
 		 * 顯示工作表
 		 */
-		'.uno:Show': function() {
+		'.uno:Show': function () {
 			L.dialog.run('ShowTable');
 		},
 		/**
 		 * calc: 設定工作標籤色彩
 		 */
-		'.uno:SetTabBgColor': function() {
+		'.uno:SetTabBgColor': function () {
 			L.dialog.run('SetTabBgColor');
 		},
 		/**
 		 * impress: 從第一張投影片開始播放
 		 */
-		'.uno:Presentation': function() {
+		'.uno:Presentation': function () {
 			this._map.fire('fullscreen');
 		},
 		/**
 		 * impress: 從目前投影片開始播放
 		 */
-		'.uno:PresentationCurrentSlide': function() {
-			this._map.fire('fullscreen', {startSlideNumber: this._map.getCurrentPartNumber()});
+		'.uno:PresentationCurrentSlide': function () {
+			this._map.fire('fullscreen', { startSlideNumber: this._map.getCurrentPartNumber() });
 		},
 		/**
 		 * impress: 新增投影片
 		 */
-		'.uno:InsertPage': function() {
+		'.uno:InsertPage': function () {
 			this._map.insertPage();
 		},
 		/**
 		 * impress: 再製投影片
 		 */
-		'.uno:DuplicatePage': function() {
+		'.uno:DuplicatePage': function () {
 			this._map.duplicatePage();
 		},
 		/**
 		 * impress: 刪除投影片
 		 */
-		'.uno:DeletePage': function() {
+		'.uno:DeletePage': function () {
 			L.dialog.confirm({
 				icon: 'warning',
 				message: _('Are you sure you want to delete this slide?'),
-				callback: function(ans) {
+				callback: function (ans) {
 					if (ans) {
 						this._map.deletePage();
 					}
@@ -362,52 +434,38 @@ L.Control.AlternativeCommand = L.Control.extend({
 		/**
 		 * impress: 設定投影片背景
 		 */
-		'.uno:SelectBackground': function() {
+		'.uno:SelectBackground': function () {
 			L.DomUtil.get('selectbackground').click();
-		},
-		/**
-		 * 切換使用者界面(精簡/分頁)
-		 */
-		'.uno:ToolbarModeUI': function() {
-			if (this._map.uiManager.shouldUseNotebookbarMode()) {
-				this._map.uiManager.onChangeUIMode({mode: 'classic', force: true});
-			} else {
-				this._map.uiManager.onChangeUIMode({mode: 'notebookbar', force: true});
-			}
 		},
 		/**
 		 * 插入雲端圖片
 		 */
-		'insertgraphicremote': function() {
-			this._map.fire('postMessage', {msgId: 'UI_InsertGraphic'});
+		'insertgraphicremote': function () {
+			this._map.fire('postMessage', { msgId: 'UI_InsertGraphic' });
 		},
 		/**
 		 * 顯示線上說明
 		 */
-		'online-help': function() {
-			L.dialog.run('ShowHelp', {id: 'online-help'});
+		'online-help': function () {
+			L.dialog.run('ShowHelp', { id: 'online-help' });
 		},
 		/**
 		 * 顯示鍵盤快捷鍵說明
 		 */
-		'keyboard-shortcuts': function() {
-			L.dialog.run('ShowHelp', {id: 'keyboard-shortcuts'});
+		'keyboard-shortcuts': function () {
+			L.dialog.run('ShowHelp', { id: 'keyboard-shortcuts' });
 		},
 		/**
 		 * 問題回報
 		 */
-		'report-an-issue': function() {
-			window.open('https://github.com/OSSII/oxool-community/issues', '_blank');
+		'report-an-issue': function () {
+			window.open(window.brandReportIssueURL, '_blank');
 		},
 		/**
 		 * 顯示「關於」對話框
 		 */
-		'about': function() {
+		'about': function () {
 			this._map.showLOAboutDialog();
 		}
 	},
 });
-
-L.control.alternativeCommand = function() {
-	return new L.Control.AlternativeCommand;
-};
