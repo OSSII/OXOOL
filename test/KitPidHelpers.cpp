@@ -14,13 +14,11 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <string>
 
 #include <wsd/OXOOLWSD.hpp>
-#include <Common.hpp>
-#include <Util.hpp>
 
 #include <lokassert.hpp>
-#include <test.hpp>
 #include <testlog.hpp>
 
 std::string getPidList(std::set<pid_t> pids);
@@ -31,134 +29,12 @@ std::set<pid_t> helpers::getSpareKitPids() { return OXOOLWSD::getSpareKitPids();
 
 std::set<pid_t> helpers::getDocKitPids() { return OXOOLWSD::getDocKitPids(); }
 
-/// Get the PID of the forkit
-std::set<pid_t> helpers::getForKitPids()
+pid_t helpers::getForKitPid()
 {
-    std::set<pid_t> pids;
-    if (OXOOLWSD::ForKitProcId >= 0)
-        pids.emplace(OXOOLWSD::ForKitProcId);
-    return pids;
-}
-
-/// How many live oxoolkit processes do we have ?
-int helpers::getOxoolKitProcessCount()
-{
-    return getKitPids().size();
-}
-
-int helpers::countOxoolKitProcesses(const int expected)
-{
-    std::chrono::milliseconds timeoutMs = std::chrono::milliseconds(COMMAND_TIMEOUT_MS) * 8;
-    const auto testname = "countOxoolKitProcesses ";
-    TST_LOG_BEGIN("Waiting until oxoolkit processes are exactly " << expected << ". Oxoolkits: ");
-
-    Util::Stopwatch stopwatch;
-
-    // This does not need to depend on any constant from Common.hpp.
-    // The shorter the better (the quicker the test runs).
-    constexpr int sleepMs = 10;
-
-    // This has to cause waiting for at least COMMAND_TIMEOUT_MS. Tolerate more for safety.
-    const std::size_t repeat = (timeoutMs.count() / sleepMs);
-    int count = getOxoolKitProcessCount();
-    for (std::size_t i = 0; i < repeat; ++i)
-    {
-        TST_LOG_APPEND(count << ' ');
-        if (count == expected)
-        {
-            break;
-        }
-
-        // Give polls in the oxool processes time to time out etc
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
-
-        const int newCount = getOxoolKitProcessCount();
-        if (count != newCount)
-        {
-            // Allow more time until the number settles.
-            i = 0;
-            count = newCount;
-        }
-    }
-
-    TST_LOG_END;
-    LOK_ASSERT(expected == count);
-    if (expected != count)
-    {
-        TST_LOG_BEGIN("Found " << count << " LoKit processes but was expecting " << expected << ": [");
-        for (pid_t i : getKitPids())
-        {
-            TST_LOG_APPEND(i << ' ');
-        }
-        TST_LOG_APPEND(']');
-        TST_LOG_END;
-
-    }
-
-    std::set<pid_t> pids = getKitPids();
-    std::ostringstream oss;
-    oss << "Test kit pids are [";
-    for (pid_t i : pids)
-        oss << i << ' ';
-    oss << "] after waiting for " << stopwatch.elapsed();
-    TST_LOG(oss.str());
-
-    return count;
-}
-
-void helpers::testCountHowManyOxoolkits()
-{
-    const char testname[] = "countHowManyOxoolkits ";
-    resetTestStartTime();
-
-    countOxoolKitProcesses(InitialOxoolKitCount);
-    TST_LOG("Initial oxoolkit count is " << InitialOxoolKitCount);
-    LOK_ASSERT(InitialOxoolKitCount > 0);
-
-    resetTestStartTime();
-}
-
-void helpers::testNoExtraOxoolKitsLeft()
-{
-    const char testname[] = "noExtraOxoolKitsLeft ";
-    const int countNow = countOxoolKitProcesses(InitialOxoolKitCount);
-    LOK_ASSERT_EQUAL(InitialOxoolKitCount, countNow);
-
-    const auto durationMs = timeSinceTestStartMs();
-
-    TST_LOG(" (" << durationMs << ')');
-}
-
-void helpers::waitForKitProcessToStop(
-        const pid_t pid,
-        const std::string& testname,
-        const std::chrono::milliseconds timeoutMs /* = COMMAND_TIMEOUT_MS * 8 */,
-        const std::chrono::milliseconds retryMs /* = 10ms */)
-{
-    TST_LOG("Waiting for kit process " << pid << " to stop.");
-
-    std::set<pid_t> pids = getDocKitPids();
-    TST_LOG("Active kit pids are: " << getPidList(pids));
-
-    int tries = (timeoutMs / retryMs);
-    while(pids.contains(pid) && tries >= 0)
-    {
-        std::this_thread::sleep_for(retryMs);
-        pids = getDocKitPids();
-        tries--;
-    }
-
-    if (pids.contains(pid))
-    {
-        std::ostringstream oss;
-        oss << "Timed out waiting for kit process " << pid << " to stop. Active kit pids are: " << getPidList(pids);
-        LOK_ASSERT_FAIL(oss.str());
-    }
-    else
-    {
-        TST_LOG("Finished waiting for kit process " << pid << " to stop.");
-        TST_LOG("Active kit pids are: " << getPidList(pids));
-    }
+    std::string testname = "getForKitPid";
+    pid_t pid = OXOOLWSD::ForKitProcId;
+    LOK_ASSERT_MESSAGE("Expected forkit process id to be >= 0", pid > 0);
+    return pid;
 }
 
 std::string getPidList(std::set<pid_t> pids)
@@ -171,4 +47,83 @@ std::string getPidList(std::set<pid_t> pids)
     }
     oss << "]";
     return oss.str();
+}
+
+void helpers::logKitProcesses(const std::string& testname)
+{
+    std::set<pid_t> docKitPids = getDocKitPids();
+    std::set<pid_t> spareKitPids = getSpareKitPids();
+    TST_LOG("Current kit processes: "
+            << "Doc Kits: " << getPidList(docKitPids)
+            << " Spare Kits: " << getPidList(spareKitPids));
+}
+
+void helpers::waitForKitProcessCount(
+        const std::string& testname,
+        int numDocKits,
+        int numSpareKits /* = -1 */,
+        const std::chrono::milliseconds timeoutMs /* = COMMAND_TIMEOUT_MS * 8 */,
+        const std::chrono::milliseconds retryMs /* = 10ms */)
+{
+    TST_LOG("Waiting for kit process count: "
+            << (numDocKits >= 0 ? "Doc Kits: " + std::to_string(numDocKits) + " " : "")
+            << (numSpareKits >= 0 ? " Spare Kits: " + std::to_string(numSpareKits) + " " : ""));
+
+    std::set<pid_t> docKitPids = getDocKitPids();
+    std::set<pid_t> spareKitPids = getSpareKitPids();
+    bool pass = (numDocKits < 0 || docKitPids.size() == static_cast<size_t>(numDocKits)) &&
+        (numSpareKits < 0 || spareKitPids.size() == static_cast<size_t>(numSpareKits));
+    int tries = (timeoutMs / retryMs);
+
+    TST_LOG("Current kit processes: "
+            << "Doc Kits: " << getPidList(docKitPids)
+            << " Spare Kits: " << getPidList(spareKitPids));
+
+    while (tries >= 0 && !pass)
+    {
+        std::this_thread::sleep_for(retryMs);
+
+        docKitPids = getDocKitPids();
+        spareKitPids = getSpareKitPids();
+        pass = (numDocKits < 0 || docKitPids.size() == static_cast<size_t>(numDocKits)) &&
+            (numSpareKits < 0 || spareKitPids.size() == static_cast<size_t>(numSpareKits));
+        tries--;
+
+        TST_LOG("Current kit processes: "
+                << "Doc Kits: " << getPidList(docKitPids)
+                << " Spare Kits: " << getPidList(spareKitPids));
+    }
+
+    if (pass)
+    {
+        TST_LOG("Finished waiting for kit process count: "
+                << (numDocKits >= 0 ? "Doc Kits: " + std::to_string(numDocKits) + " " : "")
+                << (numSpareKits >= 0 ? " Spare Kits: " + std::to_string(numSpareKits) + " " : ""));
+    }
+    else
+    {
+        std::ostringstream oss;
+        oss << (numDocKits >= 0 ? "Doc Kits: " + std::to_string(numDocKits) + " " : "")
+            << (numSpareKits >= 0 ? " Spare Kits: " + std::to_string(numSpareKits) + " " : "")
+            << "Current kit processes: "
+            << "Doc Kits: " << getPidList(docKitPids)
+            << " Spare Kits: " << getPidList(spareKitPids);
+        LOK_ASSERT_FAIL("Timed out waiting for kit process count: " + oss.str());
+    }
+}
+
+void helpers::waitForKitPidsReady(
+        const std::string& testname,
+        const std::chrono::milliseconds timeoutMs /* = KIT_PID_TIMEOUT_MS */,
+        const std::chrono::milliseconds retryMs /* = KIT_PID_RETRY_MS */)
+{
+    waitForKitProcessCount(testname, 0, 1, timeoutMs, retryMs);
+}
+
+void helpers::waitForKitPidsKilled(
+        const std::string& testname,
+        const std::chrono::milliseconds timeoutMs /* = KIT_PID_TIMEOUT_MS */,
+        const std::chrono::milliseconds retryMs /* = KIT_PID_RETRY_MS */)
+{
+    waitForKitProcessCount(testname, 0, 0, timeoutMs, retryMs);
 }
