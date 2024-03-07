@@ -349,6 +349,12 @@ L.Control.Menubar = L.Control.extend({
 		this._map.stateChangeHandler.off('.uno:Redo', this._onChangeItemName, this);
 		this._map.stateChangeHandler.off('.uno:Repeat', this._onChangeItemName, this);
 
+		// 如果已經有檔案類別圖示，就移除
+		var docLogoHeader = L.DomUtil.get('document-header');
+		if (docLogoHeader) {
+			docLogoHeader.remove();
+		}
+
 		this._menubarCont.remove();
 		this._menubarCont = null;
 
@@ -988,12 +994,9 @@ L.Control.Menubar = L.Control.extend({
 					}
 
 					// 選項圖示
-					var iconItem = L.DomUtil.create('i', 'menuicon img-icon');
-					var iconURL = 'url("' + this._map.getIconURL(
-						this._data.icon ? this._data.icon : (this._map.isUnoCommand(this._data.name) ? this._data.name : id)
-					) + '")';
-					iconItem.style.backgroundImage = iconURL;
-					this._aItem.appendChild(iconItem);
+					var iconNode = L.DomUtil.create('i', 'menuicon img-icon');
+					/* 先不指定圖示，在 updateState() 時再指定 */
+					this._aItem.appendChild(iconNode);
 
 					// 建立選項名稱專用 node，並指定 class name 為 item-text
 					L.DomUtil.create('span', 'item-text', this._aItem);
@@ -1148,7 +1151,13 @@ L.Control.Menubar = L.Control.extend({
 				// 如果有名稱，且名稱是 .uno: 開頭，就以名稱作為命令查詢
 				// 否則以 id 作為命令查詢，不管 id 是否有 .uno: 開頭
 				var command = this._map.isUnoCommand(this._data.name) ? this._data.name : id;
-				var state = self._map['stateChangeHandler'].getItemProperty(command);
+
+				// 選項圖示的 node
+				var iconNode = this._aItem.querySelector('.menuicon');
+				iconNode.style.backgroundImage = 'url("' + this._map.getIconURL(
+					this._data.icon ? this._data.icon : command) + '")';
+
+				var state = self._map['stateChangeHandler'].getItemProperty(id);
 				if (this._map.isEditMode()) {
 					this.setDisabled(state.disabled()); // 是否禁用
 					this.setChecked(state.checked()); // 是否勾選
