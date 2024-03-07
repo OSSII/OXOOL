@@ -870,22 +870,4 @@ L.Map.include({
 		}.bind(this));
 	},
 
-	// 保留原有的 dispatch function
-	_savedDispatch: this.dispatch,
-
-	/**
-	 * 重新定義 dispatch function
-	 * @param {string} action - 指令名稱
-	 */
-	dispatch: function(action) {
-		// 如果是在白名單中的指令，就執行，否則就呼叫原來的 dispatch
-		if (this.executeAllowedCommand(action))
-			return;
-
-		// 檢查是否有指定的 callback function
-		if (typeof(this._savedDispatch) === 'function') {
-			// 有的話就呼叫
-			this._savedDispatch(action);
-		}
-	}
 });
