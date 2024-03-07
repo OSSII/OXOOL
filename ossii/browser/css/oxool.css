@@ -28,7 +28,7 @@
 
 /* Dialog content */
 .ui-widget-content {
-	font-family: var(--oxool-font);
+	font-family: var(--oxool-font) !important;
 }
 
 /* Context menu */
@@ -38,9 +38,9 @@
 }
 
 .context-menu-item {
-	margin-left: 3px;
-	margin-right: 3px;
-	border-radius: 5px;
+	margin-left: 3px !important;
+	margin-right: 3px !important;
+	border-radius: 5px !important;
 	font-size: var(--context-menu-item-font-size) !important;
 	padding-top: 3px !important;
 	padding-bottom: 3px !important;
@@ -60,19 +60,19 @@
 }
 
 .context-menu-image-icon {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	left: 16px;
-	height: 18px;
-	width: 18px;
-	background-color: transparent;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: contain;
-	-moz-background-size: contain;
-	-webkit-background-size: contain;
-	-o-background-size: contain;
+	position: absolute !important;
+	top: 50% !important;
+	transform: translateY(-50%) !important;
+	left: 16px !important;
+	height: 18px !important;
+	width: 18px !important;
+	background-color: transparent !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: contain !important;
+	-moz-background-size: contain !important;
+	-webkit-background-size: contain !important;
+	-o-background-size: contain !important;
 }
 
 .context-menu-separator {
@@ -95,11 +95,11 @@
 }
 
 .context-menu-submenu.context-menu-hover:after {
-	border-color: transparent transparent transparent var(--color-background-lighter);
+	border-color: transparent transparent transparent var(--color-background-lighter) !important;
 }
 
 .context-menu-submenu:after {
-	right: 6px;
+	right: 6px !important;
 	/*border-color: transparent transparent transparent #2f2f2f;*/
 	border-width: 0.3em 0 0.3em 0.3em !important;
 }
