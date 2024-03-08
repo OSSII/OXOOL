@@ -166,7 +166,7 @@ L.Map.include({
 			return pInfo.isProtected();
 		}
 		// 否則從 stateChangeHandler 取得
-		var state = this.stateChangeHandler.getItemProperty('.uno:Protect');
+		var state = this.stateChangeHandler.getState('.uno:Protect');
 		return state.checked();
 	},
 

@@ -193,8 +193,7 @@ L.Map.AlternativeCommand = L.Handler.extend({
 		 */
 		'toggledarktheme': function (e) {
 			this._map.uiManager.toggleDarkMode();
-			var event = this.createStateEvent(e.commandName, this._map.uiManager.isDarkMode());
-			this._map.fire('commandstatechanged', event);
+			this._map.stateChangeHandler.setState(e.commandName, this._map.uiManager.getDarkModeState());
 		},
 		/**
 		 * 貼上無格式設定的文字
@@ -221,12 +220,12 @@ L.Map.AlternativeCommand = L.Handler.extend({
 		'.uno:FullScreen': function (e) {
 			var isFullscreen = this._map.uiManager.isFullscreen(); // 全螢幕狀態
 			L.toggleFullScreen(); // 切換
-
-			var event = this.createStateEvent(e.commandName, !isFullscreen);
-			this._map.fire('commandstatechanged', event);
+			this._map.stateChangeHandler.setState(e.commandName, !isFullscreen);
 		},
 		'fullscreen': function (e) {
-			this.run('.uno:FullScreen', e.json);
+			var isFullscreen = this._map.uiManager.isFullscreen(); // 全螢幕狀態
+			L.toggleFullScreen(); // 切換
+			this._map.stateChangeHandler.setState(e.commandName, !isFullscreen);
 		},
 		/**
 		 * 拉遠

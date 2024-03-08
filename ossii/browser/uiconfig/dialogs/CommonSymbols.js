@@ -19,6 +19,12 @@ L.dialog.CommonSymbols = {
 			return;
 		}
 
+		// 建立 style sheet
+		var style = L.DomUtil.create('style', '', this._dialog);
+		style.textContent =
+		'.oxool-symbol {border: 1px dotted #4297d7; margin: 4px; min-width: 20px; height: 20px; font-size: var(--default-font-size); line-height: var(--default-height); text-align: center; display: inline-block;}' +
+		'.oxool-symbol:hover {cursor: pointer;}';
+
 		var symbolTabs = L.DomUtil.create('div', '', this._dialog);
 		var ul = L.DomUtil.create('ul', '', symbolTabs);
 
@@ -82,7 +88,7 @@ L.dialog.CommonSymbols = {
 			draggable: true,
 			closeOnEscape: true,
 			close: function(/*e, ui*/) {
-				map.stateChangeHandler.setItemProperty(that._commandName, 'false');
+				map.stateChangeHandler.setState(that._commandName, false);
 				map.focus();
 			},
 			buttons: [
@@ -115,6 +121,6 @@ L.dialog.CommonSymbols = {
 			isOpen = true;
 		}
 		// 設定該指令狀態
-		this._map.stateChangeHandler.setItemProperty(this._commandName, isOpen ? 'true' : 'false');
+		this._map.stateChangeHandler.setState(this._commandName, isOpen);
 	},
 };

@@ -18,6 +18,8 @@
      */
     // register the alternative command handler
     app.map.addHandler('alternativeCommand', L.Map.AlternativeCommand);
+    // register the state change handler extension
+    app.map.addHandler('stateChangeExtend', L.Map.StateChangeExtend);
 
     // register the dialogs control
     app.map.addControl(L.control.dialogs());

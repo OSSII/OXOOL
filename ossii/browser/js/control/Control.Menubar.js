@@ -3,7 +3,7 @@
 * Control.Menubar
 */
 
-/* global app $ _ _UNO L */
+/* global $ _ _UNO L */
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help, eg: mobiledrawing)
 	options: {
@@ -694,7 +694,7 @@ L.Control.Menubar = L.Control.extend({
 		case 'languageparagraph':
 		case 'languagealltext':
 			var constLang = '.uno:LanguageStatus?Language:string=';
-			var langState = this._map.stateChangeHandler.getItemProperty('.uno:LanguageStatus');
+			var langState = this._map.stateChangeHandler.getState('.uno:LanguageStatus');
 			var menuType;
 			var constLangNone = 'LANGUAGE_NONE';
 			var constResetLang = 'RESET_LANGUAGES';
@@ -1157,7 +1157,7 @@ L.Control.Menubar = L.Control.extend({
 				iconNode.style.backgroundImage = 'url("' + this._map.getIconURL(
 					this._data.icon ? this._data.icon : command) + '")';
 
-				var state = self._map['stateChangeHandler'].getItemProperty(id);
+				var state = self._map['stateChangeHandler'].getState(id);
 				if (this._map.isEditMode()) {
 					this.setDisabled(state.disabled()); // 是否禁用
 					this.setChecked(state.checked()); // 是否勾選
@@ -1166,23 +1166,6 @@ L.Control.Menubar = L.Control.extend({
 					if (self.options.dynamicMenu[command] !== undefined) {
 						// 建立該選項的子選單
 						self._createDynamicMenu(command, this._liItem);
-					}
-
-					if (id === 'showresolved') {
-						var section = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name);
-						if (section) {
-							if (section.sectionProperties.commentList.length === 0) {
-								this.setDisabled(true);
-							} else if (section.sectionProperties.showResolved) {
-								this.setDisabled(false);
-								this.setChecked(true);
-							} else {
-								this.setDisabled(false);
-								this.setChecked(false);
-							}
-						}
-					} else if (id === 'fullscreen') {
-						this.setChecked(self._map.uiManager.isFullscreen());
 					}
 				} else {
 					this.setDisabled(!this._executeReadonly);

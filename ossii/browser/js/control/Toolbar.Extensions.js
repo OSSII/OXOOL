@@ -304,7 +304,7 @@ L.Map.include({
 				that._allowedCommands.commonSymbolsData = data;
 			},
 			error: function() {
-				/* that.stateChangeHandler.setItemProperty('dialog:CommonSymbols', 'disabled'); */
+				/* that.stateChangeHandler.setState('dialog:CommonSymbols', 'disabled'); */
 			}
 		});
 	},

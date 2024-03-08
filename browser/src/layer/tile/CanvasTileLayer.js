@@ -3150,19 +3150,13 @@ L.CanvasTileLayer = L.Layer.extend({
 			// json.state as empty string is fine, for example it means no selection
 			// when json.commandName is '.uno:RowColSelCount'.
 			if (json.commandName && json.state !== undefined) {
-				// Modified by Firefly<firefly@ossii.com.tw
-				// 不直接廣播指令狀態，改為先送給 stateChangeHandler
-				//this._map.fire('commandstatechanged', json);
-				this._map.stateChangeHandler._onStateChanged(json);
+				this._map.fire('commandstatechanged', json);
 			}
 		} else {
 			var index = textMsg.indexOf('=');
 			var commandName = index !== -1 ? textMsg.substr(0, index) : '';
 			var state = index !== -1 ? textMsg.substr(index + 1) : '';
-			// Modified by Firefly<firefly@ossii.com.tw
-			// 不直接廣播指令狀態，改為先送給 stateChangeHandler
-			//this._map.fire('commandstatechanged', {commandName : commandName, state : state});
-			this._map.stateChangeHandler._onStateChanged({commandName : commandName, state : state});
+			this._map.fire('commandstatechanged', {commandName : commandName, state : state});
 		}
 	},
 

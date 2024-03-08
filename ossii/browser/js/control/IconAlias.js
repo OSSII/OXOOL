@@ -490,7 +490,7 @@ L.Map.include({
 		if ($itemElement.hasClass('iconOK')) {
 			// 沒有指定 checktype
 			if (item.checktype === undefined) {
-				var state = this.stateChangeHandler.getItemProperty(itemKey);
+				var state = this.stateChangeHandler.getState(itemKey);
 				if (state.checked()) {
 					$itemElement.addClass('context-menu-icon');
 				} else {
