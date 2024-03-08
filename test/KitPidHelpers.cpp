@@ -8,29 +8,47 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+#include "KitPidHelpers.hpp"
 
-#pragma once
-
+#include <set>
 #include <chrono>
 #include <iostream>
 #include <thread>
 
-#include <cppunit/extensions/HelperMacros.h>
-
-#include <Poco/DirectoryIterator.h>
-#include <Poco/FileStream.h>
-#include <Poco/StreamCopier.h>
-
+#include <wsd/OXOOLWSD.hpp>
 #include <Common.hpp>
-#include "Util.hpp"
-#include "lokassert.hpp"
-#include "test.hpp"
-#include "testlog.hpp"
+#include <Util.hpp>
 
-static int countOxoolKitProcesses(const int expected,
-                                 std::chrono::milliseconds timeoutMs
-                                 = std::chrono::milliseconds(COMMAND_TIMEOUT_MS * 8))
+#include <lokassert.hpp>
+#include <test.hpp>
+#include <testlog.hpp>
+
+std::string getPidList(std::set<pid_t> pids);
+
+std::set<pid_t> helpers::getKitPids() { return OXOOLWSD::getKitPids(); }
+
+std::set<pid_t> helpers::getSpareKitPids() { return OXOOLWSD::getSpareKitPids(); }
+
+std::set<pid_t> helpers::getDocKitPids() { return OXOOLWSD::getDocKitPids(); }
+
+/// Get the PID of the forkit
+std::set<pid_t> helpers::getForKitPids()
 {
+    std::set<pid_t> pids;
+    if (OXOOLWSD::ForKitProcId >= 0)
+        pids.emplace(OXOOLWSD::ForKitProcId);
+    return pids;
+}
+
+/// How many live oxoolkit processes do we have ?
+int helpers::getOxoolKitProcessCount()
+{
+    return getKitPids().size();
+}
+
+int helpers::countOxoolKitProcesses(const int expected)
+{
+    std::chrono::milliseconds timeoutMs = std::chrono::milliseconds(COMMAND_TIMEOUT_MS) * 8;
     const auto testname = "countOxoolKitProcesses ";
     TST_LOG_BEGIN("Waiting until oxoolkit processes are exactly " << expected << ". Oxoolkits: ");
 
@@ -64,6 +82,7 @@ static int countOxoolKitProcesses(const int expected,
     }
 
     TST_LOG_END;
+    LOK_ASSERT(expected == count);
     if (expected != count)
     {
         TST_LOG_BEGIN("Found " << count << " LoKit processes but was expecting " << expected << ": [");
@@ -87,37 +106,69 @@ static int countOxoolKitProcesses(const int expected,
     return count;
 }
 
-// FIXME: we probably should make this extern
-// and reuse it. As it stands now, it is per
-// translation unit, which isn't desirable if
-// (in the non-ideal event that) it's not 1,
-// it will cause testNoExtraOxoolKitsLeft to
-// wait unnecessarily and fail.
-static int InitialOxoolKitCount = 1;
-static std::chrono::steady_clock::time_point TestStartTime;
-
-static void testCountHowManyOxoolkits()
+void helpers::testCountHowManyOxoolkits()
 {
     const char testname[] = "countHowManyOxoolkits ";
-    TestStartTime = std::chrono::steady_clock::now();
+    resetTestStartTime();
 
-    InitialOxoolKitCount = countOxoolKitProcesses(InitialOxoolKitCount);
+    countOxoolKitProcesses(InitialOxoolKitCount);
     TST_LOG("Initial oxoolkit count is " << InitialOxoolKitCount);
     LOK_ASSERT(InitialOxoolKitCount > 0);
 
-    TestStartTime = std::chrono::steady_clock::now();
+    resetTestStartTime();
 }
 
-static void testNoExtraOxoolKitsLeft()
+void helpers::testNoExtraOxoolKitsLeft()
 {
     const char testname[] = "noExtraOxoolKitsLeft ";
     const int countNow = countOxoolKitProcesses(InitialOxoolKitCount);
     LOK_ASSERT_EQUAL(InitialOxoolKitCount, countNow);
 
-    const auto duration = (std::chrono::steady_clock::now() - TestStartTime);
-    const auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    const auto durationMs = timeSinceTestStartMs();
 
     TST_LOG(" (" << durationMs << ')');
 }
 
-/* vim:set shiftwidth=4 softtabstop=4 expandtab: */
+void helpers::waitForKitProcessToStop(
+        const pid_t pid,
+        const std::string& testname,
+        const std::chrono::milliseconds timeoutMs /* = COMMAND_TIMEOUT_MS * 8 */,
+        const std::chrono::milliseconds retryMs /* = 10ms */)
+{
+    TST_LOG("Waiting for kit process " << pid << " to stop.");
+
+    std::set<pid_t> pids = getDocKitPids();
+    TST_LOG("Active kit pids are: " << getPidList(pids));
+
+    int tries = (timeoutMs / retryMs);
+    while(pids.contains(pid) && tries >= 0)
+    {
+        std::this_thread::sleep_for(retryMs);
+        pids = getDocKitPids();
+        tries--;
+    }
+
+    if (pids.contains(pid))
+    {
+        std::ostringstream oss;
+        oss << "Timed out waiting for kit process " << pid << " to stop. Active kit pids are: " << getPidList(pids);
+        LOK_ASSERT_FAIL(oss.str());
+    }
+    else
+    {
+        TST_LOG("Finished waiting for kit process " << pid << " to stop.");
+        TST_LOG("Active kit pids are: " << getPidList(pids));
+    }
+}
+
+std::string getPidList(std::set<pid_t> pids)
+{
+    std::ostringstream oss;
+    oss << "[";
+    for (pid_t i : pids)
+    {
+        oss << i << ", ";
+    }
+    oss << "]";
+    return oss.str();
+}

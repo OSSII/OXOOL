@@ -37,7 +37,6 @@
 
 #include <helpers.hpp>
 #include <Unit.hpp>
-#include <wsd/OXOOLWSD.hpp>
 #if ENABLE_SSL
 #include <Ssl.hpp>
 #include <SslSocket.hpp>
@@ -292,37 +291,5 @@ bool runClientTests(const char* cmd, bool standalone, bool verbose)
 
     return result.wasSuccessful();
 }
-
-// Standalone tests don't really use WSD
-#ifndef STANDALONE_CPPUNIT
-
-std::set<pid_t> getKitPids()
-{
-    return OXOOLWSD::getKitPids();
-}
-std::set<pid_t> getSpareKitPids()
-{
-    return OXOOLWSD::getSpareKitPids();
-}
-std::set<pid_t> getDocKitPids()
-{
-    return OXOOLWSD::getDocKitPids();
-}
-
-/// Get the PID of the forkit
-std::set<pid_t> getForKitPids()
-{
-    std::set<pid_t> pids;
-    if (OXOOLWSD::ForKitProcId >= 0)
-        pids.emplace(OXOOLWSD::ForKitProcId);
-    return pids;
-}
-
-/// How many live oxoolkit processes do we have ?
-int getOxoolKitProcessCount()
-{
-    return getKitPids().size();
-}
-#endif
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -17,7 +17,7 @@
 #include <Session.hpp>
 #include <Common.hpp>
 #include <common/FileUtil.hpp>
-#include <countcoolkits.hpp>
+#include <KitPidHelpers.hpp>
 
 #include <Poco/Net/AcceptCertificateHandler.h>
 #include <Poco/Net/FilePartSource.h>
@@ -99,14 +99,14 @@ public:
     void setUp()
     {
         helpers::resetTestStartTime();
-        testCountHowManyOxoolkits();
+        helpers::testCountHowManyOxoolkits();
         helpers::resetTestStartTime();
     }
 
     void tearDown()
     {
         helpers::resetTestStartTime();
-        testNoExtraOxoolKitsLeft();
+        helpers::testNoExtraOxoolKitsLeft();
         helpers::resetTestStartTime();
     }
 
