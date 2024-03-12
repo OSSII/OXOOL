@@ -229,16 +229,6 @@ L.Map.include({
 			var allowed = (wopi.HideExportOption !== true);
 			var cmdName = 'downloadas-' + item.format;
 			this._allowedCommands.featureCommand[cmdName] = allowed;
-			// 也放入替代指令中
-			if (allowed) {
-				this.alternativeCommand.add(cmdName, function(e) {
-					var format = e.commandName.substring('downloadas-'.length);
-					var fileName = this._map['wopi'].BaseFileName;
-					fileName = fileName.substr(0, fileName.lastIndexOf('.'));
-					fileName = fileName === '' ? _('noname') : fileName;
-					this._map.downloadAs(fileName + '.' + format, format);
-				});
-			}
 		}.bind(this));
 		//-------------------------------------------------------------------------
 
