@@ -878,7 +878,7 @@ msgstr "EPUB 電子書(.epub)"
 
 #: src/control/Control.Menubar.js:76 src/control/Control.UIManager.js:163
 msgid "Rename Document"
-msgstr "修復文件"
+msgstr "重新命名"
 
 #: src/control/Control.Menubar.js:77 src/control/Control.Menubar.js:385
 #: src/control/Control.Menubar.js:535 src/control/Control.Menubar.js:665
@@ -1936,11 +1936,11 @@ msgstr "隱藏選單"
 
 #: src/control/Control.UIManager.js:163
 msgid "Enter new name"
-msgstr ""
+msgstr "輸入新名稱"
 
 #: src/control/Control.UIManager.js:791
 msgid "Show Menu"
-msgstr ""
+msgstr "顯示選單"
 
 #: src/control/Control.UIManager.js:1092
 msgid "Dismiss"
@@ -2132,7 +2132,7 @@ msgstr ""
 
 #: src/control/Permission.js:18 src/control/Permission.js:19
 msgid "Edit document"
-msgstr ""
+msgstr "編輯文件"
 
 #: src/control/Permission.js:76
 msgid "The document could not be locked, and is opened in read-only mode."
@@ -2436,7 +2436,7 @@ msgstr ""
 
 #: src/docstate.js:96
 msgid "Document colors"
-msgstr ""
+msgstr "文件色彩"
 
 #: src/errormessages.js:22
 msgid "No disk space left on server."
@@ -2641,11 +2641,11 @@ msgstr "移除連結"
 
 #: src/layer/tile/CanvasTileLayer.js:5151
 msgid "Debug Tools"
-msgstr ""
+msgstr "除錯工具"
 
 #: src/layer/tile/CanvasTileLayer.js:5153
 msgid "Ctrl+Shift+Alt+D to exit"
-msgstr ""
+msgstr "Ctrl+Shift+Alt+D 結束"
 
 #: src/layer/tile/CanvasTileLayer.js:5982
 msgid "No Comments"
@@ -2820,20 +2820,20 @@ msgstr ""
 
 #: src/map/handler/Map.SlideShow.js:157
 msgid "Presenting in window"
-msgstr ""
+msgstr "視窗投影"
 
 #: src/map/handler/Map.SlideShow.js:158
 msgid "Close Presentation"
-msgstr ""
+msgstr "關閉投影"
 
 #: src/map/handler/Map.SlideShow.js:178
 msgid "Presenting in fullscreen"
-msgstr ""
+msgstr "全螢幕投影"
 
 #: src/map/handler/Map.SlideShow.js:179
 #, fuzzy
 msgid "End Presentation"
-msgstr "投影"
+msgstr "結束投影"
 
 #: src/map/handler/Map.SlideShow.js:234
 msgid "Already presenting"
