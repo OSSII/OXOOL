@@ -14,6 +14,8 @@ L.Map.include({
 	_cmdDarkIconDIR: 'cmd/dark/',
 	// resource 圖示路徑
 	_resIconDIR: 'res/',
+	// resource (dark)圖示路徑
+	_resDarkIconDIR: 'res/dark/',
 
 	_iconAlias: {
 		'acceptchanges': 'accepttrackedchanges',
@@ -580,6 +582,7 @@ L.Map.include({
 			break;
 
 		default:
+			iconDIR = this.uiManager.getDarkModeState() ? 'dark/': '';
 			iconName = 'lc_' + iconName;
 			break;
 		}
