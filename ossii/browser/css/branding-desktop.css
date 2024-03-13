@@ -25,7 +25,7 @@ body #document-header .document-logo {
 }
 
 [data-theme='dark'] #product-logo {
-	background: url('images/res/about_inverted.svg') no-repeat center/82px;
+	background: url('images/res/dark/about.svg') no-repeat center/82px;
 }
 
 #lokit-logo {

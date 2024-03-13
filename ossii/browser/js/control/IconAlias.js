@@ -572,7 +572,7 @@ L.Map.include({
 
 		switch (category) {
 		case 'res':
-			iconDIR = this._resIconDIR;
+			iconDIR = this.uiManager.getDarkModeState() ? this._resDarkIconDIR : this._resIconDIR;
 			break;
 
 		case '.uno':
