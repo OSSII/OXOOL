@@ -12,6 +12,11 @@
 				"comment": "替代指令"
 			},
 			{
+				"id": "renamedocument",
+				"name": "Rename Document",
+				"comment": "替代指令"
+			},
+			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share...",
 				"id": "ShareAs"
@@ -237,12 +242,22 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:ToolbarModeUI",
+				"id": "toggleuimode",
 				"name": "Tabbed view",
-				"comment": "替代指令"
+				"commit": "替代指令"
 			},
 			{
 				"id": ".uno:StatusBarVisible"
+			},
+			{
+				"id": "togglemenubar",
+				"name": "Menu Bar",
+				"comment": "替代指令"
+			},
+			{
+				"id": "toggledarktheme",
+				"name": "Dark mode",
+				"commit": "替代指令"
 			},
 			{
 				"type": "--"
@@ -298,6 +313,10 @@
 			{
 				"id": ".uno:Sidebar",
 				"hotkey": "Ctrl+F5"
+			},
+			{
+				"id": ".uno:Navigator",
+				"hotkey": "F5"
 			}
 		]
 	},
@@ -1175,7 +1194,31 @@
 				"id": ".uno:ConditionalFormatMenu",
 				"menu": [
 					{
-						"id": ".uno:ConditionalFormatDialog"
+						"id": ".uno:ConditionalFormatConditionMenu",
+						"menu": [
+							{
+								"id": ".uno:ConditionalFormatEasy?FormatRule:short=2"
+							},
+							{
+								"id": ".uno:ConditionalFormatEasy?FormatRule:short=1"
+							},
+							{
+								"id": ".uno:ConditionalFormatEasy?FormatRule:short=0"
+							},
+							{
+								"id": ".uno:ConditionalFormatEasy?FormatRule:short=6"
+							},
+							{
+								"id": ".uno:ConditionalFormatEasy?FormatRule:short=23"
+							},
+							{
+								"type": "--"
+							},
+							{
+								"id": ".uno:ConditionalFormatDialog"
+							}
+
+						]
 					},
 					{
 						"id": ".uno:ColorScaleFormatDialog"
@@ -1191,11 +1234,17 @@
 					},
 					{
 						"type": "--"
+					},
+					{
+						"id": ".uno:ConditionalFormatManagerDialog"
 					}
 				]
 			},
 			{
 				"id": ".uno:AutoFormat"
+			},
+			{
+				"id": ".uno:ThemeDialog"
 			},
 			{
 				"type": "--"
@@ -1226,7 +1275,27 @@
 				]
 			},
 			{
-				"id": ".uno:ObjectMenu",
+				"id": ".uno:FormatSparklineMenu",
+				"menu": [
+					{
+						"id": ".uno:EditSparklineGroup"
+					},
+					{
+						"id": ".uno:DeleteSparkline"
+					},
+					{
+						"id": ".uno:DeleteSparklineGroup"
+					},
+					{
+						"id": ".uno:GroupSparklines"
+					},
+					{
+						"id": ".uno:UngroupSparklines"
+					}
+				]
+			},
+			{
+				"id": ".uno:FormatObjectMenu",
 				"menu": [
 					{
 						"id": ".uno:TransformDialog"
@@ -1356,6 +1425,24 @@
 			},
 			{
 				"id": ".uno:NoteCellStyles"
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:StyleUpdateByExample",
+				"hide": true
+			},
+			{
+				"id": ".uno:StyleNewByExample",
+				"hide": true
+			},
+			{
+				"type": "--"
+			},
+			{
+				"id": ".uno:DesignerDialog",
+				"hide": true
 			}
 		]
 	},

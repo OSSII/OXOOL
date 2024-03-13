@@ -208,12 +208,25 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:ToolbarModeUI",
+				"id": "toggleuimode",
 				"name": "Tabbed view",
-				"comment": "替代指令"
+				"commit": "替代指令"
 			},
 			{
 				"id": ".uno:StatusBarVisible"
+			},
+			{
+				"id": "togglemenubar",
+				"name": "Menu Bar",
+				"comment": "替代指令"
+			},
+			{
+				"id": "toggledarktheme",
+				"name": "Dark mode",
+				"commit": "替代指令"
+			},
+			{
+				"type": "--"
 			},
 			{
 				"id": ".uno:GridMenu",

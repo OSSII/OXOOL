@@ -12,9 +12,15 @@
 				"comment": "替代指令"
 			},
 			{
+				"id": "renamedocument",
+				"name": "Rename Document",
+				"comment": "替代指令"
+			},
+			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share",
-				"id": "ShareAs"
+				"id": "ShareAs",
+				"comment": "替代指令"
 			},
 			{
 				"id": ".uno:Print",
@@ -286,7 +292,7 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:ToolbarModeUI",
+				"id": "toggleuimode",
 				"name": "Tabbed view",
 				"commit": "替代指令"
 			},
@@ -296,6 +302,19 @@
 			},
 			{
 				"id": ".uno:StatusBarVisible"
+			},
+			{
+				"id": "togglemenubar",
+				"name": "Menu Bar",
+				"comment": "替代指令"
+			},
+			{
+				"id": "toggledarktheme",
+				"name": "Dark mode",
+				"commit": "替代指令"
+			},
+			{
+				"type": "--"
 			},
 			{
 				"id": ".uno:GridMenu",
@@ -346,8 +365,8 @@
 				"comment": "顯示/隱藏註解"
 			},
 			{
-				"name": ".uno:ShowResolvedAnnotations",
-				"id": "showresolved"
+				"id": ".uno:ShowResolvedAnnotations",
+				"comment":"替代指令"
 			},
 			{
 				"type": "--"
@@ -366,6 +385,10 @@
 			{
 				"id": ".uno:Sidebar",
 				"hotkey": "Ctrl+F5"
+			},
+			{
+				"id": ".uno:Navigator",
+				"hotkey": "F5"
 			}
 		]
 	},
@@ -1791,6 +1814,35 @@
 		]
 	},
 	{
+		"id": ".uno:ContentControlsMenu",
+		"menu":[
+			{
+				"icon": "insertcontentcontrol",
+				"id": ".uno:InsertContentControl"
+			},
+			{
+				"icon": "insertpicturecontentcontrol",
+				"id": ".uno:InsertPictureContentControl"
+			},
+			{
+				"icon": "checkbox",
+				"id": ".uno:InsertCheckboxContentControl"
+			},
+			{
+				"icon": "insertdropdowncontentcontrol",
+				"id": ".uno:InsertDropdownContentControl"
+			},
+			{
+				"icon": "datefield",
+				"id": ".uno:InsertDateContentControl"
+			},
+			{
+				"icon": "contentcontrolproperties",
+				"id": ".uno:ContentControlProperties"
+			}
+		]
+	},
+	{
 		"id": ".uno:ToolsMenu",
 		"menu": [
 			{
@@ -1800,6 +1852,9 @@
 			{
 				"id": ".uno:SpellOnline",
 				"hotkey": "Shift+F7"
+			},
+			{
+				"id": ".uno:ThesaurusDialog"
 			},
 			{
 				"id": ".uno:LanguageMenu",
@@ -1838,6 +1893,12 @@
 				"id": ".uno:WordCountDialog"
 			},
 			{
+				"id": "togglea11ystate",
+				"name": "Voice Over",
+				"hide": true,
+				"comment": "替代指令"
+			},
+			{
 				"id": ".uno:AccessibilityCheck",
 				"hide": true
 			},
@@ -1865,7 +1926,7 @@
 				"id": ".uno:FootnoteDialog"
 			},
 			{
-				"name": "Binding line",
+				"name": "Binding Line Menu",
 				"id": "bindingbline",
 				"menu": [
 					{
