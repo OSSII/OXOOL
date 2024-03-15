@@ -6333,6 +6333,9 @@ int OXOOLWSD::innerMain()
 #endif
     }
 
+    // Lots of polls will stop; stop watching them first.
+    SocketPoll::shutdownWatchdog();
+
     // Stop the listening to new connections
     // and wait until sockets close.
     LOG_INF("Stopping server socket listening. ShutdownRequestFlag: " <<
