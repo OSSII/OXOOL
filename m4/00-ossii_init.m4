@@ -17,7 +17,7 @@ m4_define([ossii_CORE_OFFICE], ['oxoffice'])
 m4_define([ossii_WSD_NAME], [oxoolwsd])
 
 # define the name of the library. This is the name of the shared object
-m4_define([ossii_LIB_NAME], [OxOOL]])
+m4_define([ossii_LIB_NAME], [OxOOL])
 
 AC_DEFUN([ossii_INIT],[
     AC_SUBST([PRODUCTNAME], [ossii_PRODUCT_NAME])
