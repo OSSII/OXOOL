@@ -2,7 +2,7 @@
 /* global L app */
 
 (function (global) {
-    global.brandProductName = 'MODA ODF Web';
+    global.brandProductName = 'OxOffice Online';
     global.brandProductURL = 'https://moda.gov.tw';
     global.brandProductFAQURL = 'https://www.facebook.com/OSSIITW/';
 })(window);

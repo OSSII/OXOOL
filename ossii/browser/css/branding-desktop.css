@@ -21,11 +21,11 @@ body #document-header .document-logo {
 
 #product-logo {
 	flex-grow: 1 !important;
-	background: url('images/res/about.svg') no-repeat center/82px;
+	background: url('images/res/about.png') no-repeat center/82px;
 }
 
 [data-theme='dark'] #product-logo {
-	background: url('images/res/dark/about.svg') no-repeat center/82px;
+	background: url('images/res/about.png') no-repeat center/82px;
 }
 
 #lokit-logo {
