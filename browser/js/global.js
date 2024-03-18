@@ -89,8 +89,8 @@ window.app = {
 		var value = this.p.get(name);
 		return value === null ? '' : value;
 	}.bind(oxoolParams);
-	oxoolParams.set = function(name) {
-		this.p.set(name);
+	oxoolParams.set = function(name, value) {
+		this.p.set(name, value);
 	}.bind(oxoolParams);
 	global.oxoolParams = oxoolParams;
 
