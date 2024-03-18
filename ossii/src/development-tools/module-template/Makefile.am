@@ -51,3 +51,6 @@ endif
 if ENABLE_ADMIN
 	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/admin
 endif
+
+run:
+	@./test.sh "@MODULE_NAME@.xml"
