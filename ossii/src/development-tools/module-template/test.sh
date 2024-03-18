@@ -23,27 +23,43 @@ if test -z "${CURL_CMD}" ; then
     exit 3;
 fi
 
-# modaodfweb is running?
-MODAODFWEB_PID=`pgrep modaodfweb`
-if test -n ${MODAODFWEB_PID} ; then
-    PID=${MODAODFWEB_PID}
-else
-    # oxoolwsd is running?
-    OXOOLWSD_PID=`pgrep oxoolwsd`
-    if test -n ${OXOOLWSD_PID} ; then
-        PID=${OXOOLWSD_PID}
-    fi
-fi
 
+# 檢查 oxoolwsd 或 modaodfweb 是否正在執行
+OXOOLWSD_PID=`pgrep -x oxoolwsd`
+MODAODFWEB_PID=`pgrep -x modaodfweb`
+# 取有值的 PID
+PID=${OXOOLWSD_PID:-$MODAODFWEB_PID}
+# 如果 PID 為空，表示兩者都沒有在執行
 if test -z "${PID}" ; then
     echo -e "${RED}'oxoolwsd' or 'modaodfweb' are not executed.${NC}"
     exit 4;
 fi
 
-TESTING_URL=`cat /tmp/.oxoolmoduletesting 2> /dev/null`
-if test -z "$TESTING_URL" ; then
-    echo -e "${RED}'/tmp/.oxoolmoduletesting' does not exist, cannot get test URL.${NC}"
+# 是哪一個服務在執行
+if test -n "${OXOOLWSD_PID}" ; then
+    echo -e "${GREEN}'oxoolwsd' is running.${NC}"
+else
+    echo -e "${GREEN}'modaodfweb' is running.${NC}"
+fi
+
+
+# 取得測試 URL，檔案可能在 /tmp/.oxoolmoduletesting(舊版)
+# 或 /dev/shm/.oxoolmoduletesting(新版)
+if test -f /tmp/.oxoolmoduletesting ; then
+    TESTING_FILE=/tmp/.oxoolmoduletesting
+elif test -f /dev/shm/.oxoolmoduletesting ; then
+    TESTING_FILE=/dev/shm/.oxoolmoduletesting
+fi
+
+# 如果 TESTING_FILE 為空，表示兩者都不存在
+if test -z "${TESTING_FILE}" ; then
+    echo -e "${RED}'/tmp/.oxoolmoduletesting' or '/dev/shm/.oxoolmoduletesting' does not exist, cannot get test URL.${NC}"
     exit 5;
 fi
 
-${CURL_CMD} "${TESTING_URL}${XML_FILE}"
+# 取得測試 URL
+TESTING_URL=`cat ${TESTING_FILE}`
+FULL_URL="${TESTING_URL}${XML_FILE}"
+echo -e "${GREEN}Test URL: ${FULL_URL}${NC}"
+
+${CURL_CMD} "${FULL_URL}"

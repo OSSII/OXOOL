@@ -6,6 +6,7 @@
  */
 
 #include <fstream>
+#include <vector>
 
 #include <OxOOL/Util.h>
 #include <OxOOL/HttpHelper.h>
@@ -31,13 +32,14 @@ class ModuleTesting : public OxOOL::Module::Base
 public:
 
     ModuleTesting()
-        : maTestingFile("/tmp/.oxoolmoduletesting")
     {
+        maTestingFiles.emplace_back("/dev/shm/.oxoolmoduletesting");
+        maTestingFiles.emplace_back("/tmp/.oxoolmoduletesting"); // 未來會移除
     }
 
     ~ModuleTesting()
     {
-        removeTestingFile();
+        removeTestingFiles();
     }
 
     void initialize() override
@@ -113,33 +115,39 @@ public:
 
 private:
     /// @brief 移除測試 URL 檔
-    void removeTestingFile()
+    void removeTestingFiles()
     {
-        if (Poco::File(maTestingFile).exists())
-            Poco::File(maTestingFile).remove();
+        for (const auto& file : maTestingFiles)
+        {
+            if (Poco::File(file).exists())
+                Poco::File(file).remove();
+        }
     }
 
     /// @brief 建立測試 URL 檔
     void createTestingFile()
     {
-        std::ofstream out(maTestingFile, std::ios::trunc|std::ios::out|std::ios::binary);
-        if (out.is_open())
+        for (const auto& file : maTestingFiles)
         {
-            out << OxOOL::HttpHelper::getProtocol()
-                << "localhost:" << OxOOL::HttpHelper::getPortNumber()
-                << getDetail().serviceURI
-                << "?config=";
-            out.close();
-            LOG_DBG(logTitle() << maTestingFile << " create successfully.");
-        }
-        else
-        {
-            LOG_ERR(logTitle() << "Unable to create" << maTestingFile);
+            std::ofstream out(file, std::ios::trunc|std::ios::out|std::ios::binary);
+            if (out.is_open())
+            {
+                out << OxOOL::HttpHelper::getProtocol()
+                    << "localhost:" << OxOOL::HttpHelper::getPortNumber()
+                    << getDetail().serviceURI
+                    << "?config=";
+                out.close();
+                LOG_DBG(logTitle() << file << " create successfully.");
+            }
+            else
+            {
+                LOG_ERR(logTitle() << "Unable to create" << file);
+            }
         }
     }
 
 private:
-    const std::string maTestingFile;
+    std::vector<std::string> maTestingFiles;
 };
 
 OXOOL_MODULE_EXPORT(ModuleTesting);
