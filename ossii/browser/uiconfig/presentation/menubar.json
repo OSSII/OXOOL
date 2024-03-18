@@ -283,6 +283,13 @@
 				"hotkey": "Ctrl+F5"
 			},
 			{
+				"id": ".uno:Navigator",
+				"hotkey": "F5"
+			},
+			{
+				"type": "--"
+			},
+			{
 				"id": ".uno:ModifyPage"
 			},
 			{
