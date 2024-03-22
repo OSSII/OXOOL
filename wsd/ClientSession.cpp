@@ -20,6 +20,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include <OxOOL/OxOOL.h>
+
 #include <Poco/Base64Decoder.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/StreamCopier.h>
@@ -368,6 +370,14 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         sendTextFrameAndLogError("error: cmd=empty kind=unknown");
         return false;
     }
+
+#if !MOBILEAPP
+    // If the message is handled by the library, return.
+    if (OxOOL::handleClientInput(client_from_this(), tokens, firstLine))
+    {
+        return true;
+    }
+#endif
 
     if (tokens.equals(0, "DEBUG"))
     {
@@ -1719,6 +1729,11 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
 
 #if !MOBILEAPP
     OXOOLWSD::dumpOutgoingTrace(docBroker->getJailId(), getId(), firstLine);
+
+    if (OxOOL::handleKitToClientMessage(client_from_this(), payload))
+    {
+        return true;
+    }
 #endif
 
     const auto& tokens = payload->tokens();

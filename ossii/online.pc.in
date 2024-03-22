@@ -5,9 +5,9 @@ includedir=@includedir@
 config_dir=@OXOOLWSD_CONFIGDIR@
 data_dir=@OXOOLWSD_DATADIR@
 extensions_dir=@OXOOLWSD_DATADIR@/extensions
-modules_dir=@OXOOLWSD_MODULE_DIR@
-module_config_dir=@OXOOLWSD_MODULE_CONFIG_DIR@
-module_data_dir=@OXOOLWSD_MODULE_DATA_DIR@
+modules_dir=@OXOOL_MODULE_DIR@
+module_config_dir=@OXOOL_MODULE_CONFIG_DIR@
+module_data_dir=@OXOOL_MODULE_DATA_DIR@
 
 
 Name: @PACKAGE@

@@ -6,7 +6,6 @@ browser/branding
 # developer
 *.la
 .libs/
-OxOOL.h
 *-xml-config
 *-module-maker
 *.pc

@@ -28,8 +28,7 @@ AC_CONFIG_FILES([ossii/debian-template/rules], [cp ossii/debian-template/rules d
 AC_CONFIG_FILES(m4_esyscmd_s([
 find ossii/ ! -path "ossii/src/development-tools/module-template/*" \
     -type f -name "Makefile.am" \
-    -or -name "online.pc.in" \
-    -or -name "OxOOL.h.in" |
+    -or -name "online.pc.in" |
 while read file
 do
     DIRNAME=`dirname "$file"`

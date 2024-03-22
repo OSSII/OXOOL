@@ -124,6 +124,7 @@ using Poco::Net::PartHandler;
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/Util/XMLConfiguration.h>
 
+#include <OxOOL/OxOOL.h>
 #include <OxOOL/ModuleManager.h>
 
 #include "Admin.hpp"
@@ -4290,7 +4291,7 @@ private:
                 // Unit testing, nothing to do here
             }
             // Prioritize module processing
-            if (OxOOL::ModuleManager::instance().handleRequest(request, disposition))
+            if (OxOOL::handleRequest(request, disposition))
             {
                 // Do nothing.
             }
@@ -5782,7 +5783,6 @@ public:
 
 #if !MOBILEAPP
         _admin.start();
-        OxOOL::ModuleManager::instance().start();
 #endif
     }
 
@@ -5793,7 +5793,6 @@ public:
             WebServerPoll->joinThread();
 #if !MOBILEAPP
         _admin.stop();
-        OxOOL::ModuleManager::instance().stop();
 #endif
     }
 
@@ -6535,6 +6534,9 @@ int OXOOLWSD::main(const std::vector<std::string>& /*args*/)
     SigUtil::resetTerminationFlags();
 #endif
 
+    // Initialize the OxOOL library
+    OxOOL::initialize();
+
     int returnValue;
 
     try {
@@ -6551,6 +6553,9 @@ int OXOOLWSD::main(const std::vector<std::string>& /*args*/)
     }
 
     cleanup();
+
+    // Cleanup the OxOOL library
+    OxOOL::cleanup();
 
     returnValue = UnitBase::uninit();
 

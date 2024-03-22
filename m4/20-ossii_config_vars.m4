@@ -10,19 +10,19 @@ AC_DEFUN([ossii_CONFIG_VARS], [
 OSSII_LDFLAGS=
 if test "$ENABLE_DEBUG" = "true"; then
     modules_dir="`pwd`/ossii/src/modules"
-    OXOOLWSD_MODULE_DIR="${modules_dir}"
-    OXOOLWSD_MODULE_CONFIG_DIR="${modules_dir}"
-    OXOOLWSD_MODULE_DATA_DIR="${modules_dir}"
+    OXOOL_MODULE_DIR="${modules_dir}"
+    OXOOL_MODULE_CONFIG_DIR="${modules_dir}"
+    OXOOL_MODULE_DATA_DIR="${modules_dir}"
     OSSII_LDFLAGS="-Wl,-E,-rpath,`pwd`/ossii/src/lib/.libs"
 else
-    OXOOLWSD_MODULE_DIR=${libdir}/${PACKAGE}
-    OXOOLWSD_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
-    OXOOLWSD_MODULE_DATA_DIR=${prefix}/share/${PACKAGE}/modules
+    OXOOL_MODULE_DIR=${libdir}/${PACKAGE}
+    OXOOL_MODULE_CONFIG_DIR=${sysconfdir}/${PACKAGE}/conf.d
+    OXOOL_MODULE_DATA_DIR=${prefix}/share/${PACKAGE}/modules
 fi
 
-AC_SUBST([OXOOLWSD_MODULE_DIR])
-AC_SUBST([OXOOLWSD_MODULE_CONFIG_DIR])
-AC_SUBST([OXOOLWSD_MODULE_DATA_DIR])
+AC_SUBST([OXOOL_MODULE_DIR])
+AC_SUBST([OXOOL_MODULE_CONFIG_DIR])
+AC_SUBST([OXOOL_MODULE_DATA_DIR])
 
 AC_SUBST([OSSII_CFLAGS], ["-I`pwd`/ossii/src/include -I`pwd`/common -I`pwd`/net -I`pwd`/wsd"])
 AC_SUBST([OSSII_LDFLAGS])

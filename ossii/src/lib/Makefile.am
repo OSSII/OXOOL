@@ -9,6 +9,9 @@
 AM_CPPFLAGS = -pthread -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
 	      -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
 	      -DDEBUG_ABSSRCDIR='"@abs_top_builddir@"' \
+	      -DOXOOL_MODULE_DIR='"@OXOOL_MODULE_DIR@"' \
+	      -DOXOOL_MODULE_CONFIG_DIR='"@OXOOL_MODULE_CONFIG_DIR@"' \
+	      -DOXOOL_MODULE_DATA_DIR='"@OXOOL_MODULE_DATA_DIR@"' \
           $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) $(FONTCONFIG_CFLAGS) \
 		  $(OSSII_CFLAGS)
 
@@ -81,6 +84,7 @@ oxoolwsd_sources = $(top_srcdir)/common/Crypto.cpp \
                   $(top_srcdir)/wsd/oxoolwsd-fork.cpp
 
 oxoolcore_sources = \
+					OxOOL/OxOOL.cpp \
                     OxOOL/Module/Base.cpp \
                     OxOOL/Module/Map.cpp \
                     OxOOL/Net/Util.cpp \

@@ -8,9 +8,9 @@
 SUBDIRS = Alive Announce ModuleTesting
 
 install-data-local:
-	$(MKDIR_P) $(DESTDIR)@OXOOLWSD_MODULE_DATA_DIR@
+	$(MKDIR_P) $(DESTDIR)@OXOOL_MODULE_DATA_DIR@
 
 uninstall-local:
-	rm -rf $(DESTDIR)@OXOOLWSD_MODULE_DATA_DIR@
+	rm -rf $(DESTDIR)@OXOOL_MODULE_DATA_DIR@
 
 # vim: set noet sw=4 ts=4:

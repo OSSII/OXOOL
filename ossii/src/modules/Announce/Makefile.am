@@ -5,11 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-configdir = @OXOOLWSD_MODULE_CONFIG_DIR@
+configdir = @OXOOL_MODULE_CONFIG_DIR@
 dist_config_DATA = Announce.xml
 
 # Module install path
-moduledir = @OXOOLWSD_MODULE_DIR@
+moduledir = @OXOOL_MODULE_DIR@
 module_LTLIBRARIES = announce.la
 
 announce_la_CPPFLAGS = -pthread $(OSSII_CFLAGS)
