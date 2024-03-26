@@ -20,8 +20,11 @@ else
     OXOOL_MODULE_DATA_DIR=${prefix}/share/${PACKAGE}/modules
 fi
 
+AC_DEFINE_UNQUOTED([OXOOL_MODULE_DIR],["$OXOOL_MODULE_DIR"],[OxOOL module share library storage directory.])
 AC_SUBST([OXOOL_MODULE_DIR])
+AC_DEFINE_UNQUOTED([OXOOL_MODULE_CONFIG_DIR],["$OXOOL_MODULE_CONFIG_DIR"],[OxOOL module configuration file storage directory.])
 AC_SUBST([OXOOL_MODULE_CONFIG_DIR])
+AC_DEFINE_UNQUOTED([OXOOL_MODULE_DATA_DIR],["$OXOOL_MODULE_DATA_DIR"],[OxOOL module data storage directory.])
 AC_SUBST([OXOOL_MODULE_DATA_DIR])
 
 AC_SUBST([OSSII_CFLAGS], ["-I`pwd`/ossii/src/include -I`pwd`/common -I`pwd`/net -I`pwd`/wsd"])
