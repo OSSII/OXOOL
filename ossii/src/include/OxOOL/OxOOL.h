@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #define MULTILINE_STRING(...) #__VA_ARGS__
 
@@ -30,25 +31,42 @@ class ClientSession;
 class StringVector;
 class Message;
 
+
+namespace OxOOL::Module
+{
+class Detail;
+} // namespace OxOOL
+
 namespace OxOOL
 {
 class ENV
 {
 public:
     ENV();
-    ~ENV(){};
+    ~ENV() {};
+
+    static void initialize();
 
     static std::string Version; // PACKAGE_VERSION
     static std::string VersionHash; // OXOOLWSD_VERSION_HASH
-    static std::string HttpAgentString; // "OxOOL HTTP Agent " + ENV::Version
-    static std::string WopiAgentString; // ENV::HttpAgentString
+
     static std::string HttpServerString; // "OxOOL HTTP Server " + ENV::Version
+    static std::string HttpAgentString; // "OxOOL HTTP Agent " + ENV::Version
+
     static std::string ModuleDir; // Module directory
     static std::string ModuleConfigDir; // Module configuration directory
     static std::string ModuleDataDir; // Module data directory
 
+    static int ServerPortNumber; // Server port number
+    static std::string ServiceRoot; // Service root
+    static bool SSLEnabled; // SSL enabled
+
+    static bool AdminEnabled; // Admin enabled
+
 private:
+
 };
+
 } // namespace OxOOL
 
 namespace OxOOL
@@ -56,6 +74,9 @@ namespace OxOOL
 
 /// Initialize the library.
 void initialize();
+
+/// @brief Get all module details.
+const std::vector<OxOOL::Module::Detail> getAllModuleDetails();
 
 /// @brief if the request is handled by the library.
 bool handleRequest(const Poco::Net::HTTPRequest& request, SocketDisposition& disposition);

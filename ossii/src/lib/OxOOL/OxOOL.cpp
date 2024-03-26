@@ -5,28 +5,58 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <config_version.h>
+#include <config.h>
+#include <config_unused.h>
+
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/ModuleManager.h>
 
-#include <common/StringVector.hpp>
 #include <common/Message.hpp>
+#include <common/StringVector.hpp>
+#include <common/Util.hpp>
+#include <wsd/OXOOLWSD.hpp>
 #include <wsd/ClientSession.hpp>
 
 namespace OxOOL
 {
-std::string ENV::Version(OXOOLWSD_VERSION);
-std::string ENV::VersionHash(OXOOLWSD_VERSION_HASH);
-std::string ENV::HttpAgentString("OxOOL HTTP Agent " + ENV::Version);
-std::string ENV::WopiAgentString(ENV::HttpAgentString);
-std::string ENV::HttpServerString("OxOOL HTTP Server " + ENV::Version);
-std::string ENV::ModuleDir(OXOOL_MODULE_DIR);
-std::string ENV::ModuleConfigDir(OXOOL_MODULE_CONFIG_DIR);
-std::string ENV::ModuleDataDir(OXOOL_MODULE_DATA_DIR);
+std::string ENV::Version;
+std::string ENV::VersionHash;
+std::string ENV::HttpAgentString;
+std::string ENV::HttpServerString;
+
+std::string ENV::ModuleDir;//(OXOOL_MODULE_DIR);
+std::string ENV::ModuleConfigDir; //(OXOOL_MODULE_CONFIG_DIR);
+std::string ENV::ModuleDataDir; //(OXOOL_MODULE_DATA_DIR);
+
+int         ENV::ServerPortNumber = 0;
+std::string ENV::ServiceRoot;
+bool        ENV::SSLEnabled = false;
+
+bool        ENV::AdminEnabled = true; // Admin enabled
 
 ENV::ENV()
 {
+    // Initialize the environment.
+    initialize();
+}
 
+void ENV::initialize()
+{
+    // Get the version information.
+    Util::getVersionInfo(ENV::Version, ENV::VersionHash);
+
+    ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
+    ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;
+
+    ENV::ModuleDir       = OXOOL_MODULE_DIR;
+    ENV::ModuleConfigDir = OXOOL_MODULE_CONFIG_DIR;
+    ENV::ModuleDataDir   = OXOOL_MODULE_DATA_DIR;
+
+    ENV::ServerPortNumber = OXOOLWSD::getClientPortNumber();
+    ENV::ServiceRoot = OXOOLWSD::ServiceRoot;
+    ENV::SSLEnabled = OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination();
+
+    ENV::AdminEnabled = OXOOLWSD::AdminEnabled;
 }
 
 } // namespace OxOOL
@@ -36,7 +66,15 @@ namespace OxOOL
     /// Initialize the library.
     void initialize()
     {
+        OxOOL::ENV::initialize();
+
+        // Start the module manager.
         ModuleManager::instance().start();
+    }
+
+    const std::vector<OxOOL::Module::Detail> getAllModuleDetails()
+    {
+        return ModuleManager::instance().getAllModuleDetails();
     }
 
     /// @brief if the request is handled by the library.

@@ -698,7 +698,7 @@ bool ModuleManager::handleAdminWebsocketRequest(const std::string& moduleName,
                                                 const Poco::Net::HTTPRequest& request)
 {
     // 禁用後臺管理
-    if (!OXOOLWSD::AdminEnabled)
+    if (!OxOOL::ENV::AdminEnabled)
     {
         LOG_ERR("Request for disabled admin console");
         return false;

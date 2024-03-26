@@ -19,7 +19,6 @@
 #include <OxOOL/ModuleManager.h>
 
 #include <common/Util.hpp>
-#include <wsd/OXOOLWSD.hpp>
 #include <wsd/FileServer.hpp>
 
 namespace OxOOL
@@ -268,15 +267,6 @@ void Base::preprocessAdminFile(const std::string& adminFile,
         if (resCookies[it].getName() == "jwt")
         {
             jwtToken = resCookies[it].getValue();
-            // when response contains the jwt we can determine that admin console is
-            // accessed for the first time by a specific client
-            bool showLog =
-                OXOOLWSD::getConfigValue<bool>("admin_console.logging.admin_login", true);
-            if (showLog)
-            {
-                LOG_ANY("Admin logged in with source IPAddress [" << socket->clientAddress()
-                                                                  << ']');
-            }
             break;
         }
     }
@@ -301,7 +291,7 @@ void Base::preprocessAdminFile(const std::string& adminFile,
 
     // 製作完整 HTML 頁面
     Poco::replaceInPlace(templateFile, std::string("<!--%MAIN_CONTENT%-->"), mainContent.str()); // Now template has the main content..
-    const std::string responseRoot = OxOOL::HttpHelper::getServiceRoot();
+    const std::string& responseRoot = OxOOL::HttpHelper::getServiceRoot();
 
     // 帶入模組的多國語系設定檔
     static const std::string l10nJSON("<link rel=\"localizations\" href=\"%s/browser/dist/admin/module/%s/localizations.json\" type=\"application/vnd.oftn.l10n+json\"/>");

@@ -109,7 +109,7 @@ int getPortNumber();
 /// @brief  取得所有頁面位址的前置字串
 /// Get the prefix string of all page.
 /// @return std::string
-std::string getServiceRoot();
+const std::string& getServiceRoot();
 
 /// @brief 取得 Client 端的語系
 /// 優先從網址列取得 lang= 所指定的語系，沒有的話，再判斷 request header 的 Accept-Language

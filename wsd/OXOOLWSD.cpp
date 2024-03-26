@@ -125,7 +125,7 @@ using Poco::Net::PartHandler;
 #include <Poco/Util/XMLConfiguration.h>
 
 #include <OxOOL/OxOOL.h>
-#include <OxOOL/ModuleManager.h>
+#include <OxOOL/Module/Base.h>
 
 #include "Admin.hpp"
 #include "Auth.hpp"
@@ -5783,6 +5783,8 @@ public:
 
 #if !MOBILEAPP
         _admin.start();
+        // Initialize the OxOOL library
+        OxOOL::initialize();
 #endif
     }
 
@@ -5793,6 +5795,8 @@ public:
             WebServerPoll->joinThread();
 #if !MOBILEAPP
         _admin.stop();
+        // Cleanup the OxOOL library
+        OxOOL::cleanup();
 #endif
     }
 
@@ -6249,7 +6253,7 @@ int OXOOLWSD::innerMain()
             << std::endl;
 
     // 取得所有模組資料
-    std::vector<OxOOL::Module::Detail> details = OxOOL::ModuleManager::instance().getAllModuleDetails();
+    const std::vector<OxOOL::Module::Detail> details = OxOOL::getAllModuleDetails();
     if (!details.empty())
     {
         for (auto it : details)
@@ -6534,9 +6538,6 @@ int OXOOLWSD::main(const std::vector<std::string>& /*args*/)
     SigUtil::resetTerminationFlags();
 #endif
 
-    // Initialize the OxOOL library
-    OxOOL::initialize();
-
     int returnValue;
 
     try {
@@ -6553,9 +6554,6 @@ int OXOOLWSD::main(const std::vector<std::string>& /*args*/)
     }
 
     cleanup();
-
-    // Cleanup the OxOOL library
-    OxOOL::cleanup();
 
     returnValue = UnitBase::uninit();
 

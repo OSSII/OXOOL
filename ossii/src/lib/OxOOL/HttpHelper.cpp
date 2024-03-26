@@ -5,8 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <OxOOL/OxOOL.h>
 #include <OxOOL/HttpHelper.h>
 
+#include <fstream>
 #include <unordered_map>
 #include <algorithm>
 #include <string>
@@ -24,7 +26,6 @@
 #include <Poco/TemporaryFile.h>
 #include <Poco/StreamCopier.h>
 
-#include <wsd/OXOOLWSD.hpp>
 #include <common/Common.hpp>
 #include <common/FileUtil.hpp>
 #include <common/Util.hpp>
@@ -241,17 +242,17 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
 
 std::string getProtocol()
 {
-    return (OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination()) ? "https://" : "http://";
+    return OxOOL::ENV::SSLEnabled ? "https://" : "http://";
 }
 
 int getPortNumber()
 {
-    return OXOOLWSD::getClientPortNumber();
+    return OxOOL::ENV::ServerPortNumber;
 }
 
-std::string getServiceRoot()
+const std::string& getServiceRoot()
 {
-    return OXOOLWSD::ServiceRoot;
+    return OxOOL::ENV::ServiceRoot;
 }
 
 std::string getAcceptLanguage(const Poco::Net::HTTPRequest& request)
