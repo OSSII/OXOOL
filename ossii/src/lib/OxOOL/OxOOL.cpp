@@ -24,9 +24,9 @@ std::string ENV::VersionHash;
 std::string ENV::HttpAgentString;
 std::string ENV::HttpServerString;
 
-std::string ENV::ModuleDir;//(OXOOL_MODULE_DIR);
-std::string ENV::ModuleConfigDir; //(OXOOL_MODULE_CONFIG_DIR);
-std::string ENV::ModuleDataDir; //(OXOOL_MODULE_DATA_DIR);
+std::string ENV::ModuleDir;
+std::string ENV::ModuleConfigDir;
+std::string ENV::ModuleDataDir;
 
 int         ENV::ServerPortNumber = 0;
 std::string ENV::ServiceRoot;
@@ -63,18 +63,18 @@ void ENV::initialize()
 
 namespace OxOOL
 {
+    static ModuleManager& ModuleMgr = ModuleManager::instance();
+
     /// Initialize the library.
     void initialize()
     {
         OxOOL::ENV::initialize();
-
-        // Start the module manager.
-        ModuleManager::instance().start();
+        ModuleMgr.initialize();
     }
 
     const std::vector<OxOOL::Module::Detail> getAllModuleDetails()
     {
-        return ModuleManager::instance().getAllModuleDetails();
+        return ModuleMgr.getAllModuleDetails();
     }
 
     /// @brief if the request is handled by the library.
@@ -83,13 +83,13 @@ namespace OxOOL
     /// @return true - handled, false - not handled
     bool handleRequest(const Poco::Net::HTTPRequest& request, SocketDisposition& disposition)
     {
-        return ModuleManager::instance().handleRequest(request, disposition);
+        return ModuleMgr.handleRequest(request, disposition);
     }
 
     /// Cleanup the library.
     void cleanup()
     {
-        ModuleManager::instance().stop();
+        ModuleMgr.stop();
     }
 
     /// @brief if the client input is handled by the library.

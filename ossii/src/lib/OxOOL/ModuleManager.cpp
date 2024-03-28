@@ -100,8 +100,6 @@ private:
     OxOOL::Module::Ptr mpClass;
 };
 
-std::mutex mModulesMutex;
-std::map<std::string, std::shared_ptr<ModuleLibrary>> moduleMap;
 
 namespace OxOOL
 {
@@ -420,15 +418,25 @@ std::mutex mAgentsMutex;
 std::vector<std::shared_ptr<ModuleAgent>> mpAgentsPool;
 
 
-ModuleManager::ModuleManager() :
-    SocketPoll("ModuleManager")
+ModuleManager::ModuleManager()
+    : SocketPoll("ModuleManager")
+    , mbInitialized(false)
 {
-    loadModulesFromDirectory(OxOOL::ENV::ModuleConfigDir);
 }
 
 ModuleManager::~ModuleManager()
 {
-    moduleMap.clear();
+    maModuleMap.clear();
+}
+
+void ModuleManager::initialize()
+{
+    if (!mbInitialized)
+    {
+        loadModulesFromDirectory(OxOOL::ENV::ModuleConfigDir);
+        startThread();
+        mbInitialized = true;
+    }
 }
 
 void ModuleManager::pollingThread()
@@ -439,7 +447,7 @@ void ModuleManager::pollingThread()
         poll(SocketPoll::DefaultPollTimeoutMicroS);
 
     }
-    moduleMap.clear(); // Deconstruct all modules.
+    maModuleMap.clear(); // Deconstruct all modules.
 }
 
 void ModuleManager::loadModulesFromDirectory(const std::string& configPath)
@@ -541,12 +549,12 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
             {
                 // 模組開發階段可能需要重複載入相同 Class Librery
                 // 所以需要檢查是否重複載入
-                std::unique_lock<std::mutex> modulesLock(mModulesMutex);
-                if (auto it = moduleMap.find(configFile); it != moduleMap.end())
+                std::unique_lock<std::mutex> modulesLock(maModulesMutex);
+                if (auto it = maModuleMap.find(configFile); it != maModuleMap.end())
                 {
                     // 移除已存在的模組資料，該 Class Librery 會自動卸載
                     // 否則再次加載還是舊的 Class Library
-                    moduleMap.erase(it);
+                    maModuleMap.erase(it);
                 }
                 modulesLock.unlock();
 
@@ -584,8 +592,8 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
         // 設定模組文件絕對路徑
         module->getModule()->maRootPath = documentRoot;
 
-        std::unique_lock<std::mutex> modulesLock(mModulesMutex);
-        moduleMap[configFile] = module;
+        std::unique_lock<std::mutex> modulesLock(maModulesMutex);
+        maModuleMap[configFile] = module;
         modulesLock.unlock();
 
         // 用執行緒執行模組的 initialize()，避免被卡住
@@ -600,7 +608,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
 bool ModuleManager::hasModule(const std::string& moduleName)
 {
     // 逐筆過濾
-    for (auto& it : moduleMap)
+    for (auto& it : maModuleMap)
     {
         if (it.second->getModule()->getDetail().name == moduleName)
         {
@@ -612,9 +620,9 @@ bool ModuleManager::hasModule(const std::string& moduleName)
 
 OxOOL::Module::Ptr ModuleManager::getModuleByConfigFile(const std::string& configFile)
 {
-    if (moduleMap.find(configFile) != moduleMap.end())
+    if (maModuleMap.find(configFile) != maModuleMap.end())
     {
-        return moduleMap[configFile]->getModule();
+        return maModuleMap[configFile]->getModule();
     }
     return nullptr;
 }
@@ -622,7 +630,7 @@ OxOOL::Module::Ptr ModuleManager::getModuleByConfigFile(const std::string& confi
 OxOOL::Module::Ptr ModuleManager::getModuleByName(const std::string& moduleName)
 {
     // 逐筆過濾
-    for (auto& it : moduleMap)
+    for (auto& it : maModuleMap)
     {
         if (it.second->getModule()->getDetail().name == moduleName)
         {
@@ -764,19 +772,41 @@ void ModuleManager::cleanupDeadAgents()
 
 const std::vector<OxOOL::Module::Detail> ModuleManager::getAllModuleDetails() const
 {
-    std::vector<OxOOL::Module::Detail> detials(moduleMap.size());
-    for (auto &it : moduleMap)
+    std::vector<OxOOL::Module::Detail> detials(maModuleMap.size());
+    for (auto &it : maModuleMap)
     {
         detials.push_back(it.second->getModule()->getDetail());
     }
     return detials;
 }
 
+std::string ModuleManager::getAllModuleDetailsJsonString(const std::string& langTag) const
+{
+    std::string jsonString("[");
+    std::size_t count = 0;
+    for (auto &it : maModuleMap)
+    {
+        const OxOOL::Module::Ptr module = it.second->getModule();
+        auto detialJson = module->getAdminDetailJson(langTag);
+        std::ostringstream oss;
+
+        detialJson->stringify(oss);
+        jsonString.append(oss.str() + ",");
+        count ++;
+    }
+    // 有找到任何管理模組，去掉最後一個 ',' 字元
+    if (count > 0)
+        jsonString.pop_back();
+
+    jsonString.append("]");
+    return jsonString;
+}
+
 std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& langTag) const
 {
     std::string jsonString("[");
     std::size_t count = 0;
-    for (auto &it : moduleMap)
+    for (auto &it : maModuleMap)
     {
         const OxOOL::Module::Ptr module = it.second->getModule();
         // 只取有後臺管理的模組
@@ -807,7 +837,7 @@ void ModuleManager::dump()
 OxOOL::Module::Ptr ModuleManager::handleByModule(const Poco::Net::HTTPRequest& request)
 {
     // 找出是哪個 module 要處理這個請求
-    for (auto& it : moduleMap)
+    for (auto& it : maModuleMap)
     {
         OxOOL::Module::Ptr module = it.second->getModule();
         if (module->isService(request) || module->isAdminService(request))

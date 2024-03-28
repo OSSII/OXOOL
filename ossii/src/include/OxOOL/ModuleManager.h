@@ -21,6 +21,10 @@ namespace Net
 } // namespace Net
 } // namespace Poco
 
+class StreamSocket;
+class SocketDisposition;
+class ModuleLibrary;
+
 namespace OxOOL
 {
 
@@ -39,7 +43,8 @@ public:
         return mModuleManager;
     }
 
-    void start() { startThread(); }
+    void initialize();
+
     void stop() { joinThread(); }
 
     void pollingThread() override;
@@ -93,14 +98,22 @@ public:
     /// @return
     const std::vector<OxOOL::Module::Detail> getAllModuleDetails() const;
 
+    /// @brief 取得有模組資訊列表
+    std::string getAllModuleDetailsJsonString(const std::string& langTag = std::string()) const;
+
     /// @brief 取得有後臺管理的模組資訊列表
-    std::string getAdminModuleDetailsJsonString(const std::string& langTag) const;
+    std::string getAdminModuleDetailsJsonString(const std::string& langTag = std::string()) const;
 
     /// @brief 列出所有的模組
     void dump();
 
 private:
     OxOOL::Module::Ptr handleByModule(const Poco::Net::HTTPRequest& request);
+
+    bool mbInitialized;
+
+    std::mutex maModulesMutex;
+    std::map<std::string, std::shared_ptr<ModuleLibrary>> maModuleMap;
 };
 
 } // namespace OxOOL
