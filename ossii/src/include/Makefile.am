@@ -65,7 +65,8 @@ common_headers = \
     $(top_srcdir)/common/security.h \
     $(top_srcdir)/common/SpookyV2.h \
     $(top_srcdir)/common/CommandControl.hpp \
-    $(top_srcdir)/common/Simd.hpp
+    $(top_srcdir)/common/Simd.hpp \
+    $(top_srcdir)/common/Watchdog.hpp
 
 common_includedir = $(includedir)/OxOOL/common
 common_include_HEADERS = $(common_headers)
