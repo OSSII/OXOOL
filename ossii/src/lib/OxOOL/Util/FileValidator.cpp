@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+#include <OxOOL/Util.h>
 #include <OxOOL/Util/FileValidator.h>
 
 #include <Poco/File.h>
@@ -21,7 +22,7 @@ namespace Util
 void FileValidator::validate(const Poco::Util::Option& /* option */,
                                const std::string& value)
 {
-    const Poco::File file(value);
+    const Poco::File file(OxOOL::Util::convertUserHome(value));
     std::string reason;
 
     // 檢查檔案是否不存在

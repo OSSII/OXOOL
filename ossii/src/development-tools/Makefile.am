@@ -6,7 +6,7 @@
 #
 
 if ENABLE_DEBUG
-MODULE_TEMPLATE_DIR = $(abs_top_builddir)/src/development-tools/module-template
+MODULE_TEMPLATE_DIR = $(abs_top_builddir)/ossii/src/development-tools/module-template
 else
 MODULE_TEMPLATE_DIR = ${datarootdir}/@PACKAGE_NAME@-devel/module-template
 endif

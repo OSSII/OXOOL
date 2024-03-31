@@ -19,6 +19,7 @@
 #include <sstream>
 
 #include <OxOOL/XMLConfig.h>
+#include <OxOOL/Util.h>
 #include <OxOOL/Util/FileValidator.h>
 #include <OxOOL/Util/OptionlValidator.h>
 
@@ -222,19 +223,14 @@ protected:
         if (moduleName.empty())
             fatal("Module name must be specified.");
 
-        // 檢查 serivce URI 是否符合規定
-        // 有指定 service URI 且長度必須大於 2 且第一個字必須是 '/'
-        const std::string serviceURI = config().getString("module-serviceURI");
-        if (!serviceURI.empty() && (serviceURI.size() <= 2 || serviceURI.at(0) != '/'))
-            fatal("Service URI length must be greater than 2 characters, and must start with '/'.");
-
         // 檢查模組簡介
         const std::string summary = config().getString("module-summary");
         if (summary.empty())
             fatal("Module summary is required.");
 
         // 專案輸出路徑
-        Poco::Path projectPath(config().getString("output-path"));
+        std::string outputPath = OxOOL::Util::convertUserHome(config().getString("output-path"));
+        Poco::Path projectPath(outputPath);
         projectPath.append(PACKAGE_NAME "-module-" + config().getString("module-name"));
 
         // 專案輸出已經存在
@@ -290,7 +286,7 @@ protected:
             _xmlConfig->setString("module.load", "@MODULE_NAME@.so");
             _xmlConfig->setString("module.detail.name", "@MODULE_NAME@");
             // 服務位址
-            _xmlConfig->setString("module.detail.serviceURI", serviceURI);
+            _xmlConfig->setString("module.detail.serviceURI", Poco::trim(config().getString("module-serviceURI")));
             // 簡介
             _xmlConfig->setString("module.detail.summary", summary);
             // 作者依據 configure.ac 所訂
