@@ -10,7 +10,7 @@
 #include <set>
 #include <string>
 
-
+#include <Poco/Path.h>
 #include <Poco/String.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/Crypto/Crypto.h>
@@ -67,6 +67,20 @@ bool stringToBool(const std::string& str)
         // do nothing.
     }
     return false;
+}
+
+std::string convertUserHome(const std::string& path)
+{
+    // 如果路徑開頭不是 "~/" 直接回傳
+    if (path.find_first_of("~/") == std::string::npos)
+        return path;
+
+    // 把 "~/" 換成使用者家目錄
+    std::string tmpPath(path);
+    tmpPath.erase(0, 2);
+    tmpPath = Poco::Path::home() + tmpPath;
+
+    return tmpPath;
 }
 
 bool matchRegex(const std::set<std::string>& set, const std::string& subject)

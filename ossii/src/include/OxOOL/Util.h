@@ -28,6 +28,10 @@ std::string decryptAES256(const std::string& text,
 /// @return true / false
 bool stringToBool(const std::string& str);
 
+/// @brief 如果含有使用者家目錄符號 ~/，則轉換成實際家目錄路徑
+/// @param path - 轉換後的路徑，如果沒有家目錄符號則不變
+std::string convertUserHome(const std::string& path);
+
 /// Return true if the subject matches in given set. It uses regex
 /// Mainly used to match WOPI hosts patterns
 bool matchRegex(const std::set<std::string>& set, const std::string& subject);
