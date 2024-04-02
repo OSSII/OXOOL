@@ -96,21 +96,10 @@ namespace OxOOL
     /// @param tokens
     /// @param firstLine
     /// @return true - handled, false - not handled
-    bool handleClientInput(const std::shared_ptr<ClientSession>& clientSession,
-                           const StringVector& tokens, const std::string& firstLine)
+    bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                             const StringVector& tokens)
     {
-        (void)clientSession;
-        (void)tokens;
-        (void)firstLine;
-#if ENABLE_DEBUG
-        // TODO: Implement this.
-
-        //return ModuleManager::instance().handleClientInput(clientSession, tokens, firstLine);
-        std::cout << "handleClientInput: "
-                  << clientSession->getUserId() << "(" << clientSession->getUserName() << "): "
-                  << "\"" << firstLine << "\"" << std::endl;
-#endif
-        return false;
+        return ModuleMgr.handleClientMessage(clientSession, tokens);
     }
 
     /// @brief if the client input is handled by the library.
@@ -119,14 +108,7 @@ namespace OxOOL
     bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                                   const std::shared_ptr<Message>& payload)
     {
-        (void)clientSession;
-        (void)payload;
-#if ENABLE_DEBUG
-        std::cout << "handleKitToClientMessage: "
-                  << clientSession->getUserId() << "(" << clientSession->getUserName() << "): "
-                  << "\"" << payload->firstLine() << "\"" << std::endl;
-#endif
-        return false;
+        return ModuleMgr.handleKitToClientMessage(clientSession, payload);
     }
 
 } // namespace OxOOL

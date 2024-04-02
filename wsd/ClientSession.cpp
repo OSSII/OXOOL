@@ -371,14 +371,6 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         return false;
     }
 
-#if !MOBILEAPP
-    // If the message is handled by the library, return.
-    if (OxOOL::handleClientInput(client_from_this(), tokens, firstLine))
-    {
-        return true;
-    }
-#endif
-
     if (tokens.equals(0, "DEBUG"))
     {
         LOG_DBG("From client: " << std::string(buffer, length).substr(strlen("DEBUG") + 1));
@@ -506,6 +498,14 @@ bool ClientSession::_handleInput(const char *buffer, int length)
             docBroker->updateEditingSessionId(getId());
         }
     }
+
+#if !MOBILEAPP
+    // If the message is handled by the library, return.
+    if (OxOOL::handleClientMessage(client_from_this(), tokens))
+    {
+        return true;
+    }
+#endif
 
     if (tokens.equals(0, "urp"))
     {

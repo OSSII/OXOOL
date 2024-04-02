@@ -18,7 +18,9 @@
 #include <OxOOL/L10NTranslator.h>
 #include <OxOOL/ModuleManager.h>
 
+#include <common/Message.hpp>
 #include <common/Util.hpp>
+#include <wsd/ClientSession.hpp>
 #include <wsd/FileServer.hpp>
 
 namespace OxOOL
@@ -29,23 +31,26 @@ namespace Module
 Poco::JSON::Object::Ptr Base::getAdminDetailJson(const std::string& langTag)
 {
 
-    OxOOL::Module::Detail detail = mDetail;
+    OxOOL::Module::Detail detail = maDetail;
 
     // 若有指定語系，嘗試翻譯
     if (!langTag.empty())
     {
         std::unique_ptr<OxOOL::L10NTranslator> translator =
-            std::make_unique<OxOOL::L10NTranslator>(langTag, mDetail.name, true);
+            std::make_unique<OxOOL::L10NTranslator>(langTag, maDetail.name, true);
 
-        detail.version = translator->getTranslation(mDetail.version);
-        detail.summary = translator->getTranslation(mDetail.summary);
-        detail.author = translator->getTranslation(mDetail.author);
-        detail.license = translator->getTranslation(mDetail.license);
-        detail.description = translator->getTranslation(mDetail.description);
-        detail.adminItem = translator->getTranslation(mDetail.adminItem);
+        detail.version = translator->getTranslation(maDetail.version);
+        detail.summary = translator->getTranslation(maDetail.summary);
+        detail.author = translator->getTranslation(maDetail.author);
+        detail.license = translator->getTranslation(maDetail.license);
+        detail.description = translator->getTranslation(maDetail.description);
+        detail.adminItem = translator->getTranslation(maDetail.adminItem);
     }
 
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    json->set("id", maId);
+    json->set("browserURI", maBrowserURI);
+
     json->set("name", detail.name);
     json->set("serviceURI", detail.serviceURI);
     json->set("version", detail.version);
@@ -85,7 +90,7 @@ bool Base::isService(const Poco::Net::HTTPRequest& request) const
             此種格式，模組可自由管理 /oxool/drawio/ 之後所有位址，適合複雜的 restful api
         */
     // 取得該模組指定的 service uri, uri 長度至少 2 個字元
-    if (std::string serviceURI = mDetail.serviceURI; serviceURI.length() > 1)
+    if (std::string serviceURI = maDetail.serviceURI; serviceURI.length() > 1)
     {
         bool correctModule = false; // 預設該模組非正確模組
 
@@ -113,8 +118,8 @@ bool Base::isService(const Poco::Net::HTTPRequest& request) const
 bool Base::isAdminService(const Poco::Net::HTTPRequest& request) const
 {
     // 有管理界面 URI
-    if (!mDetail.adminServiceURI.empty())
-        return request.getURI().find(mDetail.adminServiceURI, 0) == 0;
+    if (!maDetail.adminServiceURI.empty())
+        return request.getURI().find(maDetail.adminServiceURI, 0) == 0;
 
     return false;
 }
@@ -125,7 +130,7 @@ bool Base::needAdminAuthenticate(const Poco::Net::HTTPRequest& request,
 {
     bool needAuthenticate = false;
     // 該 Service URI 需要有管理者權限，或是被 admin Service URI 需要
-    if (mDetail.adminPrivilege || callByAdmin)
+    if (maDetail.adminPrivilege || callByAdmin)
     {
         const std::shared_ptr<Poco::Net::HTTPResponse> response
             = std::make_shared<Poco::Net::HTTPResponse>();
@@ -165,12 +170,35 @@ void Base::handleRequest(const Poco::Net::HTTPRequest& request,
     sendFile(requestFile.toString(), request, socket);
 }
 
+void Base::handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                               const StringVector& tokens)
+{
+    // 跑到這裡，表示模組沒有實作 handleClientMessage()
+    // 需通知 client 端，通知模組開發者
+    const std::string error = "error: cmd=" + tokens[0] + " kind=Module_'"
+                      + maDetail.name + "'_not_implemented_handleClientMessage()";
+    clientSession->sendTextFrameAndLogError(error);
+}
+
+
+bool Base::handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                                    const std::shared_ptr<Message>& payload)
+{
+    (void)clientSession; // avoid -Werror=unused-parameter
+    (void)payload; // avoid -Werror=unused-parameter
+
+    // Base class don't handle any message from kit
+    // do nothing
+
+    return true; // We don't handle this message
+}
+
 void Base::handleAdminRequest(const Poco::Net::HTTPRequest& request,
                               const std::shared_ptr<StreamSocket>& socket)
 {
 
     const std::string requestURI = Poco::URI(request.getURI()).getPath();
-    const std::size_t stripLength = mDetail.adminServiceURI.length();
+    const std::size_t stripLength = maDetail.adminServiceURI.length();
     // 去掉 request 前導的 adminServiceURI
     const std::string realURI = stripLength >= requestURI.length() ? "/" : requestURI.substr(stripLength - 1);
     Poco::Path requestFile(maRootPath + "/admin" + realURI);
@@ -202,24 +230,31 @@ std::string Base::handleAdminMessage(const StringVector& tokens)
     return MODULE_METHOD_IS_ABSTRACT;
 }
 
+bool Base::sendTextFrameToClient(const std::shared_ptr<ClientSession>& clientSession,
+                                 const std::string& message)
+{
+    // 在訊息前加上<模組 ID>，方便 client 端識別是給哪個模組的訊息
+    return clientSession->sendTextFrame("<" + maId + ">" + message);
+}
+
 // PROTECTED METHODS
 std::string Base::parseRealURI(const Poco::Net::HTTPRequest& request) const
 {
     // 完整請求位址
     const std::string requestURI = Poco::URI(request.getURI()).getPath();
 
-    std::string realURI = mDetail.serviceURI;
+    std::string realURI = maDetail.serviceURI;
 
     // 模組 service uri 是否為 endpoint?(最後字元不是 '/')
     // 如果是 endpoint，表示要取得最右邊 '/' 之後的字串
-    if (*mDetail.serviceURI.rbegin() != '/')
+    if (*maDetail.serviceURI.rbegin() != '/')
     {
         if (const std::size_t lastPathSlash = requestURI.rfind('/'); lastPathSlash != std::string::npos)
             realURI = requestURI.substr(lastPathSlash);
     }
     else
     {
-        const std::size_t stripLength = mDetail.serviceURI.length();
+        const std::size_t stripLength = maDetail.serviceURI.length();
         // 去掉前導的 serviceURI
         realURI = stripLength >= requestURI.length() ? "/" : requestURI.substr(stripLength - 1);
     }
@@ -295,17 +330,17 @@ void Base::preprocessAdminFile(const std::string& adminFile,
 
     // 帶入模組的多國語系設定檔
     static const std::string l10nJSON("<link rel=\"localizations\" href=\"%s/browser/dist/admin/module/%s/localizations.json\" type=\"application/vnd.oftn.l10n+json\"/>");
-    const std::string moduleL10NJSON(Poco::format(l10nJSON, responseRoot, mDetail.name));
+    const std::string moduleL10NJSON(Poco::format(l10nJSON, responseRoot, maDetail.name));
     Poco::replaceInPlace(templateFile, std::string("<!--%MODULE_L10N%-->"), moduleL10NJSON);
 
     // 帶入模組的 admin.js
-    const std::string moduleAdminJS("<script src=\"%s" + mDetail.adminServiceURI + "admin.js\"></script>");
+    const std::string moduleAdminJS("<script src=\"%s" + maDetail.adminServiceURI + "admin.js\"></script>");
     const std::string moduleScriptJS(Poco::format(moduleAdminJS, responseRoot));
     Poco::replaceInPlace(templateFile, std::string("<!--%MODULE_ADMIN_JS%-->"), moduleScriptJS);
 
     Poco::replaceInPlace(templateFile, std::string("%VERSION%"), OxOOL::ENV::VersionHash);
     Poco::replaceInPlace(templateFile, std::string("%SERVICE_ROOT%"), responseRoot);
-    Poco::replaceInPlace(templateFile, std::string("%MODULE_NAME%"), mDetail.name);
+    Poco::replaceInPlace(templateFile, std::string("%MODULE_NAME%"), maDetail.name);
 
     // 傳入有管理界面的模組列表
     const std::string langTag = OxOOL::HttpHelper::getAcceptLanguage(request);

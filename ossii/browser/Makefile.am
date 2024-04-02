@@ -22,6 +22,8 @@ $(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
 
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
+	js/OxOOL.js \
+	js/ModuleManager.js \
 	js/map/handler/Map.AlternativeCommand.js \
 	js/map/handler/Map.StateChanges.Extend.js \
 	js/control/Permission.Extensions.js \
@@ -32,7 +34,6 @@ OXOOL_JS_LIST = \
 	js/control/Control.ContextMenu.js \
 	js/control/Control.Menubar.js \
 	js/control/Control.ReadonlyBar.js \
-	js/control/Control.OxOOLMain.js \
 	js/spectrum.js \
 	js/main.js
 

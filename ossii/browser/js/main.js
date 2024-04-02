@@ -3,29 +3,26 @@
 
 (function (global) {
     global.brandProductName = 'OxOffice Online';
-    global.brandProductURL = 'https://moda.gov.tw';
+    global.brandProductURL = 'https://ossii.com.tw';
     global.brandProductFAQURL = 'https://www.facebook.com/OSSIITW/';
 })(window);
 
 (function() {
     'use strict';
-
-    // register the main control
-    app.map.addControl(L.control.OxOOLMain());
-
-    /**
-     * All handlers are registered here.
-     */
-    // register the alternative command handler
-    app.map.addHandler('alternativeCommand', L.Map.AlternativeCommand);
-    // register the state change handler extension
-    app.map.addHandler('stateChangeExtend', L.Map.StateChangeExtend);
+    // Inititalize OxOOL
+    app.oxool = L.oxool({
+        map: app.map,
+    });
 
     // register the dialogs control
+    // TODO: 將來應該要移到 OxOOL 中
     app.map.addControl(L.control.dialogs());
 
     // 紀錄 brandingjs 已經載入完畢
     window.brandingjsLoaded = true;
+
+    // 觸發 branding:loaded 事件，通知其他元件，brandingjs 已經載入完畢
+    app.map.fire('branding:loaded');
 
 })();
 

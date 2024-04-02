@@ -21,9 +21,14 @@ namespace Net
 } // namespace Net
 } // namespace Poco
 
+class ClientSession;
+class StringVector;
+class Message;
 class StreamSocket;
 class SocketDisposition;
 class ModuleLibrary;
+class ModuleService;
+class ModuleAgent;
 
 namespace OxOOL
 {
@@ -47,8 +52,6 @@ public:
 
     void stop() { joinThread(); }
 
-    void pollingThread() override;
-
     /// @brief 遞迴載入指定目錄下所有副檔名爲 .xml 的模組
     /// @param modulePath
     void loadModulesFromDirectory(const std::string& configPath);
@@ -64,6 +67,11 @@ public:
     /// @param moduleName - 模組名稱
     /// @return true: 已存在, false: 不存在
     bool hasModule(const std::string& moduleName);
+
+    /// @brief 以模組 UUID 查詢模組是否已經存在
+    /// @param moduleUUID - 模組 UUID
+    /// @return nullptr: 不存在，否則爲模組 class
+    OxOOL::Module::Ptr getModuleById(const std::string& moduleUUID);
 
     /// @brief 以 xml config 絕對路徑，取得模組物件
     /// @param configFile
@@ -81,6 +89,20 @@ public:
     /// @return true: request 已被某個模組處理
     bool handleRequest(const Poco::Net::HTTPRequest& request,
                        SocketDisposition& disposition);
+
+    /// @brief 傳遞 client message 給相應的模組處理
+    /// @param clientSession - client session
+    /// @param tokens - message tokens
+    /// @return true: 不需要再傳遞 message, false: 繼續傳遞 message
+    bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                             const StringVector& tokens);
+
+    /// @brief 傳遞 KitToClient message 給所有模組，有興趣的模組自行處理
+    /// @param clientSession
+    /// @param payload
+    /// @return true: 不需要再傳遞 payload, false: 繼續傳遞 payload
+    bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                                  const std::shared_ptr<Message>& payload);
 
     /// @brief 處理模組後臺管理 Web socket 請求
     /// @param moduleName 模組名稱
@@ -108,12 +130,18 @@ public:
     void dump();
 
 private:
+    void pollingThread() override;
     OxOOL::Module::Ptr handleByModule(const Poco::Net::HTTPRequest& request);
 
     bool mbInitialized;
 
+    std::shared_ptr<ModuleService> mpModuleService;
+
     std::mutex maModulesMutex;
     std::map<std::string, std::shared_ptr<ModuleLibrary>> maModuleMap;
+
+    std::mutex maAgentsMutex;
+    std::vector<std::shared_ptr<ModuleAgent>> mpAgentsPool;
 };
 
 } // namespace OxOOL

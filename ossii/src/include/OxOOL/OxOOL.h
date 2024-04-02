@@ -86,11 +86,9 @@ void dumpAllModuleInfo();
 /// Cleanup the library.
 void cleanup();
 
-/// 以下只是概念，尚未完全實作
-
 /// @brief if the client input is handled by the library.
-bool handleClientInput(const std::shared_ptr<ClientSession>& clientSession,
-                       const StringVector& tokens, const std::string& firstLine);
+bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                         const StringVector& tokens);
 
 bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                               const std::shared_ptr<Message>& payload);
