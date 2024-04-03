@@ -51,7 +51,7 @@ $(BRANDING_DIR)/branding-src.js: $(OXOOL_JS_LIST)
 	@echo "Done bundling $@."
 
 # 壓縮打包用的 JS 檔案
-$(DIST_FOLDER)/branding.js: $(BRANDING_DIR)/branding-src.js
+$(DIST_FOLDER)/ossii.js: $(BRANDING_DIR)/branding-src.js
 	@echo "Uglifying $@..."
 	@$(MKDIR_P) $(dir $@)
 	@$(RM) -f $@
@@ -88,7 +88,7 @@ $(DIST_FOLDER)/branding.css: $(OXOOL_CSS_LIST)
 build-browserdist: \
 	$(IMAGES_DST) \
 	$(UICONFIG_DST) \
-	$(DIST_FOLDER)/branding.js \
+	$(DIST_FOLDER)/ossii.js \
 	$(DIST_FOLDER)/branding.css \
 	$(DIST_FOLDER)/branding-mobile.css \
 	$(DIST_FOLDER)/branding-tablet.css \
@@ -98,7 +98,7 @@ build-browserdist: \
 # 清除打包用的相關檔案及目錄
 clean-local:
 	@echo "Cleaning browser dist"
-	$(RM) -f $(DIST_FOLDER)/branding.js
+	$(RM) -f $(DIST_FOLDER)/ossii.js
 	$(RM) -f $(DIST_FOLDER)/branding*.css
 	$(RM) -rf $(DIST_FOLDER)/uiconfig
 	$(RM) -rf $(BRANDING_DIR)
