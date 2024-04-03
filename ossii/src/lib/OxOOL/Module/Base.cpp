@@ -190,7 +190,7 @@ bool Base::handleKitToClientMessage(const std::shared_ptr<ClientSession>& client
     // Base class don't handle any message from kit
     // do nothing
 
-    return true; // We don't handle this message
+    return false; // We don't handle this message
 }
 
 void Base::handleAdminRequest(const Poco::Net::HTTPRequest& request,
