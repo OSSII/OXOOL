@@ -1122,7 +1122,7 @@ void FileServerRequestHandler::preprocessFile(const HTTPRequest& request,
     const std::string escapedTheme = Util::encodeURIComponent(theme, "'");
     const std::string themePreFix = hasIntegrationTheme && useIntegrationTheme ? escapedTheme + "/" : "";
     const std::string linkCSS("<link rel=\"stylesheet\" href=\"%s/browser/" OXOOLWSD_VERSION_HASH "/" + themePreFix + "%s.css\">");
-    const std::string scriptJS("<script src=\"%s/browser/" OXOOLWSD_VERSION_HASH "/" + themePreFix + "%s.js\" defer></script>");
+    const std::string scriptJS("<script src=\"%s/browser/" OXOOLWSD_VERSION_HASH "/" + themePreFix + "%s.js\"></script>");
 
     std::string brandCSS(Poco::format(linkCSS, responseRoot, std::string(BRANDING)));
     std::string brandJS(Poco::format(scriptJS, responseRoot, std::string(BRANDING)));
