@@ -242,9 +242,7 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
 
 const std::string& getProtocol()
 {
-    static const std::string http = "http://";
-    static const std::string https = "https://";
-    return OxOOL::ENV::SSLEnabled ? https : http;
+    return OxOOL::ENV::ServerProtocol;
 }
 
 int getPortNumber()

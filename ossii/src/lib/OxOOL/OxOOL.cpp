@@ -28,9 +28,10 @@ std::string ENV::ModuleDir;
 std::string ENV::ModuleConfigDir;
 std::string ENV::ModuleDataDir;
 
+bool        ENV::SSLEnabled = false;
+std::string ENV::ServerProtocol;
 int         ENV::ServerPortNumber = 0;
 std::string ENV::ServiceRoot;
-bool        ENV::SSLEnabled = false;
 
 bool        ENV::AdminEnabled = true; // Admin enabled
 
@@ -48,13 +49,14 @@ void ENV::initialize()
     ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
     ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;
 
-    ENV::ModuleDir       = OXOOL_MODULE_DIR;
-    ENV::ModuleConfigDir = OXOOL_MODULE_CONFIG_DIR;
-    ENV::ModuleDataDir   = OXOOL_MODULE_DATA_DIR;
+    ENV::ModuleDir        = OXOOL_MODULE_DIR;
+    ENV::ModuleConfigDir  = OXOOL_MODULE_CONFIG_DIR;
+    ENV::ModuleDataDir    = OXOOL_MODULE_DATA_DIR;
 
+    ENV::SSLEnabled       = OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination();
+    ENV::ServerProtocol   = ENV::SSLEnabled ? "https://" : "http://";
     ENV::ServerPortNumber = OXOOLWSD::getClientPortNumber();
-    ENV::ServiceRoot = OXOOLWSD::ServiceRoot;
-    ENV::SSLEnabled = OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination();
+    ENV::ServiceRoot      = OXOOLWSD::ServiceRoot;
 
     ENV::AdminEnabled = OXOOLWSD::AdminEnabled;
 }

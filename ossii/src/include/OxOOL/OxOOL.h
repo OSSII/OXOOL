@@ -57,9 +57,10 @@ public:
     static std::string ModuleConfigDir; // Module configuration directory
     static std::string ModuleDataDir; // Module data directory
 
+    static bool SSLEnabled; // SSL enabled
+    static std::string ServerProtocol; // Server Protocol("http://" or "https://")
     static int ServerPortNumber; // Server port number
     static std::string ServiceRoot; // Service root
-    static bool SSLEnabled; // SSL enabled
 
     static bool AdminEnabled; // Admin enabled
 
