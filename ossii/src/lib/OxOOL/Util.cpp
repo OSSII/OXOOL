@@ -71,11 +71,11 @@ bool stringToBool(const std::string& str)
 
 std::string convertUserHome(const std::string& path)
 {
-    // 如果路徑開頭不是 "~/" 直接回傳
-    if (path.find_first_of("~/") == std::string::npos)
+    // if path is not start with "~/", return path directly.
+    if (path.find_first_of("~/") != 0)
         return path;
 
-    // 把 "~/" 換成使用者家目錄
+    // replace "~/" with user home path.
     std::string tmpPath(path);
     tmpPath.erase(0, 2);
     tmpPath = Poco::Path::home() + tmpPath;
