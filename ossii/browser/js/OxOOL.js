@@ -65,7 +65,7 @@ L.OxOOL = L.Class.extend({
 				var jsonStr = e.textMsg.substring('modules:'.length);
 				options.modules = JSON.parse(jsonStr);
 
-				this._ModuleManager = L.module(options);
+				this._ModuleManager = new L.Module(options);
 			} catch (e) {
 				console.error('Failed to parse modules: ', e);
 			}
@@ -203,9 +203,4 @@ L.OxOOL = L.Class.extend({
 	},
 });
 
-L.oxool = function (options) {
-	return new L.OxOOL(options);
-};
-
 /* vim: set ts=8 sts=8 sw=8 tw=100: */
-
