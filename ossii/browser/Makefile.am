@@ -22,6 +22,7 @@ $(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
 
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
+	js/BrandingData.js \
 	js/OxOOL.js \
 	js/ModuleManager.js \
 	js/map/handler/Map.AlternativeCommand.js \
