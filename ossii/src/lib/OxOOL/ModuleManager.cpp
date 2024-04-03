@@ -805,6 +805,28 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
     // 進到這裡的 Poco::Net::HTTPRequest 的 URI 已經被改寫，
     // 去掉 service root 了(如果 oxoolwsd.xml 有指定的話)
 
+    // 檢查是否請求 /loleaflet/ 位址，這是 4.0 版前用的 FireServer，新版一律改用 /browser/
+    // 如果是舊版，就重新導向到新的 /browser/ 位址，單純置換 /loleaflet/ 爲 /browser/
+    {
+        static const std::string loleaflet("/loleaflet/");
+        static const std::string browser("/browser/");
+
+        // 如果是 /loleaflet/ 開頭，就改成 /browser/
+        if (std::string::size_type pos = request.getURI().find(loleaflet); pos == 0)
+        {
+            std::string uri = request.getURI();
+            uri.replace(pos, loleaflet.size(), browser);
+
+            const std::shared_ptr<StreamSocket> socket =
+                std::static_pointer_cast<StreamSocket>(disposition.getSocket());
+            std::string serviceRoot = OxOOL::HttpHelper::getServiceRoot();
+
+            // 重新導向
+            OxOOL::HttpHelper::redirect(request, socket, serviceRoot +  uri);
+            return true;
+        }
+    }
+
     // 1. 優先處理一般 request
     // 取得處理該 request 的模組，可能是 serverURI 或 adminServerURI(如果有的話)
     if (const OxOOL::Module::Ptr module = handleByModule(request); module != nullptr)

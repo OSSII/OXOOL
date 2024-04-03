@@ -240,9 +240,11 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
     socket->shutdown();
 }
 
-std::string getProtocol()
+const std::string& getProtocol()
 {
-    return OxOOL::ENV::SSLEnabled ? "https://" : "http://";
+    static const std::string http = "http://";
+    static const std::string https = "https://";
+    return OxOOL::ENV::SSLEnabled ? https : http;
 }
 
 int getPortNumber()
@@ -288,8 +290,9 @@ std::string getHttpTimeNow()
         Poco::DateTimeFormat::HTTP_FORMAT);
 }
 
-std::string getMimeType(const std::string& fileName)
+const std::string& getMimeType(const std::string& fileName)
 {
+    static const std::string emptyString;
     static std::unordered_map<std::string, std::string> aMimeTypes {
         { "svg", "image/svg+xml" },
         { "pot", "application/vnd.ms-powerpoint" },
@@ -434,7 +437,25 @@ std::string getMimeType(const std::string& fileName)
     if (const auto it = aMimeTypes.find(sExt); it != aMimeTypes.end())
         return it->second;
 
-    return "";
+    return emptyString;
+}
+
+void redirect(const Poco::Net::HTTPRequest& request,
+              const std::shared_ptr<StreamSocket>& socket,
+              const std::string& url)
+{
+    OxOOL::HttpHelper::KeyValueMap extraHeader;
+    extraHeader["Location"] = url;
+
+    // default to 302 Found
+    Poco::Net::HTTPResponse::HTTPStatus status = Poco::Net::HTTPResponse::HTTP_FOUND;
+    // if not GET or HEAD, use 303 See Other
+    if (!isHEAD(request) && !isGET(request))
+    {
+        // 303 See Other
+        status = Poco::Net::HTTPResponse::HTTP_SEE_OTHER;
+    }
+    sendResponseAndShutdown(socket, "", status, "", extraHeader);
 }
 
 PartHandler::PartHandler(const std::string& pathPrefix) :

@@ -100,13 +100,13 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
 
 /// @brief 取得目前伺服器協定
 /// @return (http:// or https://)
-std::string getProtocol();
+const std::string& getProtocol();
 
 /// @brief 取得目前伺服器 port
 /// @return port number
 int getPortNumber();
 
-/// @brief  取得所有頁面位址的前置字串
+/// @brief  取得所有頁面位址的前置字串(字串尾部沒有 '/')
 /// Get the prefix string of all page.
 /// @return std::string
 const std::string& getServiceRoot();
@@ -121,10 +121,18 @@ std::string getAcceptLanguage(const Poco::Net::HTTPRequest& request);
 /// @return std::string
 std::string getHttpTimeNow();
 
+/// @brief Redirect to another URL.
+/// @param request - the request.
+/// @param socket - the socket to write the response to.
+/// @param url - the URL to redirect to.
+void redirect(const Poco::Net::HTTPRequest& request,
+              const std::shared_ptr<StreamSocket>& socket,
+              const std::string& url);
+
 /// @brief 取得檔案的 Mime type
 /// @param fileName
 /// @return
-std::string getMimeType(const std::string& fileName);
+const std::string& getMimeType(const std::string& fileName);
 
 class PartHandler : public Poco::Net::PartHandler
 {

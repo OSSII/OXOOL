@@ -1184,18 +1184,6 @@ bool StreamSocket::parseHeader(const char *clientName,
     try
     {
         request.read(message);
-        // Find out if there is a '/loleaflet/' string in request.getURI(),
-        // and if so, change it to a '/browser/' string.
-        std::string uri = request.getURI();
-        static const std::string loleaflet("/loleaflet/");
-        static const std::string browser("/browser/");
-        const std::string::size_type pos = uri.find(loleaflet);
-        if (pos != std::string::npos)
-        {
-            LOG_DBG("Replacing '/loleaflet/' with '/browser/' in URI: " << uri);
-            uri.replace(pos, loleaflet.size(), browser);
-            request.setURI(uri);
-        }
 
         LOG_INF(clientName << " HTTP Request: " << request.getMethod() << ' ' << request.getURI()
                            << ' ' << request.getVersion() << ' '
