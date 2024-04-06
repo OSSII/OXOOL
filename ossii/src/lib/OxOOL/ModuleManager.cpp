@@ -5,6 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
 #include <map>
 #include <chrono>
 #include <memory>
@@ -17,17 +21,23 @@
 #include <OxOOL/XMLConfig.h>
 #include <OxOOL/HttpHelper.h>
 
-#include <Poco/Version.h>
+#include "ModuleManager/ModuleLibrary.hpp"
+#include "ModuleManager/ModuleAgent.hpp"
+#include "ModuleManager/AdminService.hpp"
+#include "ModuleManager/BrowserService.hpp"
+
 #include <Poco/File.h>
 #include <Poco/Path.h>
 #include <Poco/Exception.h>
 #include <Poco/UUIDGenerator.h>
 #include <Poco/SharedLibrary.h>
+#include <Poco/String.h>
 #include <Poco/SortedDirectoryIterator.h>
 #include <Poco/String.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/Net/HTTPCookie.h>
 
 #include <common/Message.hpp>
 #include <common/Protocol.hpp>
@@ -40,351 +50,6 @@
 #include <wsd/ClientSession.hpp>
 #include <wsd/Auth.hpp>
 
-/// @brief 模組 Library 管理
-class ModuleLibrary
-{
-public:
-    ModuleLibrary() : mpModule(nullptr)
-    {
-    }
-
-    ~ModuleLibrary()
-    {
-        // 釋放模組資源
-        mpModule.reset();
-
-        // 再卸載 Library，否則會 crash
-        if (maLibrary.isLoaded())
-            maLibrary.unload();
-    }
-
-    /// @brief 載入 Library
-    /// @param path Library 絕對路徑
-    /// @return
-    bool load(const std::string& path)
-    {
-        try
-        {
-            maLibrary.load(path);
-            if (maLibrary.hasSymbol(OXOOL_MODULE_ENTRY_SYMBOL))
-            {
-                auto moduleEntry = reinterpret_cast<OxOOLModuleEntry>(maLibrary.getSymbol(OXOOL_MODULE_ENTRY_SYMBOL));
-                mpModule = moduleEntry(); // 取得模組
-                LOG_DBG("Successfully loaded '" << path << "'.");
-                return true;
-            }
-            else // 不是 OxOOL 模組物件就卸載
-            {
-                LOG_DBG("'" << path << "' is not a valid OxOOL module.");
-                maLibrary.unload();
-            }
-        }
-        // 已經載入過了
-        catch(const Poco::LibraryAlreadyLoadedException& e)
-        {
-            LOG_ERR(path << "' has already been loaded.");
-        }
-        // 無法載入
-        catch(const Poco::LibraryLoadException& e)
-        {
-            LOG_ERR(path << "' cannot be loaded.");
-        }
-
-        return false;
-    }
-
-    OxOOL::Module::Ptr getModule() const { return mpModule; }
-
-    void useBaseModule()
-    {
-        mpModule = std::make_shared<OxOOL::Module::Base>();
-    }
-
-private:
-    Poco::SharedLibrary maLibrary;
-    OxOOL::Module::Ptr mpModule;
-};
-
-class ModuleAgent : public SocketPoll
-{
-
-public:
-    ModuleAgent(const std::string& threadName) : SocketPoll(threadName)
-    {
-        purge();
-        startThread();
-    }
-
-    ~ModuleAgent() {}
-
-    static constexpr std::chrono::microseconds AgentTimeoutMicroS = std::chrono::seconds(60);
-
-    void handleRequest(OxOOL::Module::Ptr module,
-                       const Poco::Net::HTTPRequest& request,
-                       SocketDisposition& disposition)
-    {
-        setBusy(true); // 設定忙碌狀態
-
-        mpSavedModule = module;
-        mpSavedSocket = std::static_pointer_cast<StreamSocket>(disposition.getSocket());
-// Poco 版本小於 1.10，mRequest 必須 parse 才能產生
-#if POCO_VERSION < 0x010A0000
-        {
-            (void)request;
-            StreamSocket::MessageMap map;
-            Poco::MemoryInputStream message(&mpSavedSocket->getInBuffer()[0],
-                                            mpSavedSocket->getInBuffer().size());
-            if (!mpSavedSocket->parseHeader("Client", message, mRequest, &map))
-            {
-                LOG_ERR("Create HTTPRequest fail! stop running");
-                stopRunning();
-                return;
-            }
-            mRequest.setURI(request.getURI());
-        }
-#else // 否則直接複製
-        mRequest = request;
-#endif
-
-        disposition.setMove([=](const std::shared_ptr<Socket>& moveSocket)
-        {
-            insertNewSocket(moveSocket);
-            startRunning();
-        });
-    }
-
-    void pollingThread() override
-    {
-        while (SocketPoll::continuePolling() && !SigUtil::getTerminationFlag())
-        {
-            // 正在處理請求
-            if (isBusy())
-            {
-                if ((mpSavedSocket != nullptr && mpSavedSocket->isClosed()) && !isModuleRunning())
-                {
-                    purge(); // 清理資料，恢復閒置狀態，可以再利用
-                }
-            }
-            const int64_t rc = poll(AgentTimeoutMicroS);
-            if (rc == 0) // polling timeout.
-            {
-                // 現在時間
-                const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-                auto durationTime = std::chrono::duration_cast<std::chrono::microseconds>(now - mpLastIdleTime);
-                // 閒置超過預設時間，就脫離迴圈
-                if (durationTime >= AgentTimeoutMicroS)
-                {
-                    break;
-                }
-            }
-            else if (rc > 0) // Number of Events signalled.
-            {
-                // 被 wakeup，紀錄目前時間
-                mpLastIdleTime = std::chrono::steady_clock::now();
-            }
-            else // error
-            {
-                // do nothing.
-            }
-        }
-
-        // 執行緒已經結束，觸發清理程序
-        OxOOL::ModuleManager &manager = OxOOL::ModuleManager::instance();
-        manager.cleanupDeadAgents();
-
-        // 觸發 ConvertBroker 清理程序
-        OxOOL::ConvertBroker::cleanup();
-    }
-    bool isIdle() const { return isAlive() && !isBusy(); }
-
-private:
-    /// @brief 從執行緒代理請求
-    void startRunning()
-    {
-        // 讓 thread 執行，流程交還給 Main thread.
-        // 凡是加進 Callback 執行的 function 都是在 agent thread 排隊執行
-        addCallback([this]()
-        {
-            setModuleRunning(true);
-            // client address equals to "::1", it means the client is localhost.
-            if (mpSavedSocket->clientAddress() == "::1")
-            {
-                mpSavedSocket->setClientAddress("127.0.0.1");
-            }
-            // client address prefix is "::ffff:", it means the client is IPv4.
-            else if (Util::startsWith(mpSavedSocket->clientAddress(), "::ffff:"))
-            {
-                const std::string ipv4ClientAddress = mpSavedSocket->clientAddress().substr(7);
-                mpSavedSocket->setClientAddress(ipv4ClientAddress);
-            }
-
-            // 是否為 admin service
-            const bool isAdminService = mpSavedModule->isAdminService(mRequest);
-
-            // 不需要認證或已認證通過
-            if (!mpSavedModule->needAdminAuthenticate(mRequest, mpSavedSocket, isAdminService))
-            {
-                // 依據 service uri 決定要給哪個 reauest 處理
-                if (isAdminService)
-                    mpSavedModule->handleAdminRequest(mRequest, mpSavedSocket); // 管理介面
-                else
-                    mpSavedModule->handleRequest(mRequest, mpSavedSocket); // Restful API
-            }
-            stopRunning();
-        });
-    }
-
-    /// @brief 代理請求結束
-    void stopRunning()
-    {
-        setModuleRunning(false); // 模組已經結束
-        wakeup();  // 喚醒 thread.(就是 ModuleAgent::pollingThread() loop)
-    }
-
-    /// @brief 設定是否忙碌旗標
-    /// @param onOff
-    void setBusy(bool onOff) { mbBusy = onOff; }
-
-    /// @brief 是否忙碌
-    /// @return true: 是
-    bool isBusy() const { return mbBusy; }
-
-    /// @brief 設定模組是否執行中
-    /// @param onOff
-    void setModuleRunning(bool onOff)
-    {
-        mbModuleRunning = onOff;
-    }
-
-    /// @brief 模組是否正在執行
-    /// @return true: 是
-    bool isModuleRunning() const
-    {
-        return mbModuleRunning;
-    }
-
-    /// @brief 清除最近代理的資料，並恢復閒置狀態
-    void purge()
-    {
-        // 觸發 ConvertBroker 清理程序
-        OxOOL::ConvertBroker::cleanup();
-
-        mpSavedModule = nullptr;
-        mpSavedSocket = nullptr;
-        setModuleRunning(false);
-        setBusy(false);
-        mpLastIdleTime = std::chrono::steady_clock::now(); // 紀錄最近閒置時間
-    }
-
-    /// @brief 最近閒置時間
-    std::chrono::steady_clock::time_point mpLastIdleTime;
-
-    /// @brief 與 Client 的 socket
-    std::shared_ptr<StreamSocket> mpSavedSocket;
-
-    /// @brief 要代理的模組
-    OxOOL::Module::Ptr mpSavedModule;
-    /// @brief HTTP Request
-    Poco::Net::HTTPRequest mRequest;
-
-    /// @brief 是否正在代理請求
-    std::atomic<bool> mbBusy;
-    /// @brief 模組正在處理代理送去的請求
-    std::atomic<bool> mbModuleRunning;
-};
-
-class ModuleService final : public OxOOL::Module::Base
-{
-public:
-    ModuleService()
-    {
-    }
-
-    ~ModuleService() {}
-
-    void initialize() override
-    {
-        LOG_DBG("ModuleService initialized.");
-    }
-
-    std::string getVersion() override
-    {
-        return "1.0";
-    }
-
-    void handleRequest(const Poco::Net::HTTPRequest& request,
-                       const std::shared_ptr<StreamSocket>& socket) override
-    {
-        static OxOOL::ModuleManager &moduleManager = OxOOL::ModuleManager::instance();
-
-        // 避免亂 try 網址，需檢查是否是已註冊的 browser URI
-        if (!isValidBrowserURI(request))
-        {
-            OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_FORBIDDEN,
-                socket, "Invalid Browser Module URI.");
-            return;
-        }
-
-        const std::string realPath = parseRealURI(request);
-
-        const StringVector tokens(StringVector::tokenize(realPath, '/'));
-        // 至少要有兩個 token，第一個是模組ID，會重定位到該模組實際路徑的 browser 目錄
-        if (tokens.size() < 2)
-        {
-            OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST,
-                socket, "Invalid request.");
-            return;
-        }
-
-        // 取得模組 ID
-        const std::string moduleID = tokens[0];
-        OxOOL::Module::Ptr module = moduleManager.getModuleById(moduleID);
-        if (module == nullptr)
-        {
-            OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_NOT_FOUND,
-                socket, "Module not found.");
-            return;
-        }
-
-        // 取得模組的 browser 目錄實際路徑
-        const std::string moduleBrowserPath(module->getDocumentRoot() + "/browser");
-        // 重定位到真正的檔案
-        const std::string requestFile = moduleBrowserPath + realPath.substr(moduleID.size() + 1);
-        // 傳送檔案
-        sendFile(requestFile, request, socket);
-    }
-
-    void registerBrowserURI(const std::string& uri)
-    {
-        // 是否已經註冊過
-        if (std::find(maRegisteredURI.begin(), maRegisteredURI.end(), uri) == maRegisteredURI.end())
-        {
-            maRegisteredURI.emplace_back(uri);
-        }
-    }
-
-private: // private methods
-
-    bool isValidBrowserURI(const Poco::Net::HTTPRequest& request)
-    {
-        const std::string uri = request.getURI();
-        // 依序比對已註冊過的 browser URI
-        for (const auto& it : maRegisteredURI)
-        {
-            // 如果 URI 是註冊過的 URI 開頭，就是合法的
-            if (uri.find(it) == 0)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-private: // private members
-
-    std::vector<std::string> maRegisteredURI; // 已註冊的 browser URI
-
-};
 
 namespace OxOOL
 {
@@ -513,25 +178,9 @@ private:
 ModuleManager::ModuleManager()
     : SocketPoll("ModuleManager")
     , mbInitialized(false)
+    , mpBrowserService(nullptr)
+    , mpAdminService(nullptr)
 {
-    mpModuleService = std::make_shared<ModuleService>();
-
-    // 設定模組詳細資訊
-    OxOOL::Module::Detail detail;
-    detail.name = "ModuleService";
-    detail.serviceURI = "/browser/module/"; // 接管所有模組的 browser 請求，意即所有模組的 browser 請求都會被這個模組處理
-    detail.version = "1.0";
-    detail.summary = "";
-    detail.author = "OxOOL";
-    detail.license = "MPL 2.0";
-    detail.description = "";
-    detail.adminPrivilege = false;
-    //detail.adminServiceURI = "/browser/dist/admin/module/" + detail.name + "/";
-    detail.adminIcon = "";
-    detail.adminItem = "";
-    mpModuleService->maDetail = detail;
-
-    mpModuleService->initialize();
 }
 
 ModuleManager::~ModuleManager()
@@ -543,21 +192,17 @@ void ModuleManager::initialize()
 {
     if (!mbInitialized)
     {
+        // 初始化內部模組
+        initializeInternalModules();
+
+        // 載入外部模組
         loadModulesFromDirectory(OxOOL::ENV::ModuleConfigDir);
+#if ENABLE_DEBUG
+        dump();
+#endif
         startThread();
         mbInitialized = true;
     }
-}
-
-void ModuleManager::pollingThread()
-{
-    LOG_DBG("Starting Module manager polling.");
-    while (!SocketPoll::isStop() && !SigUtil::getTerminationFlag() && !SigUtil::getShutdownRequestFlag())
-    {
-        poll(SocketPoll::DefaultPollTimeoutMicroS);
-
-    }
-    maModuleMap.clear(); // Deconstruct all modules.
 }
 
 void ModuleManager::loadModulesFromDirectory(const std::string& configPath)
@@ -611,7 +256,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
     // 模組啟用
     if (isModuleEnable)
     {
-        const std::shared_ptr<ModuleLibrary> module = std::make_shared<ModuleLibrary>();
+        std::unique_ptr<ModuleLibrary> moduleLib = std::make_unique<ModuleLibrary>();
 
         // 讀取模組詳細資訊
         detail.name = config.getString("module.detail.name", "");
@@ -675,7 +320,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
                 modulesLock.unlock();
 
                 // 模組載入失敗
-                if (!module->load(sharedLibrary.path()))
+                if (!moduleLib->load(sharedLibrary.path()))
                 {
                     LOG_ERR("Can not load module:" << soFile);
                     return false;
@@ -689,7 +334,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
         }
         else // 沒有指定載入模組，就用基本模組
         {
-            module->useBaseModule();
+            moduleLib->useBaseModule();
         }
 
         std::string ID = Poco::UUIDGenerator::defaultGenerator().createRandom().toString();
@@ -704,13 +349,15 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
         std::cout << "Module: " << detail.name << ", UUID: " << ID << std::endl;
 #endif
 
+        OxOOL::Module::Ptr module = moduleLib->getModule();
+        module->maId = ID; // 設定模組 ID
+
         // 檢查是否有 browser 目錄（需在模組目錄下有 browser 目錄，且 browser 目錄下還有 module.js）
         if (Poco::File(documentRoot + "/browser/module.js").exists())
         {
-            const std::string browserURI = mpModuleService->maDetail.serviceURI + ID + "/"; // 用 UUID 作爲 URI，避免　URI 固定
-            mpModuleService->registerBrowserURI(browserURI); // 註冊 browser URI，讓 ModuleService 處理
-            module->getModule()->maId = ID; // 設定模組 ID
-            module->getModule()->maBrowserURI = browserURI; // 設定模組的前端服務位址
+            const std::string browserURI = mpBrowserService->maDetail.serviceURI + ID + "/"; // 用 UUID 作爲 URI，避免　URI 固定
+            mpBrowserService->registerBrowserURI(browserURI); // 註冊 browser URI，讓 ModuleService 處理
+            module->maBrowserURI = browserURI; // 設定模組的前端服務位址
 #if ENABLE_DEBUG
             std::cout << "Browser URI: " << browserURI << std::endl;
 #endif
@@ -721,24 +368,26 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
             Poco::File(documentRoot + "/admin/admin.html").exists() &&
             Poco::File(documentRoot + "/admin/admin.js").exists())
         {
-            detail.adminServiceURI = "/browser/dist/admin/module/" + detail.name + "/";
+            //detail.adminServiceURI = "/browser/dist/admin/module/" + ID + "/";
+            const std::string adminURI = mpAdminService->maDetail.serviceURI + "module/" + ID + "/";
+            module->maAdminURI = adminURI; // 設定模組的後臺管理位址
         }
 
         // 設定模組詳細資訊
-        detail.version = module->getModule()->getVersion();
-        module->getModule()->maDetail = detail;
+        detail.version = module->getVersion();
+        module->maDetail = detail;
         // 紀錄這個模組的配置檔位置
-        module->getModule()->maConfigFile = configFile;
+        module->maConfigFile = configFile;
         // 設定模組文件絕對路徑
-        module->getModule()->maRootPath = documentRoot;
+        module->maRootPath = documentRoot;
 
         std::unique_lock<std::mutex> modulesLock(maModulesMutex);
-        maModuleMap[ID] = module;
+        maModuleMap[ID] = std::move(moduleLib);
         modulesLock.unlock();
 
         // 用執行緒執行模組的 initialize()，避免被卡住
         std::thread([module]() {
-            module->getModule()->initialize();
+            module->initialize();
         }).detach();
     }
 
@@ -748,7 +397,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
 bool ModuleManager::hasModule(const std::string& moduleName)
 {
     // 先檢查是否是 ModuleService
-    if (mpModuleService->getDetail().name == moduleName)
+    if (mpBrowserService->getDetail().name == moduleName)
     {
         return true;
     }
@@ -829,7 +478,7 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
 
     // 1. 優先處理一般 request
     // 取得處理該 request 的模組，可能是 serverURI 或 adminServerURI(如果有的話)
-    if (const OxOOL::Module::Ptr module = handleByModule(request); module != nullptr)
+    if (const OxOOL::Module::Ptr module = handleByWhichModule(request); module != nullptr)
     {
         std::unique_lock<std::mutex> agentsLock(maAgentsMutex);
         // 尋找可用的模組代理
@@ -845,7 +494,7 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
         // 沒有找到空閒的代理
         if (moduleAgent == nullptr)
         {
-            moduleAgent = std::make_shared<ModuleAgent>("Module Agent");
+            moduleAgent = std::make_shared<ModuleAgent>("Module Agent"); // 建立新的代理
             mpAgentsPool.emplace_back(moduleAgent);
         }
         agentsLock.unlock();
@@ -992,6 +641,100 @@ bool ModuleManager::handleKitToClientMessage(const std::shared_ptr<ClientSession
     return false; // 繼續傳給 online core 處理
 }
 
+std::string ModuleManager::handleAdminMessage(const StringVector& tokens)
+{
+    // 是否是給模組的指令，第一個 token 前有 <module ID> 字串
+    if (tokens[0].at(0) == '<')
+    {
+        std::size_t pos = tokens[0].find('>');
+        if (pos != std::string::npos)
+        {
+            const std::string moduleId = tokens[0].substr(1, pos - 1); // 取得 module ID
+            const OxOOL::Module::Ptr module = getModuleById(moduleId);
+            if (module)
+            {
+                const std::string command  = tokens[0].substr(pos + 1); // 取得 command(已經去除 module ID tag)
+                StringVector moduleTokens;
+                moduleTokens.push_back(command); // first token is the command.
+                // 其餘的 token 是 module 的參數
+                for (std::size_t i = 1; i < tokens.size(); ++i)
+                    moduleTokens.push_back(tokens[i]);
+
+                // 由於交給 module 處理，所以得到的結果，要加上 <module ID>
+                return "<" + moduleId + ">" + module->handleAdminMessage(moduleTokens);
+            }
+            return ""; // 無論如何，這個請訊息只能被模組處理，不需要再往下傳。
+        }
+    }
+
+    // 非模組指令，我們要自己處理
+    if (tokens.equals(0, "getModuleList"))
+    {
+        return getAllModuleDetailsJsonString("en-US");
+    }
+
+    return ""; // 繼續傳給 online core 處理
+}
+
+void ModuleManager::preprocessAdminFile(const std::string& adminFile,
+                                        const Poco::Net::HTTPRequest& request,
+                                        const std::shared_ptr<StreamSocket>& socket)
+{
+    // 讀取檔案內容
+    std::ifstream file(adminFile, std::ios::binary);
+    std::stringstream content;
+    content << file.rdbuf();
+    file.close();
+    std::string mainContent = content.str();
+
+    std::string jwtToken;
+    Poco::Net::NameValueCollection reqCookies;
+    std::vector<Poco::Net::HTTPCookie> resCookies;
+
+    for (size_t it = 0; it < resCookies.size(); ++it)
+    {
+        if (resCookies[it].getName() == "jwt")
+        {
+            jwtToken = resCookies[it].getValue();
+            break;
+        }
+    }
+
+    if (jwtToken.empty())
+    {
+        request.getCookies(reqCookies);
+        if (reqCookies.has("jwt"))
+        {
+            jwtToken = reqCookies.get("jwt");
+        }
+    }
+
+    const std::string escapedJwtToken = Util::encodeURIComponent(jwtToken, "'");
+    Poco::replaceInPlace(mainContent, std::string("%JWT_TOKEN%"), escapedJwtToken);
+
+    Poco::replaceInPlace(mainContent, std::string("%SERVICE_ROOT%"), OxOOL::ENV::ServiceRoot);
+    Poco::replaceInPlace(mainContent, std::string("%VERSION_HASH%"), OxOOL::ENV::VersionHash);
+
+
+    Poco::Net::HTTPResponse response;
+    // Ask UAs to block if they detect any XSS attempt
+    response.add("X-XSS-Protection", "1; mode=block");
+    // No referrer-policy
+    response.add("Referrer-Policy", "no-referrer");
+    response.add("X-Content-Type-Options", "nosniff");
+    response.set("Server", OxOOL::ENV::HttpServerString);
+    response.set("Date", OxOOL::HttpHelper::getHttpTimeNow());
+
+    response.setContentType("text/html; charset=utf-8");
+    response.setChunkedTransferEncoding(false);
+
+    std::ostringstream oss;
+    response.write(oss);
+    oss << mainContent;
+    socket->send(oss.str());
+    socket->shutdown();
+}
+
 bool ModuleManager::handleAdminWebsocketRequest(const std::string& moduleName,
                                                 const std::weak_ptr<StreamSocket> &socketWeak,
                                                 const Poco::Net::HTTPRequest& request)
@@ -1122,22 +865,146 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
 
 void ModuleManager::dump()
 {
-    // TODO: Do we need to implement this?
+    std::cout << "Module list:" << std::endl
+              << "==========================" << std::endl;
+    for (auto &it : maModuleMap)
+    {
+        const OxOOL::Module::Ptr module = it.second->getModule();
+        std::cout << "Module: " << module->maId << std::endl
+                  << "Name: " << module->maDetail.name << std::endl
+                  << "Service URI: " << module->maDetail.serviceURI << std::endl
+                  << "Browser URI: " << module->maBrowserURI << std::endl
+                  << "Admin URI: " << module->maAdminURI << std::endl
+                  << "Config file: " << module->maConfigFile << std::endl
+                  << "Root path: " << module->maRootPath << std::endl;
+        std::cout << "--------------------------" << std::endl;
+    }
 }
 
 //------------------ Private mtehods ----------------------------------
 
-OxOOL::Module::Ptr ModuleManager::handleByModule(const Poco::Net::HTTPRequest& request)
+void ModuleManager::pollingThread()
 {
-    // 是否請求模組管理服務
-    if (mpModuleService->isService(request) || mpModuleService->isAdminService(request))
-        return mpModuleService;
+    LOG_DBG("Starting Module manager polling.");
+    while (!SocketPoll::isStop() && !SigUtil::getTerminationFlag() && !SigUtil::getShutdownRequestFlag())
+    {
+        poll(SocketPoll::DefaultPollTimeoutMicroS);
 
+    }
+    maModuleMap.clear(); // Deconstruct all modules.
+}
+
+// 初始化內部模組
+void ModuleManager::initializeInternalModules()
+{
+    // 1. BrowserService
+    mpBrowserService = std::make_shared<BrowserService>();
+    std::unique_ptr<ModuleLibrary> browserModuleLib = std::make_unique<ModuleLibrary>(mpBrowserService);
+
+    // 設定 Browser service 詳細資訊
+    mpBrowserService->maDetail.name = "BrowserService";
+    mpBrowserService->maDetail.serviceURI = "/browser/module/"; // 接管所有模組的 browser 請求，意即所有模組的 browser 請求都會被這個模組處理
+    mpBrowserService->maDetail.version = "1.0.0";
+    mpBrowserService->maDetail.summary = "Front-end user file service.";
+    mpBrowserService->maDetail.author = "OxOOL";
+    mpBrowserService->maDetail.license = "MPL 2.0";
+    mpBrowserService->maDetail.description = "";
+    mpBrowserService->maDetail.adminPrivilege = false;
+    mpBrowserService->maDetail.adminServiceURI = ""; // 接管所有系統的後臺管理
+    mpBrowserService->maDetail.adminIcon = "";
+    mpBrowserService->maDetail.adminItem = "";
+
+    mpBrowserService->maId = "1"; // 固定 ID 爲 1
+    maModuleMap[mpBrowserService->maId] = std::move(browserModuleLib);
+    mpBrowserService->initialize();
+
+    if (!std::getenv("ENABLE_ADMIN_SERVICE"))
+        return;
+
+    // 2. AdminService
+    mpAdminService = std::make_shared<AdminService>();
+    std::unique_ptr<ModuleLibrary> adminModuleLib = std::make_unique<ModuleLibrary>(mpAdminService);
+    // 設定 Admin service 詳細資訊
+    mpAdminService->maDetail.name = "AdminService";
+    mpAdminService->maDetail.serviceURI = "/browser/dist/admin/"; // 接管所有模組的後臺管理請求，意即所有模組的後臺管理請求都會被這個模組處理
+    mpAdminService->maDetail.version = "1.0.0";
+    mpAdminService->maDetail.summary = "Admin console service.";
+    mpAdminService->maDetail.author = "OxOOL";
+    mpAdminService->maDetail.license = "MPL 2.0";
+    mpAdminService->maDetail.description = "";
+    mpAdminService->maDetail.adminPrivilege = false;
+    mpAdminService->maDetail.adminServiceURI = ""; // 接管所有系統的後臺管理
+    mpAdminService->maDetail.adminIcon = "";
+    mpAdminService->maDetail.adminItem = "";
+
+    mpAdminService->maId = "2"; // 固定 ID 爲 2
+#if ENABLE_DEBUG
+    mpAdminService->maRootPath = OxOOL::ENV::FileServerRoot + "/ossii/browser/admin/";
+#else
+    mpAdminService->maRootPath = OxOOL::ENV::FileServerRoot + "/admin/";
+#endif
+    maModuleMap[mpAdminService->maId] = std::move(adminModuleLib);
+    mpAdminService->initialize();
+}
+
+bool ModuleManager::isService(const Poco::Net::HTTPRequest& request,
+                              const OxOOL::Module::Ptr module) const
+{
+    // 不含查詢字串的實際請求位址
+    const std::string requestURI = Poco::URI(request.getURI()).getPath();
+
+    /* serviceURI 有兩種格式：
+        一、 end point 格式：
+            例如 /oxool/endpoint 最後非 '/' 結尾)
+            此種格式用途單一，只有一個位址，適合簡單功能的 restful api
+
+        二、 目錄格式，最後爲 '/' 結尾：
+            例如 /oxool/drawio/
+            此種格式，模組可自由管理 /oxool/drawio/ 之後所有位址，適合複雜的 restful api
+        */
+    // 取得該模組指定的 service uri, uri 長度至少 2 個字元
+    if (std::string serviceURI = module->maDetail.serviceURI; serviceURI.length() > 1)
+    {
+        bool correctModule = false; // 預設該模組非正確模組
+
+        // service uri 爲 end pointer(最後字元不是 '/')，表示 request uri 和 service uri 需相符
+        if (*serviceURI.rbegin() != '/')
+        {
+            correctModule = (serviceURI == requestURI);
+        }
+        else
+        {
+            // 該位址可以為 "/endpoint" or "/endpoint/"
+            std::string endpoint(serviceURI);
+            endpoint.pop_back(); // 移除最後的 '/' 字元，轉成 /endpoint
+
+            // 位址列開始爲 "/endpoint/" 或等於 "/endpoint"，視為正確位址
+            correctModule = (requestURI.find(serviceURI, 0) == 0 || requestURI == endpoint);
+        }
+
+        return correctModule;
+    }
+
+    return false;
+}
+
+bool ModuleManager::isAdminService(const Poco::Net::HTTPRequest& request,
+                                   const OxOOL::Module::Ptr module) const
+{
+    // 有管理界面 URI
+    if (!module->maDetail.adminServiceURI.empty())
+        return request.getURI().find(module->maDetail.adminServiceURI, 0) == 0;
+
+    return false;
+}
+
+OxOOL::Module::Ptr ModuleManager::handleByWhichModule(const Poco::Net::HTTPRequest& request) const
+{
     // 找出是哪個 module 要處理這個請求
     for (auto& it : maModuleMap)
     {
         OxOOL::Module::Ptr module = it.second->getModule();
-        if (module->isService(request) || module->isAdminService(request))
+        if (isService(request, module) || isAdminService(request, module))
             return module;
     }
     return nullptr;

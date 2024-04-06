@@ -71,16 +71,6 @@ public:
     /// @return
     const std::string& getDocumentRoot() const { return maRootPath; }
 
-    /// @brief 請求是否是本模組處理
-    /// @param request
-    /// @return true 該要求屬於這個模組處理
-    bool isService(const Poco::Net::HTTPRequest& request) const;
-
-    /// @brief 請求是否是本模組的管理介面處理
-    /// @param request
-    /// @return true 該要求屬於這個模組的管理介面處理
-    bool isAdminService(const Poco::Net::HTTPRequest& request) const;
-
     /// @brief 需要管理員身份驗證
     /// @param request
     /// @param socket
@@ -172,6 +162,7 @@ private:
     std::string maConfigFile; // 模組的配置檔完整路徑
     std::string maRootPath; // 模組文件絕對路徑
     std::string maBrowserURI; // 模組的前端服務位址，若模組有前端服務(browser/ 下有 module.js)，這裏會是 /browser/module/{maId}/
+    std::string maAdminURI; // 模組的後臺管理位址，若模組有後臺管理(admin/ 下有 admin.js)，這裏會是 /browser/dist/admin/module/{maId}/
 };
 
 typedef std::shared_ptr<Base> Ptr;

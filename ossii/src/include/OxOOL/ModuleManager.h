@@ -27,8 +27,10 @@ class Message;
 class StreamSocket;
 class SocketDisposition;
 class ModuleLibrary;
-class ModuleService;
 class ModuleAgent;
+
+class AdminService;
+class BrowserService;
 
 namespace OxOOL
 {
@@ -104,6 +106,19 @@ public:
     bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                                   const std::shared_ptr<Message>& payload);
 
+    /// @brief 處理後臺管理訊息
+    /// @param payload
+    /// @return
+    std::string handleAdminMessage(const StringVector& tokens);
+
+    /// @brief 讀取模組後臺管理檔案，替換其中的變數
+    /// @param adminFile - 後臺管理檔案絕對路徑
+    /// @param request - HTTP 請求
+    /// @param socket - 連線 socket
+    void preprocessAdminFile(const std::string& adminFile,
+                             const Poco::Net::HTTPRequest& request,
+                             const std::shared_ptr<StreamSocket>& socket);
+
     /// @brief 處理模組後臺管理 Web socket 請求
     /// @param moduleName 模組名稱
     /// @param socket
@@ -131,14 +146,34 @@ public:
 
 private:
     void pollingThread() override;
-    OxOOL::Module::Ptr handleByModule(const Poco::Net::HTTPRequest& request);
 
-    bool mbInitialized;
+    /// @brief 初始化內部模組
+    void initializeInternalModules();
 
-    std::shared_ptr<ModuleService> mpModuleService;
+    /// @brief 請求是否是本模組處理
+    /// @param request
+    /// @return true 該要求屬於這個模組處理
+    bool isService(const Poco::Net::HTTPRequest& request,
+                   const OxOOL::Module::Ptr module) const;
+
+    /// @brief 請求是否是本模組的管理介面處理
+    /// @param request
+    /// @return true 該要求屬於這個模組的管理介面處理
+    bool isAdminService(const Poco::Net::HTTPRequest& request,
+                        const OxOOL::Module::Ptr module) const;
+
+    /// @brief
+    /// @param request
+    /// @return
+    OxOOL::Module::Ptr handleByWhichModule(const Poco::Net::HTTPRequest& request) const;
+
+    bool mbInitialized; // 是否已經初始化
+
+    std::shared_ptr<BrowserService> mpBrowserService;
+    std::shared_ptr<AdminService> mpAdminService;
 
     std::mutex maModulesMutex;
-    std::map<std::string, std::shared_ptr<ModuleLibrary>> maModuleMap;
+    std::map<std::string, std::unique_ptr<ModuleLibrary>> maModuleMap;
 
     std::mutex maAgentsMutex;
     std::vector<std::shared_ptr<ModuleAgent>> mpAgentsPool;

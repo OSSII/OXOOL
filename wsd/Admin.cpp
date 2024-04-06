@@ -16,6 +16,8 @@
 #include <sys/poll.h>
 #include <unistd.h>
 
+#include <OxOOL/OxOOL.h>
+
 #include <Poco/Net/HTTPCookie.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -846,6 +848,13 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
     }
     else
     {
+        const std::string result = OxOOL::handleAdminMessage(tokens);
+        if (!result.empty())
+        {
+            sendTextFrame(result);
+            return;
+        }
+
         std::cerr << "未知指令:\"" << firstLine << "\"\n";
     }
 }

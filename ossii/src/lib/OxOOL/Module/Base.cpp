@@ -75,55 +75,6 @@ OxOOL::XMLConfig::Ptr Base::getConfig()
     return nullptr;
 }
 
-bool Base::isService(const Poco::Net::HTTPRequest& request) const
-{
-    // 不含查詢字串的實際請求位址
-    const std::string requestURI = Poco::URI(request.getURI()).getPath();
-
-    /* serviceURI 有兩種格式：
-        一、 end point 格式：
-            例如 /oxool/endpoint 最後非 '/' 結尾)
-            此種格式用途單一，只有一個位址，適合簡單功能的 restful api
-
-        二、 目錄格式，最後爲 '/' 結尾：
-            例如 /oxool/drawio/
-            此種格式，模組可自由管理 /oxool/drawio/ 之後所有位址，適合複雜的 restful api
-        */
-    // 取得該模組指定的 service uri, uri 長度至少 2 個字元
-    if (std::string serviceURI = maDetail.serviceURI; serviceURI.length() > 1)
-    {
-        bool correctModule = false; // 預設該模組非正確模組
-
-        // service uri 爲 end pointer(最後字元不是 '/')，表示 request uri 和 service uri 需相符
-        if (*serviceURI.rbegin() != '/')
-        {
-            correctModule = (serviceURI == requestURI);
-        }
-        else
-        {
-            // 該位址可以為 "/endpoint" or "/endpoint/"
-            std::string endpoint(serviceURI);
-            endpoint.pop_back(); // 移除最後的 '/' 字元，轉成 /endpoint
-
-            // 位址列開始爲 "/endpoint/" 或等於 "/endpoint"，視為正確位址
-            correctModule = (requestURI.find(serviceURI, 0) == 0 || requestURI == endpoint);
-        }
-
-        return correctModule;
-    }
-
-    return false;
-}
-
-bool Base::isAdminService(const Poco::Net::HTTPRequest& request) const
-{
-    // 有管理界面 URI
-    if (!maDetail.adminServiceURI.empty())
-        return request.getURI().find(maDetail.adminServiceURI, 0) == 0;
-
-    return false;
-}
-
 bool Base::needAdminAuthenticate(const Poco::Net::HTTPRequest& request,
                                  const std::shared_ptr<StreamSocket>& socket,
                                  const bool callByAdmin)

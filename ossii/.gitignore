@@ -1,7 +1,8 @@
 
 
 # browser
-browser/branding
+browser/*.js
+browser/admin/*.js
 
 # developer
 *.la

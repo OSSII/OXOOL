@@ -5,13 +5,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+SUBDIRS = . admin
+
 DIST_FOLDER = $(top_srcdir)/browser/dist
 
 .PHONY: build-browserdist
 
 all-local: build-browserdist
-
-BRANDING_DIR = $(srcdir)/branding
 
 # 複製 uiconfig/ 所有檔案
 UICONFIG_SRC = $(shell find $(srcdir)/uiconfig -name '*.*')
@@ -19,6 +19,13 @@ UICONFIG_DST = $(patsubst $(srcdir)/%,$(DIST_FOLDER)/%,$(UICONFIG_SRC))
 $(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
 	@$(MKDIR_P) $(dir $@)
 	@cp $< $@
+
+ADMIN_JS_LIST = \
+	../admin/js/global.js \
+	../admin/js/color-scheme-switcher.js \
+	../admin/src/Base.js \
+	../admin/src/AdminSocketBase.js \
+	../admin/src/Util.js
 
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
@@ -38,9 +45,21 @@ OXOOL_JS_LIST = \
 	js/spectrum.js \
 	js/main.js
 
+pot:
+	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/ossii.pot \
+		$(OXOOL_JS_LIST) \
+		$(ADMIN_L10N_JS_LIST)
+
+	msguniq -w 78 -t UTF-8 po/ossii.pot > po/ossii.pot.new; mv po/ossii.pot.new po/ossii.pot
+
+l10n: pot
+	for i in po/*.po; do pot2po --input=po/ossii.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
+
+L10N_PO = $(wildcard $(srcdir)/po/*.po)
+L10N_JSON = $(patsubst $(srcdir)/po/%.po,$(DIST_FOLDER)/l10n/ossii/%.json,$(L10N_PO))
 
 # 產生打包用的 JS 檔案
-$(BRANDING_DIR)/branding-src.js: $(OXOOL_JS_LIST)
+ossii-src.js: $(OXOOL_JS_LIST)
 	@echo "Checking for JS errors..."
 	@$(NODE) $(top_srcdir)/browser/node_modules/eslint/bin/eslint.js $(srcdir)/js \
 		--config $(top_srcdir)/browser/.eslintrc \
@@ -51,7 +70,7 @@ $(BRANDING_DIR)/branding-src.js: $(OXOOL_JS_LIST)
 	@echo "Done bundling $@."
 
 # 壓縮打包用的 JS 檔案
-$(DIST_FOLDER)/ossii.js: $(BRANDING_DIR)/branding-src.js
+$(DIST_FOLDER)/ossii.js: ossii-src.js
 	@echo "Uglifying $@..."
 	@$(MKDIR_P) $(dir $@)
 	@$(RM) -f $@
@@ -77,6 +96,11 @@ OXOOL_CSS_LIST = \
 	css/notebookbar.css \
 	css/spectrum.css
 
+$(DIST_FOLDER)/l10n/ossii-localizations.json: $(srcdir)/l10n/ossii-localizations.json
+	@echo "Copying $@..."
+	@$(MKDIR_P) $(dir $@)
+	cp $< $@
+
 $(DIST_FOLDER)/branding.css: $(OXOOL_CSS_LIST)
 	@echo "Checking for CSS errors..."
 	@$(NODE) $(top_srcdir)/browser/node_modules/stylelint/bin/stylelint.js --config $(top_srcdir)/browser/.stylelintrc.json $(srcdir)/css/*.css
@@ -92,7 +116,8 @@ build-browserdist: \
 	$(DIST_FOLDER)/branding.css \
 	$(DIST_FOLDER)/branding-mobile.css \
 	$(DIST_FOLDER)/branding-tablet.css \
-	$(DIST_FOLDER)/branding-desktop.css
+	$(DIST_FOLDER)/branding-desktop.css \
+	$(DIST_FOLDER)/l10n/ossii-localizations.json
 	@echo "Done building browser dist"
 
 # 清除打包用的相關檔案及目錄
@@ -100,8 +125,9 @@ clean-local:
 	@echo "Cleaning browser dist"
 	$(RM) -f $(DIST_FOLDER)/ossii.js
 	$(RM) -f $(DIST_FOLDER)/branding*.css
+	$(RM) -f $(DIST_FOLDER)/l10n/ossii-localizations.json
 	$(RM) -rf $(DIST_FOLDER)/uiconfig
-	$(RM) -rf $(BRANDING_DIR)
+	$(RM) -rf ossii-src.js
 
 EXTRA_DIST = $(shell find . -type f -not -path './.git/*' | sed 's/.\///')
 

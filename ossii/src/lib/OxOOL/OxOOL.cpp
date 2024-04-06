@@ -24,6 +24,7 @@ std::string ENV::VersionHash;
 std::string ENV::HttpAgentString;
 std::string ENV::HttpServerString;
 
+std::string ENV::FileServerRoot;
 std::string ENV::ModuleDir;
 std::string ENV::ModuleConfigDir;
 std::string ENV::ModuleDataDir;
@@ -49,6 +50,7 @@ void ENV::initialize()
     ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
     ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;
 
+    ENV::FileServerRoot   = OXOOLWSD::FileServerRoot;
     ENV::ModuleDir        = OXOOL_MODULE_DIR;
     ENV::ModuleConfigDir  = OXOOL_MODULE_CONFIG_DIR;
     ENV::ModuleDataDir    = OXOOL_MODULE_DATA_DIR;
@@ -111,6 +113,11 @@ namespace OxOOL
                                   const std::shared_ptr<Message>& payload)
     {
         return ModuleMgr.handleKitToClientMessage(clientSession, payload);
+    }
+
+    std::string handleAdminMessage(const StringVector& tokens)
+    {
+        return ModuleMgr.handleAdminMessage(tokens);
     }
 
 } // namespace OxOOL

@@ -53,6 +53,7 @@ public:
     static std::string HttpServerString; // "OxOOL HTTP Server " + ENV::Version
     static std::string HttpAgentString; // "OxOOL HTTP Agent " + ENV::Version
 
+    static std::string FileServerRoot; // File server root(eg. "/usr/share/oxool")
     static std::string ModuleDir; // Module directory
     static std::string ModuleConfigDir; // Module configuration directory
     static std::string ModuleDataDir; // Module data directory
@@ -93,6 +94,8 @@ bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
 
 bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                               const std::shared_ptr<Message>& payload);
+
+std::string handleAdminMessage(const StringVector& tokens);
 
 } // namespace OxOOL
 
