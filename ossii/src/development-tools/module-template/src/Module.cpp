@@ -11,7 +11,9 @@
 
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/Module/Base.h>
+#include <OxOOL/common/Message.hpp>
 #include <OxOOL/net/Socket.hpp>
+#include <OxOOL/wsd/ClientSession.hpp>
 
 class %MODULE_NAME% : public OxOOL::Module::Base
 {
@@ -43,6 +45,7 @@ public:
         // Here is the code for initialization, if any.
     }
 
+#if ENABLE_API_SERVICE
     /// @brief 處理前端 Client 的請求
     /// Handle requests from the front-end Client.
     void handleRequest(const Poco::Net::HTTPRequest& request,
@@ -51,17 +54,33 @@ public:
         OxOOL::HttpHelper::sendResponseAndShutdown(socket, "<H1>This is an example module.</H1>",
             Poco::Net::HTTPResponse::HTTP_OK, "text/html; charset=utf-8");
     }
+#endif // ENABLE_API_SERVICE
 
-#if ENABLE_ADMIN
-    /// @brief 處理控制臺 Client 的請求
-    /// Handle requests from the Console Client.
-    void handleAdminRequest(const Poco::Net::HTTPRequest& request,
-                            const std::shared_ptr<StreamSocket>& socket) override
+#if ENABLE_BROWSER
+    /// @brief 處理前端 Client 模組傳送的 Web Socket 訊息
+    ///        Handle messages from the front-end Client module.
+    ///        If you want to handle the message from the client, you should override this function.
+    /// @param clientSession
+    /// @param tokens
+    void handleClientMessage(const std::shared_ptr<OxOOL::net::StreamSocket>& socket,
+                             const StringVector& tokens) override
     {
-        // 交給 base class 處理
-        OxOOL::Module::Base::handleAdminRequest(request, socket);
     }
 
+    /// @brief 處理後臺 kit 傳送回來的訊息
+    ///        Handle messages from the back-end kit.
+    ///        If you want to handle the message from the kit, you should override this function.
+    /// @param clientSession
+    /// @param tokens
+    /// @return true: 有處理, false: 沒有處理
+    bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
+                                          const std::shared_ptr<Message>& payload) override
+    {
+        return false; // Not handled.
+    }
+#endif // ENABLE_BROWSER
+
+#if ENABLE_ADMIN
     /// @brief 處理控制臺 Websocket 的訊息
     /// Handle console Websocket messages.
     std::string handleAdminMessage(const StringVector& tokens) override
@@ -73,7 +92,7 @@ public:
 
         return "";
     }
-#endif
+#endif // ENABLE_ADMIN
 };
 
 OXOOL_MODULE_EXPORT(%MODULE_NAME%);

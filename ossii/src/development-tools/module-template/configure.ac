@@ -71,6 +71,14 @@ AC_SUBST([XML_CONFIG_CMD])
 
 MODULE_SERVICE_URI=`${XML_CONFIG_CMD} -f module.xml.in --get module.detail.serviceURI 2> /dev/null`
 AC_SUBST([MODULE_SERVICE_URI])
+ENABLE_API_SERVICE=false
+# check the serviceURI is empty
+if test -n "${MODULE_SERVICE_URI}" ; then
+    ENABLE_API_SERVICE=true
+    AC_DEFINE([ENABLE_API_SERVICE], [1], [Enable API service.])
+else
+    AC_DEFINE([ENABLE_API_SERVICE], [0], [API service is not enabled.])
+fi
 
 MODULE_SUMMARY=`${XML_CONFIG_CMD} -f module.xml.in --get module.detail.summary 2> /dev/null`
 AC_SUBST([MODULE_SUMMARY])
@@ -114,6 +122,17 @@ if test -d ./html ; then
 fi
 AC_SUBST([CUSTOM_HTML])
 AM_CONDITIONAL([CUSTOM_HTML], [test "${CUSTOM_HTML}" = "true"])
+
+# 是否需包含前臺範本
+ENABLE_BROWSER=false
+if test -f "browser/module.js" ; then
+    ENABLE_BROWSER=true
+    AC_DEFINE([ENABLE_BROWSER], [1], [Contains browser module.])
+else
+    AC_DEFINE([ENABLE_BROWSER], [0], [Browser module is not included.])
+fi
+AC_SUBST([ENABLE_BROWSER])
+AM_CONDITIONAL([ENABLE_BROWSER], [test "${ENABLE_BROWSER}" = "true"])
 
 # 是否需包含後臺管理範本
 ENABLE_ADMIN=false

@@ -15,6 +15,10 @@ if CUSTOM_HTML
 EXTRA_DIST += html
 endif
 
+if ENABLE_BROWSER
+EXTRA_DIST += browser
+endif
+
 if ENABLE_ADMIN
 EXTRA_DIST += admin
 endif
@@ -39,6 +43,10 @@ if CUSTOM_HTML
 	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/html
 	cp -aR html/. $(DESTDIR)/$(MODULE_DATA_DIR)/html
 endif
+if ENABLE_BROWSER
+	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/browser
+	cp -aR browser/. $(DESTDIR)/$(MODULE_DATA_DIR)/browser
+endif
 if ENABLE_ADMIN
 	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/admin
 	cp -aR admin/. $(DESTDIR)/$(MODULE_DATA_DIR)/admin
@@ -48,9 +56,19 @@ uninstall-local:
 if CUSTOM_HTML
 	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/html
 endif
+if ENABLE_BROWSER
+	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/browser
+endif
 if ENABLE_ADMIN
 	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/admin
 endif
 
-run:
+# JavaScript files, including html/ , browser/ and admin/
+JS_FILES = $(shell find html/ browser/ admin/ -name '*.js')
+# Generate POT file
+pot:
+	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/@MODULE_NAME@.pot \
+		$(JS_FILES)
+
+run: all
 	@./test.sh "@MODULE_NAME@.xml"

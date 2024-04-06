@@ -243,6 +243,7 @@ protected:
         // 範本目錄內，需有如下檔案
         const std::vector<std::string> requiredFiles =
         {
+            "browser/module.js",
             "configure.ac",
             "debian/changelog",
             "debian/control.in",
@@ -362,8 +363,12 @@ private:
         const static std::string moduleName = config().getString("module-name");
         // 模組版本
         const static std::string moduleVersion = config().getString("module-version");
+        // 模組簡介
+        const static std::string moduleSummary = config().getString("module-summary");
         // 模組作者
         const static std::string moduleAuthor = config().getString("module-author");
+        // 模組授權
+        const static std::string moduleLicense = config().getString("module-license");
         // 詳細說明
         const static std::string moduleDescription = config().getString("module-description");
         // 轉成小寫的套件名稱
@@ -381,7 +386,9 @@ private:
         newContent = Poco::replace(newContent, std::string("%OXOOL_NAME%"), std::string(PACKAGE_NAME));
         newContent = Poco::replace(newContent, std::string("%PACKAGE_TARNAME%"), packageTarName);
         newContent = Poco::replace(newContent, std::string("%MODULE_VERSION%"), moduleVersion);
+        newContent = Poco::replace(newContent, std::string("%MODULE_SUMMARY%"), moduleSummary);
         newContent = Poco::replace(newContent, std::string("%MODULE_AUTHOR%"), moduleAuthor);
+        newContent = Poco::replace(newContent, std::string("%MODULE_LICENSE%"), moduleLicense);
         newContent = Poco::replace(newContent, std::string("%MODULE_DESCRIPTION%"), moduleDescription);
         // 3.存入專案目錄
         std::ofstream fileOut(projectPath + "/" + filename);
