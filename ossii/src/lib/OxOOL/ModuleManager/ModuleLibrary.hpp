@@ -7,79 +7,43 @@
 
 #pragma once
 
-#include <OxOOL/Module/Base.h>
-
 #include <Poco/SharedLibrary.h>
-#include <Poco/Exception.h>
 
-#include <common/Log.hpp>
+namespace OxOOL::Module
+{
+    class Module;
+} // namespace OxOOL::Module
 
 /// @brief 模組 Library 管理
-class ModuleLibrary final
+class ModuleLibrary final : public Poco::SharedLibrary
 {
 public:
-    ModuleLibrary() : mpModule(nullptr)
-    {
-    }
+    ModuleLibrary();
 
-    ModuleLibrary(OxOOL::Module::Ptr module) : mpModule(module)
-    {
-    }
+    ModuleLibrary(const std::string& path);
 
-    ~ModuleLibrary()
-    {
-        // 釋放模組資源
-        mpModule.reset();
+    ModuleLibrary(OxOOL::Module::Ptr module);
 
-        // 再卸載 Library，否則會 crash
-        if (maLibrary.isLoaded())
-            maLibrary.unload();
-    }
+    ~ModuleLibrary();
 
     /// @brief 載入 Library
     /// @param path Library 絕對路徑
     /// @return
-    bool load(const std::string& path)
-    {
-        try
-        {
-            maLibrary.load(path);
-            if (maLibrary.hasSymbol(OXOOL_MODULE_ENTRY_SYMBOL))
-            {
-                auto moduleEntry = reinterpret_cast<OxOOLModuleEntry>(maLibrary.getSymbol(OXOOL_MODULE_ENTRY_SYMBOL));
-                mpModule = moduleEntry(); // 取得模組
-                LOG_DBG("Successfully loaded '" << path << "'.");
-                return true;
-            }
-            else // 不是 OxOOL 模組物件就卸載
-            {
-                LOG_DBG("'" << path << "' is not a valid OxOOL module.");
-                maLibrary.unload();
-            }
-        }
-        // 已經載入過了
-        catch(const Poco::LibraryAlreadyLoadedException& e)
-        {
-            LOG_ERR(path << "' has already been loaded.");
-        }
-        // 無法載入
-        catch(const Poco::LibraryLoadException& e)
-        {
-            LOG_ERR(path << "' cannot be loaded.");
-        }
+    bool load(const std::string& path);
 
-        return false;
-    }
+    /// @brief 是否有模組
+    /// @return
+    bool hasModule() const { return mpModule != nullptr; };
 
-    OxOOL::Module::Ptr getModule() const { return mpModule; }
+    /// @brief 取得模組
+    /// @return
+    OxOOL::Module::Ptr getModule() const { return mpModule; };
 
-    void useBaseModule()
-    {
-        mpModule = std::make_shared<OxOOL::Module::Base>();
-    }
+    /// @brief 使用 Base 模組
+    void useBaseModule();
 
 private:
-    Poco::SharedLibrary maLibrary;
+    /// @brief 模組
     OxOOL::Module::Ptr mpModule;
 };
 

@@ -80,7 +80,17 @@ oxoolwsd_sources = $(top_srcdir)/common/Crypto.cpp \
                   $(top_srcdir)/wsd/WopiProxy.cpp \
                   $(top_srcdir)/wsd/oxoolwsd-fork.cpp
 
+oxoolcore_internal_header = \
+							OxOOL/ModuleManager/ModuleAgent.hpp \
+							OxOOL/ModuleManager/ModuleLibrary.hpp
+
+noinst_HEADERS = $(oxoolcore_internal_header)
+
 oxoolcore_sources = \
+                    OxOOL/ModuleManager/ModuleAgent.cpp \
+                    OxOOL/ModuleManager/ModuleLibrary.cpp \
+                    OxOOL/ModuleManager/AdminService.hpp \
+                    OxOOL/ModuleManager/BrowserService.hpp \
 					OxOOL/OxOOL.cpp \
                     OxOOL/Module/Base.cpp \
                     OxOOL/Module/Map.cpp \
