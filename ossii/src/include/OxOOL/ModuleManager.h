@@ -119,15 +119,6 @@ public:
                              const Poco::Net::HTTPRequest& request,
                              const std::shared_ptr<StreamSocket>& socket);
 
-    /// @brief 處理模組後臺管理 Web socket 請求
-    /// @param moduleName 模組名稱
-    /// @param socket
-    /// @param request
-    /// @return true if we should give this socket to the Module manager poll.
-    bool handleAdminWebsocketRequest(const std::string& moduleName,
-                                     const std::weak_ptr<StreamSocket> &socket,
-                                     const Poco::Net::HTTPRequest& request);
-
     /// @brief 清理已經不工作的 agents (代理執行緒一旦超時，就會結束執行緒，並觸發這個函式)
     void cleanupDeadAgents();
 
@@ -155,12 +146,6 @@ private:
     /// @return true 該要求屬於這個模組處理
     bool isService(const Poco::Net::HTTPRequest& request,
                    const OxOOL::Module::Ptr module) const;
-
-    /// @brief 請求是否是本模組的管理介面處理
-    /// @param request
-    /// @return true 該要求屬於這個模組的管理介面處理
-    bool isAdminService(const Poco::Net::HTTPRequest& request,
-                        const OxOOL::Module::Ptr module) const;
 
     /// @brief
     /// @param request

@@ -440,10 +440,14 @@ const std::string& getMimeType(const std::string& fileName)
 
 void redirect(const Poco::Net::HTTPRequest& request,
               const std::shared_ptr<StreamSocket>& socket,
-              const std::string& url)
+              const std::string& url,
+              const KeyValueMap& extraHeader)
 {
-    OxOOL::HttpHelper::KeyValueMap extraHeader;
-    extraHeader["Location"] = url;
+    OxOOL::HttpHelper::KeyValueMap myExtraHeader;
+    if (!extraHeader.empty())
+        myExtraHeader = extraHeader;
+
+    myExtraHeader["Location"] = url;
 
     // default to 302 Found
     Poco::Net::HTTPResponse::HTTPStatus status = Poco::Net::HTTPResponse::HTTP_FOUND;
@@ -453,7 +457,7 @@ void redirect(const Poco::Net::HTTPRequest& request,
         // 303 See Other
         status = Poco::Net::HTTPResponse::HTTP_SEE_OTHER;
     }
-    sendResponseAndShutdown(socket, "", status, "", extraHeader);
+    sendResponseAndShutdown(socket, "", status, "", myExtraHeader);
 }
 
 PartHandler::PartHandler(const std::string& pathPrefix) :

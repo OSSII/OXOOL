@@ -16,10 +16,12 @@
 #include <thread>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/Module/Base.h>
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/ConvertBroker.h>
 #include <OxOOL/XMLConfig.h>
 #include <OxOOL/HttpHelper.h>
+#include <OxOOL/Util.h>
 
 #include "ModuleManager/ModuleLibrary.hpp"
 #include "ModuleManager/ModuleAgent.hpp"
@@ -48,132 +50,9 @@
 #include <net/Socket.hpp>
 #include <net/WebSocketHandler.hpp>
 #include <wsd/ClientSession.hpp>
-#include <wsd/Auth.hpp>
-
 
 namespace OxOOL
 {
-
-/// @brief 處理模組 client 的 admin Websocket 請求和回覆
-class ModuleAdminSocketHandler : public WebSocketHandler
-{
-public:
-    ModuleAdminSocketHandler(const OxOOL::Module::Ptr& module,
-                             const std::weak_ptr<StreamSocket>& socket,
-                             const Poco::Net::HTTPRequest& request)
-        : WebSocketHandler(socket.lock(), request)
-        , mpModule(module)
-        , mbIsAuthenticated(false)
-    {
-    }
-
-    /// @brief 處理收到的 web socket 訊息，並傳送給模組處理
-    /// @param payload
-    void handleMessage(const std::vector<char> &payload) override
-    {
-        // FIXME: check fin, code etc.
-        const std::string firstLine = OXOOLProtocol::getFirstLine(payload.data(), payload.size());
-
-        const StringVector tokens(StringVector::tokenize(firstLine, ' '));
-        LOG_DBG("Module:[" << mpModule->getDetail().name << "] Recv: " << firstLine << " tokens " << tokens.size());
-
-        // 一定要有資料
-        if (tokens.empty())
-        {
-            LOG_TRC("too few tokens");
-            return;
-        }
-
-        if (tokens.equals(0, "auth"))
-        {
-            if (tokens.size() < 2)
-            {
-                LOG_DBG("Auth command without any token");
-                sendMessage("InvalidAuthToken");
-                shutdown();
-                ignoreInput();
-                return;
-            }
-            std::string jwtToken;
-            OXOOLProtocol::getTokenString(tokens[1], "jwt", jwtToken);
-
-            LOG_INF("Verifying JWT token: " << jwtToken);
-            JWTAuth authAgent("admin", "admin", "admin");
-            if (authAgent.verify(jwtToken))
-            {
-                LOG_TRC("JWT token is valid");
-                mbIsAuthenticated = true;
-                return;
-            }
-            else
-            {
-                LOG_DBG("Invalid auth token");
-                sendMessage("InvalidAuthToken");
-                shutdown();
-                ignoreInput();
-                return;
-            }
-        }
-
-        // 未認證過就擋掉
-        if (!mbIsAuthenticated)
-        {
-            LOG_DBG("Not authenticated - message is '" << firstLine << "' " <<
-                    tokens.size() << " first: '" << tokens[0] << '\'');
-            sendMessage("NotAuthenticated");
-            shutdown();
-            ignoreInput();
-            return;
-        }
-
-        // 取得模組詳細資訊
-        if (tokens.equals(0, "getModuleInfo"))
-        {
-            sendTextFrame("moduleInfo " + getModuleInfoJson());
-        }
-        else // 交給模組處理
-        {
-            const std::string result = mpModule->handleAdminMessage(tokens);
-            // 傳回結果
-            if (!result.empty())
-                sendTextFrame(result);
-            else // 紀錄收到未知指令
-                LOG_WRN("Admin Module [" << mpModule->getDetail().name
-                                        << "] received an unknown command: '"
-                                        << firstLine);
-        }
-    }
-
-private:
-    /// @brief 送出文字給已認證過的 client.
-    /// @param message 文字訊息
-    /// @param flush The data will be sent out immediately, the default is false.
-    void sendTextFrame(const std::string& message, bool flush = false)
-    {
-        if (mbIsAuthenticated)
-        {
-            LOG_DBG("Send admin module text frame '" << message << '\'');
-            sendMessage(message.c_str(), message.size(), WSOpCode::Text, flush);
-        }
-        else
-            LOG_WRN("Skip sending message to non-authenticated admin module client: '" << message << '\'');
-    }
-
-    /// @brief  取得模組詳細資訊
-    /// @return JSON 字串
-    std::string getModuleInfoJson()
-    {
-        std::ostringstream oss;
-        mpModule->getAdminDetailJson()->stringify(oss);
-        return oss.str();
-    }
-
-    /// @brief 模組 Class
-    OxOOL::Module::Ptr mpModule;
-    /// @brief 是否已認證過
-    bool mbIsAuthenticated;
-};
-
 
 ModuleManager::ModuleManager()
     : SocketPoll("ModuleManager")
@@ -368,7 +247,6 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
             Poco::File(documentRoot + "/admin/admin.html").exists() &&
             Poco::File(documentRoot + "/admin/admin.js").exists())
         {
-            //detail.adminServiceURI = "/browser/dist/admin/module/" + ID + "/";
             const std::string adminURI = mpAdminService->maDetail.serviceURI + "module/" + ID + "/";
             module->maAdminURI = adminURI; // 設定模組的後臺管理位址
         }
@@ -476,8 +354,7 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
         }
     }
 
-    // 1. 優先處理一般 request
-    // 取得處理該 request 的模組，可能是 serverURI 或 adminServerURI(如果有的話)
+    // 取得處理該 request 的模組
     if (const OxOOL::Module::Ptr module = handleByWhichModule(request); module != nullptr)
     {
         std::unique_lock<std::mutex> agentsLock(maAgentsMutex);
@@ -501,31 +378,6 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
         moduleAgent->handleRequest(module, request, disposition);
 
         return true;
-    }
-
-    // 2. 再看看是否爲後臺模組管理要求升級 Websocket
-    // URL: /oxool/adminws/<模組名稱>
-    std::vector<std::string> segments;
-    Poco::URI(request.getURI()).getPathSegments(segments);
-    if (segments.size() == 3 &&
-        segments[0] == "oxool" &&
-        segments[1] == "adminws")
-    {
-        LOG_INF("Admin module request: " << request.getURI());
-        const std::string& moduleName = segments[2];
-
-        // 轉成 std::weak_ptr
-        const std::weak_ptr<StreamSocket> socketWeak =
-              std::static_pointer_cast<StreamSocket>(disposition.getSocket());
-        if (handleAdminWebsocketRequest(moduleName, socketWeak, request))
-        {
-            disposition.setMove([this](const std::shared_ptr<Socket> &moveSocket)
-            {
-                // Hand the socket over to self poll.
-                insertNewSocket(moveSocket);
-            });
-            return true;
-        }
     }
 
     return false;
@@ -670,7 +522,7 @@ std::string ModuleManager::handleAdminMessage(const StringVector& tokens)
     // 非模組指令，我們要自己處理
     if (tokens.equals(0, "getModuleList"))
     {
-        return getAllModuleDetailsJsonString("en-US");
+        return "modules: " + getAllModuleDetailsJsonString("en-US");
     }
 
     return ""; // 繼續傳給 online core 處理
@@ -709,11 +561,18 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
         }
     }
 
-    const std::string escapedJwtToken = Util::encodeURIComponent(jwtToken, "'");
+    const std::string escapedJwtToken = OxOOL::Util::encodeURIComponent(jwtToken, "'");
     Poco::replaceInPlace(mainContent, std::string("%JWT_TOKEN%"), escapedJwtToken);
 
     Poco::replaceInPlace(mainContent, std::string("%SERVICE_ROOT%"), OxOOL::ENV::ServiceRoot);
     Poco::replaceInPlace(mainContent, std::string("%VERSION_HASH%"), OxOOL::ENV::VersionHash);
+
+    std::string adminRoot = OxOOL::ENV::ServiceRoot + mpAdminService->maDetail.serviceURI;
+    // 去掉最後的 '/'
+    if (*adminRoot.rbegin() == '/')
+        adminRoot.pop_back();
+    Poco::replaceInPlace(mainContent, std::string("%ADMIN_ROOT%"), adminRoot);
+
 
 
     Poco::Net::HTTPResponse response;
@@ -733,48 +592,6 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     oss << mainContent;
     socket->send(oss.str());
     socket->shutdown();
-}
-
-bool ModuleManager::handleAdminWebsocketRequest(const std::string& moduleName,
-                                                const std::weak_ptr<StreamSocket> &socketWeak,
-                                                const Poco::Net::HTTPRequest& request)
-{
-    // 禁用後臺管理
-    if (!OxOOL::ENV::AdminEnabled)
-    {
-        LOG_ERR("Request for disabled admin console");
-        return false;
-    }
-
-    // Socket 不存在
-    const std::shared_ptr<StreamSocket> socket = socketWeak.lock();
-    if (!socket)
-    {
-        LOG_ERR("Invalid socket while reading initial request.");
-        return false;
-    }
-
-    // 沒有指定名稱的模組
-    const OxOOL::Module::Ptr module = getModuleByName(moduleName);
-    if (module == nullptr)
-    {
-        LOG_ERR("No module named '" << moduleName << "'");
-        return false;
-    }
-
-    const std::string& requestURI = request.getURI();
-    const StringVector pathTokens(StringVector::tokenize(requestURI, '/'));
-    // 要升級連線爲 Web socket
-    if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0)
-    {
-        auto handler = std::make_shared<ModuleAdminSocketHandler>(module, socketWeak, request);
-        socket->setHandler(handler);
-        return true;
-    }
-
-    // 回應錯誤 http status code.
-    OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, socket);
-    return false;
 }
 
 void ModuleManager::cleanupDeadAgents()
@@ -845,7 +662,7 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
     {
         const OxOOL::Module::Ptr module = it.second->getModule();
         // 只取有後臺管理的模組
-        if (!module->getDetail().adminServiceURI.empty())
+        if (!module->maAdminURI.empty())
         {
             if (count > 0)
                 jsonString.append(",");
@@ -910,7 +727,6 @@ void ModuleManager::initializeInternalModules()
     mpBrowserService->maDetail.license = "MPL 2.0";
     mpBrowserService->maDetail.description = "";
     mpBrowserService->maDetail.adminPrivilege = false;
-    mpBrowserService->maDetail.adminServiceURI = ""; // 接管所有系統的後臺管理
     mpBrowserService->maDetail.adminIcon = "";
     mpBrowserService->maDetail.adminItem = "";
 
@@ -933,7 +749,6 @@ void ModuleManager::initializeInternalModules()
     mpAdminService->maDetail.license = "MPL 2.0";
     mpAdminService->maDetail.description = "";
     mpAdminService->maDetail.adminPrivilege = false;
-    mpAdminService->maDetail.adminServiceURI = ""; // 接管所有系統的後臺管理
     mpAdminService->maDetail.adminIcon = "";
     mpAdminService->maDetail.adminItem = "";
 
@@ -988,23 +803,13 @@ bool ModuleManager::isService(const Poco::Net::HTTPRequest& request,
     return false;
 }
 
-bool ModuleManager::isAdminService(const Poco::Net::HTTPRequest& request,
-                                   const OxOOL::Module::Ptr module) const
-{
-    // 有管理界面 URI
-    if (!module->maDetail.adminServiceURI.empty())
-        return request.getURI().find(module->maDetail.adminServiceURI, 0) == 0;
-
-    return false;
-}
-
 OxOOL::Module::Ptr ModuleManager::handleByWhichModule(const Poco::Net::HTTPRequest& request) const
 {
     // 找出是哪個 module 要處理這個請求
     for (auto& it : maModuleMap)
     {
         OxOOL::Module::Ptr module = it.second->getModule();
-        if (isService(request, module) || isAdminService(request, module))
+        if (isService(request, module))
             return module;
     }
     return nullptr;

@@ -127,7 +127,8 @@ std::string getHttpTimeNow();
 /// @param url - the URL to redirect to.
 void redirect(const Poco::Net::HTTPRequest& request,
               const std::shared_ptr<StreamSocket>& socket,
-              const std::string& url);
+              const std::string& url,
+              const KeyValueMap& extraHeader = KeyValueMap());
 
 /// @brief 取得檔案的 Mime type
 /// @param fileName

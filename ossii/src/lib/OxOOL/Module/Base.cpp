@@ -59,7 +59,6 @@ Poco::JSON::Object::Ptr Base::getAdminDetailJson(const std::string& langTag)
     json->set("license", detail.license);
     json->set("description", detail.description);
     json->set("adminPrivilege", detail.adminPrivilege);
-    json->set("adminServiceURI", detail.adminServiceURI);
     json->set("adminIcon", detail.adminIcon);
     json->set("adminItem", detail.adminItem);
 
@@ -144,37 +143,6 @@ bool Base::handleKitToClientMessage(const std::shared_ptr<ClientSession>& client
     return false; // We don't handle this message
 }
 
-void Base::handleAdminRequest(const Poco::Net::HTTPRequest& request,
-                              const std::shared_ptr<StreamSocket>& socket)
-{
-
-    const std::string requestURI = Poco::URI(request.getURI()).getPath();
-    const std::size_t stripLength = maDetail.adminServiceURI.length();
-    // 去掉 request 前導的 adminServiceURI
-    const std::string realURI = stripLength >= requestURI.length() ? "/" : requestURI.substr(stripLength - 1);
-    Poco::Path requestFile(maRootPath + "/admin" + realURI);
-    // 如果要求的是目錄(不帶檔名)
-    if (requestFile.isDirectory())
-    {
-        // 模組根目錄，預設檔名是 admin.html
-        if (realURI == "/")
-            requestFile.append("admin.html");
-        else // 其他目錄，預設檔名是 index.html
-            requestFile.append("index.html");
-    }
-
-    // GET html 格式的檔案，需要內嵌到 admintemplate.html 中
-    if (OxOOL::HttpHelper::isGET(request) && requestFile.getExtension() == "html")
-    {
-        preprocessAdminFile(requestFile.toString(), request, socket);
-    }
-    else
-    {
-        sendFile(requestFile.toString(), request, socket, true);
-    }
-
-}
-
 std::string Base::handleAdminMessage(const StringVector& tokens)
 {
     (void)tokens; // avoid -Werror=unused-parameter
@@ -234,87 +202,6 @@ void Base::sendFile(const std::string& requestFile,
     {
         OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_NOT_FOUND, socket);
     }
-}
-
-void Base::preprocessAdminFile(const std::string& adminFile,
-                               const Poco::Net::HTTPRequest& request,
-                               const std::shared_ptr<StreamSocket>& socket)
-{
-    // 取得 admintemplate.html
-    const std::string templatePath = "/browser/dist/admin/admintemplate.html";
-    std::string templateFile = *FileServerRequestHandler::getUncompressedFile(templatePath);
-
-    std::string jwtToken;
-    Poco::Net::NameValueCollection reqCookies;
-    std::vector<Poco::Net::HTTPCookie> resCookies;
-
-    for (size_t it = 0; it < resCookies.size(); ++it)
-    {
-        if (resCookies[it].getName() == "jwt")
-        {
-            jwtToken = resCookies[it].getValue();
-            break;
-        }
-    }
-
-    if (jwtToken.empty())
-    {
-        request.getCookies(reqCookies);
-        if (reqCookies.has("jwt"))
-        {
-            jwtToken = reqCookies.get("jwt");
-        }
-    }
-
-    const std::string escapedJwtToken = Util::encodeURIComponent(jwtToken, "'");
-    Poco::replaceInPlace(templateFile, std::string("%JWT_TOKEN%"), escapedJwtToken);
-
-    // 讀取檔案內容
-    std::ifstream file(adminFile, std::ios::binary);
-    std::stringstream mainContent;
-    mainContent << file.rdbuf();
-    file.close();
-
-    // 製作完整 HTML 頁面
-    Poco::replaceInPlace(templateFile, std::string("<!--%MAIN_CONTENT%-->"), mainContent.str()); // Now template has the main content..
-    const std::string& responseRoot = OxOOL::HttpHelper::getServiceRoot();
-
-    // 帶入模組的多國語系設定檔
-    static const std::string l10nJSON("<link rel=\"localizations\" href=\"%s/browser/dist/admin/module/%s/localizations.json\" type=\"application/vnd.oftn.l10n+json\"/>");
-    const std::string moduleL10NJSON(Poco::format(l10nJSON, responseRoot, maDetail.name));
-    Poco::replaceInPlace(templateFile, std::string("<!--%MODULE_L10N%-->"), moduleL10NJSON);
-
-    // 帶入模組的 admin.js
-    const std::string moduleAdminJS("<script src=\"%s" + maDetail.adminServiceURI + "admin.js\"></script>");
-    const std::string moduleScriptJS(Poco::format(moduleAdminJS, responseRoot));
-    Poco::replaceInPlace(templateFile, std::string("<!--%MODULE_ADMIN_JS%-->"), moduleScriptJS);
-
-    Poco::replaceInPlace(templateFile, std::string("%VERSION%"), OxOOL::ENV::VersionHash);
-    Poco::replaceInPlace(templateFile, std::string("%SERVICE_ROOT%"), responseRoot);
-    Poco::replaceInPlace(templateFile, std::string("%MODULE_NAME%"), maDetail.name);
-
-    // 傳入有管理界面的模組列表
-    const std::string langTag = OxOOL::HttpHelper::getAcceptLanguage(request);
-    Poco::replaceInPlace(templateFile, std::string("%ADMIN_MODULES%"),
-        OxOOL::ModuleManager::instance().getAdminModuleDetailsJsonString(langTag));
-
-    Poco::Net::HTTPResponse response;
-    // Ask UAs to block if they detect any XSS attempt
-    response.add("X-XSS-Protection", "1; mode=block");
-    // No referrer-policy
-    response.add("Referrer-Policy", "no-referrer");
-    response.add("X-Content-Type-Options", "nosniff");
-    response.set("Server", OxOOL::ENV::HttpServerString);
-    response.set("Date", OxOOL::HttpHelper::getHttpTimeNow());
-
-    response.setContentType("text/html");
-    response.setChunkedTransferEncoding(false);
-
-    std::ostringstream oss;
-    response.write(oss);
-    oss << templateFile;
-    socket->send(oss.str());
-    socket->shutdown();
 }
 
 } // namespace Module

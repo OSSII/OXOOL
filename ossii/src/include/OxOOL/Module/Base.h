@@ -40,7 +40,6 @@ struct Detail
     std::string license;
     std::string description;
     bool adminPrivilege = false;
-    std::string adminServiceURI; // 後臺管理位址
     std::string adminIcon; // 顯示在後臺的選項 icon(名稱請參閱 https://icons.getbootstrap.com/)
     std::string adminItem; // 顯示在後臺的選項名稱
 };
@@ -109,12 +108,6 @@ public:
     virtual bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                                           const std::shared_ptr<Message>& payload);
 
-    /// @brief 處理控制臺 Client 的請求
-    /// @param request
-    /// @param socket
-    virtual void handleAdminRequest(const Poco::Net::HTTPRequest& request,
-                                    const std::shared_ptr<StreamSocket>& socket);
-
     /// @brief 處理控制臺 Websocket 的訊息
     /// @param tokens
     /// @return
@@ -150,10 +143,6 @@ protected:
                   const Poco::Net::HTTPRequest& request,
                   const std::shared_ptr<StreamSocket>& socket,
                   const bool callByAdmin = false);
-
-    void preprocessAdminFile(const std::string& adminFile,
-                             const Poco::Net::HTTPRequest& request,
-                             const std::shared_ptr<StreamSocket>& socket);
 
 private:
     std::string maId; // 模組 ID (每次載入都會不同)

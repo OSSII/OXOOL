@@ -32,6 +32,26 @@ bool stringToBool(const std::string& str);
 /// @param path - 轉換後的路徑，如果沒有家目錄符號則不變
 std::string convertUserHome(const std::string& path);
 
+/// @brief
+/// @param uri
+/// @param reserved
+/// @return
+std::string encodeURIComponent(const std::string& uri,
+                               const std::string& reserved = ",/?:@&=+$#");
+
+/// @brief 將字串轉成 16 進位字串
+/// @param hexString - 要轉換的資料
+/// @param data - 轉換後的資料
+/// @return true / false
+template <typename T>
+bool dataFromHexString(const std::string& hexString, T& data);
+
+/// @brief 檢查使用者名稱與密碼是否與 consig 紀錄的相同
+bool isConfigAuthOk(const std::string& username, const std::string& password);
+
+/// @brief 檢查管理者是否已登入
+bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request);
+
 /// Return true if the subject matches in given set. It uses regex
 /// Mainly used to match WOPI hosts patterns
 bool matchRegex(const std::set<std::string>& set, const std::string& subject);
