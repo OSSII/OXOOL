@@ -10,6 +10,9 @@ SUBDIRS = browser etc extensions fonts
 pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = @PACKAGE@.pc
 
+EXTRA_DIST = \
+	scripts/po2json.py
+
 install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(pkgconfigdir)
 	$(INSTALL_DATA) $(srcdir)/online.pc $(DESTDIR)$(pkgconfigdir)/@PACKAGE@.pc

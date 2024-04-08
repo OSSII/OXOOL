@@ -1,0 +1,3 @@
+
+If you want to update all po files, you only need to execute the following command:
+$ make l10n
