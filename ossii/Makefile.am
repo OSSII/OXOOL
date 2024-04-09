@@ -11,7 +11,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = @PACKAGE@.pc
 
 EXTRA_DIST = \
-	scripts/po2json.py
+	scripts/mergepo2json.py
 
 install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(pkgconfigdir)

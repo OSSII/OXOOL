@@ -14,6 +14,7 @@
 
 #include <Poco/File.h>
 #include <Poco/Path.h>
+#include <Poco/MemoryStream.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/Net/HTMLForm.h>
 #include <Poco/Net/HTTPRequest.h>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-07 21:29+0800\n"
+"POT-Creation-Date: 2024-04-09 15:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,6 +208,22 @@ msgstr ""
 msgid "Close document"
 msgstr ""
 
+#: admin/js/color-scheme-switcher.js:26
+msgid "Follow system settings"
+msgstr ""
+
+#: admin/js/color-scheme-switcher.js:30
+msgid "Light Mode"
+msgstr ""
+
+#: admin/js/color-scheme-switcher.js:34
+msgid "Dark Mode"
+msgstr ""
+
+#: admin/js/color-scheme-switcher.js:191
+msgid "Current color scheme"
+msgstr ""
+
 #: admin/js/global.js:37
 msgid "Account"
 msgstr ""
@@ -224,28 +240,12 @@ msgstr ""
 msgid "OSS Integral Institute Co., Ltd."
 msgstr ""
 
-#: admin/js/global.js:100
+#: admin/js/global.js:99
 msgid "Show password"
 msgstr ""
 
-#: admin/js/global.js:100
+#: admin/js/global.js:99
 msgid "Hide password"
-msgstr ""
-
-#: admin/js/color-scheme-switcher.js:26
-msgid "Follow system settings"
-msgstr ""
-
-#: admin/js/color-scheme-switcher.js:30
-msgid "Light mode"
-msgstr ""
-
-#: admin/js/color-scheme-switcher.js:34
-msgid "Dark mode"
-msgstr ""
-
-#: admin/js/color-scheme-switcher.js:191
-msgid "Current color scheme"
 msgstr ""
 
 #: admin/src/AdminSocketBase.js:53

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <OxOOL/Module/Base.h>
 #include <OxOOL/Module/Map.h>
 
 namespace Poco::Net

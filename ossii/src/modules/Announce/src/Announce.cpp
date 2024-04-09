@@ -8,6 +8,8 @@
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/Module/Base.h>
 
+#include <Poco/MemoryStream.h>
+
 #include <common/Util.hpp>
 #include <net/NetUtil.hpp>
 #include <net/Socket.hpp>

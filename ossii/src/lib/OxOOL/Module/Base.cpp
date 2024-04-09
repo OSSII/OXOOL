@@ -15,7 +15,6 @@
 
 #include <OxOOL/Module/Base.h>
 #include <OxOOL/HttpHelper.h>
-#include <OxOOL/L10NTranslator.h>
 #include <OxOOL/ModuleManager.h>
 
 #include <common/Message.hpp>
@@ -27,43 +26,6 @@ namespace OxOOL
 {
 namespace Module
 {
-
-Poco::JSON::Object::Ptr Base::getAdminDetailJson(const std::string& langTag)
-{
-
-    OxOOL::Module::Detail detail = maDetail;
-
-    // 若有指定語系，嘗試翻譯
-    if (!langTag.empty())
-    {
-        std::unique_ptr<OxOOL::L10NTranslator> translator =
-            std::make_unique<OxOOL::L10NTranslator>(langTag, maDetail.name, true);
-
-        detail.version = translator->getTranslation(maDetail.version);
-        detail.summary = translator->getTranslation(maDetail.summary);
-        detail.author = translator->getTranslation(maDetail.author);
-        detail.license = translator->getTranslation(maDetail.license);
-        detail.description = translator->getTranslation(maDetail.description);
-        detail.adminItem = translator->getTranslation(maDetail.adminItem);
-    }
-
-    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-    json->set("id", maId);
-    json->set("browserURI", maBrowserURI);
-
-    json->set("name", detail.name);
-    json->set("serviceURI", detail.serviceURI);
-    json->set("version", detail.version);
-    json->set("summary", detail.summary);
-    json->set("author", detail.author);
-    json->set("license", detail.license);
-    json->set("description", detail.description);
-    json->set("adminPrivilege", detail.adminPrivilege);
-    json->set("adminIcon", detail.adminIcon);
-    json->set("adminItem", detail.adminItem);
-
-    return json;
-}
 
 OxOOL::XMLConfig::Ptr Base::getConfig()
 {

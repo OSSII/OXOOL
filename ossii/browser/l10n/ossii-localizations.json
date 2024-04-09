@@ -1,6 +1,0 @@
-{
-    "en": false,
-    "zh-tw": "%SERVICE_ROOT%/browser/%VERSION%/l10n/ossii/zh-TW.json",
-    "zh-TW": "%SERVICE_ROOT%/browser/%VERSION%/l10n/ossii/zh-TW.json",
-    "zh-Hant": "%SERVICE_ROOT%/browser/%VERSION%/l10n/ossii/zh-TW.json"
-}

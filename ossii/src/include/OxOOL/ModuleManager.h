@@ -8,18 +8,18 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include <OxOOL/Module/Base.h>
 
-#include <net/Socket.hpp>
+#include <Poco/JSON/Object.h>
 
-namespace Poco
-{
-namespace Net
+//#include <net/Socket.hpp>
+
+namespace Poco::Net
 {
     class HTTPRequest;
-} // namespace Net
-} // namespace Poco
+} // namespace Poco::Net
 
 class ClientSession;
 class StringVector;
@@ -35,7 +35,7 @@ class BrowserService;
 namespace OxOOL
 {
 
-class ModuleManager : public SocketPoll
+class ModuleManager
 {
     ModuleManager(const ModuleManager &) = delete;
     ModuleManager& operator = (const ModuleManager &) = delete;
@@ -52,7 +52,7 @@ public:
 
     void initialize();
 
-    void stop() { joinThread(); }
+    void stop() { }
 
     /// @brief 遞迴載入指定目錄下所有副檔名爲 .xml 的模組
     /// @param modulePath
@@ -64,11 +64,6 @@ public:
     /// @return true: 成功
     bool loadModuleConfig(const std::string& configFile,
                           const std::string& userLibraryPath = std::string());
-
-    /// @brief 以模組名稱查詢模組是否已經存在
-    /// @param moduleName - 模組名稱
-    /// @return true: 已存在, false: 不存在
-    bool hasModule(const std::string& moduleName);
 
     /// @brief 以模組 UUID 查詢模組是否已經存在
     /// @param moduleUUID - 模組 UUID
@@ -132,12 +127,17 @@ public:
     /// @brief 取得有後臺管理的模組資訊列表
     std::string getAdminModuleDetailsJsonString(const std::string& langTag = std::string()) const;
 
+    /// @brief 以 JSON 格式傳回模組詳細資訊
+    /// @param module - 模組
+    /// @param langTag - 語言標籤(en, zh-TW, ...)
+    /// @return Poco::JSON::Object::Ptr
+    Poco::JSON::Object::Ptr getModuleDetailJson(const OxOOL::Module::Ptr module,
+                                                const std::string& langTag = std::string()) const;
+
     /// @brief 列出所有的模組
     void dump();
 
 private:
-    void pollingThread() override;
-
     /// @brief 初始化內部模組
     void initializeInternalModules();
 

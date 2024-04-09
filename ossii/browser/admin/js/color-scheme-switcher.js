@@ -27,11 +27,11 @@
 		},
 		light: { // 淺色模式
 			icon: 'bi-sun-fill',
-			text: _('Light mode')
+			text: _('Light Mode')
 		},
 		dark: { // 暗色模式
 			icon: 'bi-moon-stars-fill',
-			text: _('Dark mode')
+			text: _('Dark Mode')
 		}
 	};
 
@@ -142,7 +142,7 @@
 			iconEl.className = 'bi ' + colorScheme.icon + ' me-2 opacity-50';
 			btnEl.appendChild(iconEl);
 			// 文字
-			const textEl = document.createTextNode(_(colorScheme.text));
+			const textEl = document.createTextNode(colorScheme.text);
 			btnEl.appendChild(textEl);
 
 			liEl.appendChild(btnEl);

@@ -1,98 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title _="Admin Console"></title>
-    <link rel="localizations" href="%SERVICE_ROOT%/browser/%VERSION_HASH%/l10n/ossii-localizations.json" type="application/vnd.oftn.l10n+json"/>
-    <!-- 從 css/ 引入 bootstrap.min.css 和 bootstrap-icons.min.css -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap-icons.min.css">
-    </style>
-    <!-- 引入 l10n.js, global.js, color-scheme-switcher.js -->
-    <script src="js/l10n.js"></script>
-    <script src="js/global.js"></script>
-    <script src="js/color-scheme-switcher.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title _="Admin Console"></title>
+	<link rel="localizations" href="%SERVICE_ROOT%/browser/%VERSION%/l10n/admin-localizations.json"
+		type="application/vnd.oftn.l10n+json" />
+	<!-- 從 css/ 引入 bootstrap.min.css 和 bootstrap-icons.min.css -->
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap.min.css">
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/admin.css">
+	</style>
+	<!-- 引入 l10n.js, global.js, color-scheme-switcher.js -->
+	<script src="%ADMIN_ROOT%/js/l10n.js"></script>
+	<script src="%ADMIN_ROOT%/js/global.js"></script>
+	<script src="%ADMIN_ROOT%/js/color-scheme-switcher.js"></script>
 </head>
+
 <body>
-    <input type="file" id="uploadFile" name="uploadFile" class="d-none" multiple>
-    <header class="navbar sticky-top p-3 bg-body-tertiary flex-md-nowrap shadow">
-        <div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
-            <img src="images/online.svg" class="d-flex align-items-center col-lg-3 mb-2 mb-lg-0 link-body-emphasis text-decoration-none" style="width:250px">
+	<span class="d-none" id="JWT_TOKEN">%JWT_TOKEN%</span>
+	<input type="file" id="uploadFile" name="uploadFile" class="d-none" multiple>
+	<header class="navbar sticky-top bg-body-tertiary flex-md-nowrap shadow">
+		<div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
+			<img src="images/online.svg"
+				class="d-flex align-items-center col-lg-3 mb-2 mb-lg-0 link-body-emphasis text-decoration-none"
+				style="width:250px">
 
-            <div class="d-flex align-items-center">
-                <form class="w-100 me-3" role="search">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="search" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
-                    </div>
-                </form>
-                <button type="button" class="btn btn-link nav-link dropdown-toggle" color-scheme-switcher></button>
-                <div>
-                    <div class="vr d-none d-lg-flex h-100 mx-3 text-white"></div>
-                </div>
-                <div class="flex-shrink-0 dropdown">
-                    <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <img src="images/user.svg" width="24" height="24" class="rounded-circle">
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end text-small shadow">
-                        <li><a class="dropdown-item" href="%LOGOUT_API%"><i class="bi bi-box-arrow-right me-2 text-danger"></i><span
-                                    _="Sign out"></span></a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </header>
-    <!--
-        左邊是 sidebar 用來放置檔案目錄的容器，預設是空的
-        右邊是 main 用來放置檔案內容的容器，預設是空的
-    -->
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="sidebar border border-right col-md-4 col-lg-3 d-md-block bg-body-tertiary">
-                <!-- 資料夾工作區 -->
-                <ul id="rootNodes" class="list-unstyled ps-0">
-                    <!-- -->
-                </ul>
-            </nav>
-            <main class="col-md-8 ms-sm-auto col-lg-9 px-md-4">
-                <!-- 顯示路徑位址列和檔案功能區 (麵包屑)-->
-                <div class="position-sticky w-100 user-select-none top-0 px-2 py-2 bg-body-tertiary" style="height:48px">
-                    <nav class="h-100 overflow-x-auto overflow-y-hidden" style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-                        <ol id="currentPath" class="breadcrumb">
-                            <!-- <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                 <li class="breadcrumb-item active" aria-current="page">Library</li> -->
-                        </ol>
-                    </nav>
-                </div>
+			<div class="d-flex align-items-center">
+				<form class="w-100 me-3" role="search">
+					<div class="input-group">
+						<span class="input-group-text"><i class="bi bi-search"></i></span>
+						<input type="search" class="form-control" placeholder="Search" aria-label="Search"
+							aria-describedby="basic-addon1">
+					</div>
+				</form>
+				<button type="button" class="btn btn-link nav-link dropdown-toggle" color-scheme-switcher></button>
+				<div>
+					<div class="vr d-none d-lg-flex h-100 mx-3 text-white"></div>
+				</div>
+				<div class="flex-shrink-0 dropdown">
+					<a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+						data-bs-toggle="dropdown" aria-expanded="false">
+						<span _="System"></span>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-end text-small shadow">
+						<li><button id="logout" class="dropdown-item"><i
+									class="bi bi-box-arrow-right me-2 text-success"></i><span
+									_="Sign out"></span></button></li>
+						<li class="dropdown-divider"></li>
+						<li><button id="restartServer" class="dropdown-item"><i
+									class="bi bi-bootstrap-reboot me-2 text-danger"></i><span
+									_="Restart server"></span></button></li>
+						<li><button id="changePassword" class="dropdown-item" href="#"><i
+									class="bi bi-box-arrow-right me-2 text-warning"></i><span
+									_="Change password"></span></button></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
+	<!--
+		左邊是 sidebar 用來放置檔案目錄的容器，預設是空的
+		右邊是 main 用來放置檔案內容的容器，預設是空的
+	-->
+	<div class="container-fluid">
+		<div class="row">
+			<nav id="sidebarMenu" class="border border-right col-md-3 col-lg-2 d-md-block bg-body-tertiary sidebar collapse">
+				<!-- 選單區 -->
+				<div class="position-sticky pt-3">
+					<!-- 系統選單 -->
+					<ul id="systemMenu" class="nav flex-column">
+						<li class="nav-item">
+							<button class="nav-link">
+								<i class="bi bi-info-circle">&nbsp;</i>
+								<span _="Overview"></span>
+							</button>
+						</li><li class="nav-item">
+							<button class="nav-link" href="#">
+								<i class="bi bi-graph-up">&nbsp;</i>
+								<span _="Analytics"></span>
+							</button>
+						</li>
+						<li class="nav-item">
+							<button class="nav-link" href="#">
+								<i class="bi bi-journal-text">&nbsp;</i>
+								<span _="Log"></span>
+							</button>
+						</li>
+					</ul>
+					<!-- 模組選單 -->
+					<ul id="moduleMenu" class="nav flex-column">
+					</ul>
+				</div>
+			</nav>
+			<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+				<!--MODULE_CONTENT-->
+			</main>
+		</div>
+	</div>
 
-                <div id="fileContent">
-                    <div class="table-responsive">
-                        <table class="table user-select-none">
-                            <thead>
-                                <tr class="table-success">
-                                    <th scope="col" _="Name"></th>
-                                    <th scope="col" _="Owner"></th>
-                                    <th scope="col" _="Last Modified"></th>
-                                    <th scope="col" _="Size"></th>
-                                    <th scope="col"><i class="bi bi-three-dots-vertical"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody id="fileList">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- 引入 admin.js -->
-    <script src="admin.js"></script>
-    <!-- 引入 bootstrap.bundle.min.js -->
-    <script src="js/bootstrap.bundle.min.js"></script>
+	<!-- 引入 admin.js -->
+	<script src="%ADMIN_ROOT%/admin.js"></script>
+	<!-- 引入 bootstrap.bundle.min.js -->
+	<script src="%ADMIN_ROOT%/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -5,52 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title _="Sign in"></title>
-    <link rel="localizations" href="%SERVICE_ROOT%/browser/%VERSION_HASH%/l10n/ossii-localizations.json" type="application/vnd.oftn.l10n+json"/>
+    <!-- 這裡是引入系統語系檔 -->
+    <link rel="localizations" href="%SERVICE_ROOT%/browser/%VERSION%/l10n/admin-localizations.json" type="application/vnd.oftn.l10n+json"/>
     <!-- 從 css/ 引入 bootstrap.min.css 和 bootstrap-icons.min.css -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap-icons.min.css">
-    <style>
-        html, body {
-                height: 100%;
-            }
-
-            .form-signin {
-                max-width: 330px;
-                padding: 1rem;
-            }
-
-            .form-signin .oxool-banner {
-                max-width: 300px;
-                margin-bottom: 1rem;
-            }
-
-            .form-signin .form-floating:focus-within {
-                z-index: 2;
-            }
-
-            #accountInput {
-                margin-bottom: -1px;
-                border-bottom-right-radius: 0;
-                border-bottom-left-radius: 0;
-            }
-
-            #passwordInput {
-                margin-bottom: 10px;
-                border-top-left-radius: 0;
-                border-top-right-radius: 0;
-            }
-    </style>
-    <!--script src="js/l10n.js"></script-->
-    <script src="js/global.js"></script>
-    <script src="js/color-scheme-switcher.js"></script>
+    <link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap.min.css">
+    <link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="%ADMIN_ROOT%/css/login.css">
+    <script src="%ADMIN_ROOT%/js/l10n.js"></script>
+    <script src="%ADMIN_ROOT%/js/global.js"></script>
+    <script src="%ADMIN_ROOT%/js/color-scheme-switcher.js"></script>
 </head>
 <body class="d-flex align-items-center bg-body-tertiary">
     <button type="button" class="btn btn-primary py-2 dropdown-toggle position-fixed bottom-0 end-0 mb-3 me-3" color-scheme-switcher></button>
 
     <main class="w-100">
         <div class="form-signin w-100 m-auto">
-        <form method="post" action="./login">
-            <img class="oxool-banner" src="images/online.svg">
+        <form method="post" action="%ADMIN_ROOT%/login">
+            <img class="oxool-banner" src="%ADMIN_ROOT%/images/online.svg">
 
             <div class="form-floating">
                 <input type="text" class="form-control" id="accountInput" name="account" placeholder="Account" autocomplete="username" required>
@@ -68,6 +39,6 @@
     </main>
 
     <!-- 從 js/ 引入 bootstrap.bundle.min.js -->
-    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="%ADMIN_ROOT%/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

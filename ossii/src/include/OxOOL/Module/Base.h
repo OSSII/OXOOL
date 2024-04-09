@@ -6,14 +6,18 @@
  */
 
 #pragma once
-#include <OxOOL/OxOOL.h>
-#include <OxOOL/XMLConfig.h>
 
 #include <memory>
 
-#include <Poco/Net/HTTPRequest.h>
-#include <Poco/MemoryStream.h>
-#include <Poco/JSON/Object.h>
+#include <OxOOL/XMLConfig.h>
+
+//#include <Poco/JSON/Object.h>
+
+namespace Poco::Net
+{
+    class HTTPRequest;
+} // namespace Poco::Net
+
 
 #define MODULE_METHOD_IS_ABSTRACT "@OxOOL::Module::Base"
 
@@ -53,10 +57,6 @@ public:
     friend class OxOOL::ModuleManager;
 
     const Detail& getDetail() const { return maDetail; }
-
-    /// @brief 以 JSON 格式傳回模組詳細資訊
-    /// @return Poco::JSON::Object::Ptr
-    Poco::JSON::Object::Ptr getAdminDetailJson(const std::string& langTag = std::string());
 
     /// @brief 傳回模組配置檔(XML)的位置
     /// @return

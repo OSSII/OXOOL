@@ -7,7 +7,8 @@
 ADMIN_SRC_JS = \
 	src/Base.js \
 	src/Util.js \
-	src/AdminSocketBase.js
+	src/AdminSocketBase.js \
+	src/Main.js
 
 admin-src.js: $(ADMIN_SRC_JS)
 	@echo "Checking for Admin JS errors..."
@@ -27,7 +28,6 @@ admin.js: admin-src.js
 		-O max_line_len=100 \
 		$^ \
 		--output $@
-
 
 # Admin root
 adminrootdir = $(pkgdatadir)/admin

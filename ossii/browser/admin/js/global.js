@@ -65,7 +65,6 @@
 		}
 		document.documentElement.setAttribute('lang', lang); // 設定 HTML 的 lang 屬性
 		String.locale = lang; // 設定 String 的 locale(這會載入該語言的 json 檔)
-		String.toLocaleString('./localizations.json');
 	};
 
 	// 監控瀏覽器語言的變化

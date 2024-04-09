@@ -19,14 +19,10 @@
 #include <OxOOL/Module/Base.h>
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/ConvertBroker.h>
+#include <OxOOL/L10NTranslator.h>
 #include <OxOOL/XMLConfig.h>
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/Util.h>
-
-#include "ModuleManager/ModuleLibrary.hpp"
-#include "ModuleManager/ModuleAgent.hpp"
-#include "ModuleManager/AdminService.hpp"
-#include "ModuleManager/BrowserService.hpp"
 
 #include <Poco/File.h>
 #include <Poco/Path.h>
@@ -42,21 +38,20 @@
 #include <Poco/Net/HTTPCookie.h>
 
 #include <common/Message.hpp>
-#include <common/Protocol.hpp>
 #include <common/StringVector.hpp>
-#include <common/SigUtil.hpp>
 #include <common/Log.hpp>
-#include <common/Util.hpp>
-#include <net/Socket.hpp>
-#include <net/WebSocketHandler.hpp>
 #include <wsd/ClientSession.hpp>
+
+#include "ModuleManager/ModuleLibrary.hpp"
+#include "ModuleManager/ModuleAgent.hpp"
+#include "ModuleManager/AdminService.hpp"
+#include "ModuleManager/BrowserService.hpp"
 
 namespace OxOOL
 {
 
 ModuleManager::ModuleManager()
-    : SocketPoll("ModuleManager")
-    , mbInitialized(false)
+    : mbInitialized(false)
     , mpBrowserService(nullptr)
     , mpAdminService(nullptr)
 {
@@ -79,7 +74,6 @@ void ModuleManager::initialize()
 #if ENABLE_DEBUG
         dump();
 #endif
-        startThread();
         mbInitialized = true;
     }
 }
@@ -270,25 +264,6 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
     }
 
     return true;
-}
-
-bool ModuleManager::hasModule(const std::string& moduleName)
-{
-    // 先檢查是否是 ModuleService
-    if (mpBrowserService->getDetail().name == moduleName)
-    {
-        return true;
-    }
-
-    // 逐筆過濾
-    for (auto& it : maModuleMap)
-    {
-        if (it.second->getModule()->getDetail().name == moduleName)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 OxOOL::Module::Ptr ModuleManager::getModuleById(const std::string& moduleUUID)
@@ -565,15 +540,13 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     Poco::replaceInPlace(mainContent, std::string("%JWT_TOKEN%"), escapedJwtToken);
 
     Poco::replaceInPlace(mainContent, std::string("%SERVICE_ROOT%"), OxOOL::ENV::ServiceRoot);
-    Poco::replaceInPlace(mainContent, std::string("%VERSION_HASH%"), OxOOL::ENV::VersionHash);
+    Poco::replaceInPlace(mainContent, std::string("%VERSION%"), OxOOL::ENV::VersionHash);
 
     std::string adminRoot = OxOOL::ENV::ServiceRoot + mpAdminService->maDetail.serviceURI;
     // 去掉最後的 '/'
     if (*adminRoot.rbegin() == '/')
         adminRoot.pop_back();
     Poco::replaceInPlace(mainContent, std::string("%ADMIN_ROOT%"), adminRoot);
-
-
 
     Poco::Net::HTTPResponse response;
     // Ask UAs to block if they detect any XSS attempt
@@ -594,31 +567,29 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     socket->shutdown();
 }
 
+// TODO: 這裏被 ModuleAgent 呼叫，將來改為自動管理 agent，就可以刪除這個函式
 void ModuleManager::cleanupDeadAgents()
 {
     // 交給 module manager thread 執行清理工作，避免搶走 main thread
-    addCallback([this]()
+    const std::unique_lock<std::mutex> agentsLock(maAgentsMutex);
+    // 有 agents 才進行清理工作
+    if (const int beforeClean = mpAgentsPool.size(); beforeClean > 0)
     {
-        const std::unique_lock<std::mutex> agentsLock(maAgentsMutex);
-        // 有 agents 才進行清理工作
-        if (const int beforeClean = mpAgentsPool.size(); beforeClean > 0)
+        for (auto it = mpAgentsPool.begin(); it != mpAgentsPool.end();)
         {
-            for (auto it = mpAgentsPool.begin(); it != mpAgentsPool.end();)
+            if (!it->get()->isAlive())
             {
-                if (!it->get()->isAlive())
-                {
-                    mpAgentsPool.erase(it);
-                    continue;
-                }
-                else
-                {
-                    ++it;
-                }
+                mpAgentsPool.erase(it);
+                continue;
             }
-            const int afterClean = mpAgentsPool.size();
-            LOG_DBG("Clean " << beforeClean - afterClean << " dead agents, leaving " << afterClean << ".");
+            else
+            {
+                ++it;
+            }
         }
-    });
+        const int afterClean = mpAgentsPool.size();
+        LOG_DBG("Clean " << beforeClean - afterClean << " dead agents, leaving " << afterClean << ".");
+    }
 }
 
 const std::vector<OxOOL::Module::Detail> ModuleManager::getAllModuleDetails() const
@@ -641,7 +612,7 @@ std::string ModuleManager::getAllModuleDetailsJsonString(const std::string& lang
             jsonString.append(",");
 
         const OxOOL::Module::Ptr module = it.second->getModule();
-        Poco::JSON::Object::Ptr json = module->getAdminDetailJson(langTag);
+        Poco::JSON::Object::Ptr json = getModuleDetailJson(module, langTag);
 
         std::ostringstream oss;
         json->stringify(oss);
@@ -667,7 +638,7 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
             if (count > 0)
                 jsonString.append(",");
 
-            auto json = module->getAdminDetailJson(langTag);
+            Poco::JSON::Object::Ptr json = getModuleDetailJson(module, langTag);
             std::ostringstream oss;
             json->stringify(oss);
             jsonString.append(oss.str());
@@ -678,6 +649,45 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
     jsonString.append("]");
 
     return jsonString;
+}
+
+Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::Ptr module,
+                                                           const std::string& langTag) const
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    OxOOL::Module::Detail& detail = module->maDetail;
+
+    // 若有指定語系，嘗試翻譯
+    if (!langTag.empty())
+    {
+        std::unique_ptr<OxOOL::L10NTranslator> translator =
+            std::make_unique<OxOOL::L10NTranslator>(langTag, detail.name, true);
+
+        detail.version = translator->getTranslation(detail.version);
+        detail.summary = translator->getTranslation(detail.summary);
+        detail.author = translator->getTranslation(detail.author);
+        detail.license = translator->getTranslation(detail.license);
+        detail.description = translator->getTranslation(detail.description);
+        detail.adminItem = translator->getTranslation(detail.adminItem);
+    }
+
+    json->set("id", module->maId);
+    json->set("browserURI", module->maAdminURI);
+    json->set("browserURI", module->maBrowserURI);
+
+    // 設定模組詳細資訊
+    json->set("name", detail.name);
+    json->set("serviceURI", detail.serviceURI);
+    json->set("version", detail.version);
+    json->set("summary", detail.summary);
+    json->set("author", detail.author);
+    json->set("license", detail.license);
+    json->set("description", detail.description);
+    json->set("adminPrivilege", detail.adminPrivilege);
+    json->set("adminIcon", detail.adminIcon);
+    json->set("adminItem", detail.adminItem);
+
+    return json;
 }
 
 void ModuleManager::dump()
@@ -699,17 +709,6 @@ void ModuleManager::dump()
 }
 
 //------------------ Private mtehods ----------------------------------
-
-void ModuleManager::pollingThread()
-{
-    LOG_DBG("Starting Module manager polling.");
-    while (!SocketPoll::isStop() && !SigUtil::getTerminationFlag() && !SigUtil::getShutdownRequestFlag())
-    {
-        poll(SocketPoll::DefaultPollTimeoutMicroS);
-
-    }
-    maModuleMap.clear(); // Deconstruct all modules.
-}
 
 // 初始化內部模組
 void ModuleManager::initializeInternalModules()

@@ -1,0 +1,14 @@
+
+:root {
+	--header-height: 64px;
+}
+
+header {
+	height: var(--header-height);
+}
+
+#sidebarMenu {
+	height: calc(100vh - var(--header-height));
+	overflow-x: hidden;
+	overflow-y: auto;
+}
