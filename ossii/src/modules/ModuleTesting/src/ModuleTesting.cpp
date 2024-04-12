@@ -31,6 +31,13 @@ class ModuleTesting : public OxOOL::Module::Base
 {
 public:
 
+    enum COLOR
+    {
+        GREEN = 0,
+        YELLOW,
+        RED
+    };
+
     ModuleTesting()
     {
         maTestingFiles.emplace_back("/dev/shm/.oxoolmoduletesting");
@@ -91,16 +98,20 @@ public:
 
                     std::ostringstream oss;
                     oss << "Module detials:"
+                        << "\n\tID: " << module->getId()
                         << "\n\tName: " << detial.name
-                        << "\n\tService URI: " << detial.serviceURI
+                        << "\n\tService URI: " << (detial.serviceURI.empty() ? colorString("<None>", YELLOW) : detial.serviceURI)
                         << "\n\tVerson: " << detial.version
                         << "\n\tSummary: " << detial.summary
                         << "\n\tLicense: " << detial.license
                         << "\n\tAuthor: " << detial.author
                         << "\n\tDescrtption: " << detial.description
+                        << "\n\tDocument root: " << module->getDocumentRoot()
+                        << "\n\tBrowser URI: " << (module->getBrowserURI().empty() ? colorString("<None>", GREEN) : module->getBrowserURI())
                         << "\n\tAdmin privilege: " << (detial.adminPrivilege ? "Yes" : "No")
                         << "\n\tAdmin icon: " << detial.adminIcon
-                        << "\n\tAdmin item: " << detial.adminItem;
+                        << "\n\tAdmin item: " << detial.adminItem
+                        << "\n\tAdmin URI: " << (module->getAdminURI().empty() ? colorString("<None>", GREEN) : module->getAdminURI());
 
                     responseMsg = oss.str();
                 }
@@ -143,6 +154,27 @@ private:
             {
                 LOG_ERR(logTitle() << "Unable to create" << file);
             }
+        }
+    }
+
+    /// @brief 顏色化字串
+    std::string colorString(const std::string& str, COLOR color)
+    {
+        const std::string greenColor = "\033[1;32m";
+        const std::string yellowColor = "\033[1;33m";
+        const std::string redColor = "\033[1;31m";
+        const std::string resetColor = "\033[0m";
+
+        switch (color)
+        {
+            case GREEN:
+                return greenColor + str + resetColor;
+            case YELLOW:
+                return yellowColor + str + resetColor;
+            case RED:
+                return redColor + str + resetColor;
+            default:
+                return str;
         }
     }
 
