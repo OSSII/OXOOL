@@ -1,44 +1,51 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title _="Sign in"></title>
-    <!-- 這裡是引入系統語系檔 -->
-    <link rel="localizations" href="%SERVICE_ROOT%/browser/%VERSION%/l10n/admin-localizations.json" type="application/vnd.oftn.l10n+json"/>
-    <!-- 從 css/ 引入 bootstrap.min.css 和 bootstrap-icons.min.css -->
-    <link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap.min.css">
-    <link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="%ADMIN_ROOT%/css/login.css">
-    <script src="%ADMIN_ROOT%/js/l10n.js"></script>
-    <script src="%ADMIN_ROOT%/js/global.js"></script>
-    <script src="%ADMIN_ROOT%/js/color-scheme-switcher.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title _="Administrator login"></title>
+	<!-- 這裡是引入系統語系檔 -->
+	<link rel="localizations" href="%SERVICE_ROOT%/browser/%VERSION%/l10n/admin-localizations.json"
+		type="application/vnd.oftn.l10n+json" />
+	<!-- 從 css/ 引入 bootstrap.min.css 和 bootstrap-icons.min.css -->
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap.min.css">
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/login.css">
+	<script src="%ADMIN_ROOT%/js/l10n.js"></script>
+	<script src="%ADMIN_ROOT%/js/global.js"></script>
+	<script src="%ADMIN_ROOT%/js/color-scheme-switcher.js"></script>
 </head>
+
 <body class="d-flex align-items-center bg-body-tertiary">
-    <button type="button" class="btn btn-primary py-2 dropdown-toggle position-fixed bottom-0 end-0 mb-3 me-3" color-scheme-switcher></button>
+	<button type="button" class="btn btn-primary py-2 dropdown-toggle position-fixed bottom-0 end-0 mb-3 me-3"
+		color-scheme-switcher></button>
 
-    <main class="w-100">
-        <div class="form-signin w-100 m-auto">
-        <form method="post" action="%ADMIN_ROOT%/login">
-            <img class="oxool-banner" src="%ADMIN_ROOT%/images/online.svg">
+	<main class="w-100">
+		<div class="form-signin w-100 m-auto">
+			<form method="post" action="%ADMIN_ROOT%/login">
+				<img class="oxool-banner" src="%ADMIN_ROOT%/images/online.svg">
 
-            <div class="form-floating">
-                <input type="text" class="form-control" id="accountInput" name="account" placeholder="Account" autocomplete="username" required>
-                <label for="accountInput" _="Account"></label>
-                <span class="invalid-feedback" _="Please enter your account"></span>
-            </div>
-            <div class="form-floating">
-                <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Password" autocomplete="current-password" visibility-toggle required>
-                <label for="passwordInput" _="Password"></label>
-            </div>
-            <button class="btn btn-primary w-100 py-2" type="submit" _="Sign in"></button>
-        </form>
-        </div>
-        <p class="text-center"_="© %YEAR% OSS Integral Institute Co., Ltd."></p>
-    </main>
+				<div class="form-floating">
+					<input type="text" class="form-control" id="accountInput" name="account" placeholder="Account"
+						autocomplete="username" autofocus required>
+					<label for="accountInput" _="Account"></label>
+					<span class="invalid-feedback" _="Please enter your account"></span>
+				</div>
+				<div class="form-floating">
+					<input type="password" class="form-control" id="passwordInput" name="password"
+						placeholder="Password" autocomplete="current-password" visibility-toggle required>
+					<label for="passwordInput" _="Password"></label>
+				</div>
+				<button class="btn btn-primary w-100 py-2" type="submit" _="Sign in"></button>
+			</form>
+		</div>
+		<p class="text-center" _="© %YEAR% OSS Integral Institute Co., Ltd."></p>
+	</main>
 
-    <!-- 從 js/ 引入 bootstrap.bundle.min.js -->
-    <script src="%ADMIN_ROOT%/js/bootstrap.bundle.min.js"></script>
+	<!-- 從 js/ 引入 bootstrap.bundle.min.js -->
+	<script src="%ADMIN_ROOT%/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

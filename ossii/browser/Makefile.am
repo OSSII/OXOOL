@@ -38,7 +38,8 @@ $(DIST_FOLDER)/uiconfig/%: $(srcdir)/uiconfig/%
 
 ADMIN_JS_LIST = \
 	admin/js/*.js \
-	admin/src/*.js
+	admin/src/*.js \
+	$(shell find admin/standard -name "admin.js")
 
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \

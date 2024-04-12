@@ -8,10 +8,12 @@
  * @details
  * window functions and variables.
  */
-/* global _ getURLParam */
+/* global $ _ getURLParam */
 
 (() => {
 	'use strict';
+
+	window.L = {};
 
 	/**
 	 * 取得 URL 參數的值。
@@ -25,6 +27,28 @@
 	};
 
 	/**
+	 * 取得 cookie 的值。
+	 * @param {string} name
+	 * @returns string - The value of the cookie. or undefined if the cookie does not exist.
+	 */
+	window.getCookie = (name) => {
+		let value = '; ' + document.cookie;
+		let parts = value.split('; ' + name + '=');
+		if (parts.length === 2) {
+			return parts.pop().split(';').shift();
+		}
+	};
+
+	// 如果有 jQuery，就把 $ 設為 jQuery
+	if (window.jQuery) {
+		window.$ = window.jQuery = $;
+	}
+
+	if (window.vex) {
+		window.vex.defaultOptions.className = 'vex-theme-default';
+	}
+
+	/**
 	 * Translates a string using the `_` function.
 	 * @function _
 	 * @param {string} string - The string to be translated.
@@ -32,11 +56,20 @@
 	 */
 	window._ = (string) => string.toLocaleString();
 
+	// 設定 String 的 locale
+	const LANG = getURLParam('lang') || localStorage.getItem('lang') || navigator.language || 'en-US';
+	if (LANG === 'auto') {
+		String.locale = navigator.language;
+	} else {
+		String.locale = LANG;
+	}
+
 	// eslint-disable-next-line no-unused-vars
 	const l10n = [
 		_('Account'), // 帳號
 		_('Password'), // 密碼
 		_('Sign in'), // 登入
+		_('Sign out'), // 登出
 		_('OSS Integral Institute Co., Ltd.'), // 晟鑫科技股份有限公司
 	];
 

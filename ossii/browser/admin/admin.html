@@ -10,16 +10,20 @@
 	<!-- 從 css/ 引入 bootstrap.min.css 和 bootstrap-icons.min.css -->
 	<link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap.min.css">
 	<link rel="stylesheet" href="%ADMIN_ROOT%/css/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/vex.css">
+	<link rel="stylesheet" href="%ADMIN_ROOT%/css/vex-theme-default.css">
 	<link rel="stylesheet" href="%ADMIN_ROOT%/css/admin.css">
 	</style>
 	<!-- 引入 l10n.js, global.js, color-scheme-switcher.js -->
+	<script src="%ADMIN_ROOT%/js/jquery.min.js"></script>
 	<script src="%ADMIN_ROOT%/js/l10n.js"></script>
+	<script src="%ADMIN_ROOT%/js/vex.combined.min.js"></script>
 	<script src="%ADMIN_ROOT%/js/global.js"></script>
 	<script src="%ADMIN_ROOT%/js/color-scheme-switcher.js"></script>
 </head>
 
 <body>
-	<span class="d-none" id="JWT_TOKEN">%JWT_TOKEN%</span>
+	<span class="d-none" id="__ADMIN_ROOT__">%ADMIN_ROOT%</span>
 	<input type="file" id="uploadFile" name="uploadFile" class="d-none" multiple>
 	<header class="navbar sticky-top bg-body-tertiary flex-md-nowrap shadow">
 		<div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
@@ -66,36 +70,24 @@
 	-->
 	<div class="container-fluid">
 		<div class="row">
-			<nav id="sidebarMenu" class="border border-right col-md-3 col-lg-2 d-md-block bg-body-tertiary sidebar collapse">
+			<!-- 側邊欄 -->
+			<nav id="__SIDEBAR_MENU__" class="border border-right col-md-3 col-lg-2 d-md-block bg-body-tertiary sidebar collapse">
 				<!-- 選單區 -->
 				<div class="position-sticky pt-3">
-					<!-- 系統選單 -->
-					<ul id="systemMenu" class="nav flex-column">
-						<li class="nav-item">
-							<button class="nav-link">
-								<i class="bi bi-info-circle">&nbsp;</i>
-								<span _="Overview"></span>
-							</button>
-						</li><li class="nav-item">
-							<button class="nav-link" href="#">
-								<i class="bi bi-graph-up">&nbsp;</i>
-								<span _="Analytics"></span>
-							</button>
-						</li>
-						<li class="nav-item">
-							<button class="nav-link" href="#">
-								<i class="bi bi-journal-text">&nbsp;</i>
-								<span _="Log"></span>
-							</button>
-						</li>
+
+					<ul id="__INTERNAL_MENU__" class="nav flex-column">
+						<!-- 內部模組選單 -->
 					</ul>
-					<!-- 模組選單 -->
-					<ul id="moduleMenu" class="nav flex-column">
+
+					<ul id="__EXTERNAL_MENU__" class="nav flex-column">
+						<!-- 外部模組選單 -->
 					</ul>
 				</div>
 			</nav>
-			<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-				<!--MODULE_CONTENT-->
+
+			<!-- 主要內容區 -->
+			<main id="__MAIN_CONTENT__" class="col-md-9 col-lg-10 p-4">
+				<!-- 正在執行的模組控制內容 -->
 			</main>
 		</div>
 	</div>

@@ -8,6 +8,9 @@ ADMIN_SRC_JS = \
 	src/Base.js \
 	src/Util.js \
 	src/AdminSocketBase.js \
+	$(top_srcdir)/browser/src/core/Util.js \
+	$(top_srcdir)/browser/src/core/Class.js \
+	src/AdminModule.js \
 	src/Main.js
 
 admin-src.js: $(ADMIN_SRC_JS)
@@ -55,6 +58,38 @@ dist_adminjs_DATA = \
 adminimgdir = $(pkgdatadir)/admin/images
 dist_adminimg_DATA = \
 	images/*
+
+
+admin_internal_module_DIST = \
+	standard/Overview \
+	standard/Analytics \
+	standard/Log
+
+# Admin internal modules ------------------------------------------------------
+# 所有內建模組的目錄都是 admin/standard/{ModuleName}
+
+# Overview
+admin_module_Overviewdir = $(pkgdatadir)/admin/standard/Overview
+dist_admin_module_Overview_DATA = \
+	standard/Overview/admin.html \
+	standard/Overview/admin.js
+
+# Analytics
+admin_module_Analyticsdir = $(pkgdatadir)/admin/standard/Analytics
+dist_admin_module_Analytics_DATA = \
+	standard/Analytics/admin.html \
+	standard/Analytics/admin.js
+admin_module_Analytics_jsdir = $(pkgdatadir)/admin/standard/Analytics/js
+dist_admin_module_Analytics_js_DATA = \
+	standard/Analytics/js/*.js
+
+# Log
+admin_module_Logdir = $(pkgdatadir)/admin/standard/Log
+dist_admin_module_Log_DATA = \
+	standard/Log/admin.html \
+	standard/Log/admin.js
+
+#------------------------------------------------------------
 
 clean-local:
 	$(RM) admin-src.js admin.js
