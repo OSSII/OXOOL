@@ -32,6 +32,7 @@
 #include <Poco/String.h>
 #include <Poco/SortedDirectoryIterator.h>
 #include <Poco/String.h>
+#include <Poco/StringTokenizer.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -497,7 +498,7 @@ std::string ModuleManager::handleAdminMessage(const StringVector& tokens)
 }
 
 void ModuleManager::preprocessAdminFile(const std::string& adminFile,
-                                        const Poco::Net::HTTPRequest& /* request */,
+                                        const Poco::Net::HTTPRequest& request,
                                         const std::shared_ptr<StreamSocket>& socket)
 {
     // 讀取檔案內容
@@ -515,6 +516,28 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     if (*adminRoot.rbegin() == '/')
         adminRoot.pop_back();
     Poco::replaceInPlace(mainContent, std::string("%ADMIN_ROOT%"), adminRoot);
+
+    // 是否要求模組檔案
+    const std::string realURI = mpAdminService->parseRealURI(request);
+    // 判斷是否存取模組管理頁面，兩個 token 以上且第一個 token 爲 "module"
+    const Poco::StringTokenizer tokens(realURI, "/",
+        Poco::StringTokenizer::TOK_IGNORE_EMPTY|Poco::StringTokenizer::TOK_TRIM);
+
+    if (tokens.count() > 1 && tokens[0] == "module")
+    {
+        // 找出是哪個模組
+        const OxOOL::Module::Ptr module = getModuleById(tokens[1]); // 第二個是模組 ID
+        if (module)
+        {
+            std::string adminModuleRoot = OxOOL::ENV::ServiceRoot + module->maAdminURI;
+            // 去掉最後的 '/'
+            if (*adminModuleRoot.rbegin() == '/')
+                adminModuleRoot.pop_back();
+
+            // 替換 %ADMIN_MODULE_ROOT%
+            Poco::replaceInPlace(mainContent, std::string("%ADMIN_MODULE_ROOT%"), adminModuleRoot);
+        }
+    }
 
     Poco::Net::HTTPResponse response;
     // Ask UAs to block if they detect any XSS attempt

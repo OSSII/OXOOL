@@ -56,6 +56,11 @@ public:
 
     friend class OxOOL::ModuleManager;
 
+    /// @brief 取得模組 ID
+    /// @return 模組 ID
+    const std::string& getId() const { return maId; }
+
+    /// @brief 取得模組詳細資訊
     const Detail& getDetail() const { return maDetail; }
 
     /// @brief 傳回模組配置檔(XML)的位置
@@ -67,8 +72,13 @@ public:
     OxOOL::XMLConfig::Ptr getConfig();
 
     /// @brief 傳回模組在本機所在的絕對路徑
-    /// @return
     const std::string& getDocumentRoot() const { return maRootPath; }
+
+    /// @brief 取得模組的前端服務位址
+    const std::string& getBrowserURI() const { return maBrowserURI; }
+
+    /// @brief 取得模組的後臺管理位址
+    const std::string& getAdminURI() const { return maAdminURI; }
 
     /// @brief 需要管理員身份驗證
     /// @param request
@@ -114,10 +124,6 @@ public:
     virtual std::string handleAdminMessage(const StringVector& tokens);
 
 protected:
-
-    /// @brief 取得模組 ID
-    /// @return 模組 ID
-    const std::string& getId() const { return maId; }
 
     /// @brief 傳送文字訊息給 Client
     /// @param clientSession - ClientSession 物件
