@@ -25,8 +25,8 @@ Map::~Map()
 }
 
 Map::Map(const std::string& serviceURI)
-    : maServiceURI(serviceURI)
 {
+    setServiceURI(serviceURI);
 }
 
 void Map::setServiceURI(const std::string& serviceURI)
@@ -44,6 +44,14 @@ void Map::set(const std::string& uri, std::size_t allowedMethods, Callback callb
 bool Map::handled(const Poco::Net::HTTPRequest& request,
                   const std::shared_ptr<StreamSocket>& socket)
 {
+    // 如果沒有設定 serviceURI，就不處理
+    if (maServiceURI.empty())
+    {
+        std::cerr << "Service URI is not set. Unable to process address:"
+                  << request.getURI() << std::endl;
+        return false;
+    }
+
     // 不含查詢字串的實際請求位址
     const std::string requestURI = Poco::URI(request.getURI()).getPath();
 

@@ -80,7 +80,6 @@ void AdminService::handleRequest(const Poco::Net::HTTPRequest& request,
         rootPath = module->getDocumentRoot() + "/admin";
         // realURI 去掉 "/module/模組ID"
         realURI.erase(0, tokens[0].length() + tokens[1].length() + 2);
-
     }
     else
     {
@@ -109,13 +108,48 @@ void AdminService::handleRequest(const Poco::Net::HTTPRequest& request,
                 OxOOL::ENV::ServiceRoot + getDetail().serviceURI);
             return;
         }
-
-        moduleManager.preprocessAdminFile(endPoint, request, socket);
+        moduleManager.preprocessAdminFile(requestFile.toString(), request, socket);
     }
     else // 否則直接傳送檔案
     {
         sendFile(requestFile.toString(), request, socket);
     }
+}
+
+std::string AdminService::handleAdminMessage(const StringVector& tokens)
+{
+    // TODO: 考慮加寫一個 Command Map 定義各個指令的處理程序
+    // 例如：
+    // maCommandMap.set("getModuleList", CALLBACK(&AdminService::getModuleList));
+    // maCommandMap.set("getAdminModuleList", CALLBACK(&AdminService::getAdminModuleList));
+    //
+    // 或者使用 struce 的方式定義指令和處理程序
+    // const MessageCommandMap maCommandMap = {
+    //     {"getModuleList", &AdminService::getModuleList},
+    //     {"getAdminModuleList", &AdminService::getAdminModuleList}
+    // };
+    // struct 結構如下：
+    // struct MessageCommandMap {
+    //     std::string command;
+    //     std::function<std::string(const StringVector&)> callback;
+    // };
+
+    // 取得模組列表或有後臺管理介面的模組列表
+    // tokens[0] 爲 "getModuleList" 或 "getAdminModuleList"
+    // tokens[1] 爲語言，可有可無
+    // 例如：
+    // getModuleList [語言]
+    // getAdminModuleList [語言]
+    if (tokens.equals(0, "getModuleList") || tokens.equals(0, "getAdminModuleList"))
+    {
+        const std::string langTag = tokens.size() > 1 ? tokens[1] : ""; // 有指定語言
+        if (tokens.equals(0, "getModuleList"))
+            return "modules: " + OxOOL::ModuleManager::instance().getAllModuleDetailsJsonString(langTag);
+        else
+            return "adminmodules: " + OxOOL::ModuleManager::instance().getAdminModuleDetailsJsonString(langTag);
+    }
+
+    return "";
 }
 
 

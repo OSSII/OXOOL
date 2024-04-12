@@ -28,6 +28,9 @@ public:
 
     void handleRequest(const Poco::Net::HTTPRequest& request,
                        const std::shared_ptr<StreamSocket>& socket) override;
+
+    std::string handleAdminMessage(const StringVector& tokens) override;
+
 private:
     /// @brief api URI
     OxOOL::Module::Map maApiMap;

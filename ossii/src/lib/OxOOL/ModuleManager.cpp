@@ -35,7 +35,6 @@
 #include <Poco/JSON/Object.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/Net/HTTPCookie.h>
 
 #include <common/Message.hpp>
 #include <common/StringVector.hpp>
@@ -241,8 +240,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
             Poco::File(documentRoot + "/admin/admin.html").exists() &&
             Poco::File(documentRoot + "/admin/admin.js").exists())
         {
-            const std::string adminURI = mpAdminService->maDetail.serviceURI + "module/" + ID + "/";
-            module->maAdminURI = adminURI; // 設定模組的後臺管理位址
+            module->maAdminURI = mpAdminService->maDetail.serviceURI + "module/" + ID + "/";
         }
 
         // 設定模組詳細資訊
@@ -494,17 +492,12 @@ std::string ModuleManager::handleAdminMessage(const StringVector& tokens)
         }
     }
 
-    // 非模組指令，我們要自己處理
-    if (tokens.equals(0, "getModuleList"))
-    {
-        return "modules: " + getAllModuleDetailsJsonString("en-US");
-    }
-
-    return ""; // 繼續傳給 online core 處理
+    // 非模組指令，交給 AdminService 處理
+    return mpAdminService->handleAdminMessage(tokens);
 }
 
 void ModuleManager::preprocessAdminFile(const std::string& adminFile,
-                                        const Poco::Net::HTTPRequest& request,
+                                        const Poco::Net::HTTPRequest& /* request */,
                                         const std::shared_ptr<StreamSocket>& socket)
 {
     // 讀取檔案內容
@@ -513,31 +506,6 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     content << file.rdbuf();
     file.close();
     std::string mainContent = content.str();
-
-    std::string jwtToken;
-    Poco::Net::NameValueCollection reqCookies;
-    std::vector<Poco::Net::HTTPCookie> resCookies;
-
-    for (size_t it = 0; it < resCookies.size(); ++it)
-    {
-        if (resCookies[it].getName() == "jwt")
-        {
-            jwtToken = resCookies[it].getValue();
-            break;
-        }
-    }
-
-    if (jwtToken.empty())
-    {
-        request.getCookies(reqCookies);
-        if (reqCookies.has("jwt"))
-        {
-            jwtToken = reqCookies.get("jwt");
-        }
-    }
-
-    const std::string escapedJwtToken = OxOOL::Util::encodeURIComponent(jwtToken, "'");
-    Poco::replaceInPlace(mainContent, std::string("%JWT_TOKEN%"), escapedJwtToken);
 
     Poco::replaceInPlace(mainContent, std::string("%SERVICE_ROOT%"), OxOOL::ENV::ServiceRoot);
     Poco::replaceInPlace(mainContent, std::string("%VERSION%"), OxOOL::ENV::VersionHash);
@@ -550,12 +518,14 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
 
     Poco::Net::HTTPResponse response;
     // Ask UAs to block if they detect any XSS attempt
-    response.add("X-XSS-Protection", "1; mode=block");
+    response.add("X-XSS-Protection", "1; mode=block"); // XSS 防護
     // No referrer-policy
-    response.add("Referrer-Policy", "no-referrer");
-    response.add("X-Content-Type-Options", "nosniff");
+    response.add("Referrer-Policy", "no-referrer"); // 不傳送 referrer
+    response.add("X-Content-Type-Options", "nosniff"); // 不傳送 content type
+    response.set("Cache-Control", "no-cache, no-store, must-revalidate"); //
     response.set("Server", OxOOL::ENV::HttpServerString);
     response.set("Date", OxOOL::HttpHelper::getHttpTimeNow());
+
 
     response.setContentType("text/html; charset=utf-8");
     response.setChunkedTransferEncoding(false);
@@ -672,7 +642,7 @@ Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::
     }
 
     json->set("id", module->maId);
-    json->set("browserURI", module->maAdminURI);
+    json->set("adminURI", module->maAdminURI);
     json->set("browserURI", module->maBrowserURI);
 
     // 設定模組詳細資訊
@@ -733,9 +703,6 @@ void ModuleManager::initializeInternalModules()
     maModuleMap[mpBrowserService->maId] = std::move(browserModuleLib);
     mpBrowserService->initialize();
 
-    if (!std::getenv("ENABLE_ADMIN_SERVICE"))
-        return;
-
     // 2. AdminService
     mpAdminService = std::make_shared<AdminService>();
     std::unique_ptr<ModuleLibrary> adminModuleLib = std::make_unique<ModuleLibrary>(mpAdminService);
@@ -764,6 +731,12 @@ void ModuleManager::initializeInternalModules()
 bool ModuleManager::isService(const Poco::Net::HTTPRequest& request,
                               const OxOOL::Module::Ptr module) const
 {
+#if ENABLE_DEBUG
+    // 檢查是否啓用後臺管理服務
+    bool enableAdminService = std::getenv("ENABLE_ADMIN_SERVICE") ? true : false;
+    if (module->maDetail.name == "AdminService" && !enableAdminService)
+        return false;
+#endif
     // 不含查詢字串的實際請求位址
     const std::string requestURI = Poco::URI(request.getURI()).getPath();
 
