@@ -67,8 +67,8 @@ pot:
 	msguniq -w 78 -t UTF-8 po/ossii.pot > po/ossii.pot.new; mv po/ossii.pot.new po/ossii.pot
 
 l10n: pot
-	for i in po/*.po; do pot2po --input=po/ossii.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
-#	@for i in po/*.po; do msgmerge --update --backup=off $$i po/ossii.pot;done
+	@for i in $(wildcard $(srcdir)/po/*.po); do pot2po --input=po/ossii.pot --template=$$i --output=$$i.new; mv $$i.new $$i;done
+#	@for i in $(wildcard $(srcdir)/po/*.po); do msgmerge --update --backup=off $$i po/ossii.pot;done
 
 # 產生打包用的 JS 檔案
 ossii-src.js: $(OXOOL_JS_LIST)
