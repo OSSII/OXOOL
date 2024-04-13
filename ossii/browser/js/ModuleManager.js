@@ -39,19 +39,19 @@ L.Module = L.Class.extend({
 		this._map.on('doclayerinit', this._onDocLayerInit, this);
 	},
 
-	add: function (moduleHandler, details) {
+	add: function (moduleHandler, detail) {
 		if (moduleHandler) {
 			moduleHandler.include({
 				base: this, // save base class
-				details: details, // save module details
-				getDetails: function () {
-					return this.details;
+				detail: JSON.parse(JSON.stringify(detail)), // save detail object
+				getDetail: function () {
+					return this.detail;
 				}
 			});
 		}
 		var handler = new moduleHandler(); // create module handler
 
-		this._modules[details.id] = handler; // save module handler
+		this._modules[detail.id] = handler; // save module handler
 		// Call module onAdd function
 		if (handler.onAdd) {
 			handler.onAdd(this._map);
@@ -78,11 +78,11 @@ L.Module = L.Class.extend({
 	 * @param {string} msg
 	 */
 	sendMessage: function (msg) {
-		// 如果有 details，表示是模組呼叫
-		if (this.details) {
+		// 如果有 detail，表示是模組呼叫
+		if (this.detail) {
 			// 加上模組 ID
-			msg = '<' + this.details.id + '>' + msg;
-			console.debug('L.ModuleManager: sendMessage from: %s: %s', this.details.name, msg);
+			msg = '<' + this.detail.id + '>' + msg;
+			console.debug('L.ModuleManager: sendMessage from: %s: %s', this.detail.name, msg);
 		}
 		app.socket.sendMessage(msg);
 	},
@@ -117,7 +117,7 @@ L.Module = L.Class.extend({
 				if (handler.onModuleMessage) {
 					handler.onModuleMessage(message);
 				} else {
-					console.error('Module %s does not have onModuleMessage function', handler.details.name);
+					console.error('Module %s does not have onModuleMessage function', handler.detail.name);
 				}
 			} else {
 				console.error('Module ID(%s) handler not found', moduleId);
@@ -146,8 +146,8 @@ L.Module = L.Class.extend({
 		}
 
 		for (var i = 0; i < this.options.modules.length; i++) {
-			var details = this.options.modules[i];
-			this._asyncLoadModule(details);
+			var detail = this.options.modules[i];
+			this._asyncLoadModule(detail);
 		}
 	},
 
@@ -157,19 +157,19 @@ L.Module = L.Class.extend({
 	 * @param {object} module
 	 * @returns {void}
 	 */
-	_asyncLoadModule: function (details) {
+	_asyncLoadModule: function (detail) {
 		// Skip if no browserURI
-		if (!details || details.browserURI === '') {
+		if (!detail || detail.browserURI === '') {
 			return;
 		}
 
 		var script = document.createElement('script');
-		var moduleName = details.name;
-		script.src = details.browserURI + 'module.js';
+		var moduleName = detail.name;
+		script.src = detail.browserURI + 'module.js';
 		script.onload = function () {
 			// 檢查是否有 L.Modula[moduleName] 這個 class(模組 L.Module.{moduleName})
 			if (L.Module[moduleName]) {
-				this.add(L.Module[moduleName], details);
+				this.add(L.Module[moduleName], detail);
 			} else {
 				console.error('Module class not found: ', moduleName);
 			}

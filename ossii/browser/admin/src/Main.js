@@ -266,6 +266,10 @@
 								newModule.include({
 									// 複製模組, avoid changing the original module
 									detail: JSON.parse(JSON.stringify(detail)),
+									// 替模組增加 getDetail 方法
+									getDetail: function () {
+										return this.detail;
+									},
 									// 把模組的 sendMessage 設定爲 AdminSocketMain 的 sendModuleMessage
 									sendMessage: that.sendModuleMessage.bind(that),
 								});
