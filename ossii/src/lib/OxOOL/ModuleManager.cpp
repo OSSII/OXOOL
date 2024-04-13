@@ -219,7 +219,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
         // 由此可知，第一個 token 千萬不要有 '-'，否則會出現難解的問題
         ID.erase(std::remove(ID.begin(), ID.end(), '-'), ID.end());
 #if ENABLE_DEBUG
-        std::cout << "Module: " << detail.name << ", UUID: " << ID << std::endl;
+        std::cout << "Module: " << detail.name << ", ID: " << ID << std::endl;
 #endif
 
         OxOOL::Module::Ptr module = moduleLib->getModule();
@@ -320,10 +320,9 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
 
             const std::shared_ptr<StreamSocket> socket =
                 std::static_pointer_cast<StreamSocket>(disposition.getSocket());
-            std::string serviceRoot = OxOOL::HttpHelper::getServiceRoot();
 
             // 重新導向
-            OxOOL::HttpHelper::redirect(request, socket, serviceRoot +  uri);
+            OxOOL::HttpHelper::redirect(request, socket, OxOOL::ENV::ServiceRoot +  uri);
             return true;
         }
     }
@@ -511,7 +510,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     Poco::replaceInPlace(mainContent, std::string("%SERVICE_ROOT%"), OxOOL::ENV::ServiceRoot);
     Poco::replaceInPlace(mainContent, std::string("%VERSION%"), OxOOL::ENV::VersionHash);
 
-    std::string adminRoot = OxOOL::ENV::ServiceRoot + mpAdminService->maDetail.serviceURI;
+    std::string adminRoot = mpAdminService->maDetail.serviceURI;
     // 去掉最後的 '/'
     if (*adminRoot.rbegin() == '/')
         adminRoot.pop_back();
@@ -529,7 +528,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
         const OxOOL::Module::Ptr module = getModuleById(tokens[1]); // 第二個是模組 ID
         if (module)
         {
-            std::string adminModuleRoot = OxOOL::ENV::ServiceRoot + module->maAdminURI;
+            std::string adminModuleRoot = module->maAdminURI;
             // 去掉最後的 '/'
             if (*adminModuleRoot.rbegin() == '/')
                 adminModuleRoot.pop_back();
@@ -712,7 +711,7 @@ void ModuleManager::initializeInternalModules()
 
     // 設定 Browser service 詳細資訊
     mpBrowserService->maDetail.name = "BrowserService";
-    mpBrowserService->maDetail.serviceURI = "/browser/module/"; // 接管所有模組的 browser 請求，意即所有模組的 browser 請求都會被這個模組處理
+    mpBrowserService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/browser/module/"; // 接管所有模組的 browser 請求，意即所有模組的 browser 請求都會被這個模組處理
     mpBrowserService->maDetail.version = "1.0.0";
     mpBrowserService->maDetail.summary = "Front-end user file service.";
     mpBrowserService->maDetail.author = "OxOOL";
@@ -731,7 +730,7 @@ void ModuleManager::initializeInternalModules()
     std::unique_ptr<ModuleLibrary> adminModuleLib = std::make_unique<ModuleLibrary>(mpAdminService);
     // 設定 Admin service 詳細資訊
     mpAdminService->maDetail.name = "AdminService";
-    mpAdminService->maDetail.serviceURI = "/browser/dist/admin/"; // 接管所有模組的後臺管理請求，意即所有模組的後臺管理請求都會被這個模組處理
+    mpAdminService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/browser/dist/admin/"; // 接管所有模組的後臺管理請求，意即所有模組的後臺管理請求都會被這個模組處理
     mpAdminService->maDetail.version = "1.0.0";
     mpAdminService->maDetail.summary = "Admin console service.";
     mpAdminService->maDetail.author = "OxOOL";
