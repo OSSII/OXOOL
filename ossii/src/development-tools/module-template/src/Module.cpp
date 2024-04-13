@@ -9,11 +9,16 @@
 
 #include <Poco/Net/HTTPRequest.h>
 
-#include <OxOOL/HttpHelper.h>
+#include <OxOOL/OxOOL.h>
 #include <OxOOL/Module/Base.h>
+#include <OxOOL/Module/Map.h>
+#include <OxOOL/HttpHelper.h>
 #include <OxOOL/common/Message.hpp>
 #include <OxOOL/net/Socket.hpp>
 #include <OxOOL/wsd/ClientSession.hpp>
+
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 
 class %MODULE_NAME% : public OxOOL::Module::Base
 {
@@ -51,8 +56,18 @@ public:
     void handleRequest(const Poco::Net::HTTPRequest& request,
                        const std::shared_ptr<StreamSocket>& socket) override
     {
-        OxOOL::HttpHelper::sendResponseAndShutdown(socket, "<H1>This is an example module.</H1>",
-            Poco::Net::HTTPResponse::HTTP_OK, "text/html; charset=utf-8");
+        bool handled = false; // Set to true if the request is handled.
+
+        // Write your own code to handle the request.
+        /* OxOOL::HttpHelper::sendResponseAndShutdown(socket, "<H1>Hello world.</H1>",
+            Poco::Net::HTTPResponse::HTTP_OK, "text/html; charset=utf-8"); */
+
+
+        // If you are serving static content, When necessary,
+        // you can leave it to the base class to do it for you.
+        if (!handled)
+            OxOOL::Module::Base::handleRequest(request, socket);
+
     }
 #endif // ENABLE_API_SERVICE
 
@@ -60,11 +75,17 @@ public:
     /// @brief 處理前端 Client 模組傳送的 Web Socket 訊息
     ///        Handle messages from the front-end Client module.
     ///        If you want to handle the message from the client, you should override this function.
-    /// @param clientSession
+    /// @param sion
     /// @param tokens
-    void handleClientMessage(const std::shared_ptr<OxOOL::net::StreamSocket>& socket,
+    void handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                              const StringVector& tokens) override
-    {
+    {clientSes
+        if (tokens.equals(0, "ping"))
+        {
+            sendTextFrameToClient(clientSession, "pong");
+        } else {
+            sendTextFrameToClient(clientSession, "unknowncommand: " + tokens[0]);
+        }
     }
 
     /// @brief 處理後臺 kit 傳送回來的訊息
@@ -74,7 +95,7 @@ public:
     /// @param tokens
     /// @return true: 有處理, false: 沒有處理
     bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
-                                          const std::shared_ptr<Message>& payload) override
+                                  const std::shared_ptr<Message>& payload) override
     {
         return false; // Not handled.
     }
@@ -85,12 +106,12 @@ public:
     /// Handle console Websocket messages.
     std::string handleAdminMessage(const StringVector& tokens) override
     {
-        if (tokens.equals(0, "sayHello"))
+        if (tokens.equals(0, "ping"))
         {
-            return "respond HELLO";
+            return "pong";
         }
 
-        return "";
+        return "unknowncommand: " + tokens[0];
     }
 #endif // ENABLE_ADMIN
 };

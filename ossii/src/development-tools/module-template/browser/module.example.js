@@ -21,6 +21,10 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 	 * 2. this.getDetail() get the detail object of this module
 	 */
 	initialize: function () {
+		// this.onModuleMessage() can receive 'pong' message.
+		// The fragment responding to 'pong' is written in handleClientMessage() of Module.cpp
+		this.sendMessage('ping');
+
 		// Add your own initialization code here
 	},
 
@@ -68,13 +72,19 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 	 */
 	onModuleMessage: function (textMsg) {
 		// Process the module message here
+		// Process the module message here
+		if (textMsg.startsWith('pong')) {
+			console.debug('I got my service response pong.');
+		} else {
+			coonsole.debug('other msg: ', textMsg);
+		}
 	},
 
 	/**
 	 * Send message to the owning service module.
 	 *
 	 * @description Send message to the server, the message will be prefixed with the module ID
-	 *              so the server can route the message to the correct server module.
+	 *              so the server can route the message to the you own service module.
 	 *              The message will be sent to the server as '<module-id>message'
 	 *
 	 *              If you wont to send message to the server without prefix, use app.socket.sendMessage()

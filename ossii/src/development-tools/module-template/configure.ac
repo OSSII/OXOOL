@@ -21,6 +21,11 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_SUBST([MODULE_NAME], m4_defn([module_NAME]))
 
+# Set the application name
+APP_NAME="${MODULE_NAME}"
+AC_DEFINE_UNQUOTED([APP_NAME],["$APP_NAME"],[The user-visible name of the app you build.])
+AC_SUBST(APP_NAME)
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
