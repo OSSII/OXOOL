@@ -39,6 +39,11 @@ std::string convertUserHome(const std::string& path);
 std::string encodeURIComponent(const std::string& uri,
                                const std::string& reserved = ",/?:@&=+$#");
 
+/// @brief
+/// @param uri
+/// @return
+std::string decodeURIComponent(const std::string& uri);
+
 /// @brief 將字串轉成 16 進位字串
 /// @param hexString - 要轉換的資料
 /// @param data - 轉換後的資料

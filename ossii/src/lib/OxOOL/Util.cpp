@@ -98,6 +98,13 @@ std::string encodeURIComponent(const std::string& uri, const std::string& reserv
     return encoded;
 }
 
+std::string decodeURIComponent(const std::string& uri)
+{
+    std::string decoded;
+    Poco::URI::decode(uri, decoded);
+    return decoded;
+}
+
 template <typename T>
 bool dataFromHexString(const std::string& hexString, T& data)
 {
