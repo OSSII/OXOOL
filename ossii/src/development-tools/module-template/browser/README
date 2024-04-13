@@ -1,0 +1,7 @@
+Implementation browser module:
+==============================
+
+* You just need to rename <module.example.js> to <module.js>
+
+Then implement the necessary methods according to the instructions in module.js.
+Then add related methods as needed.

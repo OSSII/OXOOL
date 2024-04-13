@@ -1,0 +1,7 @@
+Implementation admin module:
+============================
+
+* You just need to rename <admin.example.js> to <admin.js>
+
+Then implement the necessary methods according to the instructions in admin.js.
+Then add related methods as needed.

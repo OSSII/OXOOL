@@ -243,7 +243,9 @@ protected:
         // 範本目錄內，需有如下檔案
         const std::vector<std::string> requiredFiles =
         {
-            "browser/module.js",
+            "README.md",
+            "admin/admin.example.js",
+            "browser/module.example.js",
             "configure.ac",
             "debian/changelog",
             "debian/control.in",

@@ -3,7 +3,26 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = .
 
+# JavaScript files, including html/ , browser/ and admin/
+JS_FILES = $(shell find html/ browser/ admin/ -name '*.js')
+# Generate POT file
+pot:
+	@echo "Generating POT file..."
+	$(MKDIR_P) po
+	@xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output="po/@MODULE_NAME@.pot" \
+	$(JS_FILES)
+
+	@msguniq -w 78 -t UTF-8 po/@MODULE_NAME@.pot > po/@MODULE_NAME@.pot.new; mv po/@MODULE_NAME@.pot.new po/@MODULE_NAME@.pot
+
+l10n: pot
+	@for i in $(wildcard $(srcdir)/po/*.po); do \
+		msgmerge --update --backup=off $$i po/@MODULE_NAME@.pot; \
+		echo "Updated $$i"; \
+	done
+
 EXTRA_DIST = \
+	util/po2json.py \
+	util/mkl10nfiles.sh \
 	@PACKAGE_TARNAME@.spec \
 	debian/changelog \
 	debian/compat \
@@ -63,12 +82,6 @@ if ENABLE_ADMIN
 	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/admin
 endif
 
-# JavaScript files, including html/ , browser/ and admin/
-JS_FILES = $(shell find html/ browser/ admin/ -name '*.js')
-# Generate POT file
-pot:
-	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/@MODULE_NAME@.pot \
-		$(JS_FILES)
 
 run: all
 	@./test.sh "@MODULE_NAME@.xml"

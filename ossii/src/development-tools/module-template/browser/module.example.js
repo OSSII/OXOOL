@@ -15,11 +15,13 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 	/**
 	 * Initialize the module.
 	 *
-	 * 呼叫前，已設定：
-	 *      this.base 爲 L.ModuleManager
-	 *      this.details 爲本模組的 details
+	 * When implementing this module, the system has built-in several methods for you:
+	 * -------------------------------------------------------------------------------
+	 * 1. this.base is L.ModuleManager
+	 * 2. this.getDetail() get the detail object of this module
 	 */
 	initialize: function () {
+		// Add your own initialization code here
 	},
 
 	/**
@@ -41,7 +43,7 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 	 */
 	onRemove: function (map) {
 
-		// Unregister the onmessage event
+		// Unregister the onmessage event, if registered previously.
 		// map.off("onmessage", this.onMessage, this);
 	},
 
@@ -56,18 +58,20 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 	 * @param {any} e.img - the img data
 	 */
 	onMessage: function (e) {
+		// Process the message here
 	},
 
 	/**
-	 * Process messages from the owning server module.
+	 * Process messages from the owning service module.
 	 *
 	 * @param {string} textMsg
 	 */
 	onModuleMessage: function (textMsg) {
+		// Process the module message here
 	},
 
 	/**
-	 * Send message to the owning server module.
+	 * Send message to the owning service module.
 	 *
 	 * @description Send message to the server, the message will be prefixed with the module ID
 	 *              so the server can route the message to the correct server module.
@@ -83,7 +87,7 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 	},
 
 	/******************************************************************
-	 * Add your own functions here
+	 * Add your own methods here
 	 ******************************************************************/
 
 });

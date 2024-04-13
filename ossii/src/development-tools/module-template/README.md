@@ -1,5 +1,17 @@
 ## OxOffice Online Module.
 
+**Module name:** %MODULE_NAME%
+
+**Summary:** %MODULE_SUMMARY%
+
+**License:** %MODULE_LICENSE%
+
+**Author:** %MODULE_AUTHOR%
+
+**Description:** %MODULE_DESCRIPTION%
+
+--------------------------------------------
+
 **src/**
 
 C++ based shared library for module. Automatically loaded during OxOOL execution time,and manage the specified service URI.
@@ -12,19 +24,27 @@ If you don't want to implement a C++ module, you can leave <load>xxxx.so<load> i
 
 The default web page name is index.html or index.php (will be supported in the future).
 
+**browser/**
+
+If you want to add online editing functionality, you can implement the browser-side Javascript module in this directory.
+
+For implementation details, please refer to the README file in this directory.
+
 **admin/**
 
 If you have a console management interface, Please enter the name of the option to be displayed, Defined in <adminItem> in module.xml.in.
 
 This will allow you to see your admin interface at the following URL:
 
-http(s)://yourhost:9980/browser/dist/admin/admin.html
+http(s)://yourhost:9980/browser/dist/admin/
 
 Console management uses some fremawork:
 
-JQuery, JQuery-UI, and Bootstrap 5.
+JQuery 3.7.1 and Bootstrap 5.3
 
 You can also include other javascript packages in your project.
+
+For implementation details, please refer to the README file in this directory.
 
 **module.xml.in**
 
@@ -72,9 +92,27 @@ Please use 'maek run' to enable the test environment.
 Then in the project directory, modify and compile the code, To view the results locally, you can enter the command:
 
 ```
-test.sh <project name>.xml
+make run
 ```
 
 Then you can test your mod through browser or curl command.
 
-Enjoy.
+##### __Support various languages:__
+
+```
+make l10n
+```
+
+You will then see a file called %MODULE_NAME%.pot in the po directory.
+
+You can copy %MODULE_NAME%.pot as an iso 639-1 compliant .po file. For example:
+```
+cp po/%MODULE_NAME%.pot po/zh-TW.po
+```
+
+Then edit it with any text editor or proprietary po editor.
+When installed in this way, the relevant json format files will be automatically generated.
+
+By the way, please remind: copy the new po file, please don't forget to use 'git add' to add it.
+
+## Enjoy.
