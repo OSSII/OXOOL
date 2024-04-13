@@ -7,6 +7,7 @@
 
 OxOOL_includedir = $(includedir)/OxOOL
 OxOOL_include_HEADERS = \
+	$(top_srcdir)/config_version.h \
 	OxOOL/OxOOL.h \
 	OxOOL/ModuleManager.h \
 	OxOOL/HttpHelper.h \
@@ -116,5 +117,11 @@ wsd_headers = \
 
 wsd_includedir = $(includedir)/OxOOL/wsd
 wsd_include_HEADERS = $(wsd_headers)
+
+test_headers = \
+	$(top_srcdir)/test/testlog.hpp
+
+test_includedir = $(includedir)/OxOOL/test
+test_include_HEADERS = $(test_headers)
 
 # vim: set noet sw=4 ts=4:
