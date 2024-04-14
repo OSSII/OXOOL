@@ -7,8 +7,6 @@ SUBDIRS = .
 JS_FILES = $(shell find html/ browser/ admin/ -name '*.js')
 # Generate POT file
 pot:
-	@echo "Generating POT file..."
-	$(MKDIR_P) po
 	@xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output="po/@MODULE_NAME@.pot" \
 	$(JS_FILES)
 
@@ -20,9 +18,26 @@ l10n: pot
 		echo "Updated $$i"; \
 	done
 
+convert_po2json:
+	@$(MKDIR_P) $(srcdir)/browser/l10n
+	@for i in $(wildcard $(srcdir)/po/*.po); do \
+		lang=$$(basename $$i .po); \
+		$(top_srcdir)/utils/po2json.py --quiet $$i -o $(srcdir)/browser/l10n/$$lang.json; \
+		echo "Converted $$i to browser/l10n/$$lang.json"; \
+	done
+
+.PHONY: build-another
+
+all-local: build-another
+
+build-another: \
+	convert_po2json
+
+
 EXTRA_DIST = \
-	util/po2json.py \
-	util/mkl10nfiles.sh \
+	browser/* \
+	po/* \
+	utils/po2json.py \
 	@PACKAGE_TARNAME@.spec \
 	debian/changelog \
 	debian/compat \
@@ -32,10 +47,6 @@ EXTRA_DIST = \
 
 if CUSTOM_HTML
 EXTRA_DIST += html
-endif
-
-if ENABLE_BROWSER
-EXTRA_DIST += browser
 endif
 
 if ENABLE_ADMIN
@@ -58,13 +69,11 @@ module_LTLIBRARIES = @MODULE_NAME@.la
 endif
 
 install-data-local:
+	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/l10n
+	cp -aR l10n/. $(DESTDIR)/$(MODULE_DATA_DIR)/l10n
 if CUSTOM_HTML
 	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/html
 	cp -aR html/. $(DESTDIR)/$(MODULE_DATA_DIR)/html
-endif
-if ENABLE_BROWSER
-	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/browser
-	cp -aR browser/. $(DESTDIR)/$(MODULE_DATA_DIR)/browser
 endif
 if ENABLE_ADMIN
 	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/admin
@@ -72,16 +81,17 @@ if ENABLE_ADMIN
 endif
 
 uninstall-local:
+	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/l10n
 if CUSTOM_HTML
 	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/html
-endif
-if ENABLE_BROWSER
-	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/browser
 endif
 if ENABLE_ADMIN
 	rm -fr $(DESTDIR)/$(MODULE_DATA_DIR)/admin
 endif
 
+# Clean up
+clean-local:
+	rm -fr browser/l10n
 
 run: all
 	@./test.sh "@MODULE_NAME@.xml"

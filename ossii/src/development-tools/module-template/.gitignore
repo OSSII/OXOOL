@@ -34,3 +34,6 @@ m4
 *.lo
 *.la
 *.tar.gz
+
+debian/control
+browser/l10n/*

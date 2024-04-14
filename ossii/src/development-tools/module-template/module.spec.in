@@ -36,6 +36,9 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 
 %files
 %config(noreplace) %attr(640, lool, root) @OXOOL_MODULE_CONFIG_DIR@/*
+%dir @OXOOL_MODULE_DATA_DIR@/@MODULE_NAME@
+@OXOOL_MODULE_DATA_DIR@/@MODULE_NAME@/l10n/*
+
 %if "%{BUILD_SHARED_LIBRARY}" == "true"
 @OXOOL_MODULES_DIR@/*
 %endif

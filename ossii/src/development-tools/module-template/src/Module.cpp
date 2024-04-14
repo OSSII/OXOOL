@@ -79,11 +79,13 @@ public:
     /// @param tokens
     void handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                              const StringVector& tokens) override
-    {clientSes
+    {
         if (tokens.equals(0, "ping"))
         {
             sendTextFrameToClient(clientSession, "pong");
-        } else {
+        }
+        else
+        {
             sendTextFrameToClient(clientSession, "unknowncommand: " + tokens[0]);
         }
     }

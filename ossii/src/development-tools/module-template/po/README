@@ -1,0 +1,5 @@
+Every time the original text is updated, please execute the following command in the module directory:
+
+$ make l10n
+
+Then translate the new or modified parts in each language.
