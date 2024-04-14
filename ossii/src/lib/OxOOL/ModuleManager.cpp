@@ -225,8 +225,9 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
         OxOOL::Module::Ptr module = moduleLib->getModule();
         module->maId = ID; // 設定模組 ID
 
-        // 檢查是否有 browser 目錄（需在模組目錄下有 browser 目錄，且 browser 目錄下還有 module.js）
-        if (Poco::File(documentRoot + "/browser/module.js").exists())
+        // 檢查是否有 browser 目錄（需在模組目錄下有 browser 目錄，且 browser 目錄下還有 module.js 或者 l10n 目錄）
+        if (Poco::File(documentRoot + "/browser/module.js").exists() ||
+            Poco::File(documentRoot + "/browser/l10n").exists())
         {
             const std::string browserURI = mpBrowserService->maDetail.serviceURI + ID + "/"; // 用 UUID 作爲 URI，避免　URI 固定
             mpBrowserService->registerBrowserURI(browserURI); // 註冊 browser URI，讓 ModuleService 處理
@@ -652,15 +653,14 @@ Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::
     // 若有指定語系，嘗試翻譯
     if (!langTag.empty())
     {
-        std::unique_ptr<OxOOL::L10NTranslator> translator =
-            std::make_unique<OxOOL::L10NTranslator>(langTag, detail.name, true);
+        OxOOL::L10NTranslator translator(langTag, module);
 
-        detail.version = translator->getTranslation(detail.version);
-        detail.summary = translator->getTranslation(detail.summary);
-        detail.author = translator->getTranslation(detail.author);
-        detail.license = translator->getTranslation(detail.license);
-        detail.description = translator->getTranslation(detail.description);
-        detail.adminItem = translator->getTranslation(detail.adminItem);
+        detail.version = translator._(detail.version);
+        detail.summary = translator._(detail.summary);
+        detail.author = translator._(detail.author);
+        detail.license = translator._(detail.license);
+        detail.description = translator._(detail.description);
+        detail.adminItem = translator._(detail.adminItem);
     }
 
     json->set("id", module->maId);

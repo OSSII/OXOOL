@@ -155,7 +155,7 @@ private:
 
     Detail maDetail; // 模組詳細資訊
     std::string maConfigFile; // 模組的配置檔完整路徑
-    std::string maRootPath; // 模組文件絕對路徑
+    std::string maRootPath; // 模組文件絕對路徑(!!注意!!沒有最後的 '/' 字元，而 maBrowserURI 和 maAdminURI 有)
     std::string maBrowserURI; // 模組的前端服務位址，若模組有前端服務(browser/ 下有 module.js)，這裏會是 /browser/module/{maId}/
     std::string maAdminURI; // 模組的後臺管理位址，若模組有後臺管理(admin/ 下有 admin.js)，這裏會是 /browser/dist/admin/module/{maId}/
 };

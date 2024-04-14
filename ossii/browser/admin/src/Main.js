@@ -224,6 +224,8 @@
 				moduleURI = './standard/' + detail.id + '/';
 			} else { // 外部模組
 				moduleURI = detail.adminURI;
+				var l10URI = detail.browserURI + 'localizations'; // 透過 localizations API 取得 l10n list
+				String.toLocaleString(l10URI);
 			}
 
 			// 載入 admin.html 頁面

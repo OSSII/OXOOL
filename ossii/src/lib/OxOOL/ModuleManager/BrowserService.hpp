@@ -44,6 +44,16 @@ private:
     /// @brief 檢查是否是有效的 browser URI
     bool isValidBrowserURI(const Poco::Net::HTTPRequest& request);
 
+    std::mutex maModuleLocalizationCacheMutex; // 模組本地化語言 URI 快取的鎖
+    std::map<std::string, std::string> maModuleLocalizationCache; // 模組本地化語言 URI 快取
+
+    /// @brief 傳送模組本地化語言 URI 列表
+    /// @param module - 模組
+    /// @param request - HTTP 請求
+    /// @param socket - 連線 socket
+    void sendLocalizationList(const OxOOL::Module::Ptr module,
+                              const std::shared_ptr<StreamSocket>& socket);
+
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

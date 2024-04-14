@@ -9,12 +9,13 @@
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/Module/Base.h>
 
-#include <Poco/Net/HTTPRequest.h>
-#include <Poco/File.h>
-#include <Poco/FileStream.h>
-#include <Poco/StreamCopier.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Object.h>
+
+namespace Poco::Net
+{
+    class HTTPRequest;
+}
+
 
 namespace OxOOL
 {
@@ -24,12 +25,10 @@ class L10NTranslator
     L10NTranslator() = delete;
 public:
     L10NTranslator(const std::string& language,
-                   const std::string& moduleName,
-                   const bool isAdmin = false);
+                  const OxOOL::Module::Ptr& module);
 
     L10NTranslator(const Poco::Net::HTTPRequest& request,
-                   const OxOOL::Module::Ptr& module,
-                   const bool isAdmin = false);
+                   const OxOOL::Module::Ptr& module);
 
     virtual ~L10NTranslator() {};
 
@@ -40,10 +39,12 @@ public:
     /// @brief 取得翻譯結果
     /// @param message 原文
     /// @return 翻譯結果
-    const std::string getTranslation(std::string& message) const;
+    const std::string _(std::string& message) const;
 
 private:
-    void makeTranslator(const bool isAdmin = false);
+    void setLanguage(const std::string& language);
+
+    void makeTranslator();
 
 private:
     /// @brief 所屬模組
