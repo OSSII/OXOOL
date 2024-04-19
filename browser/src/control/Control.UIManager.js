@@ -147,6 +147,7 @@ L.Control.UIManager = L.Control.extend({
 		else {
 			this.loadLightMode();
 		}
+		this.activateDarkModeInCore(selectedMode);
 	},
 
 	activateDarkModeInCore: function(activate) {
