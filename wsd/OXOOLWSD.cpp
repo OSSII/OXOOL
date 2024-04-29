@@ -1040,6 +1040,7 @@ std::string OXOOLWSD::OverrideWatermark;
 std::set<const Poco::Util::AbstractConfiguration*> OXOOLWSD::PluginConfigurations;
 std::chrono::steady_clock::time_point OXOOLWSD::StartTime;
 bool OXOOLWSD::IsBindMountingEnabled = true;
+bool OXOOLWSD::IndirectionServerEnabled = false;
 
 // If you add global state please update dumpState below too
 
@@ -2864,6 +2865,7 @@ void OXOOLWSD::innerInitialize(Application& self)
     NoCapsForKit =
         Util::isKitInProcess() || !getConfigValue<bool>(conf, "security.capabilities", true);
     AdminEnabled = getConfigValue<bool>(conf, "admin_console.enable", true);
+    IndirectionServerEnabled = !getConfigValue<std::string>(conf, "indirection_endpoint.url", "").empty();
 #if ENABLE_DEBUG
     if (Util::isKitInProcess())
         SingleKit = true;
@@ -3519,6 +3521,17 @@ void OXOOLWSD::autoSave(const std::string& docKey)
         std::shared_ptr<DocumentBroker> docBroker = docBrokerIt->second;
         docBroker->addCallback(
             [docBroker]() { docBroker->autoSave(/*force=*/true, /*dontSaveIfUnmodified=*/true); });
+    }
+}
+
+void OXOOLWSD::setMigrationMsgReceived(const std::string& docKey)
+{
+    std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
+    auto docBrokerIt = DocBrokers.find(docKey);
+    if (docBrokerIt != DocBrokers.end())
+    {
+        std::shared_ptr<DocumentBroker> docBroker = docBrokerIt->second;
+        docBroker->addCallback([docBroker]() { docBroker->setMigrationMsgReceived(); });
     }
 }
 

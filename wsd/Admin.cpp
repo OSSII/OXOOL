@@ -369,6 +369,8 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             oss << "\"routeToken\"" << ':' << '"' << routeToken << '"' << ',';
             oss << "\"serverId\"" << ':' << '"' << serverId << '"' << '}';
             OXOOLWSD::alertUserInternal(dockey, oss.str());
+            if (SigUtil::getShutdownRequestFlag())
+                OXOOLWSD::setMigrationMsgReceived(dockey);
         }
         else
         {
@@ -412,6 +414,10 @@ void AdminSocketHandler::handleMessage(const std::vector<char> &payload)
             LOG_DBG("Invalid auth token");
             sendTextFrame("InvalidAuthToken " + id);
         }
+    }
+    else if(tokens.equals(0, "closemonitor"))
+    {
+       _admin->setCloseMonitorFlag();
     }
     // Added by Firefly <firefly@ossii.com.tw>
     else
@@ -705,6 +711,32 @@ void Admin::pollingThread()
         LOG_TRC("Admin poll for " << timeout);
         poll(timeout); // continue with ms for admin, settings etc.
     }
+
+    if (!OXOOLWSD::IndirectionServerEnabled)
+        return;
+
+    _model.sendShutdownReceivedMsg();
+
+    static const std::chrono::microseconds closeMonitorMsgTimeout = std::chrono::seconds(
+        OXOOLWSD::getConfigValue<int>("indirection_endpoint.migration_timeout_secs", 180));
+
+    std::chrono::time_point<std::chrono::steady_clock> closeMonitorMsgStartTime =
+        std::chrono::steady_clock::now();
+    while (!_closeMonitor)
+    {
+        LOG_DBG("Waiting for migration to complete before closing the monitor");
+        const auto now = std::chrono::steady_clock::now();
+        const auto elapsedMicroS =
+            std::chrono::duration_cast<std::chrono::microseconds>(now - closeMonitorMsgStartTime);
+        if (elapsedMicroS > closeMonitorMsgTimeout)
+        {
+            LOG_WRN("Timed out waiting for the migration server to respond within the configured "
+                    "timeout of "
+                    << closeMonitorMsgTimeout);
+            break;
+        }
+        poll(closeMonitorMsgTimeout - elapsedMicroS);
+    }
 }
 
 void Admin::modificationAlert(const std::string& dockey, pid_t pid, bool value){
@@ -920,6 +952,11 @@ void Admin::addLostKitsTerminated(unsigned lostKitsTerminated)
 void Admin::routeTokenSanityCheck()
 {
     addCallback([=] { _model.routeTokenSanityCheck(); });
+}
+
+void Admin::sendShutdownReceivedMsg()
+{
+    addCallback([this] { _model.sendShutdownReceivedMsg(); });
 }
 
 void Admin::notifyForkit()

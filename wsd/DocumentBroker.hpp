@@ -562,6 +562,8 @@ public:
 
     void onUrpMessage(const char* data, size_t len);
 
+    void setMigrationMsgReceived() { _migrateMsgReceived = true; }
+
 #if !MOBILEAPP && !WASMAPP
     /// Switch between Online and Offline modes.
     void switchMode(const std::shared_ptr<ClientSession>& session, const std::string& mode);
@@ -1329,6 +1331,7 @@ private:
     std::string _uriJailedAnonym;
     std::string _jailId;
     std::string _filename;
+    std::atomic<bool> _migrateMsgReceived = false;
 
     /// The state of the document.
     /// This regulates all other primary operations.
