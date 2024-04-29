@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 ADMIN_SRC_JS = \
+	$(top_srcdir)/ossii/browser/js/l10n.js \
 	src/Base.js \
 	src/Util.js \
 	src/AdminSocketBase.js \
