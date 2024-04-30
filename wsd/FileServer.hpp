@@ -63,11 +63,6 @@ public:
     static bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, Poco::Net::HTTPResponse& response);
     static bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, http::Response& response);
 
-    /// Added by Firefly <firefly@ossii.com.tw>
-    /// 檢查管理帳號及密碼是否與 oxoolwsd.xml 中的相符
-    static bool isConfigAuthMatch(const std::string& userProvidedUsr,
-                                  const std::string& userProvidedPwd);
-
     static void handleRequest(const Poco::Net::HTTPRequest& request,
                               const RequestDetails &requestDetails,
                               Poco::MemoryInputStream& message,
