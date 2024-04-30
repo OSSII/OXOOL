@@ -8,8 +8,13 @@
 #include <config.h>
 #include <config_unused.h>
 
+#include <iomanip>
+#include <openssl/rand.h>
+
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/ModuleManager.h>
+
+#include <Poco/Util/Application.h>
 
 #include <common/Message.hpp>
 #include <common/StringVector.hpp>
@@ -21,6 +26,9 @@ namespace OxOOL
 {
 std::string ENV::Version;
 std::string ENV::VersionHash;
+
+std::string ENV::ConfigFile;
+
 std::string ENV::HttpAgentString;
 std::string ENV::HttpServerString;
 
@@ -49,6 +57,8 @@ void ENV::initialize()
 
     ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
     ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;
+
+    ENV::ConfigFile        = OXOOLWSD::ConfigFile;
 
     ENV::FileServerRoot   = OXOOLWSD::FileServerRoot;
     ENV::ModuleDir        = OXOOL_MODULE_DIR;
@@ -118,6 +128,81 @@ namespace OxOOL
     std::string handleAdminMessage(const StringVector& tokens)
     {
         return ModuleMgr.handleAdminMessage(tokens);
+    }
+
+    bool isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userProvidedPwd)
+    {
+        const auto& config = Poco::Util::Application::instance().config();
+        const std::string& user = config.getString("admin_console.username", "");
+
+        // Check for the username
+        if (user.empty())
+        {
+            LOG_ERR("Admin Console username missing, admin console disabled.");
+            return false;
+        }
+        else if (user != userProvidedUsr)
+        {
+            LOG_ERR("Admin Console wrong username.");
+            return false;
+        }
+
+        const char useOxoolconfig[] = " Use Oxoolconfig to configure the admin password.";
+
+        // do we have secure_password?
+        if (config.has("admin_console.secure_password"))
+        {
+            const std::string securePass = config.getString("admin_console.secure_password", "");
+            if (securePass.empty())
+            {
+                LOG_ERR("Admin Console secure password is empty, denying access." << useOxoolconfig);
+                return false;
+            }
+
+#if HAVE_PKCS5_PBKDF2_HMAC
+            // Extract the salt from the config
+            std::vector<unsigned char> saltData;
+            StringVector tokens = StringVector::tokenize(securePass, '.');
+            if (tokens.size() != 5 ||
+                !tokens.equals(0, "pbkdf2") ||
+                !tokens.equals(1, "sha512") ||
+                !Util::dataFromHexString(tokens[3], saltData))
+            {
+                LOG_ERR("Incorrect format detected for secure_password in config file." << useOxoolconfig);
+                return false;
+            }
+
+            unsigned char userProvidedPwdHash[tokens[4].size() / 2];
+            PKCS5_PBKDF2_HMAC(userProvidedPwd.c_str(), -1,
+                            saltData.data(), saltData.size(),
+                            std::stoi(tokens[2]),
+                            EVP_sha512(),
+                            sizeof userProvidedPwdHash, userProvidedPwdHash);
+
+            std::stringstream stream;
+            for (unsigned long j = 0; j < sizeof userProvidedPwdHash; ++j)
+                stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(userProvidedPwdHash[j]);
+
+            // now compare the hashed user-provided pwd against the stored hash
+            return tokens.equals(4, stream.str());
+#else
+            const std::string pass = config.getString("admin_console.password", "");
+            LOG_ERR("The config file has admin_console.secure_password setting, "
+                    << "but this application was compiled with old OpenSSL version, "
+                    << "and this setting cannot be used." << (!pass.empty()? " Falling back to plain text password.": ""));
+
+            // careful, a fall-through!
+#endif
+        }
+
+        const std::string pass = config.getString("admin_console.password", "");
+        if (pass.empty())
+        {
+            LOG_ERR("Admin Console password is empty, denying access." << useOxoolconfig);
+            return false;
+        }
+
+        return pass == userProvidedPwd;
     }
 
 } // namespace OxOOL

@@ -5,12 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+
+#include <iomanip>
+#include <openssl/rand.h>
+
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/Util.h>
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/Module/Base.h>
 #include <OxOOL/Module/Map.h>
 #include <OxOOL/ModuleManager.h>
+#include <OxOOL/XMLConfig.h>
 
 #include <Poco/File.h>
 #include <Poco/Path.h>
@@ -26,6 +31,10 @@
 #include <wsd/Auth.hpp>
 
 #include "AdminService.hpp"
+
+#define pwdSaltLength 128
+#define pwdIterations 10000
+#define pwdHashLength 128
 
 std::string AdminService::getVersion()
 {
@@ -147,6 +156,67 @@ std::string AdminService::handleAdminMessage(const StringVector& tokens)
             return "modules: " + OxOOL::ModuleManager::instance().getAllModuleDetailsJsonString(langTag);
         else
             return "adminmodules: " + OxOOL::ModuleManager::instance().getAdminModuleDetailsJsonString(langTag);
+    }
+    // 檢查管理帳號密碼是否與 oxoolwsd.xml 中的一致
+    // 格式: isConfigAuthOk <帳號> <密碼>
+    else if (tokens.equals(0, "isConfigAuthOk") && tokens.size() == 3)
+    {
+        if (OxOOL::isConfigAuthOk(tokens[1], tokens[2]))
+        {
+            return "ConfigAuthOk";
+        }
+        else
+        {
+            return "ConfigAuthWrong";
+        }
+    }
+    // 變更管理帳號及密碼
+    else if (tokens.equals(0, "setAdminPassword") && tokens.size() == 3)
+    {
+        OxOOL::XMLConfig config;
+        config.load(OxOOL::ENV::ConfigFile);
+        std::string adminUser = tokens[1];
+        std::string adminPwd  = tokens[2];
+        config.setString("admin_console.username", adminUser); // 帳號用明碼儲存
+#if HAVE_PKCS5_PBKDF2_HMAC
+        unsigned char pwdhash[pwdHashLength];
+        unsigned char salt[pwdSaltLength];
+        RAND_bytes(salt, pwdSaltLength);
+        // Do the magic !
+        PKCS5_PBKDF2_HMAC(adminPwd.c_str(), -1,
+                          salt, pwdSaltLength,
+                          pwdIterations,
+                          EVP_sha512(),
+                          pwdHashLength, pwdhash);
+
+        std::stringstream stream;
+        // Make salt randomness readable
+        for (unsigned j = 0; j < pwdSaltLength; ++j)
+            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(salt[j]);
+        const std::string saltHash = stream.str();
+
+        // Clear our used hex stream to make space for password hash
+        stream.str("");
+        stream.clear();
+        // Make the hashed password readable
+        for (unsigned j = 0; j < pwdHashLength; ++j)
+            stream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(pwdhash[j]);
+        const std::string passwordHash = stream.str();
+
+        std::stringstream pwdConfigValue("pbkdf2.sha512.", std::ios_base::in | std::ios_base::out | std::ios_base::ate);
+        pwdConfigValue << std::to_string(pwdIterations) << ".";
+        pwdConfigValue << saltHash << "." << passwordHash;
+        config.remove("admin_console.password");
+        config.setString("admin_console.secure_password[@desc]",
+                              "Salt and password hash combination generated using PBKDF2 with SHA512 digest.");
+        config.setString("admin_console.secure_password", pwdConfigValue.str());
+#else
+        config.remove("admin_console.secure_password");
+        config.setString("admin_console.password[@desc]", "The password is stored in plain code.");
+        config.setString("admin_console.password", adminPwd);
+#endif
+        config.save(OxOOL::ENV::ConfigFile);
+        return "setAdminPasswordOk";
     }
 
     return "";

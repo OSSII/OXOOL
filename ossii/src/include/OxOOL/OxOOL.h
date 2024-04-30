@@ -50,6 +50,8 @@ public:
     static std::string Version; // PACKAGE_VERSION
     static std::string VersionHash; // OXOOLWSD_VERSION_HASH
 
+    static std::string ConfigFile; // Configuration file
+
     static std::string HttpServerString; // "OxOOL HTTP Server " + ENV::Version
     static std::string HttpAgentString; // "OxOOL HTTP Agent " + ENV::Version
 
@@ -96,6 +98,12 @@ bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSessio
                               const std::shared_ptr<Message>& payload);
 
 std::string handleAdminMessage(const StringVector& tokens);
+
+/// @brief Check user and password if match the configuration.
+/// @param userProvidedUsr
+/// @param userProvidedPwd
+/// @return true - match, false - not match
+bool isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userProvidedPwd);
 
 } // namespace OxOOL
 

@@ -473,14 +473,14 @@ COMMON_PARAMS = \
 
 run: setup-wsd
 	.libs/oxoolwsd $(COMMON_PARAMS) \
-			--config-file="$(abs_top_srcdir)/@PACKAGE@.xml" \
+			--config-file="$(abs_top_srcdir)/@WSD_NAME@.xml" \
 			--o:security.capabilities="$(CAPABILITIES)" \
 			--o:logging.file[@enable]=${OUTPUT_TO_FILE} --o:logging.level=trace \
 			--o:trace_event[@enable]=true
 
 if ENABLE_DEBUG
 run-one: setup-wsd
-	./oxoolwsd $(COMMON_PARAMS) \
+	.libs/oxoolwsd $(COMMON_PARAMS) \
 			--o:security.capabilities="$(CAPABILITIES)" \
 			--o:logging.file[@enable]=true --o:logging.level=trace \
 			--singlekit
@@ -488,7 +488,7 @@ run-one: setup-wsd
 run-inproc: setup-wsd
 	@echo "Launching oxoolwsd-inproc"
 	.libs/oxoolwsd-inproc $(COMMON_PARAMS) \
-			--config-file="$(abs_top_srcdir)/@PACKAGE@.xml" \
+			--config-file="$(abs_top_srcdir)/@WSD_NAME@.xml" \
 			--o:security.capabilities="$(CAPABILITIES)" \
 			--o:logging.file[@enable]=true --o:logging.level=trace
 
@@ -496,7 +496,7 @@ run-massif-inproc: setup-wsd
 	@echo "Launching oxoolwsd under valgrind for single process"
 	valgrind --tool=massif --num-callers=64 --trace-children=no -v \
 		.libs/oxoolwsd-inproc $(COMMON_PARAMS) \
-      --config-file="$(abs_top_srcdir)/@PACKAGE@.xml" \
+      --config-file="$(abs_top_srcdir)/@WSD_NAME@.xml" \
       --o:security.capabilities="$(CAPABILITIES)" \
 			--o:logging.file[@enable]=false --o:logging.level=trace
 endif
