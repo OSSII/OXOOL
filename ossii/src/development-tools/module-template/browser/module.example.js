@@ -8,9 +8,41 @@
  * @license %MODULE_LICENSE%
  * @description %MODULE_DESCRIPTION%
  */
-/* global L */
+/* global L _ */
 
 L.Module.%MODULE_NAME% = L.Module.extend({
+
+	/**
+	 * Define menu items. Can be a single item or a submenu.
+	 */
+	menubar: {
+		// 'text' is for text document(writer)
+		'text': [
+		],
+		// 'spreadsheet' is for spreadsheet document(calc)
+		'spreadsheet': [
+
+		],
+		// 'presentation' is for presentation document(impress)
+		'presentation': [
+
+		],
+		// 'drawing' is for drawing document(draw)
+		'drawing': [
+		]
+	},
+
+	/**
+	 * Define toolbar items.
+	 */
+	toolbar: {
+	},
+
+	/**
+	 * Define notebookbar items.
+	 */
+	notebookbar: {
+	},
 
 	/**
 	 * Initialize the module.
@@ -78,6 +110,22 @@ L.Module.%MODULE_NAME% = L.Module.extend({
 		} else {
 			coonsole.debug('other msg: ', textMsg);
 		}
+	},
+
+	/**
+	 * Process commands from user interface.
+	 *
+	 * when the user clicks the menu item or notebookbar item or toolbar item,
+	 * the command will be sent to this function.
+	 *
+	 * command is the id of the menu item or notebookbar item or toolbar item.
+	 * so id should be unique.
+	 *
+	 * @description The command is sent from the user interface, you can process the command here.
+	 * @param {string} command
+	 */
+	onCommand: function (command) {
+		console.debug('Execute command: %s', command);
 	},
 
 	/**

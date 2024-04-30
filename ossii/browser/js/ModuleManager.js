@@ -15,8 +15,8 @@ L.Module = L.Class.extend({
 	 * @private
 	 *
 	 * @type {Object}
-	 * @property {string} id - Module ID
-	 * @property {object} handler - Module handler
+	 * @property {string} Module ID
+	 * @property {Object} Module handler
 	 *
 	 */
 	_modules: {},
@@ -37,8 +37,14 @@ L.Module = L.Class.extend({
 		this._loadBrowserModules();
 
 		this._map.on('doclayerinit', this._onDocLayerInit, this);
+		this._map.on('menubarReady', this._onMenubarReady, this);
 	},
 
+	/**
+	 * Add module
+	 * @param {object} moduleHandler
+	 * @param {object} detail
+	 */
 	add: function (moduleHandler, detail) {
 		if (moduleHandler) {
 			moduleHandler.include({
@@ -60,6 +66,10 @@ L.Module = L.Class.extend({
 		return this;
 	},
 
+	/**
+	 * Remove module
+	 * @param {string} id - Module ID
+	 */
 	remove: function (id) {
 		if (this._modules[id]) {
 			var handler = this._modules[id];
@@ -72,8 +82,32 @@ L.Module = L.Class.extend({
 	},
 
 	/**
-	 * Send message to the server
+	 * Execute module command
 	 *
+	 * @param {string} moduleId - Module ID
+	 * @param {string} command - Command
+	 */
+	executeModuleCommand: function (moduleId, command) {
+		// 取得 module handler
+		var handler = this._modules[moduleId];
+		if (handler) {
+			// Call module onCommand function
+			if (handler.onCommand) {
+				handler.onCommand(command);
+			} else {
+				console.error('Module %s does not have onCommand function', handler.detail.name);
+			}
+		} else {
+			console.error('Module ID(%s) handler not found', moduleId);
+		}
+	},
+
+	/**
+	 * Send message to the server
+	 * !!!NOTE: This function is only for the module to send message to the server
+	 * !!!NOTE: Do not use this function to send message to the server directly
+	 *
+	 * 這裏的 this 是模組，所以可以使用 this.detail 取得模組的 detail 物件
 	 *
 	 * @param {string} msg
 	 */
@@ -147,6 +181,13 @@ L.Module = L.Class.extend({
 
 		for (var i = 0; i < this.options.modules.length; i++) {
 			var detail = this.options.modules[i];
+			// Skip if no browserURI
+			if (!detail || detail.browserURI === '') {
+				continue;
+			}
+
+			this._modules[detail.id] = null;
+
 			this._asyncLoadModule(detail);
 		}
 	},
@@ -158,27 +199,62 @@ L.Module = L.Class.extend({
 	 * @returns {void}
 	 */
 	_asyncLoadModule: function (detail) {
-		// Skip if no browserURI
-		if (!detail || detail.browserURI === '') {
-			return;
-		}
+		var l10nURI = detail.browserURI + 'localizations';
+		String.toLocaleString(l10nURI);
 
 		var script = document.createElement('script');
 		var moduleName = detail.name;
+
+		script.type = 'text/javascript';
+		script.async = true;
 		script.src = detail.browserURI + 'module.js';
 		script.onload = function () {
-			// 檢查是否有 L.Modula[moduleName] 這個 class(模組 L.Module.{moduleName})
+			// 檢查是否有 L.Module[moduleName] 這個 class(模組 L.Module.{moduleName})
 			if (L.Module[moduleName]) {
 				this.add(L.Module[moduleName], detail);
 			} else {
 				console.error('Module class not found: ', moduleName);
+				delete this._modules[detail.id];
 			}
+			document.head.removeChild(script); // remove script tag
 		}.bind(this);
 		script.onerror = function () {
+			delete this._modules[detail.id];
 			console.error('Failed to load module: ', moduleName);
-		};
+			document.head.removeChild(script); // remove script tag
+		}.bind(this);
 
 		document.head.appendChild(script); // add script to head and load
+	},
+
+	_onMenubarReady: function () {
+		var loaded = true;
+		for (var moduleId in this._modules) {
+			if (this._modules[moduleId] === null) {
+				loaded = false;
+				break;
+			}
+		}
+
+		if (!loaded) {
+			setTimeout(L.bind(this._onMenubarReady, this), 10);
+			return;
+		}
+
+		var docType = this._map.getDocType();
+		// All modules are loaded
+		// Add modules menu items to the menubar
+		for (var moduleId in this._modules) {
+			var handler = this._modules[moduleId];
+			// if handler has menubar and menubar has docType
+			if (handler && handler.menubar && handler.menubar[docType]) {
+				var event = {
+					moduleId: moduleId,
+					menubar: handler.menubar[docType],
+				};
+				this._map.fire('addmodulemenu', event);
+			}
+		}
 	},
 
 });

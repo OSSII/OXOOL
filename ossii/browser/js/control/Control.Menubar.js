@@ -3,7 +3,7 @@
 * Control.Menubar
 */
 
-/* global $ _ _UNO L */
+/* global $ _ _UNO L app */
 L.Control.Menubar = L.Control.extend({
 	// TODO: Some mechanism to stop the need to copy duplicate menus (eg. Help, eg: mobiledrawing)
 	options: {
@@ -402,6 +402,8 @@ L.Control.Menubar = L.Control.extend({
 		},
 	},
 
+	_autoSeparatorIndex: 0, // 自動分隔符號索引
+
 	languages: [],
 
 	onAdd: function (map) {
@@ -428,6 +430,7 @@ L.Control.Menubar = L.Control.extend({
 		map.on('doclayerinit', this._onDocLayerInit, this);
 		//map.on('updatepermission', this._onRefresh, this);
 		map.on('addmenu', this._addMenu, this);
+		map.on('addmodulemenu', this._addModuleMenu, this);
 		map.on('commandvalues', this._onInitLanguagesMenu, this);
 		map.on('updatetoolbarcommandvalues', this._onStyleMenu, this);
 
@@ -444,6 +447,7 @@ L.Control.Menubar = L.Control.extend({
 		this._map.off('doclayerinit', this._onDocLayerInit, this);
 		//this._map.off('updatepermission', this._onRefresh, this);
 		this._map.off('addmenu', this._addMenu, this);
+		this._map.off('addmodulemenu', this._addModuleMenu, this);
 		this._map.off('commandvalues', this._onInitLanguagesMenu, this);
 		this._map.off('updatetoolbarcommandvalues', this._onStyleMenu, this);
 
@@ -494,6 +498,72 @@ L.Control.Menubar = L.Control.extend({
 		liItem.mgr.data('postmessage', true);
 
 		this._menubarCont.insertBefore(liItem, this._menubarCont.firstChild);
+	},
+
+	/**
+	 * 建立模組設定選項
+	 *
+	 * @param {event} e
+	 * @param {string} e.moduleId - 模組 ID
+	 * @param {Array} e.menubar - 選單資料
+	 * @returns
+	 */
+	_addModuleMenu: function (e) {
+		if (!L.Util.isArray(e.menubar)) {
+			return;
+		}
+
+		var targetItemID = '.uno:ToolsMenu'; // 預設加到工具選單
+		var position = 'after';
+		e.menubar.forEach(function(item) {
+			item.moduleId = e.moduleId; // 紀錄所屬模組 ID
+			// 加到哪裡？
+			if (item.insertBefore) {
+				targetItemID = item.insertBefore;
+				position = 'before';
+			} else if (item.insertAfter) {
+				targetItemID = item.insertAfter;
+				position = 'after';
+			}
+
+			var liItem = this._createItem(item);
+			if (!liItem) {
+				console.debug('menuitem not created', item);
+				return;
+			}
+
+			var mgr = liItem.mgr; // 取得 ItemManager
+			var separatorId = 'separator-' + this._autoSeparatorIndex++;
+			if (mgr.isSeparator()) {
+				liItem.id = 'menu-' + separatorId;
+			}
+
+			var targetItem = document.getElementById('menu-' + targetItemID);
+			// 找不到目標選項，就加到工具選單
+			if (!targetItem) {
+				targetItemID === '.uno:ToolsMenu';
+			}
+			// 目標選項是 ToolMenu 的話，就找出 toolMenu 子選單的最後一個項目
+			if (targetItemID === '.uno:ToolsMenu') {
+				targetItem = document.getElementById('menu-' + targetItemID);
+				// 找出子選單
+				var submenu = targetItem.querySelector('ul');
+				// 找出最後一個子選項
+				targetItem = submenu.lastElementChild;
+				position = 'after'; // 插到最後一個子選項後面
+			}
+
+			if (position === 'before') {
+				targetItem.parentNode.insertBefore(liItem, targetItem);
+			} else if (position === 'after') {
+				targetItem.parentNode.insertBefore(liItem, targetItem.nextSibling);
+			}
+
+			targetItemID = mgr.isSeparator() ? separatorId : item.id; // 紀錄下一個加入的位置
+
+		}.bind(this));
+
+		$('#main-menu').smartmenus('refresh');
 	},
 
 	_onInitLanguagesMenu: function (e) {
@@ -580,6 +650,9 @@ L.Control.Menubar = L.Control.extend({
 		document.getElementById('main-menu').setAttribute('role', 'menubar');
 		this._addTabIndexPropsToMainMenu();
 		this._menubarInitialized = true;
+
+		// 公告選單列已經準備好了
+		this._map.fire('menubarReady');
 	},
 
 	/**
@@ -1281,6 +1354,16 @@ L.Control.Menubar = L.Control.extend({
 				var self = this._self;
 				var id = this._data.id;
 				if (id) {
+					// 如果該指令屬於模組指令，就交給模組處理
+					if (this._data.moduleId) {
+						if (app.oxool && app.oxool._ModuleManager) {
+							app.oxool._ModuleManager.executeModuleCommand(this._data.moduleId, id);
+						} else {
+							console.error('Error! ModuleManager not found.');
+						}
+						return;
+					}
+
 					var state = self._map['stateChangeHandler'].getItemValue(id);
 					if (id.startsWith('.uno:SlideMasterPage')) {
 						// Toggle between showing master page and closing it.
@@ -1308,16 +1391,25 @@ L.Control.Menubar = L.Control.extend({
 
 	/**
 	 * 建立選項
+	 *
 	 * @param {object} item - 選項物件
 	 * @returns DOMElement
 	 */
 	_createItem: function(item) {
 		var manager = this._createItemManager(item);
 		var liItem = manager.getLiItem();
+		var moduleId = item.moduleId;
 
 		switch (manager.getType()) {
 		case 'menuitem': // 選項
 			if (manager.hasMenu()) {
+				// 屬於模組定義的選項
+				if (moduleId) {
+					// 把每個選項都增加一個 module id
+					for (var i = 0; i < item.menu.length; i++) {
+						item.menu[i].moduleId = moduleId;
+					}
+				}
 				// 遞迴呼叫自己
 				var subMenu = this._createMenu(item.menu);
 				// 建立子選單結構
