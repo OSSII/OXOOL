@@ -70,7 +70,7 @@ var map = L.map('map', {
 
 
 /* eslint-disable indent */
-var completeInitialization = function() {
+map.on('ossiiloaded', function() {
 
 ////// Controls /////
 
@@ -138,7 +138,7 @@ if (L.Browser.isInternetExplorer) {
 	map.uiManager.showInfoModal('browser-not-supported-modal', '', _('Warning! The browser you are using is not supported.'), '', _('OK'), null, false);
 }
 
-}.bind(this); // completeInitialization
+}, this); // map.on('ossiiloaded')
 
 ////// Load ossii.js /////
 {
@@ -152,10 +152,6 @@ if (L.Browser.isInternetExplorer) {
 	script.async = true;
 	script.onload = function() {
 		console.log('ossii.js loaded');
-		// Wait for a tick to ensure ossii.js is fully loaded
-		// then call completeInitialization
-		// if we call it directly, it may fail because ossii.js is not fully loaded
-		setTimeout(completeInitialization, 1);
 		// remove the script tag
 		document.head.removeChild(script);
 	};

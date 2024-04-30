@@ -12,6 +12,10 @@
 	// TODO: 將來應該要移到 OxOOL 中
 	app.map.addControl(L.control.dialogs());
 
+	setTimeout(function() {
+		app.map.fire('ossiiloaded');
+	}, 10);
+
 })();
 
 /* vim: set ts=8 sts=8 sw=8 tw=100: */
