@@ -3535,6 +3535,16 @@ void OXOOLWSD::setMigrationMsgReceived(const std::string& docKey)
     }
 }
 
+void OXOOLWSD::setAllMigrationMsgReceived()
+{
+    std::unique_lock<std::mutex> docBrokersLock(DocBrokersMutex);
+    for (auto& brokerIt : DocBrokers)
+    {
+        std::shared_ptr<DocumentBroker> docBroker = brokerIt.second;
+        docBroker->addCallback([docBroker]() { docBroker->setMigrationMsgReceived(); });
+    }
+}
+
 void OXOOLWSD::setLogLevelsOfKits(const std::string& level)
 {
     std::lock_guard<std::mutex> docBrokersLock(DocBrokersMutex);
