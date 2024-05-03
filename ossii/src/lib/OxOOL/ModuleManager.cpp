@@ -354,6 +354,23 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
         return true;
     }
 
+    // 是否要求連接 Admin websocket
+    if (request.getURI().find("/oxool/adminws") == 0)
+    {
+        LOG_INF("Admin websocket request: " << request.getURI());
+        const std::weak_ptr<StreamSocket> weakSocket =
+            std::static_pointer_cast<StreamSocket>(disposition.getSocket());
+
+        if (AdminSocketHandler::handleInitialRequest(weakSocket, request))
+        {
+            disposition.setMove([](const std::shared_ptr<Socket> &moveSocket) {
+                // Hand the socket over to the Admin poll.
+                Admin::instance().insertNewSocket(moveSocket);
+            });
+            return true;
+        }
+    }
+
     return false;
 }
 
