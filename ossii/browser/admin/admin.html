@@ -24,44 +24,38 @@
 
 <body>
 	<span class="d-none" id="__ADMIN_ROOT__">%ADMIN_ROOT%</span>
-	<input type="file" id="uploadFile" name="uploadFile" class="d-none" multiple>
-	<header class="navbar sticky-top bg-body-tertiary flex-md-nowrap shadow">
-		<div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
+	<header class="navbar sticky-top bg-body-tertiary flex-md-nowrap p-0 shadow">
+		<div class="container-fluid">
 			<img src="images/online.svg"
-				class="d-flex align-items-center col-lg-3 mb-2 mb-lg-0 link-body-emphasis text-decoration-none"
+				class="d-flex align-items-center col-lg-3 mb-2 mb-lg-0 link-body-emphasis text-decoration-none d-none d-md-block"
 				style="width:250px">
-
-			<div class="d-flex align-items-center">
-				<form class="w-100 me-3" role="search">
-					<div class="input-group">
-						<span class="input-group-text"><i class="bi bi-search"></i></span>
-						<input type="search" class="form-control" placeholder="Search" aria-label="Search"
-							aria-describedby="basic-addon1">
-					</div>
-				</form>
-				<button type="button" class="btn btn-link nav-link dropdown-toggle" color-scheme-switcher></button>
-				<div>
-					<div class="vr d-none d-lg-flex h-100 mx-3 text-white"></div>
-				</div>
-				<div class="flex-shrink-0 dropdown">
-					<a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
-						data-bs-toggle="dropdown" aria-expanded="false">
-						<span _="System"></span>
-					</a>
-					<ul class="dropdown-menu dropdown-menu-end text-small shadow">
-						<li><button id="logout" class="dropdown-item"><i
-									class="bi bi-box-arrow-right me-2 text-success"></i><span
-									_="Sign out"></span></button></li>
-						<li class="dropdown-divider"></li>
-						<li><button id="restartServer" class="dropdown-item"><i
-									class="bi bi-bootstrap-reboot me-2 text-danger"></i><span
-									_="Restart server"></span></button></li>
-						<li><button id="changePassword" class="dropdown-item" href="#"><i
-									class="bi bi-box-arrow-right me-2 text-warning"></i><span
-									_="Change password"></span></button></li>
-					</ul>
-				</div>
+			<div  id="__MODULE_TITLE__" class="w-100 text-center fw-bold fs-3"></div>
+			<button type="button" class="btn btn-link nav-link dropdown d-none d-md-block" color-scheme-switcher></button>
+			<div>
+				<div class="vr d-none d-lg-flex h-100 mx-3 text-white"></div>
 			</div>
+			<div class="flex-shrink-0 dropdown d-none d-md-block">
+				<a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+					data-bs-toggle="dropdown" aria-expanded="false">
+					<span _="System"></span>
+				</a>
+				<ul class="dropdown-menu dropdown-menu-end text-small shadow">
+					<li><button id="logout" class="dropdown-item"><i
+								class="bi bi-box-arrow-right me-2 text-success"></i><span
+								_="Sign out"></span></button></li>
+					<li class="dropdown-divider"></li>
+					<li><button id="restartServer" class="dropdown-item"><i
+								class="bi bi-bootstrap-reboot me-2 text-danger"></i><span
+								_="Restart server"></span></button></li>
+					<li><button id="changePassword" class="dropdown-item" href="#"><i
+								class="bi bi-box-arrow-right me-2 text-warning"></i><span
+								_="Change password"></span></button></li>
+				</ul>
+			</div>
+
+			<button class="nav-link px-3 text-white d-md-none position-absolute" type="button" data-bs-toggle="offcanvas" data-bs-target="#__SIDEBAR_MENU__" aria-controls="__SIDEBAR_MENU__" aria-expanded="false" aria-label="Toggle navigation">
+				<i class="bi bi-three-dots"></i>
+			</button>
 		</div>
 	</header>
 	<!--
@@ -71,22 +65,31 @@
 	<div class="container-fluid">
 		<div class="row">
 			<!-- 側邊欄 -->
-			<nav id="__SIDEBAR_MENU__" class="border border-right col-md-3 col-lg-2 d-md-block bg-body-tertiary sidebar collapse">
-				<!-- 選單區 -->
-				<div class="position-sticky pt-3">
+			<div id="__SIDEBAR__" class="sidebar border border-right col-md-3 col-lg-2 p-2 bg-body-tertiary">
+				<nav id="__SIDEBAR_MENU__" class="offcanvas-md offcanvas-start bg-body-tertiary" tabindex="-1">
+					<!-- 選單標題 -->
+					<div class="offcanvas-header">
+						<img src="images/online.svg"
+							class="d-flex align-items-center col-lg-3 mb-2 mb-lg-0 link-body-emphasis text-decoration-none"
+							style="width:250px">
+						<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#__SIDEBAR_MENU__" aria-label="Close"></button>
+					</div>
+					<!-- 選單區 -->
+					<div class="">
 
-					<ul id="__INTERNAL_MENU__" class="nav flex-column">
-						<!-- 內部模組選單 -->
-					</ul>
+						<ul id="__INTERNAL_MENU__" class="nav flex-column">
+							<!-- 內部模組選單 -->
+						</ul>
 
-					<ul id="__EXTERNAL_MENU__" class="nav flex-column">
-						<!-- 外部模組選單 -->
-					</ul>
-				</div>
-			</nav>
+						<ul id="__EXTERNAL_MENU__" class="nav flex-column">
+							<!-- 外部模組選單 -->
+						</ul>
+					</div>
+				</nav>
+			</div>
 
 			<!-- 主要內容區 -->
-			<main id="__MAIN_CONTENT__" class="col-md-9 col-lg-10 p-4">
+			<main id="__MAIN_CONTENT__" class="col-md-9 col-lg-10 ms-sm-auto p-4">
 				<!-- 正在執行的模組控制內容 -->
 			</main>
 		</div>

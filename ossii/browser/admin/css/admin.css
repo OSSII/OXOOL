@@ -7,8 +7,15 @@ header {
 	height: var(--header-height);
 }
 
-#__SIDEBAR_MENU__ {
-	height: calc(100vh - var(--header-height));
+#__SIDEBAR__ {
+	position: fixed;
+	top: var(--header-height);
+	left: 0;
+	bottom: 0;
 	overflow-x: hidden;
 	overflow-y: auto;
+}
+
+.offcanvas-header {
+	padding-top: var(--header-height);
 }
