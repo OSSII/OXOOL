@@ -228,6 +228,19 @@
 				String.toLocaleString(l10URI);
 			}
 
+			// 設定模組標題 --------------------------------
+			var icon = document.createElement('i');
+			icon.className = 'bi bi-' + detail.adminIcon;
+			var title = document.createElement('span');
+			title.innerHTML = '&nbsp;&nbsp;' + detail.adminItem;
+			// 清空模組標題
+			var moduleTitle = document.getElementById('__MODULE_TITLE__');
+			moduleTitle.innerHTML = '';
+			// 插入模組標題
+			moduleTitle.appendChild(icon);
+			moduleTitle.appendChild(title);
+			//--------------------------------------------
+
 			// 載入 admin.html 頁面
 			fetch(moduleURI + 'admin.html').then(function (response) {
 				if (response.ok) {
