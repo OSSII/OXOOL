@@ -56,6 +56,7 @@ public:
     static std::string HttpAgentString; // "OxOOL HTTP Agent " + ENV::Version
 
     static std::string FileServerRoot; // File server root(eg. "/usr/share/oxool")
+    static std::string SysTemplate; // System Template directory.
     static std::string ModuleDir; // Module directory
     static std::string ModuleConfigDir; // Module configuration directory
     static std::string ModuleDataDir; // Module data directory

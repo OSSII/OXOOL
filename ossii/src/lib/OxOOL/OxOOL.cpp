@@ -33,6 +33,7 @@ std::string ENV::HttpAgentString;
 std::string ENV::HttpServerString;
 
 std::string ENV::FileServerRoot;
+std::string ENV::SysTemplate;
 std::string ENV::ModuleDir;
 std::string ENV::ModuleConfigDir;
 std::string ENV::ModuleDataDir;
@@ -61,6 +62,7 @@ void ENV::initialize()
     ENV::ConfigFile        = OXOOLWSD::ConfigFile;
 
     ENV::FileServerRoot   = OXOOLWSD::FileServerRoot;
+    ENV::SysTemplate      = OXOOLWSD::SysTemplate;
     ENV::ModuleDir        = OXOOL_MODULE_DIR;
     ENV::ModuleConfigDir  = OXOOL_MODULE_CONFIG_DIR;
     ENV::ModuleDataDir    = OXOOL_MODULE_DATA_DIR;
