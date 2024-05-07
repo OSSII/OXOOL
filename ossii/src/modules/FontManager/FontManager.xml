@@ -1,0 +1,16 @@
+<config>
+    <module enable="true" type="bool">
+        <load>FontManager.so</load>
+        <detail>
+            <name>FontManager</name>
+            <serviceURI>/oxool/fontmanager/</serviceURI>
+            <summary>Font Management</summary>
+            <author>Firefly &lt;firefly@ossii.com.tw&gt;</author>
+            <license>MPLv2.0</license>
+            <description/>
+            <adminPrivilege default="false" desc="Requires admin authentication." type="bool">false</adminPrivilege>
+            <adminIcon desc="Please refer to https://icons.getbootstrap.com/ for icon names.">fonts</adminIcon>
+            <adminItem>Font Manager</adminItem>
+        </detail>
+    </module>
+</config>

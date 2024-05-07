@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-SUBDIRS = Alive Announce ModuleTesting
+SUBDIRS = Alive Announce ModuleTesting FontManager
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)@OXOOL_MODULE_DATA_DIR@

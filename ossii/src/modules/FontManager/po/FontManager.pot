@@ -1,0 +1,70 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-07 15:14+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin/admin.js:16
+msgid "Font Manager"
+msgstr ""
+
+#: admin/admin.js:17
+msgid "Select all"
+msgstr ""
+
+#: admin/admin.js:18
+msgid "File name"
+msgstr ""
+
+#: admin/admin.js:19
+msgid "Font name (preview)"
+msgstr ""
+
+#: admin/admin.js:20
+msgid "Style"
+msgstr ""
+
+#: admin/admin.js:21
+msgid "Color font"
+msgstr ""
+
+#: admin/admin.js:22
+msgid "Symbol font"
+msgstr ""
+
+#: admin/admin.js:23 admin/admin.js:288
+msgid "Delete"
+msgstr ""
+
+#: admin/admin.js:24
+msgid "Delete selected files?"
+msgstr ""
+
+#: admin/admin.js:25 admin/admin.js:53
+msgid "Upload font files."
+msgstr ""
+
+#: admin/admin.js:26 admin/admin.js:265 admin/admin.js:288
+msgid "file(s)."
+msgstr ""
+
+#: admin/admin.js:27 admin/admin.js:266
+msgid "font(s)."
+msgstr ""
+
+#: admin/admin.js:28 admin/admin.js:165
+msgid "Transmission"
+msgstr ""

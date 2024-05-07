@@ -67,7 +67,7 @@ oxoolwsdconfig_DATA = $(WSD_NAME).xml \
 ACLOCAL_AMFLAGS = -I m4
 
 # quick and easy for now.
-include_paths = -I${top_srcdir}/common -I${top_srcdir}/net -I${top_srcdir}/wsd -I${top_srcdir}/kit ${ZLIB_CFLAGS} ${ZSTD_CFLAGS} ${PNG_CFLAGS} ${FONTCONFIG_CFLAGS} ${OSSII_CFLAGS}
+include_paths = -I${top_srcdir}/common -I${top_srcdir}/net -I${top_srcdir}/wsd -I${top_srcdir}/kit ${ZLIB_CFLAGS} ${ZSTD_CFLAGS} ${PNG_CFLAGS} ${OSSII_CFLAGS}
 if ENABLE_SSL
 include_paths += ${OPENSSL_CFLAGS}
 endif
@@ -81,7 +81,7 @@ if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS} ${FONTCONFIG_LIBS} ${OSSII_LIBS}
+AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) ${PNG_LIBS} ${OSSII_LIBS}
 
 if ENABLE_DEBUG
 AM_LDFLAGS += -Wl,-E,-rpath,"@abs_top_builddir@/ossii/src/lib/.libs"

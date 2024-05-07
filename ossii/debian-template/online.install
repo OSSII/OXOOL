@@ -18,6 +18,6 @@ etc/pam.d/@PACKAGE@
 etc/sudoers.d/*
 
 usr/bin/@PACKAGE@-xml-config
-etc/@PACKAGE@/conf.d/{Alive.xml,Announce.xml}
-usr/lib/@PACKAGE@/{alive.so,announce.so}
+etc/@PACKAGE@/conf.d/{Alive.xml,Announce.xml,FontManager.xml}
+usr/lib/@PACKAGE@/{alive.so,announce.so,FontManager.so}
 usr/lib/*.so.*
