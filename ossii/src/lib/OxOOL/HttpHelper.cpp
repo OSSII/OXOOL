@@ -498,7 +498,7 @@ void PartHandler::handlePart(const Poco::Net::MessageHeader& header,
 
 PartHandler::~PartHandler()
 {
-    // do nothing
+    removeFiles();
 }
 
 std::string PartHandler::getFilename(const std::string& name) const
@@ -533,11 +533,9 @@ void PartHandler::removeFiles()
 
 std::vector<std::string> PartHandler::getReceivedFiles() const
 {
-    std::vector<std::string> files(mpReceivedFiles.size());
+    std::vector<std::string> files;
     for (auto &it : mpReceivedFiles)
-    {
-        files.push_back(it.second);
-    }
+        files.emplace_back(it.second);
 
     return files;
 }
