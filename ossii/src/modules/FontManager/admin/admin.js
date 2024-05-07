@@ -31,12 +31,6 @@ L.AdminModule.FontManager = L.AdminModule.extend({
 	_lang: String.locale.toLowerCase(),
 	_fontList: {},
 
-
-	_fileInfo : null, // 欲傳送的檔案資訊
-	_fileReader : new FileReader(), // 檔案存取物件
-	_sliceSize : 1024000, // 每次傳送的大小
-	_loaded : 0, // 已經傳輸的 bytes
-
 	/**
 	 * Initialize the module.
 	 *
