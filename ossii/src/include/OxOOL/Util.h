@@ -12,6 +12,8 @@
 #include <set>
 #include <string>
 
+class StreamSocket;
+
 namespace OxOOL::Util
 {
 /// 以 AES 256 加密字串
@@ -55,7 +57,7 @@ bool dataFromHexString(const std::string& hexString, T& data);
 bool isConfigAuthOk(const std::string& username, const std::string& password);
 
 /// @brief 檢查管理者是否已登入
-bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request);
+bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, const std::shared_ptr<StreamSocket>& socket = nullptr);
 
 /// Return true if the subject matches in given set. It uses regex
 /// Mainly used to match WOPI hosts patterns

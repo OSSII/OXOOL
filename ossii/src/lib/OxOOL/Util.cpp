@@ -21,10 +21,13 @@
 #include <Poco/Crypto/Cipher.h>
 #include <Poco/Crypto/CipherKey.h>
 #include <Poco/Crypto/CipherFactory.h>
+#include <Poco/MemoryStream.h>
 #include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTMLForm.h>
 
 #include <common/Log.hpp>
 #include <wsd/Auth.hpp>
+#include <net/Socket.hpp>
 
 namespace OxOOL::Util
 {
@@ -205,6 +208,43 @@ bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request)
     if (cookies.has("jwt"))
     {
         const std::string jwtToken = cookies.get("jwt");
+        LOG_INF("Verifying JWT token: " << jwtToken);
+        JWTAuth authAgent("admin", "admin", "admin");
+        // JWT token 有效
+        if (authAgent.verify(jwtToken))
+        {
+            LOG_TRC("JWT token is valid");
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request,
+                       const std::shared_ptr<StreamSocket>& socket)
+{
+    std::string jwtToken;
+
+    // 檢查是否以管理員身份登入
+    // 檢查是否有名為 "jwt" 的 cookie
+    Poco::Net::NameValueCollection cookies;
+    request.getCookies(cookies);
+    // 如果有 jwt cookie，檢查是否有效
+    if (cookies.has("jwt"))
+    {
+        jwtToken = cookies.get("jwt");
+    }
+    else if (socket != nullptr) // 檢查是否透過表單傳送 jwt token
+    {
+        Poco::MemoryInputStream message(&socket->getInBuffer()[0],
+                                        socket->getInBuffer().size());
+        const Poco::Net::HTMLForm form(request, message);
+        jwtToken = form.get("jwt", "");
+    }
+
+    if (!jwtToken.empty())
+    {
         LOG_INF("Verifying JWT token: " << jwtToken);
         JWTAuth authAgent("admin", "admin", "admin");
         // JWT token 有效
