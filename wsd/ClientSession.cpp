@@ -30,6 +30,7 @@
 
 #include "DocumentBroker.hpp"
 #include "OXOOLWSD.hpp"
+#include "FileServer.hpp"
 #include <common/Common.hpp>
 #include <common/JsonUtil.hpp>
 #include <common/Log.hpp>
@@ -1930,6 +1931,7 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
 
                 const std::string fileName = Poco::Path(resultURL.getPath()).getFileName();
                 http::Response response(http::StatusCode::OK);
+                FileServerRequestHandler::hstsHeaders(response);
                 if (!fileName.empty())
                     response.set("Content-Disposition", "attachment; filename=\"" + fileName + '"');
                 response.setContentType("application/octet-stream");
@@ -2360,6 +2362,7 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
                 const std::string stringJSON = payload->jsonString();
 
                 http::Response httpResponse(http::StatusCode::OK);
+                FileServerRequestHandler::hstsHeaders(httpResponse);
                 httpResponse.set("Last-Modified", Util::getHttpTimeNow());
                 httpResponse.set("X-Content-Type-Options", "nosniff");
                 httpResponse.setBody(stringJSON, "application/json");
@@ -2388,6 +2391,7 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
                     std::string thumbnail(payload->data().data() + firstLineSize, payload->data().size() - firstLineSize);
 
                     http::Response httpResponse(http::StatusCode::OK);
+                    FileServerRequestHandler::hstsHeaders(httpResponse);
                     httpResponse.set("Last-Modified", Util::getHttpTimeNow());
                     httpResponse.set("X-Content-Type-Options", "nosniff");
                     httpResponse.setBody(thumbnail, "image/png");
