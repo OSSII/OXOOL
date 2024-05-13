@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <set>
 #include <string>
+#include <vector>
+#include <fstream>
 #include <openssl/evp.h>
 
 #include <OxOOL/Util.h>
@@ -256,6 +258,44 @@ bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request,
     }
 
     return false;
+}
+
+const std::map<std::string, std::string>& getOsRelease()
+{
+    static std::map<std::string, std::string> osRelease;
+
+    // Already read.
+    if (!osRelease.empty())
+        return osRelease;
+
+    std::ifstream in("/etc/os-release", std::ifstream::in);
+    if (in.is_open())
+    {
+        std::string line;
+        while (std::getline(in, line))
+        {
+            // 第一個字元是 #，就跳過
+            if (line.front() == '#')
+                continue;
+
+            StringVector tokens = StringVector::tokenize(line, "=");
+            if (tokens.size() == 2)
+            {
+                std::string value = tokens[1];
+                // 第一個字元是雙引號，就移除
+                if (value.front() == '"')
+                    value.erase(0, 1);
+                // 最後一個字元是雙引號，就移除
+                if (value.back() == '"')
+                    value.pop_back();
+
+                osRelease[tokens[0]] = value;
+            }
+        }
+        in.close();
+    }
+
+    return osRelease;
 }
 
 bool matchRegex(const std::set<std::string>& set, const std::string& subject)

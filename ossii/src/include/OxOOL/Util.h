@@ -9,6 +9,7 @@
 
 #include <OxOOL/OxOOL.h>
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -58,6 +59,11 @@ bool isConfigAuthOk(const std::string& username, const std::string& password);
 
 /// @brief 檢查管理者是否已登入
 bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, const std::shared_ptr<StreamSocket>& socket = nullptr);
+
+/// @brief Read the contents of /etc/os-release
+/// @ref https://www.freedesktop.org/software/systemd/man/latest/os-release.html
+/// @return
+const std::map<std::string, std::string>& getOsRelease();
 
 /// Return true if the subject matches in given set. It uses regex
 /// Mainly used to match WOPI hosts patterns
