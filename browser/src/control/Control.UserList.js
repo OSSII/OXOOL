@@ -91,7 +91,7 @@ L.Control.UserList = L.Control.extend({
 		w2ui['actionbar'].uncheck('userlist');
 	},
 
-	createAvatar: function (viewId, userName, extraInfo, color) {
+	createAvatar: function (viewId, extraInfo, color) {
 		var img;
 		if (extraInfo !== undefined && extraInfo.avatar !== undefined) {
 			img = L.DomUtil.create('img', 'avatar-img');
@@ -113,7 +113,7 @@ L.Control.UserList = L.Control.extend({
 		var iconTd = L.DomUtil.create('td', 'usercolor', content);
 		var nameTd = L.DomUtil.create('td', 'username oxool-font', content);
 
-		iconTd.appendChild(this.createAvatar(viewId, userName, extraInfo, color));
+		iconTd.appendChild(this.createAvatar(viewId, extraInfo, color));
 		nameTd.textContent = userName;
 
 		return content;
@@ -175,7 +175,7 @@ L.Control.UserList = L.Control.extend({
 		// Summary rendering
 		headerUserList.forEach(function (user) {
 			if (!document.querySelector('#userListSummary [data-view-id="' + user.viewId + '"]')) {
-				document.getElementById('userListSummary').appendChild(this.createAvatar(user.viewId, user.userName, user.extraInfo, user.color));
+				document.getElementById('userListSummary').appendChild(this.createAvatar(user.viewId, user.extraInfo, user.color));
 			}
 		}.bind(this));
 
@@ -197,7 +197,7 @@ L.Control.UserList = L.Control.extend({
 			var listItem = L.DomUtil.create('div', 'user-list-item');
 			listItem.setAttribute('data-view-id', user.viewId);
 			listItem.setAttribute('role', 'button');
-			listItem.appendChild(this.createAvatar(user.viewId, user.userName, user.extraInfo, user.color));
+			listItem.appendChild(this.createAvatar(user.viewId, user.extraInfo, user.color));
 			listItem.appendChild(userLabelContainer);
 			listItem.addEventListener('click', function () {
 				this.followUser(user.viewId);
@@ -301,7 +301,6 @@ L.Control.UserList = L.Control.extend({
 
 	onAddView: function(e) {
 		var userlistItem = w2ui['actionbar'].get('userlist');
-		var username = this.escapeHtml(e.username);
 		var showPopup = false;
 
 		if (userlistItem !== null)
@@ -311,7 +310,7 @@ L.Control.UserList = L.Control.extend({
 			$('#tb_actionbar_item_userlist')
 				.w2overlay({
 					class: 'oxool-font',
-					html: this.options.userJoinedPopupMessage.replace('%user', username),
+					html: this.options.userJoinedPopupMessage.replace('%user', this.escapeHtml(e.username)),
 					style: 'padding: 5px'
 				});
 			clearTimeout(this.options.userPopupTimeout);
@@ -323,6 +322,7 @@ L.Control.UserList = L.Control.extend({
 			}, 3000);
 		}
 
+		var username = e.username;
 		var color = L.LOUtil.rgbToHex(this.map.getViewColor(e.viewId));
 		if (e.viewId === this.map._docLayer._viewId) {
 			username = _('You');
