@@ -1,0 +1,66 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-14 10:50+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin/admin.js:16
+msgid "Software Upgrade"
+msgstr ""
+
+#: admin/admin.js:17
+msgid "The following file types are accepted : *.zip/*.tar.gz/*.rpm/.deb"
+msgstr ""
+
+#: admin/admin.js:18
+msgid "Upload"
+msgstr ""
+
+#: admin/admin.js:19 admin/admin.js:123
+msgid "Transmission"
+msgstr ""
+
+#: admin/admin.js:20
+msgid "Unsupported package installation system!"
+msgstr ""
+
+#: admin/admin.js:21
+msgid "Software upgrade only supports rpm and dep package formats."
+msgstr ""
+
+#: admin/admin.js:56
+msgid "File decompression failed!"
+msgstr ""
+
+#: admin/admin.js:59
+msgid "Test upgrade failed!"
+msgstr ""
+
+#: admin/admin.js:62
+msgid "Software upgrade is successful."
+msgstr ""
+
+#: admin/admin.js:65
+msgid "You may need to restart the service."
+msgstr ""
+
+#: admin/admin.js:68
+msgid "Software upgrade failed!"
+msgstr ""
+
+#: admin/admin.js:130
+msgid "File upload failed"
+msgstr ""

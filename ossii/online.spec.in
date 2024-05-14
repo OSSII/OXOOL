@@ -110,9 +110,11 @@ sed -i "/^ReadWritePaths/d;/^ProtectControlGroups/d;/^ProtectSystem/d" %{buildro
 %{_sysconfdir}/%{name}/conf.d/Alive.xml
 %{_sysconfdir}/%{name}/conf.d/Announce.xml
 %{_sysconfdir}/%{name}/conf.d/FontManager.xml
+%{_sysconfdir}/%{name}/conf.d/SoftwareUpgrade.xml
 %{_libdir}/%{name}/alive.so
 %{_libdir}/%{name}/announce.so
 %{_libdir}/%{name}/FontManager.so
+%{_libdir}/%{name}/SoftwareUpgrade.so
 %{_libdir}/*.so.*
 %endif
 
