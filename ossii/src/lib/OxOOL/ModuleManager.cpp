@@ -210,7 +210,7 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
             moduleLib->useBaseModule();
         }
 
-        std::string ID = Poco::UUIDGenerator::defaultGenerator().createRandom().toString();
+        std::string ID(detail.name + '_' + Poco::UUIDGenerator::defaultGenerator().createRandom().toString());
         // Important: remove all '-' in UUID
         // 重要、重要、重要，說三次 XDD
         // 因為 UUID 會放在訊息開頭配合模組指令，
@@ -484,7 +484,8 @@ bool ModuleManager::handleKitToClientMessage(const std::shared_ptr<ClientSession
     return false; // 繼續傳給 online core 處理
 }
 
-std::string ModuleManager::handleAdminMessage(const StringVector& tokens)
+void ModuleManager::handleAdminMessage(const SendTextMessageFn& sendTextMessage,
+                                       const StringVector& tokens)
 {
     // 是否是給模組的指令，第一個 token 前有 <module ID> 字串
     if (tokens[0].at(0) == '<')
@@ -503,15 +504,15 @@ std::string ModuleManager::handleAdminMessage(const StringVector& tokens)
                 for (std::size_t i = 1; i < tokens.size(); ++i)
                     moduleTokens.push_back(tokens[i]);
 
-                // 由於交給 module 處理，所以得到的結果，要加上 <module ID>
-                return "<" + moduleId + ">" + module->handleAdminMessage(moduleTokens);
+                // 交給 module 處理
+                module->handleAdminMessage(sendTextMessage, moduleTokens);
             }
-            return ""; // 無論如何，這個請訊息只能被模組處理，不需要再往下傳。
+            return; // 無論如何，這個請訊息只能被模組處理，不需要再往下傳。
         }
     }
 
     // 非模組指令，交給 AdminService 處理
-    return mpAdminService->handleAdminMessage(tokens);
+    mpAdminService->handleAdminMessage(sendTextMessage, tokens);
 }
 
 void ModuleManager::preprocessAdminFile(const std::string& adminFile,

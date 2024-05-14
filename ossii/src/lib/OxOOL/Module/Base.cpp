@@ -105,12 +105,13 @@ bool Base::handleKitToClientMessage(const std::shared_ptr<ClientSession>& client
     return false; // We don't handle this message
 }
 
-std::string Base::handleAdminMessage(const StringVector& tokens)
+void Base::handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
+                              const StringVector& tokens)
 {
-    (void)tokens; // avoid -Werror=unused-parameter
-    return MODULE_METHOD_IS_ABSTRACT;
+    sendAdminTextFrame(sendTextMessage, MODULE_METHOD_IS_ABSTRACT ":" + tokens[0]);
 }
 
+// PROTECTED METHODS
 bool Base::sendTextFrameToClient(const std::shared_ptr<ClientSession>& clientSession,
                                  const std::string& message)
 {
@@ -118,7 +119,12 @@ bool Base::sendTextFrameToClient(const std::shared_ptr<ClientSession>& clientSes
     return clientSession->sendTextFrame("<" + maId + ">" + message);
 }
 
-// PROTECTED METHODS
+void Base::sendAdminTextFrame(const OxOOL::SendTextMessageFn& sendTextMessage,
+                              const std::string& message, bool flush)
+{
+    sendTextMessage("<" + maId + ">" + message, flush);
+}
+
 std::string Base::parseRealURI(const Poco::Net::HTTPRequest& request) const
 {
     // 完整請求位址

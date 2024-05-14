@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,7 +99,9 @@ bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
 bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                               const std::shared_ptr<Message>& payload);
 
-std::string handleAdminMessage(const StringVector& tokens);
+typedef std::function<void(const std::string&, bool)> SendTextMessageFn;
+void handleAdminMessage(const SendTextMessageFn& sendTextMessage,
+                        const StringVector& tokens);
 
 /// @brief Check user and password if match the configuration.
 /// @param userProvidedUsr

@@ -74,13 +74,15 @@ public:
 
     /// @brief 處理控制臺 Websocket 的訊息
     /// Handle console Websocket messages.
-    std::string handleAdminMessage(const StringVector& tokens) override
+    void handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
+                            const StringVector& tokens) override
     {
         // 傳回字型列表
         // 語法：getFontlist
         if (tokens.equals(0, "getFontlist"))
         {
-            return "fontList: " + scanFontDir();
+            //return "fontList: " + scanFontDir();
+            sendAdminTextFrame(sendTextMessage, "fontList: " + scanFontDir());
         }
         // 刪除字型
         // 語法：deleteFont <檔名>
@@ -101,10 +103,12 @@ public:
             if (tempFont.exists())
                 tempFont.remove();
 
-            return "deleteFontSuccess";
+            sendAdminTextFrame(sendTextMessage, "deleteFontSuccess");
         }
-
-        return "unknowncommand: " + tokens[0];
+        else
+        {
+            sendAdminTextFrame(sendTextMessage, "unknowncommand: " + tokens[0]);
+        }
     }
 
 private:

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include <OxOOL/OxOOL.h>
 #include <OxOOL/XMLConfig.h>
 
 //#include <Poco/JSON/Object.h>
@@ -118,10 +119,11 @@ public:
     virtual bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                                           const std::shared_ptr<Message>& payload);
 
-    /// @brief 處理控制臺 Websocket 的訊息
+    /// @brief 處理 Admin Websocket 的訊息
     /// @param tokens
     /// @return
-    virtual std::string handleAdminMessage(const StringVector& tokens);
+    virtual void handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
+                                    const StringVector& tokens);
 
 protected:
 
@@ -131,6 +133,9 @@ protected:
     /// @return true: 成功， false: 失敗
     bool sendTextFrameToClient(const std::shared_ptr<ClientSession>& clientSession,
                                const std::string& message);
+
+    void sendAdminTextFrame(const OxOOL::SendTextMessageFn& sendTextMessage,
+                            const std::string& message, bool flush = false);
 
     /// @brief 回傳 "[module name]" 字串，方便給模組 LOG 用
     /// @return "[XXXXXXX]"

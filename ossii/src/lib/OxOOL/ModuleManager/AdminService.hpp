@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <OxOOL/OxOOL.h>
 #include <OxOOL/Module/Map.h>
 
 namespace Poco::Net
@@ -29,7 +30,8 @@ public:
     void handleRequest(const Poco::Net::HTTPRequest& request,
                        const std::shared_ptr<StreamSocket>& socket) override;
 
-    std::string handleAdminMessage(const StringVector& tokens) override;
+    void handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
+                            const StringVector& tokens) override;
 
 private:
     /// @brief api URI

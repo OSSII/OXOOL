@@ -127,9 +127,10 @@ namespace OxOOL
         return ModuleMgr.handleKitToClientMessage(clientSession, payload);
     }
 
-    std::string handleAdminMessage(const StringVector& tokens)
+    void handleAdminMessage(const SendTextMessageFn& sendTextMessage,
+                            const StringVector& tokens)
     {
-        return ModuleMgr.handleAdminMessage(tokens);
+        ModuleMgr.handleAdminMessage(sendTextMessage, tokens);
     }
 
     bool isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userProvidedPwd)

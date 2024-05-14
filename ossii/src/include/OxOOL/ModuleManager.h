@@ -10,6 +10,7 @@
 #include <vector>
 #include <mutex>
 
+#include <OxOOL/OxOOL.h>
 #include <OxOOL/Module/Base.h>
 
 #include <Poco/JSON/Object.h>
@@ -103,8 +104,8 @@ public:
 
     /// @brief 處理後臺管理訊息
     /// @param payload
-    /// @return
-    std::string handleAdminMessage(const StringVector& tokens);
+    void handleAdminMessage(const SendTextMessageFn& sendTextMessage,
+                            const StringVector& tokens);
 
     /// @brief 讀取模組後臺管理檔案，替換其中的變數
     /// @param adminFile - 後臺管理檔案絕對路徑

@@ -125,7 +125,8 @@ void AdminService::handleRequest(const Poco::Net::HTTPRequest& request,
     }
 }
 
-std::string AdminService::handleAdminMessage(const StringVector& tokens)
+void AdminService::handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
+                                      const StringVector& tokens)
 {
     // TODO: 考慮加寫一個 Command Map 定義各個指令的處理程序
     // 例如：
@@ -153,22 +154,20 @@ std::string AdminService::handleAdminMessage(const StringVector& tokens)
     {
         const std::string langTag = tokens.size() > 1 ? tokens[1] : ""; // 有指定語言
         if (tokens.equals(0, "getModuleList"))
-            return "modules: " + OxOOL::ModuleManager::instance().getAllModuleDetailsJsonString(langTag);
+            sendTextMessage("modules: "
+                           + OxOOL::ModuleManager::instance().getAllModuleDetailsJsonString(langTag), false);
         else
-            return "adminmodules: " + OxOOL::ModuleManager::instance().getAdminModuleDetailsJsonString(langTag);
+            sendTextMessage("adminmodules: "
+                           + OxOOL::ModuleManager::instance().getAdminModuleDetailsJsonString(langTag), false);
     }
     // 檢查管理帳號密碼是否與 oxoolwsd.xml 中的一致
     // 格式: isConfigAuthOk <帳號> <密碼>
     else if (tokens.equals(0, "isConfigAuthOk") && tokens.size() == 3)
     {
         if (OxOOL::isConfigAuthOk(tokens[1], tokens[2]))
-        {
-            return "ConfigAuthOk";
-        }
+            sendTextMessage("ConfigAuthOk", false);
         else
-        {
-            return "ConfigAuthWrong";
-        }
+            sendTextMessage("ConfigAuthWrong", false);
     }
     // 變更管理帳號及密碼
     else if (tokens.equals(0, "setAdminPassword") && tokens.size() == 3)
@@ -216,10 +215,12 @@ std::string AdminService::handleAdminMessage(const StringVector& tokens)
         config.setString("admin_console.password", adminPwd);
 #endif
         config.save(OxOOL::ENV::ConfigFile);
-        return "setAdminPasswordOk";
+        sendTextMessage("setAdminPasswordOk", false);
     }
-
-    return "";
+    else
+    {
+        sendTextMessage("Unknown command:" + tokens[0], false);
+    }
 }
 
 
