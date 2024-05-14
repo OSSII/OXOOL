@@ -113,8 +113,8 @@ public:
             }
             else if (maPackageBase == "deb")
             {
-                installTestCmd = "sudo dpkg -i ";
-                installCmd = "sudo dpkg -i ";
+                installTestCmd = "sudo dpkg -i --force-all --dry-run `find -name \"*.deb\"` 2>&1 ; echo $? > retcode";
+                installCmd = "sudo dpkg -i --force-all `find -name \"*.deb\"` 2>&1 ; echo $? > retcode";
             }
             else
             {
