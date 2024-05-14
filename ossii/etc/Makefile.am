@@ -6,19 +6,6 @@
 #
 
 pamdir = ${sysconfdir}/pam.d
-
-sudoersdir = ${sysconfdir}/sudoers.d
-EXTRA_DIST = pam.d/pam \
-	     sudoers.d/lool
-
-install-data-local:
-	$(INSTALL) -d $(DESTDIR)$(pamdir)
-	$(INSTALL) -m 0640 $(srcdir)/pam.d/pam $(DESTDIR)$(pamdir)/@PACKAGE@
-	$(INSTALL) -d $(DESTDIR)$(sudoersdir)
-	$(INSTALL) -m 0440 $(srcdir)/sudoers.d/lool $(DESTDIR)$(sudoersdir)/@PACKAGE@
-
-uninstall-local:
-	rm -f $(DESTDIR)$(pamdir)
-	rm -f $(DESTDIR)$(sudoersdir)
+dist_pam_DATA = pam.d/oxool
 
 ## vim: set noet sw=4 ts=4:
