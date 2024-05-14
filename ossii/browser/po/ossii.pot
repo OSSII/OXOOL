@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-09 15:04+0800\n"
+"POT-Creation-Date: 2024-05-14 16:34+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,14 +36,17 @@ msgstr ""
 #: js/map/handler/Map.AlternativeCommand.js:406
 #: js/map/handler/Map.AlternativeCommand.js:999
 #: js/control/Control.Dialogs.js:115 js/control/Control.Dialogs.js:151
-#: js/control/Control.Dialogs.js:199
+#: js/control/Control.Dialogs.js:199 admin/src/Main.js:425
+#: admin/src/Main.js:469 admin/standard/Overview/admin.js:240
 msgid "OK"
 msgstr ""
 
 #: js/control/Toolbar.Extensions.js:132 js/control/Toolbar.Extensions.js:142
 #: js/control/Toolbar.Extensions.js:150 js/control/Toolbar.Extensions.js:157
-#: js/control/Control.Menubar.js:22 js/control/Control.Menubar.js:75
-#: js/control/Control.Menubar.js:130 js/control/Control.Menubar.js:177
+#: js/control/Control.Menubar.js:16 js/control/Control.Menubar.js:25
+#: js/control/Control.Menubar.js:81 js/control/Control.Menubar.js:89
+#: js/control/Control.Menubar.js:145 js/control/Control.Menubar.js:152
+#: js/control/Control.Menubar.js:199 js/control/Control.Menubar.js:209
 msgid "PDF Document (.pdf)"
 msgstr ""
 
@@ -56,19 +59,19 @@ msgstr ""
 msgid "HTML Document (.html)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:135 js/control/Control.Menubar.js:23
+#: js/control/Toolbar.Extensions.js:135 js/control/Control.Menubar.js:27
 msgid "ODF text document (.odt)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:136 js/control/Control.Menubar.js:24
+#: js/control/Toolbar.Extensions.js:136 js/control/Control.Menubar.js:28
 msgid "Word 2003 Document (.doc)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:137 js/control/Control.Menubar.js:25
+#: js/control/Toolbar.Extensions.js:137 js/control/Control.Menubar.js:29
 msgid "Word Document (.docx)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:138 js/control/Control.Menubar.js:26
+#: js/control/Toolbar.Extensions.js:138 js/control/Control.Menubar.js:30
 msgid "Rich Text (.rtf)"
 msgstr ""
 
@@ -76,15 +79,15 @@ msgstr ""
 msgid "EPUB Document (.epub)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:144 js/control/Control.Menubar.js:178
+#: js/control/Toolbar.Extensions.js:144 js/control/Control.Menubar.js:211
 msgid "ODF spreadsheet (.ods)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:145 js/control/Control.Menubar.js:179
+#: js/control/Toolbar.Extensions.js:145 js/control/Control.Menubar.js:212
 msgid "Excel 2003 Spreadsheet (.xls)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:146 js/control/Control.Menubar.js:180
+#: js/control/Toolbar.Extensions.js:146 js/control/Control.Menubar.js:213
 msgid "Excel Spreadsheet (.xlsx)"
 msgstr ""
 
@@ -92,20 +95,20 @@ msgstr ""
 msgid "CSV (.csv)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:152 js/control/Control.Menubar.js:76
+#: js/control/Toolbar.Extensions.js:152 js/control/Control.Menubar.js:91
 msgid "ODF presentation (.odp)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:153 js/control/Control.Menubar.js:77
+#: js/control/Toolbar.Extensions.js:153 js/control/Control.Menubar.js:92
 msgid "PowerPoint 2003 Presentation (.ppt)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:154 js/control/Control.Menubar.js:78
+#: js/control/Toolbar.Extensions.js:154 js/control/Control.Menubar.js:93
 msgid "PowerPoint Presentation (.pptx)"
 msgstr ""
 
-#: js/control/Toolbar.Extensions.js:158 js/control/Control.Menubar.js:79
-#: js/control/Control.Menubar.js:131
+#: js/control/Toolbar.Extensions.js:158 js/control/Control.Menubar.js:94
+#: js/control/Control.Menubar.js:154
 msgid "ODF Drawing (.odg)"
 msgstr ""
 
@@ -118,6 +121,8 @@ msgid "Saving..."
 msgstr ""
 
 #: js/control/Control.Dialogs.js:122 js/control/Control.Dialogs.js:206
+#: admin/src/Main.js:426 admin/src/Main.js:449 admin/src/Main.js:470
+#: admin/standard/Overview/admin.js:241
 msgid "Cancel"
 msgstr ""
 
@@ -129,78 +134,132 @@ msgstr ""
 msgid "Command"
 msgstr ""
 
-#: js/control/Control.Menubar.js:11 js/control/Control.Menubar.js:65
-#: js/control/Control.Menubar.js:121 js/control/Control.Menubar.js:167
+#: js/control/Control.Menubar.js:11 js/control/Control.Menubar.js:76
+#: js/control/Control.Menubar.js:140 js/control/Control.Menubar.js:194
 msgid "Search"
 msgstr ""
 
-#: js/control/Control.Menubar.js:15 js/control/Control.Menubar.js:69
-#: js/control/Control.Menubar.js:125 js/control/Control.Menubar.js:171
+#: js/control/Control.Menubar.js:15 js/control/Control.Menubar.js:24
+#: js/control/Control.Menubar.js:80 js/control/Control.Menubar.js:88
+#: js/control/Control.Menubar.js:144 js/control/Control.Menubar.js:151
+#: js/control/Control.Menubar.js:198 js/control/Control.Menubar.js:208
+msgid "Export as"
+msgstr ""
+
+#: js/control/Control.Menubar.js:17 js/control/Control.Menubar.js:31
+msgid "EPUB (.epub)"
+msgstr ""
+
+#: js/control/Control.Menubar.js:19 js/control/Control.Menubar.js:83
+#: js/control/Control.Menubar.js:147 js/control/Control.Menubar.js:201
 msgid "Share..."
 msgstr ""
 
-#: js/control/Control.Menubar.js:16 js/control/Control.Menubar.js:70
-#: js/control/Control.Menubar.js:127 js/control/Control.Menubar.js:172
+#: js/control/Control.Menubar.js:20 js/control/Control.Menubar.js:84
+#: js/control/Control.Menubar.js:149 js/control/Control.Menubar.js:202
 msgid "See revision history"
 msgstr ""
 
-#: js/control/Control.Menubar.js:17
-msgid "Sign document"
-msgstr ""
-
-#: js/control/Control.Menubar.js:21 js/control/Control.Menubar.js:74
-#: js/control/Control.Menubar.js:129 js/control/Control.Menubar.js:176
+#: js/control/Control.Menubar.js:24 js/control/Control.Menubar.js:88
+#: js/control/Control.Menubar.js:151 js/control/Control.Menubar.js:208
 #: js/control/Control.ReadonlyBar.js:159
 msgid "Download as"
 msgstr ""
 
-#: js/control/Control.Menubar.js:21 js/control/Control.Menubar.js:74
-#: js/control/Control.Menubar.js:129 js/control/Control.Menubar.js:176
-msgid "Export as"
+#: js/control/Control.Menubar.js:26 js/control/Control.Menubar.js:90
+#: js/control/Control.Menubar.js:153 js/control/Control.Menubar.js:210
+msgid "PDF Document (.pdf) as..."
 msgstr ""
 
-#: js/control/Control.Menubar.js:27
-msgid "EPUB (.epub)"
-msgstr ""
-
-#: js/control/Control.Menubar.js:32 js/control/Control.Menubar.js:84
-#: js/control/Control.Menubar.js:136 js/control/Control.Menubar.js:185
+#: js/control/Control.Menubar.js:36 js/control/Control.Menubar.js:99
+#: js/control/Control.Menubar.js:159 js/control/Control.Menubar.js:218
 msgid "Repair"
 msgstr ""
 
-#: js/control/Control.Menubar.js:56
+#: js/control/Control.Menubar.js:57 js/control/Control.Menubar.js:109
+#: js/control/Control.Menubar.js:169 js/control/Control.Menubar.js:228
+#: admin/js/color-scheme-switcher.js:34
+msgid "Dark Mode"
+msgstr ""
+
+#: js/control/Control.Menubar.js:61
+msgid "Voice Over"
+msgstr ""
+
+#: js/control/Control.Menubar.js:63
 msgid "Page Setup"
 msgstr ""
 
-#: js/control/Control.Menubar.js:59 js/control/Control.Menubar.js:115
-#: js/control/Control.Menubar.js:161 js/control/Control.Menubar.js:228
+#: js/control/Control.Menubar.js:70 js/control/Control.Menubar.js:134
+#: js/control/Control.Menubar.js:188 js/control/Control.Menubar.js:262
 msgid "Latest Updates"
 msgstr ""
 
-#: js/control/Control.Menubar.js:60 js/control/Control.Menubar.js:116
-#: js/control/Control.Menubar.js:162 js/control/Control.Menubar.js:229
+#: js/control/Control.Menubar.js:71 js/control/Control.Menubar.js:135
+#: js/control/Control.Menubar.js:189 js/control/Control.Menubar.js:263
 msgid "Send Feedback"
 msgstr ""
 
-#: js/control/Control.Menubar.js:61 js/control/Control.Menubar.js:117
-#: js/control/Control.Menubar.js:163 js/control/Control.Menubar.js:230
+#: js/control/Control.Menubar.js:72 js/control/Control.Menubar.js:136
+#: js/control/Control.Menubar.js:190 js/control/Control.Menubar.js:264
 #: js/control/Control.ReadonlyBar.js:177
 msgid "About"
 msgstr ""
 
-#: js/control/Control.Menubar.js:113
+#: js/control/Control.Menubar.js:133
 msgid "Fullscreen presentation"
 msgstr ""
 
-#: js/control/Control.Menubar.js:729
+#: js/control/Control.Menubar.js:205
+msgid "Define print area"
+msgstr ""
+
+#: js/control/Control.Menubar.js:206
+msgid "Remove print area"
+msgstr ""
+
+#: js/control/Control.Menubar.js:270 js/control/Control.Menubar.js:320
+#: js/control/Control.Menubar.js:334 js/control/Control.Menubar.js:357
+msgid "Local Image..."
+msgstr ""
+
+#: js/control/Control.Menubar.js:287 js/control/Control.Menubar.js:289
+msgid "All"
+msgstr ""
+
+#: js/control/Control.Menubar.js:309
+msgid "Insert Rich Text"
+msgstr ""
+
+#: js/control/Control.Menubar.js:310
+msgid "Insert Checkbox"
+msgstr ""
+
+#: js/control/Control.Menubar.js:311
+msgid "Insert Dropdown"
+msgstr ""
+
+#: js/control/Control.Menubar.js:312
+msgid "Insert Picture"
+msgstr ""
+
+#: js/control/Control.Menubar.js:313
+msgid "Insert Date"
+msgstr ""
+
+#: js/control/Control.Menubar.js:314
+msgid "Properties"
+msgstr ""
+
+#: js/control/Control.Menubar.js:904
 msgid "None (Do not check spelling)"
 msgstr ""
 
-#: js/control/Control.Menubar.js:735
+#: js/control/Control.Menubar.js:910
 msgid "Reset to Default Language"
 msgstr ""
 
-#: js/control/Control.Menubar.js:773
+#: js/control/Control.Menubar.js:948
 msgid "Insert Shape"
 msgstr ""
 
@@ -216,48 +275,128 @@ msgstr ""
 msgid "Light Mode"
 msgstr ""
 
-#: admin/js/color-scheme-switcher.js:34
-msgid "Dark Mode"
-msgstr ""
-
 #: admin/js/color-scheme-switcher.js:191
 msgid "Current color scheme"
 msgstr ""
 
-#: admin/js/global.js:37
+#: admin/js/global.js:69
 msgid "Account"
 msgstr ""
 
-#: admin/js/global.js:38
+#: admin/js/global.js:70 admin/src/Main.js:445 admin/src/Main.js:465
 msgid "Password"
 msgstr ""
 
-#: admin/js/global.js:39
+#: admin/js/global.js:71
 msgid "Sign in"
 msgstr ""
 
-#: admin/js/global.js:40
+#: admin/js/global.js:72
+msgid "Sign out"
+msgstr ""
+
+#: admin/js/global.js:73
 msgid "OSS Integral Institute Co., Ltd."
 msgstr ""
 
-#: admin/js/global.js:99
+#: admin/js/global.js:132
 msgid "Show password"
 msgstr ""
 
-#: admin/js/global.js:99
+#: admin/js/global.js:132
 msgid "Hide password"
 msgstr ""
 
-#: admin/src/AdminSocketBase.js:53
+#: admin/src/AdminSocketBase.js:52
 msgid "Server has been shut down; Waiting to be back online."
 msgstr ""
 
-#: admin/src/AdminSocketBase.js:68
+#: admin/src/AdminSocketBase.js:67
 msgid "Connection error"
 msgstr ""
 
-#: admin/src/AdminSocketBase.js:75
+#: admin/src/AdminSocketBase.js:74
 msgid "Try to reconnect..."
+msgstr ""
+
+#: admin/src/Main.js:19
+msgid "Administrator login"
+msgstr ""
+
+#: admin/src/Main.js:20
+msgid "Admin Console"
+msgstr ""
+
+#: admin/src/Main.js:21
+msgid "Restart server"
+msgstr ""
+
+#: admin/src/Main.js:22
+msgid "Change password"
+msgstr ""
+
+#: admin/src/Main.js:23
+msgid "OSS Integral Institute Co., Ltd. All rights reserved."
+msgstr ""
+
+#: admin/src/Main.js:37
+msgid "Overview"
+msgstr ""
+
+#: admin/src/Main.js:45
+msgid "Analytics"
+msgstr ""
+
+#: admin/src/Main.js:52
+msgid "Log"
+msgstr ""
+
+#: admin/src/Main.js:67 admin/src/Main.js:118
+msgid "Authentication required"
+msgstr ""
+
+#: admin/src/Main.js:116
+msgid "Invalid authentication token"
+msgstr ""
+
+#: admin/src/Main.js:133
+msgid "The account or password is inconsistent with the system!"
+msgstr ""
+
+#: admin/src/Main.js:138
+msgid ""
+"The account and password have been updated and will take effect after the "
+"next service restart."
+msgstr ""
+
+#: admin/src/Main.js:423
+msgid "Are you sure you want to restart the online service?"
+msgstr ""
+
+#: admin/src/Main.js:442
+msgid ""
+"For security reasons, please enter your original management account and "
+"password."
+msgstr ""
+
+#: admin/src/Main.js:444 admin/src/Main.js:464
+msgid "User name"
+msgstr ""
+
+#: admin/src/Main.js:448
+msgid "Verification"
+msgstr ""
+
+#: admin/src/Main.js:462
+msgid "Please enter a new account and password."
+msgstr ""
+
+#: admin/src/Main.js:466
+msgid "Confirm password"
+msgstr ""
+
+#: admin/src/Main.js:479
+msgid "The password does not match the confirmation password!"
 msgstr ""
 
 #: admin/src/Util.js:14
@@ -306,4 +445,132 @@ msgstr ""
 
 #: admin/src/Util.js:54
 msgid " s"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:9
+msgid "Users online"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:10
+msgid "Documents opened"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:11
+msgid "Memory consumed"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:12
+msgid "Bytes sent"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:13
+msgid "Bytes received"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:14
+msgid "Server uptime"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:15
+msgid "WOPI host"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:16
+msgid "Views"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:17
+msgid "PID"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:18
+msgid "Document"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:19
+msgid "Elapsed time"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:20
+msgid "Idle time"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:21
+msgid "Modified"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:22
+msgid "Number of Documents"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:23
+msgid "Uploaded"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:179
+msgid "Failed to set jwt authentication cookie over insecure connection"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:183
+msgid "Failed to authenticate this session over protocol %0"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:232
+msgid "Kill session."
+msgstr ""
+
+#: admin/standard/Overview/admin.js:238
+msgid "Are you sure you want to terminate this session?"
+msgstr ""
+
+#: admin/standard/Overview/admin.js:301
+msgid "user(s)."
+msgstr ""
+
+#: admin/standard/Overview/admin.js:353
+msgid "document(s) open."
+msgstr ""
+
+#: admin/standard/Log/admin.js:10
+msgid "None"
+msgstr ""
+
+#: admin/standard/Log/admin.js:11
+msgid "Channel Filter:"
+msgstr ""
+
+#: admin/standard/Log/admin.js:12
+msgid "Refresh Log"
+msgstr ""
+
+#: admin/standard/Log/admin.js:13
+msgid "Set Log Levels"
+msgstr ""
+
+#: admin/standard/Log/admin.js:14
+msgid "Log Levels"
+msgstr ""
+
+#: admin/standard/Log/admin.js:15
+msgid "Update Log Levels"
+msgstr ""
+
+#: admin/standard/Analytics/admin.js:11
+msgid "Memory Graph"
+msgstr ""
+
+#: admin/standard/Analytics/admin.js:12
+msgid "CPU Graph"
+msgstr ""
+
+#: admin/standard/Analytics/admin.js:13
+msgid "Network Graph"
+msgstr ""
+
+#: admin/standard/Analytics/admin.js:206
+msgid "Received"
+msgstr ""
+
+#: admin/standard/Analytics/admin.js:210
+msgid "Sent"
 msgstr ""

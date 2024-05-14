@@ -18,6 +18,9 @@
 		_l10n: [
 			_('Administrator login'), // 管理員登入
 			_('Admin Console'), // 控制檯
+			_('Restart server'), // 重啓伺服器
+			_('Change password'), // 修改密碼
+			_('OSS Integral Institute Co., Ltd. All rights reserved.'),
 		],
 
 		_adminRootURI: '', // 後臺管理根 URI
