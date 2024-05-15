@@ -79,7 +79,6 @@ L.AdminModule.Overview = L.AdminModule.extend({
 			textMsg = textMsg.substring('resetidle'.length);
 			sPid = textMsg.trim().split(' ')[0];
 			$('#docidle' + sPid).val(0);
-			//document.getElementById('docidle' + sPid).innerText = Util.humanizeSecs(0);
 		// 使用者開啟文件
 		} else if (textMsg.startsWith('adddoc')) {
 			textMsg = textMsg.substring('adddoc'.length);
@@ -90,21 +89,30 @@ L.AdminModule.Overview = L.AdminModule.extend({
 			// 3 : user name(被 encode 過)
 			// 4 : user id(被 encode 過)
 			// 5 : 耗用的記憶體
+			// 6 : wopi host
+			// 7 : read only
+			// 8 : wopiSrc
 			docProps = {
 				'pid': docProps[0],
 				'fileName': docProps[1],
-				'memory': docProps[5],
-				'elapsedTime': '0',
-				'idleTime': '0',
+				'memory': parseInt(docProps[5]),
+				'elapsedTime': 0,
+				'idleTime': 0,
 				'modified': 'No',
+				'wopiHost': docProps[6],
+				'wopiSrc': docProps[8],
 				'views': [{
+					'readonly': docProps[7],
 					'sessionid': docProps[2],
 					'userName': decodeURI(docProps[3]),
-					'userId': decodeURI(docProps[4])}]
+					'userId': decodeURI(docProps[4])
+				}],
+				'uploaded': 'No'
 			};
 
 			this._upsertDocsTable(docProps);
 			this._upsertUsersTable(docProps);
+			this._getBasicStats(); // 更新統計資料
 		// 各項統計資料回報
 		} else if (textMsg.startsWith('mem_consumed') ||
 			textMsg.startsWith('active_docs_count') ||
@@ -147,6 +155,7 @@ L.AdminModule.Overview = L.AdminModule.extend({
 				var userDocListCell = docEntry.parentNode.parentNode;
 				this._getCollapsibleClass(userDocListCell.id).deleteItem(docEntry.id);
 			}
+			this._getBasicStats(); // 更新統計資料
 		// 文件消耗的記憶體改變
 		} else if (textMsg.startsWith('propchange')) {
 			textMsg = textMsg.substring('propchange'.length);
@@ -168,22 +177,18 @@ L.AdminModule.Overview = L.AdminModule.extend({
 			docProps = textMsg.trim().split(' ');
 			sPid = docProps[0];
 			var value = docProps[1];
-
 			var $mod = $(document.getElementById('mod' + sPid));
 			$mod.html(value === 'Yes' ? '<i class="bi bi-check2 text-danger"></i>' : '');
-		} else if (textMsg == 'InvalidAuthToken' || textMsg == 'NotAuthenticated') {
-			var msg;
-			if (window.location.protocol === 'http:')
-			{
-				// Browsers refuse to overwrite the jwt cookie in this case.
-				msg =  _('Failed to set jwt authentication cookie over insecure connection');
-			}
-			else
-			{
-				msg =  _('Failed to authenticate this session over protocol %0');
-				msg = msg.replace('%0', window.location.protocol);
-			}
-			vex.dialog.alert({ message: msg });
+		// 文件已上傳
+		} else if (textMsg.startsWith('uploaded')) {
+			textMsg = textMsg.substring('uploaded'.length);
+			docProps = textMsg.trim().split(' ');
+			sPid = docProps[0];
+			var value = docProps[1];
+			var $uploaded = $(document.getElementById('uploaded' + sPid));
+			$uploaded.html(value === 'Yes' ? '<i class="bi bi-check2 text-success"></i>' : '');
+		} else {
+			console.error('Unknown message: "' + textMsg + '"');
 		}
 	},
 
@@ -277,14 +282,12 @@ L.AdminModule.Overview = L.AdminModule.extend({
 			var eTimeCell = document.createElement('td');
 			eTimeCell.className = 'text-center elapsed_time';
 			$(eTimeCell).val(doc.elapsedTime);
-			//eTimeCell.innerText = Util.humanizeSecs(doc.elapsedTime);
 			row.appendChild(eTimeCell);
 			// 閒置的時間欄位
 			var idleCell = document.createElement('td');
 			idleCell.className = 'text-center idle_time';
 			idleCell.id = 'docidle' + doc.pid;
 			$(idleCell).val(doc.idleTime);
-			//idleCell.innerText = Util.humanizeSecs(doc.idleTime);
 			row.appendChild(idleCell);
 			// 最後修改欄位
 			var isModifiedCell = document.createElement('td');
@@ -295,6 +298,7 @@ L.AdminModule.Overview = L.AdminModule.extend({
 			// Uploaded 欄位
 			var uploadedCell = document.createElement('td');
 			uploadedCell.className = 'text-center';
+			uploadedCell.id = 'uploaded' + doc.pid;
 			uploadedCell.innerHTML = doc['uploaded'] === 'Yes' ? '<i class="bi bi-check2 text-success"></i>' : '';
 			row.appendChild(uploadedCell);
 			// 建立折疊區
@@ -303,16 +307,6 @@ L.AdminModule.Overview = L.AdminModule.extend({
 				collapsable.addItem('user' + doc.views[i].sessionid, doc.views[i].userName);
 			}
 		}
-		/* // TODO: Is activeViews always the same with viewer count? We will hide this for now. If they are not same, this will be added to Users column like: 1/2 active/user(s).
-		if (add === true) {
-			var viewsCell = document.createElement('td');
-			viewsCell.id = 'docview' + doc['pid'];
-			viewsCell.innerText = doc['activeViews'];
-			//row.appendChild(viewsCell);
-		}
-		else {
-			//document.getElementById('docview' + doc['pid']).innerText = String(parseInt(document.getElementById('docview' + doc['pid'])) + 1);
-		} */
 	},
 
 	/**
