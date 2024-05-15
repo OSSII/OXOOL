@@ -83,7 +83,7 @@
 			// 連線成功後，傳送 jwt token，否則之後都無法和 server 通訊
 			this.socket.send('auth jwt=' + this._jwtToken);
 
-			this.socket.send('mem_consumed');
+			this.socket.send('version'); // 要求傳回版本資訊
 			this.socket.send('getAdminModuleList ' + String.locale); // 要求傳回有後臺管理的模組
 		},
 
@@ -136,8 +136,15 @@
 				this._changeAccountPassword();
 			} else if (textMsg.startsWith('setAdminPasswordOk')) {
 				vex.dialog.alert(_('The account and password have been updated and will take effect after the next service restart.'));
-			} else if (this.runningModule) {
-				this.runningModule.onMessage(textMsg);
+
+			} else if (textMsg.startsWith('oxoolserver') || textMsg.startsWith('coolserver')) {
+				// online 版本資訊
+				console.debug('AdminSocketMain.onSocketMessage: online version', textMsg);
+			} else if (textMsg.startsWith('lokitversion')) {
+				// lokit 版本資訊
+				console.debug('AdminSocketMain.onSocketMessage: lokit version', textMsg);
+			} else {
+				console.error('AdminSocketMain.onSocketMessage: invalid message "%s"', textMsg);
 			}
 		},
 
