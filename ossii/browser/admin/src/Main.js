@@ -143,8 +143,10 @@
 			} else if (textMsg.startsWith('lokitversion')) {
 				// lokit 版本資訊
 				console.debug('AdminSocketMain.onSocketMessage: lokit version', textMsg);
+			} else if (this.runningModule) {
+				this.runningModule.onMessage(textMsg);
 			} else {
-				console.error('AdminSocketMain.onSocketMessage: invalid message "%s"', textMsg);
+				console.error('AdminSocketMain.onSocketMessage: invalid message', textMsg);
 			}
 		},
 
