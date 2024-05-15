@@ -181,8 +181,8 @@ L.Module = L.Class.extend({
 
 		for (var i = 0; i < this.options.modules.length; i++) {
 			var detail = this.options.modules[i];
-			// Skip if no browserURI
-			if (!detail || detail.browserURI === '') {
+			// Skip if no browserURI or no browserModuleJS
+			if (!detail || detail.browserURI === '' || detail.browserModuleJS === '') {
 				continue;
 			}
 
@@ -207,7 +207,7 @@ L.Module = L.Class.extend({
 
 		script.type = 'text/javascript';
 		script.async = true;
-		script.src = detail.browserURI + 'module.js';
+		script.src = detail.browserModuleJS;
 		script.onload = function () {
 			// 檢查是否有 L.Module[moduleName] 這個 class(模組 L.Module.{moduleName})
 			if (L.Module[moduleName]) {

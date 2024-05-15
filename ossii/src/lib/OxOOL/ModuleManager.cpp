@@ -184,9 +184,6 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
                     if (it.second->getModule()->maConfigFile == configFile)
                     {
                         maModuleMap.erase(it.first);
-#if ENABLE_DEBUG
-                        std::cout << "Module: " << detail.name << " already loaded. unload it." << std::endl;
-#endif
                         break;
                     }
                 }
@@ -218,9 +215,6 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
         // 若有就會把第一個 token 清空，造成模組指令不完整，解析不出來
         // 由此可知，第一個 token 千萬不要有 '-'，否則會出現難解的問題
         ID.erase(std::remove(ID.begin(), ID.end(), '-'), ID.end());
-#if ENABLE_DEBUG
-        std::cout << "Module: " << detail.name << ", ID: " << ID << std::endl;
-#endif
 
         OxOOL::Module::Ptr module = moduleLib->getModule();
         module->maId = ID; // 設定模組 ID
@@ -230,11 +224,8 @@ bool ModuleManager::loadModuleConfig(const std::string& configFile,
             Poco::File(documentRoot + "/browser/l10n").exists())
         {
             const std::string browserURI = mpBrowserService->maDetail.serviceURI + ID + "/"; // 用 UUID 作爲 URI，避免　URI 固定
-            mpBrowserService->registerBrowserURI(browserURI); // 註冊 browser URI，讓 ModuleService 處理
+            mpBrowserService->registerBrowserURI(browserURI); // 註冊 browser URI，讓 BrowserService 處理
             module->maBrowserURI = browserURI; // 設定模組的前端服務位址
-#if ENABLE_DEBUG
-            std::cout << "Browser URI: " << browserURI << std::endl;
-#endif
         }
 
         // 檢查是否有後臺管理(需在模組目錄下有 admin 目錄，且 admin 目錄下還有 admin.html 及 admin.js)
@@ -377,16 +368,6 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
 bool ModuleManager::handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                                         const StringVector& tokens)
 {
-#if ENABLE_DEBUG
-    std::string firstLine;
-    for (std::size_t count = 0; count < tokens.size(); ++count)
-    {
-        if (count > 0)
-            firstLine.append(" ");
-
-        firstLine.append(tokens[count]);
-    }
-#endif // ENABLE_DEBUG
     // 檢查是否來自 module client 的請求，用 <module ID> 來區分。
     if (tokens[0].at(0) == '<')
     {
@@ -397,15 +378,6 @@ bool ModuleManager::handleClientMessage(const std::shared_ptr<ClientSession>& cl
             const OxOOL::Module::Ptr module = getModuleById(moduleId);
             if (module)
             {
-#if ENABLE_DEBUG
-            {
-                std::cout << "\033[1;33mClient Message from: "
-                    << clientSession->getUserId() << "(" << clientSession->getUserName() << ")\033[0m" << std::endl;
-
-                std::cout << "Message: \"" << firstLine << "\"" << std::endl;
-                std::cout << "---------------------------------" << std::endl;
-            }
-#endif // ENABLE_DEBUG
                 const std::string command  = tokens[0].substr(pos + 1); // 取得 command(已經去除 module ID tag)
                 StringVector moduleTokens;
                 moduleTokens.push_back(command); // first token is the command.
@@ -419,14 +391,6 @@ bool ModuleManager::handleClientMessage(const std::shared_ptr<ClientSession>& cl
             return true; // 無論如何，這個請訊息只能被模組處理，不需要再往下傳。
         }
     }
-#if ENABLE_DEBUG
-    {
-        std::cout << "\033[1;32mClient Message from: "
-            << clientSession->getUserId() << "(" << clientSession->getUserName() << ")\033[0m" << std::endl;
-        std::cout << "Message: \"" << firstLine << "\"" << std::endl;
-        std::cout << "---------------------------------" << std::endl;
-    }
-#endif // ENABLE_DEBUG
 
     // 介入這個請求，先把模組列表送給 client，攔截 load 指令
     if (tokens.equals(0, "load") )
@@ -466,20 +430,6 @@ bool ModuleManager::handleKitToClientMessage(const std::shared_ptr<ClientSession
         // 紀錄抹組處理狀況
         handledModules[it.second->getModule()->getDetail().name] = handled;
     }
-
-#if ENABLE_DEBUG
-    {
-        std::cout << "Kit Message to "
-                << clientSession->getUserId() << "(" << clientSession->getUserName() << ")" << std::endl;
-        std::cout << "Payload: " << "\"" << payload->firstLine() << "\"" << std::endl;
-        std::cout << "Handled by modules: " << std::endl;
-        for (auto& it : handledModules)
-        {
-            std::cout << it.first << ": " << (it.second ? "Yes" : "No") << std::endl;
-        }
-        std::cout << "---------------------------------" << std::endl;
-    }
-#endif // ENABLE_DEBUG
 
     return false; // 繼續傳給 online core 處理
 }
@@ -666,7 +616,7 @@ Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::
                                                            const std::string& langTag) const
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-    OxOOL::Module::Detail& detail = module->maDetail;
+    OxOOL::Module::Detail detail = module->maDetail;
 
     // 若有指定語系，嘗試翻譯
     if (!langTag.empty())
@@ -684,6 +634,11 @@ Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::
     json->set("id", module->maId);
     json->set("adminURI", module->maAdminURI);
     json->set("browserURI", module->maBrowserURI);
+    // 是否有 browser/module.js
+    const std::string browserModuleJS = Poco::File(module->maRootPath + "/browser/module.js").exists()
+                                      ? module->maBrowserURI + "module.js"
+                                      : "";
+    json->set("browserModuleJS", browserModuleJS);
 
     // 設定模組詳細資訊
     json->set("name", detail.name);
@@ -771,12 +726,6 @@ void ModuleManager::initializeInternalModules()
 bool ModuleManager::isService(const Poco::Net::HTTPRequest& request,
                               const OxOOL::Module::Ptr module) const
 {
-#if ENABLE_DEBUG
-    // 檢查是否啓用後臺管理服務
-    bool enableAdminService = std::getenv("ENABLE_ADMIN_SERVICE") ? true : false;
-    if (module->maDetail.name == "AdminService" && !enableAdminService)
-        return false;
-#endif
     // 不含查詢字串的實際請求位址
     const std::string requestURI = Poco::URI(request.getURI()).getPath();
 
