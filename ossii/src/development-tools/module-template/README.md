@@ -87,7 +87,7 @@ Then you will see oxool-module-[name]\_...-1.amd64.deb in perent directory.
 
 ##### __Test during development:__
 
-Please use 'maek run' to enable the test environment.
+Please use 'make run' to enable the test environment.
 
 Then in the project directory, modify and compile the code, To view the results locally, you can enter the command:
 
