@@ -106,14 +106,15 @@ public:
 #if ENABLE_ADMIN
     /// @brief 處理控制臺 Websocket 的訊息
     /// Handle console Websocket messages.
-    std::string handleAdminMessage(const StringVector& tokens) override
+    void handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
+                            const StringVector& tokens) override
     {
         if (tokens.equals(0, "ping"))
         {
-            return "pong";
+           sendAdminTextFrame(sendTextMessage, "pong");
         }
 
-        return "unknowncommand: " + tokens[0];
+        sendAdminTextFrame(sendTextMessage, "unknowncommand: " + tokens[0]);
     }
 #endif // ENABLE_ADMIN
 };
