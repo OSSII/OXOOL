@@ -5713,6 +5713,9 @@ private:
         capabilities->set("hasWASMSupport", OXOOLWSD::WASMState != OXOOLWSD::WASMActivationState::Disabled);
 #endif // !MOBILEAPP
 
+        if (const char* podName = std::getenv("POD_NAME"))
+            capabilities->set("podName", podName);
+
         std::ostringstream ostrJSON;
         capabilities->stringify(ostrJSON);
         return ostrJSON.str();
