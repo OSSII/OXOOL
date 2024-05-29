@@ -555,12 +555,12 @@ void ModuleManager::cleanupDeadAgents()
 
 const std::vector<OxOOL::Module::Detail> ModuleManager::getAllModuleDetails() const
 {
-    std::vector<OxOOL::Module::Detail> detials(maModuleMap.size());
+    std::vector<OxOOL::Module::Detail> details(maModuleMap.size());
     for (auto &it : maModuleMap)
     {
-        detials.emplace_back(it.second->getModule()->getDetail());
+        details.emplace_back(it.second->getModule()->getDetail());
     }
-    return detials;
+    return details;
 }
 
 std::string ModuleManager::getAllModuleDetailsJsonString(const std::string& langTag) const

@@ -94,23 +94,23 @@ public:
                 else
                 {
                     OxOOL::Module::Ptr module = moduleManager.getModuleByConfigFile(configFile);
-                    OxOOL::Module::Detail detial = module->getDetail();
+                    OxOOL::Module::Detail detail = module->getDetail();
 
                     std::ostringstream oss;
-                    oss << "Module detials:"
+                    oss << "Module details:"
                         << "\n\tID: " << module->getId()
-                        << "\n\tName: " << detial.name
-                        << "\n\tService URI: " << (detial.serviceURI.empty() ? colorString("<None>", YELLOW) : detial.serviceURI)
-                        << "\n\tVerson: " << detial.version
-                        << "\n\tSummary: " << detial.summary
-                        << "\n\tLicense: " << detial.license
-                        << "\n\tAuthor: " << detial.author
-                        << "\n\tDescrtption: " << detial.description
+                        << "\n\tName: " << detail.name
+                        << "\n\tService URI: " << (detail.serviceURI.empty() ? colorString("<None>", YELLOW) : detail.serviceURI)
+                        << "\n\tVerson: " << detail.version
+                        << "\n\tSummary: " << detail.summary
+                        << "\n\tLicense: " << detail.license
+                        << "\n\tAuthor: " << detail.author
+                        << "\n\tDescrtption: " << detail.description
                         << "\n\tDocument root: " << module->getDocumentRoot()
                         << "\n\tBrowser URI: " << (module->getBrowserURI().empty() ? colorString("<None>", GREEN) : module->getBrowserURI())
-                        << "\n\tAdmin privilege: " << (detial.adminPrivilege ? "Yes" : "No")
-                        << "\n\tAdmin icon: " << detial.adminIcon
-                        << "\n\tAdmin item: " << detial.adminItem
+                        << "\n\tAdmin privilege: " << (detail.adminPrivilege ? "Yes" : "No")
+                        << "\n\tAdmin icon: " << detail.adminIcon
+                        << "\n\tAdmin item: " << detail.adminItem
                         << "\n\tAdmin URI: " << (module->getAdminURI().empty() ? colorString("<None>", GREEN) : module->getAdminURI());
 
                     responseMsg = oss.str();
