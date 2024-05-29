@@ -134,6 +134,20 @@ protected:
     bool sendTextFrameToClient(const std::shared_ptr<ClientSession>& clientSession,
                                const std::string& message);
 
+    /// @brief 轉送 Client 訊息給 Kit
+    /// @param clientSession - ClientSession 物件
+    /// @param message - 訊息內容
+    /// @return true: 成功， false: 失敗
+    bool forwardToChild(const std::shared_ptr<ClientSession>& clientSession,
+                        const std::string& message);
+
+    /// @brief 轉送 Kit 訊息給 Client
+    /// @param clientSession - ClientSession 物件
+    /// @param message - 訊息內容
+    /// @return true: 成功， false: 失敗
+    bool forwardToClient(const std::shared_ptr<ClientSession>& clientSession,
+                         const std::shared_ptr<Message>& payload);
+
     void sendAdminTextFrame(const OxOOL::SendTextMessageFn& sendTextMessage,
                             const std::string& message, bool flush = false);
 

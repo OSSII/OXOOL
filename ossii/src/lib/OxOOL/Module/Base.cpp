@@ -119,6 +119,20 @@ bool Base::sendTextFrameToClient(const std::shared_ptr<ClientSession>& clientSes
     return clientSession->sendTextFrame("<" + maId + ">" + message);
 }
 
+bool Base::forwardToChild(const std::shared_ptr<ClientSession>& clientSession,
+                          const std::string& message)
+{
+    const bool binary = message.find("paste") == 0 || message.find("urp") == 0;
+    return clientSession->getDocumentBroker()->forwardToChild(clientSession, message, binary);
+}
+
+bool Base::forwardToClient(const std::shared_ptr<ClientSession>& clientSession,
+                           const std::shared_ptr<Message>& payload)
+{
+    clientSession->enqueueSendMessage(payload);
+    return true;
+}
+
 void Base::sendAdminTextFrame(const OxOOL::SendTextMessageFn& sendTextMessage,
                               const std::string& message, bool flush)
 {
