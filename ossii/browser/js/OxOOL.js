@@ -70,9 +70,9 @@ L.OxOOL = L.Class.extend({
 				console.error('Failed to parse modules: ', e);
 			}
 
-			// We have created the ModuleManager, or failed to create it.
-			// In any case, the original socket onMessage function must be restored.
-			this._restoreSocketOnMessage();
+			return;
+		} else if (e.textMsg.startsWith('watermark:')) {
+			this._map.options.watermark = JSON.parse(e.textMsg.substring(e.textMsg.indexOf('{')));
 			return;
 		}
 

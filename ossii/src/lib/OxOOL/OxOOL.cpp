@@ -15,12 +15,15 @@
 #include <OxOOL/ModuleManager.h>
 
 #include <Poco/Util/Application.h>
+#include <Poco/JSON/Parser.h>
 
 #include <common/Message.hpp>
 #include <common/StringVector.hpp>
 #include <common/Util.hpp>
 #include <wsd/OXOOLWSD.hpp>
 #include <wsd/ClientSession.hpp>
+
+#include "Private/Watermark.hpp"
 
 namespace OxOOL
 {
@@ -80,12 +83,22 @@ void ENV::initialize()
 namespace OxOOL
 {
     static ModuleManager& ModuleMgr = ModuleManager::instance();
+    static Watermark Watermark;
 
     /// Initialize the library.
     void initialize()
     {
+        // Initialize the environment.
         OxOOL::ENV::initialize();
+        // Initialize the module manager.
         ModuleMgr.initialize();
+        // Initialize the watermark.
+        Watermark.initialize();
+    }
+
+    void enhanceWatermark(const std::shared_ptr<ClientSession>& session)
+    {
+        Watermark.enhanceWatermark(session);
     }
 
     const std::vector<OxOOL::Module::Detail> getAllModuleDetails()
@@ -100,6 +113,11 @@ namespace OxOOL
     bool handleRequest(const Poco::Net::HTTPRequest& request, SocketDisposition& disposition)
     {
         return ModuleMgr.handleRequest(request, disposition);
+    }
+
+    void dumpAllModuleInfo()
+    {
+        // TODO: Implement this.
     }
 
     /// Cleanup the library.

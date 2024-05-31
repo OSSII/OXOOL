@@ -81,6 +81,8 @@ namespace OxOOL
 /// Initialize the library.
 void initialize();
 
+void enhanceWatermark(const std::shared_ptr<ClientSession>& session);
+
 /// @brief Get all module details.
 const std::vector<OxOOL::Module::Detail> getAllModuleDetails();
 

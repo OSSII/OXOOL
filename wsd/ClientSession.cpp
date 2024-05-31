@@ -1196,6 +1196,8 @@ bool ClientSession::loadDocument(const char* /*buffer*/, int /*length*/,
         int loadPart = -1;
         parseDocOptions(tokens, loadPart, timestamp, doctemplate);
 
+        OxOOL::enhanceWatermark(client_from_this());
+
         std::ostringstream oss;
         oss << "load url=" << docBroker->getPublicUri().toString();
 

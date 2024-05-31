@@ -9,7 +9,7 @@
 AM_CPPFLAGS = -pthread -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
 	      -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
 	      -DDEBUG_ABSSRCDIR='"@abs_top_builddir@"' \
-          $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) $(FONTCONFIG_CFLAGS) \
+          $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) \
 		  $(OSSII_CFLAGS)
 
 if ENABLE_SSL
@@ -20,7 +20,7 @@ if !ENABLE_DEBUG
 AM_CPPFLAGS += -DNDEBUG
 endif
 
-AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) $(PNG_LIBS) $(FONTCONFIG_LIBS)
+AM_LDFLAGS = -Wl,-E -lpam $(ZLIB_LIBS) $(ZSTD_LIBS) $(PNG_LIBS)
 
 # Clang's linker doesn't like -pthread.
 if !HAVE_CLANG
@@ -84,7 +84,8 @@ oxoolcore_internal_header = \
 							OxOOL/ModuleManager/AdminService.hpp \
 							OxOOL/ModuleManager/BrowserService.hpp \
 							OxOOL/ModuleManager/ModuleAgent.hpp \
-							OxOOL/ModuleManager/ModuleLibrary.hpp
+							OxOOL/ModuleManager/ModuleLibrary.hpp \
+							OxOOL/Private/Watermark.hpp
 
 noinst_HEADERS = $(oxoolcore_internal_header)
 
@@ -105,7 +106,8 @@ oxoolcore_sources = \
                     OxOOL/ConvertBroker.cpp \
                     OxOOL/Util.cpp \
                     OxOOL/Util/OptionlValidator.cpp \
-                    OxOOL/Util/FileValidator.cpp
+                    OxOOL/Util/FileValidator.cpp \
+                    OxOOL/Private/Watermark.cpp
 
 lib_LTLIBRARIES = lib@OSSII_LIB_NAME@.la
 lib@OSSII_LIB_NAME@_la_SOURCES = $(shared_sources) $(oxoolwsd_sources) $(oxoolcore_sources)
