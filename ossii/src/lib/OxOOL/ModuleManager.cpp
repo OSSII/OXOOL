@@ -612,7 +612,7 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
     return jsonString;
 }
 
-Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::Ptr module,
+Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::Ptr& module,
                                                            const std::string& langTag) const
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -724,7 +724,7 @@ void ModuleManager::initializeInternalModules()
 }
 
 bool ModuleManager::isService(const Poco::Net::HTTPRequest& request,
-                              const OxOOL::Module::Ptr module) const
+                              const OxOOL::Module::Ptr& module) const
 {
     // 不含查詢字串的實際請求位址
     const std::string requestURI = Poco::URI(request.getURI()).getPath();

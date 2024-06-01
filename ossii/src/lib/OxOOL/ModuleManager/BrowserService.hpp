@@ -51,7 +51,7 @@ private:
     /// @param module - 模組
     /// @param request - HTTP 請求
     /// @param socket - 連線 socket
-    void sendLocalizationList(const OxOOL::Module::Ptr module,
+    void sendLocalizationList(const OxOOL::Module::Ptr& module,
                               const std::shared_ptr<StreamSocket>& socket);
 
 };

@@ -111,7 +111,7 @@ bool BrowserService::isValidBrowserURI(const Poco::Net::HTTPRequest& request)
     return false;
 }
 
-void BrowserService::sendLocalizationList(const OxOOL::Module::Ptr module,
+void BrowserService::sendLocalizationList(const OxOOL::Module::Ptr& module,
                                           const std::shared_ptr<StreamSocket>& socket)
 {
     // 查是否有快取

@@ -15,8 +15,6 @@
 
 #include <Poco/JSON/Object.h>
 
-//#include <net/Socket.hpp>
-
 namespace Poco::Net
 {
     class HTTPRequest;
@@ -132,7 +130,7 @@ public:
     /// @param module - 模組
     /// @param langTag - 語言標籤(en, zh-TW, ...)
     /// @return Poco::JSON::Object::Ptr
-    Poco::JSON::Object::Ptr getModuleDetailJson(const OxOOL::Module::Ptr module,
+    Poco::JSON::Object::Ptr getModuleDetailJson(const OxOOL::Module::Ptr& module,
                                                 const std::string& langTag = std::string()) const;
 
     /// @brief 列出所有的模組
@@ -146,7 +144,7 @@ private:
     /// @param request
     /// @return true 該要求屬於這個模組處理
     bool isService(const Poco::Net::HTTPRequest& request,
-                   const OxOOL::Module::Ptr module) const;
+                   const OxOOL::Module::Ptr& module) const;
 
     /// @brief
     /// @param request
