@@ -58,6 +58,8 @@ public:
 
     static std::string FileServerRoot; // File server root(eg. "/usr/share/oxool")
     static std::string SysTemplate; // System Template directory.
+    static std::string LoTemplate; // LibreOffice Template directory.
+    static std::string ChildRoot; // Child root directory
     static std::string ModuleDir; // Module directory
     static std::string ModuleConfigDir; // Module configuration directory
     static std::string ModuleDataDir; // Module data directory
@@ -112,5 +114,26 @@ void handleAdminMessage(const SendTextMessageFn& sendTextMessage,
 bool isConfigAuthOk(const std::string& userProvidedUsr, const std::string& userProvidedPwd);
 
 } // namespace OxOOL
+
+namespace OxOOL::Jail
+{
+    /// General temporary directory owned by us.
+    constexpr const char CHILDROOT_TMP_EXTENSIONS_PATH[] = "/tmp/extensions";
+
+    /// @brief Create jail extensions template.
+    /// @param childRoot - Child root directory.
+    /// @param loTemplate - LibreOffice template directory.
+    /// @param fileServerRoot - File server root directory.
+    void createExtensionsTemplate(const std::string& childRoot,
+                                  const std::string& loTemplate,
+                                  const std::string& fileServerRoot);
+
+    /// @brief bind mount extensions to the jail.
+    /// @param childRoot - Child root directory.
+    /// @param jailId - Jail ID.
+    /// @return true on success, false on failure.
+    bool mountExtensionsTemplate(const std::string& childRoot, const std::string& jailId);
+
+} // namespace OxOOL::Jail
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

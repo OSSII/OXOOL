@@ -14,9 +14,15 @@
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/ModuleManager.h>
 
+#include <Poco/DirectoryIterator.h>
+#include <Poco/File.h>
+#include <Poco/Path.h>
 #include <Poco/Util/Application.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/Zip/Decompress.h>
 
+#include <common/JailUtil.hpp>
+#include <common/Log.hpp>
 #include <common/Message.hpp>
 #include <common/StringVector.hpp>
 #include <common/Util.hpp>
@@ -37,6 +43,8 @@ std::string ENV::HttpServerString;
 
 std::string ENV::FileServerRoot;
 std::string ENV::SysTemplate;
+std::string ENV::LoTemplate;
+std::string ENV::ChildRoot;
 std::string ENV::ModuleDir;
 std::string ENV::ModuleConfigDir;
 std::string ENV::ModuleDataDir;
@@ -66,6 +74,8 @@ void ENV::initialize()
 
     ENV::FileServerRoot   = OXOOLWSD::FileServerRoot;
     ENV::SysTemplate      = OXOOLWSD::SysTemplate;
+    ENV::LoTemplate       = OXOOLWSD::LoTemplate;
+    ENV::ChildRoot        = OXOOLWSD::ChildRoot;
     ENV::ModuleDir        = OXOOL_MODULE_DIR;
     ENV::ModuleConfigDir  = OXOOL_MODULE_CONFIG_DIR;
     ENV::ModuleDataDir    = OXOOL_MODULE_DATA_DIR;
@@ -227,5 +237,107 @@ namespace OxOOL
     }
 
 } // namespace OxOOL
+
+/*-------------------------
+ * Jail related functions.
+ -------------------------*/
+namespace OxOOL::Jail
+{
+    void createExtensionsTemplate(const std::string& childRoot,
+                                  const std::string& loTemplate,
+                                  const std::string& fileServerRoot)
+    {
+        const std::string extenstionsPath = Poco::Path(childRoot).append(CHILDROOT_TMP_EXTENSIONS_PATH).toString();
+        LOG_INF("Creating extensions template at: " << extenstionsPath );
+        JailUtil::createJailPath(extenstionsPath);
+
+        const std::string loExtenstionsPath = loTemplate + "/share/extensions";
+        // Check if LibreOffice extensions directory exists.
+        if (Poco::File(loExtenstionsPath).exists() && Poco::File(loExtenstionsPath).isDirectory())
+        {
+            for (Poco::DirectoryIterator it(loExtenstionsPath); it != Poco::DirectoryIterator(); ++it)
+            {
+                LOG_INF("Copying LO extension: [" << it->path() << "] to [" << extenstionsPath << "]");
+                Poco::File(it->path()).copyTo(extenstionsPath);
+            }
+        }
+        else
+        {
+            LOG_ERR("LO extensions directory not found: " << loExtenstionsPath);
+            // remove the extensions template directory.
+            Poco::File(extenstionsPath).remove(true);
+            return;
+        }
+
+        // Extract OxOOL extensions.
+#if ENABLE_DEBUG
+        const std::string sysExtenstionsPath = fileServerRoot + "/ossii/extensions";
+#else
+        const std::string sysExtenstionsPath = fileServerRoot + "/extensions";
+#endif
+        // Check if system extensions directory exists.
+        bool hasOxtFiles = false;
+        if (Poco::File(sysExtenstionsPath).exists() && Poco::File(sysExtenstionsPath).isDirectory())
+        {
+            for (Poco::DirectoryIterator it(sysExtenstionsPath); it != Poco::DirectoryIterator(); ++it)
+            {
+                const Poco::Path extFile(it->path());
+                if (it->isFile() && extFile.getExtension() == "oxt")
+                {
+                    hasOxtFiles = true;
+                    const std::string dirName = extFile.getFileName();
+                    const Poco::Path oxtDir(extenstionsPath, dirName);
+                    // Extract the oxt file.
+                    LOG_INF("Extracting OXT file: " << it->path() << " to " << oxtDir.toString());
+                    std::ifstream oxtStream(it->path(), std::ios::binary);
+                    Poco::Zip::Decompress decompress(oxtStream, oxtDir, false, true);
+                    decompress.decompressAllFiles();
+                }
+            }
+        }
+
+        if (!hasOxtFiles)
+        {
+            LOG_ERR("No OXT files found in: " << sysExtenstionsPath << ", removing extensions template: " << extenstionsPath);
+            // remove the extensions template directory.
+            Poco::File(extenstionsPath).remove(true);
+        }
+    }
+
+    bool mountExtensionsTemplate(const std::string& childRoot, const std::string& jailId)
+    {
+        // Extensions template directory.
+        const std::string extenstionsPath = Poco::Path(childRoot).append(CHILDROOT_TMP_EXTENSIONS_PATH).toString();
+        // Check if extensions template directory exists.
+        if (!Poco::File(extenstionsPath).exists() || !Poco::File(extenstionsPath).isDirectory())
+        {
+            LOG_ERR("Extensions template directory not found: " << extenstionsPath);
+            return false;
+        }
+
+        // Jail path.
+        const std::string jailPath = Poco::Path(childRoot).append(jailId).toString();
+        // Check if jail directory exists.
+        if (!Poco::File(jailPath).exists() || !Poco::File(jailPath).isDirectory())
+        {
+            LOG_ERR("Jail directory not found: " << jailPath);
+            return false;
+        }
+
+        // Extensions jail directory.
+        const std::string loJailExtensionsPath =
+            Poco::Path(jailPath + '/' + JailUtil::LO_JAIL_SUBPATH + "/share/extensions").toString();
+        // Bind mount the extensions template to the jail.
+        if (!JailUtil::bind(extenstionsPath, loJailExtensionsPath) ||
+            !JailUtil::remountReadonly(extenstionsPath, loJailExtensionsPath))
+        {
+            LOG_ERR("Failed to bind mount extensions template to jail: ["
+                    << extenstionsPath << "] to [" << loJailExtensionsPath << "]");
+            return false;
+        }
+
+        return true;
+    }
+} // namespace OxOOL::Jail
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

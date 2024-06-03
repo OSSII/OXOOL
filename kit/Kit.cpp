@@ -55,6 +55,8 @@
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 
+#include <OxOOL/OxOOL.h>
+
 #include <Poco/File.h>
 #include <Poco/Exception.h>
 #include <Poco/JSON/Object.h>
@@ -2952,6 +2954,9 @@ void lokit_main(
                                                 << "], will link/copy contents.");
                     return false;
                 }
+
+                // OSSII extended features.
+                OxOOL::Jail::mountExtensionsTemplate(childRoot, jailId);
 
                 return true;
             };

@@ -2739,6 +2739,9 @@ void OXOOLWSD::innerInitialize(Application& self)
     FileServerRoot = getPathFromConfig("file_server_root_path");
     LOG_DBG("FileServerRoot after config: " << FileServerRoot);
 
+    // OSSII extended features.
+    OxOOL::Jail::createExtensionsTemplate(ChildRoot, LoTemplate, FileServerRoot);
+
     //creating quarantine directory
     if (getConfigValue<bool>(conf, "quarantine_files[@enable]", false))
     {
