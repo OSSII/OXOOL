@@ -1596,6 +1596,10 @@ private:
         if (!userTimezone.empty())
             options += ",Timezone=" + userTimezone;
 
+        const std::string wopiCertDir = pathFromFileURL(session->getJailedFilePath() + ".certs");
+        if (FileUtil::Stat(wopiCertDir).exists())
+            ::setenv("LO_CERTIFICATE_AUTHORITY_PATH", wopiCertDir.c_str(), 1);
+
         std::string spellOnline;
         if (!_loKitDocument)
         {
