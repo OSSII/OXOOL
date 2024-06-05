@@ -8,6 +8,7 @@ L.OxOOL = L.Class.extend({
 	},
 
 	_socketOnMessage: null, // save the original socket onMessage function
+	_savedDispatchFunction: null, // save the original dispatch function
 
 	_ModuleManager: null, // ModuleManager
 
@@ -23,7 +24,7 @@ L.OxOOL = L.Class.extend({
 		}
 
 		// Override socket _onMessage function to handle the message
-		this._takeOverSocketOnMessage();
+		this._overrideCoolFunctions();
 
 		// Register our own handlers
 		this._registerHandlers();
@@ -34,15 +35,21 @@ L.OxOOL = L.Class.extend({
 		this._map.on('doclayerinit', this._onDocLayerInit, this);
 	},
 
-	/** *
-	 * Override socket onMessage function to handle the message
+	/**
+	 * Override some cool functions if needed.
+	 *
 	 * @private
 	 */
-	_takeOverSocketOnMessage: function () {
+	_overrideCoolFunctions: function () {
+
 		// save the original socket onMessage function
 		this._socketOnMessage = L.bind(app.socket._onMessage, app.socket);
 		// override the socket onMessage function
 		app.socket._onMessage = L.bind(this._onMessage, this);
+
+		// take over the dispatch function
+		this._savedDispatchFunction = L.bind(app.map.dispatch, app.map);
+		app.map.dispatch = L.bind(this._dispatch, this);
 	},
 
 	/**
@@ -83,16 +90,15 @@ L.OxOOL = L.Class.extend({
 	},
 
 	/**
-	 * Restore the original socket onMessage function
-	 *
+	 * Handle the dispatch function
+	 * If the command is not allowed, call the original dispatch function
 	 * @private
+	 * @param {string} action - the command to be dispatched
 	 */
-	_restoreSocketOnMessage: function () {
-		if (this._socketOnMessage) {
-			// restore the original socket onMessage function
-			app.socket._onMessage = this._socketOnMessage;
-			this._socketOnMessage = null; // clear the saved socket onMessage function
-		}
+	_dispatch: function (action) {
+		if (!app.map.executeAllowedCommand(action))
+			// Call the original dispatch function
+			this._savedDispatchFunction(action);
 	},
 
 	/**
@@ -194,13 +200,6 @@ L.OxOOL = L.Class.extend({
 		this._postloadData(docType);
 	},
 
-	/**
-	 * Override some cool functions if needed.
-	 *
-	 * @private
-	 */
-	_overrideCoolFunctions: function () {
-	},
 });
 
 /* vim: set ts=8 sts=8 sw=8 tw=100: */
