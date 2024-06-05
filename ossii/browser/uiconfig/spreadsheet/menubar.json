@@ -336,11 +336,6 @@
 				"id": ".uno:InsertObjectChart"
 			},
 			{
-				"icon": ".uno:FlowChartShapes",
-				"name": "Hand-drawn diagram",
-				"id": "dialog:DiagramEditor"
-			},
-			{
 				"id": ".uno:InsertQrCode"
 			},
 			{

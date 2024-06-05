@@ -431,11 +431,6 @@
 				"id": "insertgraphicremote"
 			},
 			{
-				"icon": ".uno:FlowChartShapes",
-				"name": "Hand-drawn diagram",
-				"id": "dialog:DiagramEditor"
-			},
-			{
 				"id": ".uno:InsertObjectChart"
 			},
 			{
