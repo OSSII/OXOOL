@@ -77,7 +77,6 @@ L.Control.ReadonlyBar = L.Control.extend({
 			callback: this._callbackHandler
 		});
 
-		console.debug('haha this.builder', this.builder);
 		// 新增 _toolitemHandlers 的 downloadas handler
 		this.builder._toolitemHandlers['downloadas'] = this._downloadAsControl;
 
@@ -141,6 +140,11 @@ L.Control.ReadonlyBar = L.Control.extend({
 				'type': 'customtoolitem',
 				'command': '.uno:Presentation',
 				'text': _UNO('.uno:Presentation', this._docType)
+			});
+			shortcutsBar.push({
+				'type': 'customtoolitem',
+				'command': 'presentinwindow',
+				'text': _('Present in Window'),
 			});
 			// 從目前頁面開始投影
 			shortcutsBar.push({
