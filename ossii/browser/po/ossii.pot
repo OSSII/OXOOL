@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-14 16:34+0800\n"
+"POT-Creation-Date: 2024-06-05 17:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,167 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: js/OtherMessages.js:9 js/control/Toolbar.Extensions.js:132
+#: js/control/Toolbar.Extensions.js:142 js/control/Toolbar.Extensions.js:150
+#: js/control/Toolbar.Extensions.js:157 js/control/Control.Menubar.js:16
+#: js/control/Control.Menubar.js:25 js/control/Control.Menubar.js:81
+#: js/control/Control.Menubar.js:89 js/control/Control.Menubar.js:145
+#: js/control/Control.Menubar.js:152 js/control/Control.Menubar.js:199
+#: js/control/Control.Menubar.js:209
+msgid "PDF Document (.pdf)"
+msgstr ""
+
+#: js/OtherMessages.js:10 js/control/Toolbar.Extensions.js:133
+msgid "TEXT Document (.txt)"
+msgstr ""
+
+#: js/OtherMessages.js:11 js/control/Toolbar.Extensions.js:134
+#: js/control/Toolbar.Extensions.js:143 js/control/Toolbar.Extensions.js:151
+msgid "HTML Document (.html)"
+msgstr ""
+
+#: js/OtherMessages.js:12 js/control/Toolbar.Extensions.js:135
+#: js/control/Control.Menubar.js:27
+msgid "ODF text document (.odt)"
+msgstr ""
+
+#: js/OtherMessages.js:13 js/control/Toolbar.Extensions.js:144
+#: js/control/Control.Menubar.js:211
+msgid "ODF spreadsheet (.ods)"
+msgstr ""
+
+#: js/OtherMessages.js:14 js/control/Toolbar.Extensions.js:152
+#: js/control/Control.Menubar.js:91
+msgid "ODF presentation (.odp)"
+msgstr ""
+
+#: js/OtherMessages.js:15 js/control/Toolbar.Extensions.js:136
+#: js/control/Control.Menubar.js:28
+msgid "Word 2003 Document (.doc)"
+msgstr ""
+
+#: js/OtherMessages.js:16 js/control/Toolbar.Extensions.js:145
+#: js/control/Control.Menubar.js:212
+msgid "Excel 2003 Spreadsheet (.xls)"
+msgstr ""
+
+#: js/OtherMessages.js:17 js/control/Toolbar.Extensions.js:153
+#: js/control/Control.Menubar.js:92
+msgid "PowerPoint 2003 Presentation (.ppt)"
+msgstr ""
+
+#: js/OtherMessages.js:18 js/control/Toolbar.Extensions.js:137
+#: js/control/Control.Menubar.js:29
+msgid "Word Document (.docx)"
+msgstr ""
+
+#: js/OtherMessages.js:19 js/control/Toolbar.Extensions.js:146
+#: js/control/Control.Menubar.js:213
+msgid "Excel Spreadsheet (.xlsx)"
+msgstr ""
+
+#: js/OtherMessages.js:20 js/control/Toolbar.Extensions.js:154
+#: js/control/Control.Menubar.js:93
+msgid "PowerPoint Presentation (.pptx)"
+msgstr ""
+
+#: js/OtherMessages.js:21 js/control/Toolbar.Extensions.js:138
+#: js/control/Control.Menubar.js:30
+msgid "Rich Text (.rtf)"
+msgstr ""
+
+#: js/OtherMessages.js:22 js/control/Toolbar.Extensions.js:147
+msgid "CSV (.csv)"
+msgstr ""
+
+#: js/OtherMessages.js:23 js/control/Toolbar.Extensions.js:139
+msgid "EPUB Document (.epub)"
+msgstr ""
+
+#: js/OtherMessages.js:24
+msgid "Remote image"
+msgstr ""
+
+#: js/OtherMessages.js:25
+msgid "Binding Line Menu"
+msgstr ""
+
+#: js/OtherMessages.js:26
+msgid "Insert on the left side of page"
+msgstr ""
+
+#: js/OtherMessages.js:27
+msgid "Insert on the right side of page"
+msgstr ""
+
+#: js/OtherMessages.js:28
+msgid "Insert on the top side of page"
+msgstr ""
+
+#: js/OtherMessages.js:29
+msgid "Insert on the bottom side of page"
+msgstr ""
+
+#: js/OtherMessages.js:30
+msgid "Customize"
+msgstr ""
+
+#: js/OtherMessages.js:31
+msgid "Tabbed view"
+msgstr ""
+
+#: js/OtherMessages.js:32
+msgid "Menu Bar"
+msgstr ""
+
+#: js/OtherMessages.js:33
+msgid "Dark mode"
+msgstr ""
+
+#: js/OtherMessages.js:37
+msgid "File"
+msgstr ""
+
+#: js/OtherMessages.js:38
+msgid "Home"
+msgstr ""
+
+#: js/OtherMessages.js:39
+msgid "Review"
+msgstr ""
+
+#: js/OtherMessages.js:40
+msgid "Help"
+msgstr ""
+
+#: js/OtherMessages.js:41
+msgid "Theme"
+msgstr ""
+
+#: js/OtherMessages.js:42
+msgid "Export As"
+msgstr ""
+
+#: js/OtherMessages.js:43
+msgid "Rich Text"
+msgstr ""
+
+#: js/OtherMessages.js:44
+msgid "Checkbok"
+msgstr ""
+
+#: js/OtherMessages.js:45
+msgid "Dropdown"
+msgstr ""
+
+#: js/OtherMessages.js:46
+msgid "Sparkline"
+msgstr ""
+
+#: js/OtherMessages.js:47
+msgid "Page Number"
+msgstr ""
 
 #: js/map/handler/Map.AlternativeCommand.js:400
 #: js/map/handler/Map.AlternativeCommand.js:993
@@ -36,75 +197,9 @@ msgstr ""
 #: js/map/handler/Map.AlternativeCommand.js:406
 #: js/map/handler/Map.AlternativeCommand.js:999
 #: js/control/Control.Dialogs.js:115 js/control/Control.Dialogs.js:151
-#: js/control/Control.Dialogs.js:199 admin/src/Main.js:425
-#: admin/src/Main.js:469 admin/standard/Overview/admin.js:240
+#: js/control/Control.Dialogs.js:199 admin/src/Main.js:434
+#: admin/src/Main.js:478 admin/standard/Overview/admin.js:245
 msgid "OK"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:132 js/control/Toolbar.Extensions.js:142
-#: js/control/Toolbar.Extensions.js:150 js/control/Toolbar.Extensions.js:157
-#: js/control/Control.Menubar.js:16 js/control/Control.Menubar.js:25
-#: js/control/Control.Menubar.js:81 js/control/Control.Menubar.js:89
-#: js/control/Control.Menubar.js:145 js/control/Control.Menubar.js:152
-#: js/control/Control.Menubar.js:199 js/control/Control.Menubar.js:209
-msgid "PDF Document (.pdf)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:133
-msgid "TEXT Document (.txt)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:134 js/control/Toolbar.Extensions.js:143
-#: js/control/Toolbar.Extensions.js:151
-msgid "HTML Document (.html)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:135 js/control/Control.Menubar.js:27
-msgid "ODF text document (.odt)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:136 js/control/Control.Menubar.js:28
-msgid "Word 2003 Document (.doc)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:137 js/control/Control.Menubar.js:29
-msgid "Word Document (.docx)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:138 js/control/Control.Menubar.js:30
-msgid "Rich Text (.rtf)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:139
-msgid "EPUB Document (.epub)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:144 js/control/Control.Menubar.js:211
-msgid "ODF spreadsheet (.ods)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:145 js/control/Control.Menubar.js:212
-msgid "Excel 2003 Spreadsheet (.xls)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:146 js/control/Control.Menubar.js:213
-msgid "Excel Spreadsheet (.xlsx)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:147
-msgid "CSV (.csv)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:152 js/control/Control.Menubar.js:91
-msgid "ODF presentation (.odp)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:153 js/control/Control.Menubar.js:92
-msgid "PowerPoint 2003 Presentation (.ppt)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:154 js/control/Control.Menubar.js:93
-msgid "PowerPoint Presentation (.pptx)"
 msgstr ""
 
 #: js/control/Toolbar.Extensions.js:158 js/control/Control.Menubar.js:94
@@ -121,8 +216,8 @@ msgid "Saving..."
 msgstr ""
 
 #: js/control/Control.Dialogs.js:122 js/control/Control.Dialogs.js:206
-#: admin/src/Main.js:426 admin/src/Main.js:449 admin/src/Main.js:470
-#: admin/standard/Overview/admin.js:241
+#: admin/src/Main.js:435 admin/src/Main.js:458 admin/src/Main.js:479
+#: admin/standard/Overview/admin.js:246
 msgid "Cancel"
 msgstr ""
 
@@ -162,7 +257,7 @@ msgstr ""
 
 #: js/control/Control.Menubar.js:24 js/control/Control.Menubar.js:88
 #: js/control/Control.Menubar.js:151 js/control/Control.Menubar.js:208
-#: js/control/Control.ReadonlyBar.js:159
+#: js/control/Control.ReadonlyBar.js:163
 msgid "Download as"
 msgstr ""
 
@@ -202,7 +297,7 @@ msgstr ""
 
 #: js/control/Control.Menubar.js:72 js/control/Control.Menubar.js:136
 #: js/control/Control.Menubar.js:190 js/control/Control.Menubar.js:264
-#: js/control/Control.ReadonlyBar.js:177
+#: js/control/Control.ReadonlyBar.js:181
 msgid "About"
 msgstr ""
 
@@ -267,6 +362,10 @@ msgstr ""
 msgid "Close document"
 msgstr ""
 
+#: js/control/Control.ReadonlyBar.js:147
+msgid "Present in Window"
+msgstr ""
+
 #: admin/js/color-scheme-switcher.js:26
 msgid "Follow system settings"
 msgstr ""
@@ -283,7 +382,7 @@ msgstr ""
 msgid "Account"
 msgstr ""
 
-#: admin/js/global.js:70 admin/src/Main.js:445 admin/src/Main.js:465
+#: admin/js/global.js:70 admin/src/Main.js:454 admin/src/Main.js:474
 msgid "Password"
 msgstr ""
 
@@ -369,33 +468,33 @@ msgid ""
 "next service restart."
 msgstr ""
 
-#: admin/src/Main.js:423
+#: admin/src/Main.js:432
 msgid "Are you sure you want to restart the online service?"
 msgstr ""
 
-#: admin/src/Main.js:442
+#: admin/src/Main.js:451
 msgid ""
 "For security reasons, please enter your original management account and "
 "password."
 msgstr ""
 
-#: admin/src/Main.js:444 admin/src/Main.js:464
+#: admin/src/Main.js:453 admin/src/Main.js:473
 msgid "User name"
 msgstr ""
 
-#: admin/src/Main.js:448
+#: admin/src/Main.js:457
 msgid "Verification"
 msgstr ""
 
-#: admin/src/Main.js:462
+#: admin/src/Main.js:471
 msgid "Please enter a new account and password."
 msgstr ""
 
-#: admin/src/Main.js:466
+#: admin/src/Main.js:475
 msgid "Confirm password"
 msgstr ""
 
-#: admin/src/Main.js:479
+#: admin/src/Main.js:488
 msgid "The password does not match the confirmation password!"
 msgstr ""
 
@@ -507,27 +606,19 @@ msgstr ""
 msgid "Uploaded"
 msgstr ""
 
-#: admin/standard/Overview/admin.js:179
-msgid "Failed to set jwt authentication cookie over insecure connection"
-msgstr ""
-
-#: admin/standard/Overview/admin.js:183
-msgid "Failed to authenticate this session over protocol %0"
-msgstr ""
-
-#: admin/standard/Overview/admin.js:232
+#: admin/standard/Overview/admin.js:237
 msgid "Kill session."
 msgstr ""
 
-#: admin/standard/Overview/admin.js:238
+#: admin/standard/Overview/admin.js:243
 msgid "Are you sure you want to terminate this session?"
 msgstr ""
 
-#: admin/standard/Overview/admin.js:301
+#: admin/standard/Overview/admin.js:305
 msgid "user(s)."
 msgstr ""
 
-#: admin/standard/Overview/admin.js:353
+#: admin/standard/Overview/admin.js:347
 msgid "document(s) open."
 msgstr ""
 

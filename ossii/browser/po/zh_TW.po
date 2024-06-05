@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-14 16:34+0800\n"
+"POT-Creation-Date: 2024-06-05 17:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,6 +15,167 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Translate Toolkit 1.11.0\n"
+
+#: js/OtherMessages.js:9 js/control/Toolbar.Extensions.js:132
+#: js/control/Toolbar.Extensions.js:142 js/control/Toolbar.Extensions.js:150
+#: js/control/Toolbar.Extensions.js:157 js/control/Control.Menubar.js:16
+#: js/control/Control.Menubar.js:25 js/control/Control.Menubar.js:81
+#: js/control/Control.Menubar.js:89 js/control/Control.Menubar.js:145
+#: js/control/Control.Menubar.js:152 js/control/Control.Menubar.js:199
+#: js/control/Control.Menubar.js:209
+msgid "PDF Document (.pdf)"
+msgstr "PDF 文件（.pdf）"
+
+#: js/OtherMessages.js:10 js/control/Toolbar.Extensions.js:133
+msgid "TEXT Document (.txt)"
+msgstr "純文字文件（.txt）"
+
+#: js/OtherMessages.js:11 js/control/Toolbar.Extensions.js:134
+#: js/control/Toolbar.Extensions.js:143 js/control/Toolbar.Extensions.js:151
+msgid "HTML Document (.html)"
+msgstr "HTML 文件（.html）"
+
+#: js/OtherMessages.js:12 js/control/Toolbar.Extensions.js:135
+#: js/control/Control.Menubar.js:27
+msgid "ODF text document (.odt)"
+msgstr "ODF 文字文件（.odt）"
+
+#: js/OtherMessages.js:13 js/control/Toolbar.Extensions.js:144
+#: js/control/Control.Menubar.js:211
+msgid "ODF spreadsheet (.ods)"
+msgstr "ODF 試算表（.ods）"
+
+#: js/OtherMessages.js:14 js/control/Toolbar.Extensions.js:152
+#: js/control/Control.Menubar.js:91
+msgid "ODF presentation (.odp)"
+msgstr "ODF 簡報（.odp）"
+
+#: js/OtherMessages.js:15 js/control/Toolbar.Extensions.js:136
+#: js/control/Control.Menubar.js:28
+msgid "Word 2003 Document (.doc)"
+msgstr "Word 2003 文件（.doc）"
+
+#: js/OtherMessages.js:16 js/control/Toolbar.Extensions.js:145
+#: js/control/Control.Menubar.js:212
+msgid "Excel 2003 Spreadsheet (.xls)"
+msgstr "Excel 2003 試算表（.xls）"
+
+#: js/OtherMessages.js:17 js/control/Toolbar.Extensions.js:153
+#: js/control/Control.Menubar.js:92
+msgid "PowerPoint 2003 Presentation (.ppt)"
+msgstr "PowerPoint 2003 簡報（.ppt）"
+
+#: js/OtherMessages.js:18 js/control/Toolbar.Extensions.js:137
+#: js/control/Control.Menubar.js:29
+msgid "Word Document (.docx)"
+msgstr "Word 文件（.docx）"
+
+#: js/OtherMessages.js:19 js/control/Toolbar.Extensions.js:146
+#: js/control/Control.Menubar.js:213
+msgid "Excel Spreadsheet (.xlsx)"
+msgstr "Excel 試算表（.xlsx）"
+
+#: js/OtherMessages.js:20 js/control/Toolbar.Extensions.js:154
+#: js/control/Control.Menubar.js:93
+msgid "PowerPoint Presentation (.pptx)"
+msgstr "PowerPoint 簡報（.pptx）"
+
+#: js/OtherMessages.js:21 js/control/Toolbar.Extensions.js:138
+#: js/control/Control.Menubar.js:30
+msgid "Rich Text (.rtf)"
+msgstr "RTF 文件（.rtf）"
+
+#: js/OtherMessages.js:22 js/control/Toolbar.Extensions.js:147
+msgid "CSV (.csv)"
+msgstr "CSV 文件（.csv）"
+
+#: js/OtherMessages.js:23 js/control/Toolbar.Extensions.js:139
+msgid "EPUB Document (.epub)"
+msgstr "EPUB 電子書（.epub）"
+
+#: js/OtherMessages.js:24
+msgid "Remote image"
+msgstr "雲端圖片"
+
+#: js/OtherMessages.js:25
+msgid "Binding Line Menu"
+msgstr "裝訂線"
+
+#: js/OtherMessages.js:26
+msgid "Insert on the left side of page"
+msgstr "插入頁面左側"
+
+#: js/OtherMessages.js:27
+msgid "Insert on the right side of page"
+msgstr "插入頁面右側"
+
+#: js/OtherMessages.js:28
+msgid "Insert on the top side of page"
+msgstr "插入頁面上方"
+
+#: js/OtherMessages.js:29
+msgid "Insert on the bottom side of page"
+msgstr "插入頁面底部"
+
+#: js/OtherMessages.js:30
+msgid "Customize"
+msgstr "自訂"
+
+#: js/OtherMessages.js:31
+msgid "Tabbed view"
+msgstr "分頁式界面"
+
+#: js/OtherMessages.js:32
+msgid "Menu Bar"
+msgstr "選單列"
+
+#: js/OtherMessages.js:33
+msgid "Dark mode"
+msgstr "深色模式"
+
+#: js/OtherMessages.js:37
+msgid "File"
+msgstr "檔案"
+
+#: js/OtherMessages.js:38
+msgid "Home"
+msgstr "常用"
+
+#: js/OtherMessages.js:39
+msgid "Review"
+msgstr "校閱"
+
+#: js/OtherMessages.js:40
+msgid "Help"
+msgstr "說明"
+
+#: js/OtherMessages.js:41
+msgid "Theme"
+msgstr "佈景主題"
+
+#: js/OtherMessages.js:42
+msgid "Export As"
+msgstr "匯出爲…"
+
+#: js/OtherMessages.js:43
+msgid "Rich Text"
+msgstr "文字"
+
+#: js/OtherMessages.js:44
+msgid "Checkbox"
+msgstr "核取方塊"
+
+#: js/OtherMessages.js:45
+msgid "Dropdown"
+msgstr "下拉式選項"
+
+#: js/OtherMessages.js:46
+msgid "Sparkline"
+msgstr "走勢圖"
+
+#: js/OtherMessages.js:47
+msgid "Page Number"
+msgstr "頁碼"
 
 #: js/map/handler/Map.AlternativeCommand.js:400
 #: js/map/handler/Map.AlternativeCommand.js:993
@@ -35,81 +196,15 @@ msgstr "刪除"
 #: js/map/handler/Map.AlternativeCommand.js:406
 #: js/map/handler/Map.AlternativeCommand.js:999
 #: js/control/Control.Dialogs.js:115 js/control/Control.Dialogs.js:151
-#: js/control/Control.Dialogs.js:199 admin/src/Main.js:425
-#: admin/src/Main.js:469 admin/standard/Overview/admin.js:240
+#: js/control/Control.Dialogs.js:199 admin/src/Main.js:434
+#: admin/src/Main.js:478 admin/standard/Overview/admin.js:245
 msgid "OK"
 msgstr "確定"
-
-#: js/control/Toolbar.Extensions.js:132 js/control/Toolbar.Extensions.js:142
-#: js/control/Toolbar.Extensions.js:150 js/control/Toolbar.Extensions.js:157
-#: js/control/Control.Menubar.js:16 js/control/Control.Menubar.js:25
-#: js/control/Control.Menubar.js:81 js/control/Control.Menubar.js:89
-#: js/control/Control.Menubar.js:145 js/control/Control.Menubar.js:152
-#: js/control/Control.Menubar.js:199 js/control/Control.Menubar.js:209
-msgid "PDF Document (.pdf)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:133
-msgid "TEXT Document (.txt)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:134 js/control/Toolbar.Extensions.js:143
-#: js/control/Toolbar.Extensions.js:151
-msgid "HTML Document (.html)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:135 js/control/Control.Menubar.js:27
-msgid "ODF text document (.odt)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:136 js/control/Control.Menubar.js:28
-msgid "Word 2003 Document (.doc)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:137 js/control/Control.Menubar.js:29
-msgid "Word Document (.docx)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:138 js/control/Control.Menubar.js:30
-msgid "Rich Text (.rtf)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:139
-msgid "EPUB Document (.epub)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:144 js/control/Control.Menubar.js:211
-msgid "ODF spreadsheet (.ods)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:145 js/control/Control.Menubar.js:212
-msgid "Excel 2003 Spreadsheet (.xls)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:146 js/control/Control.Menubar.js:213
-msgid "Excel Spreadsheet (.xlsx)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:147
-msgid "CSV (.csv)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:152 js/control/Control.Menubar.js:91
-msgid "ODF presentation (.odp)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:153 js/control/Control.Menubar.js:92
-msgid "PowerPoint 2003 Presentation (.ppt)"
-msgstr ""
-
-#: js/control/Toolbar.Extensions.js:154 js/control/Control.Menubar.js:93
-msgid "PowerPoint Presentation (.pptx)"
-msgstr ""
 
 #: js/control/Toolbar.Extensions.js:158 js/control/Control.Menubar.js:94
 #: js/control/Control.Menubar.js:154
 msgid "ODF Drawing (.odg)"
-msgstr ""
+msgstr "ODF 繪圖（.odg）"
 
 #: js/control/Toolbar.Extensions.js:159
 msgid "Image (.png)"
@@ -120,8 +215,8 @@ msgid "Saving..."
 msgstr "存檔中…"
 
 #: js/control/Control.Dialogs.js:122 js/control/Control.Dialogs.js:206
-#: admin/src/Main.js:426 admin/src/Main.js:449 admin/src/Main.js:470
-#: admin/standard/Overview/admin.js:241
+#: admin/src/Main.js:435 admin/src/Main.js:458 admin/src/Main.js:479
+#: admin/standard/Overview/admin.js:246
 msgid "Cancel"
 msgstr "放棄"
 
@@ -147,7 +242,7 @@ msgstr "匯出爲…"
 
 #: js/control/Control.Menubar.js:17 js/control/Control.Menubar.js:31
 msgid "EPUB (.epub)"
-msgstr ""
+msgstr "EPUB 電子書（.epub）"
 
 #: js/control/Control.Menubar.js:19 js/control/Control.Menubar.js:83
 #: js/control/Control.Menubar.js:147 js/control/Control.Menubar.js:201
@@ -161,14 +256,14 @@ msgstr "查看修訂歷史"
 
 #: js/control/Control.Menubar.js:24 js/control/Control.Menubar.js:88
 #: js/control/Control.Menubar.js:151 js/control/Control.Menubar.js:208
-#: js/control/Control.ReadonlyBar.js:159
+#: js/control/Control.ReadonlyBar.js:163
 msgid "Download as"
 msgstr "下載爲…"
 
 #: js/control/Control.Menubar.js:26 js/control/Control.Menubar.js:90
 #: js/control/Control.Menubar.js:153 js/control/Control.Menubar.js:210
 msgid "PDF Document (.pdf) as..."
-msgstr ""
+msgstr "匯出 PDF 文件（.pdf）…"
 
 #: js/control/Control.Menubar.js:36 js/control/Control.Menubar.js:99
 #: js/control/Control.Menubar.js:159 js/control/Control.Menubar.js:218
@@ -201,7 +296,7 @@ msgstr "傳送建議"
 
 #: js/control/Control.Menubar.js:72 js/control/Control.Menubar.js:136
 #: js/control/Control.Menubar.js:190 js/control/Control.Menubar.js:264
-#: js/control/Control.ReadonlyBar.js:177
+#: js/control/Control.ReadonlyBar.js:181
 msgid "About"
 msgstr "關於"
 
@@ -220,7 +315,7 @@ msgstr "移除列印區域"
 #: js/control/Control.Menubar.js:270 js/control/Control.Menubar.js:320
 #: js/control/Control.Menubar.js:334 js/control/Control.Menubar.js:357
 msgid "Local Image..."
-msgstr "本地圖片…"
+msgstr "此裝置上的圖片…"
 
 #: js/control/Control.Menubar.js:287 js/control/Control.Menubar.js:289
 msgid "All"
@@ -243,9 +338,8 @@ msgid "Insert Picture"
 msgstr "插入圖片"
 
 #: js/control/Control.Menubar.js:313
-#, fuzzy
 msgid "Insert Date"
-msgstr "插入圖案"
+msgstr "插入日期"
 
 #: js/control/Control.Menubar.js:314
 msgid "Properties"
@@ -267,6 +361,10 @@ msgstr "插入圖案"
 msgid "Close document"
 msgstr "關閉檔案"
 
+#: js/control/Control.ReadonlyBar.js:147
+msgid "Present in Window"
+msgstr "在視窗中播放"
+
 #: admin/js/color-scheme-switcher.js:26
 msgid "Follow system settings"
 msgstr "依據系統設定"
@@ -283,7 +381,7 @@ msgstr "目前配色"
 msgid "Account"
 msgstr "帳號"
 
-#: admin/js/global.js:70 admin/src/Main.js:445 admin/src/Main.js:465
+#: admin/js/global.js:70 admin/src/Main.js:454 admin/src/Main.js:474
 msgid "Password"
 msgstr "密碼"
 
@@ -369,33 +467,33 @@ msgid ""
 "next service restart."
 msgstr "帳號和密碼已更新，下次服務重新啟動後生效"
 
-#: admin/src/Main.js:423
+#: admin/src/Main.js:432
 msgid "Are you sure you want to restart the online service?"
 msgstr "確定重新啟動線上服務？"
 
-#: admin/src/Main.js:442
+#: admin/src/Main.js:451
 msgid ""
 "For security reasons, please enter your original management account and "
 "password."
 msgstr "基於安全考量，請輸入您原來的管理帳號和密碼"
 
-#: admin/src/Main.js:444 admin/src/Main.js:464
+#: admin/src/Main.js:453 admin/src/Main.js:473
 msgid "User name"
 msgstr "使用者名稱"
 
-#: admin/src/Main.js:448
+#: admin/src/Main.js:457
 msgid "Verification"
 msgstr "驗證"
 
-#: admin/src/Main.js:462
+#: admin/src/Main.js:471
 msgid "Please enter a new account and password."
 msgstr "請輸入新的帳號和密碼"
 
-#: admin/src/Main.js:466
+#: admin/src/Main.js:475
 msgid "Confirm password"
 msgstr "確認密碼"
 
-#: admin/src/Main.js:479
+#: admin/src/Main.js:488
 msgid "The password does not match the confirmation password!"
 msgstr "密碼與確認密碼不符！"
 
@@ -477,7 +575,7 @@ msgstr "WOPI 主機"
 
 #: admin/standard/Overview/admin.js:16
 msgid "Views"
-msgstr "檢視數"
+msgstr "閱覽者"
 
 #: admin/standard/Overview/admin.js:17
 msgid "PID"
@@ -507,27 +605,19 @@ msgstr "文件數"
 msgid "Uploaded"
 msgstr "已上傳"
 
-#: admin/standard/Overview/admin.js:179
-msgid "Failed to set jwt authentication cookie over insecure connection"
-msgstr "在不安全的連線上設定 jwt 身份驗證 cookie 失敗"
-
-#: admin/standard/Overview/admin.js:183
-msgid "Failed to authenticate this session over protocol %0"
-msgstr "在 %0 協定上驗證此連線失敗"
-
-#: admin/standard/Overview/admin.js:232
+#: admin/standard/Overview/admin.js:237
 msgid "Kill session."
 msgstr "終止"
 
-#: admin/standard/Overview/admin.js:238
+#: admin/standard/Overview/admin.js:243
 msgid "Are you sure you want to terminate this session?"
 msgstr "確定終止此連線？"
 
-#: admin/standard/Overview/admin.js:301
+#: admin/standard/Overview/admin.js:305
 msgid "user(s)."
 msgstr "個使用者"
 
-#: admin/standard/Overview/admin.js:353
+#: admin/standard/Overview/admin.js:347
 msgid "document(s) open."
 msgstr "個文件開啟"
 
