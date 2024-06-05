@@ -62,6 +62,7 @@ OXOOL_JS_LIST = \
 
 pot:
 	xgettext --from-code=UTF-8 --language=JavaScript --keyword=_ --output=po/ossii.pot \
+		js/OtherMessages.js \
 		$(OXOOL_JS_LIST) \
 		$(ADMIN_JS_LIST)
 
