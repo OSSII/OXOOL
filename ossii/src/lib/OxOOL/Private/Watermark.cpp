@@ -8,6 +8,7 @@
 #include "Watermark.hpp"
 
 #include <time.h>
+#include <mutex>
 
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/Util.h>
@@ -165,22 +166,45 @@ std::string Watermark::convertJsonString(const Poco::JSON::Object& obj)
     return oss.str();
 }
 
+long int Watermark::getTimezoneOffset(const std::string& timezone)
+{
+    // Check if timezone is empty
+    if (timezone.empty())
+        return 0;
+
+    // Check if in cache
+    if (maTimezoneOffset.find(timezone) == maTimezoneOffset.end())
+    {
+        std::lock_guard<std::mutex> lock(maTimezoneMutex);
+        const char* savedTimezone = std::getenv("TZ");
+        setenv("TZ", timezone.c_str(), 1);
+
+        tzset();
+        time_t now = time(NULL);
+        struct tm local_tm = *localtime(&now);
+
+        maTimezoneOffset[timezone] = local_tm.tm_gmtoff;
+
+        // restore TZ
+        if (savedTimezone)
+            setenv("TZ", savedTimezone, 1);
+        else
+            unsetenv("TZ");
+    }
+
+    return maTimezoneOffset[timezone];
+}
+
 std::string Watermark::convertTags(const std::shared_ptr<ClientSession>& clientSession,
                                    const std::string& text, const std::string& userIP)
 {
     std::string retString = text;
 
     const std::string& timezone = clientSession->getTimezone();
-    setenv("TZ", timezone.c_str(), 1);
-    tzset();
-    time_t now = time(NULL);
-    struct tm local_tm = *localtime(&now);
-    unsetenv("TZ");
+    long int timezoneOffset = getTimezoneOffset(timezone);
+
     // 系統時間加上客戶端時區偏移值，就是客戶端目前時間
-    Poco::DateTime clientDateTime(Poco::Timestamp() + Poco::Timespan(local_tm.tm_gmtoff, 0));
-    // 日光節約時間
-    if (local_tm.tm_isdst > 0)
-        clientDateTime += Poco::Timespan(3600, 0);
+    Poco::DateTime clientDateTime(Poco::Timestamp() + Poco::Timespan(timezoneOffset, 0));
 
     // 使用者 ID ${id}
     Poco::replaceInPlace(retString, std::string("${id}"), clientSession->getUserId());

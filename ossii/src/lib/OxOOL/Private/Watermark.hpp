@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 
 #include <Poco/JSON/Object.h>
 
@@ -30,11 +31,17 @@ public:
     void enhanceWatermark(const std::shared_ptr<ClientSession>& clientSession);
 
 private:
-
+    /// @brief System watermark
     Poco::JSON::Object maSysWatermark;
-
     /// @brief Load system watermark from configuration
     void loadSysWatermark();
+
+    /// @brief Mutex for timezone offset cache
+    std::mutex maTimezoneMutex;
+    /// @brief Timezone offset cache
+    std::map<std::string, long int> maTimezoneOffset;
+    /// @brief Get timezone offset
+    long int getTimezoneOffset(const std::string& timezone);
 
     /// @brief Convert JSON object to string
     std::string convertJsonString(const Poco::JSON::Object& obj);
