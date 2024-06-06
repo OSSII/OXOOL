@@ -953,6 +953,7 @@ export class CommentSection extends CanvasSectionObject {
 		L.installContextMenu({
 			selector: '.oxool-annotation-menu',
 			trigger: 'none',
+			zIndex: 1500,
 			className: 'oxool-font',
 			build: function ($trigger: any) {
 				return {
@@ -1013,6 +1014,7 @@ export class CommentSection extends CanvasSectionObject {
 		L.installContextMenu({
 			selector: '.oxool-annotation-menu-redline',
 			trigger: 'none',
+			zIndex: 1500,
 			className: 'oxool-font',
 			items: {
 				modify: {
