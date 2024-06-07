@@ -318,6 +318,7 @@ void ClientSession::handleClipboardRequest(DocumentBroker::ClipboardRequest     
         {
             preProcessSetClipboardPayload(*data);
 
+#if !MOBILEAPP
             if (Util::startsWith(*data, "{"))
             {
                 // We got JSON, extract the URL and the UNO command name.
@@ -356,6 +357,7 @@ void ClientSession::handleClipboardRequest(DocumentBroker::ClipboardRequest     
                 }
             }
             else
+#endif
             {
                 // List of mimetype-size-data tuples, pass that over as-is.
                 docBroker->forwardToChild(client_from_this(), "setclipboard\n" + *data, true);
