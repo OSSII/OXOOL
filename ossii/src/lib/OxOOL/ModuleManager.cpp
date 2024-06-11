@@ -392,30 +392,6 @@ bool ModuleManager::handleClientMessage(const std::shared_ptr<ClientSession>& cl
         }
     }
 
-    // 介入這個請求，先把模組列表送給 client，攔截 load 指令
-    if (tokens.equals(0, "load") )
-    {
-        // 尚未載入文件
-        if (clientSession->getDocURL().empty())
-        {
-            std::string lang("en-US"); // 預設語言
-            // 先找出 lang=? 的參數
-            for (std::size_t i = 1; i < tokens.size(); ++i)
-            {
-
-                if (tokens[i].find("lang=") == 0)
-                {
-                    lang = tokens[i].substr(5);
-                    if (lang == "en")
-                        lang = "en-US";
-
-                    break;
-                }
-            }
-            clientSession->sendTextFrame("modules: " + getAllModuleDetailsJsonString(lang));
-        }
-    }
-
     return false;
 }
 

@@ -12,6 +12,7 @@
 #include <openssl/rand.h>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/Util.h>
 #include <OxOOL/ModuleManager.h>
 
 #include <Poco/DirectoryIterator.h>
@@ -65,7 +66,7 @@ ENV::ENV()
 void ENV::initialize()
 {
     // Get the version information.
-    Util::getVersionInfo(ENV::Version, ENV::VersionHash);
+    ::Util::getVersionInfo(ENV::Version, ENV::VersionHash);
 
     ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
     ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;
@@ -137,12 +138,39 @@ namespace OxOOL
     }
 
     /// @brief if the client input is handled by the library.
+    /// @param clientSession
     /// @param tokens
-    /// @param firstLine
     /// @return true - handled, false - not handled
     bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                              const StringVector& tokens)
     {
+        const std::shared_ptr<DocumentBroker> docBroker = clientSession->getDocumentBroker();
+
+        // NOTE: 特殊處理：介入 load 指令，先把模組列表送給 client，然後傳回 false，
+        // 讓 ClientSession 的 _handleInput() 繼續處理。
+        if (tokens.equals(0, "load") )
+        {
+            // 尚未載入文件
+            if (clientSession->getDocURL().empty())
+            {
+                std::string lang("en-US"); // 預設語言
+                // 先找出 lang=? 的參數
+                for (std::size_t i = 1; i < tokens.size(); ++i)
+                {
+                    if (tokens[i].find("lang=") == 0)
+                    {
+                        lang = tokens[i].substr(5);
+                        if (lang == "en")
+                            lang = "en-US";
+
+                        break;
+                    }
+                }
+                clientSession->sendTextFrame("modules: " + ModuleMgr.getAllModuleDetailsJsonString(lang));
+            }
+            return false;
+        }
+
         return ModuleMgr.handleClientMessage(clientSession, tokens);
     }
 
