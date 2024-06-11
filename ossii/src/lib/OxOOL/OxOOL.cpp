@@ -20,6 +20,7 @@
 #include <Poco/Path.h>
 #include <Poco/Util/Application.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/JSON/Object.h>
 #include <Poco/Zip/Decompress.h>
 
 #include <common/JailUtil.hpp>
@@ -57,6 +58,8 @@ std::string ENV::ServiceRoot;
 
 bool        ENV::AdminEnabled = true; // Admin enabled
 
+Poco::JSON::Object::Ptr ENV::LOKitVersionInfo;
+
 ENV::ENV()
 {
     // Initialize the environment.
@@ -87,6 +90,16 @@ void ENV::initialize()
     ENV::ServiceRoot      = OXOOLWSD::ServiceRoot;
 
     ENV::AdminEnabled = OXOOLWSD::AdminEnabled;
+
+    try
+    {
+        ENV::LOKitVersionInfo = Poco::JSON::Parser().parse(OXOOLWSD::LOKitVersion).extract<Poco::JSON::Object::Ptr>();
+    }
+    catch(const std::exception& e)
+    {
+        LOG_ERR("Failed to parse LibreOfficeKit version information: " << e.what());
+        ENV::LOKitVersionInfo = new Poco::JSON::Object();
+    }
 }
 
 } // namespace OxOOL

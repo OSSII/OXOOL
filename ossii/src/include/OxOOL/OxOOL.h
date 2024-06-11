@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include <Poco/JSON/Object.h>
+
 #define MULTILINE_STRING(...) #__VA_ARGS__
 
 #ifndef CODE_COVERAGE
@@ -70,6 +72,8 @@ public:
     static std::string ServiceRoot; // Service root
 
     static bool AdminEnabled; // Admin enabled
+
+    static Poco::JSON::Object::Ptr LOKitVersionInfo; // LibreOfficeKit version information.
 
 private:
 
