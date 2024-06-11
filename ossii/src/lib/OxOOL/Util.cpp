@@ -28,6 +28,7 @@
 #include <Poco/Net/HTMLForm.h>
 
 #include <common/Log.hpp>
+#include <common/StringVector.hpp>
 #include <wsd/Auth.hpp>
 #include <net/Socket.hpp>
 
@@ -130,6 +131,20 @@ bool dataFromHexString(const std::string& hexString, T& data)
     }
 
     return true;
+}
+
+std::string tokensToString(const StringVector& tokens)
+{
+    const std::size_t size = tokens.size();
+    std::string line;
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        line.append(tokens[i]);
+        if (i + 1 < size)
+            line.append(" ");
+    }
+
+    return line;
 }
 
 bool isConfigAuthOk(const std::string& username, const std::string& password)

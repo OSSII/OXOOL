@@ -54,6 +54,11 @@ std::string decodeURIComponent(const std::string& uri);
 template <typename T>
 bool dataFromHexString(const std::string& hexString, T& data);
 
+/// @brief 將 Tokens 轉成字串
+/// @param tokens
+/// @return
+std::string tokensToString(const StringVector& tokens);
+
 /// @brief 檢查使用者名稱與密碼是否與 consig 紀錄的相同
 bool isConfigAuthOk(const std::string& username, const std::string& password);
 
