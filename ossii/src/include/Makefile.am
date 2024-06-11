@@ -90,7 +90,7 @@ net_include_HEADERS = $(net_headers)
 
 # WSD headers
 wsd_headers = \
-	$(top_srcdir)/wsd/Admin.hpp \
+    $(top_srcdir)/wsd/Admin.hpp \
     $(top_srcdir)/wsd/AdminModel.hpp \
     $(top_srcdir)/wsd/Auth.hpp \
     $(top_srcdir)/wsd/ClientSession.hpp \
@@ -117,6 +117,15 @@ wsd_headers = \
 
 wsd_includedir = $(includedir)/OxOOL/wsd
 wsd_include_HEADERS = $(wsd_headers)
+
+# KIT headers
+kit_headers = \
+	$(top_srcdir)/kit/ChildSession.hpp \
+	$(top_srcdir)/kit/Kit.hpp \
+	$(top_srcdir)/kit/Watermark.hpp
+
+kit_includedir = $(includedir)/OxOOL/kit
+kit_include_HEADERS = $(kit_headers)
 
 test_headers = \
 	$(top_srcdir)/test/testlog.hpp

@@ -56,6 +56,7 @@
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/Kit.h>
 
 #include <Poco/File.h>
 #include <Poco/Exception.h>
@@ -3168,6 +3169,7 @@ void lokit_main(
                 std::cout << "office version details: " << versionString << std::endl;
 
             SigUtil::setVersionInfo(versionString);
+            OxOOL::Kit::setVersionInfo(versionString);
 
             // Add some parameters we want to pass to the client. Could not figure out how to get
             // the configuration parameters from OXOOLWSD.cpp's initialize() or oxoolwsd.xml here, so

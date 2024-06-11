@@ -11,6 +11,9 @@
 
 #include <config.h>
 
+#include <OxOOL/OxOOL.h>
+#include <OxOOL/Kit.h>
+
 #include "Kit.hpp"
 #include "ChildSession.hpp"
 #include "MobileApp.hpp"
@@ -249,6 +252,14 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         _stateRecorder.clear();
 
         LOG_TRC("Finished replaying messages.");
+    }
+
+    {
+        const std::shared_ptr<ChildSession> self = std::static_pointer_cast<ChildSession>(shared_from_this());
+        if (OxOOL::Kit::handleChildMessage(self, tokens))
+        {
+            return true;
+        }
     }
 
     if (tokens.equals(0, "dummymsg"))

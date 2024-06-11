@@ -107,7 +107,8 @@ oxoolcore_sources = \
                     OxOOL/Util.cpp \
                     OxOOL/Util/OptionlValidator.cpp \
                     OxOOL/Util/FileValidator.cpp \
-                    OxOOL/Private/Watermark.cpp
+                    OxOOL/Private/Watermark.cpp \
+                    OxOOL/Kit.cpp
 
 lib_LTLIBRARIES = lib@OSSII_LIB_NAME@.la
 lib@OSSII_LIB_NAME@_la_SOURCES = $(shared_sources) $(oxoolwsd_sources) $(oxoolcore_sources)

@@ -27,7 +27,7 @@ AC_SUBST([OXOOL_MODULE_CONFIG_DIR])
 AC_DEFINE_UNQUOTED([OXOOL_MODULE_DATA_DIR],["$OXOOL_MODULE_DATA_DIR"],[OxOOL module data storage directory.])
 AC_SUBST([OXOOL_MODULE_DATA_DIR])
 
-AC_SUBST([OSSII_CFLAGS], ["-I`pwd`/ossii/src/include -I`pwd`/common -I`pwd`/net -I`pwd`/wsd"])
+AC_SUBST([OSSII_CFLAGS], ["-I`pwd`/ossii/src/include -I`pwd`/common -I`pwd`/net -I`pwd`/wsd -I`pwd`/kit"])
 AC_SUBST([OSSII_LDFLAGS])
 AC_SUBST([OSSII_LIBS], ["${OSSII_LDFLAGS} `pwd`/ossii/src/lib/lib${OSSII_LIB_NAME}.la"])
 
