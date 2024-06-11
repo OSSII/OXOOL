@@ -137,7 +137,7 @@ void StorageBase::initialize()
     }
 #endif
 
-    if (SSLEnabled)
+    if (SSLEnabled || SSLAsScheme)
     {
         sslClientParams.certificateFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
         sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
