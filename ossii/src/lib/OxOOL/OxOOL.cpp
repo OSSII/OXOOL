@@ -157,7 +157,11 @@ namespace OxOOL
     bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                              const StringVector& tokens)
     {
+        // if handled by any command, return true.
+        bool handled = false; // not handled
+
         const std::shared_ptr<DocumentBroker> docBroker = clientSession->getDocumentBroker();
+        const std::string firstLine = OxOOL::Util::tokensToString(tokens);
 
         // NOTE: 特殊處理：介入 load 指令，先把模組列表送給 client，然後傳回 false，
         // 讓 ClientSession 的 _handleInput() 繼續處理。
@@ -181,10 +185,26 @@ namespace OxOOL
                 }
                 clientSession->sendTextFrame("modules: " + ModuleMgr.getAllModuleDetailsJsonString(lang));
             }
-            return false;
+            return false; // not handled. please don't change this.
+        }
+        else if (tokens.equals(0, "initunostatus"))
+        {
+            // LOKit 是否支援 initUnoStatus
+            if (!OxOOL::ENV::LOKitVersionInfo->has("initUnoStatus"))
+                clientSession->sendTextFrameAndLogError("error: cmd=initunostatus kind=unsupported");
+            else if (tokens.size() != 2)
+                clientSession->sendTextFrameAndLogError("error: cmd=initunostatus kind=syntax");
+            else
+                docBroker->forwardToChild(clientSession, firstLine);
+
+            handled = true; // handled
         }
 
-        return ModuleMgr.handleClientMessage(clientSession, tokens);
+        // 如果沒有被處理，就交給 ModuleMgr 處理。
+        if (!handled)
+            handled = ModuleMgr.handleClientMessage(clientSession, tokens);
+
+        return handled;
     }
 
     /// @brief if the client input is handled by the library.

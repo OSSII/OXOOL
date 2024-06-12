@@ -15,6 +15,11 @@
 
 #include <Poco/JSON/Object.h>
 
+namespace lok
+{
+class Document;
+}   // namespace lok
+
 class ChildSession;
 class StringVector;
 
@@ -24,17 +29,10 @@ namespace OxOOL
 namespace Kit
 {
 
-/// @brief set the version string of the LibreOfficeKit.
-/// @param versionString
-void setVersionInfo(const std::string versionString);
-
-/// @brief  get the version string of the LibreOfficeKit.
-/// @return
-const Poco::JSON::Object::Ptr& getLOKitVersion();
-
 /// @brief if the client input is handled by the library.
 bool handleChildMessage(const std::shared_ptr<ChildSession>& childSession,
-                        const StringVector& tokens);
+                        const StringVector& tokens,
+                        const std::shared_ptr<lok::Document>& lokitDocument);
 
 } // namespace Kit
 } // namespace OxOOL

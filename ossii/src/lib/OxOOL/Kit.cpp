@@ -20,24 +20,21 @@
 namespace OxOOL::Kit
 {
 
-static Poco::JSON::Object::Ptr LOKitVersionInfo; // LibreOfficeKit version information.
-void setVersionInfo(const std::string versionString)
-{
-    LOKitVersionInfo = Poco::JSON::Parser().parse(versionString).extract<Poco::JSON::Object::Ptr>();
-}
-
-const Poco::JSON::Object::Ptr& getLOKitVersion()
-{
-    return LOKitVersionInfo;
-}
-
 bool handleChildMessage(const std::shared_ptr<ChildSession>& childSession,
-                        const StringVector& tokens)
+                        const StringVector& tokens,
+                        const std::shared_ptr<lok::Document>& lokitDocument)
 {
-    (void)childSession;
-    (void)tokens;
+    // if any of the commands are handled, set to true.
+    bool handled = false;
 
-    return false;
+    if (tokens.equals(0, "initunostatus"))
+    {
+        lokitDocument->setView(childSession->getViewId());
+        lokitDocument->initUnoStatus(tokens[1].c_str());
+        handled = true;
+    }
+
+    return handled;
 }
 
 } // namespace OxOOL::Kit
