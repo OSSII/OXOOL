@@ -32,6 +32,13 @@ void Watermark::initialize()
 
 void Watermark::enhanceWatermark(const std::shared_ptr<ClientSession>& clientSession)
 {
+    // if Lokit is not enabled enhance watermark, return
+    if (!OxOOL::ENV::LOKitVersionInfo->has("enhanceWatermark"))
+    {
+        LOG_WRN("Lokit does not support enhanceWatermark");
+        return;
+    }
+
     // Parse UserExtraInfo to JSON object
     Poco::JSON::Object::Ptr userExtraInfo;
     try
