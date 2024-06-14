@@ -187,8 +187,6 @@ L.Map.include({
 			return;
 		}
 
-		L.dialog.run('AsyncClipboard');
-
 		var that = this;
 
 		if (docType === undefined) {
