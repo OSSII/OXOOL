@@ -14,6 +14,7 @@
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/Util.h>
 #include <OxOOL/ModuleManager.h>
+#include <OxOOL/ZipPackage.h>
 
 #include <Poco/DirectoryIterator.h>
 #include <Poco/File.h>
@@ -21,7 +22,6 @@
 #include <Poco/Util/Application.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Object.h>
-#include <Poco/Zip/Decompress.h>
 
 #include <common/JailUtil.hpp>
 #include <common/Log.hpp>
@@ -350,9 +350,7 @@ namespace OxOOL::Jail
                     const Poco::Path oxtDir(extenstionsPath, dirName);
                     // Extract the oxt file.
                     LOG_INF("Extracting OXT file: " << it->path() << " to " << oxtDir.toString());
-                    std::ifstream oxtStream(it->path(), std::ios::binary);
-                    Poco::Zip::Decompress decompress(oxtStream, oxtDir, false, true);
-                    decompress.decompressAllFiles();
+                    OxOOL::ZipPackage::decompressAllFiles(it->path(), oxtDir.toString());
                 }
             }
         }
