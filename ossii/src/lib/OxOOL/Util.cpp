@@ -26,6 +26,8 @@
 #include <Poco/MemoryStream.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTMLForm.h>
+#include <Poco/InflatingStream.h>
+#include <Poco/DeflatingStream.h>
 
 #include <common/Log.hpp>
 #include <common/StringVector.hpp>
@@ -311,6 +313,26 @@ const std::map<std::string, std::string>& getOsRelease()
     }
 
     return osRelease;
+}
+
+std::string gzip(const std::string& uncompressedContent)
+{
+    std::ostringstream compressedContent;
+    Poco::DeflatingOutputStream deflater(compressedContent, Poco::DeflatingStreamBuf::STREAM_GZIP);
+    deflater << uncompressedContent;
+    deflater.close();
+
+    return compressedContent.str();
+}
+
+std::string gunzip(const std::string& compressedContent)
+{
+    std::istringstream istr(compressedContent, std::ios::binary);
+    Poco::InflatingInputStream inflater(istr, Poco::InflatingStreamBuf::STREAM_GZIP);
+    std::ostringstream data;
+    Poco::StreamCopier::copyStream(inflater, data);
+
+    return data.str();
 }
 
 bool matchRegex(const std::set<std::string>& set, const std::string& subject)

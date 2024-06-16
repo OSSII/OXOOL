@@ -70,6 +70,16 @@ bool isAdminLoggedIn(const Poco::Net::HTTPRequest& request, const std::shared_pt
 /// @return
 const std::map<std::string, std::string>& getOsRelease();
 
+/// @brief compress content unsing gzip algorithm
+/// @param uncompressedContent - uncompressed content
+/// @return std::string - compressed content
+std::string gzip(const std::string& uncompressedContent);
+
+/// @brief decompress content using gzip algorithm
+/// @param compressedContent - compressed content
+/// @return std::string - uncompressed content
+std::string gunzip(const std::string& compressedContent);
+
 /// Return true if the subject matches in given set. It uses regex
 /// Mainly used to match WOPI hosts patterns
 bool matchRegex(const std::set<std::string>& set, const std::string& subject);
