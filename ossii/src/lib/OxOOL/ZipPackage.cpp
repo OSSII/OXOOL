@@ -17,7 +17,9 @@
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/ZipPackage.h>
 
-#include <Poco/Zip/Zip.h>
+#include <Poco/Path.h>
+#include <Poco/File.h>
+#include <Poco/Zip/ZipManipulator.h>
 #include <Poco/Zip/Decompress.h>
 #include <Poco/Zip/ZipFileInfo.h>
 #include <Poco/Zip/ZipArchive.h>
@@ -30,123 +32,160 @@ namespace OxOOL
 {
 
 ZipPackage::ZipPackage()
-    : mpZip(nullptr)
 {
 }
 
-ZipPackage::ZipPackage(const ZipPackage&)
-    : mpZip(nullptr)
+ZipPackage::ZipPackage(const std::string& localZipFile)
 {
+    open(localZipFile);
 }
 
-ZipPackage::ZipPackage(const std::string& zipFile)
-    : mpZip(nullptr)
+ZipPackage::ZipPackage(const char* localZipFile)
 {
-    open(zipFile);
-}
-
-ZipPackage::ZipPackage(const char* zipFile)
-    : mpZip(nullptr)
-{
-    open(zipFile);
+    open(localZipFile);
 }
 
 ZipPackage::~ZipPackage()
 {
-    if (maStream.is_open())
-        maStream.close();
+    if (maInputStream.is_open())
+        maInputStream.close();
 
-    mpZip.reset();
+    mpZipManipulator.reset();
 }
 
-ZipPackage& ZipPackage::operator=(const std::string& zipFile)
+ZipPackage& ZipPackage::operator=(const std::string& localZipFile)
 {
-    open(zipFile);
+    open(localZipFile);
     return *this;
 }
 
-ZipPackage& ZipPackage::operator=(const char* zipFile)
+ZipPackage& ZipPackage::operator=(const char* localZipFile)
 {
-    open(zipFile);
+    open(localZipFile);
     return *this;
 }
 
-ZipPackage& ZipPackage::operator=(const ZipPackage&)
+std::ostringstream ZipPackage::operator[](const std::string& zipFile)
 {
-    return *this;
+    return getContentStream(zipFile);
 }
 
-std::ostringstream ZipPackage::operator[](const std::string& fileName)
+std::ostringstream ZipPackage::operator[](const char* zipFile)
 {
-    return getContentStream(fileName);
+    return getContentStream(zipFile);
 }
 
-std::ostringstream ZipPackage::operator[](const char* fileName)
+std::ostringstream ZipPackage::operator[](const Poco::Path& zipFile)
 {
-    return getContentStream(fileName);
+    return getContentStream(zipFile.toString());
 }
 
-std::ostringstream ZipPackage::operator[](const Poco::Path& path)
+bool ZipPackage::ready() const
 {
-    return getContentStream(path.toString());
+    return mpZipManipulator != nullptr;
 }
 
-std::vector<std::string> ZipPackage::getList() const
+std::vector<std::string> ZipPackage::getList()
 {
     std::vector<std::string> files;
-    if (mpZip != nullptr)
+    if (ready())
     {
-        // 讀取檔案列表
-        for (auto it = mpZip->headerBegin(); it != mpZip->headerEnd(); ++it)
+        const std::lock_guard<std::mutex> lock(maMutex);
+        const Poco::Zip::ZipArchive& zipArchive = mpZipManipulator->originalArchive();
+        // get the list of files in the zip
+        for (auto it = zipArchive.headerBegin(); it != zipArchive.headerEnd(); ++it)
             files.emplace_back(it->first);
     }
 
     return files;
 }
 
-bool ZipPackage::exists(const std::string& fileName)
+bool ZipPackage::getList(const std::string& localZipFile, std::vector<std::string>& list)
 {
-    if (mpZip != nullptr)
+    list.clear(); // clear the list
+    // can read the zip file
+    std::ifstream zipStream(localZipFile, std::ios::binary|std::ios::in);
+    if (zipStream.is_open())
+    {
+        const Poco::Zip::ZipArchive zipArchive(zipStream);
+        for (auto it = zipArchive.headerBegin(); it != zipArchive.headerEnd(); ++it)
+            list.emplace_back(it->first);
+
+        return true;
+    }
+    else
+        LOG_ERR("Failed to open zip file [" << localZipFile << "].");
+
+    return false;
+}
+
+bool ZipPackage::exists(const std::string& zipFile)
+{
+    if (ready() && !zipFile.empty())
     {
         const std::lock_guard<std::mutex> lock(maMutex);
-        return mpZip->findHeader(fileName) != mpZip->headerEnd();
+        // zip file name not include the leading '/'
+        const std::string fileNameCopy = zipFile[0] == '/' ? zipFile.substr(1) : zipFile;
+        const Poco::Zip::ZipArchive& zipArchive = mpZipManipulator->originalArchive();
+        return zipArchive.findHeader(fileNameCopy) != zipArchive.headerEnd();
     }
 
     return false;
 }
 
-std::ostringstream ZipPackage::getContentStream(const std::string& fileName)
+std::ostringstream ZipPackage::getContentStream(const std::string& zipFile)
 {
     std::ostringstream oss;
     oss.setstate(std::ios::badbit);
-    if (mpZip != nullptr)
+
+    if (ready() && !zipFile.empty())
     {
         const std::lock_guard<std::mutex> lock(maMutex);
-        const Poco::Zip::ZipArchive::FileHeaders::const_iterator it = mpZip->findHeader(fileName);
-        if (it != mpZip->headerEnd())
+        // zip file name not include the leading '/'
+        const std::string fileNameCopy = zipFile[0] == '/' ? zipFile.substr(1) : zipFile;
+        // get the zip archive reference
+        const Poco::Zip::ZipArchive& zipArchive = mpZipManipulator->originalArchive();
+        // find the file in the zip archive
+        const auto it = zipArchive.findHeader(fileNameCopy);
+        if (it != zipArchive.headerEnd())
         {
-            oss.clear();
             const Poco::Zip::ZipLocalFileHeader info = it->second;
-            maStream.clear();
-            Poco::Zip::ZipInputStream zipStream(maStream, info);
-            Poco::StreamCopier::copyStream(zipStream, oss);
+            if (info.isFile())
+            {
+                oss.clear();
+                maInputStream.clear();
+                Poco::Zip::ZipInputStream zipStream(maInputStream, info);
+                Poco::StreamCopier::copyStream(zipStream, oss);
+            }
+            else
+                LOG_ERR("File [" << zipFile << "] is not a file in zip file [" << maLocalZipFile << "].");
         }
         else
-        {
-            LOG_ERR("File [" << fileName << "] not found in zip file [" << maZipFile << "].");
-        }
+            LOG_ERR("File [" << zipFile << "] not found in zip file [" << maLocalZipFile << "].");
     }
+    else
+        LOG_ERR("Failed to get content of file [" << zipFile << "] from zip file [" << maLocalZipFile << "]."
+                << (ready() ? "" : " The zip file is not ready."));
 
     return oss;
 }
 
-bool ZipPackage::extract(const std::string& fromZipfileName,
+bool ZipPackage::getContent(const std::string& zipFile, std::string& content)
+{
+    std::ostringstream oss = getContentStream(zipFile);
+
+    if (oss.bad())
+        return false;
+
+    content = oss.str();
+    return true;
+}
+
+bool ZipPackage::extract(const std::string& zipfile,
                          const std::string& toDestPath)
 {
-    Poco::Path zipFileName(fromZipfileName);
-
-    std::ostringstream oss = getContentStream(zipFileName.toString());
-    if (oss.bad())
+    std::string content;
+    if (!getContent(zipfile, content))
         return false;
 
     Poco::File destFile(toDestPath);
@@ -157,11 +196,11 @@ bool ZipPackage::extract(const std::string& fromZipfileName,
         if (destFile.canWrite())
         {
             std::ofstream file(toDestPath +
-                               (destFile.isDirectory() ?  "/" + zipFileName.getFileName() : ""),
-                               std::ios::binary|std::ios::trunc);
+                (destFile.isDirectory() ?  "/" + Poco::Path(zipfile).getFileName() : ""),
+                std::ios::binary|std::ios::trunc);
             if (file.is_open())
             {
-                file << oss.str();
+                file << content;
                 return true;
             }
             else
@@ -172,15 +211,14 @@ bool ZipPackage::extract(const std::string& fromZipfileName,
     }
     else // if the destination does not exist
     {
-        // 檢查父目錄是否存在
         Poco::Path parentPath = Poco::Path(destFile.path()).parent().makeDirectory();
-        // 如果父目錄存在且可寫入
+        // check if the parent path exists and is writable
         if (Poco::File(parentPath).exists() && Poco::File(parentPath).canWrite())
         {
             std::ofstream file(toDestPath, std::ios::binary|std::ios::trunc);
             if (file.is_open())
             {
-                file << oss.str();
+                file << content;
                 return true;
             }
             else
@@ -193,18 +231,25 @@ bool ZipPackage::extract(const std::string& fromZipfileName,
     return false;
 }
 
-bool ZipPackage::decompressAllFiles(const std::string& zipFile,
+bool ZipPackage::extractAll(const std::string& destPath)
+{
+    if (ready())
+        return decompressAllFiles(maLocalZipFile, destPath);
+
+    return false;
+}
+
+bool ZipPackage::decompressAllFiles(const std::string& localZipFile,
                                     const std::string& destPath)
 {
-    // zip file 能讀取
-    std::ifstream zipStream(zipFile, std::ios::binary);
+    std::ifstream zipStream(localZipFile, std::ios::binary|std::ios::in);
     if (!zipStream.is_open())
     {
-        LOG_ERR("Failed to open zip file [" << zipFile << "].");
+        LOG_ERR("Failed to open zip file [" << localZipFile << "].");
         return false;
     }
 
-    // destPath 必須存在，且是目錄，且能寫入
+    // destPath must be a directory and writable
     Poco::File destFile(destPath);
     destFile.createDirectories(); // 建立目錄
     if (!destFile.exists() || !destFile.isDirectory() || !destFile.canWrite())
@@ -218,12 +263,96 @@ bool ZipPackage::decompressAllFiles(const std::string& zipFile,
     return true;
 }
 
-bool ZipPackage::extractAll(const std::string& destPath)
+bool ZipPackage::addFile(const std::string& zipFile, const std::string& localFile, bool commitNow)
 {
-    if (mpZip != nullptr)
-        return decompressAllFiles(maZipFile, destPath);
+    if (ready() && !readonly())
+    {
+        const std::lock_guard<std::mutex> lock(maMutex);
+        mpZipManipulator->addFile(zipFile, localFile);
+        if (commitNow)
+            commit();
+
+        LOG_DBG("File [" << localFile << "] added to zip file [" << maLocalZipFile << "]."
+                << " zip file name: [" << zipFile << "].");
+        return true;
+    }
+    else
+        LOG_ERR("Failed to add file [" << localFile << "] to zip file [" << maLocalZipFile << "]."
+                << (readonly() ? " The zip file is readonly." : "")
+                << (ready() ? "" : " The zip file is not ready."));
 
     return false;
+}
+
+bool ZipPackage::replaceFile(const std::string& zipFile, const std::string& localFile, bool commitNow)
+{
+    if (ready() && !readonly())
+    {
+        const std::lock_guard<std::mutex> lock(maMutex);
+        mpZipManipulator->replaceFile(zipFile, localFile);
+        if (commitNow)
+            commit();
+
+        LOG_DBG("File [" << localFile << "] replaced in zip file [" << maLocalZipFile << "]."
+                << " zip file name: [" << zipFile << "].");
+        return true;
+    }
+    else
+        LOG_ERR("Failed to replace file [" << localFile << "] in zip file [" << maLocalZipFile << "]."
+                << (readonly() ? " The zip file is readonly." : "")
+                << (ready() ? "" : " The zip file is not ready."));
+
+    return false;
+}
+
+bool ZipPackage::deleteFile(const std::string& zipFile, bool commitNow)
+{
+    if (ready() && !readonly())
+    {
+        const std::lock_guard<std::mutex> lock(maMutex);
+        mpZipManipulator->deleteFile(zipFile);
+        if (commitNow)
+            commit();
+
+        LOG_DBG("File [" << zipFile << "] deleted from zip file [" << maLocalZipFile << "].");
+        return true;
+    }
+    else
+        LOG_ERR("Failed to delete file [" << zipFile << "] from zip file [" << maLocalZipFile << "]."
+                << (readonly() ? " The zip file is readonly." : "")
+                << (ready() ? "" : " The zip file is not ready."));
+
+    return false;
+}
+
+bool ZipPackage::renameFile(const std::string& oldZipFile, const std::string& newZipFile, bool commitNow)
+{
+    if (ready() && !readonly())
+    {
+        const std::lock_guard<std::mutex> lock(maMutex);
+        mpZipManipulator->renameFile(oldZipFile, newZipFile);
+        if (commitNow)
+            commit();
+
+        LOG_DBG("File [" << oldZipFile << "] renamed to [" << newZipFile << "] in zip file [" << maLocalZipFile << "].");
+        return true;
+    }
+    else
+        LOG_ERR("Failed to rename file [" << oldZipFile << "] to [" << newZipFile << "] in zip file [" << maLocalZipFile << "]."
+                << (readonly() ? " The zip file is readonly." : "")
+                << (ready() ? "" : " The zip file is not ready."));
+
+    return false;
+}
+
+void ZipPackage::commit()
+{
+    if (ready() && !readonly())
+    {
+        const std::lock_guard<std::mutex> lock(maCommitMutex);
+        Poco::Zip::ZipArchive zipArchive = mpZipManipulator->commit();
+        loadLocalZipFile();
+    }
 }
 
 // private methods here --------------------------------------------------------
@@ -240,23 +369,31 @@ bool ZipPackage::open(const std::string& zipFile)
         return false;
     }
 
-    // try to open the file
-    std::ifstream tryStream(zipFile, std::ios::binary);
-    if (!tryStream.is_open())
+    // check if the file can be read
+    if (!file.canRead())
     {
-        LOG_ERR("Failed to open zip file: " << zipFile);
+        LOG_ERR("Failed to read zip file: " << zipFile);
         return false;
     }
 
-    if (maStream.is_open())
-        maStream.close(); // Close the previous file
+    // check if the file can be written
+    mbReadonly = !file.canWrite();
+    // set the local zip file
+    maLocalZipFile = zipFile;
 
-    maStream = std::move(tryStream); // Move the new file
-    mpZip.reset(new Poco::Zip::ZipArchive(maStream));
-
-    maZipFile = zipFile;
+    loadLocalZipFile(); // reset the local zip file
 
     return true;
+}
+
+void ZipPackage::loadLocalZipFile()
+{
+    mpZipManipulator.reset(new Poco::Zip::ZipManipulator(maLocalZipFile, false));
+
+    if (maInputStream.is_open())
+        maInputStream.close();
+
+    maInputStream.open(maLocalZipFile, std::ios::binary|std::ios::in);
 }
 
 } // namespace OxOOL
