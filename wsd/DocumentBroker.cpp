@@ -835,7 +835,6 @@ bool DocumentBroker::download(const std::shared_ptr<ClientSession>& session, con
     std::string userPrivateInfo;
     std::string watermarkText;
     std::string templateSource;
-    std::optional<bool> isAdminUser;
 
 #if !MOBILEAPP
     std::chrono::milliseconds checkFileInfoCallDurationMs = std::chrono::milliseconds::zero();
@@ -856,7 +855,8 @@ bool DocumentBroker::download(const std::shared_ptr<ClientSession>& session, con
         userPrivateInfo = wopiFileInfo->getUserPrivateInfo();
         watermarkText = wopiFileInfo->getWatermarkText();
         templateSource = wopiFileInfo->getTemplateSource();
-        isAdminUser = wopiFileInfo->getIsAdminUser();
+
+        session->setIsAdminUser(wopiFileInfo->getIsAdminUser());
 
         _isViewFileExtension = OXOOLWSD::IsViewFileExtension(wopiStorage->getFileExtension());
         if (!wopiFileInfo->getUserCanWrite()) // Readonly.
@@ -1028,7 +1028,6 @@ bool DocumentBroker::download(const std::shared_ptr<ClientSession>& session, con
     session->setUserExtraInfo(userExtraInfo);
     session->setUserPrivateInfo(userPrivateInfo);
     session->setWatermarkText(watermarkText);
-    session->setIsAdminUser(isAdminUser);
 
     LOG_DBG("Setting username [" << OXOOLWSD::anonymizeUsername(username) << "] and userId [" <<
             OXOOLWSD::anonymizeUsername(userId) << "] for session [" << sessionId <<
