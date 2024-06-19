@@ -266,16 +266,9 @@ L.Control.ContextMenu = L.Control.extend({
 					continue;
 				}
 
+				itemName = window.removeAccessKey(item.text);
 				if (hasParam || commandName === 'None' || commandName === 'FontDialogForParagraph' || commandName === 'Delete') {
-					itemName = window.removeAccessKey(item.text);
 					itemName = itemName.replace(' ', '\u00a0');
-				} else {
-					// Get the translated text associated with the command
-					itemName = _UNO(item.command, docType, 'popup');
-					// 沒有翻譯
-					if (itemName === commandName) {
-						itemName = window.removeAccessKey(item.text);
-					}
 				}
 
 				contextMenu[item.command] = {
@@ -301,12 +294,7 @@ L.Control.ContextMenu = L.Control.extend({
 
 				isLastItemText = true;
 			} else if (item.type === 'menu') {
-				// Get the translated text associated with the command
-				itemName = _UNO(item.command, docType, false);
-				// 沒有翻譯
-				if (itemName === commandName) {
-					itemName = window.removeAccessKey(item.text);
-				}
+				itemName = window.removeAccessKey(item.text);
 				var submenu = this._createContextMenuStructure(item);
 				// ignore submenus with all items disabled
 				if (Object.keys(submenu).length === 0) {
