@@ -76,7 +76,8 @@ void sendResponse(const std::shared_ptr<StreamSocket>& socket,
                   const std::string& body,
                   Poco::Net::HTTPResponse::HTTPStatus statusCode,
                   const std::string& mimeType,
-                  const KeyValueMap& extraHeader)
+                  const KeyValueMap& extraHeader,
+                  bool keepAlive)
 {
     Poco::Net::HTTPResponse response;
 
@@ -94,16 +95,16 @@ void sendResponse(const std::shared_ptr<StreamSocket>& socket,
     if (!extraHeader.empty())
     {
         for (auto &it : extraHeader)
-        {
             response.set(it.first, it.second);
-        }
     }
+
+    if (!keepAlive)
+        response.set("Connection", "close");
+
     socket->send(response);
 
     if (body.size())
-    {
         socket->send(body);
-    }
 }
 
 void sendResponseAndShutdown(const std::shared_ptr<StreamSocket>& socket,
@@ -112,7 +113,7 @@ void sendResponseAndShutdown(const std::shared_ptr<StreamSocket>& socket,
                              const std::string& mimeType,
                              const KeyValueMap& extraHeader)
 {
-    sendResponse(socket, body, statusCode, mimeType, extraHeader);
+    sendResponse(socket, body, statusCode, mimeType, extraHeader, false);
     socket->shutdown();
 }
 
@@ -131,7 +132,7 @@ void sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTPStatus errorCode,
                           const std::string& mimeType,
                           const KeyValueMap& extraHeader)
 {
-    sendResponse(socket, body, errorCode, mimeType, extraHeader);
+    sendResponse(socket, body, errorCode, mimeType, extraHeader, false);
     socket->shutdown();
     socket->ignoreInput();
 }
@@ -184,6 +185,8 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
     Poco::Net::HTTPResponse localResponse;
     if (!response)
         response = &localResponse;
+
+    response->set("Connection", "close");
 
     const FileUtil::Stat st(path);
     if (st.bad())

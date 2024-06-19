@@ -68,7 +68,8 @@ void sendResponse(const std::shared_ptr<StreamSocket>& socket,
                   Poco::Net::HTTPResponse::HTTPStatus statusCode
                   = Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK,
                   const std::string& mimeType = std::string(),
-                  const KeyValueMap& extraHeader = KeyValueMap());
+                  const KeyValueMap& extraHeader = KeyValueMap(),
+                  bool keepAlive = true);
 
 /// Write headers and body for a response. Afterwards, shutdown the socket.
 void sendResponseAndShutdown(const std::shared_ptr<StreamSocket>& socket,
