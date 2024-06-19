@@ -24,10 +24,15 @@
 #define MOBILEAPP 0
 #endif
 
-namespace Poco::Net
+namespace Poco
+{
+class URI;
+
+namespace Net
 {
 class HTTPRequest;
-} // namespace Poco::Net
+} // namespace Net
+} // namespace Poco
 
 class SocketDisposition;
 class ClientSession;
@@ -88,6 +93,13 @@ namespace OxOOL
 void initialize();
 
 void enhanceWatermark(const std::shared_ptr<ClientSession>& session);
+
+/// @brief Get the resource from the given URI.
+/// @param uri The URI of the resource.
+/// @param resource The resource content obtained.
+/// @param mimeType The obtained resource MIME type.
+/// @return true if the resource is obtained successfully, false otherwise.
+bool getResource(const Poco::URI& uri, std::string& resource, std::string& mimeType);
 
 /// @brief Get all module details.
 const std::vector<OxOOL::Module::Detail> getAllModuleDetails();

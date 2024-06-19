@@ -19,7 +19,9 @@ OxOOL_include_HEADERS = \
 	OxOOL/Util/OptionlValidator.h \
 	OxOOL/Util/FileValidator.h \
 	OxOOL/Kit.h \
-    OxOOL/ZipPackage.h
+    OxOOL/ZipPackage.h \
+    OxOOL/ResourceManager.h \
+	OxOOL/ResourceProvider.h
 
 OxOOL_Module_includedir = $(includedir)/OxOOL/Module
 OxOOL_Module_include_HEADERS = \

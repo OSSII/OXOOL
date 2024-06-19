@@ -30,6 +30,7 @@ class ModuleAgent;
 
 class AdminService;
 class BrowserService;
+class ResourceService;
 
 namespace OxOOL
 {
@@ -155,6 +156,7 @@ private:
 
     std::shared_ptr<BrowserService> mpBrowserService;
     std::shared_ptr<AdminService> mpAdminService;
+    std::shared_ptr<ResourceService> mpResourceService;
 
     std::mutex maModulesMutex;
     std::map<std::string, std::unique_ptr<ModuleLibrary>> maModuleMap;

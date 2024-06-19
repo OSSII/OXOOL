@@ -46,14 +46,13 @@
 #include "ModuleManager/ModuleAgent.hpp"
 #include "ModuleManager/AdminService.hpp"
 #include "ModuleManager/BrowserService.hpp"
+#include "ModuleManager/ResourceService.hpp"
 
 namespace OxOOL
 {
 
 ModuleManager::ModuleManager()
     : mbInitialized(false)
-    , mpBrowserService(nullptr)
-    , mpAdminService(nullptr)
 {
 }
 
@@ -697,6 +696,25 @@ void ModuleManager::initializeInternalModules()
 #endif
     maModuleMap[mpAdminService->maId] = std::move(adminModuleLib);
     mpAdminService->initialize();
+
+    // 3. ResourceService
+    mpResourceService = std::make_shared<ResourceService>();
+    std::unique_ptr<ModuleLibrary> resourceModuleLib = std::make_unique<ModuleLibrary>(mpResourceService);
+    // 設定 Resource service 詳細資訊
+    mpResourceService->maDetail.name = "ResourceService";
+    mpResourceService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/oxool/resource/";
+    mpResourceService->maDetail.version = "1.0.0";
+    mpResourceService->maDetail.summary = "Resource service.";
+    mpResourceService->maDetail.author = "OxOOL";
+    mpResourceService->maDetail.license = "MPL 2.0";
+    mpResourceService->maDetail.description = "";
+    mpResourceService->maDetail.adminPrivilege = false;
+    mpResourceService->maDetail.adminIcon = "";
+    mpResourceService->maDetail.adminItem = "";
+
+    mpResourceService->maId = "3"; // 固定 ID 爲 3
+    maModuleMap[mpResourceService->maId] = std::move(resourceModuleLib);
+    mpResourceService->initialize();
 }
 
 bool ModuleManager::isService(const Poco::Net::HTTPRequest& request,

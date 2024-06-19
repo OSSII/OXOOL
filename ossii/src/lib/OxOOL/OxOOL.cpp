@@ -15,10 +15,12 @@
 #include <OxOOL/Util.h>
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/ZipPackage.h>
+#include <OxOOL/ResourceManager.h>
 
 #include <Poco/DirectoryIterator.h>
 #include <Poco/File.h>
 #include <Poco/Path.h>
+#include <Poco/URI.h>
 #include <Poco/Util/Application.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Object.h>
@@ -108,6 +110,7 @@ namespace OxOOL
 {
     static ModuleManager& ModuleMgr = ModuleManager::instance();
     static Watermark Watermark;
+    static ResourceManager& ResourceMgr = ResourceManager::instance();
 
     /// Initialize the library.
     void initialize()
@@ -118,11 +121,18 @@ namespace OxOOL
         ModuleMgr.initialize();
         // Initialize the watermark.
         Watermark.initialize();
+        // Initialize the resource manager.
+        ResourceMgr.initialize();
     }
 
     void enhanceWatermark(const std::shared_ptr<ClientSession>& session)
     {
         Watermark.enhanceWatermark(session);
+    }
+
+    bool getResource(const Poco::URI& uri, std::string& resource, std::string& mimeType)
+    {
+        return ResourceMgr.getResource(uri, resource, mimeType);
     }
 
     const std::vector<OxOOL::Module::Detail> getAllModuleDetails()

@@ -83,15 +83,18 @@ oxoolwsd_sources = $(top_srcdir)/common/Crypto.cpp \
 oxoolcore_internal_header = \
 							OxOOL/ModuleManager/AdminService.hpp \
 							OxOOL/ModuleManager/BrowserService.hpp \
+                            OxOOL/ModuleManager/ResourceService.hpp \
 							OxOOL/ModuleManager/ModuleAgent.hpp \
 							OxOOL/ModuleManager/ModuleLibrary.hpp \
-							OxOOL/Private/Watermark.hpp
+							OxOOL/Private/Watermark.hpp \
+                            OxOOL/Private/IconThemeProvider.hpp
 
 noinst_HEADERS = $(oxoolcore_internal_header)
 
 oxoolcore_sources = \
                     OxOOL/ModuleManager/AdminService.cpp \
                     OxOOL/ModuleManager/BrowserService.cpp \
+                    OxOOL/ModuleManager/ResourceService.cpp \
                     OxOOL/ModuleManager/ModuleAgent.cpp \
                     OxOOL/ModuleManager/ModuleLibrary.cpp \
 					OxOOL/OxOOL.cpp \
@@ -108,8 +111,10 @@ oxoolcore_sources = \
                     OxOOL/Util/OptionlValidator.cpp \
                     OxOOL/Util/FileValidator.cpp \
                     OxOOL/Private/Watermark.cpp \
+                    OxOOL/Private/IconThemeProvider.cpp \
                     OxOOL/Kit.cpp \
-                    OxOOL/ZipPackage.cpp
+                    OxOOL/ZipPackage.cpp \
+                    OxOOL/ResourceManager.cpp
 
 lib_LTLIBRARIES = lib@OSSII_LIB_NAME@.la
 lib@OSSII_LIB_NAME@_la_SOURCES = $(shared_sources) $(oxoolwsd_sources) $(oxoolcore_sources)
