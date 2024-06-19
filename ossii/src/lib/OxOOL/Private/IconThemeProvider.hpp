@@ -59,7 +59,18 @@ class IconTheme : public OxOOL::ResourceProvider
         * links() - File link list, json format. For example: icon:dark/links()
 
     UNO COMMAND: Get the uno command icon, such as '.uno:Save'
-        Example: icon:light/.uno:Save
+        Example: "icon:light/.uno:Save" or "icon:dark/.uno:Save"
+
+        UNO command has three sizes: small, medium, and large.
+            16x16 px icons are used in the menus.
+            24x24 px icons are used in toolbars and sidebar.
+            Notebook bar use 24x24 px icons when there is only one icon, and 16x16 px everywhere else.
+
+        Default icon size is small(16 x16).
+        if you want to get the medium(24 x 24) or large(32 x 32) icon,
+        you can add the size parameter to the URI.
+        For example: "icon:light/.uno:Save/m" to get the medium icon.
+                 or: "icon:light/.uno:Save/l" to get the large icon.
 
     ICON PATH: Use the file path to get the icon.
         You can use "icon:dark/list()" to get the file list.

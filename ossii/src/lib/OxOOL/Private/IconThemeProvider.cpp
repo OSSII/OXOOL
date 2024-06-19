@@ -184,17 +184,32 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
     // 1.開頭是 '.uno:'
     if (path.find(".uno:") == 0)
     {
-        // 只有 uno 命令有分大小圖示
-        const IconTheme::Size size = IconTheme::Size::MEDIUM;
         // 去掉 '.uno:'
-        const std::string cmdName = path.substr(5);
+        std::string cmdName = path.substr(5);
+
+        // 只有 uno 命令有分大、中、小三種 size 圖示，而且每種 size 圖示的數量不同
+        IconTheme::Size size = IconTheme::Size::SMALL; // 預設小圖示
+
+
+        // uno命令後若接 '/m' - MEDIUM、'/l' - LARGE，則改變 size
+        if (cmdName.size() > 2 && cmdName[cmdName.size() - 2] == '/')
+        {
+            if (cmdName[cmdName.size() - 1] == 'm')
+                size = IconTheme::Size::MEDIUM;
+            else if (cmdName[cmdName.size() - 1] == 'l')
+                size = IconTheme::Size::LARGE;
+
+            // 去掉 '/m' 或 '/l'
+            cmdName = cmdName.substr(0, cmdName.size() - 2);
+        }
+
         std::string sizePrefix;
-        if (size == IconTheme::Size::SMALL) // 小圖示 16x16 的路徑是 "cmd/sc_" + cmdName + (".svg/.png")
-            sizePrefix = "sc_";
+        if (size == IconTheme::Size::MEDIUM) // 一般圖示 24x24 的路徑是 "cmd/lc_" + cmdName + (".svg/.png")
+            sizePrefix = "lc_";
         else if (size == IconTheme::Size::LARGE) // 大圖示 32x32 的路徑是 "cmd/32/" + cmdName + (".svg/.png")
             sizePrefix = "32/";
-        else // 一般圖示 24x24 的路徑是 "cmd/lc_" + cmdName + (".svg/.png")
-            sizePrefix = "lc_";
+        else // 小圖示 16x16 的路徑是 "cmd/sc_" + cmdName + (".svg/.png")
+            sizePrefix = "sc_";
 
         realName = "cmd/" + sizePrefix + cmdName; // 在 zip 檔案中的名稱，不包含副檔名
     }
