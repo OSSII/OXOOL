@@ -196,7 +196,11 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
         throw Poco::FileNotFoundException("Failed to stat [" + path + "]. File will not be sent.");
     }
 
-    if (!noCache)
+    bool isDebug = false;
+#if ENABLE_DEBUG
+    isDebug = true;
+#endif
+    if (!noCache && !isDebug)
     {
         // 60 * 60 * 24 * 128 (days) = 11059200
         response->set("Cache-Control", "max-age=11059200");
