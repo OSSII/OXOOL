@@ -212,14 +212,8 @@ L.Map.include({
 
 			'.uno:Presentation': !wopi.HideExportOption, // 從第一張投影片開始播放
 			'.uno:PresentationCurrentSlide': !wopi.HideExportOption, // 從目前投影片開始播放
-			'.uno:ToolbarModeUI': !window.app.dontUseNotebookbar, // 使用者界面(精簡/分頁式))切換
-			'.uno:Sidebar': !window.app.dontUseSidebar, // 側邊欄
-			'.uno:ModifyPage': !window.app.dontUseSidebar, // 側邊欄-投影片版面配置
-			'.uno:SlideChangeWindow': !window.app.dontUseSidebar, // 側邊欄-投影片轉場
-			'.uno:CustomAnimation': !window.app.dontUseSidebar, // 側邊欄-動畫
-			'.uno:MasterSlidesPanel': !window.app.dontUseSidebar, // 側邊欄-投影片母片
 
-			'.uno:Protect': wopi.DocumentOwner == true, // 檔案擁有者，才可以保護/解除飽和工作表
+			'.uno:Protect': wopi.DocumentOwner == true, // 檔案擁有者，才可以保護/解除保護工作表
 		};
 
 		// 把該文件類別能夠匯出的類別指令，放入特性命令中

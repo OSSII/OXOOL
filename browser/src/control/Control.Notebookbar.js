@@ -569,10 +569,6 @@ L.Control.Notebookbar = L.Control.extend({
 	createOptionsSection: function(childrenArray) {
 		$('.notebookbar-options-section').remove();
 
-		// 如果不使用側邊欄，，就不建立側邊欄按鈕區
-		if (window.app.dontUseSidebar)
-			return;
-
 		var optionsSection = L.DomUtil.create('div', 'notebookbar-options-section');
 		$(optionsSection).insertBefore('#closebuttonwrapper');
 

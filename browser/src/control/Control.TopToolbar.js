@@ -401,10 +401,6 @@ L.Control.TopToolbar = L.Control.extend({
 		window.updateVisibilityForToolbar(w2ui['editbar']);
 
 		if (toolbarUp) {
-			// 如果不使用側邊欄，隱藏側邊欄按鈕
-			if (window.app.dontUseSidebar) {
-				toolbarUp.hide('breaksidebar', 'sidebar', 'modifypage', 'slidechangewindow', 'customanimation', 'masterslidespanel', 'navigator');
-			}
 			toolbarUp.refresh();
 		}
 

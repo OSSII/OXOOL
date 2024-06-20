@@ -2241,7 +2241,7 @@ L.Control.Menubar = L.Control.extend({
 					'.uno:CustomAnimation',	// 動畫
 					'.uno:MasterSlidesPanel'	// 投影片母片
 				];
-				if (window.app.dontUseNotebookbar && hideSidebarItems.indexOf(menu[i].uno) > -1)
+				if (hideSidebarItems.indexOf(menu[i].uno) > -1)
 					continue;
 
 				$(aItem).data('type', 'unocommand');
@@ -2253,9 +2253,6 @@ L.Control.Menubar = L.Control.extend({
 				aItem.tabIndex = -1;
 			} else if (menu[i].type === 'action') {
 				if (menu[i].id == 'feedback' && !this._map.feedback)
-					continue;
-				// 如果不使用 Notebookbar，就不顯示切換 UI 模式的選項
-				if (menu[i].id == 'toggleuimode' && window.app.dontUseNotebookbar)
 					continue;
 
 				$(aItem).data('type', 'action');

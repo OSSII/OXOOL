@@ -10,8 +10,6 @@
  */
 
 window.app = { // Shouldn't have any functions defined.
-	dontUseNotebookbar: false,
-	dontUseSidebar: false,
 	definitions: {}, // Class instances are created using definitions under this variable.
 	dpiScale: window.devicePixelRatio,
 	roundedDpiScale: Math.round(window.devicePixelRatio),
