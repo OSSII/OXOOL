@@ -10,6 +10,8 @@ L.OxOOL = L.Class.extend({
 	_socketOnMessage: null, // save the original socket onMessage function
 	_savedDispatchFunction: null, // save the original dispatch function
 
+	_modules: {}, // modules
+
 	_ModuleManager: null, // ModuleManager
 
 	/**
@@ -33,6 +35,10 @@ L.OxOOL = L.Class.extend({
 		this._prelaodData();
 
 		this._map.on('doclayerinit', this._onDocLayerInit, this);
+	},
+
+	getModuleByName: function (name) {
+		return this._modules[name];
 	},
 
 	/**
@@ -73,6 +79,10 @@ L.OxOOL = L.Class.extend({
 				options.modules = JSON.parse(jsonStr);
 
 				this._ModuleManager = new L.Module(options);
+				this._modules = {};
+				for (var i = 0; i < options.modules.length; i++) {
+					this._modules[options.modules[i].name] = options.modules[i];
+				}
 			} catch (e) {
 				console.error('Failed to parse modules: ', e);
 			}
