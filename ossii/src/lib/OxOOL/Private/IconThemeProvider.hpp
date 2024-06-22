@@ -20,8 +20,19 @@
 #include <Poco/Path.h>
 
 constexpr const char ICON_THEMES_RELATIVE_PATH[] = "share/config";
+constexpr const char OFFICE_SHELL_PATH[] = "program/shell";
+
 constexpr const char FALLBACK_LIGHT_ICON_THEME[] = "colibre_svg";
 constexpr const char FALLBACK_DARK_ICON_THEME[]  = "colibre_dark_svg";
+
+namespace Poco
+{
+    class URI;
+    namespace JSON
+    {
+        class Object;
+    }
+}
 
 namespace OxOOL
 {
@@ -54,9 +65,12 @@ class IconTheme : public OxOOL::ResourceProvider
         * light: light icon.
         * dark:  dark color icon.
 
-    FUNCTION: two functions
-        * list() - Get the list of all files in json format. For example: icon:light/list()
+    FUNCTION: There are four functions
+        * format() - Get the icon format, json format. For example: icon:light/format()
+        * files() - Get the list of all files in json format. For example: icon:light/files()
         * links() - File link list, json format. For example: icon:dark/links()
+        * structure() - Get the icon structure, json format. include format, files, and links.
+                        For example: icon:dark/structure()
 
     UNO COMMAND: Get the uno command icon, such as '.uno:Save'
         Example: "icon:light/.uno:Save" or "icon:dark/.uno:Save"
@@ -72,8 +86,6 @@ class IconTheme : public OxOOL::ResourceProvider
         For example: "icon:light/.uno:Save/m" to get the medium icon.
                  or: "icon:light/.uno:Save/l" to get the large icon.
 
-    ICON PATH: Use the file path to get the icon.
-        You can use "icon:dark/list()" to get the file list.
 */
 {
 public:
@@ -123,6 +135,8 @@ private:
     /// @brief icon theme info map
     /// @description first: icon theme type, second: icon theme info
     std::map<ThemeType, std::shared_ptr<Info>> maInfoMap;
+
+    bool makeJsonResource(const Poco::JSON::Object& object, std::string& resource, std::string& mimeType);
 
 }; // class IconTheme
 

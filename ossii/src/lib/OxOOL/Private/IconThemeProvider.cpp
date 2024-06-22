@@ -213,14 +213,21 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
 
         realName = "cmd/" + sizePrefix + cmdName; // 在 zip 檔案中的名稱，不包含副檔名
     }
+    else if (path == "format()")
+    {
+        Poco::JSON::Object format;
+        format.set("format", pInfo->type == Info::IconType::SVG ? "svg" : "png");
+
+        return makeJsonResource(format, resource, mimeType);
+    }
     // 要求檔案列表方法
-    else if (path == "list()")
+    else if (path == "files()")
     {
         Poco::JSON::Array files;
         for (auto file : pInfo->package.getList())
             files.add(file);
 
-        mimeType = "application/json";
+        mimeType = "application/json; charset=utf-8";
         std::ostringstream oss;
         files.stringify(oss);
         resource = oss.str();
@@ -234,12 +241,26 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
         for (const auto& link : pInfo->linksMap)
             links.set(link.first, link.second);
 
-        mimeType = "application/json";
-        std::ostringstream oss;
-        links.stringify(oss);
-        resource = oss.str();
+        return makeJsonResource(links, resource, mimeType);
+    }
+    else if (path == "structure()")
+    {
+        Poco::JSON::Object structure;
+        structure.set("name", pInfo->name);
+        structure.set("readableName", pInfo->readableName);
+        structure.set("format", pInfo->type == Info::IconType::SVG ? "svg" : "png");
 
-        return true;
+        Poco::JSON::Array files;
+        for (auto file : pInfo->package.getList())
+            files.add(file);
+        structure.set("files", files);
+
+        Poco::JSON::Object links;
+        for (const auto& link : pInfo->linksMap)
+            links.set(link.first, link.second);
+        structure.set("links", links);
+
+        return makeJsonResource(structure, resource, mimeType);
     }
     else
     {
@@ -271,6 +292,18 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
     }
 
     return false;
+}
+
+// Private method here
+
+bool IconTheme::makeJsonResource(const Poco::JSON::Object& object, std::string& resource, std::string& mimeType)
+{
+    mimeType = "application/json; charset=utf-8";
+    std::ostringstream oss;
+    object.stringify(oss);
+    resource = oss.str();
+
+    return true;
 }
 
 } // namespace OxOOL
