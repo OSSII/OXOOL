@@ -28,7 +28,6 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"icon": "res:rev-history",
 				"name": "See history",
 				"id": "rev-history"
 			},
@@ -38,42 +37,34 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:downloadas-pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
 					{
-						"icon": "res:txt",
 						"name": "TEXT Document (.txt)",
 						"id": "downloadas-txt"
 					},
 					{
-						"icon": ".uno:NewHtmlDoc",
 						"name": "HTML Document (.html)",
 						"id": "downloadas-html"
 					},
 					{
-						"icon": "res:downloadas-odt",
 						"name": "ODF text document (.odt)",
 						"id": "downloadas-odt"
 					},
 					{
-						"icon": "res:downloadas-doc",
 						"name": "Word 2003 Document (.doc)",
 						"id": "downloadas-doc"
 					},
 					{
-						"icon": "res:downloadas-docx",
 						"name": "Word Document (.docx)",
 						"id": "downloadas-docx"
 					},
 					{
-						"icon": "res:downloadas-rtf",
 						"name": "Rich Text (.rtf)",
 						"id": "downloadas-rtf"
 					},
 					{
-						"icon": "res:downloadas-epub",
 						"name": "EPUB Document (.epub)",
 						"id": "downloadas-epub"
 					}
@@ -110,7 +101,6 @@
 				"hotkey": "Ctrl+Shift+Y"
 			},
 			{
-				"icon": "res:repair",
 				"name": "Repair",
 				"id": "Repair"
 			},
@@ -426,7 +416,6 @@
 				"comment": "替代指令"
 			},
 			{
-				"icon": "res:insertgraphicremote",
 				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
@@ -1925,22 +1914,22 @@
 				"id": "bindingbline",
 				"menu": [
 					{
-						"icon": "res:fr02",
+						"icon": "svx/res/fr02",
 						"name": "Insert on the left side of page",
 						"id": "macro:///OxOOL.BindingLine.insertLeft()"
 					},
 					{
-						"icon": "res:fr03",
+						"icon": "svx/res/fr03",
 						"name": "Insert on the right side of page",
 						"id": "macro:///OxOOL.BindingLine.insertRight()"
 					},
 					{
-						"icon": "res:fr05",
+						"icon": "svx/res/fr05",
 						"name": "Insert on the top side of page",
 						"id": "macro:///OxOOL.BindingLine.insertTop()"
 					},
 					{
-						"icon": "res:fr06",
+						"icon": "svx/res/fr06",
 						"name": "Insert on the bottom side of page",
 						"id": "macro:///OxOOL.BindingLine.insertBottom()"
 					},
@@ -2005,20 +1994,17 @@
 				"iosapp": false
 			},
 			{
-				"icon": "res:keyboardshortcuts",
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",
 				"hotkey": "Ctrl+Alt+Shift+?",
 				"iosapp": false
 			},
 			{
-				"icon": ".uno:ReportIssue",
 				"name": "Report an issue",
 				"id": "report-an-issue",
 				"iosapp": false
 			},
 			{
-				"icon": "res:about",
 				"name": "About",
 				"id": "about"
 			}

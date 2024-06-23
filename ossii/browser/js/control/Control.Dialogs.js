@@ -311,7 +311,7 @@ L.Control.Dialogs = L.Control.extend({
 		if (typeof type == 'string') {
 			var icon = iconSet[type.toLowerCase()];
 			if (icon !== undefined) {
-				return this._map.getIconURL(icon);
+				return this._map.Icon.getURL(icon);
 			}
 		}
 		return null;

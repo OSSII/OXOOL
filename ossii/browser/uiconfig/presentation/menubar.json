@@ -23,7 +23,6 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"icon": "res:rev-history",
 				"name": "See history",
 				"comment": "替代指令",
 				"id": "rev-history"
@@ -34,32 +33,26 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:downloadas-pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
 					{
-						"icon": ".uno:NewHtmlDoc",
 						"name": "HTML Document (.html)",
 						"id": "downloadas-html"
 					},
 					{
-						"icon": "res:downloadas-odp",
 						"name": "ODF presentation (.odp)",
 						"id": "downloadas-odp"
 					},
 					{
-						"icon": "res:downloadas-odg",
 						"name": "ODF Drawing (.odg)",
 						"id": "downloadas-odg"
 					},
 					{
-						"icon": "res:downloadas-ppt",
 						"name": "PowerPoint 2003 Presentation (.ppt)",
 						"id": "downloadas-ppt"
 					},
 					{
-						"icon": "res:downloadas-pptx",
 						"name": "PowerPoint Presentation (.pptx)",
 						"id": "downloadas-pptx"
 					}
@@ -92,7 +85,6 @@
 				"hotkey": "Ctrl+Y"
 			},
 			{
-				"icon": "res:repair",
 				"name": "Repair",
 				"comment": "替代指令",
 				"id": "Repair"
@@ -311,7 +303,6 @@
 				"comment": "替代指令"
 			},
 			{
-				"icon": "res:insertgraphicremote",
 				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
@@ -1645,7 +1636,6 @@
 				"iosapp": false
 			},
 			{
-				"icon": "res:about",
 				"name": "About",
 				"id": "about"
 			}

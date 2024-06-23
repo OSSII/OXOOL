@@ -27,7 +27,6 @@
 				"hotkey": "Ctrl+P"
 			},
 			{
-				"icon": "res:rev-history",
 				"name": "See history",
 				"comment": "替代指令",
 				"id": "rev-history"
@@ -38,32 +37,26 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:downloadas-pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
 					{
-						"icon": ".uno:NewHtmlDoc",
 						"name": "HTML Document (.html)",
 						"id": "downloadas-html"
 					},
 					{
-						"icon": "res:downloadas-ods",
 						"name": "ODF spreadsheet (.ods)",
 						"id": "downloadas-ods"
 					},
 					{
-						"icon": "res:downloadas-xls",
 						"name": "Excel 2003 Spreadsheet (.xls)",
 						"id": "downloadas-xls"
 					},
 					{
-						"icon": "res:downloadas-xlsx",
 						"name": "Excel Spreadsheet (.xlsx)",
 						"id": "downloadas-xlsx"
 					},
 					{
-						"icon": "res:downloadas-csv",
 						"name": "CSV (.csv)",
 						"id": "downloadas-csv"
 					}
@@ -100,7 +93,6 @@
 				"hotkey": "Ctrl+Shift+Y"
 			},
 			{
-				"icon": "res:repair",
 				"name": "Repair",
 				"comment": "替代指令",
 				"id": "Repair"
@@ -328,7 +320,6 @@
 				"comment": "替代指令"
 			},
 			{
-				"icon": "res:insertgraphicremote",
 				"name": "Remote image",
 				"id": "insertgraphicremote"
 			},
@@ -1942,20 +1933,17 @@
 				"iosapp": false
 			},
 			{
-				"icon": "res:keyboardshortcuts",
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",
 				"hotkey": "Ctrl+Alt+Shift+?",
 				"iosapp": false
 			},
 			{
-				"icon": ".uno:ReportIssue",
 				"name": "Report an issue",
 				"id": "report-an-issue",
 				"iosapp": false
 			},
 			{
-				"icon": "res:about",
 				"name": "About",
 				"id": "about"
 			}

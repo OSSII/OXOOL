@@ -29,7 +29,6 @@
 #include <common/Log.hpp>
 #include <common/Message.hpp>
 #include <common/StringVector.hpp>
-#include <common/Util.hpp>
 #include <wsd/OXOOLWSD.hpp>
 #include <wsd/ClientSession.hpp>
 
@@ -37,8 +36,8 @@
 
 namespace OxOOL
 {
-std::string ENV::Version;
-std::string ENV::VersionHash;
+std::string ENV::Version = OXOOLWSD_VERSION;
+std::string ENV::VersionHash = OXOOLWSD_VERSION_HASH;
 
 std::string ENV::ConfigFile;
 
@@ -71,7 +70,7 @@ ENV::ENV()
 void ENV::initialize()
 {
     // Get the version information.
-    ::Util::getVersionInfo(ENV::Version, ENV::VersionHash);
+    //::Util::getVersionInfo(ENV::Version, ENV::VersionHash);
 
     ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
     ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;

@@ -7,12 +7,9 @@ L.OxOOL = L.Class.extend({
 	options: {
 	},
 
-	_socketOnMessage: null, // save the original socket onMessage function
-	_savedDispatchFunction: null, // save the original dispatch function
 
-	_modules: {}, // modules
 
-	_ModuleManager: null, // ModuleManager
+	moduleManager: null, // ModuleManager
 
 	/**
 	 * Initialize the OxOOL library
@@ -40,6 +37,15 @@ L.OxOOL = L.Class.extend({
 	getModuleByName: function (name) {
 		return this._modules[name];
 	},
+
+	// Private variables there --------------------------------------------
+	_map: null, // the map object
+	_socketOnMessage: null, // save the original socket onMessage function
+	_savedDispatchFunction: null, // save the original dispatch function
+
+	_modules: {}, // modules
+
+	// Private methods there --------------------------------------------
 
 	/**
 	 * Override some cool functions if needed.
@@ -77,12 +83,15 @@ L.OxOOL = L.Class.extend({
 			try {
 				var jsonStr = e.textMsg.substring('modules:'.length);
 				options.modules = JSON.parse(jsonStr);
-
-				this._ModuleManager = new L.Module(options);
 				this._modules = {};
 				for (var i = 0; i < options.modules.length; i++) {
 					this._modules[options.modules[i].name] = options.modules[i];
 				}
+
+				this._map.fire('modulesloaded', this._modules); // fire modulesloaded event
+
+				this.moduleManager = new L.Module(options);
+
 			} catch (e) {
 				console.error('Failed to parse modules: ', e);
 			}
@@ -121,6 +130,8 @@ L.OxOOL = L.Class.extend({
 		this._map.addHandler('alternativeCommand', L.Map.AlternativeCommand);
 		// register the state change handler extension
 		this._map.addHandler('stateChangeExtend', L.Map.StateChangeExtend);
+		// register the resource handler
+		this._map.addHandler('Icon', L.Map.Icon);
 	},
 
 	/**

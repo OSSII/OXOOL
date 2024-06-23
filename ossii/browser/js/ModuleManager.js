@@ -10,7 +10,7 @@ L.Module = L.Class.extend({
 	_map: null,
 
 	/**
-	 * Modules
+	 * Modules handler
 	 *
 	 * @private
 	 *
@@ -19,7 +19,7 @@ L.Module = L.Class.extend({
 	 * @property {Object} Module handler
 	 *
 	 */
-	_modules: {},
+	_handlers: {},
 
 	_docLayerOnMessage: null, // save the original docLayer _onMessage function
 
@@ -57,7 +57,7 @@ L.Module = L.Class.extend({
 		}
 		var handler = new moduleHandler(); // create module handler
 
-		this._modules[detail.id] = handler; // save module handler
+		this._handlers[detail.id] = handler; // save module handler
 		// Call module onAdd function
 		if (handler.onAdd) {
 			handler.onAdd(this._map);
@@ -71,12 +71,12 @@ L.Module = L.Class.extend({
 	 * @param {string} id - Module ID
 	 */
 	remove: function (id) {
-		if (this._modules[id]) {
-			var handler = this._modules[id];
+		if (this._handlers[id]) {
+			var handler = this._handlers[id];
 			if (handler.onRemove) {
 				handler.onRemove(this._map);
 			}
-			delete this._modules[id];
+			delete this._handlers[id];
 		}
 		return this;
 	},
@@ -87,9 +87,9 @@ L.Module = L.Class.extend({
 	 * @param {string} moduleId - Module ID
 	 * @param {string} command - Command
 	 */
-	executeModuleCommand: function (moduleId, command) {
+	executeCommand: function (moduleId, command) {
 		// 取得 module handler
-		var handler = this._modules[moduleId];
+		var handler = this._handlers[moduleId];
 		if (handler) {
 			// Call module onCommand function
 			if (handler.onCommand) {
@@ -145,8 +145,8 @@ L.Module = L.Class.extend({
 			var moduleId = textMsg.substring(1, closeTagIndex); // 取得模組 ID
 			var message = textMsg.substring(closeTagIndex + 1); // 取得訊息
 			// Check if message is for module
-			if (this._modules[moduleId]) {
-				var handler = this._modules[moduleId]; // 取得模組 handler
+			if (this._handlers[moduleId]) {
+				var handler = this._handlers[moduleId]; // 取得模組 handler
 				// Call module onMessage function
 				if (handler.onModuleMessage) {
 					handler.onModuleMessage(message);
@@ -186,7 +186,7 @@ L.Module = L.Class.extend({
 				continue;
 			}
 
-			this._modules[detail.id] = null;
+			this._handlers[detail.id] = null;
 
 			this._asyncLoadModule(detail);
 		}
@@ -214,12 +214,12 @@ L.Module = L.Class.extend({
 				this.add(L.Module[moduleName], detail);
 			} else {
 				console.error('Module class not found: ', moduleName);
-				delete this._modules[detail.id];
+				delete this._handlers[detail.id];
 			}
 			document.head.removeChild(script); // remove script tag
 		}.bind(this);
 		script.onerror = function () {
-			delete this._modules[detail.id];
+			delete this._handlers[detail.id];
 			console.error('Failed to load module: ', moduleName);
 			document.head.removeChild(script); // remove script tag
 		}.bind(this);
@@ -229,8 +229,8 @@ L.Module = L.Class.extend({
 
 	_onMenubarReady: function () {
 		var loaded = true;
-		for (var moduleId in this._modules) {
-			if (this._modules[moduleId] === null) {
+		for (var moduleId in this._handlers) {
+			if (this._handlers[moduleId] === null) {
 				loaded = false;
 				break;
 			}
@@ -244,8 +244,8 @@ L.Module = L.Class.extend({
 		var docType = this._map.getDocType();
 		// All modules are loaded
 		// Add modules menu items to the menubar
-		for (var moduleId in this._modules) {
-			var handler = this._modules[moduleId];
+		for (var moduleId in this._handlers) {
+			var handler = this._handlers[moduleId];
 			// if handler has menubar and menubar has docType
 			if (handler && handler.menubar && handler.menubar[docType]) {
 				var event = {

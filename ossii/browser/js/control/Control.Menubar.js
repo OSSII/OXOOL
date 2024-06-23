@@ -1183,7 +1183,7 @@ L.Control.Menubar = L.Control.extend({
 						var keys = this._data.hotkey.split('+');
 						var paddingRight = (this._data.hotkey.length * 5) + (keys.length * 5) + 32;
 						this._aItem.style.paddingRight = paddingRight + 'px';
-						this._aItem.appendChild(this._map.createItemHotkey(this._data.hotkey));
+						this._aItem.appendChild(this._map.Icon.createHotkey(this._data.hotkey));
 					}
 
 					// 如果該選項是動態選單的話，先建立一個空陣列
@@ -1329,8 +1329,8 @@ L.Control.Menubar = L.Control.extend({
 
 				// 選項圖示的 node
 				var iconNode = this._aItem.querySelector('.menuicon');
-				iconNode.style.backgroundImage = 'url("' + this._map.getIconURL(
-					this._data.icon ? this._data.icon : command) + '")';
+				var iconURL = this._map.Icon.getURL(this._data.icon ? this._data.icon : command);
+				iconNode.style.backgroundImage = 'url("' + iconURL + '")';
 
 				var state = self._map['stateChangeHandler'].getState(id);
 				if (this._map.isEditMode()) {
@@ -1356,8 +1356,8 @@ L.Control.Menubar = L.Control.extend({
 				if (id) {
 					// 如果該指令屬於模組指令，就交給模組處理
 					if (this._data.moduleId) {
-						if (app.oxool && app.oxool._ModuleManager) {
-							app.oxool._ModuleManager.executeModuleCommand(this._data.moduleId, id);
+						if (app.oxool && app.oxool.moduleManager) {
+							app.oxool.moduleManager.executeCommand(this._data.moduleId, id);
 						} else {
 							console.error('Error! ModuleManager not found.');
 						}

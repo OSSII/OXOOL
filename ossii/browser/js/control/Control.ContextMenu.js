@@ -311,7 +311,7 @@ L.Control.ContextMenu = L.Control.extend({
 
 			// 如果非手機模式，且有指令，設定該選項的 icon function.
 			if (!window.mode.isMobile() && item.command) {
-				contextMenu[item.command].icon = this._map.contextMenuIcon.bind(this._map);
+				contextMenu[item.command].icon = this._map.Icon.contextMenu.bind(this._map.Icon);
 			}
 		}
 
@@ -427,7 +427,7 @@ L.installContextMenu = function(options) {
 
 			// 只要沒有自訂 icon function，就用我們自己的 icon function
 			if (typeof(items[key].icon) !== 'function') {
-				items[key].icon = (map.contextMenuIcon).bind(map);
+				items[key].icon = (map.Icon.contextMenu).bind(map.Icon);
 			}
 
 			if (!items[key].isHtmlName) {

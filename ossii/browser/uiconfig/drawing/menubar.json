@@ -34,12 +34,10 @@
 				"id": "downloadas",
 				"menu": [
 					{
-						"icon": "res:pdf",
 						"name": "PDF Document (.pdf)",
 						"id": "downloadas-pdf"
 					},
 					{
-						"icon": "res:odg",
 						"name": "ODF Drawing (.odg)",
 						"id": "downloadas-odg"
 					}
