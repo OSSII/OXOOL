@@ -1,6 +1,6 @@
 /* Document logo */
 body #document-header .document-logo {
-	background-image: url('images/res/logo_inverted.svg') !important;
+	background-image: url('/oxool/resource/icon:dark/getLogo()') !important;
 	background-repeat: no-repeat !important;
 	background-size: contain !important;
 	background-position: center !important;
@@ -29,7 +29,13 @@ body #document-header .document-logo {
 }
 
 #lokit-logo {
-	background: url('images/res/lokit.svg') center top/82px no-repeat;
+	background: url('/oxool/resource/icon:light/getAbout()') center top/82px no-repeat;
+	display: flex;
+	flex-grow: 1;
+}
+
+[data-theme='dark'] #lokit-logo {
+	background: url('/oxool/resource/icon:dark/getAbout()') center top/82px no-repeat;
 	display: flex;
 	flex-grow: 1;
 }
