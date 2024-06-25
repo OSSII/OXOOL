@@ -20,35 +20,72 @@ L.Map.mergeOptions({
 
 L.Map.Icon = L.Handler.extend({
 
+	/**
+	 * Initialize
+	 * @param {L.Map} map - map object
+	 */
 	initialize: function (map) {
 		this._map = map;
-		this._onModulesLoaded();
+		this._loadIconResource(); // load icon resource
 	},
 
+	/**
+	 * On add hooks
+	 */
 	addHooks: function () {
-		//this._map.on('modulesloaded', this._onModulesLoaded, this);
+
 	},
 
+	/**
+	 * On remove hooks
+	 */
 	removeHooks: function () {
-		//this._map.off('modulesloaded', this._onModulesLoaded, this);
+
 	},
 
+	/**
+	 * Get specified icon URL
+	 *
+	 * @param {string} icon - uno command or icon path
+	 * @param {string} size - icon size, default is '',
+	 *						  '/m' - medium(24x24 px)
+	 *						  '/l' - large(32x32 px)
+	 * @returns {string} - icon URL
+	 * @example 1. getURL('.uno:Save') - get uno command icon URL
+	 * 			2. getURL('.uno:SaveAs', '/l') - get uno command icon URL with large size
+	 * 			3. getURL('res/writer128') - get specified with path
+	 * 			4. getURL('downloadas-pdf') - get download as PDF icon URL, use alias
+	 *
+	 * @note: if icon is not uno command, size is not necessary
+	 *
+	 */
 	getURL: function (icon, size) {
-		if (!icon) return '';
-
-		if (!size) size = '';
-
-		// 替代的 icon
-		if (this._resorceIcon[icon]) {
-			icon = this._resorceIcon[icon];
+		if (!icon) {
+			console.error('Not specify icon name');
+			return L.LOUtil.emptyImageUrl;
 		}
 
-		var isDark = this._map.uiManager.getDarkModeState();
-		var theme = this._theme[isDark ? 'dark' : 'light'];
-		var prefixURL = this._resourceURI + 'icon:' + (isDark ? 'dark/' : 'light/');
+		// 如果 size 不是 '' 或 '/m' 或 '/l'，則設為 ''
+		if (size !== '' && size !== '/m' && size !== '/l') {
+			size = '';
+		}
 
-		var iconName = '';
-		if (icon.startsWith('.uno:') || icon.startsWith('dialog:')) {
+		// 如果有的話，找出替代的 icon
+		if (this._iconAlias[icon]) {
+			icon = this._iconAlias[icon];
+		}
+
+		var isDark = this._map.uiManager.getDarkModeState(); // 是否為深色模式
+		var prefixURL = this._resourceURI + 'icon:' + (isDark ? 'dark/' : 'light/'); // icon 的 URL 前綴
+		var theme = this._theme[isDark ? 'dark' : 'light']; // 使用的 theme
+		// check theme is loaded
+		var themeLoaded = theme.format !== '';
+		// icon 的副檔名，如果 theme 沒有載入，不使用副檔名(Resource service 會自動判別)
+		var iconExtension = themeLoaded ? '.' + theme.format : '';
+
+		var iconPath = '';
+		// 如果是 uno 指令
+		if (icon.startsWith('.uno:')) {
 			// 去掉 .uno: 或 dialog: 前綴
 			var cmdName = icon.substring(icon.indexOf(':') + 1).toLowerCase();
 			var sizePrefix = 'cmd/';
@@ -60,22 +97,29 @@ L.Map.Icon = L.Handler.extend({
 				sizePrefix += '32/';
 			}
 
-			iconName = sizePrefix + cmdName + '.' + theme.format;
-			// check the icon is link or not
-			if (theme.links[iconName]) {
-				iconName = theme.links[iconName];
-			}
+			iconPath = sizePrefix + cmdName + iconExtension;
 		}
 		else {
-			iconName = icon + '.' + theme.format;
+			size = ''; // 除了 uno 指令外，其他的 icon 都不區分 size
+			iconPath = icon + iconExtension;
 		}
 
-		if (!theme.files.has(iconName)) {
-			console.debug('Icon not found: ' + iconName);
-			return L.Util.emptyImageUrl;
+		// 如果 theme 沒有載入，或是 icon 已經存在，或是 icon 已經在 links 中
+		// 直接傳回 URL
+		var iconURL = prefixURL + icon + size;
+		if (!themeLoaded || theme.files.has(iconPath) || theme.links[iconPath]) {
+			return iconURL;
 		}
 
-		return prefixURL + iconName + size;
+		// TODO: 確實找不到 icon 的話，是否改用 online browser/dist/images/ 之下的圖示？
+		/*
+		{
+			// Fall back to images/lc_*.svg or images/dark/lc_*.svg
+			iconURL = 'images/' + (isDark ? 'dark/' : '') + 'lc_' + icon + '.svg';
+			return iconURL;
+		} */
+
+		return L.Util.emptyImageUrl;
 	},
 
 	/**
@@ -147,7 +191,7 @@ L.Map.Icon = L.Handler.extend({
 
 	// Private variables here ----------------------------------------------------
 
-	_resourceURI: '/oxool/resource/' + window.versionPath + '/',
+	_resourceURI: '/oxool/resource/', // Resource URI
 
 	_theme: {
 		light: {
@@ -162,11 +206,11 @@ L.Map.Icon = L.Handler.extend({
 		},
 	},
 
-	// 帶參數的 uno 指令(.uno:AssignLayout?WhatLayer=xx)
-	_resorceIcon: {
+	// icon 別名
+	_iconAlias: {
 		// downloadas-* 的圖示
-		// writer
 		'downloadas-pdf': '.uno:ExportDirectToPDF', // 下載爲 PDF
+		// writer
 		'downloadas-html': '.uno:NewHtmlDoc', // 下載爲 HTML
 		'downloadas-odt': 'res/odt_16_8', // 下載爲 ODT
 		'downloadas-doc': 'res/sx03162', // 下載爲 DOC
@@ -182,9 +226,10 @@ L.Map.Icon = L.Handler.extend({
 		'downloadas-ppt': 'res/sx03123', // 下載爲 PPT
 		'downloadas-pptx': 'res/sx03130', // 下載爲 PPTX
 
+		// 通用的圖示
 		'about': 'vcl/res/infobox', // 關於
 
-		// Impress 版面配置
+		// Impress 版面配置(menubar & conetxt menu)
 		'.uno:AssignLayout?WhatLayout:long=20': 'sd/res/layout_empty', // 空白投影片
 		'.uno:AssignLayout?WhatLayout:long=19': 'sd/res/layout_head01', // 只有題名
 		'.uno:AssignLayout?WhatLayout:long=0': 'sd/res/layout_head03', // 題名投影片
@@ -206,37 +251,35 @@ L.Map.Icon = L.Handler.extend({
 	// private methods here --------------------------------------------------------
 
 	/**
-	 *
-	 * @param {object} e - modulesloaded event
+	 * Load icon resource
 	 */
-	_onModulesLoaded: function (e) {
+	_loadIconResource: function () {
 		if (this._resourceURI) {
 			// load light theme icons
 			fetch(this._resourceURI + 'icon:light/structure()')
-				.then(function (response) {
-					return response.json();
-				}).then(function (json) {
-					// change json.files from array to Set
-					json.files = new Set(json.files);
-					this._theme.light = json;
-				}.bind(this))
-				.catch(function (error) {
-					console.error('Request failed(light)', error);
-				});
+			.then(function (response) {
+				return response.json();
+			}).then(function (json) {
+				// change json.files from array to Set
+				json.files = new Set(json.files);
+				this._theme.light = json;
+			}.bind(this))
+			.catch(function (error) {
+				console.error('Request failed(light)', error);
+			});
 
 			// load dark theme icons
 			fetch(this._resourceURI + 'icon:dark/structure()')
-				.then(function (response) {
-					return response.json();
-				}).then(function (json) {
-					// change json.files from array to Set
-					json.files = new Set(json.files);
-					this._theme.dark = json;
-				}.bind(this))
-				.catch(function (error) {
-					console.error('Request failed(dark icons)', error);
-				});
+			.then(function (response) {
+				return response.json();
+			}).then(function (json) {
+				// change json.files from array to Set
+				json.files = new Set(json.files);
+				this._theme.dark = json;
+			}.bind(this))
+			.catch(function (error) {
+				console.error('Request failed(dark icons)', error);
+			});
 		}
 	},
-
 });

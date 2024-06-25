@@ -7,8 +7,6 @@ L.OxOOL = L.Class.extend({
 	options: {
 	},
 
-
-
 	moduleManager: null, // ModuleManager
 
 	/**
@@ -27,7 +25,6 @@ L.OxOOL = L.Class.extend({
 
 		// Register our own handlers
 		this._registerHandlers();
-
 
 		this._prelaodData();
 
@@ -71,6 +68,7 @@ L.OxOOL = L.Class.extend({
 	 * @param {event} e - the event object
 	 */
 	_onMessage: function (e) {
+		var handled = false; // whether the message is handled
 		// When client send 'load url=<...>' message,
 		// the server will send 'modules: [...]' message back first,
 		// so we can create the ModuleManager before loading document.
@@ -96,14 +94,22 @@ L.OxOOL = L.Class.extend({
 				console.error('Failed to parse modules: ', e);
 			}
 
-			return;
+			handled = true;
 		} else if (e.textMsg.startsWith('watermark:')) {
 			this._map.options.watermark = JSON.parse(e.textMsg.substring(e.textMsg.indexOf('{')));
-			return;
+			handled = true;
+		} else if (e.textMsg.startsWith('lokitversion ')) {
+			try {
+				var kitJson = JSON.parse(e.textMsg.substring('lokitversion '.length));
+				this._map.setLoKitVersion(kitJson);
+			} catch (e) {
+				console.error('Failed to parse lokitversion: ', e);
+			}
+			// pass the message to the original socket onMessage function
 		}
 
 		// Call the original socket onMessage function
-		if (this._socketOnMessage) {
+		if (!handled && this._socketOnMessage) {
 			this._socketOnMessage(e);
 		}
 	},
@@ -115,9 +121,10 @@ L.OxOOL = L.Class.extend({
 	 * @param {string} action - the command to be dispatched
 	 */
 	_dispatch: function (action) {
-		if (!app.map.executeAllowedCommand(action))
+		if (!app.map.executeAllowedCommand(action)) {
 			// Call the original dispatch function
 			this._savedDispatchFunction(action);
+		}
 	},
 
 	/**
@@ -143,19 +150,6 @@ L.OxOOL = L.Class.extend({
 	 * @private
 	 */
 	_prelaodData: function () {
-		// download Common symbols.
-		var locale = String.locale ? String.locale : navigator.language;
-		var symbolsURL = L.LOUtil.getURL('uiconfig/symbols/' + locale + '.json');
-		fetch(symbolsURL)
-			.then(function (response) {
-				return response.json();
-			})
-			.then(function (data) {
-				this._map.fire('symbolsloaded', data);
-			}.bind(this))
-			.catch(function (error) {
-				console.error('Common symbols load error:', error);
-			});
 	},
 
 	/**
@@ -163,37 +157,8 @@ L.OxOOL = L.Class.extend({
 	 *
 	 * @private
 	 */
-	_postloadData: function (docType) {
-		// download menubar.json
-		var baseURL = L.LOUtil.getURL('uiconfig/' + docType);
-		fetch(baseURL + '/menubar.json')
-			.then(function (response) {
-				return response.json();
-			})
-			.then(function (data) {
-				this._map.fire('menubarloaded', data);
-			}.bind(this))
-			.catch(function (error) {
-				console.error('Menubar load error:', error);
-			});
+	_postloadData: function () {
 
-		// 如果從 WOPI Host 有指定選單權限，就直接使用
-		if (this._map.wopi.UserExtraInfo && this._map.wopi.UserExtraInfo.MenuPermissions) {
-			this._map._allowedCommands.menuPermissions = this._map.wopi.UserExtraInfo.MenuPermissions;
-			console.debug('Use WOPI menu permissions.');
-		} else {
-			// download perm.json
-			fetch(baseURL + '/perm.json')
-				.then(function (response) {
-					return response.json();
-				})
-				.then(function (data) {
-					this._map.fire('permloaded', data);
-				}.bind(this))
-				.catch(function (error) {
-					console.warn('perm.json load error:', error);
-				});
-		}
 	},
 
 	/**
@@ -218,7 +183,8 @@ L.OxOOL = L.Class.extend({
 		// TODO: 這個步驟將來改寫到 這個 class 中
 		this._map.initializeDocumentPresets(docType);
 
-		this._postloadData(docType);
+		// 載入和文件類型有關的資料
+		this._postloadData();
 	},
 
 });

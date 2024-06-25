@@ -112,19 +112,7 @@ L.Map.include({
 	// 帶有 hotkey 的指令
 	_hotkeyCommands: {},
 
-	/**
-	 * 紀錄後端 Office 版本資訊
-	 * { "ProductName": "OxOffice",
-	 *   "ProductVersion": "R9S0",
-	 *   "ProductExtension": "8.3.1-0",
-	 *   "OxofficeVersion": "R9S0",
-	 *   "BuildId": "9237a2d5d04b2903da3caa984e12c381bb34e609"
-	 * }
-	 */
-
-	_officeVersion: {}, // 後端 Office 版本資訊
-
-	_isOxOffice: false, // 預設後端 Office 非 OxOffice 或 ndcodfsys
+	_loKitVersion: {}, // 後端 Office 版本資訊
 
 	// 支援匯出的格式
 	_exportFormats: {
@@ -193,9 +181,6 @@ L.Map.include({
 			docType = this.getDocType();
 		}
 
-		// 取得語系
-		var locale = String.locale ? String.locale : navigator.language;
-
 		// 處理特性指令(這些指令會依據不同狀況有不同結果)
 		var wopi = this.wopi;
 		this._allowedCommands.featureCommand = {
@@ -224,70 +209,41 @@ L.Map.include({
 		}.bind(this));
 		//-------------------------------------------------------------------------
 
-		var docMenubarURL = L.LOUtil.getURL('uiconfig/' + docType + '/');
-
-		// 如果從 WOPI Host 有指定選單權限，就直接使用
-		if (this.wopi.UserExtraInfo && this.wopi.UserExtraInfo.MenuPermissions) {
-			this._allowedCommands.menuPermissions = this._map.wopi.UserExtraInfo.MenuPermissions;
-			window.app.console.debug('Use WOPI menu permissions.');
-		// 否則從 OxOOL 下載
-		} else {
-			$.ajax({
-				type: 'GET',
-				url: docMenubarURL + 'perm.json',
-				cache: false,
-				async: false,
-				dataType: 'json',
-				success: function(perm) {
-					that._allowedCommands.menuPermissions = perm; // 紀錄禁用選項
-					window.app.console.debug('Obtain system menu permissions.', perm);
-				},
-				error: function(/*xhr, ajaxOptions, thrownError*/) {
-					window.app.console.error('Menu permission not specified.');
-				}
-			});
-		}
-
-		// 載入該文件類別的 menubar.json
-		$.ajax({
-			type: 'GET',
-			url: docMenubarURL + 'menubar.json',
-			cache: false,
-			async: false,
-			dataType: 'json',
-			success: function(data) {
-				that._allowedCommands.menubarData = data;
-				// 1. 把選單指令加入系統白名單
-				that.createAllowCommand(that._allowedCommands.menubarData);
-				// 2. 把通用右鍵指令加入系統白名單
-				that.createAllowCommand(that._allowedCommands.contextMenu.general);
-				// 3. 把該類文件右鍵指令加入系統白名單
-				that.createAllowCommand(that._allowedCommands.contextMenu[docType]);
-				// 4. 把暫存未初始狀態的指令，一次送給 server
-				if (/* that._isOxOffice &&  */that._allowedCommands.pausedInitCmd !== '') {
-					app.socket.sendMessage('initunostatus ' + that._allowedCommands.pausedInitCmd);
-				}
-
-				that._allowedCommands.pausedInitCmd = ''; // 清除暫存命令
-			},
-			error: function(/*xhr, ajaxOptions, thrownError*/) {
-				window.app.console.error('An error occurred while processing menubar JSON file.');
+		fetch(L.LOUtil.getURL('uiconfig/' + docType + '/menubar.json'))
+		.then(function (response) {
+			return response.json();
+		})
+		.then(function (data) {
+			this._allowedCommands.menubarData = data;
+			// 1. 把選單指令加入系統白名單
+			this.createAllowCommand(that._allowedCommands.menubarData);
+			// 2. 把通用右鍵指令加入系統白名單
+			this.createAllowCommand(that._allowedCommands.contextMenu.general);
+			// 3. 把該類文件右鍵指令加入系統白名單
+			this.createAllowCommand(that._allowedCommands.contextMenu[docType]);
+			// 4. 把暫存未初始狀態的指令，一次送給 server
+			if (this._loKitVersion['initUnoStatus'] !== undefined && that._allowedCommands.pausedInitCmd !== '') {
+				app.socket.sendMessage('initunostatus ' + that._allowedCommands.pausedInitCmd);
 			}
+
+			this._allowedCommands.pausedInitCmd = ''; // 清除暫存命令
+		}.bind(this))
+		.catch(function (error) {
+			console.error('Menubar load error:', error);
 		});
 
-		// 讀取該語系常用符號表
-		$.ajax({
-			url: L.LOUtil.getURL('uiconfig/symbols/') + locale + '.json',
-			type: 'GET',
-			cache: false,
-			async: true,
-			dataType: 'json',
-			success: function(data) {
-				that._allowedCommands.commonSymbolsData = data;
-			},
-			error: function() {
-				/* that.stateChangeHandler.setState('dialog:CommonSymbols', 'disabled'); */
-			}
+		// download Common symbols.
+		var locale = String.locale ? String.locale : navigator.language;
+		var symbolsURL = L.LOUtil.getURL('uiconfig/symbols/' + locale + '.json');
+		fetch(symbolsURL)
+		.then(function (response) {
+			return response.json();
+		})
+		.then(function (data) {
+			this._allowedCommands.commonSymbolsData = data;
+		}.bind(this))
+		.catch(function (error) {
+			console.error('Common symbols load error:', error);
 		});
 	},
 
@@ -302,22 +258,17 @@ L.Map.include({
 	 * 設定後端 Office 版本資訊
 	 * @param {object} version : OxOffice Version object.
 	 */
-	setOfficeVersion: function(version) {
-		if (version)
-			this._officeVersion = version;
-
-		// 如果 this._officeVersion.ProductName 有 'OxOffice' 或 'modaodfsys' 或 'MODA' 字串，就是 OxOffice
-		this._isOxOffice = (this._officeVersion.ProductName.indexOf('OxOffice') >= 0 ||
-			this._officeVersion.ProductName.indexOf('modaodfsys') >= 0) ||
-			this._officeVersion.ProductName.indexOf('MODA') >= 0;
+	setLoKitVersion: function(version) {
+		if (typeof version === 'object')
+			this._loKitVersion = version;
 	},
 
 	/**
 	 * 取得後端 Office 版本資訊
 	 * @returns {object} 版本物件
 	 */
-	getOfficeVersion: function() {
-		return this._officeVersion;
+	getLoKitVersion: function() {
+		return this._loKitVersion;
 	},
 
 	/**
@@ -464,11 +415,11 @@ L.Map.include({
 	},
 
 	/**
-	 * 設定取得 uno 指令(只有後端是 OxOffice 才行)
+	 * 設定取得 uno 指令
 	 * @param {string} unoCommand - .uno: 開頭的指令
 	 */
 	setGetCommandStatus: function(unoCommand) {
-		if (this.isUnoCommand(unoCommand) && this._isOxOffice) {
+		if (this.isUnoCommand(unoCommand) && this._loKitVersion['initUnoStatus'] !== undefined) {
 			app.socket.sendMessage('initunostatus ' + encodeURI(unoCommand));
 		}
 	},
@@ -664,11 +615,6 @@ L.Map.include({
 		setTimeout(function() {app.socket.sendMessage('status');}, 100);
 	},
 
-	rgbToHex: function(color) {
-		var sColor = parseInt(color).toString(16);
-		return '#' + '0'.repeat(6 - sColor.length) + sColor; // 不足六碼前面補0
-	},
-
 	/**
 	 * 建立檔案類別圖示
 	 */
@@ -701,94 +647,6 @@ L.Map.include({
 		$(docLogo).data('id', 'document-logo');
 		$(docLogo).data('type', 'action');
 		$('.main-nav').prepend(docLogoHeader);
-	},
-
-	/**
-	 * 關閉檔案
-	 */
-	closeDocument: function() {
-		var map = this;
-		// 文件在可編輯狀態，且有強制寫入或文件已修改過
-		if (map._active === true && map.isEditMode() && (map.forceCellCommit() || map._everModified)) {
-			// 超過一人在編輯(共編模式)，不存檔，直接結束
-			if (map.getViewCount() > 1) {
-				window.app.console.debug('Co-editing mode, do not save this file.');
-				window.onClose();
-				return;
-			} else {
-				window.app.console.debug('Non-co-editing mode, save this file.');
-			}
-
-			// 等待存檔結束，並關閉檔案
-			map.on('commandresult', function(e) {
-				// 表示是按下關閉按鈕，等待存檔完畢
-				if (e.commandName === '.uno:Save') {
-					window.app.console.debug('Save complete. Send UI_Close signal.');
-					window.onClose();
-				}
-			}, map);
-			// 顯示檔案儲存中訊息
-			map.showBusy(_('Saving...'));
-			// 0.5 秒後呼叫存檔
-			setTimeout(function() {
-				map.save(true, true);
-			}, 500);
-			// 超過 60 秒未結束，則直接結束
-			setTimeout(function() {
-				window.app.console.debug('Save file for more than 60 seconds. Send UI_Close signal.');
-				window.onClose();
-			}, 60000);
-		} else {
-			window.onClose();
-		}
-	},
-
-	/**
-	 * 強制寫入試算表儲存格
-	 * @returns {boolean} true:
-	 */
-	forceCellCommit: function () {
-		var map = this;
-		var isModified = false;
-		// 如果是試算表，檢查儲存格是否在輸入狀態
-		if (map.isEditMode()
-			&& map.getDocType() === 'spreadsheet'
-			&& this._hasForceCellCommit !== true) {
-
-			this._hasForceCellCommit = true; // 設定 commit 狀態，避免重複 commit
-			// 游標在編輯狀態
-			if (map._docLayer._isCursorVisible === true) {
-				isModified = true;
-				// 送出 enter 按鍵
-				map.focus();
-				map._docLayer.postKeyboardEvent(
-					'input',
-					map.keyboard.keyCodes.enter,
-					map.keyboard._toUNOKeyCode(this.map.keyboard.keyCodes.enter)
-				);
-			}
-			this._hasForceCellCommit = false;
-		}
-		return isModified;
-	},
-
-	/**
-	 * 字串寫入試算表儲存格
-	 * @string - 字串內容
-	 * @forceCommit - true(強制)
- 	 */
-	cellEnterString: function (string, forceCommit) {
-		var command = {
-			'StringName': {
-				type: 'string',
-				value: string
-			},
-			'DontCommit': {
-				type: 'boolean',
-				value: (forceCommit === true) ? false : true
-			}
-		};
-		this.sendUnoCommand('.uno:EnterString', command);
 	},
 
 	/**

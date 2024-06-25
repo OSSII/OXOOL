@@ -65,7 +65,7 @@ L.Control.ReadonlyBar = L.Control.extend({
 			closeButton.title = _('Close document');
 			// 點擊關閉按鈕時，關閉文件
 			L.DomEvent.on(closeButton, 'click', function() {
-				this._map.closeDocument();
+				window.onClose();
 			}, this);
 		}
 
@@ -106,7 +106,7 @@ L.Control.ReadonlyBar = L.Control.extend({
 		formats.forEach(function(item) {
 			var id = 'downloadas-' + item.format;
 			menuItems[id] = {
-				icon: 'res:' + id,
+				//icon: 'res:' + id,
 				name: item.label
 			};
 		});

@@ -702,7 +702,7 @@ void ModuleManager::initializeInternalModules()
     std::unique_ptr<ModuleLibrary> resourceModuleLib = std::make_unique<ModuleLibrary>(mpResourceService);
     // 設定 Resource service 詳細資訊
     mpResourceService->maDetail.name = "ResourceService";
-    mpResourceService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/oxool/resource/" + OxOOL::ENV::VersionHash + "/";
+    mpResourceService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/oxool/resource/";
     mpResourceService->maDetail.version = "1.0.0";
     mpResourceService->maDetail.summary = "Resource service.";
     mpResourceService->maDetail.author = "OxOOL";
