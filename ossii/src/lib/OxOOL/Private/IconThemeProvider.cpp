@@ -41,6 +41,8 @@ void IconTheme::initialize()
     // Get the path of the icon theme
     maLoIconThemePath = Poco::Path(ENV::LoTemplate, ICON_THEMES_RELATIVE_PATH);
     maLoIconThemePath.makeAbsolute();
+    maLoBrandPath = Poco::Path(ENV::LoTemplate, OFFICE_SHELL_PATH);
+    maLoBrandPath.makeAbsolute();
 
     Poco::File iconThemePath(maLoIconThemePath);
     if (!iconThemePath.exists() || !iconThemePath.isDirectory())
@@ -169,6 +171,25 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
         LOG_ERR("Invalid path format: [" << uri.toString() << "] theme type should be 'light' or 'dark'.");
         return false;
     }
+
+    // 本段程式碼取得後端 office 廠商相關的 logo 及 about 圖示
+    if (path == "getLogo()")
+    {
+        Poco::Path logoFile(maLoBrandPath, (isDark ? "logo_inverted.svg" : "logo.svg"));
+        return getFileContent(logoFile.toString(), resource, mimeType);
+    }
+    else if (path == "getAbout()")
+    {
+        Poco::Path aboutFile(maLoBrandPath, "about.svg");
+        Poco::Path darkAboutFile(maLoBrandPath, "about_inverted.svg");
+        // 暗色 about_inverted.svg 有可能不存在
+        // 若是暗色主題，且 about_inverted.svg 存在，則使用 about_inverted.svg
+        if (isDark && Poco::File(darkAboutFile).exists())
+            aboutFile = darkAboutFile;
+
+        return getFileContent(aboutFile.toString(), resource, mimeType);
+    }
+    // end of brand logo
 
     if (maInfoMap.find(isDark ? ThemeType::DARK : ThemeType::LIGHT) == maInfoMap.end())
     {
@@ -304,6 +325,23 @@ bool IconTheme::makeJsonResource(const Poco::JSON::Object& object, std::string& 
     resource = oss.str();
 
     return true;
+}
+
+bool IconTheme::getFileContent(const std::string& fullpath, std::string& content, std::string& mimeType)
+{
+    if (Poco::File(fullpath).exists())
+    {
+        std::ifstream ifs(fullpath, std::ios::binary);
+        std::ostringstream oss;
+        oss << ifs.rdbuf();
+        content = oss.str();
+        mimeType = HttpHelper::getMimeType(fullpath);
+        return true;
+    }
+    else
+        LOG_ERR("Failed to load file: " << fullpath);
+
+    return false;
 }
 
 } // namespace OxOOL

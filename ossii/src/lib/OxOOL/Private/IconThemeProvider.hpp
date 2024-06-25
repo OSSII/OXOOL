@@ -65,7 +65,9 @@ class IconTheme : public OxOOL::ResourceProvider
         * light: light icon.
         * dark:  dark color icon.
 
-    FUNCTION: There are four functions
+    FUNCTION: There are 6 functions
+        * getLogo() - Get LoKit logo. For example: icon:light/getLogo()
+        * getAbout() - Get LoKit about icon. For example: icon:light/getAbout()
         * format() - Get the icon format, json format. For example: icon:light/format()
         * files() - Get the list of all files in json format. For example: icon:light/files()
         * links() - File link list, json format. For example: icon:dark/links()
@@ -86,6 +88,8 @@ class IconTheme : public OxOOL::ResourceProvider
         For example: "icon:light/.uno:Save/m" to get the medium icon.
                  or: "icon:light/.uno:Save/l" to get the large icon.
 
+    ICON PATH: Get the icon by path(No extension is required).
+        For example: "icon:light/res/writer128" or "icon:dark/res/writer128" to get icon in svg or png format.
 */
 {
 public:
@@ -127,6 +131,9 @@ private:
     /// @brief Lokit icon theme path
     Poco::Path maLoIconThemePath;
 
+    /// @brief Lokit brand path
+    Poco::Path maLoBrandPath;
+
     /// @brief icon theme name and path map
     /// @description first: icon theme name,
     ///              second: {first:readable name, second: icon theme path}
@@ -137,6 +144,13 @@ private:
     std::map<ThemeType, std::shared_ptr<Info>> maInfoMap;
 
     bool makeJsonResource(const Poco::JSON::Object& object, std::string& resource, std::string& mimeType);
+
+    /// @brief Get file content
+    /// @param fullpath - The full path of the file.
+    /// @param content - The file content obtained.
+    /// @param mimeType - file MIME type
+    /// @return true if the file is retrieved successfully, false otherwise.
+    bool getFileContent(const std::string& fullpath, std::string& content, std::string& mimeType);
 
 }; // class IconTheme
 
