@@ -8,8 +8,17 @@ html, body {
 }
 
 .form-signin .oxool-banner {
-	max-width: 300px;
+	width: 100%;
+	height: 64px;
 	margin-bottom: 1rem;
+	background-image: url("/oxool/resource/icon:light/getLogo()");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+[data-bs-theme="dark"] .form-signin .oxool-banner {
+	background-image: url("/oxool/resource/icon:dark/getLogo()");
 }
 
 .form-signin .form-floating:focus-within {

@@ -54,12 +54,6 @@ adminjsdir = $(pkgdatadir)/admin/js
 dist_adminjs_DATA = \
 	js/*.js
 
-# Admin images
-adminimgdir = $(pkgdatadir)/admin/images
-dist_adminimg_DATA = \
-	images/*
-
-
 admin_internal_module_DIST = \
 	standard/Overview \
 	standard/Analytics \

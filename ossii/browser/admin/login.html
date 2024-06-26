@@ -26,7 +26,8 @@
 	<main class="w-100">
 		<div class="form-signin w-100 m-auto">
 			<form method="post" action="%ADMIN_ROOT%/login">
-				<img class="oxool-banner" src="%ADMIN_ROOT%/images/online.svg">
+				<div class="oxool-banner"></div>
+				<div class="text-center w-100 h5" _="Admin Console"></div>
 
 				<div class="form-floating">
 					<input type="text" class="form-control" id="accountInput" name="account" placeholder="Account"
@@ -42,7 +43,10 @@
 				<button class="btn btn-primary w-100 py-2" type="submit" _="Sign in"></button>
 			</form>
 		</div>
-		<p class="text-center" _="OSS Integral Institute Co., Ltd. All rights reserved."></p>
+		<p class="text-center">
+			<span>Copyright © %YEAR%, </span>
+			<span _="%VENDOR%"></span>
+		</p>
 	</main>
 
 	<!-- 從 js/ 引入 bootstrap.bundle.min.js -->
