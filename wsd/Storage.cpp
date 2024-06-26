@@ -139,7 +139,13 @@ void StorageBase::initialize()
 
     if (SSLEnabled || SSLAsScheme)
     {
-        if (!OXOOLWSD::isSSLTermination())
+        if (OXOOLWSD::isSSLTermination())
+        {
+            sslClientParams.certificateFile = OXOOLWSD::getPathFromConfig("storage.ssl.cert_file_path");
+            sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfig("storage.ssl.key_file_path");
+            sslClientParams.caLocation = OXOOLWSD::getPathFromConfig("storage.ssl.ca_file_path");
+        }
+        else
         {
             sslClientParams.certificateFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
             sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
