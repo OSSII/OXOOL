@@ -55,6 +55,7 @@ public:
 
     static void initialize();
 
+    static std::string Vendor; // VENDOR
     static std::string Version; // PACKAGE_VERSION
     static std::string VersionHash; // OXOOLWSD_VERSION_HASH
 

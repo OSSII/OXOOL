@@ -36,6 +36,8 @@
 
 namespace OxOOL
 {
+std::string ENV::Vendor = VENDOR;
+
 std::string ENV::Version = OXOOLWSD_VERSION;
 std::string ENV::VersionHash = OXOOLWSD_VERSION_HASH;
 

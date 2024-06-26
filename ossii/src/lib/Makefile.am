@@ -9,6 +9,7 @@
 AM_CPPFLAGS = -pthread -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
 	      -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
 	      -DDEBUG_ABSSRCDIR='"@abs_top_builddir@"' \
+		  -DVENDOR='"@VENDOR@"' \
           $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) \
 		  $(OSSII_CFLAGS)
 

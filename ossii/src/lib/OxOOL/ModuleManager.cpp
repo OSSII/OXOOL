@@ -451,8 +451,12 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     file.close();
     std::string mainContent = content.str();
 
+    Poco::replaceInPlace(mainContent, std::string("%VENDOR%"), OxOOL::ENV::Vendor);
     Poco::replaceInPlace(mainContent, std::string("%SERVICE_ROOT%"), OxOOL::ENV::ServiceRoot);
     Poco::replaceInPlace(mainContent, std::string("%VERSION%"), OxOOL::ENV::VersionHash);
+    // 取得西元年 YYYY
+    const std::string year = Poco::DateTimeFormatter::format(Poco::DateTime(), "%Y");
+    Poco::replaceInPlace(mainContent, std::string("%YEAR%"), year);
 
     std::string adminRoot = mpAdminService->maDetail.serviceURI;
     // 去掉最後的 '/'
