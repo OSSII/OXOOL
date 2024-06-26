@@ -139,9 +139,12 @@ void StorageBase::initialize()
 
     if (SSLEnabled || SSLAsScheme)
     {
-        sslClientParams.certificateFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
-        sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
-        sslClientParams.caLocation = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.ca_file_path", "ssl.ca_file_path");
+        if (!OXOOLWSD::isSSLTermination())
+        {
+            sslClientParams.certificateFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
+            sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
+            sslClientParams.caLocation = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.ca_file_path", "ssl.ca_file_path");
+        }
         sslClientParams.cipherList = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cipher_list", "ssl.cipher_list");
         const bool sslVerification = OXOOLWSD::getConfigValue<bool>("ssl.ssl_verification", true);
         sslClientParams.verificationMode = !sslVerification ? Poco::Net::Context::VERIFY_NONE : Poco::Net::Context::VERIFY_STRICT;
