@@ -1798,30 +1798,34 @@
 		]
 	},
 	{
-		"id": ".uno:ContentControlsMenu",
+		"id": ".uno:FormatFormMenu",
 		"menu":[
 			{
-				"icon": "insertcontentcontrol",
+				"icon": ".uno:PatternField",
 				"id": ".uno:InsertContentControl"
 			},
 			{
-				"icon": "insertpicturecontentcontrol",
+				"icon": ".uno:Imagebutton",
 				"id": ".uno:InsertPictureContentControl"
 			},
 			{
-				"icon": "checkbox",
+				"icon": ".uno:CheckBox",
 				"id": ".uno:InsertCheckboxContentControl"
 			},
 			{
-				"icon": "insertdropdowncontentcontrol",
+				"icon": ".uno:ComboBox",
+				"id": ".uno:InsertComboBoxContentControl"
+			},
+			{
+				"icon": ".uno:ListBox",
 				"id": ".uno:InsertDropdownContentControl"
 			},
 			{
-				"icon": "datefield",
+				"icon": ".uno:DateField",
 				"id": ".uno:InsertDateContentControl"
 			},
 			{
-				"icon": "contentcontrolproperties",
+				"icon": ".uno:SwitchControlDesignMode",
 				"id": ".uno:ContentControlProperties"
 			}
 		]
