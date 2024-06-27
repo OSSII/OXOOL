@@ -9,6 +9,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <string_view>
+#include <set>
+
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/ResourceProvider.h>
@@ -40,9 +43,7 @@ void IconTheme::initialize()
 {
     // Get the path of the icon theme
     maLoIconThemePath = Poco::Path(ENV::LoTemplate, ICON_THEMES_RELATIVE_PATH);
-    maLoIconThemePath.makeAbsolute();
     maLoBrandPath = Poco::Path(ENV::LoTemplate, OFFICE_SHELL_PATH);
-    maLoBrandPath.makeAbsolute();
 
     Poco::File iconThemePath(maLoIconThemePath);
     if (!iconThemePath.exists() || !iconThemePath.isDirectory())
@@ -149,21 +150,55 @@ void IconTheme::initialize()
 
     setIconThem(ThemeType::LIGHT, lightIconTheme);
     setIconThem(ThemeType::DARK,  darkIconTheme);
+
+    /*
+     * 取得 browser/dist/images/ 及
+     *     browser/dist/images/dark/ 之下的所有檔案列表(不含子目錄)
+     */
+    maOnlineFiles[ThemeType::LIGHT] = std::set<std::string>();
+    maOnlineFiles[ThemeType::DARK] = std::set<std::string>();
+
+    // browser/dist/images/
+    const Poco::Path lightPath(ENV::FileServerRoot, ONLINE_IMAGES_RELATIVE_PATH);
+    // browser/dist/images/dark/
+    const Poco::Path darkPath(lightPath, "dark");
+
+    // 遍歷所有檔案，將檔案名稱存到 maOnlineFiles 中
+    for (auto it = maOnlineFiles.begin(); it != maOnlineFiles.end(); ++it)
+    {
+        Poco::File dir(it->first == ThemeType::LIGHT ? lightPath : darkPath); // 取得路徑
+        // 若路徑存在且是目錄
+        if (dir.exists() && dir.isDirectory())
+        {
+            std::vector<std::string> files;
+            dir.list(files); // 取得目錄下所有檔案
+            // 遍歷所有檔案，將檔案名稱存到 maOnlineFiles 中
+            for (const auto& file : files)
+            {
+                // 只存 svg 或 png 檔案
+                if (file.find(".svg") != std::string::npos ||
+                    file.find(".png") != std::string::npos)
+                    it->second.emplace(file);
+            }
+        }
+        else
+            LOG_ERR("Failed to load online images list: " << dir.path());
+    }
 }
 
 bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::string& mimeType)
 {
-    std::string path = uri.getPath();
+    std::string_view path = uri.getPath();
 
     bool isDark = false;
     // path 開頭只能是 "light/" 或 "dark/"
     if (path.find("light/") == 0)
     {
-        path = path.substr(6);
+        path.remove_prefix(6);
     }
     else if (path.find("dark/") == 0)
     {
-        path = path.substr(5);
+        path.remove_prefix(5);
         isDark = true;
     }
     else
@@ -202,37 +237,56 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
     std::string extName; // 副檔名
 
     // name 有幾種格式，如下：
-    // 1.開頭是 '.uno:'
-    if (path.find(".uno:") == 0)
+    // 1. '@' + name: 代表直接取得 online browser/dist/images/ 之下的檔案
+    if (path[0] == '@')
     {
-        // 去掉 '.uno:'
-        std::string cmdName = path.substr(5);
+        path.remove_prefix(1); // 去掉 '@'
+
+        // 檢測結尾是否為 '.svg' 或 '.png'
+        if (path.find(".svg") != std::string::npos || path.find(".png") != std::string::npos)
+            realName = path;
+        else // 若沒有指定副檔名，則預設為 svg
+            realName = path.data() + std::string(".svg");
+
+        // 若 onlineFile 存在，則取得檔案內容
+        if (maOnlineFiles[isDark ? ThemeType::DARK : ThemeType::LIGHT].count(realName) == 1)
+        {
+            Poco::Path onlinePath(ENV::FileServerRoot, ONLINE_IMAGES_RELATIVE_PATH);
+            onlinePath.append(realName);
+            return getFileContent(onlinePath.toString(), resource, mimeType);
+        }
+
+        return false;
+    }
+    // 2.開頭是 '.uno:'
+    else if (path.find(".uno:") == 0)
+    {
+        path.remove_prefix(5); // 去掉 '.uno:'
 
         // 只有 uno 命令有分大、中、小三種 size 圖示，而且每種 size 圖示的數量不同
         IconTheme::Size size = IconTheme::Size::SMALL; // 預設小圖示
 
-
         // uno命令後若接 '/m' - MEDIUM、'/l' - LARGE，則改變 size
-        if (cmdName.size() > 2 && cmdName[cmdName.size() - 2] == '/')
+        if (path.size() > 2 && path[path.size() - 2] == '/')
         {
-            if (cmdName[cmdName.size() - 1] == 'm')
+            if (path[path.size() - 1] == 'm')
                 size = IconTheme::Size::MEDIUM;
-            else if (cmdName[cmdName.size() - 1] == 'l')
+            else if (path[path.size() - 1] == 'l')
                 size = IconTheme::Size::LARGE;
 
             // 去掉 '/m' 或 '/l'
-            cmdName = cmdName.substr(0, cmdName.size() - 2);
+            path.remove_suffix(2);
         }
 
         std::string sizePrefix;
-        if (size == IconTheme::Size::MEDIUM) // 一般圖示 24x24 的路徑是 "cmd/lc_" + cmdName + (".svg/.png")
+        if (size == IconTheme::Size::MEDIUM) // 一般圖示 24x24 的路徑是 "cmd/lc_" + path + (".svg/.png")
             sizePrefix = "lc_";
-        else if (size == IconTheme::Size::LARGE) // 大圖示 32x32 的路徑是 "cmd/32/" + cmdName + (".svg/.png")
+        else if (size == IconTheme::Size::LARGE) // 大圖示 32x32 的路徑是 "cmd/32/" + path + (".svg/.png")
             sizePrefix = "32/";
-        else // 小圖示 16x16 的路徑是 "cmd/sc_" + cmdName + (".svg/.png")
+        else // 小圖示 16x16 的路徑是 "cmd/sc_" + path + (".svg/.png")
             sizePrefix = "sc_";
 
-        realName = "cmd/" + sizePrefix + cmdName; // 在 zip 檔案中的名稱，不包含副檔名
+        realName = "cmd/" + sizePrefix + path.data(); // 在 zip 檔案中的名稱，不包含副檔名
     }
     else if (path == "format()")
     {
@@ -248,12 +302,7 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
         for (auto file : pInfo->package.getList())
             files.add(file);
 
-        mimeType = "application/json; charset=utf-8";
-        std::ostringstream oss;
-        files.stringify(oss);
-        resource = oss.str();
-
-        return true;
+        return makeJsonResource(files, resource, mimeType);
     }
     // 要求連結列表方法
     else if (path == "links()")
@@ -263,6 +312,14 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
             links.set(link.first, link.second);
 
         return makeJsonResource(links, resource, mimeType);
+    }
+    else if (path == "onlineFiles()")
+    {
+        Poco::JSON::Array files;
+        for (const auto& onlineFile : maOnlineFiles[isDark ? ThemeType::DARK : ThemeType::LIGHT])
+            files.add(onlineFile);
+
+        return makeJsonResource(files, resource, mimeType);
     }
     else if (path == "structure()")
     {
@@ -276,6 +333,11 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
             files.add(file);
         structure.set("files", files);
 
+        files.clear();
+        for (const auto& onlineFile : maOnlineFiles[isDark ? ThemeType::DARK : ThemeType::LIGHT])
+            files.add(onlineFile);
+        structure.set("onlineFiles", files);
+
         Poco::JSON::Object links;
         for (const auto& link : pInfo->linksMap)
             links.set(link.first, link.second);
@@ -285,7 +347,7 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
     }
     else
     {
-        const Poco::Path iconPath(path);
+        const Poco::Path iconPath(path.data());
         const std::string dirName = iconPath.parent().toString(); // 路徑
         const std::string baseName = iconPath.getBaseName(); // 在 zip 檔案中的名稱，不包含副檔名
         extName = iconPath.getExtension(); // 副檔名
@@ -315,13 +377,23 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
     return false;
 }
 
-// Private method here
+// Private method here --------------------------------------------------------
 
 bool IconTheme::makeJsonResource(const Poco::JSON::Object& object, std::string& resource, std::string& mimeType)
 {
     mimeType = "application/json; charset=utf-8";
     std::ostringstream oss;
     object.stringify(oss);
+    resource = oss.str();
+
+    return true;
+}
+
+bool IconTheme::makeJsonResource(const Poco::JSON::Array& array, std::string& resource, std::string& mimeType)
+{
+    mimeType = "application/json; charset=utf-8";
+    std::ostringstream oss;
+    array.stringify(oss);
     resource = oss.str();
 
     return true;

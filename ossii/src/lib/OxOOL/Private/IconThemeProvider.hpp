@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <set>
 #include <map>
 #include <memory>
 
@@ -18,6 +19,8 @@
 #include <OxOOL/ZipPackage.h>
 
 #include <Poco/Path.h>
+
+constexpr const char ONLINE_IMAGES_RELATIVE_PATH[] = "browser/dist/images";
 
 constexpr const char ICON_THEMES_RELATIVE_PATH[] = "share/config";
 constexpr const char OFFICE_SHELL_PATH[] = "program/shell";
@@ -30,6 +33,7 @@ namespace Poco
     class URI;
     namespace JSON
     {
+        class Array;
         class Object;
     }
 }
@@ -59,19 +63,21 @@ class IconTheme : public OxOOL::ResourceProvider
 /*
     You can use URI to obtain icon resources.
     The URI format is as follows:
-    icon:<THEME TYPE>/<FUNCTION | UNO COMMAND | ICON PATH>
+    icon:<THEME TYPE>/<FUNCTION | UNO COMMAND | ICON PATH | ONLINE IMAGE>
 
     THEME TYPE: There are only two categories
         * light: light icon.
         * dark:  dark color icon.
 
     FUNCTION: There are 6 functions
-        * getLogo() - Get LoKit logo. For example: icon:light/getLogo()
-        * getAbout() - Get LoKit about icon. For example: icon:light/getAbout()
         * format() - Get the icon format, json format. For example: icon:light/format()
         * files() - Get the list of all files in json format. For example: icon:light/files()
         * links() - File link list, json format. For example: icon:dark/links()
-        * structure() - Get the icon structure, json format. include format, files, and links.
+
+        * getLogo() - Get LoKit logo. For example: icon:light/getLogo()
+        * getAbout() - Get LoKit about icon. For example: icon:light/getAbout()
+        * onlineFiles() - Get the online image file list, json format. For example: icon:light/onlineFiles()
+        * structure() - Get the icon structure, json format. include format, files, onlineFiles and links.
                         For example: icon:dark/structure()
 
     UNO COMMAND: Get the uno command icon, such as '.uno:Save'
@@ -90,6 +96,9 @@ class IconTheme : public OxOOL::ResourceProvider
 
     ICON PATH: Get the icon by path(No extension is required).
         For example: "icon:light/res/writer128" or "icon:dark/res/writer128" to get icon in svg or png format.
+
+    ONLINE IMAGE: Get the online image file. if not specified extension name, the default is svg.
+        For example: "icon:light/@filename" or "icon:dark/@filename.png" to get the online image file.
 */
 {
 public:
@@ -143,7 +152,11 @@ private:
     /// @description first: icon theme type, second: icon theme info
     std::map<ThemeType, std::shared_ptr<Info>> maInfoMap;
 
+    std::map<ThemeType, std::set<std::string>> maOnlineFiles;
+
     bool makeJsonResource(const Poco::JSON::Object& object, std::string& resource, std::string& mimeType);
+
+    bool makeJsonResource(const Poco::JSON::Array& array, std::string& resource, std::string& mimeType);
 
     /// @brief Get file content
     /// @param fullpath - The full path of the file.
