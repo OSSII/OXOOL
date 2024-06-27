@@ -139,17 +139,17 @@ void StorageBase::initialize()
 
     if (SSLEnabled || SSLAsScheme)
     {
-        if (OXOOLWSD::isSSLTermination())
-        {
-            sslClientParams.certificateFile = OXOOLWSD::getPathFromConfig("storage.ssl.cert_file_path");
-            sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfig("storage.ssl.key_file_path");
-            sslClientParams.caLocation = OXOOLWSD::getPathFromConfig("storage.ssl.ca_file_path");
-        }
-        else
+        if (OXOOLWSD::isSSLEnabled())
         {
             sslClientParams.certificateFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cert_file_path", "ssl.cert_file_path");
             sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.key_file_path", "ssl.key_file_path");
             sslClientParams.caLocation = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.ca_file_path", "ssl.ca_file_path");
+        }
+        else
+        {
+            sslClientParams.certificateFile = OXOOLWSD::getPathFromConfig("storage.ssl.cert_file_path");
+            sslClientParams.privateKeyFile = OXOOLWSD::getPathFromConfig("storage.ssl.key_file_path");
+            sslClientParams.caLocation = OXOOLWSD::getPathFromConfig("storage.ssl.ca_file_path");
         }
         sslClientParams.cipherList = OXOOLWSD::getPathFromConfigWithFallback("storage.ssl.cipher_list", "ssl.cipher_list");
         const bool sslVerification = OXOOLWSD::getConfigValue<bool>("ssl.ssl_verification", true);
