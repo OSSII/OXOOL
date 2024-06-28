@@ -197,7 +197,7 @@
 			// 產生選單
 			modules.forEach(function (module) {
 				var $li = $('<li>').addClass('nav-item');
-				var $btn = $('<button>').addClass('nav-link');
+				var $btn = $('<button>').addClass('nav-link text-start');
 				var $icon = $('<i>').addClass('bi bi-' + module.adminIcon);
 				var $span = $('<span>').html('&nbsp;&nbsp;' + module.adminItem);
 				$btn.append($icon).append($span);
