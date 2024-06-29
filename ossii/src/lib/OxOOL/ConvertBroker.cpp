@@ -54,6 +54,9 @@ bool ConvertBroker::loadDocument(const std::shared_ptr<StreamSocket>& socket, co
     // addCallback 前，要先進入執行緒
     startThread();
 
+    // avoid assert same thread owner error.
+    socket->resetThreadOwner();
+
     addCallback([this, socket]()
     {
         _clientSession->setSaveAsSocket(socket);
