@@ -493,6 +493,8 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
 
             // 替換 %ADMIN_MODULE_ROOT%
             Poco::replaceInPlace(mainContent, std::string("%ADMIN_MODULE_ROOT%"), adminModuleRoot);
+            // 替換 %ADMIN_MODULE_SERVICE_URI%
+            Poco::replaceInPlace(mainContent, std::string("%ADMIN_MODULE_SERVICE_URI%"), module->getDetail().serviceURI);
         }
     }
 
