@@ -46,7 +46,7 @@ L.Map.Icon = L.Handler.extend({
 	/**
 	 * Get specified icon URL
 	 *
-	 * @param {string} icon - uno command or icon path
+	 * @param {string} icon - uno command or icon path or online icon
 	 * @param {string} size - icon size, default is '',
 	 *						  '/m' - medium(24x24 px)
 	 *						  '/l' - large(32x32 px)
@@ -55,6 +55,7 @@ L.Map.Icon = L.Handler.extend({
 	 * 			2. getURL('.uno:SaveAs', '/l') - get uno command icon URL with large size
 	 * 			3. getURL('res/writer128') - get specified with path
 	 * 			4. getURL('downloadas-pdf') - get download as PDF icon URL, use alias
+	 * 			5. getURL('@fold.svg') - get online icon URL
 	 *
 	 * @note: if icon is not uno command, size is not necessary
 	 *
@@ -98,8 +99,20 @@ L.Map.Icon = L.Handler.extend({
 			}
 
 			iconPath = sizePrefix + cmdName + iconExtension;
-		}
-		else {
+		} else if (icon.startsWith('@')) { // 如果是 online icon
+			iconPath = icon;
+			// 檢查 icon 是否有帶副檔名 .svg 或 .png
+			if (!iconPath.endsWith('.svg') && !iconPath.endsWith('.png')) {
+				iconPath += '.svg'; // 預設是 svg
+			}
+			// theme 尚未載入，或已經在 onlineFiles 中
+			if (!themeLoaded || theme.onlineFiles.has(iconPath)) {
+				return prefixURL + iconPath;
+			}
+			else // 直接傳回空白圖示
+				return L.Util.emptyImageUrl;
+
+		} else {
 			size = ''; // 除了 uno 指令外，其他的 icon 都不區分 size
 			iconPath = icon + iconExtension;
 		}
@@ -197,11 +210,13 @@ L.Map.Icon = L.Handler.extend({
 		light: {
 			format: '',
 			files: new Set(),
+			onlineFiles: new Set(),
 			links: {},
 		},
 		dark: {
 			format: '',
 			files: new Set(),
+			onlineFiles: new Set(),
 			links: {},
 		},
 	},
@@ -262,6 +277,7 @@ L.Map.Icon = L.Handler.extend({
 			}).then(function (json) {
 				// change json.files from array to Set
 				json.files = new Set(json.files);
+				json.onlineFiles = new Set(json.onlineFiles);
 				this._theme.light = json;
 			}.bind(this))
 			.catch(function (error) {
@@ -275,6 +291,7 @@ L.Map.Icon = L.Handler.extend({
 			}).then(function (json) {
 				// change json.files from array to Set
 				json.files = new Set(json.files);
+				json.onlineFiles = new Set(json.onlineFiles);
 				this._theme.dark = json;
 			}.bind(this))
 			.catch(function (error) {
