@@ -1,10 +1,15 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
+ * Copyright the OxOffice Online contributors.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <string_view>
 #include <algorithm>
 #include <mutex>
 
@@ -127,28 +132,31 @@ void BrowserService::sendLocalizationList(const OxOOL::Module::Ptr& module,
 
     // 取得模組的 l10n 目錄實際路徑
     const std::string moduleL10NPath(module->getDocumentRoot() + "/browser/l10n");
+    const Poco::File dir(moduleL10NPath);
     // 檢查目錄是否存在
-    if (!Poco::File(moduleL10NPath).exists() || !Poco::File(moduleL10NPath).isDirectory())
+    if (!dir.exists() || !dir.isDirectory())
     {
         OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_NOT_FOUND,
             socket, "Localization directory not found.");
         return;
     }
 
-    const Poco::File dir(moduleL10NPath);
+    std::vector<std::string> jsonFiles;
+    dir.list(jsonFiles);
     std::map <std::string, std::string> l10nMap;
     // 掃描目錄下所有的檔案
-    for (auto it = Poco::DirectoryIterator(dir); it != Poco::DirectoryIterator(); ++it)
+    for (const auto& jsonFile : jsonFiles)
     {
         // 取得檔名
-        const std::string fileName = it.name();
+        std::string_view fileName(jsonFile);
         // 檔名不是 .json 結尾的，不是本地化檔
-        if (fileName.size() < 6 || fileName.substr(fileName.size() - 5) != ".json")
-        {
+        if (fileName.size() < 5 || fileName.substr(fileName.size() - 5) != ".json")
             continue;
-        }
+
         // 取得檔案名稱，去掉 .json
-        const std::string locale = fileName.substr(0, fileName.size() - 5);
+        std::string_view locale(fileName);
+        locale.remove_suffix(5);
+
         // 加入到 map
         l10nMap.emplace(locale, fileName);
         // 如果 locale 是 zh-TW，也加入 zh-Hant 和 zh-tw
@@ -156,6 +164,8 @@ void BrowserService::sendLocalizationList(const OxOOL::Module::Ptr& module,
         {
             l10nMap.emplace("zh-Hant", fileName);
             l10nMap.emplace("zh-tw", fileName);
+            l10nMap.emplace("zh-hk", fileName);
+            l10nMap.emplace("zh-HK", fileName);
         }
         // 如果 locale 是 zh-CN，也加入 zh-Hans 和 zh-cn
         else if (locale == "zh-CN")
@@ -180,7 +190,6 @@ void BrowserService::sendLocalizationList(const OxOOL::Module::Ptr& module,
     // 加入快取
     maModuleLocalizationCache.emplace(module->getId(), json);
 
-    // 傳送 JSON
     // 傳送 JSON 快取
     OxOOL::HttpHelper::sendResponseAndShutdown(socket, json,
         Poco::Net::HTTPResponse::HTTP_OK, "application/json; charset=utf-8");
