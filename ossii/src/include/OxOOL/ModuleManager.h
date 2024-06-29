@@ -1,4 +1,9 @@
+/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
+ * Copyright the OxOffice Online contributors.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,16 +14,27 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <atomic>
+#include <memory>
 
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/Module/Base.h>
 
-#include <Poco/JSON/Object.h>
+namespace Poco
+{
 
-namespace Poco::Net
+class ThreadPool;
+
+namespace JSON
+{
+    class Object;
+} // namespace JSON
+
+namespace Net
 {
     class HTTPRequest;
-} // namespace Poco::Net
+} // namespace Net
+} // namespace Poco
 
 class ClientSession;
 class StringVector;
@@ -152,7 +168,7 @@ private:
     /// @return
     OxOOL::Module::Ptr handleByWhichModule(const Poco::Net::HTTPRequest& request) const;
 
-    bool mbInitialized; // 是否已經初始化
+    std::atomic<bool> mbInitialized; // 是否已經初始化
 
     std::shared_ptr<BrowserService> mpBrowserService;
     std::shared_ptr<AdminService> mpAdminService;
@@ -166,3 +182,5 @@ private:
 };
 
 } // namespace OxOOL
+
+/* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -1,11 +1,16 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
+ * Copyright the OxOffice Online contributors.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -296,6 +301,7 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
 {
     // 進到這裡的 Poco::Net::HTTPRequest 的 URI 已經被改寫，
     // 去掉 service root 了(如果 oxoolwsd.xml 有指定的話)
+    std::string_view requestURI(request.getURI());
 
     // 檢查是否請求 /loleaflet/ 位址，這是 4.0 版前用的 FireServer，新版一律改用 /browser/
     // 如果是舊版，就重新導向到新的 /browser/ 位址，單純置換 /loleaflet/ 爲 /browser/
@@ -304,16 +310,16 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
         static const std::string browser("/browser/");
 
         // 如果是 /loleaflet/ 開頭，就改成 /browser/
-        if (std::string::size_type pos = request.getURI().find(loleaflet); pos == 0)
+        if (std::string::size_type pos = requestURI.find(loleaflet); pos == 0)
         {
-            std::string uri = request.getURI();
-            uri.replace(pos, loleaflet.size(), browser);
+            std::string newURI(requestURI.data());
+            newURI.replace(pos, loleaflet.size(), browser);
 
             const std::shared_ptr<StreamSocket> socket =
                 std::static_pointer_cast<StreamSocket>(disposition.getSocket());
 
             // 重新導向
-            OxOOL::HttpHelper::redirect(request, socket, OxOOL::ENV::ServiceRoot +  uri);
+            OxOOL::HttpHelper::redirect(request, socket, OxOOL::ENV::ServiceRoot + newURI);
             return true;
         }
     }
@@ -345,9 +351,13 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
     }
 
     // 是否要求連接 Admin websocket
-    if (request.getURI().find("/oxool/adminws") == 0)
+    Poco::URI uri(requestURI.data());
+    std::vector<std::string> pathSegments;
+    uri.getPathSegments(pathSegments);
+    // 如果是 /[隨意路徑]/adminws 開頭，就是要求連接 Admin websocket
+    if (pathSegments.size() > 1 && pathSegments[1] == "adminws")
     {
-        LOG_INF("Admin websocket request: " << request.getURI());
+        LOG_INF("Admin websocket request: " << requestURI);
         const std::weak_ptr<StreamSocket> weakSocket =
             std::static_pointer_cast<StreamSocket>(disposition.getSocket());
 
