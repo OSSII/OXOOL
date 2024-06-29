@@ -37,11 +37,10 @@ void ModuleAgent::handleRequest(OxOOL::Module::Ptr module,
 // Poco 版本小於 1.10，maRequest 必須 parse 才能產生
 #if POCO_VERSION < 0x010A0000
     {
-        (void)request;
         StreamSocket::MessageMap map;
         Poco::MemoryInputStream message(&mpSavedSocket->getInBuffer()[0],
                                         mpSavedSocket->getInBuffer().size());
-        if (!mpSavedSocket->parseHeader("Client", message, maRequest, &map))
+        if (!mpSavedSocket->parseHeader("Client", message, maRequest, map))
         {
             LOG_ERR("Create HTTPRequest fail! stop running");
             stopRunning();
