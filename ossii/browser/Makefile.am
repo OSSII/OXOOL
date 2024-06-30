@@ -57,6 +57,10 @@ OXOOL_JS_LIST = \
 	js/control/Control.ContextMenu.js \
 	js/control/Control.Menubar.js \
 	js/control/Control.ReadonlyBar.js \
+	js/control/Control.NotebookbarWriter.js \
+	js/control/Control.NotebookbarCalc.js \
+	js/control/Control.NotebookbarImpress.js \
+	js/control/Control.NotebookbarDraw.js \
 	js/spectrum.js \
 	js/main.js
 
