@@ -10,6 +10,7 @@
 	global.brandProductName = 'OxOffice Online';
 	global.brandProductURL = 'https://ossii.com.tw';
 	global.brandProductFAQURL = 'https://www.facebook.com/OSSIITW/';
+	global.brandReportIssueURL = 'https://github.com/OSSII/oxool-community/issues';
 })(window);
 
 /* vim: set ts=8 sts=8 sw=8 tw=100: */
