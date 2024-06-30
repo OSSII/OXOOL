@@ -12,6 +12,11 @@
 				"comment": "替代指令"
 			},
 			{
+				"id": "renamedocument",
+				"name": "Rename Document",
+				"comment": "替代指令"
+			},
+			{
 				"icon": ".uno:ShareDocument",
 				"name": "Share",
 				"comment": "替代指令",
