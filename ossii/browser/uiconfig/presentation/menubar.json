@@ -1489,8 +1489,7 @@
 				"id": ".uno:HideSlide"
 			},
 			{
-				"name": ".uno:RenameSlide",
-				"id": "dialog:RenameSlide"
+				"id": ".uno:RenameSlide"
 			},
 			{
 				"type": "--"
