@@ -301,11 +301,11 @@ L.Control.Dialogs = L.Control.extend({
 
 	_getDialogIcon: function(type) {
 		var iconSet = {
-			error: 'res:errorbox',
-			information: 'res:infobox',
-			question: 'res:querybox',
-			success: 'res:successbox',
-			warning: 'res:warningbox'
+			error: 'vcl/res/errorbox',
+			information: 'vcl/res/infobox',
+			question: 'vcl/res/querybox',
+			success: 'cmd/lc_ok',
+			warning: 'vcl/res/warningbox'
 		};
 
 		if (typeof type == 'string') {

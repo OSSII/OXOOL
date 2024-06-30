@@ -803,7 +803,7 @@ L.Map.AlternativeCommand = L.Handler.extend({
 		'.uno:RejectAllTrackedChanges': {
 			alias: 'rejectalltrackedchanges',
 			execute: function () {
-				this.sendUnoCommand('.uno:RejectAllTrackedChanges');
+				this._map.sendUnoCommand('.uno:RejectAllTrackedChanges');
                 var commentSection = app.sectionContainer.getSectionWithName(L.CSections.CommentList.name);
                 commentSection.rejectAllTrackedCommentChanges();
 			}
@@ -960,7 +960,7 @@ L.Map.AlternativeCommand = L.Handler.extend({
 		'exportdirectpdf': {
 			alise: '.uno:ExportDirectToPDF',
 			execute: function () {
-				this.sendUnoCommand('.uno:ExportDirectToPDF', {
+				this._map.sendUnoCommand('.uno:ExportDirectToPDF', {
 					'SynchronMode': {
 						'type': 'boolean',
 						'value': false

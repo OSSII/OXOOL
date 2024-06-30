@@ -26,6 +26,13 @@ L.Map.Icon = L.Handler.extend({
 	 */
 	initialize: function (map) {
 		this._map = map;
+
+		// 取代 L.LOUtil.setImage() 的功能
+		if (L.LOUtil.setImage) {
+			this._savedSetImage = L.bind(L.LOUtil.setImage, L.LOUtil);
+			L.LOUtil.setImage = L.bind(this._setImage, this);
+		}
+
 		this._loadIconResource(); // load icon resource
 	},
 
@@ -100,14 +107,14 @@ L.Map.Icon = L.Handler.extend({
 
 			iconPath = sizePrefix + cmdName + iconExtension;
 		} else if (icon.startsWith('@')) { // 如果是 online icon
-			iconPath = icon;
+			iconPath = icon.substring(1);
 			// 檢查 icon 是否有帶副檔名 .svg 或 .png
 			if (!iconPath.endsWith('.svg') && !iconPath.endsWith('.png')) {
 				iconPath += '.svg'; // 預設是 svg
 			}
 			// theme 尚未載入，或已經在 onlineFiles 中
 			if (!themeLoaded || theme.onlineFiles.has(iconPath)) {
-				return prefixURL + iconPath;
+				return prefixURL + icon;
 			}
 			else // 直接傳回空白圖示
 				return L.Util.emptyImageUrl;
@@ -204,7 +211,9 @@ L.Map.Icon = L.Handler.extend({
 
 	// Private variables here ----------------------------------------------------
 
-	_resourceURI: '/oxool/resource/', // Resource URI
+	_resourceURI: window.serviceRoot + '/oxool/resource/', // Resource URI
+
+	_savedSetImage: null, // save the original setImage function
 
 	_theme: {
 		light: {
@@ -242,7 +251,14 @@ L.Map.Icon = L.Handler.extend({
 		'downloadas-pptx': 'res/sx03130', // 下載爲 PPTX
 
 		// 通用的圖示
-		'about': 'vcl/res/infobox', // 關於
+		'renamedocument': '@lc_renamedocument', // 重新命名(online 內建)
+		'rev-history': '@lc_rev-history', // 檢視修訂紀錄(online 內建)
+
+		'toggledarktheme': '@lc_toggledarktheme', // 切換深色主題(online 內建)
+
+		'keyboard-shortcuts': '@lc_keyboardshortcuts', // 鍵盤快捷鍵(online 內建)
+		'report-an-issue': '@lc_reportissue', // 回報問題(online 內建)
+		'about': '@lc_about', // 關於(online 內建)
 
 		// Impress 版面配置(menubar & conetxt menu)
 		'.uno:AssignLayout?WhatLayout:long=20': 'sd/res/layout_empty', // 空白投影片
@@ -297,6 +313,15 @@ L.Map.Icon = L.Handler.extend({
 			.catch(function (error) {
 				console.error('Request failed(dark icons)', error);
 			});
+		}
+	},
+
+	_setImage: function (img, name, map) {
+
+		{ /* TODO: 實作替代 setImage() 的功能 */ }
+
+		if (this._savedSetImage) {
+			this._savedSetImage(img, name, map);
 		}
 	},
 });

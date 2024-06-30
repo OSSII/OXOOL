@@ -56,8 +56,29 @@ L.Map.include({
 				{id: '.uno:SpellCheckIgnore'}, // 忽略(拼字檢查)
 				{id: '.uno:SpellCheckIgnoreAll'}, // 全部忽略(拼字檢查)
 				{id: '.uno:FontDialogForParagraph'}, // FontDialogForParagraph
+
+				{id: 'exportas-pdf'}, // exportas-pdf
+				{id: 'exportdirectpdf'}, // exportdirectpdf
+				{id: 'exportpdf'}, // exportpdf
+
+				{id: 'shareas'}, // shareas
+				{id: 'repair'}, // repair
+
+				{id: 'home-search'}, // home-search
+				{id: 'hyperlinkdialog'}, // hyperlinkdialog
+				{id: 'charmapcontrol'}, // 符號
+				{id: 'fullscreen'}, // 全螢幕
+				{id: 'zoomreset'}, // 重設遠近
+				{id: 'zoomout'}, // 拉遠
+				{id: 'zoomin'}, // 拉近
+				{id: 'showruler'}, // 顯示尺規
+				{id: 'showstatusbar'}, // 顯示狀態列
+				{id: 'collapsenotebookbar'}, // 收起分頁
 			],
 			text: [
+				{id: 'exportas-epub'}, // exportas-pdf
+				{id: 'exportepub'}, // exportepub
+
 				{id: '.uno:OutlineBullet'}, // 項目符號與編號
 				{id: '.uno:FrameDialog'}, // 外框屬性
 				{id: 'inserttable'}, // inserttable
@@ -89,6 +110,9 @@ L.Map.include({
 				{id: '.uno:AutoMin'}, // AutoMin
 				{id: '.uno:AutoMax'}, // AutoMax
 				{id: '.uno:AutoCount'}, // AutoCount
+
+				{id: 'print-active-sheet'}, // 列印目前工作表
+				{id: 'print-all-sheets'}, // 列印全部工作表
 			],
 			presentation: [
 				{id: '.uno:CloseMasterView'}, // 關閉母片檢視
@@ -97,10 +121,12 @@ L.Map.include({
 				{id: '.uno:InsertColumnsBefore'}, // 前方插入欄
 				{id: '.uno:InsertColumnsAfter'}, // 後方插入欄
 				{id: '.uno:TextAutoFitToSize'}, // 自動調整文字
-				{id: 'inserttable'}, // inserttable
+
+				{id: 'deletepage'}, // 刪除投影片
+				{id: 'presentation'}, // 投影
 			],
 			drawing: [
-				{id: 'inserttable'}, // inserttable
+				{id: 'deletepage'}, // 刪除投影片
 			]
 		},
 		pausedInitCmd: '',
