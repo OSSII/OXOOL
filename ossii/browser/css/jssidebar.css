@@ -3,6 +3,6 @@
 	font-family: var(--oxool-font);
 }
 
-#sidebar-panel {
-	background-color: var(--color-sidebar-background);
+.sidebar.ui-expander-label {
+	font-weight: bold !important;
 }

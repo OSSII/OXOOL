@@ -2,7 +2,7 @@
 /* Notebookbar unselected tab text color */
 .ui-tab.notebookbar {
 	color: var(--nav-color-main-text) !important;
-	font-size: var(--default-font-size) !important;
+	font-size: var(--notebookbar-tab-font-size) !important;
 	height: 24px !important;
 	line-height: 24px !important;
 }

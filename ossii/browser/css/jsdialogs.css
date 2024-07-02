@@ -1,4 +1,9 @@
 
+.ui-tabpage.jsdialog {
+	border: var(--color-border-dark) 1px solid !important;
+	padding: 3px !important;
+}
+
 .context-menu-list {
 	border: 1px solid var(--color-menu-border) !important;
 	background-color: var(--color-menu-background) !important;
@@ -15,4 +20,16 @@
 
 .context-menu-hover > span > a {
 	color: var(--nav-color-main-text) !important;
+}
+
+.radiobutton.jsdialog {
+	width: max-content !important;
+}
+
+.ui-dialog-content .jsdialog.ui-text {
+	width: max-content !important;
+}
+
+.jsdialog.vertical label, .ui-frame-label {
+	width: max-content !important;
 }

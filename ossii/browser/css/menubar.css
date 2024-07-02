@@ -31,7 +31,7 @@
 /* menubar 選項 */
 .lo-menu a, .lo-menu a:hover, .lo-menu a:focus, .lo-menu a:active {
 	font-family: var(--oxool-font);
-	font-size: var(--default-font-size);
+	font-size: var(--menu-bar-font-size);
 	/* line-height: 16px; */
 }
 
@@ -156,7 +156,7 @@ li .disabled .img-icon {
 .hotkey .keyboard {
 	font-family: var(--oxool-font);
 	font-weight: normal;
-	font-style: normal;
+	font-style: oblique;
 	border-radius: 3px;
 	border: 1px solid rgb(220, 220, 220);
 	display: inline-block;

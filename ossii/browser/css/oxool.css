@@ -5,11 +5,18 @@
 	--jquery-ui-font: var(--oxool-font);
 
 	/* size */
-	--default-font-size: 16px; /* 預設的字型大小 */
+	--default-font-size: 14px; /* 預設的字型大小 */
 
 	--hotkey-font-size: 11px; /* 快速鍵字型大小 */
+
+	--menu-bar-font-size: 16px; /* 選單列字型大小 */
 	--menu-item-font-size: 14px; /* 下拉選單項目字型大小 */
+
+	--notebookbar-tab-font-size: 16px; /* Notebookbar 頁籤字型大小 */
+
 	--context-menu-item-font-size: 14px; /* 右鍵選單項目字型大小 */
+
+	--status-bar-font-size: 13px; /* 狀態列字型大小 */
 
 }
 
@@ -216,4 +223,8 @@
 	background-size: 24px 24px;
 	background-repeat: no-repeat;
 	background-position: center;
+}
+
+#toolbar-down *{
+	font-size: var(--status-bar-font-size) !important;
 }
