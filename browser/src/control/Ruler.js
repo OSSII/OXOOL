@@ -265,7 +265,7 @@ L.Control.Ruler = L.Control.extend({
 
 	_updateBreakPoints: function() {
 
-		if (this.options.margin1 == null || this.options.margin2 == null)
+		if (this.options.margin1 == null || this.options.margin2 == null || this._map._docLayer._docPixelSize === undefined)
 			return;
 
 		var lMargin, rMargin, wPixel, scale;
