@@ -214,7 +214,7 @@ L.Control.Ruler = L.Control.extend({
 		var items = this._map['stateChangeHandler'];
 		var state = items.getItemValue('.uno:LeftRightParaMargin');
 
-		if (!state)
+		if (typeof state !== 'object')
 			return;
 
 		this.options.firstLineIndent = parseFloat(state.firstline.replace(',', '.'));
