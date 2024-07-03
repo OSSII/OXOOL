@@ -2,7 +2,8 @@
 /* global L app */
 
 (function() {
-	'use strict';
+	var startTime = new Date().getTime();
+
 	// Inititalize OxOOL
 	app.oxool = new L.OxOOL({
 		map: app.map,
@@ -12,9 +13,13 @@
 	// TODO: 將來應該要移到 OxOOL 中
 	app.map.addControl(L.control.dialogs());
 
-	setTimeout(function() {
+	// 等待預載完成，最多 2000 ms，然後觸發 ossiiloaded 事件
+	app.map.Tasks.whanPreloadComplate(function(tasks) {
 		app.map.fire('ossiiloaded');
-	}, 10);
+		var endTime = new Date().getTime();
+		console.debug('All preloads are complete. tasks:', tasks,
+					  'execution time:', endTime - startTime, 'ms');
+	}, 2000);
 
 })();
 

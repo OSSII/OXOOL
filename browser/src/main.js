@@ -70,8 +70,8 @@ var map = L.map('map', {
 
 
 /* eslint-disable indent */
-map.on('ossiiloaded', function() {
-
+var ossiiLoaded = function() {
+map.off('ossiiloaded', ossiiLoaded); // unregister the event listener, only need to run once.
 ////// Controls /////
 
 map.uiManager = L.control.uiManager();
@@ -138,7 +138,7 @@ if (L.Browser.isInternetExplorer) {
 	map.uiManager.showInfoModal('browser-not-supported-modal', '', _('Warning! The browser you are using is not supported.'), '', _('OK'), null, false);
 }
 
-}, this); // map.on('ossiiloaded')
+}; // End of ossiiLoaded
 
 ////// Load ossii.js /////
 {
@@ -146,6 +146,11 @@ if (L.Browser.isInternetExplorer) {
 	app.map = map;
 	app.idleHandler.map = map;
 
+	// Register the event listener,
+	// to be triggered when ossii.js is loaded and initialized
+	map.on('ossiiloaded', ossiiLoaded);
+
+	// Load ossii.js
 	var script = document.createElement('script');
 	script.src = 'ossii.js';
 	script.type = 'text/javascript';

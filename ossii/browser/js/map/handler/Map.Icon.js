@@ -27,12 +27,6 @@ L.Map.Icon = L.Handler.extend({
 	initialize: function (map) {
 		this._map = map;
 
-		// 取代 L.LOUtil.setImage() 的功能
-		if (L.LOUtil.setImage) {
-			this._savedSetImage = L.bind(L.LOUtil.setImage, L.LOUtil);
-			L.LOUtil.setImage = L.bind(this._setImage, this);
-		}
-
 		this._loadIconResource(); // load icon resource
 	},
 
@@ -40,14 +34,24 @@ L.Map.Icon = L.Handler.extend({
 	 * On add hooks
 	 */
 	addHooks: function () {
+		// 取代 L.LOUtil.setImage() 的功能
+		if (L.LOUtil.setImage) {
+			this._savedSetImage = L.bind(L.LOUtil.setImage, L.LOUtil);
+			L.LOUtil.setImage = L.bind(this._setImage, this);
+		}
 
+		this._map.on('themechanged', this._themeChanged, this);
 	},
 
 	/**
 	 * On remove hooks
 	 */
 	removeHooks: function () {
+		if (this._savedSetImage) {
+			L.LOUtil.setImage = L.bind(this._savedSetImage, L.LOUtil);
+		}
 
+		this._map.off('themechanged', this._themeChanged, this);
 	},
 
 	/**
@@ -69,7 +73,6 @@ L.Map.Icon = L.Handler.extend({
 	 */
 	getURL: function (icon, size) {
 		if (!icon) {
-			console.error('Not specify icon name');
 			return L.LOUtil.emptyImageUrl;
 		}
 
@@ -83,13 +86,11 @@ L.Map.Icon = L.Handler.extend({
 			icon = this._iconAlias[icon];
 		}
 
-		var isDark = this._map.uiManager.getDarkModeState(); // 是否為深色模式
+		var isDark = this._isDarkMode(); // 是否為深色模式
 		var prefixURL = this._resourceURI + 'icon:' + (isDark ? 'dark/' : 'light/'); // icon 的 URL 前綴
 		var theme = this._theme[isDark ? 'dark' : 'light']; // 使用的 theme
-		// check theme is loaded
-		var themeLoaded = theme.format !== '';
-		// icon 的副檔名，如果 theme 沒有載入，不使用副檔名(Resource service 會自動判別)
-		var iconExtension = themeLoaded ? '.' + theme.format : '';
+		// icon 的副檔名
+		var iconExtension = '.' + theme.format;
 
 		var iconPath = '';
 		// 如果是 uno 指令
@@ -112,22 +113,31 @@ L.Map.Icon = L.Handler.extend({
 			if (!iconPath.endsWith('.svg') && !iconPath.endsWith('.png')) {
 				iconPath += '.svg'; // 預設是 svg
 			}
-			// theme 尚未載入，或已經在 onlineFiles 中
-			if (!themeLoaded || theme.onlineFiles.has(iconPath)) {
+
+			// 如果是 lc_ 開頭的 icon，則檢查是否有對應的 cmd/ 檔案
+			if (iconPath.startsWith('lc_')) {
+				var cmdPath = 'cmd/' + iconPath;
+				if (theme.files.has(cmdPath) || theme.links[cmdPath]) {
+					return prefixURL + cmdPath;
+				}
+			}
+			// 已經在 onlineFiles 中
+			if (theme.onlineFiles.has(iconPath)) {
 				return prefixURL + icon;
 			}
-			else // 直接傳回空白圖示
-				return L.Util.emptyImageUrl;
+
+			console.error('Icon not found:', iconPath);
+			return L.Util.emptyImageUrl;
 
 		} else {
 			size = ''; // 除了 uno 指令外，其他的 icon 都不區分 size
 			iconPath = icon + iconExtension;
 		}
 
-		// 如果 theme 沒有載入，或是 icon 已經存在，或是 icon 已經在 links 中
+		// icon 已經存在，或是 icon 已經在 links 中
 		// 直接傳回 URL
 		var iconURL = prefixURL + icon + size;
-		if (!themeLoaded || theme.files.has(iconPath) || theme.links[iconPath]) {
+		if (theme.files.has(iconPath) || theme.links[iconPath]) {
 			return iconURL;
 		}
 
@@ -281,47 +291,85 @@ L.Map.Icon = L.Handler.extend({
 
 	// private methods here --------------------------------------------------------
 
+	_isDarkMode: function () {
+		// first check UIManager is loaded
+		if (this._map.uiManager) {
+			return this._map.uiManager.getDarkModeState();
+		}
+		// if UIManager is not loaded, check localStorage
+		if (window.isLocalStorageAllowed) {
+			var state = localStorage.getItem('UIDefaults_' + this._map.getDocType() + '_darkTheme');
+			if ((state && (/true/).test(state.toLowerCase())) ||
+				(state === null &&  window.uiDefaults['darkTheme'])) {
+				return true;
+			}
+		}
+		return false;
+	},
+
+	/**
+	 * Theme changed event
+	 * Change icon theme
+	 *
+	 * @private
+	 * @fires themechanged
+	 */
+	_themeChanged: function () {
+		var isDark = this._isDarkMode();
+		var newTheme = isDark ? 'dark' : 'light';
+		var newScheme = 'icon:' + newTheme;
+		var prevTheme = isDark ? 'light' : 'dark';
+		var oldScheme = 'icon:' + prevTheme;
+		// 找出 attribute 為 resource-icon=prevThemeName 的 img
+		var imgs = document.querySelectorAll('img[resource-icon=' + prevTheme + ']');
+		imgs.forEach(function(img) {
+			img.src = img.src.replace(oldScheme, newScheme);
+			img.setAttribute('resource-icon', newTheme);
+		});
+	},
+
 	/**
 	 * Load icon resource
 	 */
 	_loadIconResource: function () {
-		if (this._resourceURI) {
-			// load light theme icons
-			fetch(this._resourceURI + 'icon:light/structure()')
-			.then(function (response) {
-				return response.json();
-			}).then(function (json) {
+		// load light theme icons
+		this._map.Tasks.registerPreload({
+			name: 'LightIconThemeLoaded',
+			url: this._resourceURI + 'icon:light/structure()',
+			method: 'GET',
+			type: 'json',
+			success: function (json) {
 				// change json.files from array to Set
 				json.files = new Set(json.files);
 				json.onlineFiles = new Set(json.onlineFiles);
 				this._theme.light = json;
-			}.bind(this))
-			.catch(function (error) {
-				console.error('Request failed(light)', error);
-			});
+			}.bind(this)
+		});
 
-			// load dark theme icons
-			fetch(this._resourceURI + 'icon:dark/structure()')
-			.then(function (response) {
-				return response.json();
-			}).then(function (json) {
+		// load dark theme icons
+		this._map.Tasks.registerPreload({
+			name: 'DarkIconThemeLoaded',
+			url: this._resourceURI + 'icon:dark/structure()',
+			method: 'GET',
+			type: 'json',
+			success: function (json) {
 				// change json.files from array to Set
 				json.files = new Set(json.files);
 				json.onlineFiles = new Set(json.onlineFiles);
 				this._theme.dark = json;
-			}.bind(this))
-			.catch(function (error) {
-				console.error('Request failed(dark icons)', error);
-			});
-		}
+			}.bind(this)
+		});
 	},
 
-	_setImage: function (img, name, map) {
-
-		{ /* TODO: 實作替代 setImage() 的功能 */ }
-
-		if (this._savedSetImage) {
-			this._savedSetImage(img, name, map);
-		}
+	/**
+	 * Set image - override L.LOUtil.setImage()
+	 * @param {HTMLImageElement} img - image element
+	 * @param {string} name - icon name
+	 * @param {Object} map - same as this._map
+	 */
+	_setImage: function (img, name/*, map */) {
+		img.setAttribute('resource-icon', this._isDarkMode() ? 'dark' : 'light');
+		img.src = this.getURL('@' + name);
+		return;
 	},
 });

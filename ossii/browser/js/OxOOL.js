@@ -22,15 +22,20 @@ L.OxOOL = L.Class.extend({
 
 		// Override socket _onMessage function to handle the message
 		this._overrideCoolFunctions();
-
 		// Register our own handlers
 		this._registerHandlers();
 
-		this._prelaodData();
+		this._preloadData();
 
 		this._map.on('doclayerinit', this._onDocLayerInit, this);
 	},
 
+	/**
+	 * Get the module by name
+	 *
+	 * @param {string} name - the name of the module
+	 * @return {object} the module object
+	 */
 	getModuleByName: function (name) {
 		return this._modules[name];
 	},
@@ -130,15 +135,18 @@ L.OxOOL = L.Class.extend({
 	/**
 	 * Register our own handlers
 	 *
+	 * @note There is a sequence, do not change it arbitrarily
+	 * @note If you want to register a new handler, you should add it here
 	 * @private
 	 */
 	_registerHandlers: function () {
+		this._map.addHandler('Tasks', L.Map.Tasks);
+		// register the resource handler
+		this._map.addHandler('Icon', L.Map.Icon);
 		// register the alternative command handler
 		this._map.addHandler('alternativeCommand', L.Map.AlternativeCommand);
 		// register the state change handler extension
 		this._map.addHandler('stateChangeExtend', L.Map.StateChangeExtend);
-		// register the resource handler
-		this._map.addHandler('Icon', L.Map.Icon);
 	},
 
 	/**
@@ -149,7 +157,7 @@ L.OxOOL = L.Class.extend({
 	 *
 	 * @private
 	 */
-	_prelaodData: function () {
+	_preloadData: function () {
 	},
 
 	/**
