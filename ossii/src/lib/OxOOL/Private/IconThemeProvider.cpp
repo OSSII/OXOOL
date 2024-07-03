@@ -105,14 +105,46 @@ void IconTheme::initialize()
         }
     }
 
-    // get the default icon themes from the configuration
+    // 1. get the default icon themes from the configuration
     const auto& config = Poco::Util::Application::instance().config();
     std::string lightIconTheme = config.getString("user_interface.icon_theme.light", "");
     std::string darkIconTheme  = config.getString("user_interface.icon_theme.dark",  "");
 
-    // Fallback icon themes
+    // 2. Fallback default icon themes
     lightIconTheme = lightIconTheme.empty() ? FALLBACK_LIGHT_ICON_THEME : lightIconTheme;
     darkIconTheme  = darkIconTheme.empty()  ? FALLBACK_DARK_ICON_THEME  : darkIconTheme;
+
+    // 3. check light and dark icon themes if exists
+    if (maIconThemeMap.find(lightIconTheme) == maIconThemeMap.end())
+    {
+        LOG_ERR("Failed to find light icon theme: " << lightIconTheme);
+        // 找名稱中沒有 'dark' 的第一個 icon theme
+        for (const auto& it : maIconThemeMap)
+        {
+            if (it.first.find("dark") == std::string::npos)
+            {
+                lightIconTheme = it.first;
+                LOG_INF("Use the first light icon theme: " << lightIconTheme);
+                break;
+            }
+        }
+    }
+
+    // 4. check dark icon theme if exists
+    if (maIconThemeMap.find(darkIconTheme) == maIconThemeMap.end())
+    {
+        LOG_ERR("Failed to find dark icon theme: " << darkIconTheme);
+        // 找名稱中有 'dark' 的第一個 icon theme
+        for (const auto& it : maIconThemeMap)
+        {
+            if (it.first.find("dark") != std::string::npos)
+            {
+                darkIconTheme = it.first;
+                LOG_INF("Use the first dark icon theme: " << darkIconTheme);
+                break;
+            }
+        }
+    }
 
     auto setIconThem = [&](ThemeType type, const std::string& themeName)
     {
