@@ -25,26 +25,21 @@ namespace OxOOL
 {
 
 ResourceManager::ResourceManager()
-    : mbInitialized(false)
 {
+    initialize();
 }
 
 ResourceManager::~ResourceManager()
 {
+    std::lock_guard<std::mutex> lock(maMutex);
+    maProvidersMap.clear();
 }
 
 void ResourceManager::initialize()
 {
-    if (mbInitialized)
-        return;
-
     // Register the icon theme provider
     const std::shared_ptr<ResourceProvider> iconThemeProvider = std::make_shared<IconTheme>();
-    const std::string& scheme = iconThemeProvider->getScheme();
-    iconThemeProvider->initialize();
-    maProvidersMap[scheme] = iconThemeProvider;
-
-    mbInitialized = true;
+    registerProvider(iconThemeProvider);
 }
 
 bool ResourceManager::registerProvider(std::shared_ptr<ResourceProvider> provider)
@@ -89,15 +84,14 @@ bool ResourceManager::getResource(const Poco::URI& uri, std::string& resource, s
 
     const std::string& scheme = uri.getScheme();
     // Check if the URI scheme is supported
-    if (maProvidersMap.find(scheme) == maProvidersMap.end())
+    auto it = maProvidersMap.find(scheme);
+    if (it == maProvidersMap.end())
     {
         LOG_ERR("Scheme '" << scheme << "' is not supported.");
         return false;
     }
 
-    // Get the resource provider
-    const std::shared_ptr<ResourceProvider> provider = maProvidersMap[scheme];
-    return provider->getResource(uri, resource, mimeType);
+    return it->second->getResource(uri, resource, mimeType);
 }
 
 } // namespace OxOOL

@@ -111,7 +111,6 @@ namespace OxOOL
 {
     static ModuleManager& ModuleMgr = ModuleManager::instance();
     static Watermark Watermark;
-    static ResourceManager& ResourceMgr = ResourceManager::instance();
 
     /// Initialize the library.
     void initialize()
@@ -122,18 +121,11 @@ namespace OxOOL
         ModuleMgr.initialize();
         // Initialize the watermark.
         Watermark.initialize();
-        // Initialize the resource manager.
-        ResourceMgr.initialize();
     }
 
     void enhanceWatermark(const std::shared_ptr<ClientSession>& session)
     {
         Watermark.enhanceWatermark(session);
-    }
-
-    bool getResource(const Poco::URI& uri, std::string& resource, std::string& mimeType)
-    {
-        return ResourceMgr.getResource(uri, resource, mimeType);
     }
 
     const std::vector<OxOOL::Module::Detail> getAllModuleDetails()

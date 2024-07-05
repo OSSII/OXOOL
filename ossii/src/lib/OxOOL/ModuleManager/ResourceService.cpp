@@ -14,6 +14,7 @@
 
 #include <OxOOL/OxOOL.h>
 #include <OxOOL/HttpHelper.h>
+#include <OxOOL/ResourceManager.h>
 #include <OxOOL/Util.h>
 #include <OxOOL/Module/Base.h>
 #include <OxOOL/ModuleManager.h>
@@ -55,7 +56,7 @@ void ResourceService::handleRequest(const Poco::Net::HTTPRequest& request,
         std::string resource;
         std::string mimeType;
         // if the resource is not found, return 404
-        if (!OxOOL::getResource(uri, resource, mimeType))
+        if (!OxOOL::ResourceManager::instance().getResource(uri, resource, mimeType))
         {
             OxOOL::HttpHelper::sendErrorAndShutdown(Poco::Net::HTTPResponse::HTTP_NOT_FOUND, socket, "Rescoure not found.");
             return;

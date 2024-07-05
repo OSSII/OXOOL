@@ -38,12 +38,9 @@ public:
     /// @brief Get the singleton instance of the resource manager.
     static ResourceManager& instance()
     {
-        static ResourceManager maResourceManager;
-        return maResourceManager;
+        static ResourceManager instance;
+        return instance;
     }
-
-    /// @brief Initialize the resource manager.
-    void initialize();
 
     /// @brief Register a resource provider.
     /// @param provider The resource provider to register.
@@ -63,7 +60,8 @@ public:
     bool getResource(const Poco::URI& uri, std::string& resource, std::string& mimeType);
 
 private:
-    std::atomic<bool> mbInitialized; ///< Whether the resource manager is initialized.
+    /// @brief Initialize the resource manager.
+    void initialize();
 
     std::mutex maMutex; ///< Mutex to protect the resource providers map.
     /// @brief Map of resource providers.
