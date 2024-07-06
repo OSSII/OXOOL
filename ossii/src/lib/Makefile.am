@@ -1,5 +1,9 @@
 # -*- Mode: makefile-gmake; tab-width: 4; indent-tabs-mode: t -*-
 #
+# Copyright the OxOffice Online contributors.
+#
+# SPDX-License-Identifier: MPL-2.0
+#
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,10 +11,10 @@
 
 
 AM_CPPFLAGS = -pthread -DOXOOLWSD_DATADIR='"@OXOOLWSD_DATADIR@"' \
-	      -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
-	      -DDEBUG_ABSSRCDIR='"@abs_top_builddir@"' \
-          $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) \
-		  $(OSSII_CFLAGS)
+              -DOXOOLWSD_CONFIGDIR='"@OXOOLWSD_CONFIGDIR@"' \
+              -DDEBUG_ABSSRCDIR='"@abs_top_builddir@"' \
+              $(ZLIB_CFLAGS) $(ZSTD_CFLAGS) $(PNG_CFLAGS) \
+              $(OSSII_CFLAGS)
 
 if ENABLE_SSL
 AM_CPPFLAGS += $(OPENSSL_CFLAGS)
@@ -81,12 +85,12 @@ oxoolwsd_sources = $(top_srcdir)/common/Crypto.cpp \
                   $(top_srcdir)/wsd/oxoolwsd-fork.cpp
 
 oxoolcore_internal_header = \
-							OxOOL/ModuleManager/AdminService.hpp \
-							OxOOL/ModuleManager/BrowserService.hpp \
+                            OxOOL/ModuleManager/AdminService.hpp \
+                            OxOOL/ModuleManager/BrowserService.hpp \
                             OxOOL/ModuleManager/ResourceService.hpp \
-							OxOOL/ModuleManager/ModuleAgent.hpp \
-							OxOOL/ModuleManager/ModuleLibrary.hpp \
-							OxOOL/Private/Watermark.hpp \
+                            OxOOL/ModuleManager/ModuleAgent.hpp \
+                            OxOOL/ModuleManager/ModuleLibrary.hpp \
+                            OxOOL/Private/Watermark.hpp \
                             OxOOL/Private/IconThemeProvider.hpp
 
 noinst_HEADERS = $(oxoolcore_internal_header)
@@ -97,7 +101,8 @@ oxoolcore_sources = \
                     OxOOL/ModuleManager/ResourceService.cpp \
                     OxOOL/ModuleManager/ModuleAgent.cpp \
                     OxOOL/ModuleManager/ModuleLibrary.cpp \
-					OxOOL/OxOOL.cpp \
+                    OxOOL/OxOOL.cpp \
+                    OxOOL/ENV.cpp \
                     OxOOL/Module/Base.cpp \
                     OxOOL/Module/Map.cpp \
                     OxOOL/Net/Util.cpp \

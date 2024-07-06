@@ -1,5 +1,9 @@
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4; fill-column: 100 -*- */
 /*
+ * Copyright the OxOffice Online contributors.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -12,6 +16,7 @@
 #include <openssl/rand.h>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/ENV.h>
 #include <OxOOL/Util.h>
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/ZipPackage.h>
@@ -22,7 +27,6 @@
 #include <Poco/Path.h>
 #include <Poco/URI.h>
 #include <Poco/Util/Application.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Object.h>
 
 #include <common/JailUtil.hpp>
@@ -36,91 +40,43 @@
 
 namespace OxOOL
 {
-std::string ENV::Vendor = VENDOR;
-
-std::string ENV::Version = OXOOLWSD_VERSION;
-std::string ENV::VersionHash = OXOOLWSD_VERSION_HASH;
-
-std::string ENV::ConfigFile;
-
-std::string ENV::HttpAgentString;
-std::string ENV::HttpServerString;
-
-std::string ENV::FileServerRoot;
-std::string ENV::SysTemplate;
-std::string ENV::LoTemplate;
-std::string ENV::ChildRoot;
-std::string ENV::ModuleDir;
-std::string ENV::ModuleConfigDir;
-std::string ENV::ModuleDataDir;
-
-bool        ENV::SSLEnabled = false;
-std::string ENV::ServerProtocol;
-int         ENV::ServerPortNumber = 0;
-std::string ENV::ServiceRoot;
-
-bool        ENV::AdminEnabled = true; // Admin enabled
-
-Poco::JSON::Object::Ptr ENV::LOKitVersionInfo;
-
-ENV::ENV()
-{
-    // Initialize the environment.
-    initialize();
-}
-
-void ENV::initialize()
-{
-    // Get the version information.
-    //::Util::getVersionInfo(ENV::Version, ENV::VersionHash);
-
-    ENV::HttpServerString = "OxOOL HTTP Server " + ENV::Version;
-    ENV::HttpAgentString  = "OxOOL HTTP Agent "  + ENV::Version;
-
-    ENV::ConfigFile        = OXOOLWSD::ConfigFile;
-
-    ENV::FileServerRoot   = OXOOLWSD::FileServerRoot;
-    ENV::SysTemplate      = OXOOLWSD::SysTemplate;
-    ENV::LoTemplate       = OXOOLWSD::LoTemplate;
-    ENV::ChildRoot        = OXOOLWSD::ChildRoot;
-    ENV::ModuleDir        = OXOOL_MODULE_DIR;
-    ENV::ModuleConfigDir  = OXOOL_MODULE_CONFIG_DIR;
-    ENV::ModuleDataDir    = OXOOL_MODULE_DATA_DIR;
-
-    ENV::SSLEnabled       = OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination();
-    ENV::ServerProtocol   = ENV::SSLEnabled ? "https://" : "http://";
-    ENV::ServerPortNumber = OXOOLWSD::getClientPortNumber();
-    ENV::ServiceRoot      = OXOOLWSD::ServiceRoot;
-
-    ENV::AdminEnabled = OXOOLWSD::AdminEnabled;
-
-    try
-    {
-        ENV::LOKitVersionInfo = Poco::JSON::Parser().parse(OXOOLWSD::LOKitVersion).extract<Poco::JSON::Object::Ptr>();
-    }
-    catch(const std::exception& e)
-    {
-        LOG_ERR("Failed to parse LibreOfficeKit version information: " << e.what());
-        ENV::LOKitVersionInfo = new Poco::JSON::Object();
-    }
-}
-
-} // namespace OxOOL
-
-namespace OxOOL
-{
+    static std::atomic<bool> OxOOLInitialized(false);
     static ModuleManager& ModuleMgr = ModuleManager::instance();
     static Watermark Watermark;
 
     /// Initialize the library.
+    /**
+     * @brief Initializes the OxOOL library.
+     *
+     * This function initializes the OxOOL library by performing the following steps:
+     * 1. Checks if the library has already been initialized. If it has, the function returns.
+     * 2. Prints a message indicating that the initialization process has started.
+     * 3. Initializes the environment using the WSD mode.
+     * 4. Initializes the module manager.
+     * 5. Initializes the watermark.
+     *
+     * @note This function should be called before using any other functionality provided by the OxOOL library.
+     */
     void initialize()
     {
+        if (OxOOLInitialized.exchange(true))
+        {
+            LOG_WRN("OxOOL::initialize() called more than once.");
+            return;
+        }
+
         // Initialize the environment.
-        OxOOL::ENV::initialize();
+        ENV::initialize();
         // Initialize the module manager.
         ModuleMgr.initialize();
         // Initialize the watermark.
         Watermark.initialize();
+    }
+
+    /// @brief Check if the library is initialized.
+    bool isInitialized()
+    {
+        return OxOOLInitialized;
     }
 
     void enhanceWatermark(const std::shared_ptr<ClientSession>& session)
@@ -139,7 +95,13 @@ namespace OxOOL
     /// @return true - handled, false - not handled
     bool handleRequest(const Poco::Net::HTTPRequest& request, SocketDisposition& disposition)
     {
-        return ModuleMgr.handleRequest(request, disposition);
+        if (OxOOLInitialized)
+            return ModuleMgr.handleRequest(request, disposition);
+        else
+        {
+            LOG_ERR("OxOOL::handleRequest() called before initialization.");
+            return false;
+        }
     }
 
     void dumpAllModuleInfo()

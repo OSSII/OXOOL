@@ -21,6 +21,7 @@
 #include <thread>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/ENV.h>
 #include <OxOOL/Module/Base.h>
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/ConvertBroker.h>
@@ -505,7 +506,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     response.add("Referrer-Policy", "no-referrer"); // 不傳送 referrer
     response.add("X-Content-Type-Options", "nosniff"); // 不傳送 content type
     response.set("Cache-Control", "no-cache, no-store, must-revalidate"); //
-    response.set("Server", OxOOL::ENV::HttpServerString);
+    response.set("Server", "OxOOL HTTP Server " + OxOOL::ENV::Version);
     response.set("Date", OxOOL::HttpHelper::getHttpTimeNow());
 
 

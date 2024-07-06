@@ -13,6 +13,7 @@
 #include <set>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/ENV.h>
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/ResourceProvider.h>
 

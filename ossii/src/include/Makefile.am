@@ -1,5 +1,9 @@
 # -*- Mode: makefile-gmake; tab-width: 4; indent-tabs-mode: t -*-
 #
+# Copyright the OxOffice Online contributors.
+#
+# SPDX-License-Identifier: MPL-2.0
+#
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,42 +11,43 @@
 
 OxOOL_includedir = $(includedir)/OxOOL
 OxOOL_include_HEADERS = \
-	$(top_srcdir)/config_version.h \
-	OxOOL/OxOOL.h \
-	OxOOL/ModuleManager.h \
-	OxOOL/HttpHelper.h \
-	OxOOL/L10NTranslator.h \
-	OxOOL/Logger.h \
-	OxOOL/XMLConfig.h \
-	OxOOL/ConvertBroker.h \
-	OxOOL/Util.h \
-	OxOOL/Util/OptionlValidator.h \
-	OxOOL/Util/FileValidator.h \
-	OxOOL/Kit.h \
+    $(top_srcdir)/config_version.h \
+    OxOOL/OxOOL.h \
+    OxOOL/ENV.h \
+    OxOOL/ModuleManager.h \
+    OxOOL/HttpHelper.h \
+    OxOOL/L10NTranslator.h \
+    OxOOL/Logger.h \
+    OxOOL/XMLConfig.h \
+    OxOOL/ConvertBroker.h \
+    OxOOL/Util.h \
+    OxOOL/Util/OptionlValidator.h \
+    OxOOL/Util/FileValidator.h \
+    OxOOL/Kit.h \
     OxOOL/ZipPackage.h \
     OxOOL/ResourceManager.h \
-	OxOOL/ResourceProvider.h
+    OxOOL/ResourceProvider.h
 
 OxOOL_Module_includedir = $(includedir)/OxOOL/Module
 OxOOL_Module_include_HEADERS = \
-	OxOOL/Module/Base.h \
-	OxOOL/Module/Map.h
+    OxOOL/Module/Base.h \
+    OxOOL/Module/Map.h
 
 OxOOL_Net_includedir = $(includedir)/OxOOL/Net
 OxOOL_Net_include_HEADERS = \
-	OxOOL/Net/PrivateKeyHandler.h \
-	OxOOL/Net/Util.h
+    OxOOL/Net/PrivateKeyHandler.h \
+    OxOOL/Net/Util.h
 
 # LibreOfficeKit headers
 lokit_headers = \
-	$(top_srcdir)/bundled/include/LibreOfficeKit/LibreOfficeKitEnums.h
+    $(top_srcdir)/bundled/include/LibreOfficeKit/LibreOfficeKitEnums.h
 
 lokit_includedir = $(includedir)/OxOOL/LibreOfficeKit
 lokit_include_HEADERS = $(lokit_headers)
 
 # Common headers
 common_headers = \
-	$(top_srcdir)/common/Common.hpp \
+    $(top_srcdir)/common/Common.hpp \
     $(top_srcdir)/common/Clipboard.hpp \
     $(top_srcdir)/common/Crypto.hpp \
     $(top_srcdir)/common/JsonUtil.hpp \
@@ -78,7 +83,7 @@ common_include_HEADERS = $(common_headers)
 
 # Net headers
 net_headers = \
-	$(top_srcdir)/net/Buffer.hpp \
+    $(top_srcdir)/net/Buffer.hpp \
     $(top_srcdir)/net/DelaySocket.hpp \
     $(top_srcdir)/net/FakeSocket.hpp \
     $(top_srcdir)/net/HttpRequest.hpp \
@@ -117,22 +122,22 @@ wsd_headers = \
     $(top_srcdir)/wsd/UserMessages.hpp \
     $(top_srcdir)/wsd/QuarantineUtil.hpp \
     $(top_srcdir)/wsd/HostUtil.hpp \
-	$(top_srcdir)/wsd/WopiProxy.hpp
+    $(top_srcdir)/wsd/WopiProxy.hpp
 
 wsd_includedir = $(includedir)/OxOOL/wsd
 wsd_include_HEADERS = $(wsd_headers)
 
 # KIT headers
 kit_headers = \
-	$(top_srcdir)/kit/ChildSession.hpp \
-	$(top_srcdir)/kit/Kit.hpp \
-	$(top_srcdir)/kit/Watermark.hpp
+    $(top_srcdir)/kit/ChildSession.hpp \
+    $(top_srcdir)/kit/Kit.hpp \
+    $(top_srcdir)/kit/Watermark.hpp
 
 kit_includedir = $(includedir)/OxOOL/kit
 kit_include_HEADERS = $(kit_headers)
 
 test_headers = \
-	$(top_srcdir)/test/testlog.hpp
+    $(top_srcdir)/test/testlog.hpp
 
 test_includedir = $(includedir)/OxOOL/test
 test_include_HEADERS = $(test_headers)

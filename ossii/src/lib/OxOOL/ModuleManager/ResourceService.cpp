@@ -13,6 +13,7 @@
 #include <mutex>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/ENV.h>
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/ResourceManager.h>
 #include <OxOOL/Util.h>
