@@ -31,6 +31,7 @@ AC_SUBST([OSSII_CFLAGS], ["-I`pwd`/ossii/src/include -I`pwd`/common -I`pwd`/net 
 AC_SUBST([OSSII_LDFLAGS])
 AC_SUBST([OSSII_LIBS], ["${OSSII_LDFLAGS} `pwd`/ossii/src/lib/lib${OSSII_LIB_NAME}.la"])
 
+AC_DEFINE_UNQUOTED([VENDOR],[ossii_VENDOR],[Vendor])
 AC_SUBST([VENDOR], [ossii_VENDOR])
 
 # This is used by the ossii browser to load custom icons.

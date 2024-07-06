@@ -6,12 +6,12 @@ dnl -*- Mode: Autoconf; tab-width: 4; indent-tabs-mode: nil; fill-column: 102 -*
 #
 
 # define the name of the vendor
-m4_define([ossii_VENDOR], ['OSS Integral Institute Co., Ltd.'])
+m4_define([ossii_VENDOR], ["OSS Integral Institute Co., Ltd"])
 
 # define the product name
-m4_define([ossii_PRODUCT_NAME], ['OxOffice Online'])
+m4_define([ossii_PRODUCT_NAME], ["OxOffice Online"])
 # define the core office name
-m4_define([ossii_CORE_OFFICE], ['oxoffice'])
+m4_define([ossii_CORE_OFFICE], ["oxoffice"])
 
 # define the name of the WSD (Web Socket Daemon)
 m4_define([ossii_WSD_NAME], [oxoolwsd])
