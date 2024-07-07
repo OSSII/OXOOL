@@ -11,14 +11,13 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <mutex>
 #include <atomic>
 #include <memory>
-
-#include <OxOOL/OxOOL.h>
-#include <OxOOL/Module/Base.h>
+#include <map>
 
 namespace Poco
 {
@@ -50,6 +49,12 @@ class ResourceService;
 
 namespace OxOOL
 {
+namespace Module
+{
+    class Base;
+    struct Detail;
+    typedef std::shared_ptr<Base> Ptr;
+} // namespace Module
 
 class ModuleManager
 {
@@ -117,6 +122,7 @@ public:
     bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
                                   const std::shared_ptr<Message>& payload);
 
+    typedef std::function<void(const std::string&, bool)> SendTextMessageFn;
     /// @brief 處理後臺管理訊息
     /// @param payload
     void handleAdminMessage(const SendTextMessageFn& sendTextMessage,
@@ -133,22 +139,19 @@ public:
     /// @brief 清理已經不工作的 agents (代理執行緒一旦超時，就會結束執行緒，並觸發這個函式)
     void cleanupDeadAgents();
 
-    /// @brief 取得所有模組詳細資訊列表
-    /// @return
-    const std::vector<OxOOL::Module::Detail> getAllModuleDetails() const;
-
     /// @brief 取得有模組資訊列表
     std::string getAllModuleDetailsJsonString(const std::string& langTag = std::string()) const;
 
     /// @brief 取得有後臺管理的模組資訊列表
     std::string getAdminModuleDetailsJsonString(const std::string& langTag = std::string()) const;
 
-    /// @brief 以 JSON 格式傳回模組詳細資訊
+    /// @brief 取得個別模組詳細資訊
     /// @param module - 模組
-    /// @param langTag - 語言標籤(en, zh-TW, ...)
-    /// @return Poco::JSON::Object::Ptr
-    Poco::JSON::Object::Ptr getModuleDetailJson(const OxOOL::Module::Ptr& module,
-                                                const std::string& langTag = std::string()) const;
+    /// @param json - reference to Poco::JSON::Object, the module detail will be filled in
+    /// @param langTag - (optional) language tag
+    void getModuleDetailJson(const OxOOL::Module::Ptr& module,
+                             Poco::JSON::Object& json,
+                             const std::string& langTag = std::string()) const;
 
     /// @brief 列出所有的模組
     void dump();

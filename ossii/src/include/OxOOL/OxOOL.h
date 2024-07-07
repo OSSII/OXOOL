@@ -16,8 +16,6 @@
 #include <string>
 #include <vector>
 
-#include <Poco/JSON/Object.h>
-
 #define MULTILINE_STRING(...) #__VA_ARGS__
 
 #ifndef CODE_COVERAGE
@@ -43,13 +41,6 @@ class ClientSession;
 class StringVector;
 class Message;
 
-
-namespace OxOOL::Module
-{
-class Detail;
-} // namespace OxOOL
-
-
 namespace OxOOL
 {
 
@@ -61,9 +52,6 @@ void initialize();
 bool isInitialized();
 
 void enhanceWatermark(const std::shared_ptr<ClientSession>& session);
-
-/// @brief Get all module details.
-const std::vector<OxOOL::Module::Detail> getAllModuleDetails();
 
 /// @brief if the request is handled by the library.
 bool handleRequest(const Poco::Net::HTTPRequest& request, SocketDisposition& disposition);

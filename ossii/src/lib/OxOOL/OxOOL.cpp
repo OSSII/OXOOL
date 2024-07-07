@@ -20,7 +20,6 @@
 #include <OxOOL/Util.h>
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/ZipPackage.h>
-#include <OxOOL/ResourceManager.h>
 
 #include <Poco/DirectoryIterator.h>
 #include <Poco/File.h>
@@ -103,11 +102,6 @@ namespace OxOOL
     void enhanceWatermark(const std::shared_ptr<ClientSession>& session)
     {
         Watermark.enhanceWatermark(session);
-    }
-
-    const std::vector<OxOOL::Module::Detail> getAllModuleDetails()
-    {
-        return ModuleMgr.getAllModuleDetails();
     }
 
     /// @brief if the request is handled by the library.

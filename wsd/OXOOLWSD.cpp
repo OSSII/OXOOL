@@ -6282,21 +6282,6 @@ int OXOOLWSD::innerMain()
             << getServiceURI("/hosting/discovery") << '\n'
             << std::endl;
 
-    // 取得所有模組資料
-    const std::vector<OxOOL::Module::Detail> details = OxOOL::getAllModuleDetails();
-    if (!details.empty())
-    {
-        for (auto it : details)
-        {
-            // 該模組有指定服務位址
-            if (!it.serviceURI.empty())
-            {
-                oss << std::endl << "Module '" << it.name << "': " << it.summary << std::endl
-                    << getServiceURI(it.serviceURI, it.adminPrivilege) << std::endl;
-            }
-        }
-    }
-
     std::cerr << oss.str();
 #endif
 

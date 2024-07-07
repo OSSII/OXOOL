@@ -37,7 +37,6 @@
 #include <Poco/SharedLibrary.h>
 #include <Poco/String.h>
 #include <Poco/SortedDirectoryIterator.h>
-#include <Poco/String.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -46,6 +45,7 @@
 #include <common/Message.hpp>
 #include <common/StringVector.hpp>
 #include <common/Log.hpp>
+#include <net/Socket.hpp>
 #include <wsd/ClientSession.hpp>
 
 #include "ModuleManager/ModuleLibrary.hpp"
@@ -545,15 +545,6 @@ void ModuleManager::cleanupDeadAgents()
     }
 }
 
-const std::vector<OxOOL::Module::Detail> ModuleManager::getAllModuleDetails() const
-{
-    std::vector<OxOOL::Module::Detail> details(maModuleMap.size());
-    for (auto &it : maModuleMap)
-    {
-        details.emplace_back(it.second->getModule()->getDetail());
-    }
-    return details;
-}
 
 std::string ModuleManager::getAllModuleDetailsJsonString(const std::string& langTag) const
 {
@@ -565,10 +556,11 @@ std::string ModuleManager::getAllModuleDetailsJsonString(const std::string& lang
             jsonString.append(",");
 
         const OxOOL::Module::Ptr module = it.second->getModule();
-        Poco::JSON::Object::Ptr json = getModuleDetailJson(module, langTag);
+        Poco::JSON::Object json;
+        getModuleDetailJson(module, json, langTag);
 
         std::ostringstream oss;
-        json->stringify(oss);
+        json.stringify(oss);
         jsonString.append(oss.str());
 
         count ++;
@@ -591,9 +583,10 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
             if (count > 0)
                 jsonString.append(",");
 
-            Poco::JSON::Object::Ptr json = getModuleDetailJson(module, langTag);
+            Poco::JSON::Object json;
+            getModuleDetailJson(module, json, langTag);
             std::ostringstream oss;
-            json->stringify(oss);
+            json.stringify(oss);
             jsonString.append(oss.str());
 
             count ++;
@@ -604,11 +597,12 @@ std::string ModuleManager::getAdminModuleDetailsJsonString(const std::string& la
     return jsonString;
 }
 
-Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::Ptr& module,
-                                                           const std::string& langTag) const
+void ModuleManager::getModuleDetailJson(const OxOOL::Module::Ptr& module,
+                                        Poco::JSON::Object& json,
+                                        const std::string& langTag) const
 {
-    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-    OxOOL::Module::Detail detail = module->maDetail;
+    json.clear();
+    OxOOL::Module::Detail& detail = module->maDetail;
 
     // 若有指定語系，嘗試翻譯
     if (!langTag.empty())
@@ -623,28 +617,26 @@ Poco::JSON::Object::Ptr ModuleManager::getModuleDetailJson(const OxOOL::Module::
         detail.adminItem = translator._(detail.adminItem);
     }
 
-    json->set("id", module->maId);
-    json->set("adminURI", module->maAdminURI);
-    json->set("browserURI", module->maBrowserURI);
+    json.set("id", module->maId);
+    json.set("adminURI", module->maAdminURI);
+    json.set("browserURI", module->maBrowserURI);
     // 是否有 browser/module.js
     const std::string browserModuleJS = Poco::File(module->maRootPath + "/browser/module.js").exists()
                                       ? module->maBrowserURI + "module.js"
                                       : "";
-    json->set("browserModuleJS", browserModuleJS);
+    json.set("browserModuleJS", browserModuleJS);
 
     // 設定模組詳細資訊
-    json->set("name", detail.name);
-    json->set("serviceURI", detail.serviceURI);
-    json->set("version", detail.version);
-    json->set("summary", detail.summary);
-    json->set("author", detail.author);
-    json->set("license", detail.license);
-    json->set("description", detail.description);
-    json->set("adminPrivilege", detail.adminPrivilege);
-    json->set("adminIcon", detail.adminIcon);
-    json->set("adminItem", detail.adminItem);
-
-    return json;
+    json.set("name", detail.name);
+    json.set("serviceURI", detail.serviceURI);
+    json.set("version", detail.version);
+    json.set("summary", detail.summary);
+    json.set("author", detail.author);
+    json.set("license", detail.license);
+    json.set("description", detail.description);
+    json.set("adminPrivilege", detail.adminPrivilege);
+    json.set("adminIcon", detail.adminIcon);
+    json.set("adminItem", detail.adminItem);
 }
 
 void ModuleManager::dump()
