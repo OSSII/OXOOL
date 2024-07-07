@@ -13,44 +13,66 @@
 
 #include <string>
 
-#include <Poco/JSON/Object.h>
+namespace Poco
+{
+namespace JSON
+{
+class Object;
+} // namespace JSON
+} // namespace Poco
 
 namespace OxOOL
 {
 class ENV
 {
+    ENV() = delete; // Disallow creating an instance of this object (singleton
+    ENV(const ENV&) = delete; // Disallow copying
+    ENV& operator=(const ENV&) = delete; // Disallow copying
 public:
-    ENV();
-    ~ENV() {};
 
-    static void initialize();
+    enum Mode
+    {
+        WSD = 0,
+        KIT = 1
+    };
 
+    ENV(Mode which);
+    virtual ~ENV() {}
+
+    virtual void initialize();
+
+    static bool isWSD() { return mnWhich == WSD; }
+    static bool isKIT() { return mnWhich == KIT; }
+
+    // Use default values for these.
     static std::string AppName; // App name
     static std::string Vendor; // VENDOR
+
     static std::string Version; // PACKAGE_VERSION
     static std::string VersionHash; // OXOOLWSD_VERSION_HASH
 
-    static std::string ConfigFile; // Configuration file
-
-    static std::string HttpServerString; // "OxOOL HTTP Server " + ENV::Version
-    static std::string HttpAgentString; // "OxOOL HTTP Agent " + ENV::Version
-
-    static std::string FileServerRoot; // File server root(eg. "/usr/share/oxool")
-    static std::string SysTemplate; // System Template directory.
-    static std::string LoTemplate; // LibreOffice Template directory.
-    static std::string ChildRoot; // Child root directory
     static std::string ModuleDir; // Module directory
     static std::string ModuleConfigDir; // Module configuration directory
     static std::string ModuleDataDir; // Module data directory
 
+    // Use OXOOL_CONFIG environment variable.
+    static std::string FileServerRoot; // File server root(eg. "/usr/share/oxool")
+    static std::string SysTemplate; // System Template directory.
+    static std::string ChildRoot; // Child root directory
     static bool SSLEnabled; // SSL enabled
-    static std::string ServerProtocol; // Server Protocol("http://" or "https://")
-    static int ServerPortNumber; // Server port number
+
+    static std::string ConfigFile; // Configuration file
+    static std::string LoTemplate; // LibreOffice Template directory.
     static std::string ServiceRoot; // Service root
 
-    static bool AdminEnabled; // Admin enabled
+    static Poco::JSON::Object LOKitVersionInfo; // LibreOfficeKit version information.
+    /// @brief Set up LibreOfficeKit version information.
+    /// @param jsonString LibreOfficeKit version information in JSON format.
+    /// @return true if successful, false json parsing failed.
+    static bool setLOKitVersionInfo(const std::string& jsonString);
 
-    static Poco::JSON::Object::Ptr LOKitVersionInfo; // LibreOfficeKit version information.
+private:
+    static Mode mnWhich;
 };
 
 } // namespace OxOOL

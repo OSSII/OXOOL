@@ -44,6 +44,24 @@ namespace OxOOL
     static ModuleManager& ModuleMgr = ModuleManager::instance();
     static Watermark Watermark;
 
+    class WsdENV final : public ENV
+    {
+    public:
+        WsdENV(Mode which) : ENV(which)
+        {
+            initialize();
+        }
+
+    private:
+        void initialize() override
+        {
+            ENV::ConfigFile  = OXOOLWSD::ConfigFile;
+            ENV::LoTemplate  = OXOOLWSD::LoTemplate;
+            ENV::ServiceRoot = OXOOLWSD::ServiceRoot;
+            setLOKitVersionInfo(OXOOLWSD::LOKitVersion);
+        }
+    };
+
     /// Initialize the library.
     /**
      * @brief Initializes the OxOOL library.
@@ -65,8 +83,11 @@ namespace OxOOL
             return;
         }
 
-        // Initialize the environment.
-        ENV::initialize();
+        // Initialize ENV using WSD mode.
+        WsdENV env(ENV::Mode::WSD);
+        // Setup the WSD environment variables.
+        //setupWSDENV();
+
         // Initialize the module manager.
         ModuleMgr.initialize();
         // Initialize the watermark.
@@ -155,7 +176,7 @@ namespace OxOOL
         else if (tokens.equals(0, "initunostatus"))
         {
             // LOKit 是否支援 initUnoStatus
-            if (!OxOOL::ENV::LOKitVersionInfo->has("initUnoStatus"))
+            if (!OxOOL::ENV::LOKitVersionInfo.has("initUnoStatus"))
                 clientSession->sendTextFrameAndLogError("error: cmd=initunostatus kind=unsupported");
             else if (tokens.size() != 2)
                 clientSession->sendTextFrameAndLogError("error: cmd=initunostatus kind=syntax");

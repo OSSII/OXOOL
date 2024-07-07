@@ -17,7 +17,8 @@
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
 
-#include <wsd/OXOOLWSD.hpp>
+#include <common/ConfigUtil.hpp>
+#include <common/Log.hpp>
 
 namespace OxOOL
 {
@@ -31,55 +32,53 @@ std::string ENV::ModuleDir(OXOOL_MODULE_DIR);
 std::string ENV::ModuleConfigDir = OXOOL_MODULE_CONFIG_DIR;
 std::string ENV::ModuleDataDir = OXOOL_MODULE_DATA_DIR;
 
-std::string ENV::ConfigFile;
-
-std::string ENV::HttpAgentString("OxOOL HTTP Server " + ENV::Version);
-std::string ENV::HttpServerString("OxOOL HTTP Agent "  + ENV::Version);
-
 std::string ENV::FileServerRoot;
 std::string ENV::SysTemplate;
 std::string ENV::LoTemplate;
 std::string ENV::ChildRoot;
 
+std::string ENV::ConfigFile;
 bool        ENV::SSLEnabled = false;
-std::string ENV::ServerProtocol;
-int         ENV::ServerPortNumber = 0;
 std::string ENV::ServiceRoot;
 
-bool        ENV::AdminEnabled = true; // Admin enabled
+Poco::JSON::Object ENV::LOKitVersionInfo;
 
-Poco::JSON::Object::Ptr ENV::LOKitVersionInfo;
+// Private static members -----------------------------------------------------
+ENV::Mode ENV::mnWhich;
+// ----------------------------------------------------------------------------
 
-ENV::ENV()
+ENV::ENV(Mode which)
 {
+    mnWhich = which;
+    initialize();
 }
 
 void ENV::initialize()
 {
+    const char* oxool_config = std::getenv("OXOOL_CONFIG");
+    if (oxool_config)
+    {
+        ENV::FileServerRoot = config::getString("file_server_root_path", "");
+        ENV::SysTemplate = config::getString("sys_template_path", "");
+        ENV::ChildRoot = config::getString("child_root_path", "");
+        ENV::SSLEnabled = config::getBool("ssl.enable", false);
+    }
+    else
+        LOG_ERR("OXOOL_CONFIG environment variable not set.");
+}
 
-    ENV::ConfigFile       = OXOOLWSD::ConfigFile;
-
-    ENV::FileServerRoot   = OXOOLWSD::FileServerRoot;
-    ENV::SysTemplate      = OXOOLWSD::SysTemplate;
-    ENV::LoTemplate       = OXOOLWSD::LoTemplate;
-    ENV::ChildRoot        = OXOOLWSD::ChildRoot;
-
-    ENV::SSLEnabled       = OXOOLWSD::isSSLEnabled() || OXOOLWSD::isSSLTermination();
-    ENV::ServerProtocol   = ENV::SSLEnabled ? "https://" : "http://";
-    ENV::ServerPortNumber = OXOOLWSD::getClientPortNumber();
-    ENV::ServiceRoot      = OXOOLWSD::ServiceRoot;
-
-    ENV::AdminEnabled = OXOOLWSD::AdminEnabled;
-
+bool ENV::setLOKitVersionInfo(const std::string& lokitVersion)
+{
     try
     {
-        ENV::LOKitVersionInfo = Poco::JSON::Parser().parse(OXOOLWSD::LOKitVersion).extract<Poco::JSON::Object::Ptr>();
+        ENV::LOKitVersionInfo = *Poco::JSON::Parser().parse(lokitVersion).extract<Poco::JSON::Object::Ptr>();
     }
-    catch(const std::exception& e)
+    catch (const Poco::Exception& exc)
     {
-        LOG_ERR("Failed to parse LibreOfficeKit version information: " << e.what());
-        ENV::LOKitVersionInfo = new Poco::JSON::Object();
+        LOG_ERR("Error parsing LOKit version info: " << exc.displayText());
+        return false;
     }
+    return true;
 }
 
 } // namespace OxOOL

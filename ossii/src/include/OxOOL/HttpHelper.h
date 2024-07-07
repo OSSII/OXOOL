@@ -112,6 +112,10 @@ int getPortNumber();
 /// @return std::string
 const std::string& getServiceRoot();
 
+/// @brief Get the server string. for response header only.
+/// @return std::string reference
+const std::string& getServerString();
+
 /// @brief 取得 Client 端的語系
 /// 優先從網址列取得 lang= 所指定的語系，沒有的話，再判斷 request header 的 Accept-Language
 /// @param request

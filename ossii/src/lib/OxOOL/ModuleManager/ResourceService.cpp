@@ -81,7 +81,7 @@ void ResourceService::handleRequest(const Poco::Net::HTTPRequest& request,
 #endif
 
     Poco::Net::HTTPResponse response(Poco::Net::HTTPResponse::HTTP_1_1, Poco::Net::HTTPResponse::HTTP_OK);
-    response.set("Server", OxOOL::ENV::HttpServerString);
+    response.set("Server", OxOOL::HttpHelper::getServerString());
     response.set("Date", OxOOL::HttpHelper::getHttpTimeNow());
     response.setContentType(resourceInfo.mimeType);
 

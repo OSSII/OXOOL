@@ -36,6 +36,7 @@
 #include <common/Util.hpp>
 #include <common/Log.hpp>
 #include <net/Socket.hpp>
+#include <wsd/OXOOLWSD.hpp>
 
 namespace OxOOL
 {
@@ -254,17 +255,25 @@ void sendFileAndShutdown(const std::shared_ptr<StreamSocket>& socket, const std:
 
 const std::string& getProtocol()
 {
-    return OxOOL::ENV::ServerProtocol;
+    static std::string http("http://");
+    static std::string https("https://");
+    return OxOOL::ENV::SSLEnabled ? https : http;
 }
 
 int getPortNumber()
 {
-    return OxOOL::ENV::ServerPortNumber;
+    return OXOOLWSD::getClientPortNumber();
 }
 
 const std::string& getServiceRoot()
 {
     return OxOOL::ENV::ServiceRoot;
+}
+
+const std::string& getServerString()
+{
+    static std::string serviceString("OXOOLWSD HTTP Server " + OxOOL::ENV::Version);
+    return serviceString;
 }
 
 std::string getAcceptLanguage(const Poco::Net::HTTPRequest& request)
