@@ -11,7 +11,6 @@
 
 #include <config.h>
 
-#include <OxOOL/OxOOL.h>
 #include <OxOOL/Kit.h>
 
 #include "Kit.hpp"
@@ -254,16 +253,15 @@ bool ChildSession::_handleInput(const char *buffer, int length)
         LOG_TRC("Finished replaying messages.");
     }
 
-    // OSSII extended features.
-    if (_isDocLoaded && _viewId >=0)
+    // OSSII extended features. --------------------------------------------
+    if (_extSession == nullptr)
+        _extSession = std::make_unique<OxOOL::Kit::ExtensionSession>(*this);
+
+    if (_isDocLoaded && _viewId >=0 && _extSession->handleChildMessage(buffer, length, tokens))
     {
-        const std::shared_ptr<ChildSession> self = std::static_pointer_cast<ChildSession>(shared_from_this());
-        if (OxOOL::Kit::handleChildMessage(self, tokens, getLOKitDocument()))
-        {
-            return true;
-        }
+        return true;
     }
-    //------------ end of OSSII extended features.
+    //---------------------------------------------------------------------
 
     if (tokens.equals(0, "dummymsg"))
     {

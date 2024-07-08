@@ -402,6 +402,11 @@ public:
     }
 
 private:
+    // OSSII extended feature. -------------------------------------------------
+    friend class OxOOL::Kit::ExtensionSession;
+    std::unique_ptr<OxOOL::Kit::ExtensionSession> _extSession = nullptr;
+    //--------------------------------------------------------------------------
+
     const std::string _jailId;
     const std::string _jailRoot;
     DocumentManagerInterface* _docManager;

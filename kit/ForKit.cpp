@@ -31,6 +31,9 @@
 #include <thread>
 #include <chrono>
 
+#include <OxOOL/ENV.h>
+#include <OxOOL/Kit.h>
+
 #include <Poco/Path.h>
 
 #include <Common.hpp>
@@ -770,6 +773,14 @@ int forkit_main(int argc, char** argv)
     Util::setThreadName("forkit");
 
     LOG_INF("Preinit stage OK.");
+
+    // OSSII extended feature. -----------------------------------------------------
+    // Initialize the OxOOL::Kit singleton.
+    // Note: This must be done before forking any child processes.
+    //       Avoid any environment variable changes after this point.
+    OxOOL::Kit::initialize(loKitPtr);
+    OxOOL::ENV::LoTemplate = loTemplate;
+    //--------------------------------------------------------------------------------
 
     // We must have at least one child, more are created dynamically.
     // Ask this first child to send version information to master process and trace startup.

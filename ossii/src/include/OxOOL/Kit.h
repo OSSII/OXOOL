@@ -13,12 +13,10 @@
 
 #include <memory>
 
-#include <Poco/JSON/Object.h>
+#include <OxOOL/ENV.h> // Include the header file that defines OxOOL::ENV
 
-namespace lok
-{
-class Document;
-}   // namespace lok
+#define LOK_USE_UNSTABLE_API
+#include <LibreOfficeKit/LibreOfficeKitInit.h>
 
 class ChildSession;
 class StringVector;
@@ -29,10 +27,45 @@ namespace OxOOL
 namespace Kit
 {
 
-/// @brief if the client input is handled by the library.
-bool handleChildMessage(const std::shared_ptr<ChildSession>& childSession,
-                        const StringVector& tokens,
-                        const std::shared_ptr<lok::Document>& lokitDocument);
+/// @brief Initialize the Kit library.
+void initialize(LibreOfficeKit* loKitPtr);
+
+class ENV final : public OxOOL::ENV
+{
+    ENV() = delete;
+    ENV(const ENV&) = delete;
+    ENV& operator=(const ENV&) = delete;
+public:
+    ENV(OxOOL::ENV::Mode mode);
+    ~ENV() override;
+
+private:
+    void initialize() override;
+};
+
+/// @brief The Child extension session.
+class ExtensionSession
+{
+public:
+    ExtensionSession(ChildSession& session);
+    virtual ~ExtensionSession();
+
+    /// @brief Handle a message from the child.
+    /// @param buffer The message buffer.
+    /// @param length The message length.
+    /// @param tokens The message tokens.
+    /// @return True if the message was handled.
+    bool handleChildMessage(const char* buffer, int length, const StringVector& tokens);
+
+// Private methods -----------------------------------------------------------
+private:
+    /// @brief Handle a text input message.
+    bool textInput(const StringVector& tokens);
+
+// Private members -----------------------------------------------------------
+private:
+    ChildSession& mrSession;
+};
 
 } // namespace Kit
 } // namespace OxOOL
