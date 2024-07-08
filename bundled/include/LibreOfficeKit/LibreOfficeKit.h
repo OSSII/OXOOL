@@ -514,6 +514,13 @@ struct _LibreOfficeKitDocumentClass
     /// @see lok::Document::initUnoStatus
     void (*initUnoStatus) (LibreOfficeKitDocument* pThis, const char* pCommands);
 
+    /// @see lok::Document::postWindowExtTextInputEventEventEnhance
+     void (*postWindowExtTextInputEventEnhance) (LibreOfficeKitDocument* pThis,
+                                                 unsigned nWindowId,
+                                                 int nType,
+                                                 const char* pText,
+                                                 int nCursorPos);
+
     /// @see lok::Document::hyperlinkInfoAtPosition().
     char* (*hyperlinkInfoAtPosition) (LibreOfficeKitDocument* pThis, int x,int y);
 
