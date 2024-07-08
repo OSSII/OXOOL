@@ -34,11 +34,11 @@ std::string ENV::ModuleDataDir = OXOOL_MODULE_DATA_DIR;
 
 std::string ENV::FileServerRoot;
 std::string ENV::SysTemplate;
-std::string ENV::LoTemplate;
 std::string ENV::ChildRoot;
-
-std::string ENV::ConfigFile;
 bool        ENV::SSLEnabled = false;
+
+std::string ENV::LoTemplate;
+std::string ENV::ConfigFile;
 std::string ENV::ServiceRoot;
 
 Poco::JSON::Object ENV::LOKitVersionInfo;

@@ -61,9 +61,10 @@ public:
     static std::string ChildRoot; // Child root directory
     static bool SSLEnabled; // SSL enabled
 
-    static std::string ConfigFile; // Configuration file
     static std::string LoTemplate; // LibreOffice Template directory.
-    static std::string ServiceRoot; // Service root
+
+    static std::string ConfigFile; // Configuration file (WSD Mode Only)
+    static std::string ServiceRoot; // Service root (WSD Mode Only)
 
     static Poco::JSON::Object LOKitVersionInfo; // LibreOfficeKit version information.
     /// @brief Set up LibreOfficeKit version information.
