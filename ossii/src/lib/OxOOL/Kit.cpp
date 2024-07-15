@@ -87,30 +87,19 @@ bool ExtensionSession::handleChildMessage(const char* buffer, int length, const 
 
         handled = true;
     }
-    else if (tokens.equals(0, "textinput"))
+    else if (tokens.equals(0, "writetext"))
     {
-        handled = textInput(tokens);
+        writeText(tokens);
+        handled = true;
     }
 
     return handled;
 }
 
-bool ExtensionSession::textInput(const StringVector& tokens)
+bool ExtensionSession::writeText(const StringVector& tokens)
 {
-    if (!OxOOL::ENV::LOKitVersionInfo.has("postWindowExtTextInputEventEnhance"))
-    {
-        LOG_ERR("LOKit does not support postWindowExtTextInputEventEnhance.");
-        return false;
-    }
-
-    // tokens[0] = textinput
-    // 其餘 tokens 必須要包括
-    // id - view id
-    // text - input text
-    // type - input type. "input", "end"
-    // cursor - cursor position in text
-
-    int id = -1, cursor = -1, type = -1;
+    int id = -1, cursor = -1;
+    std::string type;
     std::string decodedText;
 
     for (std::size_t i = 1; i < tokens.size(); ++i)
@@ -120,30 +109,30 @@ bool ExtensionSession::textInput(const StringVector& tokens)
         if (name == "id")
             id = std::stoi(value);
         else if (name == "text")
-        {
             Poco::URI::decode(value, decodedText);
-        }
         else if (name == "type")
-        {
-            if (value == "input")
-                type = LOK_EXT_TEXTINPUT;
-            else if (value == "end")
-                type = LOK_EXT_TEXTINPUT_END;
-        }
+            type = value;
         else if (name == "cursor")
             cursor = std::stoi(value);
     }
 
-    if (id < 0 || cursor < 0 || type < 0)
-        return false; // fall back to default handling.
-
-    // end input event only needs id and type.
-    // there is no need to set the text.
-    if (type == LOK_EXT_TEXTINPUT_END)
-        decodedText.clear();
+#if ENABLE_DEBUG
+    std::cout << "id: " << id << ", text: " << decodedText
+              << ", type: " << type << ", cursor: " << cursor << std::endl;
+#endif
 
     mrSession.getLOKitDocument()->setView(mrSession.getViewId());
-    mrSession.getLOKitDocument()->postWindowExtTextInputEventEnhance(id, type, decodedText.c_str(), cursor);
+    if (type != "input")
+    {
+        // Insert text to document.
+        mrSession.getLOKitDocument()->postWindowExtTextInputEvent(id, LOK_EXT_TEXTINPUT, decodedText.c_str());
+        mrSession.getLOKitDocument()->postWindowExtTextInputEvent(id, LOK_EXT_TEXTINPUT_END, decodedText.c_str());
+    }
+    else
+    {
+        // Send preview text with cursor position.
+        mrSession.getLOKitDocument()->postWindowExtTextInputEventEnhance(id, LOK_EXT_TEXTINPUT, decodedText.c_str(), cursor);
+    }
 
     return true;
 }

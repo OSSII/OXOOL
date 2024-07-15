@@ -60,7 +60,7 @@ public:
 // Private methods -----------------------------------------------------------
 private:
     /// @brief Handle a text input message.
-    bool textInput(const StringVector& tokens);
+    bool writeText(const StringVector& tokens);
 
 // Private members -----------------------------------------------------------
 private:

@@ -47,6 +47,7 @@ OXOOL_JS_LIST = \
 	js/BrandingData.js \
 	js/OxOOL.js \
 	js/ModuleManager.js \
+	js/layer/marker/EnhancedTextInput.js \
 	js/map/handler/Map.Tasks.js \
 	js/map/handler/Map.Icon.js \
 	js/map/handler/Map.AlternativeCommand.js \

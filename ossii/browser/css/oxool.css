@@ -228,3 +228,43 @@
 #toolbar-down *{
 	font-size: var(--status-bar-font-size) !important;
 }
+
+.clipboard-container {
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	left: 0px;
+	top: 0px;
+	width: 0px;
+	height: 0px;
+	background: var(--doc-identify-color);
+	border-radius: 3px;
+	padding: 3px;
+	border: 1px #e0e0e0 solid;
+	box-shadow: rgba(0, 0, 0, 0.70) 0px 5px 15px;
+	z-index: -1;
+	opacity: 0;
+}
+
+[data-theme='dark'] .clipboard-container {
+	box-shadow: rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px;
+}
+
+.clipboard-container.overspot {
+	width: auto;
+	height: auto;
+	opacity: 1;
+	z-index: 100;
+}
+
+#clipboard-area.clipboard {
+	max-width: calc(1rem * 15);
+	width: auto;
+	height: auto;
+	background-color: transparent;
+	font-family: var(--oxool-font);
+	font-size: 1rem;
+	border: none;
+	color: #fff;
+}

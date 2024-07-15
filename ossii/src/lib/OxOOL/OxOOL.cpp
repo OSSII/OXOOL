@@ -179,6 +179,15 @@ namespace OxOOL
 
             handled = true; // handled
         }
+        else if (tokens.equals(0, "writetext"))
+        {
+            if (OxOOL::ENV::LOKitVersionInfo.has("postWindowExtTextInputEventEnhance"))
+                docBroker->forwardToChild(clientSession, firstLine);
+            else
+                LOG_ERR("LoKit does not support postWindowExtTextInputEventEnhance.");
+
+            handled = true; // handled
+        }
 
         // 如果沒有被處理，就交給 ModuleMgr 處理。
         if (!handled)
