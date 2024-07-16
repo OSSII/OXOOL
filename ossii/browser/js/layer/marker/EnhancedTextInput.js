@@ -68,7 +68,6 @@ L.EnhancedTextInput = L.Layer.extend({
 		}
 
 		this._map.on('updatepermission', this._onPermission, this);
-		this._map.on('commandresult', this._onCommandResult, this);
 		L.DomEvent.on(this._textArea, 'focus blur', this._onFocusBlur, this);
 
 		// Do not wait for a 'focus' event to attach events if the
@@ -105,7 +104,6 @@ L.EnhancedTextInput = L.Layer.extend({
 		}
 
 		this._map.off('updatepermission', this._onPermission, this);
-		this._map.off('commandresult', this._onCommandResult, this);
 		L.DomEvent.off(this._textArea, 'focus blur', this._onFocusBlur, this);
 		L.DomEvent.off(this._map.getContainer(), 'mousedown touchstart', this._abortComposition, this);
 
@@ -122,27 +120,9 @@ L.EnhancedTextInput = L.Layer.extend({
 
 	_onPermission: function (e) {
 		if (e.perm === 'edit') {
-			this._textArea.removeAttribute('disabled');
+			this.enable();
 		} else {
-			this._textArea.setAttribute('disabled', true);
-		}
-	},
-
-	_onCommandResult: function (e) {
-		if (this.hasAccessibilitySupport())
-			return;
-
-		if (e.commandName === '.uno:Undo' || e.commandName === '.uno:Redo') {
-			//undoing something does not trigger any input method
-			// this causes the editable area content not to be a substring
-			// of the document text; moreover this causes problem
-			// in mobile working with suggestions:
-			//i.e: type "than" and then select "thank" from suggestion
-			//now undo and then again select "thanks" from suggestions
-			//final output is "thans"
-			//this happens because undo doesn't change the editable area content.
-			//So better to clean the editable area content.
-			this._emptyArea();
+			this.disable();
 		}
 	},
 
@@ -196,7 +176,7 @@ L.EnhancedTextInput = L.Layer.extend({
 		// read-only before focus() and reset it again after the blur()
 		if (!window.ThisIsTheiOSApp && navigator.platform !== 'iPhone' && !window.mode.isChromebook()) {
 			if ((window.ThisIsAMobileApp || window.mode.isMobile()) && acceptInput !== true)
-				this._textArea.setAttribute('readonly', true);
+				this.disable();
 		}
 
 		if (!window.ThisIsTheiOSApp && navigator.platform !== 'iPhone' && !window.keyboard.guessOnscreenKeyboard()) {
@@ -224,7 +204,7 @@ L.EnhancedTextInput = L.Layer.extend({
 			if (window.keyboard.guessOnscreenKeyboard() && acceptInput !== true) {
 				this._setAcceptInput(false);
 				this._textArea.blur();
-				this._textArea.removeAttribute('readonly');
+				this.enable();
 			} else {
 				this._setAcceptInput(true);
 			}
@@ -289,11 +269,7 @@ L.EnhancedTextInput = L.Layer.extend({
 		this._textArea.setAttribute('spellcheck', 'false');
 		this._textArea.setAttribute('wrap', 'on');
 		// Prevent autofocus
-		this._textArea.setAttribute('disabled', true);
-
-		this._textAreaLabel = L.DomUtil.create('label', 'visuallyhidden', this._container);
-		this._textAreaLabel.setAttribute('for', 'clipboard-area');
-		this._textAreaLabel.innerHTML = 'clipboard area';
+		this.disable();
 
 		this._emptyArea();
 
@@ -312,6 +288,11 @@ L.EnhancedTextInput = L.Layer.extend({
 
 	debug: function (debugOn) {
 		this._isDebugOn = !!debugOn;
+		if (this._isDebugOn) {
+			L.DomUtil.addClass(this._container, 'overspot');
+		} else {
+			L.DomUtil.removeClass(this._container, 'overspot');
+		}
 	},
 
 	activeElement: function () {
@@ -386,25 +367,17 @@ L.EnhancedTextInput = L.Layer.extend({
 		if (ev.timeStamp - this._compositionendTimestamp < this._compositionendTimeDiff)
 			return;
 
-
+		var textContent = this.getValue();
 		switch (ev.inputType) {
 			case 'insertText': // Direct input
-				this._sendText(ev.data); // Send the text to the server
+				this._sendText(textContent);
 				break;
 
 			case 'insertCompositionText': // Composing
-				var textContent = this.getValue();
-				/* console.debug('Is composing:', ev.isComposing ? 'Yes' : 'No',
-							  ', ev.data:', ev.data,
-							  ', content:', textContent,
-							  ', cursor:', this._getCursorPosition(),
-							  ', inputType:', ev.inputType); */
 				if (this._isComposing) {
 					if (this._isOnTheSpot()) {
 						var type = textContent.length > 0 ? 'input' : '';
 						this._sendText(textContent, type);
-					} else {
-						this._calcCompositionBoxPosition();
 					}
 				} else {
 					this._sendText(textContent);
@@ -414,7 +387,6 @@ L.EnhancedTextInput = L.Layer.extend({
 			case 'insertParagraph': // Enter
 			case 'deleteContentBackward': // Backspace
 			case 'deleteContentForward': // Delete
-				// Send the Delete key as a key event
 				// handle by _onKeyDown()
 				break;
 
@@ -427,9 +399,8 @@ L.EnhancedTextInput = L.Layer.extend({
 			this._emptyArea(); // Clear the textarea
 		}
 
-		if (this._isDebugOn) {
-			this._calcCompositionBoxPosition();
-		}
+		this._calcCompositionBoxPosition();
+
 	},
 
 	// Sends the given (UTF-8) string of text to server,
@@ -448,7 +419,6 @@ L.EnhancedTextInput = L.Layer.extend({
 	// Clears the textarea
 	_emptyArea: function () {
 		this._textArea.innerHTML = '';
-		this._setCursorPosition(0);
 	},
 
 	/**
@@ -485,24 +455,14 @@ L.EnhancedTextInput = L.Layer.extend({
 		app.idleHandler.notifyActive();
 		// Record the timestamp of the most recent compositionend
 		this._compositionendTimestamp = ev.timeStamp;
-		this._isComposing = false; // 結束組字
+		// Send text area content to server
+		this._sendText(this.getValue());
+		// Hide the composition box if over the spot mode.
+		this._hideCompositionBox();
 
-		// Have any text been composed?
-		if (ev.data) {
-			this._sendText(ev.data);
-		}
+		this._isComposing = false; // End of composition
 
-		// Hide the composition box
-		if (this._isOverTheSpot()) {
-			this._hideCompositionBox();
-		}
-
-		if (ev.data === '切換輸入模式') {
-			this._toggleMode();
-		}
-
-		// 清除輸入區資料
-		this._emptyArea();
+		this._emptyArea(); // Clear the textarea
 	},
 
 	// Called when the user goes back to a word to spellcheck or replace it,
@@ -511,9 +471,7 @@ L.EnhancedTextInput = L.Layer.extend({
 	// empty the text area.
 	_abortComposition: function () {
 		// Hide the composition box
-		if (this._isOverTheSpot()) {
-			this._hideCompositionBox();
-		}
+		this._hideCompositionBox();
 
 		// If the user is composing, and the text area is not empty,
 		// send the text
@@ -541,17 +499,32 @@ L.EnhancedTextInput = L.Layer.extend({
 			this._map.dialog.getCurrentDialogContainer() && !this._isCaretVisible());
 	},
 
+	/**
+	 * Check if the input mode is OverTheSpot.
+	 *
+	 * @returns {boolean} - true if the input mode is OverTheSpot
+	 */
 	_isOverTheSpot: function () {
 		return !this._isOnTheSpot();
 	},
 
-	_toggleMode: function () {
-		var prevMode = this.options.inputMode;
+	/**
+	 * Toggle the input mode between OnTheSpot and OverTheSpot.
+	 * Note: Only available on desktop and when inputEnhanced is enabled.
+	 *
+	 * @returns {boolean} - true toggle the input mode successfully
+	 */
+	_toggleInputMode: function () {
 		if (window.mode.isDesktop() && this.options.inputEnhanced) {
+			var prevMode = this.options.inputMode;
 			this.options.inputMode = this._isOnTheSpot() ? 'OverTheSpot' : 'OnTheSpot';
 			if (localStorage) {
 				localStorage.setItem('inputMode', this.options.inputMode);
 			}
+			var inputModeName = this.options.inputMode === 'OverTheSpot' ? _('Over the spot') : _('On the spot');
+			this._map.uiManager.showSnackbar(
+				_('Switch input mode to:') + ' ' + inputModeName, null, null, 2000
+			);
 			return prevMode !== this.options.inputMode;
 		}
 		return false;
@@ -567,21 +540,20 @@ L.EnhancedTextInput = L.Layer.extend({
 			this._map._docLayer._cursorMarker.visible;
 	},
 
+	/**
+	 * Calculate the position of the composition box.
+	 */
 	_calcCompositionBoxPosition: function () {
-		// 如果是 onTheSpot 模式，不需要計算組字視窗位置
 		if (this._isOnTheSpot() && !this._isDebugOn)
 			return;
 
-		// 如果游標不可見，可能是選取了物件
-		// 也可能是在試算表文件中，尚未進入儲存格編輯模式
+		// If the caret is not visible
 		if (!this._isCaretVisible()) {
-			// 如果有選取物件，則不需要顯示組字視窗
+			// If the cursor is not visible, but there is an active selection
 			if (this._map._docLayer._hasActiveSelection) {
-				//console.debug('No cursor, but active selection.');
 				return;
-			} else  if (this._map.getDocType() === 'spreadsheet'/*  && this._map._docLayer._cellCursor */) {
-				// 如果是試算表文件，則移動游標到儲存格開頭
-				//console.debug('No cursor, moving to cell cursor.');
+			} else  if (this._map.getDocType() === 'spreadsheet') {
+				// If the cursor is not visible, but there is a cell cursor
 				var anchorPos = this._map._docLayer._cellCursor.getNorthWest();
 				this._latlng = L.latLng(anchorPos);
 				this.update();
@@ -590,55 +562,59 @@ L.EnhancedTextInput = L.Layer.extend({
 			}
 		}
 
-		// 取得 #map 的 rect
+		// Get the caret position
+		var caretPosition = this._map.latLngToLayerPoint(this._latlng).round();
+		var hasChanged = false; // is the position changed
+
+		// Get the map container's bounding rectangle
 		var mapRect = this._map.getContainer().getBoundingClientRect();
-		// 取得組字視窗的位置
-		var rect = this._container.getBoundingClientRect();
+		// Get the composition box's bounding rectangle
+		var compositionRect = this._container.getBoundingClientRect();
 
-		// 如果游標可見，則取得游標的高度
+		// Get the cursor marker's height
 		var cursorMarker = this._map._docLayer._cursorMarker;
-		var cursorHeight = cursorMarker.visible ? cursorMarker.size.y : 0;
+		var cursorHeight = (cursorMarker && cursorMarker.visible) ? cursorMarker.size.y : 0;
 
-		// 取得文件編輯區的寬度及高度
-		var viewWidth = this._map.getSize().x;
-		var viewHeight = this._map.getSize().y;
-		// 取得視窗的寬度及高度
+		// Get the window's width and height
 		var winWidth = window.innerWidth || document.documentElement.clientWidth;
 		var winHeight = window.innerHeight || document.documentElement.clientHeight;
 
-		// 計算編輯區的右側及底部邊界
-		var rightBundary = Math.min(viewWidth, winWidth) + mapRect.left;
-		var bottomBundary = Math.min(viewHeight, winHeight) + mapRect.top;
+		// Calculate the right and bottom boundaries
+		var rightBundary = Math.min(mapRect.width, winWidth) + mapRect.left;
+		var bottomBundary = Math.min(mapRect.height, winHeight) + mapRect.top;
 
-		// 把 _latlng 轉換成畫布座標
-		var position = this._map.latLngToLayerPoint(this._latlng).round();
-		var hasChanged = false;
-		// 如果組字視窗右側超出編輯區右側，則左移組字視窗
-		if (rect.right > rightBundary) {
-			var moveLeft = rect.right - rightBundary;
-			position.x -= moveLeft;
+		// If the composition box's left side is out of the map container's left side
+		if (compositionRect.right > rightBundary) {
+			var moveLeft = compositionRect.right - rightBundary;
+			caretPosition.x -= moveLeft;
 			hasChanged = true;
 		}
 
-		// 如果組字視窗底部超出編輯區底部，則上移組字視窗
-		if (rect.bottom > bottomBundary) {
-			var moveUp = (rect.bottom - bottomBundary) + cursorHeight;
-			position.y -= moveUp;
+		// If the composition box's top side is out of the map container's top side
+		if (compositionRect.bottom > bottomBundary) {
+			var moveUp = (compositionRect.bottom - bottomBundary) + cursorHeight;
+			caretPosition.y -= moveUp;
 			hasChanged = true;
 		}
 
-		// 座標有變動，則更新組字視窗位置
+		// If the position has changed, update the composition box position
 		if (hasChanged) {
-			this._latlng = this._map.layerPointToLatLng(position);
+			this._latlng = this._map.layerPointToLatLng(caretPosition);
 			this.update();
 		}
 	},
 
-	// 隱藏組字視窗
+	/**
+	 * Hide the composition box.
+	 */
 	_hideCompositionBox: function () {
-		L.DomUtil.removeClass(this._container, 'overspot');
+		if (!this._isDebugOn && this._isOverTheSpot())
+			L.DomUtil.removeClass(this._container, 'overspot');
 	},
 
+	/**
+	 * Key down event handler.
+	 */
 	_onKeyDown: function (ev) {
 		if (this._isComposing || this._map.uiManager.isUIBlocked())
 			return;
@@ -646,24 +622,26 @@ L.EnhancedTextInput = L.Layer.extend({
 		if (app.UI.notebookbarAccessibility)
 			app.UI.notebookbarAccessibility.onDocumentKeyDown(ev);
 
-		var oneKey = !ev.shiftKey && !ev.ctrlKey && !ev.altKey && !ev.metaKey;
-		if (oneKey) {
-			switch (ev.keyCode) {
-				case 8: // Backspace
-				case 46: // Delete
-				case 13: // Enter
+		if (!ev.shiftKey && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
+			switch (ev.key) {
+				case 'Backspace':
+				case 'Delete':
+				case 'Enter':
 					var unoKeyCode = this._map['keyboard']._toUNOKeyCode(ev.keyCode);
 					this._sendKeyEvent(ev.charCode, unoKeyCode);
 					break;
 			}
+		} else if (ev.ctrlKey && (ev.altKey || ev.metaKey) && ev.shiftKey && ev.key === 'K') {
+			if (this._toggleInputMode()) {
+				ev.preventDefault();
+				ev.stopPropagation();
+			}
 		}
 	},
 
-	// Check arrow keys on 'keyup' event; using 'ArrowLeft' or 'ArrowRight'
-	// shall empty the textarea, to prevent FFX/Gecko from ever not having
-	// whitespace around the caret.
-	// Across browsers, arrow up/down / home / end would move the caret to
-	// the beginning/end of the textarea/contenteditable.
+	/**
+	 * Key up event handler.
+	 */
 	_onKeyUp: function (ev) {
 		if (this._isComposing || this._map.uiManager.isUIBlocked())
 			return;
@@ -705,6 +683,11 @@ L.EnhancedTextInput = L.Layer.extend({
 		this._map._docLayer._postMouseEvent('buttonup', cursorPos.x, cursorPos.y, 1, 1, 0);
 	},
 
+	/**
+	 * Get cursor position in the textarea/contenteditable.
+	 *
+	 * @returns {number} - cursor position
+	 */
 	_getCursorPosition: function () {
 		var cursorPos = -1;
 		// textarea 是否爲 contenteditable
@@ -722,6 +705,10 @@ L.EnhancedTextInput = L.Layer.extend({
 		return cursorPos;
 	},
 
+	/**
+	 * Set cursor position in the textarea/contenteditable.
+	 * @param {number} pos - cursor position
+	 */
 	_setCursorPosition: function (pos) {
 		// textarea 是否爲 contenteditable
 		if (this._textArea.getAttribute('contenteditable') === 'true') {
@@ -774,21 +761,21 @@ L.textInput = function () {
 
 	var defaultInputMode = 'OverTheSpot';
 	if (window.mode.isDesktop()) {
-		// 檢查 localStorage 是否有儲存輸入模式
+		// Check if the input mode is specified in the local storage
 		var inputMode = localStorage && localStorage.getItem('inputMode');
-		// 如果指定使用 OverTheSpot 或 OnTheSpot 模式，則使用指定模式
+		// If the input mode is specified in the local storage, and it is valid, use it
 		if (inputMode === 'OverTheSpot' || inputMode === 'OnTheSpot') {
 			defaultInputMode = inputMode;
 		}
-		// 如果指定使用 OverTheSpot 模式，且未啟用增強輸入，則強制使用 OverTheSpot 模式
+		// If the input mode is not specified in the local storage, use the default input mode
 		if (defaultInputMode === 'OnTheSpot' && !options.inputEnhanced) {
 			options.inputMode = 'OverTheSpot';
 		}
 	} else {
-		defaultInputMode = 'OnTheSpot';
+		defaultInputMode = 'OnTheSpot'; // Mobile only supports OnTheSpot
 	}
 
-	// 預設輸入模式
+	// Save the input mode to the local storage
 	if (localStorage) {
 		localStorage.setItem('inputMode', defaultInputMode);
 	}
