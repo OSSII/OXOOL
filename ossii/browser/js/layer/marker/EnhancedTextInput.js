@@ -155,8 +155,6 @@ L.EnhancedTextInput = L.Layer.extend({
 	// @acceptInput (only on "mobile" (= mobile phone) or on iOS and Android in general) true if we want to
 	// accept key input, and show the virtual keyboard.
 	focus: function (acceptInput) {
-		// window.app.console.trace('L.TextInput.focus(' + acceptInput + ')');
-
 		// Note that the acceptInput parameter intentionally
 		// is a tri-state boolean: undefined, false, or true.
 
@@ -347,6 +345,40 @@ L.EnhancedTextInput = L.Layer.extend({
 		this._map.fire('handlerstatus', { hidden: false });
 	},
 
+	/**
+	 * Get the input mode.
+	 *
+	 * @returns {string} - input mode
+	 * @see this.options.inputMode
+	 */
+	getInputMode: function () {
+		return this.options.inputMode;
+	},
+
+	/**
+	 * Toggle the input mode between OnTheSpot and OverTheSpot.
+	 * Note: Only available on desktop and when inputEnhanced is enabled.
+	 *
+	 * @returns {boolean} - true toggle the input mode successfully
+	 */
+	toggleInputMode: function () {
+		if (window.mode.isDesktop() && this.options.inputEnhanced) {
+			// Toggle the input mode
+			this.options.inputMode = this._isOnTheSpot() ? 'OverTheSpot' : 'OnTheSpot';
+			// Save the input mode to the local storage
+			if (localStorage) {
+				localStorage.setItem('inputMode', this.options.inputMode);
+			}
+			// Show now input mode in the snackbar, and wait for 2 seconds
+			var inputModeName = this.options.inputMode === 'OverTheSpot' ? _('Over the spot') : _('On the spot');
+			this._map.uiManager.showSnackbar(
+				_('Switch input mode to:') + ' ' + inputModeName, null, null, 2000
+			);
+			return true;
+		}
+		return false;
+	},
+
 	_setPos: function (pos) {
 		L.DomUtil.setPosition(this._container, pos);
 	},
@@ -509,28 +541,6 @@ L.EnhancedTextInput = L.Layer.extend({
 	},
 
 	/**
-	 * Toggle the input mode between OnTheSpot and OverTheSpot.
-	 * Note: Only available on desktop and when inputEnhanced is enabled.
-	 *
-	 * @returns {boolean} - true toggle the input mode successfully
-	 */
-	_toggleInputMode: function () {
-		if (window.mode.isDesktop() && this.options.inputEnhanced) {
-			var prevMode = this.options.inputMode;
-			this.options.inputMode = this._isOnTheSpot() ? 'OverTheSpot' : 'OnTheSpot';
-			if (localStorage) {
-				localStorage.setItem('inputMode', this.options.inputMode);
-			}
-			var inputModeName = this.options.inputMode === 'OverTheSpot' ? _('Over the spot') : _('On the spot');
-			this._map.uiManager.showSnackbar(
-				_('Switch input mode to:') + ' ' + inputModeName, null, null, 2000
-			);
-			return prevMode !== this.options.inputMode;
-		}
-		return false;
-	},
-
-	/**
 	 * Check if the caret is visible.
 	 *
 	 * @returns {boolean} - true if the caret is visible
@@ -632,7 +642,7 @@ L.EnhancedTextInput = L.Layer.extend({
 					break;
 			}
 		} else if (ev.ctrlKey && (ev.altKey || ev.metaKey) && ev.shiftKey && ev.key === 'K') {
-			if (this._toggleInputMode()) {
+			if (this.toggleInputMode()) {
 				ev.preventDefault();
 				ev.stopPropagation();
 			}
