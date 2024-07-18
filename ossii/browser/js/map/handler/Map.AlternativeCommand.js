@@ -1008,14 +1008,6 @@ L.Map.AlternativeCommand = L.Handler.extend({
 			}
 		},
 		/**
-		 * 插入特殊符號
-		 */
-		'charmapcontrol': {
-			execute: function () {
-				this._map.sendUnoCommand('.uno:InsertSymbol');
-			}
-		},
-		/**
 		 * FIXME: 關閉平板模式？
 		 */
 		'closetablet': {
@@ -1089,6 +1081,7 @@ L.Map.AlternativeCommand = L.Handler.extend({
 		 * 插入地區化的特殊符號
 		 */
 		'.uno:InsertSymbol': {
+			alias: 'charmapcontrol',
 			execute: function () {
 				L.dialog.run('CommonSymbols');
 			}
