@@ -1613,6 +1613,9 @@
 				"id": ".uno:NavigateMenu",
 				"menu": [
 					{
+						"id": ".uno:JumpToTable"
+					},
+					{
 						"id": ".uno:JumpToPrevTable"
 					},
 					{
