@@ -1,8 +1,4 @@
 
-.ui-tabpage.jsdialog {
-	border: var(--color-border-dark) 1px solid !important;
-	padding: 3px !important;
-}
 
 .context-menu-list {
 	border: 1px solid var(--color-menu-border) !important;
@@ -32,4 +28,36 @@
 
 .jsdialog.vertical label, .ui-frame-label {
 	width: max-content !important;
+}
+
+/* JSDialogs Tabpage */
+.ui-tabpage.jsdialog {
+	border: var(--color-border-dark) 1px solid !important;
+	padding: 3px !important;
+}
+
+.ui-tabs {
+	padding: 0px !important;
+}
+
+.ui-tab.jsdialog {
+	padding: 0px 10px !important;
+	border: solid 1px var(--color-border-dark) !important;
+	border-radius: 0px !important;
+	margin-inline-end: 0px !important;
+	margin-bottom: 0px !important;
+}
+
+.ui-tab.selected.jsdialog {
+	background-color: var(--doc-identify-color) !important;
+	color: var(--nav-color-main-text) !important;
+	box-shadow: 0 0 2px 1px var(--color-box-shadow) !important;
+}
+
+.jsdialog .ui-tabs-content {
+	margin-top: 0px;
+}
+
+.jsdialog-window:not(.modalpopup) .jsdialog-container:not(.snackbar) {
+	min-width: 250px;
 }
