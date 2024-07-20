@@ -44,6 +44,7 @@ ADMIN_JS_LIST = \
 # 準備打包的 JS 檔案列表
 OXOOL_JS_LIST = \
 	js/l10n.js \
+	js/unocommands.js \
 	js/BrandingData.js \
 	js/OxOOL.js \
 	js/ModuleManager.js \
