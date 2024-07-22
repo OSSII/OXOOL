@@ -24,6 +24,14 @@
 
 class DocumentBroker;
 
+namespace OxOOL
+{
+namespace WSD
+{
+class ExtensionSession;
+} // namespace WSD
+} // namespace OxOOL
+
 /// Represents a session to a OXOOL client, in the WSD process.
 class ClientSession final : public Session
 {
@@ -325,6 +333,10 @@ private:
 #endif
 
 private:
+    // OSSII extended feature. -------------------------------------------------
+    friend class OxOOL::WSD::ExtensionSession;
+    std::unique_ptr<OxOOL::WSD::ExtensionSession> _extSession;
+    //--------------------------------------------------------------------------
     std::weak_ptr<DocumentBroker> _docBroker;
 
     /// URI with which client made request to us

@@ -117,6 +117,7 @@ oxoolcore_sources = \
                     OxOOL/Util/FileValidator.cpp \
                     OxOOL/Private/Watermark.cpp \
                     OxOOL/Private/IconThemeProvider.cpp \
+                    OxOOL/WSD.cpp \
                     OxOOL/Kit.cpp \
                     OxOOL/ZipPackage.cpp \
                     OxOOL/ResourceManager.cpp

@@ -21,6 +21,7 @@
 #include <unordered_map>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/WSD.h>
 
 #include <Poco/Base64Decoder.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -572,13 +573,15 @@ bool ClientSession::_handleInput(const char *buffer, int length)
         }
     }
 
-#if !MOBILEAPP
-    // If the message is handled by the library, return.
-    if (OxOOL::handleClientMessage(client_from_this(), tokens))
+    // OSSII extended features. --------------------------------------------
+    if (_extSession == nullptr)
+        _extSession = std::make_unique<OxOOL::WSD::ExtensionSession>(*this);
+
+    if (_extSession->handleClientMessage(firstLine, tokens))
     {
         return true;
     }
-#endif
+    //---------------------------------------------------------------------
 
     if (tokens.equals(0, "urp"))
     {
@@ -1809,12 +1812,14 @@ bool ClientSession::handleKitToClientMessage(const std::shared_ptr<Message>& pay
 
 #if !MOBILEAPP
     OXOOLWSD::dumpOutgoingTrace(docBroker->getJailId(), getId(), firstLine);
+#endif
 
-    if (OxOOL::handleKitToClientMessage(client_from_this(), payload))
+    // OSSII extended features. --------------------------------------------
+    if (_extSession->handleKitToClientMessage(payload))
     {
         return true;
     }
-#endif
+    // ---------------------------------------------------------------------
 
     const auto& tokens = payload->tokens();
     if (tokens.equals(0, "unocommandresult:"))

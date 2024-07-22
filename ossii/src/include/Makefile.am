@@ -23,6 +23,7 @@ OxOOL_include_HEADERS = \
     OxOOL/Util.h \
     OxOOL/Util/OptionlValidator.h \
     OxOOL/Util/FileValidator.h \
+    OxOOL/WSD.h \
     OxOOL/Kit.h \
     OxOOL/ZipPackage.h \
     OxOOL/ResourceManager.h \

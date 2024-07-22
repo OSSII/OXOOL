@@ -61,13 +61,6 @@ void dumpAllModuleInfo();
 /// Cleanup the library.
 void cleanup();
 
-/// @brief if the client input is handled by the library.
-bool handleClientMessage(const std::shared_ptr<ClientSession>& clientSession,
-                         const StringVector& tokens);
-
-bool handleKitToClientMessage(const std::shared_ptr<ClientSession>& clientSession,
-                              const std::shared_ptr<Message>& payload);
-
 typedef std::function<void(const std::string&, bool)> SendTextMessageFn;
 void handleAdminMessage(const SendTextMessageFn& sendTextMessage,
                         const StringVector& tokens);
