@@ -66,10 +66,9 @@ ExtensionSession::~ExtensionSession()
 {
 }
 
-bool ExtensionSession::handleChildMessage(const char* buffer, int length, const StringVector& tokens)
+bool ExtensionSession::handleChildMessage(const std::string& firstLine, const StringVector& tokens)
 {
-    std::string_view firstLine(buffer, length);
-
+    (void)firstLine;
     // if any of the commands are handled, set to true.
     bool handled = false;
 

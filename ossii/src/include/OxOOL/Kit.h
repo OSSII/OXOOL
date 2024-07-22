@@ -55,7 +55,7 @@ public:
     /// @param length The message length.
     /// @param tokens The message tokens.
     /// @return True if the message was handled.
-    bool handleChildMessage(const char* buffer, int length, const StringVector& tokens);
+    bool handleChildMessage(const std::string& firstLine, const StringVector& tokens);
 
 // Private methods -----------------------------------------------------------
 private:

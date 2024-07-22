@@ -257,7 +257,7 @@ bool ChildSession::_handleInput(const char *buffer, int length)
     if (_extSession == nullptr)
         _extSession = std::make_unique<OxOOL::Kit::ExtensionSession>(*this);
 
-    if (_isDocLoaded && _viewId >=0 && _extSession->handleChildMessage(buffer, length, tokens))
+    if (_isDocLoaded && _viewId >=0 && _extSession->handleChildMessage(firstLine, tokens))
     {
         return true;
     }
