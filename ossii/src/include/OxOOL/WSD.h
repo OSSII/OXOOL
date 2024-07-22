@@ -43,6 +43,9 @@ public:
     bool handleKitToClientMessage(const std::shared_ptr<Message>& payload);
 
 private:
+    bool filterUnoCommand(const std::string& unoCommand);
+
+private:
     ClientSession& mrSession;
 
 }; // class ExtensionSession

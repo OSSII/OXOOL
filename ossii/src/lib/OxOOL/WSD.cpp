@@ -15,7 +15,10 @@
 #include <OxOOL/ModuleManager.h>
 #include <OxOOL/WSD.h>
 
+#include <common/Log.hpp>
+#include <common/Message.hpp>
 #include <common/StringVector.hpp>
+#include <wsd/DocumentBroker.hpp>
 #include <wsd/ClientSession.hpp>
 
 
@@ -38,7 +41,6 @@ ExtensionSession::~ExtensionSession()
 bool ExtensionSession::handleClientMessage(const std::string& firstLine, const StringVector& tokens)
 {
     (void)firstLine;
-    std::cout << "WSD::ExtensionSession::handleClientMessage: " << firstLine << std::endl;
 
     // if any of the commands are handled, set to true.
     bool handled = false;
@@ -87,6 +89,11 @@ bool ExtensionSession::handleClientMessage(const std::string& firstLine, const S
 
         handled = true; // handled
     }
+    else if (tokens.equals(0, "uno") && tokens.size() > 1)
+    {
+        // If uno command is forbidden, return handled.
+        handled = filterUnoCommand(tokens[1]);
+    }
 
     // 如果沒有被處理，就交給 ModuleMgr 處理。
     if (!handled)
@@ -98,6 +105,33 @@ bool ExtensionSession::handleClientMessage(const std::string& firstLine, const S
 bool ExtensionSession::handleKitToClientMessage(const std::shared_ptr<Message>& payload)
 {
     return ModuleMgr.handleKitToClientMessage(mrSession.client_from_this(), payload);
+}
+
+// Private Methods -----------------------------------------------------------
+
+bool ExtensionSession::filterUnoCommand(const std::string& unoCommand)
+{
+    static std::vector<std::string> exportFileCommands =
+    {
+        ".uno:SaveGraphic", // text/spreadsheet/presentation/drawing
+        ".uno:ExportAsGraphic", // spreadsheet
+        ".uno:SaveBackground", // presentation
+    };
+
+    // If DisableCopy turned on, then we don't allow any export file command.
+    if (mrSession._wopiFileInfo && mrSession._wopiFileInfo->getDisableCopy())
+    {
+        for (const auto& cmd : exportFileCommands)
+        {
+            if (cmd.find(unoCommand) == 0) // starts with
+            {
+                mrSession.sendTextFrame("error: cmd=" + unoCommand + " kind=forbidden");
+                return true; // handled
+            }
+        }
+    }
+
+    return false;
 }
 
 } // namespace WSD
