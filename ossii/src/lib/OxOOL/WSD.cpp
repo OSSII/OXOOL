@@ -116,6 +116,7 @@ bool ExtensionSession::filterUnoCommand(const std::string& unoCommand)
         ".uno:SaveGraphic", // text/spreadsheet/presentation/drawing
         ".uno:ExportAsGraphic", // spreadsheet
         ".uno:SaveBackground", // presentation
+        ".uno:ExternalEdit", // text/spreadsheet/presentation/drawing
     };
 
     // If DisableCopy turned on, then we don't allow any export file command.
