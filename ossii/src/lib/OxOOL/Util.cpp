@@ -15,6 +15,8 @@
 #include <OxOOL/Util.h>
 
 #include <Poco/Util/Application.h>
+#include <Poco/Base64Decoder.h>
+#include <Poco/Base64Encoder.h>
 #include <Poco/Path.h>
 #include <Poco/String.h>
 #include <Poco/RegularExpression.h>
@@ -111,6 +113,14 @@ std::string decodeURIComponent(const std::string& uri)
     std::string decoded;
     Poco::URI::decode(uri, decoded);
     return decoded;
+}
+
+std::vector<unsigned char> decodeBase64(const std::string& inputBase64)
+{
+    std::istringstream stream(inputBase64);
+    Poco::Base64Decoder base64Decoder(stream);
+    std::istreambuf_iterator<char> eos;
+    return std::vector<unsigned char>(std::istreambuf_iterator<char>(base64Decoder), eos);
 }
 
 template <typename T>

@@ -15,6 +15,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace Poco
 {
@@ -58,6 +59,11 @@ std::string encodeURIComponent(const std::string& uri,
 /// @param uri
 /// @return
 std::string decodeURIComponent(const std::string& uri);
+
+/// @brief
+/// @param inputBase64
+/// @return
+std::vector<unsigned char> decodeBase64(const std::string& inputBase64);
 
 /// @brief 將字串轉成 16 進位字串
 /// @param hexString - 要轉換的資料
