@@ -1,4 +1,13 @@
 /* -*- js-indent-level: 8 -*- */
+/*
+ * Copyright the OxOffice Online contributors.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 /**
  * L.Control.AlternativeCommand is a control that allows the user to execute alternative commands.
  *
@@ -471,7 +480,7 @@ L.Map.AlternativeCommand = L.Handler.extend({
 		 * 插入電腦(本地)圖片
 		 */
 		'.uno:InsertGraphic': {
-			alias: 'insertgraphic',
+			alias: ['insertgraphic', '.uno:ChangePicture'],
 			execute: function () {
 				L.DomUtil.get('insertgraphic').click();
 			}
@@ -1058,23 +1067,6 @@ L.Map.AlternativeCommand = L.Handler.extend({
 					this._map.save(true, true);
 				}
 				this._map.sendUnoCommand('.uno:EditDoc');
-			}
-		},
-
-		/**
-		 * 以外部工具編輯
-		 */
-		'.uno:ExternalEdit': {
-			execute: function () {
-				app.socket.sendMessage('getgraphicselection id=edit');
-			}
-		},
-		/**
-		 * 儲存(下載)文件中的圖片
-		 */
-		'.uno:SaveGraphic': {
-			execute: function () {
-				app.socket.sendMessage('getgraphicselection id=export');
 			}
 		},
 		/**

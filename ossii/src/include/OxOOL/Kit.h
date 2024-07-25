@@ -62,6 +62,8 @@ private:
     /// @brief Handle a text input message.
     bool writeText(const StringVector& tokens);
 
+    bool insertPicture(const StringVector& tokens, bool isChange = false);
+
 // Private members -----------------------------------------------------------
 private:
     ChildSession& mrSession;

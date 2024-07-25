@@ -45,6 +45,11 @@ public:
 private:
     bool filterUnoCommand(const std::string& unoCommand);
 
+    /// @brief Is direct forward to Kit Child
+    /// @param cmd
+    /// @return
+    bool isDirectForward(const std::string& cmd);
+
 private:
     ClientSession& mrSession;
 

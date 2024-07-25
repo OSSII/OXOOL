@@ -94,6 +94,12 @@ bool ExtensionSession::handleClientMessage(const std::string& firstLine, const S
         // If uno command is forbidden, return handled.
         handled = filterUnoCommand(tokens[1]);
     }
+    else if (isDirectForward(tokens[0]))
+    {
+        mrSession.forwardToChild(firstLine, docBroker);
+        handled = true;
+    }
+
 
     // 如果沒有被處理，就交給 ModuleMgr 處理。
     if (!handled)
@@ -130,6 +136,23 @@ bool ExtensionSession::filterUnoCommand(const std::string& unoCommand)
                 return true; // handled
             }
         }
+    }
+
+    return false;
+}
+
+bool ExtensionSession::isDirectForward(const std::string& cmd)
+{
+    static std::vector<std::string> directCommands =
+    {
+        "insertpicture",
+        "changepicture",
+    };
+
+    for (auto directCmd : directCommands)
+    {
+        if (cmd == directCmd)
+            return true;
     }
 
     return false;

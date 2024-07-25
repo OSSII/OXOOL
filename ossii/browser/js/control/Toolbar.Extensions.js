@@ -84,6 +84,7 @@ L.Map.include({
 				{id: 'inserttable'}, // inserttable
 			],
 			spreadsheet: [
+				{id: '.uno:ExportAsGraphic'}, // 匯出為圖片
 				{id: '.uno:TableSelectAll'}, // 選取全部的工作表
 				{id: '.uno:TableDeselectAll'}, // 取消選取全部的工作表
 				{id: '.uno:EnterString'}, // 輸入字串

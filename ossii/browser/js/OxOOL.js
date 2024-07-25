@@ -147,6 +147,8 @@ L.OxOOL = L.Class.extend({
 		this._map.addHandler('alternativeCommand', L.Map.AlternativeCommand);
 		// register the state change handler extension
 		this._map.addHandler('stateChangeExtend', L.Map.StateChangeExtend);
+		// register the ExternalEdit handler
+		this._map.addHandler('ExternalEdit', L.Map.ExternalEdit);
 	},
 
 	/**

@@ -9,15 +9,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <fstream>
 #include <memory>
 #include <string_view>
 
 #include <OxOOL/ENV.h>
+#include <OxOOL/Util.h>
 #include <OxOOL/Kit.h>
 
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/Path.h>
 #include <Poco/URI.h>
+#include <Poco/TemporaryFile.h>
 
 #define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
@@ -91,6 +95,16 @@ bool ExtensionSession::handleChildMessage(const std::string& firstLine, const St
         writeText(tokens);
         handled = true;
     }
+    else if (tokens.equals(0, "insertpicture"))
+    {
+        insertPicture(tokens);
+        handled = true;
+    }
+    else if (tokens.equals(0, "changepicture"))
+    {
+        insertPicture(tokens, true);
+        handled = true;
+    }
 
     return handled;
 }
@@ -132,6 +146,47 @@ bool ExtensionSession::writeText(const StringVector& tokens)
         // Send preview text with cursor position.
         mrSession.getLOKitDocument()->postWindowExtTextInputEventEnhance(id, LOK_EXT_TEXTINPUT, decodedText.c_str(), cursor);
     }
+
+    return true;
+}
+
+bool ExtensionSession::insertPicture(const StringVector& tokens, bool isChange)
+{
+    std::string data;
+
+    if (tokens.size() != 2 || !OXOOLProtocol::getTokenString(tokens[1], "data", data))
+    {
+        mrSession.sendTextFrame("error: cmd=insertpicture kind=syntax");
+        return false;
+    }
+
+    auto binaryData = OxOOL::Util::decodeBase64(data);
+
+    // Create a temporary directory to store the image file.
+    Poco::TemporaryFile tempDir(Poco::Path::temp());
+    tempDir.createDirectories();
+    const std::string dirName = tempDir.path();
+    const std::string fileName(std::to_string(mrSession.getViewId()));
+    // Temporary file path.
+    std::string tempFile = dirName + '/'  + fileName;
+    // Write binary data to the temporary file.
+    std::ofstream fileStream(tempFile, std::ofstream::out|std::ofstream::binary);
+    fileStream.write(reinterpret_cast<char*>(binaryData.data()), binaryData.size());
+    fileStream.close();
+
+    std::string command = ".uno:InsertGraphic";
+    std::string arguments = "{"
+        "\"FileName\":{"
+            "\"type\":\"string\","
+            "\"value\":\"file://" + tempFile + "\""
+        "}}";
+
+
+    mrSession.getLOKitDocument()->setView(mrSession.getViewId());
+    LOG_DBG((isChange ? "Change" : "Insert") << " picture '" << arguments << "'");
+    // Insert picture to document. sync call.
+    mrSession.getLOKitDocument()->postUnoCommand(command.c_str(), arguments.c_str(), true);
+    tempDir.remove(true);
 
     return true;
 }

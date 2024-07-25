@@ -53,6 +53,7 @@ OXOOL_JS_LIST = \
 	js/map/handler/Map.Icon.js \
 	js/map/handler/Map.AlternativeCommand.js \
 	js/map/handler/Map.StateChanges.Extend.js \
+	js/map/handler/Map.ExternalEdit.js \
 	js/control/Permission.Extensions.js \
 	js/control/Toolbar.Extensions.js \
 	js/control/Parts.Extensions.js \
