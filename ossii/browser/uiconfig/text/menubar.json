@@ -1346,14 +1346,18 @@
 				"menu": [
 					{
 						"id": ".uno:ExternalEdit",
-						"comment": "替代指令"
+						"comment": "需 patch LOKit"
+					},
+					{
+						"id": ".uno:ChangePicture",
+						"comment": "需 patch LOKit"
 					},
 					{
 						"id": ".uno:CompressGraphic"
 					},
 					{
 						"id": ".uno:SaveGraphic",
-						"comment": "替代指令"
+						"comment": "需 patch LOKit"
 					},
 					{
 						"type": "--"
