@@ -56,7 +56,6 @@ OXOOL_JS_LIST = \
 	js/map/handler/Map.ExternalEdit.js \
 	js/control/Permission.Extensions.js \
 	js/control/Toolbar.Extensions.js \
-	js/control/Parts.Extensions.js \
 	js/control/Control.Dialogs.js \
 	js/control/Control.ContextMenu.js \
 	js/control/Control.Menubar.js \

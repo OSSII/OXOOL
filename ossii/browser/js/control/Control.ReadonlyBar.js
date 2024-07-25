@@ -12,7 +12,7 @@ L.Control.ReadonlyBar = L.Control.extend({
 	onAdd: function(map) {
 		this._map = map;
 		this._docType = map.getDocType();
-		this._docName = map.getFileName();
+		this._docName = this.getFileName();
 		// 隱藏導覽列，導覽列的 class 為 main-nav
 		this.mainNav = document.getElementsByClassName('main-nav')[0];
 		this.mainNav.style.display = 'none'; // 隱藏導覽列
@@ -188,6 +188,15 @@ L.Control.ReadonlyBar = L.Control.extend({
 	createShortcutsBar: function() {
 		var shortcutsBarData = this.getShortcutsBarData();
 		this.builder.build(this._shortcutsBar, shortcutsBarData, false, true);
+	},
+
+	/**
+	 * 取得文件檔名(含副檔名)
+	 */
+	getFileName: function() {
+		var file = this._map.options.wopi ? this._map.wopi.BaseFileName : this._map.options.doc;
+		var idx = file.lastIndexOf('/');
+		return file.substr(idx + 1);
 	},
 
 });
