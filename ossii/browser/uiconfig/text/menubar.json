@@ -1918,6 +1918,7 @@
 				"id": ".uno:FootnoteDialog"
 			},
 			{
+				"icon": "@stapler.svg",
 				"name": "Binding Line Menu",
 				"id": "bindingbline",
 				"menu": [
