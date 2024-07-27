@@ -369,7 +369,8 @@ L.Map.Icon = L.Handler.extend({
 	 */
 	_setImage: function (img, name/*, map */) {
 		img.setAttribute('resource-icon', this._isDarkMode() ? 'dark' : 'light');
-		img.src = this.getURL('@' + name);
-		return;
+		// If it is uno command or icon with path '/', it is not the online built-in icon
+		var isIconTheme = name.startsWith('.uno:') || name.indexOf('/') !== -1;
+		img.src = this.getURL((isIconTheme ? '' : '@') + name);
 	},
 });
