@@ -285,6 +285,9 @@ bool IconTheme::getResource(const Poco::URI& uri, std::string& resource, std::st
         if (maOnlineFiles[isDark ? ThemeType::DARK : ThemeType::LIGHT].count(realName) == 1)
         {
             Poco::Path onlinePath(ENV::FileServerRoot, ONLINE_IMAGES_RELATIVE_PATH);
+            if (isDark)
+                onlinePath.append("dark");
+
             onlinePath.append(realName);
             return getFileContent(onlinePath.toString(), resource, mimeType);
         }
