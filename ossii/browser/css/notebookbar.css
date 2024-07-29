@@ -18,3 +18,15 @@
 	border: 1px solid transparent;
 	color: var(--nav-color-main-text) !important;
 }
+
+.unotoolbutton.notebookbar {
+	margin-inline-end: 0px !important;
+}
+
+.notebookbar.vseparator {
+	height: 100%;
+	width: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
+	background-color: var(--color-background-dark);
+}
