@@ -61,6 +61,7 @@ OXOOL_JS_LIST = \
 	js/control/Control.Menubar.js \
 	js/control/Control.ReadonlyBar.js \
 	js/control/Control.StatusBar.js \
+	js/control/Control.NotebookbarEnhancedBuilder.js \
 	js/control/Control.NotebookbarWriter.js \
 	js/control/Control.NotebookbarCalc.js \
 	js/control/Control.NotebookbarImpress.js \
