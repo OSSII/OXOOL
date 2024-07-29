@@ -16,6 +16,7 @@
 
 	var AdminSocketMain = AdminSocketBase.extend({
 		_l10n: [
+			_('System'), // 系統
 			_('Administrator login'), // 管理員登入
 			_('Admin Console'), // 控制檯
 			_('Restart server'), // 重啓伺服器
