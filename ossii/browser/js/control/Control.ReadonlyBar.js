@@ -3,7 +3,7 @@
  * L.Control.ReadonlyBar
  */
 
-/* global L $ _ _UNO */
+/* global L _ _UNO */
 L.Control.ReadonlyBar = L.Control.extend({
 	_bar: null,
 	_docName: null,
@@ -77,9 +77,6 @@ L.Control.ReadonlyBar = L.Control.extend({
 			callback: this._callbackHandler
 		});
 
-		// 新增 _toolitemHandlers 的 downloadas handler
-		this.builder._toolitemHandlers['downloadas'] = this._downloadAsControl;
-
 		this.createShortcutsBar(); // 建立工具列
 		this._bar.style.display = 'flex'; // 顯示工具列
 	},
@@ -94,32 +91,6 @@ L.Control.ReadonlyBar = L.Control.extend({
 		if (objectType == 'toolbutton' && eventType == 'click' && data.indexOf('.uno:') >= 0) {
 			builder.map.executeAllowedCommand(data);
 		}
-	},
-
-	_downloadAsControl: function(parentContainer, data, builder) {
-		var options = {hasDropdownArrow: true};
-		var control = builder._unoToolButton(parentContainer, data, builder, options);
-
-		$(control.container).unbind('click.toolbutton');
-		var formats = builder.map.getExportFormats();
-		var menuItems = {};
-		formats.forEach(function(item) {
-			var id = 'downloadas-' + item.format;
-			menuItems[id] = {
-				//icon: 'res:' + id,
-				name: item.label
-			};
-		});
-		L.installContextMenu({
-			selector: '#downloadasmenu',
-			className: 'oxool-font',
-			trigger: 'left',
-			items: menuItems,
-			callback: function(key/* , options */) {
-				builder.map.executeAllowedCommand(key);
-			}
-		});
-		builder._preventDocumentLosingFocusOnClick(control.container);
 	},
 
 	getShortcutsBarData: function() {
