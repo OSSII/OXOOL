@@ -17,6 +17,7 @@
 L.Control.NotebookbarEnhancedBuilder = L.Control.NotebookbarBuilder.extend({
 	_enhanceHandlers: function () {
 		this._controlHandlers['vseparator'] = this._vSeparatorHandler;
+		this._controlHandlers['separator'] = this._separatorHandler;
 
 		this._toolitemHandlers['downloadas'] = this._downloadAsControl;
 	},
@@ -34,8 +35,19 @@ L.Control.NotebookbarEnhancedBuilder = L.Control.NotebookbarBuilder.extend({
 	},
 
 	/**
-	 * Download as control handler
+	 * Separator handler
 	 *
+	 * @param {*} parentContainer
+	 * @param {*} data
+	 * @param {*} builder
+	 */
+	_separatorHandler: function (parentContainer/* , data, builder */) {
+		L.DomUtil.create('div', 'notebookbar separator', parentContainer);
+		return false;
+	},
+
+	/**
+	 * Download as control handler
 	 * @param {*} parentContainer
 	 * @param {*} data
 	 * @param {*} builder
