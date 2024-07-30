@@ -176,13 +176,14 @@ L.Map.Icon = L.Handler.extend({
 	contextMenu: function (opt, $itemElement, itemKey, item) {
 		if (opt.$node) {
 			// 設定 icon
-			var icon = L.DomUtil.create('i', 'context-menu-image-icon');
+			var icon = L.DomUtil.create('img', 'context-menu-image-icon');
 			// 如果有 _savedIcon 的話，以 _savedIcon 為主，否則以 itemKey 為主
 			// NOTE: _savedIcon 是 L.installContextMenu() 產生的，
 			// 非透過 L.installContextMenu() 無法指定
 			var iconURL = this.getURL(item._savedIcon ? item._savedIcon : itemKey);
-			// 設定 icon 的背景圖片
-			icon.style.backgroundImage = 'url(\'' + iconURL + '\')';
+			// set icon URL
+			icon.src = iconURL;
+			icon.setAttribute('resource-icon', this._isDarkMode() ? 'dark' : 'light');
 			$itemElement.prepend(icon);
 
 			// 如果是桌面環境，檢查該項目是否有快捷鍵
@@ -249,6 +250,7 @@ L.Map.Icon = L.Handler.extend({
 		'downloadas-odt': 'res/odt_16_8', // 下載爲 ODT
 		'downloadas-doc': 'res/sx03162', // 下載爲 DOC
 		'downloadas-docx': 'res/sx03163', // 下載爲 DOCX
+		'downloadas-rtf': '@lc_downloadas-rtf.svg', // 下載爲 RTF
 		'downloadas-epub': '.uno:ExportDirectToEPUB', // 下載爲 EPUB
 		// calc
 		'downloadas-ods': 'res/ods_16_8', // 下載爲 ODS
