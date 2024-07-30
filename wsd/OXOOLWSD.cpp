@@ -211,7 +211,7 @@ using Poco::XML::InputSource;
 using Poco::XML::NodeList;
 
 /// Port for external clients to connect to
-int ClientPortNumber = 0;
+int ClientPortNumber = DEFAULT_CLIENT_PORT_NUMBER;
 /// Protocols to listen on
 Socket::Type ClientPortProto = Socket::Type::All;
 
@@ -2240,6 +2240,7 @@ void OXOOLWSD::innerInitialize(Application& self)
         { "security.enable_metrics_unauthenticated", "false" },
         { "certificates.database_path", "" },
         { "server_name", "" },
+        { "client_port_number", "9980"},
         { "ssl.ca_file_path", OXOOLWSD_CONFIGDIR "/ca-chain.cert.pem" },
         { "ssl.cert_file_path", OXOOLWSD_CONFIGDIR "/cert.pem" },
         { "ssl.enable", "true" },
@@ -2457,6 +2458,8 @@ void OXOOLWSD::innerInitialize(Application& self)
     LOG_INF("Initializing oxoolwsd server [" << ServerName << "]. Experimental features are "
                                             << (EnableExperimental ? "enabled." : "disabled."));
 
+    ClientPortNumber = config().getUInt("client_port_number", DEFAULT_CLIENT_PORT_NUMBER);
+    LOG_INF("Initializing oxoolwsd client port : " << ClientPortNumber);
 
     // Initialize the UnitTest subsystem.
     if (!UnitWSD::init(UnitWSD::UnitType::Wsd, UnitTestLibrary))
