@@ -70,7 +70,7 @@ endif
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/l10n
-	cp -aR l10n/. $(DESTDIR)/$(MODULE_DATA_DIR)/l10n
+	cp -aR browser/l10n/. $(DESTDIR)/$(MODULE_DATA_DIR)/l10n
 if CUSTOM_HTML
 	$(MKDIR_P) $(DESTDIR)/$(MODULE_DATA_DIR)/html
 	cp -aR html/. $(DESTDIR)/$(MODULE_DATA_DIR)/html

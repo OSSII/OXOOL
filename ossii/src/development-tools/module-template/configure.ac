@@ -9,7 +9,7 @@ m4_define([module_VERSION], [%MODULE_VERSION%])
 m4_define([module_AUTHOR], [%MODULE_AUTHOR%])
 
 AC_INIT(m4_defn([oxool_NAME])[-module-]m4_defn([module_NAME]),
-        m4([module_VERSION]),
+        m4_defn([module_VERSION]),
         m4_defn([module_AUTHOR]))
 
 LT_INIT([shared, disable-static])
