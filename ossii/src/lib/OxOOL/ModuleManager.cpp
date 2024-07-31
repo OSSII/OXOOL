@@ -320,7 +320,7 @@ bool ModuleManager::handleRequest(const Poco::Net::HTTPRequest& request,
                 std::static_pointer_cast<StreamSocket>(disposition.getSocket());
 
             // 重新導向
-            OxOOL::HttpHelper::redirect(request, socket, OxOOL::ENV::ServiceRoot + newURI);
+            OxOOL::HttpHelper::redirect(request, socket, OxOOL::HttpHelper::getServiceURI(newURI));
             return true;
         }
     }
@@ -469,7 +469,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     const std::string year = Poco::DateTimeFormatter::format(Poco::DateTime(), "%Y");
     Poco::replaceInPlace(mainContent, std::string("%YEAR%"), year);
 
-    std::string adminRoot = mpAdminService->maDetail.serviceURI;
+    std::string adminRoot = OxOOL::HttpHelper::getServiceURI(mpAdminService->maDetail.serviceURI);
     // 去掉最後的 '/'
     if (*adminRoot.rbegin() == '/')
         adminRoot.pop_back();
@@ -487,7 +487,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
         const OxOOL::Module::Ptr module = getModuleById(tokens[1]); // 第二個是模組 ID
         if (module)
         {
-            std::string adminModuleRoot = module->maAdminURI;
+            std::string adminModuleRoot = OxOOL::HttpHelper::getServiceURI(module->maAdminURI);
             // 去掉最後的 '/'
             if (*adminModuleRoot.rbegin() == '/')
                 adminModuleRoot.pop_back();
@@ -495,7 +495,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
             // 替換 %ADMIN_MODULE_ROOT%
             Poco::replaceInPlace(mainContent, std::string("%ADMIN_MODULE_ROOT%"), adminModuleRoot);
             // 替換 %ADMIN_MODULE_SERVICE_URI%
-            Poco::replaceInPlace(mainContent, std::string("%ADMIN_MODULE_SERVICE_URI%"), module->getDetail().serviceURI);
+            Poco::replaceInPlace(mainContent, std::string("%ADMIN_MODULE_SERVICE_URI%"), OxOOL::HttpHelper::getServiceURI(module->getDetail().serviceURI));
         }
     }
 
@@ -510,7 +510,7 @@ void ModuleManager::preprocessAdminFile(const std::string& adminFile,
     response.set("Date", OxOOL::HttpHelper::getHttpTimeNow());
 
 
-    response.setContentType("text/html; charset=utf-8");
+    response.setContentType(OxOOL::HttpHelper::getMimeType(adminFile));
     response.setChunkedTransferEncoding(false);
 
     std::ostringstream oss;
@@ -618,17 +618,17 @@ void ModuleManager::getModuleDetailJson(const OxOOL::Module::Ptr& module,
     }
 
     json.set("id", module->maId);
-    json.set("adminURI", module->maAdminURI);
-    json.set("browserURI", module->maBrowserURI);
+    json.set("adminURI", OxOOL::HttpHelper::getServiceURI(module->maAdminURI));
+    json.set("browserURI", OxOOL::HttpHelper::getServiceURI(module->maBrowserURI));
     // 是否有 browser/module.js
     const std::string browserModuleJS = Poco::File(module->maRootPath + "/browser/module.js").exists()
-                                      ? module->maBrowserURI + "module.js"
+                                      ? OxOOL::HttpHelper::getServiceURI(module->maBrowserURI + "module.js")
                                       : "";
     json.set("browserModuleJS", browserModuleJS);
 
     // 設定模組詳細資訊
     json.set("name", detail.name);
-    json.set("serviceURI", detail.serviceURI);
+    json.set("serviceURI", OxOOL::HttpHelper::getServiceURI(detail.serviceURI));
     json.set("version", detail.version);
     json.set("summary", detail.summary);
     json.set("author", detail.author);
@@ -648,9 +648,9 @@ void ModuleManager::dump()
         const OxOOL::Module::Ptr module = it.second->getModule();
         std::cout << "Module: " << module->maId << std::endl
                   << "Name: " << module->maDetail.name << std::endl
-                  << "Service URI: " << module->maDetail.serviceURI << std::endl
-                  << "Browser URI: " << module->maBrowserURI << std::endl
-                  << "Admin URI: " << module->maAdminURI << std::endl
+                  << "Service URI: " << OxOOL::HttpHelper::getServiceURI(module->maDetail.serviceURI) << std::endl
+                  << "Browser URI: " << OxOOL::HttpHelper::getServiceURI(module->maBrowserURI) << std::endl
+                  << "Admin URI: " << OxOOL::HttpHelper::getServiceURI(module->maAdminURI) << std::endl
                   << "Config file: " << module->maConfigFile << std::endl
                   << "Root path: " << module->maRootPath << std::endl;
         std::cout << "--------------------------" << std::endl;
@@ -668,7 +668,7 @@ void ModuleManager::initializeInternalModules()
 
     // 設定 Browser service 詳細資訊
     mpBrowserService->maDetail.name = "BrowserService";
-    mpBrowserService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/browser/module/"; // 接管所有模組的 browser 請求，意即所有模組的 browser 請求都會被這個模組處理
+    mpBrowserService->maDetail.serviceURI = "/browser/module/"; // 接管所有模組的 browser 請求，意即所有模組的 browser 請求都會被這個模組處理
     mpBrowserService->maDetail.version = "1.0.0";
     mpBrowserService->maDetail.summary = "Front-end user file service.";
     mpBrowserService->maDetail.author = "OxOOL";
@@ -687,7 +687,7 @@ void ModuleManager::initializeInternalModules()
     std::unique_ptr<ModuleLibrary> adminModuleLib = std::make_unique<ModuleLibrary>(mpAdminService);
     // 設定 Admin service 詳細資訊
     mpAdminService->maDetail.name = "AdminService";
-    mpAdminService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/browser/dist/admin/"; // 接管所有模組的後臺管理請求，意即所有模組的後臺管理請求都會被這個模組處理
+    mpAdminService->maDetail.serviceURI = "/browser/dist/admin/"; // 接管所有模組的後臺管理請求，意即所有模組的後臺管理請求都會被這個模組處理
     mpAdminService->maDetail.version = "1.0.0";
     mpAdminService->maDetail.summary = "Admin console service.";
     mpAdminService->maDetail.author = "OxOOL";
@@ -711,7 +711,7 @@ void ModuleManager::initializeInternalModules()
     std::unique_ptr<ModuleLibrary> resourceModuleLib = std::make_unique<ModuleLibrary>(mpResourceService);
     // 設定 Resource service 詳細資訊
     mpResourceService->maDetail.name = "ResourceService";
-    mpResourceService->maDetail.serviceURI = OxOOL::ENV::ServiceRoot + "/oxool/resource/";
+    mpResourceService->maDetail.serviceURI = "/oxool/resource/";
     mpResourceService->maDetail.version = "1.0.0";
     mpResourceService->maDetail.summary = "Resource service.";
     mpResourceService->maDetail.author = "OxOOL";

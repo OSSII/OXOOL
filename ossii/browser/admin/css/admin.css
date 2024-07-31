@@ -23,12 +23,12 @@ header {
 .oxool-logo {
 	width: 220px;
 	height: 64px;
-	background-image: url("/oxool/resource/icon:light/getLogo()");
+	background-image: url("%SERVICE_ROOT%/oxool/resource/icon:light/getLogo()");
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
 }
 
 [data-bs-theme="dark"] .oxool-logo {
-	background-image: url("/oxool/resource/icon:dark/getLogo()");
+	background-image: url("%SERVICE_ROOT%/oxool/resource/icon:dark/getLogo()");
 }

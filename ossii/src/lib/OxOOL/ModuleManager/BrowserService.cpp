@@ -14,6 +14,7 @@
 #include <mutex>
 
 #include <OxOOL/OxOOL.h>
+#include <OxOOL/ENV.h>
 #include <OxOOL/HttpHelper.h>
 #include <OxOOL/Module/Base.h>
 #include <OxOOL/ModuleManager.h>
@@ -181,7 +182,7 @@ void BrowserService::sendLocalizationList(const OxOOL::Module::Ptr& module,
     json += "\"en\": false,";
     for (const auto& jsonIt : l10nMap)
     {
-        std::string fileURI = module->getBrowserURI() + "l10n/" + jsonIt.second;
+        std::string fileURI = OxOOL::HttpHelper::getServiceURI(module->getBrowserURI()) + "l10n/" + jsonIt.second;
         json += "\"" + jsonIt.first + "\": \"" + fileURI + "\",";
     }
     json.pop_back(); // 移除最後一個逗號

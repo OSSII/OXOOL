@@ -12,7 +12,7 @@
 	'use strict';
 
 	var host = (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
-		+ window.location.host + '/oxool/adminws/';
+		+ window.location.host + window.ServiceRoot + '/oxool/adminws/';
 
 	var AdminSocketMain = AdminSocketBase.extend({
 		_l10n: [

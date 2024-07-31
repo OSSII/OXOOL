@@ -100,18 +100,18 @@ public:
                     oss << "Module details:"
                         << "\n\tID: " << module->getId()
                         << "\n\tName: " << detail.name
-                        << "\n\tService URI: " << (detail.serviceURI.empty() ? colorString("<None>", YELLOW) : detail.serviceURI)
+                        << "\n\tService URI: " << (detail.serviceURI.empty() ? colorString("<None>", YELLOW) : OxOOL::HttpHelper::getServiceURI(detail.serviceURI))
                         << "\n\tVerson: " << detail.version
                         << "\n\tSummary: " << detail.summary
                         << "\n\tLicense: " << detail.license
                         << "\n\tAuthor: " << detail.author
                         << "\n\tDescrtption: " << detail.description
                         << "\n\tDocument root: " << module->getDocumentRoot()
-                        << "\n\tBrowser URI: " << (module->getBrowserURI().empty() ? colorString("<None>", GREEN) : module->getBrowserURI())
+                        << "\n\tBrowser URI: " << (module->getBrowserURI().empty() ? colorString("<None>", GREEN) : OxOOL::HttpHelper::getServiceURI(module->getBrowserURI()))
                         << "\n\tAdmin privilege: " << (detail.adminPrivilege ? "Yes" : "No")
                         << "\n\tAdmin icon: " << detail.adminIcon
                         << "\n\tAdmin item: " << detail.adminItem
-                        << "\n\tAdmin URI: " << (module->getAdminURI().empty() ? colorString("<None>", GREEN) : module->getAdminURI());
+                        << "\n\tAdmin URI: " << (module->getAdminURI().empty() ? colorString("<None>", GREEN) : OxOOL::HttpHelper::getServiceURI(module->getAdminURI()));
 
                     responseMsg = oss.str();
                 }
@@ -145,7 +145,7 @@ private:
             {
                 out << OxOOL::HttpHelper::getProtocol()
                     << "localhost:" << OxOOL::HttpHelper::getPortNumber()
-                    << getDetail().serviceURI
+                    << OxOOL::HttpHelper::getServiceURI(getDetail().serviceURI)
                     << "?config=";
                 out.close();
                 LOG_DBG(logTitle() << file << " create successfully.");

@@ -109,24 +109,27 @@ void AdminService::handleRequest(const Poco::Net::HTTPRequest& request,
         return;
     }
 
-    // 取得檔名
+    // Get the file name
     const std::string endPoint = requestFile.getFileName();
-    // 如果副檔名是 .html 或 .html，需檢查是否已登入
-    if (endPoint == "admin.html")
+    // if the endpoint is admin.html or admin.htm
+    if (endPoint == "admin.html" || endPoint == "admin.htm")
     {
-        // 未登入則轉到首頁
+        // unauthenticated users are redirected to the login page
         if (!OxOOL::Util::isAdminLoggedIn(request))
         {
             OxOOL::HttpHelper::redirect(request, socket,
-                OxOOL::ENV::ServiceRoot + getDetail().serviceURI);
+                OxOOL::HttpHelper::getServiceURI(getDetail().serviceURI));
             return;
         }
+    }
+
+    // Get the file extension
+    const std::string extension = requestFile.getExtension();
+    // css or html or htm
+    if (extension == "css" || extension == "html" || extension == "htm")
         moduleManager.preprocessAdminFile(requestFile.toString(), request, socket);
-    }
-    else // 否則直接傳送檔案
-    {
+    else // other file types directly send
         sendFile(requestFile.toString(), request, socket);
-    }
 }
 
 void AdminService::handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMessage,
@@ -231,7 +234,7 @@ void AdminService::handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMe
 void AdminService::login(const Poco::Net::HTTPRequest& request,
                          const std::shared_ptr<StreamSocket>& socket)
 {
-    const std::string fullPath = OxOOL::ENV::ServiceRoot + getDetail().serviceURI;
+    const std::string fullPath = OxOOL::HttpHelper::getServiceURI(getDetail().serviceURI);
     // 處理登入
     Poco::MemoryInputStream message(&socket->getInBuffer()[0],
                                     socket->getInBuffer().size());
@@ -263,7 +266,7 @@ void AdminService::login(const Poco::Net::HTTPRequest& request,
 void AdminService::logout(const Poco::Net::HTTPRequest& request,
                           const std::shared_ptr<StreamSocket>& socket)
 {
-    const std::string fullPath = OxOOL::ENV::ServiceRoot + getDetail().serviceURI;
+    const std::string fullPath = OxOOL::HttpHelper::getServiceURI(getDetail().serviceURI);
     // 清除 jwt cookie
     Poco::Net::HTTPCookie cookie("jwt", "");
     cookie.setPath(fullPath);
