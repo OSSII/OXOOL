@@ -265,9 +265,12 @@ int getPortNumber()
     return OXOOLWSD::getClientPortNumber();
 }
 
-const std::string& getServiceRoot()
+const std::string getServiceURI(const std::string& uri)
 {
-    return OxOOL::ENV::ServiceRoot;
+    if (uri.empty())
+        return std::string();
+
+    return OxOOL::ENV::ServiceRoot + uri;
 }
 
 const std::string& getServerString()

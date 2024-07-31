@@ -107,10 +107,9 @@ const std::string& getProtocol();
 /// @return port number
 int getPortNumber();
 
-/// @brief  取得所有頁面位址的前置字串(字串尾部沒有 '/')
-/// Get the prefix string of all page.
+/// @brief 在 URI 前加上 Service Root path(如果有的話)
 /// @return std::string
-const std::string& getServiceRoot();
+const std::string getServiceURI(const std::string& uri);
 
 /// @brief Get the server string. for response header only.
 /// @return std::string reference
