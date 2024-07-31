@@ -2,7 +2,7 @@
 /*
  * L.OxOOL
  */
-/* global L app */
+/* global L app _ */
 L.OxOOL = L.Class.extend({
 	options: {
 	},
@@ -111,6 +111,9 @@ L.OxOOL = L.Class.extend({
 				console.error('Failed to parse lokitversion: ', e);
 			}
 			// pass the message to the original socket onMessage function
+		} else if (e.textMsg.startsWith('announce:')) {
+			this._onAnnounce(e.textMsg);
+			handled = true;
 		}
 
 		// Call the original socket onMessage function
@@ -195,6 +198,32 @@ L.OxOOL = L.Class.extend({
 
 		// 載入和文件類型有關的資料
 		this._postloadData();
+	},
+
+	/**
+	 * Handling the announce message
+	 *
+	 * @param {string} msg
+	 */
+	_onAnnounce: function (msg) {
+		var data = msg.substring('announce:'.length);
+		this._map.hideBusy();
+		try {
+			var json = JSON.parse(data);
+			var alertObj = {};
+			if (json.title) {
+				alertObj.title = json.title;
+			}
+			if (json.type) {
+				alertObj.icon = json.type;
+			}
+			if (json.message) {
+				alertObj.message = json.message;
+			}
+			L.dialog.alert(alertObj);
+		} catch (e) {
+			this._map.fire('warn', {msg: _(msg)});
+		}
 	},
 
 });
