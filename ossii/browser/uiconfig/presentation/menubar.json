@@ -67,12 +67,6 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:SetDocumentProperties"
-			},
-			{
-				"type": "--"
-			},
-			{
 				"id": ".uno:CloseDoc",
 				"comment": "替代指令"
 			}
@@ -139,13 +133,6 @@
 			{
 				"id": ".uno:SearchDialog",
 				"hotkey": "Ctrl+H"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:EditDoc",
-				"hotkey": "Ctrl+Shift+M"
 			}
 		]
 	},
@@ -170,36 +157,6 @@
 			{
 				"id": ".uno:Zoom100Percent",
 				"comment": "替代指令"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:NormalMultiPaneGUI",
-				"hide": true
-			},
-			{
-				"id": ".uno:OutlineMode",
-				"hide": true
-			},
-			{
-				"id": ".uno:NotesMode",
-				"hide": true
-			},
-			{
-				"id": ".uno:DiaMode",
-				"hide": true
-			},
-			{
-				"id": ".uno:SlideMasterPage"
-			},
-			{
-				"id": ".uno:NotesMasterPage",
-				"hide": true
-			},
-			{
-				"id": ".uno:HandoutMode",
-				"hide": true
 			},
 			{
 				"type": "--"
@@ -233,13 +190,6 @@
 					},
 					{
 						"id": ".uno:GridFront"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:HelplinesMove",
-						"hide": true
 					}
 				]
 			},
@@ -271,32 +221,6 @@
 						"id": ".uno:SnapBorder"
 					}
 				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:Sidebar",
-				"hotkey": "Ctrl+F5"
-			},
-			{
-				"id": ".uno:Navigator",
-				"hotkey": "F5"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:ModifyPage"
-			},
-			{
-				"id": ".uno:SlideChangeWindow"
-			},
-			{
-				"id": ".uno:CustomAnimation"
-			},
-			{
-				"id": ".uno:MasterSlidesPanel"
 			}
 		]
 	},
@@ -313,12 +237,6 @@
 			},
 			{
 				"id": ".uno:InsertObjectChart"
-			},
-			{
-				"id": ".uno:InsertTable"
-			},
-			{
-				"id": ".uno:InsertQrCode"
 			},
 			{
 				"id": ".uno:ShapesMenu",
@@ -790,10 +708,12 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater"
+				"type": "--"
 			},
 			{
-				"type": "--"
+				"id": "HyperlinkQRCode",
+				"icon": ".uno:InsertQrCode",
+				"name": "Share link QR Code"
 			},
 			{
 				"id": ".uno:HyperlinkDialog",
@@ -827,9 +747,6 @@
 			},
 			{
 				"type": "--"
-			},
-			{
-				"id": ".uno:InsertSlideField"
 			},
 			{
 				"id": ".uno:FieldMenu",
@@ -1105,73 +1022,6 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:FormatImageMenu",
-				"menu": [
-					{
-						"id": ".uno:OriginalSize"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ExternalEdit",
-						"comment": "需 patch LOKit"
-					},
-					{
-						"id": ".uno:ChangePicture",
-						"comment": "需 patch LOKit"
-					},
-					{
-						"id": ".uno:CompressGraphic"
-					},
-					{
-						"id": ".uno:SaveGraphic",
-						"comment": "需 patch LOKit"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:FormatImageFilterMenu",
-						"menu": [
-							{
-								"id": ".uno:GraphicFilterSepia"
-							},
-							{
-								"id": ".uno:GraphicFilterSobel"
-							},
-							{
-								"id": ".uno:GraphicFilterInvert"
-							},
-							{
-								"id": ".uno:GraphicFilterMosaic"
-							},
-							{
-								"id": ".uno:GraphicFilterPopart"
-							},
-							{
-								"id": ".uno:GraphicFilterPoster"
-							},
-							{
-								"id": ".uno:GraphicFilterRelief"
-							},
-							{
-								"id": ".uno:GraphicFilterRemoveNoise"
-							},
-							{
-								"id": ".uno:GraphicFilterSharpen"
-							},
-							{
-								"id": ".uno:GraphicFilterSmooth"
-							},
-							{
-								"id": ".uno:GraphicFilterSolarize"
-							}
-						]
-					}
-				]
-			},
-			{
 				"id": ".uno:FormatObjectMenu",
 				"menu": [
 					{
@@ -1189,15 +1039,6 @@
 				]
 			},
 			{
-				"id": ".uno:FillShadow"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:AnimationEffects"
-			},
-			{
 				"type": "--"
 			},
 			{
@@ -1208,32 +1049,6 @@
 					},
 					{
 						"id": ".uno:MirrorHorz"
-					}
-				]
-			},
-			{
-				"id": ".uno:ConvertMenu",
-				"menu": [
-					{
-						"id": ".uno:ChangeBezier"
-					},
-					{
-						"id": ".uno:ChangePolygon"
-					},
-					{
-						"id": ".uno:convert_to_contour"
-					},
-					{
-						"id": ".uno:ConvertInto3D"
-					},
-					{
-						"id": ".uno:ConvertInto3DLatheFast"
-					},
-					{
-						"id": ".uno:ConvertIntoBitmap"
-					},
-					{
-						"id": ".uno:ConvertIntoMetaFile"
 					}
 				]
 			},
@@ -1264,38 +1079,6 @@
 					},
 					{
 						"id": ".uno:AlignDown"
-					}
-				]
-			},
-			{
-				"id": ".uno:ArrangeMenu",
-				"menu": [
-					{
-						"id": ".uno:BringToFront"
-					},
-					{
-						"id": ".uno:Forward"
-					},
-					{
-						"id": ".uno:Backward"
-					},
-					{
-						"id": ".uno:SendToBack"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:BeforeObject"
-					},
-					{
-						"id": ".uno:BehindObject"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ReverseOrder"
 					}
 				]
 			},
@@ -1367,13 +1150,7 @@
 				"id": ".uno:MergeCells"
 			},
 			{
-				"id": ".uno:SplitCell"
-			},
-			{
 				"type": "--"
-			},
-			{
-				"id": ".uno:DeleteTable"
 			},
 			{
 				"id": ".uno:SelectTable"
@@ -1420,96 +1197,13 @@
 				"comment": "替代指令"
 			},
 			{
-				"id": ".uno:AssignLayout",
-				"menu": [
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=20"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=19"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=0"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=1"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=32"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=3"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=12"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=15"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=14"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=16"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=18"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=34"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=28"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=27"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=29"
-					},
-					{
-						"id": ".uno:AssignLayout?WhatLayout:long=30"
-					}
-				]
-			},
-			{
 				"type": "--"
-			},
-			{
-				"id": ".uno:SaveBackground"
-			},
-			{
-				"id": ".uno:SelectBackground",
-				"comment": "替代指令"
 			},
 			{
 				"id": ".uno:SlideSetup"
 			},
 			{
 				"type": "--"
-			},
-			{
-				"id": ".uno:ShowSlide"
-			},
-			{
-				"id": ".uno:HideSlide"
-			},
-			{
-				"id": ".uno:RenameSlide"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:RestoreEditingView",
-				"hotkey": "Alt+Shift+5",
-				"hide": true
 			},
 			{
 				"id": ".uno:SlideMoveMenu",
@@ -1550,19 +1244,6 @@
 						"id": ".uno:LastSlide"
 					}
 				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:SummaryPage"
-			},
-			{
-				"id": ".uno:ExpandPage"
-			},
-			{
-				"id": ".uno:SlideChangeWindow",
-				"hide": true
 			}
 		]
 	},
@@ -1578,60 +1259,19 @@
 				"hotkey": "Shift+F7"
 			},
 			{
-				"id": ".uno:ThesaurusDialog",
-				"hotkey": "Ctrl+F7",
-				"hide": true
-			},
-			{
 				"id": ".uno:LanguageMenu",
 				"menu": [
 					{
 						"id": ".uno:SetLanguageAllTextMenu",
 						"menu": []
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:Hyphenation",
-						"hide": true
-					},
-					{
-						"id": ".uno:ChineseConversion",
-						"hide": true
-					},
-					{
-						"id": ".uno:HangulHanjaConversion",
-						"hotkey": "Ctrl+Shift+F7",
-						"hide": true
 					}
 				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:PresentationMinimizer",
-				"hide": true
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:RunMacro"
 			}
 		]
 	},
 	{
 		"id": ".uno:HelpMenu",
 		"menu": [
-			{
-				"icon": ".uno:HelpIndex",
-				"name": "Online Help",
-				"id": "online-help",
-				"hotkey": "F1",
-				"iosapp": false
-			},
 			{
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",

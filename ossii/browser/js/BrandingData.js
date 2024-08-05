@@ -7,7 +7,7 @@
  */
 
 (function (global) {
-	global.brandProductName = 'OxOffice Online';
+	global.brandProductName = 'OxOffice Online Community';
 	global.brandProductURL = 'https://ossii.com.tw';
 	global.brandProductFAQURL = 'https://www.facebook.com/OSSIITW/';
 	global.brandReportIssueURL = 'https://github.com/OSSII/oxool-community/issues';

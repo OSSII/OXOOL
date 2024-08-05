@@ -66,12 +66,6 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:SetDocumentProperties"
-			},
-			{
-				"type": "--"
-			},
-			{
 				"id": ".uno:CloseDoc",
 				"comment": "替代指令"
 			}
@@ -153,49 +147,6 @@
 			{
 				"id": ".uno:SearchDialog",
 				"hotkey": "Ctrl+H"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:ChangesMenu",
-				"menu": [
-					{
-						"id": ".uno:TraceChangeMode",
-						"hotkey": "Ctrl+Shift+C"
-					},
-					{
-						"id": ".uno:ShowChanges"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:AcceptChanges"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:CommentChange"
-					},
-					{
-						"id": ".uno:ProtectTraceChangeMode"
-					}
-				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:CellProtection"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:EditDoc",
-				"hotkey": "Ctrl+Shift+M"
 			}
 		]
 	},
@@ -220,15 +171,6 @@
 			{
 				"id": ".uno:Zoom100Percent",
 				"comment": "替代指令"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:NormalViewMode"
-			},
-			{
-				"id": ".uno:PagebreakMode"
 			},
 			{
 				"type": "--"
@@ -262,40 +204,6 @@
 				"menu": [
 					{
 						"id": ".uno:GridVisible"
-					},
-					{
-						"id": ".uno:GridUse",
-						"hide": true
-					}
-				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:ViewValueHighlighting",
-				"hotkey": "Ctrl+F8"
-			},
-			{
-				"id": ".uno:ToggleFormula"
-			},
-			{
-				"id": ".uno:ShowAnnotations"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:FreezePanes"
-			},
-			{
-				"id": ".uno:FreezeCellsMenu",
-				"menu": [
-					{
-						"id": ".uno:FreezePanesColumn"
-					},
-					{
-						"id": ".uno:FreezePanesRow"
 					}
 				]
 			},
@@ -305,10 +213,6 @@
 			{
 				"id": ".uno:Sidebar",
 				"hotkey": "Ctrl+F5"
-			},
-			{
-				"id": ".uno:Navigator",
-				"hotkey": "F5"
 			}
 		]
 	},
@@ -325,9 +229,6 @@
 			},
 			{
 				"id": ".uno:InsertObjectChart"
-			},
-			{
-				"id": ".uno:InsertQrCode"
 			},
 			{
 				"id": ".uno:DataDataPilotRun"
@@ -790,13 +691,6 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:FunctionDialog",
-				"hotkey": "Ctrl+F2"
-			},
-			{
-				"type": "--"
-			},
-			{
 				"id": ".uno:DrawText"
 			},
 			{
@@ -808,10 +702,12 @@
 				"hotkey": "Ctrl+Alt+C"
 			},
 			{
-				"id": ".uno:FontworkGalleryFloater"
+				"type": "--"
 			},
 			{
-				"type": "--"
+				"id": "HyperlinkQRCode",
+				"icon": ".uno:InsertQrCode",
+				"name": "Share link QR Code"
 			},
 			{
 				"id": ".uno:HyperlinkDialog",
@@ -871,9 +767,6 @@
 			},
 			{
 				"id": ".uno:EditHeaderAndFooter"
-			},
-			{
-				"type": "--"
 			}
 		]
 	},
@@ -1157,135 +1050,10 @@
 				"id": ".uno:PageFormatDialog"
 			},
 			{
-				"id": ".uno:PrintRangesMenu",
-				"menu": [
-					{
-						"id": ".uno:DefinePrintArea"
-					},
-					{
-						"id": ".uno:AddPrintArea"
-					},
-					{
-						"id": ".uno:EditPrintArea"
-					},
-					{
-						"id": ".uno:DeletePrintArea"
-					}
-				]
-			},
-			{
 				"type": "--"
 			},
 			{
-				"id": ".uno:ConditionalFormatMenu",
-				"menu": [
-					{
-						"id": ".uno:ConditionalFormatConditionMenu",
-						"menu": [
-							{
-								"id": ".uno:ConditionalFormatEasy?FormatRule:short=2"
-							},
-							{
-								"id": ".uno:ConditionalFormatEasy?FormatRule:short=1"
-							},
-							{
-								"id": ".uno:ConditionalFormatEasy?FormatRule:short=0"
-							},
-							{
-								"id": ".uno:ConditionalFormatEasy?FormatRule:short=6"
-							},
-							{
-								"id": ".uno:ConditionalFormatEasy?FormatRule:short=23"
-							},
-							{
-								"type": "--"
-							},
-							{
-								"id": ".uno:ConditionalFormatDialog"
-							}
-
-						]
-					},
-					{
-						"id": ".uno:ColorScaleFormatDialog"
-					},
-					{
-						"id": ".uno:DataBarFormatDialog"
-					},
-					{
-						"id": ".uno:IconSetFormatDialog"
-					},
-					{
-						"id": ".uno:CondDateFormatDialog"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ConditionalFormatManagerDialog"
-					}
-				]
-			},
-			{
-				"id": ".uno:AutoFormat"
-			},
-			{
-				"id": ".uno:ThemeDialog"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:FormatImageMenu",
-				"menu": [
-					{
-						"id": ".uno:OriginalSize"
-					},
-					{
-						"id": ".uno:FitCellSize"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ExternalEdit",
-						"comment": "需 patch LOKit"
-					},
-					{
-						"id": ".uno:ChangePicture",
-						"comment": "需 patch LOKit"
-					},
-					{
-						"id": ".uno:CompressGraphic"
-					},
-					{
-						"id": ".uno:SaveGraphic",
-						"comment": "需 patch LOKit"
-					}
-				]
-			},
-			{
-				"id": ".uno:FormatSparklineMenu",
-				"menu": [
-					{
-						"id": ".uno:EditSparklineGroup"
-					},
-					{
-						"id": ".uno:DeleteSparkline"
-					},
-					{
-						"id": ".uno:DeleteSparklineGroup"
-					},
-					{
-						"id": ".uno:GroupSparklines"
-					},
-					{
-						"id": ".uno:UngroupSparklines"
-					}
-				]
-			},
-			{
-				"id": ".uno:FormatObjectMenu",
+				"id": ".uno:ObjectMenu",
 				"menu": [
 					{
 						"id": ".uno:TransformDialog"
@@ -1295,20 +1063,8 @@
 					},
 					{
 						"id": ".uno:FormatArea"
-					},
-					{
-						"id": ".uno:TextAttributes"
-					},
-					{
-						"type": "--"
 					}
 				]
-			},
-			{
-				"id": ".uno:RenameObject"
-			},
-			{
-				"id": ".uno:ObjectTitleDescription"
 			},
 			{
 				"type": "--"
@@ -1341,17 +1097,6 @@
 					},
 					{
 						"id": ".uno:SendToBack"
-					}
-				]
-			},
-			{
-				"id": ".uno:FlipMenu",
-				"menu": [
-					{
-						"id": ".uno:ObjectMirrorVertical"
-					},
-					{
-						"id": ".uno:ObjectMirrorHorizontal"
 					}
 				]
 			},
@@ -1415,24 +1160,6 @@
 			},
 			{
 				"id": ".uno:NoteCellStyles"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:StyleUpdateByExample",
-				"hide": true
-			},
-			{
-				"id": ".uno:StyleNewByExample",
-				"hide": true
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:DesignerDialog",
-				"hide": true
 			}
 		]
 	},
@@ -1522,73 +1249,6 @@
 				"id": ".uno:Delete"
 			},
 			{
-				"id": ".uno:FillCellsMenu",
-				"menu": [
-					{
-						"id": ".uno:FillDown",
-						"hotkey": "Ctrl+D"
-					},
-					{
-						"id": ".uno:FillRight"
-					},
-					{
-						"id": ".uno:FillUp"
-					},
-					{
-						"id": ".uno:FillLeft"
-					},
-					{
-						"id": ".uno:FillTable",
-						"hide": true,
-						"comment": "填入工作表只能在桌面版執行"
-					},
-					{
-						"id": ".uno:FillSeries"
-					},
-					{
-						"id": ".uno:RandomNumberGeneratorDialog"
-					}
-				]
-			},
-			{
-				"id": ".uno:NamesMenu",
-				"menu": [
-					{
-						"id": ".uno:AddName"
-					},
-					{
-						"id": ".uno:DefineName",
-						"hotkey": "Ctrl+F3"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:DefineLabelRange"
-					}
-				]
-			},
-			{
-				"id": ".uno:SheetCommentMenu",
-				"menu": [
-					{
-						"id": ".uno:HideNote",
-						"hide": true
-					},
-					{
-						"id": ".uno:ShowNote",
-						"hide": true
-					},
-					{
-						"id": ".uno:DeleteNote",
-						"hide": true
-					},
-					{
-						"id": ".uno:DeleteAllNotes"
-					}
-				]
-			},
-			{
 				"type": "--"
 			},
 			{
@@ -1607,10 +1267,6 @@
 				"comment": "替代指令"
 			},
 			{
-				"id": ".uno:SetTabBgColor",
-				"comment": "替代指令"
-			},
-			{
 				"type": "--"
 			},
 			{
@@ -1626,9 +1282,6 @@
 						"id": ".uno:JumpToNextTable"
 					}
 				]
-			},
-			{
-				"type": "--"
 			}
 		]
 	},
@@ -1681,7 +1334,7 @@
 			},
 			{
 				"id": ".uno:DataPilotMenu",
-				"menu":[
+				"menu": [
 					{
 						"id": ".uno:InsertPivotTable"
 					},
@@ -1697,28 +1350,6 @@
 				"type": "--"
 			},
 			{
-				"id": ".uno:CellContentsMenu",
-				"menu": [
-					{
-						"id": ".uno:Calculate",
-						"hotkey": "F9"
-					},
-					{
-						"id": ".uno:CalculateHard",
-						"hotkey": "Ctrl+Shift+F9"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ConvertFormulaToValue"
-					},
-					{
-						"id": ".uno:AutomaticCalculation"
-					}
-				]
-			},
-			{
 				"id": ".uno:Validation"
 			},
 			{
@@ -1726,12 +1357,6 @@
 			},
 			{
 				"type": "--"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:TableOperationDialog"
 			},
 			{
 				"id": ".uno:DataConsolidate"
@@ -1765,50 +1390,6 @@
 						"id": ".uno:ShowDetail"
 					}
 				]
-			},
-			{
-				"id": ".uno:StatisticsMenu",
-				"menu": [
-					{
-						"id": ".uno:SamplingDialog"
-					},
-					{
-						"id": ".uno:DescriptiveStatisticsDialog"
-					},
-					{
-						"id": ".uno:AnalysisOfVarianceDialog"
-					},
-					{
-						"id": ".uno:CorrelationDialog"
-					},
-					{
-						"id": ".uno:CovarianceDialog"
-					},
-					{
-						"id": ".uno:ExponentialSmoothingDialog"
-					},
-					{
-						"id": ".uno:MovingAverageDialog"
-					},
-					{
-						"id": ".uno:RegressionDialog"
-					},
-					{
-						"id": ".uno:TTestDialog"
-					},
-					{
-						"id": ".uno:FTestDialog"
-					},
-					{
-						"id": ".uno:ZTestDialog"
-					},
-					{
-						"id": ".uno:ChiSquareTestDialog"
-					},
-					{
-						"id": ".uno:FourierAnalysisDialog"
-					}
-				]
 			}
 		]
 	},
@@ -1829,116 +1410,14 @@
 					{
 						"id": ".uno:SetLanguageAllTextMenu",
 						"menu": []
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:Hyphenate",
-						"hide": true
-					},
-					{
-						"id": ".uno:ChineseConversion",
-						"hide": true
-					},
-					{
-						"id": ".uno:HangulHanjaConversion",
-						"hotkey": "Ctrl+Shift+F7",
-						"hide": true
 					}
 				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:AutoCorrectDlg"
-			},
-			{
-				"id": ".uno:AutoComplete"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:GoalSeekDialog"
-			},
-			{
-				"id": ".uno:SolverDialog"
-			},
-			{
-				"id": ".uno:AuditMenu",
-				"menu": [
-					{
-						"id": ".uno:ShowPrecedents",
-						"hotkey": "Shift+F9"
-					},
-					{
-						"id": ".uno:ShowDependents",
-						"hotkey": "Shift+F5"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ClearArrows"
-					},
-					{
-						"id": ".uno:ClearArrowPrecedents"
-					},
-					{
-						"id": ".uno:ClearArrowDependents"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:ShowErrors"
-					},
-					{
-						"id": ".uno:RefreshArrows"
-					},
-					{
-						"type": "--"
-					},
-					{
-						"id": ".uno:AuditingFillMode"
-					},
-					{
-						"id": ".uno:AutoRefreshArrows"
-					},
-					{
-						"id": ".uno:ShowInvalid"
-					}
-				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:Protect"
-			},
-			{
-				"id": ".uno:ToolProtectionDocument"
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:RunMacro"
 			}
 		]
 	},
 	{
 		"id": ".uno:HelpMenu",
 		"menu": [
-			{
-				"icon": ".uno:HelpIndex",
-				"name": "Online Help",
-				"id": "online-help",
-				"hotkey": "F1",
-				"iosapp": false
-			},
 			{
 				"name": "Keyboard shortcuts",
 				"id": "keyboard-shortcuts",

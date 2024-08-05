@@ -9,7 +9,7 @@ dnl -*- Mode: Autoconf; tab-width: 4; indent-tabs-mode: nil; fill-column: 102 -*
 m4_define([ossii_VENDOR], ["OSS Integral Institute Co., Ltd"])
 
 # define the product name
-m4_define([ossii_PRODUCT_NAME], ["OxOffice Online"])
+m4_define([ossii_PRODUCT_NAME], ["OxOffice Online Community"])
 # define the core office name
 m4_define([ossii_CORE_OFFICE], ["oxoffice"])
 

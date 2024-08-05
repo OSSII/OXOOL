@@ -16,6 +16,11 @@
 				"id": "savecomments"
 			},
 			{
+				"id": "renamedocument",
+				"name": "Rename Document",
+				"comment": "替代指令"
+			},
+			{
 				"name": "Share...",
 				"id": "shareas"
 			},
@@ -134,8 +139,8 @@
 				"id": "insertgraphicremote"
 			},
 			{
-				"id": ".uno:SelectBackground",
-				"comment": "替代指令"
+				"name": ".uno:SelectBackground",
+				"id": "selectbackground"
 			},
 			{
 				"id": ".uno:InsertAnnotation",
@@ -326,12 +331,6 @@
 						"id": ".uno:LanguageStatus?Language:string=Default_LANGUAGE_NONE"
 					}
 				]
-			},
-			{
-				"type": "--"
-			},
-			{
-				"id": ".uno:RunMacro"
 			}
 		]
 	},
@@ -339,10 +338,8 @@
 		"id": ".uno:HelpMenu",
 		"menu": [
 			{
-				"icon": ".uno:HelpIndex",
 				"name": "Online Help",
 				"id": "online-help",
-				"hotkey": "F1",
 				"iosapp": false
 			},
 			{
