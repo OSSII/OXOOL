@@ -4179,8 +4179,9 @@ public:
         if (!init)
         {
             const auto& app = Poco::Util::Application::instance();
+            bool postAllowed = app.config().getBool("net.post_allow[@allow]", false);
             // Parse the host allow settings.
-            for (size_t i = 0; ; ++i)
+            for (size_t i = 0; postAllowed ; ++i)
             {
                 const std::string path = "net.post_allow.host[" + std::to_string(i) + ']';
                 const auto host = app.config().getString(path, "");
