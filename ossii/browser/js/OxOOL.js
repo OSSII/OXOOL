@@ -27,7 +27,10 @@ L.OxOOL = L.Class.extend({
 
 		this._preloadData();
 
+		// Listen to the doclayerinit event
 		this._map.on('doclayerinit', this._onDocLayerInit, this);
+		// Listen to the wopiprops event
+		this._map.on('wopiprops', this._onWopiProps, this);
 	},
 
 	/**
@@ -198,6 +201,31 @@ L.OxOOL = L.Class.extend({
 
 		// 載入和文件類型有關的資料
 		this._postloadData();
+	},
+
+	/**
+	 * Handling the WOPI properties message
+	 *
+	 * @param {*} wopiInfo
+	 */
+	_onWopiProps: function (wopiInfo) {
+		// have to parse the UserExtraInfo
+		if (wopiInfo.UserExtraInfo) {
+			var userExtraInfoObj = {}; // the object of UserExtraInfo
+			if (typeof wopiInfo.UserExtraInfo === 'string') {
+				try {
+					userExtraInfoObj = JSON.parse(wopiInfo.UserExtraInfo); // parse the UserExtraInfo
+				} catch (e) {
+					console.error('Failed to parse UserExtraInfo: ', e);
+				}
+			} else if (typeof wopiInfo.UserExtraInfo === 'object') {
+				userExtraInfoObj = wopiInfo.UserExtraInfo; // the UserExtraInfo is already an object
+			} else {
+				console.error('Invalid UserExtraInfo type: ', typeof wopiInfo.UserExtraInfo);
+			}
+
+			this._map['wopi'].UserExtraInfo = userExtraInfoObj;
+		}
 	},
 
 	/**

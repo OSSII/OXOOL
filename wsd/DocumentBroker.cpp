@@ -976,6 +976,9 @@ bool DocumentBroker::download(const std::shared_ptr<ClientSession>& session, con
                                   WopiStorage::WOPIFileInfo::TriState::True);
         wopiInfo->set("IsOwner", session->isDocumentOwner());
 
+        // we will send the client about the user's extra info
+        wopiInfo->set("UserExtraInfo", userExtraInfo);
+
         std::ostringstream ossWopiInfo;
         wopiInfo->stringify(ossWopiInfo);
         const std::string wopiInfoString = ossWopiInfo.str();
