@@ -243,7 +243,7 @@
                 <refresh desc="How frequently we should re-acquire a lock with the storage server, in seconds (default 15 mins) or 0 for no refresh" type="int" default="900">900</refresh>
             </locking>
 
-            <alias_groups desc="default mode is 'first' it allows only the first host when groups are not defined. set mode to 'groups' and define group to allow multiple host and its aliases" mode="first">
+            <alias_groups desc="set mode to 'first' it allows only the first host when groups are not defined. set mode to 'groups' and define group to allow multiple host and its aliases. The default mode is 'compat' and the host is defined to allow it to be a WOPI host." mode="compat">
             <!-- If you need to use multiple wopi hosts, please change the mode to "groups" and
                     add the hosts below.  If one host is accessible under multiple ip addresses
                     or names, add them as aliases. -->
@@ -255,6 +255,14 @@
             </group>-->
             <!-- More "group"s possible here -->
             </alias_groups>
+
+            <host desc="Regex pattern of hostname to allow or deny." allow="true">localhost</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="true">10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="true">172\.1[6789]\.[0-9]{1,3}\.[0-9]{1,3}</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="true">172\.2[0-9]\.[0-9]{1,3}\.[0-9]{1,3}</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="true">172\.3[01]\.[0-9]{1,3}\.[0-9]{1,3}</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="true">192\.168\.[0-9]{1,3}\.[0-9]{1,3}</host>
+            <host desc="Regex pattern of hostname to allow or deny." allow="false">192\.168\.1\.1</host>
 
         </wopi>
         <ssl desc="SSL settings">

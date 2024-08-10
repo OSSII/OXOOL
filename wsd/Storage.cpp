@@ -98,8 +98,10 @@ void StorageBase::initialize()
     const auto& app = Poco::Util::Application::instance();
     FilesystemEnabled = app.config().getBool("storage.filesystem[@allow]", false);
 
-    //parse wopi.storage.host only when there is no storage.wopi.alias_groups entry in config
-    if (!app.config().has("storage.wopi.alias_groups"))
+    // parse wopi.storage.host when there is no storage.wopi.alias_groups
+    // or storage.wopi.alias_groups[@mode=compat]
+    if (!app.config().has("storage.wopi.alias_groups") ||
+        app.config().has("storage.wopi.alias_groups[@mode=compat]"))
     {
         HostUtil::parseWopiHost(app.config());
     }
