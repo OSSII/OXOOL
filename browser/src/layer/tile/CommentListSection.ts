@@ -13,6 +13,8 @@
 
 L.Map.include({
 	insertComment: function() {
+		if (this.stateChangeHandler.getItemValue('InsertAnnotation') === 'disabled')
+			return;
 		if (oxool.Comment.isAnyEdit()) {
 			oxool.CommentSection.showCommentEditingWarning();
 			return;
