@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-29 15:19+0800\n"
+"POT-Creation-Date: 2024-08-21 14:03+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 #: js/control/Control.Menubar.js:89 js/control/Control.Menubar.js:145
 #: js/control/Control.Menubar.js:152 js/control/Control.Menubar.js:199
 #: js/control/Control.Menubar.js:209
-#: js/control/Control.NotebookbarWriter.js:308
+#: js/control/Control.NotebookbarWriter.js:299
 #: js/control/Control.NotebookbarCalc.js:262
 #: js/control/Control.NotebookbarImpress.js:352
 #: js/control/Control.NotebookbarDraw.js:263
@@ -56,7 +56,7 @@ msgstr "ODF 簡報（.odp）"
 
 #: js/OtherMessages.js:15 js/control/Toolbar.Extensions.js:151
 #: js/control/Control.Menubar.js:28
-#: js/control/Control.NotebookbarWriter.js:290
+#: js/control/Control.NotebookbarWriter.js:281
 msgid "Word 2003 Document (.doc)"
 msgstr "Word 2003 文件（.doc）"
 
@@ -73,7 +73,7 @@ msgstr "PowerPoint 2003 簡報（.ppt）"
 
 #: js/OtherMessages.js:18 js/control/Toolbar.Extensions.js:152
 #: js/control/Control.Menubar.js:29
-#: js/control/Control.NotebookbarWriter.js:296
+#: js/control/Control.NotebookbarWriter.js:287
 msgid "Word Document (.docx)"
 msgstr "Word 文件（.docx）"
 
@@ -90,7 +90,7 @@ msgstr "PowerPoint 簡報（.pptx）"
 
 #: js/OtherMessages.js:21 js/control/Toolbar.Extensions.js:153
 #: js/control/Control.Menubar.js:30
-#: js/control/Control.NotebookbarWriter.js:278
+#: js/control/Control.NotebookbarWriter.js:269
 msgid "Rich Text (.rtf)"
 msgstr "RTF 文件（.rtf）"
 
@@ -99,7 +99,7 @@ msgid "CSV (.csv)"
 msgstr "CSV 文件（.csv）"
 
 #: js/OtherMessages.js:23 js/control/Toolbar.Extensions.js:154
-#: js/control/Control.NotebookbarWriter.js:328
+#: js/control/Control.NotebookbarWriter.js:319
 msgid "EPUB Document (.epub)"
 msgstr "EPUB 電子書（.epub）"
 
@@ -143,28 +143,28 @@ msgstr "選單列"
 msgid "Dark mode"
 msgstr "深色模式"
 
-#: js/OtherMessages.js:37 js/control/Control.NotebookbarWriter.js:37
+#: js/OtherMessages.js:37 js/control/Control.NotebookbarWriter.js:36
 #: js/control/Control.NotebookbarCalc.js:23
 #: js/control/Control.NotebookbarImpress.js:77
 #: js/control/Control.NotebookbarDraw.js:62
 msgid "File"
 msgstr "檔案"
 
-#: js/OtherMessages.js:38 js/control/Control.NotebookbarWriter.js:43
+#: js/OtherMessages.js:38 js/control/Control.NotebookbarWriter.js:42
 #: js/control/Control.NotebookbarCalc.js:29
 #: js/control/Control.NotebookbarImpress.js:83
 #: js/control/Control.NotebookbarDraw.js:68
 msgid "Home"
 msgstr "常用"
 
-#: js/OtherMessages.js:39 js/control/Control.NotebookbarWriter.js:68
+#: js/OtherMessages.js:39 js/control/Control.NotebookbarWriter.js:67
 #: js/control/Control.NotebookbarCalc.js:54
 #: js/control/Control.NotebookbarImpress.js:102
 #: js/control/Control.NotebookbarDraw.js:87
 msgid "Review"
 msgstr "校閱"
 
-#: js/OtherMessages.js:40 js/control/Control.NotebookbarWriter.js:112
+#: js/OtherMessages.js:40 js/control/Control.NotebookbarWriter.js:105
 #: js/control/Control.NotebookbarCalc.js:79
 #: js/control/Control.NotebookbarImpress.js:141
 #: js/control/Control.NotebookbarDraw.js:119
@@ -175,22 +175,22 @@ msgstr "說明"
 msgid "Theme"
 msgstr "佈景主題"
 
-#: js/OtherMessages.js:42 js/control/Control.NotebookbarWriter.js:198
+#: js/OtherMessages.js:42 js/control/Control.NotebookbarWriter.js:190
 #: js/control/Control.NotebookbarCalc.js:143
 #: js/control/Control.NotebookbarImpress.js:209
 #: js/control/Control.NotebookbarDraw.js:179
 msgid "Export As"
 msgstr "匯出爲…"
 
-#: js/OtherMessages.js:43 js/control/Control.NotebookbarWriter.js:1360
+#: js/OtherMessages.js:43 js/control/Control.NotebookbarWriter.js:1342
 msgid "Rich Text"
 msgstr "文字"
 
-#: js/OtherMessages.js:44 js/control/Control.NotebookbarWriter.js:1367
+#: js/OtherMessages.js:44 js/control/Control.NotebookbarWriter.js:1349
 msgid "Checkbox"
 msgstr "核取方塊"
 
-#: js/OtherMessages.js:45 js/control/Control.NotebookbarWriter.js:1374
+#: js/OtherMessages.js:45 js/control/Control.NotebookbarWriter.js:1356
 msgid "Dropdown"
 msgstr "下拉式選項"
 
@@ -259,8 +259,8 @@ msgstr "刪除"
 #: js/map/handler/Map.AlternativeCommand.js:1008
 #: js/map/handler/Map.ExternalEdit.js:108 js/control/Control.Dialogs.js:115
 #: js/control/Control.Dialogs.js:151 js/control/Control.Dialogs.js:199
-#: admin/src/Main.js:435 admin/src/Main.js:479
-#: admin/standard/Overview/admin.js:245
+#: admin/src/Dialog.js:197 admin/src/Dialog.js:251 admin/src/Dialog.js:307
+#: admin/src/Main.js:476 admin/standard/Overview/admin.js:245
 msgid "OK"
 msgstr "確定"
 
@@ -285,10 +285,10 @@ msgid "Image (.png)"
 msgstr "圖片（.png）"
 
 #: js/control/Control.Dialogs.js:122 js/control/Control.Dialogs.js:206
-#: admin/src/Main.js:436 admin/src/Main.js:459 admin/src/Main.js:480
-#: admin/standard/Overview/admin.js:246
+#: admin/src/Dialog.js:239 admin/src/Dialog.js:295 admin/src/Main.js:456
+#: admin/src/Main.js:477 admin/standard/Overview/admin.js:246
 msgid "Cancel"
-msgstr "放棄"
+msgstr "取消"
 
 #: js/control/Control.Dialogs.js:245
 msgid "Close"
@@ -301,7 +301,7 @@ msgstr "命令"
 #: js/control/Control.Menubar.js:11 js/control/Control.Menubar.js:76
 #: js/control/Control.Menubar.js:140 js/control/Control.Menubar.js:194
 #: js/control/Control.StatusBar.js:150
-#: js/control/Control.NotebookbarWriter.js:925
+#: js/control/Control.NotebookbarWriter.js:907
 #: js/control/Control.NotebookbarCalc.js:887
 #: js/control/Control.NotebookbarImpress.js:1078
 #: js/control/Control.NotebookbarDraw.js:949
@@ -332,7 +332,6 @@ msgstr "查看修訂歷史"
 #: js/control/Control.Menubar.js:24 js/control/Control.Menubar.js:88
 #: js/control/Control.Menubar.js:151 js/control/Control.Menubar.js:208
 #: js/control/Control.ReadonlyBar.js:134
-#: js/control/Control.NotebookbarWriter.js:261
 msgid "Download as"
 msgstr "下載爲…"
 
@@ -343,10 +342,10 @@ msgstr "匯出 PDF 文件（.pdf）…"
 
 #: js/control/Control.Menubar.js:36 js/control/Control.Menubar.js:99
 #: js/control/Control.Menubar.js:159 js/control/Control.Menubar.js:218
-#: js/control/Control.NotebookbarWriter.js:335
-#: js/control/Control.NotebookbarWriter.js:336
-#: js/control/Control.NotebookbarWriter.js:352
-#: js/control/Control.NotebookbarWriter.js:353
+#: js/control/Control.NotebookbarWriter.js:326
+#: js/control/Control.NotebookbarWriter.js:327
+#: js/control/Control.NotebookbarWriter.js:343
+#: js/control/Control.NotebookbarWriter.js:344
 #: js/control/Control.NotebookbarCalc.js:289
 #: js/control/Control.NotebookbarCalc.js:290
 #: js/control/Control.NotebookbarImpress.js:288
@@ -362,7 +361,7 @@ msgstr "修復"
 
 #: js/control/Control.Menubar.js:57 js/control/Control.Menubar.js:109
 #: js/control/Control.Menubar.js:169 js/control/Control.Menubar.js:228
-#: js/control/Control.NotebookbarWriter.js:1518
+#: js/control/Control.NotebookbarWriter.js:1500
 #: js/control/Control.NotebookbarCalc.js:1300
 #: js/control/Control.NotebookbarImpress.js:553
 #: js/control/Control.NotebookbarDraw.js:425
@@ -371,7 +370,7 @@ msgid "Dark Mode"
 msgstr "深色模式"
 
 #: js/control/Control.Menubar.js:61
-#: js/control/Control.NotebookbarWriter.js:458
+#: js/control/Control.NotebookbarWriter.js:449
 msgid "Voice Over"
 msgstr "語音"
 
@@ -381,20 +380,20 @@ msgstr "頁面設定"
 
 #: js/control/Control.Menubar.js:70 js/control/Control.Menubar.js:134
 #: js/control/Control.Menubar.js:188 js/control/Control.Menubar.js:262
-#: js/control/Control.NotebookbarWriter.js:487
+#: js/control/Control.NotebookbarWriter.js:478
 msgid "Latest Updates"
 msgstr "最近更新"
 
 #: js/control/Control.Menubar.js:71 js/control/Control.Menubar.js:135
 #: js/control/Control.Menubar.js:189 js/control/Control.Menubar.js:263
-#: js/control/Control.NotebookbarWriter.js:499
+#: js/control/Control.NotebookbarWriter.js:490
 msgid "Send Feedback"
 msgstr "傳送建議"
 
 #: js/control/Control.Menubar.js:72 js/control/Control.Menubar.js:136
 #: js/control/Control.Menubar.js:190 js/control/Control.Menubar.js:264
 #: js/control/Control.ReadonlyBar.js:152
-#: js/control/Control.NotebookbarWriter.js:511
+#: js/control/Control.NotebookbarWriter.js:502
 msgid "About"
 msgstr "關於"
 
@@ -440,8 +439,8 @@ msgid "Insert Date"
 msgstr "插入日期"
 
 #: js/control/Control.Menubar.js:314
-#: js/control/Control.NotebookbarWriter.js:368
-#: js/control/Control.NotebookbarWriter.js:1395
+#: js/control/Control.NotebookbarWriter.js:359
+#: js/control/Control.NotebookbarWriter.js:1377
 #: js/control/Control.NotebookbarCalc.js:305
 #: js/control/Control.NotebookbarImpress.js:410
 #: js/control/Control.NotebookbarDraw.js:306
@@ -474,8 +473,8 @@ msgid "Cancel the search"
 msgstr "取消搜尋"
 
 #: js/control/Control.StatusBar.js:165
-#: js/control/Control.NotebookbarWriter.js:1432
-#: js/control/Control.NotebookbarWriter.js:1433
+#: js/control/Control.NotebookbarWriter.js:1414
+#: js/control/Control.NotebookbarWriter.js:1415
 #: js/control/Control.NotebookbarCalc.js:1221
 #: js/control/Control.NotebookbarCalc.js:1222
 #: js/control/Control.NotebookbarImpress.js:467
@@ -486,7 +485,7 @@ msgid "Reset zoom"
 msgstr "100 %"
 
 #: js/control/Control.StatusBar.js:275
-#: js/control/Control.NotebookbarWriter.js:50
+#: js/control/Control.NotebookbarWriter.js:49
 #: js/control/Control.NotebookbarCalc.js:36
 #: js/control/Control.NotebookbarImpress.js:90
 #: js/control/Control.NotebookbarDraw.js:75
@@ -530,9 +529,8 @@ msgid "Average"
 msgstr "平均"
 
 #: js/control/Control.StatusBar.js:372
-#, fuzzy
 msgid "CountA"
-msgstr "計數"
+msgstr "全計數"
 
 #: js/control/Control.StatusBar.js:373
 msgid "Count"
@@ -590,52 +588,48 @@ msgstr "唯讀"
 msgid "Edit"
 msgstr "編輯"
 
-#: js/control/Control.NotebookbarWriter.js:56
+#: js/control/Control.NotebookbarWriter.js:55
 #: js/control/Control.NotebookbarCalc.js:42
 #: js/control/Control.NotebookbarImpress.js:96
 #: js/control/Control.NotebookbarDraw.js:81
 msgid "Layout"
 msgstr "版面配置"
 
-#: js/control/Control.NotebookbarWriter.js:62
+#: js/control/Control.NotebookbarWriter.js:61
 msgid "References"
 msgstr "參照"
 
-#: js/control/Control.NotebookbarWriter.js:74
+#: js/control/Control.NotebookbarWriter.js:73
 #: js/control/Control.NotebookbarCalc.js:60
 #: js/control/Control.NotebookbarImpress.js:108
 #: js/control/Control.NotebookbarDraw.js:93
 msgid "Format"
 msgstr "格式"
 
-#: js/control/Control.NotebookbarWriter.js:80
+#: js/control/Control.NotebookbarWriter.js:79
 msgid "Form"
 msgstr "表單"
 
-#: js/control/Control.NotebookbarWriter.js:86
+#: js/control/Control.NotebookbarWriter.js:85
 #: js/control/Control.NotebookbarImpress.js:114
 #: js/control/Control.NotebookbarDraw.js:99
 msgid "Table"
 msgstr "表格"
 
-#: js/control/Control.NotebookbarWriter.js:93
+#: js/control/Control.NotebookbarWriter.js:92
 #: js/control/Control.NotebookbarCalc.js:66
 #: js/control/Control.NotebookbarDraw.js:106
 msgid "Draw"
 msgstr "繪圖"
 
-#: js/control/Control.NotebookbarWriter.js:100
+#: js/control/Control.NotebookbarWriter.js:99
 #: js/control/Control.NotebookbarCalc.js:73
 #: js/control/Control.NotebookbarImpress.js:135
 #: js/control/Control.NotebookbarDraw.js:113
 msgid "View"
 msgstr "檢視"
 
-#: js/control/Control.NotebookbarWriter.js:106
-msgid "Tools"
-msgstr "工具"
-
-#: js/control/Control.NotebookbarWriter.js:166
+#: js/control/Control.NotebookbarWriter.js:158
 #: js/control/Control.NotebookbarCalc.js:112
 #: js/control/Control.NotebookbarImpress.js:29
 #: js/control/Control.NotebookbarImpress.js:176
@@ -644,64 +638,69 @@ msgstr "工具"
 msgid "Save"
 msgstr "儲存"
 
-#: js/control/Control.NotebookbarWriter.js:179
-#: js/control/Control.NotebookbarWriter.js:261
+#: js/control/Control.NotebookbarWriter.js:171
+#: js/control/Control.NotebookbarWriter.js:252
 #: js/control/Control.NotebookbarCalc.js:125
 #: js/control/Control.NotebookbarImpress.js:190
 msgid "Save As"
 msgstr "另存新檔"
 
-#: js/control/Control.NotebookbarWriter.js:211
+#: js/control/Control.NotebookbarWriter.js:203
 #: js/control/Control.NotebookbarCalc.js:158
 #: js/control/Control.NotebookbarImpress.js:224
 #: js/control/Control.NotebookbarDraw.js:195
 msgid "Share"
 msgstr "分享"
 
-#: js/control/Control.NotebookbarWriter.js:220
+#: js/control/Control.NotebookbarWriter.js:212
 #: js/control/Control.NotebookbarCalc.js:168
 #: js/control/Control.NotebookbarImpress.js:234
 #: js/control/Control.NotebookbarDraw.js:205
 msgid "See history"
 msgstr "修訂紀錄"
 
-#: js/control/Control.NotebookbarWriter.js:272
-#, fuzzy
+#: js/control/Control.NotebookbarWriter.js:252
+#: js/control/Control.NotebookbarCalc.js:208
+#: js/control/Control.NotebookbarImpress.js:276
+msgid "Download"
+msgstr "下載"
+
+#: js/control/Control.NotebookbarWriter.js:263
 msgid "ODF Text Document (.odt)"
 msgstr "ODF 文字文件（.odt）"
 
-#: js/control/Control.NotebookbarWriter.js:315
+#: js/control/Control.NotebookbarWriter.js:306
 #: js/control/Control.NotebookbarCalc.js:270
 #: js/control/Control.NotebookbarImpress.js:361
 #: js/control/Control.NotebookbarDraw.js:272
 msgid "PDF Document (.pdf) - Expert"
 msgstr "PDF 文件（.pdf） - 專家模式"
 
-#: js/control/Control.NotebookbarWriter.js:382
+#: js/control/Control.NotebookbarWriter.js:373
 #: js/control/Control.NotebookbarCalc.js:318
 #: js/control/Control.NotebookbarImpress.js:422
 #: js/control/Control.NotebookbarDraw.js:319
 msgid "Rename"
 msgstr "重新命名"
 
-#: js/control/Control.NotebookbarWriter.js:396
+#: js/control/Control.NotebookbarWriter.js:387
 msgid "Go Online"
 msgstr ""
 
-#: js/control/Control.NotebookbarWriter.js:396
+#: js/control/Control.NotebookbarWriter.js:387
 msgid "Go Offline"
 msgstr ""
 
-#: js/control/Control.NotebookbarWriter.js:448
+#: js/control/Control.NotebookbarWriter.js:439
 msgid "Keyboard shortcuts"
 msgstr "鍵盤快捷鍵"
 
-#: js/control/Control.NotebookbarWriter.js:474
+#: js/control/Control.NotebookbarWriter.js:465
 msgid "Report an issue"
 msgstr "回報問題"
 
-#: js/control/Control.NotebookbarWriter.js:926
-#: js/control/Control.NotebookbarWriter.js:1500
+#: js/control/Control.NotebookbarWriter.js:908
+#: js/control/Control.NotebookbarWriter.js:1482
 #: js/control/Control.NotebookbarCalc.js:888
 #: js/control/Control.NotebookbarCalc.js:1288
 #: js/control/Control.NotebookbarImpress.js:534
@@ -711,8 +710,8 @@ msgstr "回報問題"
 msgid "Show Status Bar"
 msgstr "顯示狀態列"
 
-#: js/control/Control.NotebookbarWriter.js:1080
-#: js/control/Control.NotebookbarWriter.js:2851
+#: js/control/Control.NotebookbarWriter.js:1062
+#: js/control/Control.NotebookbarWriter.js:2818
 #: js/control/Control.NotebookbarCalc.js:1506
 #: js/control/Control.NotebookbarCalc.js:2305
 #: js/control/Control.NotebookbarImpress.js:955
@@ -723,94 +722,90 @@ msgstr "顯示狀態列"
 msgid "Shapes"
 msgstr "圖案"
 
-#: js/control/Control.NotebookbarWriter.js:1124
+#: js/control/Control.NotebookbarWriter.js:1106
 #: js/control/Control.NotebookbarCalc.js:1423
 #: js/control/Control.NotebookbarImpress.js:1255
 #: js/control/Control.NotebookbarDraw.js:1238
 msgid "Smart Picker"
 msgstr ""
 
-#: js/control/Control.NotebookbarWriter.js:1381
+#: js/control/Control.NotebookbarWriter.js:1363
 msgid "Picture"
 msgstr "圖片"
 
-#: js/control/Control.NotebookbarWriter.js:1388
+#: js/control/Control.NotebookbarWriter.js:1370
 #: js/control/Control.NotebookbarCalc.js:658
 msgid "Date"
 msgstr "日期"
 
-#: js/control/Control.NotebookbarWriter.js:1411
+#: js/control/Control.NotebookbarWriter.js:1393
 #: js/control/Control.NotebookbarCalc.js:1207
 #: js/control/Control.NotebookbarImpress.js:437
 #: js/control/Control.NotebookbarDraw.js:334
 msgid "Read mode"
 msgstr ""
 
-#: js/control/Control.NotebookbarWriter.js:1472
+#: js/control/Control.NotebookbarWriter.js:1454
 #: js/control/Control.NotebookbarCalc.js:1261
 #: js/control/Control.NotebookbarImpress.js:507
 #: js/control/Control.NotebookbarDraw.js:388
 msgid "Compact view"
 msgstr "精簡界面"
 
-#: js/control/Control.NotebookbarWriter.js:1473
+#: js/control/Control.NotebookbarWriter.js:1455
 #: js/control/Control.NotebookbarCalc.js:1262
 #: js/control/Control.NotebookbarImpress.js:508
 #: js/control/Control.NotebookbarDraw.js:389
 msgid "Toggle UI Mode"
 msgstr "切換操作介面"
 
-#: js/control/Control.NotebookbarWriter.js:1486
+#: js/control/Control.NotebookbarWriter.js:1468
 msgid "Ruler"
 msgstr "尺規"
 
-#: js/control/Control.NotebookbarWriter.js:1487
+#: js/control/Control.NotebookbarWriter.js:1469
 msgid "Show Ruler"
 msgstr "顯示尺規"
 
-#: js/control/Control.NotebookbarWriter.js:1499
+#: js/control/Control.NotebookbarWriter.js:1481
 #: js/control/Control.NotebookbarCalc.js:1287
 #: js/control/Control.NotebookbarImpress.js:533
 #: js/control/Control.NotebookbarDraw.js:413
 msgid "Status Bar"
 msgstr "狀態列"
 
-#: js/control/Control.NotebookbarWriter.js:1512
+#: js/control/Control.NotebookbarWriter.js:1494
 #: js/control/Control.NotebookbarCalc.js:1275
 #: js/control/Control.NotebookbarImpress.js:521
 #: js/control/Control.NotebookbarDraw.js:401
 msgid "Collapse Tabs"
 msgstr "收起分頁"
 
-#: js/control/Control.NotebookbarWriter.js:1546
-msgid "Binding line"
-msgstr "裝訂線"
-
-#: js/control/Control.NotebookbarWriter.js:1893
+#: js/control/Control.NotebookbarWriter.js:1860
 msgid "Update Index"
 msgstr "更新索引"
 
-#: js/control/Control.NotebookbarWriter.js:1976
+#: js/control/Control.NotebookbarWriter.js:1943
 msgid "Add Bibliography"
 msgstr "新增參考文獻"
 
-#: js/control/Control.NotebookbarWriter.js:1989
+#: js/control/Control.NotebookbarWriter.js:1956
 msgid "Add Citation"
 msgstr "新增引用"
 
-#: js/control/Control.NotebookbarWriter.js:2001
+#: js/control/Control.NotebookbarWriter.js:1968
 msgid "Add Citation Note"
 msgstr "新增引用註記"
 
-#: js/control/Control.NotebookbarWriter.js:2019
+#: js/control/Control.NotebookbarWriter.js:1986
 msgid "Refresh Citations"
 msgstr "更新引用"
 
-#: js/control/Control.NotebookbarWriter.js:2031
+#: js/control/Control.NotebookbarWriter.js:1998
 msgid "Unlink Citations"
 msgstr "取消引用"
 
-#: js/control/Control.NotebookbarWriter.js:2043
+#: js/control/Control.NotebookbarWriter.js:2010
 msgid "Citation Preferences"
 msgstr ""
 
@@ -818,13 +813,7 @@ msgstr ""
 msgid "Data"
 msgstr "資料"
 
-#: js/control/Control.NotebookbarCalc.js:208
-#: js/control/Control.NotebookbarImpress.js:276
-msgid "Download"
-msgstr "下載"
-
 #: js/control/Control.NotebookbarCalc.js:220
-#, fuzzy
 msgid "ODF Spreadsheet (.ods)"
 msgstr "ODF 試算表（.ods）"
 
@@ -929,7 +918,6 @@ msgid "Master"
 msgstr ""
 
 #: js/control/Control.NotebookbarImpress.js:306
-#, fuzzy
 msgid "ODF Presentation (.odp)"
 msgstr "ODF 簡報（.odp）"
 
@@ -962,7 +950,7 @@ msgstr "目前配色"
 msgid "Account"
 msgstr "帳號"
 
-#: admin/js/global.js:70 admin/src/Main.js:455 admin/src/Main.js:475
+#: admin/js/global.js:70 admin/src/Main.js:452 admin/src/Main.js:472
 msgid "Password"
 msgstr "密碼"
 
@@ -986,15 +974,15 @@ msgstr "顯示密碼"
 msgid "Hide password"
 msgstr "隱藏密碼"
 
-#: admin/src/AdminSocketBase.js:52
+#: admin/src/AdminSocketBase.js:55
 msgid "Server has been shut down; Waiting to be back online."
 msgstr "伺服器已經關閉，等待重新上線…"
 
-#: admin/src/AdminSocketBase.js:67
+#: admin/src/AdminSocketBase.js:68
 msgid "Connection error"
 msgstr "連線錯誤"
 
-#: admin/src/AdminSocketBase.js:74
+#: admin/src/AdminSocketBase.js:75
 msgid "Try to reconnect..."
 msgstr "嘗試重新連線"
 
@@ -1052,33 +1040,33 @@ msgid ""
 "next service restart."
 msgstr "帳號和密碼已更新，下次服務重新啟動後生效"
 
-#: admin/src/Main.js:433
+#: admin/src/Main.js:432
 msgid "Are you sure you want to restart the online service?"
 msgstr "確定重新啟動線上服務？"
 
-#: admin/src/Main.js:452
+#: admin/src/Main.js:449
 msgid ""
 "For security reasons, please enter your original management account and "
 "password."
 msgstr "基於安全考量，請輸入您原來的管理帳號和密碼"
 
-#: admin/src/Main.js:454 admin/src/Main.js:474
+#: admin/src/Main.js:451 admin/src/Main.js:471
 msgid "User name"
 msgstr "使用者名稱"
 
-#: admin/src/Main.js:458
+#: admin/src/Main.js:455
 msgid "Verification"
 msgstr "驗證"
 
-#: admin/src/Main.js:472
+#: admin/src/Main.js:469
 msgid "Please enter a new account and password."
 msgstr "請輸入新的帳號和密碼"
 
-#: admin/src/Main.js:476
+#: admin/src/Main.js:473
 msgid "Confirm password"
 msgstr "確認密碼"
 
-#: admin/src/Main.js:489
+#: admin/src/Main.js:486
 msgid "The password does not match the confirmation password!"
 msgstr "密碼與確認密碼不符！"
 
@@ -1245,6 +1233,12 @@ msgstr "個使用者"
 #: admin/standard/Overview/admin.js:347
 msgid "document(s) open."
 msgstr "個文件開啟"
+
+#~ msgid "Tools"
+#~ msgstr "工具"
+
+#~ msgid "Binding line"
+#~ msgstr "裝訂線"
 
 #~ msgid "Saving..."
 #~ msgstr "存檔中…"
