@@ -10,6 +10,9 @@ ADMIN_SRC_JS = \
 	src/AdminSocketBase.js \
 	$(top_srcdir)/browser/src/core/Util.js \
 	$(top_srcdir)/browser/src/core/Class.js \
+	src/Form.js \
+	src/Dialog.js \
+	src/Toast.js \
 	src/AdminModule.js \
 	src/Main.js
 
