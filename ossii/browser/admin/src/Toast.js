@@ -32,8 +32,10 @@ L.Toast = function (options) {
 	} else {
 		title = options.title !== undefined ? options.title : null;
 		message = options.content !== undefined ? options.content : null;
-		delay = options.delay !== undefined ? options.delay : 5000;
 		textBgColor = options.type !== undefined ? 'text-bg-' + options.type : 'text-bg-primary';
+		if (options.delay !== undefined) {
+			delay = parseInt(options.delay);
+		}
 	}
 
 	// least required message to create a toast
@@ -112,7 +114,7 @@ L.Toast.success = function (message, delay) {
     var options = {
         content: message,
         type: 'success',
-        delay: delay === undefined ? 0 : delay
+        delay: delay
     };
     L.Toast(options);
 };
@@ -121,7 +123,7 @@ L.Toast.error = function (message, delay) {
     var options = {
         content: message,
         type: 'danger',
-        delay: delay === undefined ? 0 : delay
+        delay: delay
     };
     L.Toast(options);
 };
@@ -130,7 +132,7 @@ L.Toast.warning = function (message, delay) {
     var options = {
         content: message,
         type: 'warning',
-        delay: delay === undefined ? 0 : delay
+        delay: delay
     };
     L.Toast(options);
 };
@@ -139,7 +141,7 @@ L.Toast.info = function (message, delay) {
     var options = {
         content: message,
         type: 'info',
-        delay: delay === undefined ? 0 : delay
+        delay: delay
     };
     L.Toast(options);
 };
@@ -148,7 +150,7 @@ L.Toast.message = function (message, delay) {
     var options = {
         content: message,
         type: 'secondary',
-        delay: delay === undefined ? 0 : delay
+        delay: delay
     };
     L.Toast(options);
 };
