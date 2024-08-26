@@ -277,6 +277,24 @@ public:
 
     int  getCanonicalViewId() { return _canonicalViewId; }
 
+// OSSII extended feature. -------------------------------------------------
+#if !MOBILEAPP
+    /// @brief Set the client address
+    /// @param clientAddress
+    void setClientAddress(const std::string& clientAddress) { _clientAddress = clientAddress; }
+    /// @brief Get the client address
+    /// @return std::string - the client address
+    std::string getClientAddress() const
+    {
+        // If _saveAsSocket is set, return the client address of the saveAsSocket.
+        if (_saveAsSocket)
+            return _saveAsSocket->clientAddress();
+
+        return _clientAddress;
+    }
+#endif
+// OSSII extended feature. -------------------------------------------------
+
 private:
     std::shared_ptr<ClientSession> client_from_this()
     {
@@ -336,6 +354,7 @@ private:
     // OSSII extended feature. -------------------------------------------------
     friend class OxOOL::WSD::ExtensionSession;
     std::unique_ptr<OxOOL::WSD::ExtensionSession> _extSession;
+    std::string _clientAddress;
     //--------------------------------------------------------------------------
     std::weak_ptr<DocumentBroker> _docBroker;
 

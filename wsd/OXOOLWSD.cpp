@@ -5489,6 +5489,8 @@ private:
                         {
                             auto streamSocket = std::static_pointer_cast<StreamSocket>(moveSocket);
 
+                            clientSession->setClientAddress(streamSocket->clientAddress());
+
                             // Set WebSocketHandler's socket after its construction for shared_ptr goodness.
                             streamSocket->setHandler(ws);
 
