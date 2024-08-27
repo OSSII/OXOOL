@@ -108,13 +108,13 @@ public:
             std::string installTestCmd, installCmd;
             if (maPackageBase == "rpm")
             {
-                installTestCmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
-                installCmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1 ; echo $? > retcode";
+                installTestCmd = "sudo rpm -Uvh --force --test `find -name \"*.rpm\"` 2>&1";
+                installCmd = "sudo rpm -Uvh --force `find -name \"*.rpm\"` 2>&1";
             }
             else if (maPackageBase == "deb")
             {
-                installTestCmd = "sudo dpkg -i --force-all --dry-run `find -name \"*.deb\"` 2>&1 ; echo $? > retcode";
-                installCmd = "sudo dpkg -i --force-all `find -name \"*.deb\"` 2>&1 ; echo $? > retcode";
+                installTestCmd = "sudo dpkg -i --force-all --dry-run `find -name \"*.deb\"` 2>&1";
+                installCmd = "sudo dpkg -i --force-all `find -name \"*.deb\"` 2>&1";
             }
             else
             {
@@ -145,9 +145,9 @@ public:
 
             std::string uncompressCmd;
             if (extName == "zip")
-                uncompressCmd = "unzip \"" + workFile.getFileName() + "\" 2>&1 ; echo $? > retcode";
+                uncompressCmd = "unzip \"" + workFile.getFileName() + "\" 2>&1";
             else if (extName == "gz" || extName == "tgz")
-                uncompressCmd = "tar zxvf \"" + workFile.getFileName() + "\" 2>&1 ; echo $? > retcode";
+                uncompressCmd = "tar zxvf \"" + workFile.getFileName() + "\" 2>&1";
             else if (extName == "rpm" || extName == "deb")
             {
                 // do nothing
@@ -175,12 +175,7 @@ public:
                     // 傳回輸出內容
                     sendAdminTextFrame(sendTextMessage, "upgradeInfo:" + std::string(buffer), true);
                 }
-                pclose(fp);
-                // 讀取指令結束碼
-                in.open("./retcode", std::ifstream::in);
-                in.getline(buffer, sizeof(buffer));
-                in.close();
-                retcode = std::atoi(buffer);
+                retcode = pclose(fp);
                 // 指令執行有錯
                 if (retcode != 0)
                 {
@@ -199,12 +194,7 @@ public:
                 // 傳回輸出內容
                 sendAdminTextFrame(sendTextMessage, "upgradeInfo:" + std::string(buffer), true);
             }
-            pclose(fp);
-            // 讀取指令結束碼
-            in.open("./retcode", std::ifstream::in);
-            in.getline(buffer, sizeof(buffer));
-            in.close();
-            retcode = std::atoi(buffer);
+            retcode = pclose(fp);
             // 指令執行有錯
             if (retcode != 0)
             {
@@ -222,12 +212,7 @@ public:
                 // 傳回輸出內容
                 sendAdminTextFrame(sendTextMessage, "upgradeInfo:" + std::string(buffer), true);
             }
-            pclose(fp);
-            // 讀取指令結束碼
-            in.open("./retcode", std::ifstream::in);
-            in.getline(buffer, sizeof(buffer));
-            in.close();
-            retcode = std::atoi(buffer);
+            retcode = pclose(fp);
             // 指令執行有錯
             if (retcode != 0)
             {
