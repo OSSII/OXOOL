@@ -6,7 +6,7 @@
  * @version 1.0.0
  * @date 2024.04.06
  */
-/* global L $ _ vex AdminSocketBase */
+/* global L $ _ AdminSocketBase */
 
 (function () {
 	'use strict';
@@ -65,7 +65,7 @@
 			// 檢查 jwt token
 			var jwtToken = window.getCookie('jwt');
 			if (!jwtToken) {
-				vex.dialog.alert(_('Authentication required'));
+				L.Toast.error(_('Authentication required'));
 				// 等待 5 秒後重新導向到登出
 				setTimeout(function () {
 					window.location.href = this._adminRootURI + '/logout';
@@ -114,9 +114,9 @@
 			}
 
 			if (textMsg === 'InvalidAuthToken') { // 無效的 jwt token
-				vex.dialog.alert(_('Invalid authentication token'));
+				L.Toast.error(_('Invalid authentication token'));
 			} else if (textMsg === 'NotAuthenticated') { // 未驗證
-				vex.dialog.alert(_('Authentication required'));
+				L.Toast.error(_('Authentication required'));
 			} if (textMsg.startsWith('adminmodules:')) {
 				// 後面是陣列字串，用 JSON.parse 解析
 				try {
@@ -131,12 +131,12 @@
 				}
 			} else if (textMsg.startsWith('ConfigAuthWrong')) {
 				// 原來的帳號密碼與 oxoolwsd.xml 不符
-				vex.dialog.alert(_('The account or password is inconsistent with the system!'));
+				L.Toast.error(_('The account or password is inconsistent with the system!'));
 			} else if (textMsg.startsWith('ConfigAuthOk')) {
 				// 原來的帳號密碼與 oxoolwsd.xml 一致
 				this._changeAccountPassword();
 			} else if (textMsg.startsWith('setAdminPasswordOk')) {
-				vex.dialog.alert(_('The account and password have been updated and will take effect after the next service restart.'));
+				L.Toast.error(_('The account and password have been updated and will take effect after the next service restart.'));
 
 			} else if (textMsg.startsWith('oxoolserver') || textMsg.startsWith('coolserver')) {
 				// online 版本資訊
@@ -428,46 +428,102 @@
 		 * 重新啟動伺服器事件處理
 		 */
 		_onRestartServer: function () {
-			var that = this;
-			vex.dialog.confirm({
-				message: _('Are you sure you want to restart the online service?'),
-				buttons: [
-					$.extend({}, vex.dialog.buttons.YES, { text: _('OK') }),
-					$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
-				],
-				callback: function (value) {
-					if (value) {
-						that.socket.send('shutdown maintenance');
+			var options = {
+				content: _('Are you sure you want to restart the online service?'),
+				callback: function (ok) {
+					if (ok) {
+						this.socket.send('shutdown maintenance');
 					}
-				}
-			});
+				}.bind(this)
+			};
+
+			L.Dialog.confirm(options);
 		},
 
 		/**
 		 * 修改密碼事件處理
 		 */
 		_onChangePassword: function () {
-			var that = this;
-			vex.dialog.open({
-				message: _('For security reasons, please enter your original management account and password.'),
-				input: [
-					'<input class="form-control" name="username" type="text" placeholder="' + _('User name') + '" required />',
-					'<input name="password" type="password" placeholder="' + _('Password') + '" required />'
+			var dialog = L.Dialog({
+				title: _('For security reasons, please enter your original management account and password.'),
+				content: [
+					'<div class="row mb-2">',
+					'<label for="username" class="col-3 col-form-label">' + _('User name') + '</label>',
+					'<div class="col-9">',
+					'<input class="form-control" id="username" type="text">',
+					'</div>',
+					'</div>',
+					'<div class="row">',
+					'<label for="password" class="col-3 col-form-label">' + _('Password') + '</label>',
+					'<div class="col-9">',
+					'<input class="form-control" id="password" type="password">',
+					'</div>',
+					'</div>'
 				].join(''),
 				buttons: [
-					$.extend({}, vex.dialog.buttons.YES, { text: _('Verification') }),
-					$.extend({}, vex.dialog.buttons.NO, { text: _('Cancel') })
-				],
-				callback: function (data) {
-					if (data) {
-						that.socket.send('isConfigAuthOk ' + data.username + ' ' + data.password);
+					{
+						text: _('Cancel')
+					},
+					{
+						text: _('Verification'),
+						primary: true,
+						onClick: function () {
+							var username = encodeURI(document.getElementById('username').value);
+							var password = encodeURI(document.getElementById('password').value);
+							this.socket.send('isConfigAuthOk ' + username + ' ' + password);
+						}.bind(this)
 					}
-				}
+				],
+
 			});
+			dialog.show();
 		},
 
 		_changeAccountPassword: function () {
-			var that = this;
+			var dialog = L.Dialog({
+				title: _('Please enter a new account and password.'),
+				content: [
+					'<div class="row mb-2">',
+					'<label for="newUsername" class="col-3 col-form-label">' + _('User name') + '</label>',
+					'<div class="col-9">',
+					'<input class="form-control" id="newUsername" type="text">',
+					'</div>',
+					'</div>',
+					'<div class="row mb-2">',
+					'<label for="newPassword" class="col-3 col-form-label">' + _('Password') + '</label>',
+					'<div class="col-9">',
+					'<input class="form-control" id="newPassword" type="password">',
+					'</div>',
+					'</div>',
+					'<div class="row">',
+					'<label for="confirmPassword" class="col-3 col-form-label">' + _('Confirm password') + '</label>',
+					'<div class="col-9">',
+					'<input class="form-control" id="confirmPassword" type="password">',
+					'</div>',
+					'</div>'
+				].join(''),
+				buttons: [
+					{
+						text: _('Cancel')
+					},
+					{
+						text: _('OK'),
+						primary: true,
+						onClick: function () {
+							var username = encodeURI(document.getElementById('newUsername').value);
+							var password = encodeURI(document.getElementById('newPassword').value);
+							var confirmPassword = encodeURI(document.getElementById('confirmPassword').value);
+							if (password === confirmPassword) {
+								this.socket.send('setAdminPassword ' + username + ' ' + password);
+							} else {
+								L.Toast.error(_('The password does not match the confirmation password!'));
+							}
+						}.bind(this)
+					}
+				]
+			});
+			dialog.show();
+			/* var that = this;
 			vex.dialog.open({
 				message: _('Please enter a new account and password.'),
 				input: [
@@ -486,11 +542,11 @@
 								data.username + ' ' + data.password);
 						}
 						else {
-							vex.dialog.alert(_('The password does not match the confirmation password!'));
+							L.Toast.error(_('The password does not match the confirmation password!'));
 						}
 					}
 				}
-			});
+			}); */
 		},
 	});
 

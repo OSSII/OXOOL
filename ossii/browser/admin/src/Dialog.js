@@ -9,7 +9,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/* global L _ bootstrap */
+/* global L _ bootstrap Form */
 
 /**
  * @class L.dialog
@@ -24,6 +24,7 @@
  * @param {boolean} options.keyboard - Closes the dialog when escape key is pressed. if not set, default is true
  * @param {String} options.title - title of dialog. if not set, no title
  * @param {String|HTMLElement} options.content - content of dialog
+ * @param {Object} options.form - form of dialog
  * @param {Array} options.buttons - buttons of dialog. if not set, no buttons
  * @param {String} options.buttons.text - text of button
  * @param {Boolean} options.buttons.primary - primary button or not
@@ -33,6 +34,9 @@
  */
 
 L.dialog = L.Class.extend({
+	options: {
+	},
+
 	initialize: function (options) {
 		switch (options.size) {
 			case 'small':
@@ -129,6 +133,9 @@ L.dialog = L.Class.extend({
 			} else if (typeof this.options.content === 'object') {
 				// randering content element
 			}
+		} else if (typeof this.options.form === 'object') {
+			// randering form
+			this._createForm(dialogBody, this.options.form);
 		}
 
 		if (L.Util.isArray(this.options.buttons)) {
@@ -145,7 +152,6 @@ L.dialog = L.Class.extend({
 				dialogFooter.appendChild(dialogFooterButton);
 
 				dialogFooterButton.addEventListener('click', function () {
-					this._modal.hide(); // close dialog
 					if (typeof button.onClick === 'function') {
 						if (this.options.bind) {
 							button.onClick.bind(this.options.bind)();
@@ -153,6 +159,7 @@ L.dialog = L.Class.extend({
 							button.onClick();
 						}
 					}
+					this._modal.hide(); // !!!IMPORTANT: must hide dialog after click button
 				}.bind(this));
 
 			}.bind(this));
@@ -172,6 +179,12 @@ L.dialog = L.Class.extend({
 		this._dialog = dialog;
 
 		return this._dialog;
+	},
+
+	_createForm: function (container, form) {
+		var formEl = Form.create(form);
+		formEl.classList.add('row', 'g-3');
+		container.appendChild(formEl);
 	},
 });
 
