@@ -3,7 +3,7 @@
 	Abstract class
 */
 
-/* global $ _ vex Base */
+/* global $ _ Base */
 
 var AdminSocketBase = Base.extend({
 	socket: null,
@@ -48,23 +48,24 @@ var AdminSocketBase = Base.extend({
 		this.socket.close();
 
 		if (this.pageWillBeRefreshed === false) {
-			this.vexInstance = vex.open({
-				unsafeContent: _('Server has been shut down; Waiting to be back online.') +
-						'<div>' +
-						'<span class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>' +
-						' <span id="wait-server-start"></span>' +
-						'</div>',
-				contentClassName: 'loleaflet-user-idle',
-				showCloseButton: false,
-				overlayClosesOnClick: false,
-				escapeButtonCloses: false,
-			});
+			var options = {
+				backdrop: false,
+				keyboard: false,
+				focus: false,
+				content: _('Server has been shut down; Waiting to be back online.') +
+				'<div>' +
+				'<span class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>' +
+				'<span id="wait-server-start"></span>' +
+				'</div>'
+			};
+
+			L.Dialog(options).show();
 			this.waitServerStart(); // 進入等待 Server 重啟循環
 		}
 	},
 
 	onSocketError: function () {
-		vex.dialog.alert(_('Connection error'));
+		L.Dialog.alert(_('Connection error'));
 	},
 
 	// 偵測 OxOOL Server 是否啟動，若是，就重新 reload 當前頁面

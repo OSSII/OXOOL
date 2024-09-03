@@ -61,8 +61,8 @@ L.AdminModule.SoftwareUpgrade = L.AdminModule.extend({
 		case 'upgradeSuccess': // 軟體升級成功
 			var successMsg = _('Software upgrade is successful.');
 			this._addMessage('<p class="text-success h4 fw-bold">' + successMsg + '</p>');
-			vex.dialog.alert({unsafeMessage: '<p class="text-success">' + successMsg +
-				'<br>' + _('You may need to restart the service.') + '</p>'});
+			L.Dialog.alert('<p class="text-success">' + successMsg +
+				'<br>' + _('You may need to restart the service.') + '</p>');
 			break;
 		case 'upgradeFail': // 軟體升級失敗
 			this._addMessage('<p class="text-danger h4 fw-bold">' + _('Software upgrade failed!') + '</p>');
@@ -127,7 +127,7 @@ L.AdminModule.SoftwareUpgrade = L.AdminModule.extend({
 				console.debug('upload success:', data);
 			},
 			error: function(xhr) {
-				vex.dialog.alert({unsafeMessage: _('File upload failed')});
+				L.Dialog.alert(_('File upload failed'));
 				console.error('upload error:', xhr);
 			},
 			complete: function(xhr) {
