@@ -171,6 +171,9 @@ void AdminService::handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMe
     // 格式: isConfigAuthOk <帳號> <密碼>
     else if (tokens.equals(0, "isConfigAuthOk") && tokens.size() == 3)
     {
+        std::string adminUser = OxOOL::Util::decodeURIComponent(tokens[1]);
+        std::string adminPwd  = OxOOL::Util::decodeURIComponent(tokens[2]);
+
         if (OxOOL::isConfigAuthOk(tokens[1], tokens[2]))
             sendTextMessage("ConfigAuthOk", false);
         else
@@ -181,8 +184,8 @@ void AdminService::handleAdminMessage(const OxOOL::SendTextMessageFn& sendTextMe
     {
         OxOOL::XMLConfig config;
         config.load(OxOOL::ENV::ConfigFile);
-        std::string adminUser = tokens[1];
-        std::string adminPwd  = tokens[2];
+        std::string adminUser = OxOOL::Util::decodeURIComponent(tokens[1]);
+        std::string adminPwd  = OxOOL::Util::decodeURIComponent(tokens[2]);
         config.setString("admin_console.username", adminUser); // 帳號用明碼儲存
 #if HAVE_PKCS5_PBKDF2_HMAC
         unsigned char pwdhash[pwdHashLength];
