@@ -34,6 +34,7 @@
 #include <common/StringVector.hpp>
 #include <wsd/OXOOLWSD.hpp>
 #include <wsd/ClientSession.hpp>
+#include <wsd/HostUtil.hpp>
 
 #include "Private/Watermark.hpp"
 
@@ -82,10 +83,16 @@ namespace OxOOL
             return;
         }
 
+        const auto& app = Poco::Util::Application::instance();
+
         // Initialize ENV using WSD mode.
         WsdENV env(ENV::Mode::WSD);
-        // Setup the WSD environment variables.
-        //setupWSDENV();
+
+        // Add WOPI hosts.(compatible with old config)
+        if (app.config().has("storage.wopi.host[0]"))
+        {
+            HostUtil::parseWopiHost(app.config());
+        }
 
         // Initialize the module manager.
         ModuleMgr.initialize();
