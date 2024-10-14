@@ -266,11 +266,11 @@ msgstr "確定"
 
 #: js/map/handler/Map.ExternalEdit.js:106
 msgid "Inform"
-msgstr ""
+msgstr "通知"
 
 #: js/map/handler/Map.ExternalEdit.js:107
 msgid "There is no handler that can handle this format:"
-msgstr ""
+msgstr "沒有能處理此種格式的編輯器："
 
 #: js/control/Toolbar.Extensions.js:173 js/control/Control.Menubar.js:94
 #: js/control/Control.Menubar.js:154
