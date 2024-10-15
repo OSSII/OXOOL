@@ -73,13 +73,6 @@ void Watermark::enhanceWatermark(const std::shared_ptr<ClientSession>& clientSes
     {
         userWatermark = *userExtraInfo->getObject("watermark");
     }
-    // Compatible with Collabora Online watermark settings
-    else if (!clientSession->getWatermarkText().empty())
-    {
-        userWatermark.set("text", clientSession->getWatermarkText());
-        userWatermark.set("editing", true);
-        userWatermark.set("printing", true);
-    }
 
     // Merge system watermark with user watermark
     for (const auto& key : maSysWatermark)
@@ -88,8 +81,17 @@ void Watermark::enhanceWatermark(const std::shared_ptr<ClientSession>& clientSes
             userWatermark.set(key.first, key.second);
     }
 
+    // WOPI host specific watermark text and user watermar text is empty,
+    // Use WOPI host specific watermark text.
+    if (!clientSession->getWatermarkText().empty() && userWatermark.get("text").toString().empty())
+    {
+        userWatermark.set("text", clientSession->getWatermarkText());
+        userWatermark.set("editing", true);
+        userWatermark.set("printing", true);
+    }
+
     // if text is empty, or editing/printing are false, disable watermark
-    if (userWatermark.get("text").isEmpty() ||
+    if (userWatermark.get("text").toString().empty() ||
         (!userWatermark.getValue<bool>("editing") && !userWatermark.getValue<bool>("printing")))
     {
         clientSession->setWatermarkText("");
@@ -167,7 +169,7 @@ void Watermark::loadSysWatermark()
     }
 
     // Check if watermark text is empty
-    if (maSysWatermark.get("text").isEmpty())
+    if (maSysWatermark.get("text").toString().empty())
     {
         maSysWatermark.set("editing", false);
         maSysWatermark.set("printing", false);
