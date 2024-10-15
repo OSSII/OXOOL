@@ -58,15 +58,9 @@ void Watermark::enhanceWatermark(const std::shared_ptr<ClientSession>& clientSes
 
     bool hasUserWatermark = true; // Check if userExtraInfo has watermark
     // Check userExtraInfo has watermark
-    if (!userExtraInfo->has("watermark"))
+    if (!userExtraInfo->has("watermark") || !userExtraInfo->isObject("watermark"))
     {
-        LOG_WRN("No watermark in userExtraInfo");
-        hasUserWatermark = false;
-    }
-
-    if (!userExtraInfo->isObject("watermark"))
-    {
-        LOG_WRN("Watermark is not an object");
+        LOG_WRN("No watermark in userExtraInfo or not an object");
         hasUserWatermark = false;
     }
 
@@ -76,7 +70,16 @@ void Watermark::enhanceWatermark(const std::shared_ptr<ClientSession>& clientSes
     // User watermark object
     Poco::JSON::Object userWatermark;
     if (hasUserWatermark)
+    {
         userWatermark = *userExtraInfo->getObject("watermark");
+    }
+    // Compatible with Collabora Online watermark settings
+    else if (!clientSession->getWatermarkText().empty())
+    {
+        userWatermark.set("text", clientSession->getWatermarkText());
+        userWatermark.set("editing", true);
+        userWatermark.set("printing", true);
+    }
 
     // Merge system watermark with user watermark
     for (const auto& key : maSysWatermark)
