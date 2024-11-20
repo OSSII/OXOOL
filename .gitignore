@@ -182,3 +182,6 @@ debian/control
 debian/copyright
 debian/rules
 debian/oxool*
+
+# Ignore Vagrant state files
+/.vagrant/
