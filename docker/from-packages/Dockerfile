@@ -8,30 +8,16 @@ FROM debian:stable-slim
 
 # some descriptive metadata - docker image inspect
 ARG author
-LABEL author=${author:-"Collabora Productivity Ltd."}
-LABEL description="Collabora Online is a powerful collaborative Office suite that supports all major document, spreadsheet and presentation file formats, which you can integrate into your own infrastructure. Collabora Online provides data security and sovereignty, and is ideally suited to the demands of a modern distributed working environment. Delivering a familiar look and feel, Collabora Online represents a real alternative to other big-brands solutions, giving you control and flexibility."
+LABEL author=${author:-"晟鑫科技 OSS Integral Institute Co., Ltd."}
+LABEL description="OxOffice Online is a powerful collaborative Office suite that supports all major document, spreadsheet and presentation file formats, which you can integrate into your own infrastructure. OxOffice Online provides data security and sovereignty, and is ideally suited to the demands of a modern distributed working environment. Delivering a familiar look and feel, OxOffice Online represents a real alternative to other big-brands solutions, giving you control and flexibility."
 ARG releasenotes
-LABEL release.notes=${releasenotes:-"https://www.collaboraonline.com/code-24-04-release-notes/"}
+LABEL release.notes=${releasenotes:-"https://docs.ossii.com.tw/books/oxoffice-更新公告/page/oxoffice-online-社群版本更新公告"}
 ARG version
-LABEL version=${version:-"24.04.1.3"}
+LABEL version=${version:-"5.0.1-community-dev"}
 ARG coretag
 LABEL commit.history.core="https://git.libreoffice.org/core/+log/${coretag}"
 ARG onlinetag
-LABEL commit.history.online="https://github.com/CollaboraOnline/online/commits/${onlinetag}"
-
-# repo: can be 'repos', 'repos-staging', 'repos-snapshot'
-# Optional. The default is 'repos'.
-ARG repo
-
-# type: can be
-# 'code' - Collabora Online Development Edition
-# 'cool' - Collabora Online, to build this you need to give your secret URL part from https://support.collaboraoffice.com, i.e. you have to be Collabora partner or customer
-# 'key'  - Collabora Online, the license key enabled version.
-# Optional. The default is 'code'.
-ARG type
-
-# Optional. If defined then brand package will not be installed.
-ARG nobrand
+LABEL commit.history.online="https://github.com/OSSII/oxool-community/commits/${onlinetag}"
 
 # UTF-8 locale is needed to handle file names with non-ASCII characters
 ENV LC_CTYPE C.UTF-8
