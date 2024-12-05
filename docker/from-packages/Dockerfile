@@ -24,7 +24,7 @@ LABEL commit.history.online="https://github.com/OSSII/oxool-community/commits/${
 ENV LC_CTYPE=C.UTF-8
 
 RUN --mount=type=bind,source=.,target=/build-context \
-# Install dependencies for setting up the OxOffice Online v4 repo
+# Install dependencies for setting up external repositories
     dnf install -y curl && \
 # Setup OxOffice Online v4 repo(only for the poco library)
     curl --output /etc/yum.repos.d/oxool-community-v4-el8.repo http://www.oxoffice.com.tw/rpm/el/oxool-community-v4-el8.repo && \
