@@ -7,13 +7,14 @@
 FROM rockylinux:8
 
 # some descriptive metadata - docker image inspect
+LABEL org.opencontainers.image.title="OxOffice Online(COMMUNITY-5)"
 ARG author
-LABEL author=${author:-"晟鑫科技 OSS Integral Institute Co., Ltd."}
-LABEL description="OxOffice Online is a powerful collaborative Office suite that supports all major document, spreadsheet and presentation file formats, which you can integrate into your own infrastructure. OxOffice Online provides data security and sovereignty, and is ideally suited to the demands of a modern distributed working environment. Delivering a familiar look and feel, OxOffice Online represents a real alternative to other big-brands solutions, giving you control and flexibility."
+LABEL org.opencontainers.image.authors=${author:-"晟鑫科技 OSS Integral Institute Co., Ltd."}
+LABEL org.opencontainers.image.description="OxOffice Online is a powerful collaborative Office suite that supports all major document, spreadsheet and presentation file formats, which you can integrate into your own infrastructure. OxOffice Online provides data security and sovereignty, and is ideally suited to the demands of a modern distributed working environment. Delivering a familiar look and feel, OxOffice Online represents a real alternative to other big-brands solutions, giving you control and flexibility."
 ARG releasenotes
 LABEL release.notes=${releasenotes:-"https://docs.ossii.com.tw/books/oxoffice-更新公告/page/oxoffice-online-社群版本更新公告"}
 ARG version
-LABEL version=${version:-"5.0.1-community-dev"}
+LABEL org.opencontainers.image.version=${version:-"5.0.1-community-dev"}
 ARG coretag
 LABEL commit.history.core="https://git.libreoffice.org/core/+log/${coretag}"
 ARG onlinetag
