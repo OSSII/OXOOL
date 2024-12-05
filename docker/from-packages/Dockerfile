@@ -20,7 +20,7 @@ ARG onlinetag
 LABEL commit.history.online="https://github.com/OSSII/oxool-community/commits/${onlinetag}"
 
 # UTF-8 locale is needed to handle file names with non-ASCII characters
-ENV LC_CTYPE C.UTF-8
+ENV LC_CTYPE=C.UTF-8
 
 RUN \
 # Update repos before installing packages
