@@ -1,0 +1,6 @@
+# Docker build context ignore file
+#
+# Specify files that should not be transmitted as part of the Docker build context to save build time and storage space.
+
+# Avoid sending unextracted binary package archive files
+*.zip
