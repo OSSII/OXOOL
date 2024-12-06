@@ -15,10 +15,6 @@ ARG releasenotes
 LABEL release.notes=${releasenotes:-"https://docs.ossii.com.tw/books/oxoffice-更新公告/page/oxoffice-online-社群版本更新公告"}
 ARG version
 LABEL org.opencontainers.image.version=${version:-"5.0.1-community-dev"}
-ARG coretag
-LABEL commit.history.core="https://git.libreoffice.org/core/+log/${coretag}"
-ARG onlinetag
-LABEL commit.history.online="https://github.com/OSSII/oxool-community/commits/${onlinetag}"
 
 # UTF-8 locale is needed to handle file names with non-ASCII characters
 ENV LC_CTYPE=C.UTF-8
