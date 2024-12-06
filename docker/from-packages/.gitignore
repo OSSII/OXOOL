@@ -1,2 +1,5 @@
+# Don't track Docker container bind mounts
+/config*
+
 # Don't track built RPM packages that is used to build the container images
 *.rpm

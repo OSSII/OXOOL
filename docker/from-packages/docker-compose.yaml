@@ -1,0 +1,39 @@
+# Docker Compose configuration file
+#
+# References:
+#
+# * Compose Specification | Compose file reference | Reference | Docker Docs
+#   https://docs.docker.com/compose/compose-file/
+#
+# Copyright 2024 Buo-ren Lin <buoren.lin@ossii.com.tw>
+# SPDX-License-Identifier: MPL-2.0
+name: oxool
+services:
+  oxool:
+    container_name: oxool-community-5
+    hostname: oxool
+    image: oxool:community-5-latest
+    volumes:
+      - type: bind
+        source: ./config
+        target: /etc/oxool
+    environment:
+      # Fix time presentation
+      #- TZ=CST-8
+    ports:
+      - "127.0.0.1:9980:9980"
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - MKNOD
+
+      # Not needed: privilege port binding is done by the Docker Engine
+      #- NET_BIND_SERVICE
+
+      - SYS_ADMIN
+      - SYS_CHROOT
+    ulimits:
+      # docker --ulimit does not support unlimited or large numbers · Issue #12515 · moby/moby
+      # https://github.com/moby/moby/issues/12515
+      nproc: -1
