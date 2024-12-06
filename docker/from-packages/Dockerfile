@@ -20,7 +20,7 @@ LABEL commit.history.core="https://git.libreoffice.org/core/+log/${coretag}"
 ARG onlinetag
 LABEL commit.history.online="https://github.com/OSSII/oxool-community/commits/${onlinetag}"
 
-# UTF-8 locale is needed to handle file names with non-ASCII characters
+# UTF-8 locale is needed to handle file names with non-ASCII characters
 ENV LC_CTYPE=C.UTF-8
 
 RUN --mount=type=bind,source=.,target=/build-context \
