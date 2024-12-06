@@ -113,7 +113,7 @@ Refer to the following steps to import service configuration from the container 
         # Preserve file ownership and permissions
         --archive
     )
-    docker cp "${docker_cp_opts[@]}" oxool:community-5-latest:/etc/oxool/ config
+    docker cp "${docker_cp_opts[@]}" oxool-community-5:/etc/oxool/ config
     ```
 
 1. Run the following commands to stop and destroy the temporary container:
@@ -174,7 +174,7 @@ Refer to the following steps to prepare your service files from your native inst
         # Preserve file ownership and permissions
         --archive
     )
-    docker cp "${docker_cp_opts[@]}" oxool:community-5-latest:/etc/oxool/ config.reference
+    docker cp "${docker_cp_opts[@]}" oxool-community-5:/etc/oxool/ config.reference
     ```
 
 1. Run the following commands to stop and destroy the container:
