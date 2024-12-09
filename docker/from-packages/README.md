@@ -212,40 +212,40 @@ Refer to the following steps to launch the service:
 1. Change the working directory to the directory that hosts this document.
 1. Run the following commands to directly create and run a container from the built container image:
 
-```bash
-docker_run_opts=(
-    # Configure the container name that can be used to reference the running container in Docker CLI
-    --name oxool-community-5
+    ```bash
+    docker_run_opts=(
+        # Configure the container name that can be used to reference the running container in Docker CLI
+        --name oxool-community-5
 
-    # Detach the controlling terminal after container creation, this allows you to continue running commands in the current terminal
-    -d
+        # Detach the controlling terminal after container creation, this allows you to continue running commands in the current terminal
+        -d
 
-    # Publish container port to the host
-    # NOTE: Change the host IP address to one that is accessible by the WOPI application, avoid unnecessarily publish the container port to the public
-    -p 127.0.0.1:9980:9980
+        # Publish container port to the host
+        # NOTE: Change the host IP address to one that is accessible by the WOPI application, avoid unnecessarily publish the container port to the public
+        -p 127.0.0.1:9980:9980
 
-    # Always restart the container after crashes
-    --restart always
+        # Always restart the container after crashes
+        --restart always
 
-    # Configure timezone so that proper log timestamps will be used, refer the following webpage for more information:
-    #
-    # The GNU C Library - TZ Variable
-    # https://ftp.gnu.org/old-gnu/Manuals/glibc-2.2.3/html_node/libc_431.html
-    #--env=TZ=Asia/Taipei
+        # Configure timezone so that proper log timestamps will be used, refer the following webpage for more information:
+        #
+        # The GNU C Library - TZ Variable
+        # https://ftp.gnu.org/old-gnu/Manuals/glibc-2.2.3/html_node/libc_431.html
+        #--env=TZ=Asia/Taipei
 
-    # Mount the configuration directory into the container
-    --mount type=bind,source=./config,destination=/etc/oxool
+        # Mount the configuration directory into the container
+        --mount type=bind,source=./config,destination=/etc/oxool
 
-    # Grant Linux capabilities required for the service to operate (optimally)
-    --cap-add=CHOWN
-    --cap-add=DAC_OVERRIDE
-    --cap-add=FOWNER
-    --cap-add=MKNOD
-    --cap-add=SYS_ADMIN
-    --cap-add=SYS_CHROOT
-)
-docker run "${docker_run_opts[@]}" oxool:community-5-latest
-```
+        # Grant Linux capabilities required for the service to operate (optimally)
+        --cap-add=CHOWN
+        --cap-add=DAC_OVERRIDE
+        --cap-add=FOWNER
+        --cap-add=MKNOD
+        --cap-add=SYS_ADMIN
+        --cap-add=SYS_CHROOT
+    )
+    docker run "${docker_run_opts[@]}" oxool:community-5-latest
+    ```
 
 ### Launch the service using Docker Compose
 
