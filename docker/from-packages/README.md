@@ -93,7 +93,7 @@ Refer to the following steps to import service configuration from the container 
 
     ```bash
     docker_run_opts=(
-        # Configure the container name that can be used to reference the running container in Docker CLI
+        # Configure the container name so that it can be used to reference the running container in the Docker CLI
         --name oxool-community-5
 
         # Remove container and its data in the writable layer after stopping
@@ -154,7 +154,7 @@ Refer to the following steps to prepare your service files from your native inst
 
     ```bash
     docker_run_opts=(
-        # Configure the container name that can be used to reference the running container in Docker CLI
+        # Configure the container name so that it can be used to reference the running container in the Docker CLI
         --name oxool-community-5
 
         # Remove container and its data in the writable layer after stopping
@@ -214,7 +214,7 @@ Refer to the following steps to launch the service:
 
     ```bash
     docker_run_opts=(
-        # Configure the container name that can be used to reference the running container in Docker CLI
+        # Configure the container name so that it can be used to reference the running container in the Docker CLI
         --name oxool-community-5
 
         # Detach the controlling terminal after container creation, this allows you to continue running commands in the current terminal
