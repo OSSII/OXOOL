@@ -347,13 +347,13 @@ Run the following commands to destroy and remove the service container:
 docker container rm oxool-community-5
 ```
 
+The container [must be stopped first](#stop-the-service) before doing this operation.
+
 If you're using Docker Compose you can also use this command after changing the working directory to the directory hosting this document:
 
 ```bash
 docker compose down oxool
 ```
-
-The container [must be stopped first](#stop-the-service) before doing this operation.
 
 ## References
 
