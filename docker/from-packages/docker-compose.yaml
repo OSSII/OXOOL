@@ -21,7 +21,8 @@ services:
       # Fix time presentation
       #- TZ=CST-8
     ports:
-      - "127.0.0.1:9980:9980"
+      # NOTE: For Nextcloud demonstration setup loopback address will not work
+      - 127.0.0.1:9980:9980
     cap_add:
       - CHOWN
       - DAC_OVERRIDE
@@ -37,3 +38,20 @@ services:
       # docker --ulimit does not support unlimited or large numbers · Issue #12515 · moby/moby
       # https://github.com/moby/moby/issues/12515
       nproc: -1
+
+  # Nextcloud service container for demonstration
+  nextcloud:
+    image: nextcloud:28
+    restart: always
+    container_name: oxool-nextcloud
+    volumes:
+      - nextcloud-config:/var/www/html/config
+      - nextcloud-data:/var/www/html/data
+    ports:
+      - 8080:80
+    profiles:
+      - demo
+
+volumes:
+  nextcloud-config:
+  nextcloud-data:

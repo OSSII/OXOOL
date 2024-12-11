@@ -263,6 +263,22 @@ Refer to the following steps to launch the service:
     docker compose up "${docker_compose_up_opts[@]}"
     ```
 
+   If you also want a Nextcloud container running for demonstration purposes, run the following commands instead:
+
+    ```bash
+    docker_compose_opts=(
+        # Start the containers that matches the "demo" profile as well
+        --profile demo
+    )
+    docker_compose_up_opts=(
+        # Detach the controlling terminal after container creation, this allows you to continue running commands in the current terminal
+        -d
+    )
+    docker compose "${docker_compose_opts[@]}" up "${docker_compose_up_opts[@]}"
+    ```
+
+   Note that in this usecases both containers' service port must be _published to a non-loopback address_.
+
 ## Operations
 
 The following sections documents common operations for maintaining the containerized service:
