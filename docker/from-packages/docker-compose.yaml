@@ -17,7 +17,7 @@ services:
       - type: bind
         source: ./config
         target: /etc/oxool
-    environment:
+    environment: {}
       # Fix time presentation
       #- TZ=CST-8
     ports:
