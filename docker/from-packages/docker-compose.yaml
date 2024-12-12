@@ -38,6 +38,7 @@ services:
       # docker --ulimit does not support unlimited or large numbers · Issue #12515 · moby/moby
       # https://github.com/moby/moby/issues/12515
       nproc: -1
+    restart: always
 
   # Nextcloud service container for demonstration
   nextcloud:
