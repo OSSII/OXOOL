@@ -1,0 +1,31 @@
+# EditorConfig configuration file
+# http://EditorConfig.org
+#
+# Copyright 2024 Buo-ren Lin <buoren.lin@ossii.com.tw>
+# SPDX-License-Identifier: LicenseRef-Proprietary
+
+# This is the top-most EditorConfig file
+root = true
+
+# Common settings
+[*]
+end_of_line = lf
+indent_style = space
+indent_size = 4
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown documents
+[*.{md,mkd,mkdn,markdown}]
+# Trailing whitespace means manual linebreaks
+trim_trailing_whitespace = false
+
+# Don't check indentation size as it can't handle intentional indentation
+# in list item after hardbreaks to align with the node markers, use
+# Markdownlint to check instead
+indent_size = unset
+
+# Vagrant configuration file
+[Vagrantfile]
+indent_size = 2
