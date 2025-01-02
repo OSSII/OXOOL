@@ -1,3 +1,3 @@
-# vagrant-assets
+# dev-assets
 
-Assets used in deploying the Vagrant development environment.
+Assets used in deploying the development environment.
