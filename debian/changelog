@@ -1,3 +1,9 @@
+oxool (5.0.1-1) stable; urgency=medium
+
+  * Bump to version 5.0.1.
+
+ -- Jeff Huang <jeff.huang@ossii.com.tw>  Thu, 9 Jan 2025 13:36:00 +0800
+
 oxool (5.0.0-1) unstable; urgency=medium
 
   * Initialize the oxool 5.0.0 project.
